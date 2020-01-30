@@ -24,11 +24,11 @@ goog.require('KeyMap');
  */
 ChromeVoxPrefs = class {
   constructor() {
-    var lastRunVersion = localStorage['lastRunVersion'];
+    let lastRunVersion = localStorage['lastRunVersion'];
     if (!lastRunVersion) {
       lastRunVersion = '1.16.0';
     }
-    var loadExistingSettings = true;
+    let loadExistingSettings = true;
     // TODO(dtseng): Logic below needs clarification. Perhaps needs a
     // 'lastIncompatibleVersion' member.
     if (lastRunVersion == '1.16.0') {
@@ -65,7 +65,7 @@ ChromeVoxPrefs = class {
    */
   init(pullFromLocalStorage) {
     // Set the default value of any pref that isn't already in localStorage.
-    for (var pref in ChromeVoxPrefs.DEFAULT_PREFS) {
+    for (const pref in ChromeVoxPrefs.DEFAULT_PREFS) {
       if (localStorage[pref] === undefined) {
         localStorage[pref] = ChromeVoxPrefs.DEFAULT_PREFS[pref];
       }
@@ -107,8 +107,8 @@ ChromeVoxPrefs = class {
    * @return {Object} A map of all prefs except the key map from localStorage.
    */
   getPrefs() {
-    var prefs = {};
-    for (var pref in ChromeVoxPrefs.DEFAULT_PREFS) {
+    const prefs = {};
+    for (const pref in ChromeVoxPrefs.DEFAULT_PREFS) {
       prefs[pref] = localStorage[pref];
     }
     prefs['version'] = chrome.runtime.getManifest().version;
@@ -122,7 +122,7 @@ ChromeVoxPrefs = class {
     // Get the current key map from localStorage.
     // TODO(dtseng): We currently don't support merges since we write the entire
     // map back to local storage.
-    var currentKeyMap = KeyMap.fromLocalStorage();
+    let currentKeyMap = KeyMap.fromLocalStorage();
     if (!currentKeyMap) {
       currentKeyMap = KeyMap.fromCurrentKeyMap();
       currentKeyMap.toLocalStorage();

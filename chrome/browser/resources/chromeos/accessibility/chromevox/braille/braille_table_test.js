@@ -36,7 +36,7 @@ TEST_F('ChromeVoxBrailleTableTest', 'testGetAllAndValidate', function() {
 /** Tests getDisplayName for some specific representative cases. */
 TEST_F('ChromeVoxBrailleTableTest', 'testGetDisplayName', function() {
   BrailleTable.getAll(this.newCallback(function(tables) {
-    var table = BrailleTable.forId(tables, 'bg-comp8');
+    let table = BrailleTable.forId(tables, 'bg-comp8');
     expectEquals('Bulgarian', BrailleTable.getDisplayName(table));
     table = BrailleTable.forId(tables, 'ar-g1');
     expectEquals('Arabic, Grade 1', BrailleTable.getDisplayName(table));
@@ -51,8 +51,8 @@ TEST_F('ChromeVoxBrailleTableTest', 'testGetDisplayName', function() {
 TEST_F('ChromeVoxBrailleTableTest', 'testGetUncontracted', function() {
   BrailleTable.getAll(this.newCallback(function(tables) {
     function expectUncontracted(uncontractedId, idToCheck) {
-      var checkedTable = BrailleTable.forId(tables, idToCheck);
-      var uncontractedTable =
+      const checkedTable = BrailleTable.forId(tables, idToCheck);
+      const uncontractedTable =
           BrailleTable.getUncontracted(tables, checkedTable);
       expectNotEquals(null, uncontractedTable);
       expectEquals(uncontractedId, uncontractedTable.id);

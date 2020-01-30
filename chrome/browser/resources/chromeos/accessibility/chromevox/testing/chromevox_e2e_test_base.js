@@ -62,8 +62,8 @@ ChromeVoxE2ETest = class extends testing.Test {
    *     document is created.
    */
   runWithTab(doc, opt_callback) {
-    var url = TestUtils.createUrlForDoc(doc);
-    var createParams = {active: true, url};
+    const url = TestUtils.createUrlForDoc(doc);
+    const createParams = {active: true, url};
     chrome.tabs.create(createParams, function(tab) {
       if (opt_callback) {
         opt_callback(tab.url);

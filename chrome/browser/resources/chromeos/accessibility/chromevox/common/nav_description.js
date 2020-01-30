@@ -99,15 +99,15 @@ NavDescription = class {
      * @return {Object} The newly created properties object.
      */
     function makeAnnotationProps() {
-      var properties = {};
-      var src = AbstractTts.PERSONALITY_ANNOTATION;
-      for (var key in src) {
+      const properties = {};
+      const src = AbstractTts.PERSONALITY_ANNOTATION;
+      for (const key in src) {
         properties[key] = src[key];
       }
       return properties;
     }
 
-    var speakArgs = new Array();
+    const speakArgs = new Array();
     if (this.context) {
       speakArgs.push([this.context, queueMode, makeAnnotationProps()]);
       queueMode = QueueMode.QUEUE;
@@ -129,8 +129,8 @@ NavDescription = class {
       speakArgs.push([this.hint, queueMode, makeAnnotationProps()]);
     }
 
-    var length = speakArgs.length;
-    for (var i = 0; i < length; i++) {
+    const length = speakArgs.length;
+    for (let i = 0; i < length; i++) {
       if (i == 0 && opt_startCallback) {
         speakArgs[i][2]['startCallback'] = opt_startCallback;
       }

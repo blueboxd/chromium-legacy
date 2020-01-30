@@ -47,10 +47,10 @@ ChromeVoxCursorsTest = class extends ChromeVoxNextE2ETest {
    *     movement, direction, and assertions object. See example below.
    */
   cursorMoveAndAssert(cursor, moves) {
-    var move = null;
+    let move = null;
     while (move = moves.shift()) {
       cursor = cursor.move(move[0], move[1], move[2]);
-      var expected = move[3];
+      const expected = move[3];
       this.makeCursorAssertion(expected, cursor);
     }
     }
@@ -67,11 +67,11 @@ ChromeVoxCursorsTest = class extends ChromeVoxNextE2ETest {
      *     direction, start and end assertions objects. See example below.
      */
     rangeMoveAndAssert(range, moves) {
-      var move = null;
+      let move = null;
       while (move = moves.shift()) {
         range = range.move(move[0], move[1]);
-        var expectedStart = move[2];
-        var expectedEnd = move[3];
+        const expectedStart = move[2];
+        const expectedEnd = move[3];
 
         this.makeCursorAssertion(expectedStart, range.start);
         this.makeCursorAssertion(expectedEnd, range.end);
@@ -110,7 +110,7 @@ ChromeVoxCursorsTest = class extends ChromeVoxNextE2ETest {
           var cursor = new cursors.Cursor(start, 0);
           this.cursorMoveAndAssert(cursor, moves);
         } else if (opt_testType == this.RANGE) {
-          var range = new cursors.Range(cursor, cursor);
+          const range = new cursors.Range(cursor, cursor);
           this.rangeMoveAndAssert(range, moves);
         }
       });
@@ -342,9 +342,9 @@ TEST_F('ChromeVoxCursorsTest', 'LineRange', function() {
 
 TEST_F('ChromeVoxCursorsTest', 'DontSplitOnNodeNavigation', function() {
   this.runWithLoadedTree(this.multiInlineDoc, function(root) {
-    var para = root.firstChild;
+    const para = root.firstChild;
     assertEquals('paragraph', para.role);
-    var cursor = new cursors.Cursor(para.firstChild, 0);
+    let cursor = new cursors.Cursor(para.firstChild, 0);
     cursor = cursor.move(NODE, DIRECTIONAL, FORWARD);
     assertEquals('staticText', cursor.node.role);
     assertEquals('end', cursor.node.name);
@@ -362,9 +362,9 @@ TEST_F('ChromeVoxCursorsTest', 'DontSplitOnNodeNavigation', function() {
 
 TEST_F('ChromeVoxCursorsTest', 'WrappingCursors', function() {
   this.runWithLoadedTree(this.multiInlineDoc, function(root) {
-    var first = root;
-    var last = root.lastChild.firstChild;
-    var cursor = new cursors.WrappingCursor(first, -1);
+    const first = root;
+    const last = root.lastChild.firstChild;
+    let cursor = new cursors.WrappingCursor(first, -1);
 
     // Wrap from first node to last node.
     cursor = cursor.move(NODE, DIRECTIONAL, BACKWARD);
@@ -378,9 +378,9 @@ TEST_F('ChromeVoxCursorsTest', 'WrappingCursors', function() {
 
 TEST_F('ChromeVoxCursorsTest', 'IsInWebRange', function() {
   this.runWithLoadedTree(this.simpleDoc, function(root) {
-    var para = root.firstChild;
-    var webRange = cursors.Range.fromNode(para);
-    var auraRange = cursors.Range.fromNode(root.parent);
+    const para = root.firstChild;
+    const webRange = cursors.Range.fromNode(para);
+    const auraRange = cursors.Range.fromNode(root.parent);
     assertFalse(auraRange.isWebRange());
     assertTrue(webRange.isWebRange());
   });
@@ -395,14 +395,14 @@ TEST_F('ChromeVoxCursorsTest', 'SingleDocSelection', function() {
     <p>end of text</p>
   `,
       function(root) {
-        var link = root.find({role: RoleType.LINK});
-        var p1 = root.find({role: RoleType.PARAGRAPH});
-        var p2 = p1.nextSibling;
+        const link = root.find({role: RoleType.LINK});
+        const p1 = root.find({role: RoleType.PARAGRAPH});
+        const p2 = p1.nextSibling;
 
-        var singleSel = new cursors.Range(
+        const singleSel = new cursors.Range(
             new cursors.Cursor(link, 0), new cursors.Cursor(link, 1));
 
-        var multiSel = new cursors.Range(
+        const multiSel = new cursors.Range(
             new cursors.Cursor(p1.firstChild, 2),
             new cursors.Cursor(p2.firstChild, 4));
 
@@ -429,11 +429,11 @@ TEST_F('ChromeVoxCursorsTest', 'SingleDocSelection', function() {
 
 TEST_F('ChromeVoxCursorsTest', 'MultiLineOffsetSelection', function() {
   this.runWithLoadedTree(this.multiInlineDoc, function(root) {
-    var secondLine = root.firstChild.firstChild.firstChild.nextSibling;
+    const secondLine = root.firstChild.firstChild.firstChild.nextSibling;
     assertEquals('inlineTextBox', secondLine.role);
     assertEquals('diff ', secondLine.name);
 
-    var secondLineCursor = new cursors.Cursor(secondLine, -1);
+    let secondLineCursor = new cursors.Cursor(secondLine, -1);
     // The selected node moves to the static text node.
     assertEquals(secondLineCursor.node.parent, secondLineCursor.selectionNode_);
 
@@ -445,7 +445,7 @@ TEST_F('ChromeVoxCursorsTest', 'MultiLineOffsetSelection', function() {
     assertEquals(7, secondLineCursor.selectionIndex_);
 
     // Now, try selecting via node offsets.
-    var cursor = new cursors.Cursor(root.firstChild, -1);
+    let cursor = new cursors.Cursor(root.firstChild, -1);
     assertEquals(root, cursor.selectionNode_);
     assertEquals(0, cursor.selectionIndex_);
 
@@ -483,17 +483,17 @@ TEST_F('ChromeVoxCursorsTest', 'InlineElementOffset', function() {
         assertEquals('test', testNode.name);
 
         var ofSelectionNode = root.lastChild.lastChild;
-        var cur = new cursors.Cursor(ofSelectionNode, 0);
+        const cur = new cursors.Cursor(ofSelectionNode, 0);
         assertEquals('of selection', cur.selectionNode_.name);
         assertEquals(RoleType.STATIC_TEXT, cur.selectionNode_.role);
         assertEquals(0, cur.selectionIndex_);
 
-        var curIntoO = new cursors.Cursor(ofSelectionNode, 1);
+        const curIntoO = new cursors.Cursor(ofSelectionNode, 1);
         assertEquals('of selection', curIntoO.selectionNode_.name);
         assertEquals(RoleType.STATIC_TEXT, curIntoO.selectionNode_.role);
         assertEquals(1, curIntoO.selectionIndex_);
 
-        var oRange = new cursors.Range(cur, curIntoO);
+        const oRange = new cursors.Range(cur, curIntoO);
         oRange.select();
       });
 });
@@ -504,17 +504,17 @@ TEST_F('ChromeVoxCursorsTest', 'ContentEquality', function() {
     <div role="region">this is a test</button>
   `,
       function(root) {
-        var region = root.firstChild;
+        const region = root.firstChild;
         assertEquals(RoleType.REGION, region.role);
-        var staticText = region.firstChild;
+        const staticText = region.firstChild;
         assertEquals(RoleType.STATIC_TEXT, staticText.role);
-        var inlineTextBox = staticText.firstChild;
+        const inlineTextBox = staticText.firstChild;
         assertEquals(RoleType.INLINE_TEXT_BOX, inlineTextBox.role);
 
-        var rootRange = cursors.Range.fromNode(root);
-        var regionRange = cursors.Range.fromNode(region);
-        var staticTextRange = cursors.Range.fromNode(staticText);
-        var inlineTextBoxRange = cursors.Range.fromNode(inlineTextBox);
+        const rootRange = cursors.Range.fromNode(root);
+        const regionRange = cursors.Range.fromNode(region);
+        const staticTextRange = cursors.Range.fromNode(staticText);
+        const inlineTextBoxRange = cursors.Range.fromNode(inlineTextBox);
 
         // Positive cases.
         assertTrue(regionRange.contentEquals(staticTextRange));
@@ -538,9 +538,9 @@ TEST_F('ChromeVoxCursorsTest', 'DeepEquivalency', function() {
     <p style="word-spacing:100000px">this is a test</p>
   `,
       function(root) {
-        var textNode = root.find({role: RoleType.STATIC_TEXT});
+        const textNode = root.find({role: RoleType.STATIC_TEXT});
 
-        var text = new cursors.Cursor(textNode, 2);
+        let text = new cursors.Cursor(textNode, 2);
         deep = text.deepEquivalent;
         assertEquals('this ', deep.node.name);
         assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
@@ -591,11 +591,11 @@ TEST_F('ChromeVoxCursorsTest', 'DeepEquivalencyBeyondLastChild', function() {
     <p>test</p>
   `,
       function(root) {
-        var paragraph = root.find({role: RoleType.PARAGRAPH});
+        const paragraph = root.find({role: RoleType.PARAGRAPH});
         assertEquals(1, paragraph.children.length);
-        var cursor = new cursors.Cursor(paragraph, 1);
+        const cursor = new cursors.Cursor(paragraph, 1);
 
-        var deep = cursor.deepEquivalent;
+        const deep = cursor.deepEquivalent;
         assertEquals(RoleType.STATIC_TEXT, deep.node.role);
         assertEquals(4, deep.index);
       });
@@ -607,15 +607,15 @@ TEST_F('ChromeVoxCursorsTest', 'SelectionAdjustmentsRichText', function() {
     <div contenteditable><p>test</p><p>123</p></div>
   `,
       function(root) {
-        var textField = root.firstChild;
-        var paragraph = textField.firstChild;
-        var otherParagraph = textField.lastChild;
-        var staticText = paragraph.firstChild;
-        var otherStaticText = otherParagraph.firstChild;
+        const textField = root.firstChild;
+        const paragraph = textField.firstChild;
+        const otherParagraph = textField.lastChild;
+        const staticText = paragraph.firstChild;
+        const otherStaticText = otherParagraph.firstChild;
 
         // Ranges by default surround a node. Ensure it results in a collapsed
         // selection.
-        var range = cursors.Range.fromNode(staticText);
+        let range = cursors.Range.fromNode(staticText);
         assertEquals(0, range.start.selectionIndex_);
         assertEquals(0, range.end.selectionIndex_);
         assertEquals(paragraph, range.start.selectionNode_);
@@ -658,9 +658,9 @@ TEST_F('ChromeVoxCursorsTest', 'SelectionAdjustmentsNonRichText', function() {
     <textarea></textarea>
   `,
       function(root) {
-        var testEditable = function(edit) {
+        const testEditable = function(edit) {
           // Occurs as part of ordinary (non-text) navigation.
-          var range = cursors.Range.fromNode(edit);
+          let range = cursors.Range.fromNode(edit);
           assertEquals(-1, range.start.selectionIndex_);
           assertEquals(-1, range.end.selectionIndex_);
           assertEquals(edit, range.start.selectionNode_);
@@ -675,8 +675,8 @@ TEST_F('ChromeVoxCursorsTest', 'SelectionAdjustmentsNonRichText', function() {
           assertEquals(edit, range.end.selectionNode_);
         };
 
-        var textField = root.firstChild.firstChild;
-        var textArea = root.lastChild.lastChild;
+        const textField = root.firstChild.firstChild;
+        const textArea = root.lastChild.lastChild;
 
         // Both of these should behave in the same way.
         testEditable(textField);

@@ -75,7 +75,7 @@ LibLouis = class {
     }
     this.rpc_('CheckTable', {'table_names': tableNames}, function(reply) {
       if (reply['success']) {
-        var translator = new LibLouis.Translator(this, tableNames);
+        const translator = new LibLouis.Translator(this, tableNames);
         callback(translator);
       } else {
         callback(null /* translator */);
@@ -96,10 +96,10 @@ LibLouis = class {
     if (!this.worker_) {
       throw Error('Cannot send RPC: liblouis instance not loaded');
     }
-    var messageId = '' + this.nextMessageId_++;
+    const messageId = '' + this.nextMessageId_++;
     message['message_id'] = messageId;
     message['command'] = command;
-    var json = JSON.stringify(message);
+    const json = JSON.stringify(message);
     if (LibLouis.DEBUG) {
       window.console.debug('RPC -> ' + json);
     }
@@ -135,8 +135,8 @@ LibLouis = class {
     if (LibLouis.DEBUG) {
       window.console.debug('RPC <- ' + e.data);
     }
-    var message = /** @type {!Object} */ (JSON.parse(e.data));
-    var messageId = message['in_reply_to'];
+    const message = /** @type {!Object} */ (JSON.parse(e.data));
+    const messageId = message['in_reply_to'];
     if (!goog.isDef(messageId)) {
       window.console.warn(
           'liblouis Native Client module sent message with no ID', message);
@@ -145,7 +145,7 @@ LibLouis = class {
     if (goog.isDef(message['error'])) {
       window.console.error('liblouis Native Client error', message['error']);
     }
-    var callback = this.pendingRpcCallbacks_[messageId];
+    const callback = this.pendingRpcCallbacks_[messageId];
     if (goog.isDef(callback)) {
       delete this.pendingRpcCallbacks_[messageId];
       callback(message);
@@ -231,15 +231,15 @@ LibLouis.Translator = class {
       callback(null /*cells*/, null /*textToBraille*/, null /*brailleToText*/);
       return;
     }
-    var message = {
+    const message = {
       'table_names': this.tableNames_,
       text,
       form_type_map: formTypeMap
     };
     this.instance_.rpc_('Translate', message, function(reply) {
-      var cells = null;
-      var textToBraille = null;
-      var brailleToText = null;
+      let cells = null;
+      let textToBraille = null;
+      let brailleToText = null;
       if (reply['success'] && goog.isString(reply['cells'])) {
         cells = LibLouis.Translator.decodeHexString_(reply['cells']);
         if (goog.isDef(reply['text_to_braille'])) {
@@ -274,7 +274,7 @@ LibLouis.Translator = class {
       callback('');
       return;
     }
-    var message = {
+    const message = {
       'table_names': this.tableNames_,
       'cells': LibLouis.Translator.encodeHexString_(cells)
     };
@@ -297,9 +297,9 @@ LibLouis.Translator = class {
     if (!/^([0-9a-f]{2})*$/i.test(hex)) {
       throw Error('invalid hexadecimal string');
     }
-    var array = new Uint8Array(hex.length / 2);
-    var idx = 0;
-    for (var i = 0; i < hex.length; i += 2) {
+    const array = new Uint8Array(hex.length / 2);
+    let idx = 0;
+    for (let i = 0; i < hex.length; i += 2) {
       array[idx++] = parseInt(hex.substring(i, i + 2), 16);
     }
     return array.buffer;
@@ -312,10 +312,10 @@ LibLouis.Translator = class {
    * @private
    */
   static encodeHexString_(arrayBuffer) {
-    var array = new Uint8Array(arrayBuffer);
-    var hex = '';
-    for (var i = 0; i < array.length; i++) {
-      var b = array[i];
+    const array = new Uint8Array(arrayBuffer);
+    let hex = '';
+    for (let i = 0; i < array.length; i++) {
+      const b = array[i];
       hex += (b < 0x10 ? '0' : '') + b.toString(16);
     }
     return hex;

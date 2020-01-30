@@ -119,9 +119,10 @@ EarconEngine = class {
     this.progressIntervalID_ = null;
 
     // Initialization: load the base sound data files asynchronously.
-    var allSoundFilesToLoad = EarconEngine.SOUNDS.concat(EarconEngine.REVERBS);
+    const allSoundFilesToLoad =
+        EarconEngine.SOUNDS.concat(EarconEngine.REVERBS);
     allSoundFilesToLoad.forEach((function(sound) {
-                                  var url =
+                                  const url =
                                       EarconEngine.BASE_URL + sound + '.wav';
                                   this.loadSound(sound, url);
                                 }).bind(this));
@@ -134,7 +135,7 @@ EarconEngine = class {
    * @param {string} url The url where the sound should be fetched from.
    */
   loadSound(name, url) {
-    var request = new XMLHttpRequest();
+    const request = new XMLHttpRequest();
     request.open('GET', url, true);
     request.responseType = 'arraybuffer';
 
@@ -166,28 +167,28 @@ EarconEngine = class {
    *     to the destination node.
    */
   createCommonFilters(properties) {
-    var gain = this.masterVolume;
+    let gain = this.masterVolume;
     if (properties.gain) {
       gain *= properties.gain;
     }
-    var gainNode = this.context_.createGain();
+    const gainNode = this.context_.createGain();
     gainNode.gain.value = gain;
-    var first = gainNode;
-    var last = gainNode;
+    const first = gainNode;
+    let last = gainNode;
 
-    var pan = this.masterPan;
+    let pan = this.masterPan;
     if (properties.pan !== undefined) {
       pan = properties.pan;
     }
     if (pan != 0) {
-      var panNode = this.context_.createPanner();
+      const panNode = this.context_.createPanner();
       panNode.setPosition(pan, 0, 0);
       panNode.setOrientation(0, 0, 1);
       last.connect(panNode);
       last = panNode;
     }
 
-    var reverb = this.masterReverb;
+    let reverb = this.masterReverb;
     if (properties.reverb !== undefined) {
       reverb = properties.reverb;
     }
@@ -202,7 +203,7 @@ EarconEngine = class {
       last.connect(this.context_.destination);
 
       // Wet
-      var reverbGainNode = this.context_.createGain();
+      const reverbGainNode = this.context_.createGain();
       reverbGainNode.gain.value = reverb;
       last.connect(reverbGainNode);
       reverbGainNode.connect(this.reverbConvolver_);
@@ -236,7 +237,7 @@ EarconEngine = class {
    *     or set event handlers on it.
    */
   play(sound, opt_properties) {
-    var source = this.context_.createBufferSource();
+    const source = this.context_.createBufferSource();
     source.buffer = this.buffers_[sound];
 
     if (!opt_properties) {
@@ -245,7 +246,7 @@ EarconEngine = class {
       opt_properties = /** @type {undefined} */ ({});
     }
 
-    var pitch = this.masterPitch;
+    let pitch = this.masterPitch;
     if (opt_properties.pitch) {
       pitch += opt_properties.pitch;
     }
@@ -253,7 +254,7 @@ EarconEngine = class {
       source.playbackRate.value = Math.pow(EarconEngine.HALF_STEP, pitch);
     }
 
-    var destination = this.createCommonFilters(opt_properties);
+    const destination = this.createCommonFilters(opt_properties);
     source.connect(destination);
 
     if (opt_properties.time) {
@@ -409,10 +410,10 @@ EarconEngine = class {
    *     control the sound, as described above.
    */
   generateSinusoidal(properties) {
-    var envelopeNode = this.context_.createGain();
+    const envelopeNode = this.context_.createGain();
     envelopeNode.connect(this.context_.destination);
 
-    var time = properties.time;
+    let time = properties.time;
     if (time === undefined) {
       time = 0;
     }
@@ -424,9 +425,9 @@ EarconEngine = class {
     //
     // If an end frequency is specified, do an exponential ramp to that end
     // frequency.
-    var gain = properties.gain;
-    for (var i = 0; i < properties.overtones; i++) {
-      var osc = this.context_.createOscillator();
+    let gain = properties.gain;
+    for (let i = 0; i < properties.overtones; i++) {
+      const osc = this.context_.createOscillator();
       osc.frequency.value = properties.freq * (i + 1);
 
       if (properties.endFreq) {
@@ -440,7 +441,7 @@ EarconEngine = class {
       osc.start(this.context_.currentTime + time);
       osc.stop(this.context_.currentTime + time + properties.dur);
 
-      var gainNode = this.context_.createGain();
+      const gainNode = this.context_.createGain();
       gainNode.gain.value = gain;
       osc.connect(gainNode);
       gainNode.connect(envelopeNode);
@@ -460,7 +461,7 @@ EarconEngine = class {
         0, this.context_.currentTime + time + properties.dur);
 
     // Route everything through the common filters like reverb at the end.
-    var destination = this.createCommonFilters({});
+    const destination = this.createCommonFilters({});
     envelopeNode.connect(destination);
   }
 
@@ -471,40 +472,40 @@ EarconEngine = class {
    * @param {boolean} reverse Whether to play in the reverse direction.
    */
   onChromeVoxSweep(reverse) {
-    var pitches = [-7, -5, 0, 5, 7, 12, 17, 19, 24];
+    const pitches = [-7, -5, 0, 5, 7, 12, 17, 19, 24];
 
     if (reverse) {
       pitches.reverse();
     }
 
-    var attack = 0.015;
-    var dur = pitches.length * this.sweepDelay;
+    const attack = 0.015;
+    const dur = pitches.length * this.sweepDelay;
 
-    var destination = this.createCommonFilters({reverb: 2.0});
-    for (var k = 0; k < this.sweepEchoCount; k++) {
-      var envelopeNode = this.context_.createGain();
-      var startTime = this.context_.currentTime + this.sweepEchoDelay * k;
-      var sweepGain = Math.pow(0.3, k);
-      var overtones = 2;
-      var overtoneGain = sweepGain;
-      for (var i = 0; i < overtones; i++) {
-        var osc = this.context_.createOscillator();
+    const destination = this.createCommonFilters({reverb: 2.0});
+    for (let k = 0; k < this.sweepEchoCount; k++) {
+      const envelopeNode = this.context_.createGain();
+      const startTime = this.context_.currentTime + this.sweepEchoDelay * k;
+      const sweepGain = Math.pow(0.3, k);
+      const overtones = 2;
+      let overtoneGain = sweepGain;
+      for (let i = 0; i < overtones; i++) {
+        const osc = this.context_.createOscillator();
         osc.start(startTime);
         osc.stop(startTime + dur);
 
-        var gainNode = this.context_.createGain();
+        const gainNode = this.context_.createGain();
         osc.connect(gainNode);
         gainNode.connect(envelopeNode);
 
-        for (var j = 0; j < pitches.length; j++) {
+        for (let j = 0; j < pitches.length; j++) {
           var freqDecay;
           if (reverse) {
             freqDecay = Math.pow(0.75, pitches.length - j);
           } else {
             freqDecay = Math.pow(0.75, j);
           }
-          var gain = overtoneGain * freqDecay;
-          var freq = (i + 1) * 220 *
+          const gain = overtoneGain * freqDecay;
+          const freq = (i + 1) * 220 *
               Math.pow(EarconEngine.HALF_STEP, pitches[j] + this.sweepPitch);
           if (j == 0) {
             osc.frequency.setValueAtTime(freq, startTime);
@@ -548,8 +549,8 @@ EarconEngine = class {
    * Play an alert sound.
    */
   onAlert() {
-    var freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, this.alertPitch - 2);
-    var freq2 = 220 * Math.pow(EarconEngine.HALF_STEP, this.alertPitch - 3);
+    const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, this.alertPitch - 2);
+    const freq2 = 220 * Math.pow(EarconEngine.HALF_STEP, this.alertPitch - 3);
     this.generateSinusoidal({
       attack: 0.02,
       decay: 0.07,
@@ -575,8 +576,8 @@ EarconEngine = class {
    */
   onWrap() {
     this.play('static', {gain: this.clickVolume * 0.3});
-    var freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, this.wrapPitch - 8);
-    var freq2 = 220 * Math.pow(EarconEngine.HALF_STEP, this.wrapPitch + 8);
+    const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, this.wrapPitch - 8);
+    const freq2 = 220 * Math.pow(EarconEngine.HALF_STEP, this.wrapPitch + 8);
     this.generateSinusoidal({
       attack: 0.01,
       decay: 0.1,
@@ -596,7 +597,7 @@ EarconEngine = class {
    */
   generateProgressTickTocks_() {
     while (this.progressTime_ < this.context_.currentTime + 3.0) {
-      var t = this.progressTime_ - this.context_.currentTime;
+      let t = this.progressTime_ - this.context_.currentTime;
       this.progressSources_.push([
         this.progressTime_,
         this.play('static', {gain: 0.5 * this.progressGain_, time: t})
@@ -629,7 +630,7 @@ EarconEngine = class {
       this.progressTime_ += 1.0;
     }
 
-    var removeCount = 0;
+    let removeCount = 0;
     while (removeCount < this.progressSources_.length &&
            this.progressSources_[removeCount][0] <
                this.context_.currentTime - 0.2) {
@@ -663,7 +664,7 @@ EarconEngine = class {
       return;
     }
 
-    for (var i = 0; i < this.progressSources_.length; i++) {
+    for (let i = 0; i < this.progressSources_.length; i++) {
       this.progressSources_[i][1].stop();
     }
     this.progressSources_ = [];
@@ -679,7 +680,7 @@ EarconEngine = class {
   setPositionForRect(rect, container) {
     // The horizontal position computed as a percentage relative to its
     // container.
-    var x = (rect.left + rect.width / 2) / container.width;
+    let x = (rect.left + rect.width / 2) / container.width;
 
     // Clamp.
     x = Math.min(Math.max(x, 0.0), 1.0);

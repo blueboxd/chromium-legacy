@@ -86,25 +86,25 @@ BrailleTranslatorManager = class {
       return;
     }
 
-    var tables = this.tables_;
+    const tables = this.tables_;
     if (tables.length == 0) {
       return;
     }
 
     // Look for the table requested.
-    var table = BrailleTable.forId(tables, brailleTable);
+    let table = BrailleTable.forId(tables, brailleTable);
     if (!table) {
       // Match table against current locale.
-      var currentLocale = chrome.i18n.getMessage('@@ui_locale').split(/[_-]/);
-      var major = currentLocale[0];
-      var minor = currentLocale[1];
-      var firstPass = tables.filter(function(table) {
+      const currentLocale = chrome.i18n.getMessage('@@ui_locale').split(/[_-]/);
+      const major = currentLocale[0];
+      const minor = currentLocale[1];
+      const firstPass = tables.filter(function(table) {
         return table.locale.split(/[_-]/)[0] == major;
       });
       if (firstPass.length > 0) {
         table = firstPass[0];
         if (minor) {
-          var secondPass = firstPass.filter(function(table) {
+          const secondPass = firstPass.filter(function(table) {
             return table.locale.split(/[_-]/)[1] == minor;
           });
           if (secondPass.length > 0) {
@@ -120,20 +120,20 @@ BrailleTranslatorManager = class {
     // If the user explicitly set an 8 dot table, use that when looking
     // for an uncontracted table.  Otherwise, use the current table and let
     // getUncontracted find an appropriate corresponding table.
-    var table8Dot = opt_brailleTable8 ?
+    const table8Dot = opt_brailleTable8 ?
         BrailleTable.forId(tables, opt_brailleTable8) :
         null;
-    var uncontractedTable =
+    const uncontractedTable =
         BrailleTable.getUncontracted(tables, table8Dot || table);
-    var newDefaultTableId = table.id;
-    var newUncontractedTableId =
+    const newDefaultTableId = table.id;
+    const newUncontractedTableId =
         table.id === uncontractedTable.id ? null : uncontractedTable.id;
     if (newDefaultTableId === this.defaultTableId_ &&
         newUncontractedTableId === this.uncontractedTableId_) {
       return;
     }
 
-    var finishRefresh = function(defaultTranslator, uncontractedTranslator) {
+    const finishRefresh = function(defaultTranslator, uncontractedTranslator) {
       this.defaultTableId_ = newDefaultTableId;
       this.uncontractedTableId_ = newUncontractedTableId;
       this.expandingTranslator_ = new ExpandingBrailleTranslator(

@@ -22,7 +22,7 @@ goog.provide('NodeIdentifier');
  *    className: !string,
  *    htmlTag: !string }}
  */
-var Attributes;
+let Attributes;
 
 NodeIdentifier = class {
   /**
@@ -66,7 +66,7 @@ NodeIdentifier = class {
       return false;
     }
 
-    for (var i = 0; i < this.ancestry.length; ++i) {
+    for (let i = 0; i < this.ancestry.length; ++i) {
       if (!this.matchingAttributes_(this.ancestry[i], other.ancestry[i])) {
         return false;
       }
@@ -99,9 +99,9 @@ NodeIdentifier = class {
    * @private
    */
   createAttributesAncestry_(node) {
-    var ancestry = [];
-    var scanNode = node.parent;
-    var treeRoot = node.root;
+    const ancestry = [];
+    let scanNode = node.parent;
+    const treeRoot = node.root;
     while (scanNode && scanNode !== treeRoot) {
       ancestry.push(this.createAttributes_(scanNode));
       scanNode = scanNode.parent;
@@ -116,7 +116,7 @@ NodeIdentifier = class {
    * @private
    */
   matchingAttributes_(target, candidate) {
-    for (var [key, targetValue] of Object.entries(target)) {
+    for (const [key, targetValue] of Object.entries(target)) {
       if (candidate[key] !== targetValue) {
         return false;
       }

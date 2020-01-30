@@ -87,7 +87,7 @@ CompositeTts = class {
    */
   propertyToPercentage(property) {
     for (var i = 0, engine; engine = this.ttsEngines_[i]; i++) {
-      var value = engine.propertyToPercentage(property);
+      const value = engine.propertyToPercentage(property);
       if (value !== undefined) {
         return value;
       }
@@ -100,7 +100,7 @@ CompositeTts = class {
    */
   getDefaultProperty(property) {
     for (var i = 0, engine; engine = this.ttsEngines_[i]; i++) {
-      var value = engine.getDefaultProperty(property);
+      const value = engine.getDefaultProperty(property);
       if (value !== undefined) {
         return value;
       }
@@ -110,7 +110,7 @@ CompositeTts = class {
 
   /** @override */
   toggleSpeechOnOrOff() {
-    var value = false;
+    let value = false;
     this.ttsEngines_.forEach(function(engine) {
       value = value || engine.toggleSpeechOnOrOff();
     });

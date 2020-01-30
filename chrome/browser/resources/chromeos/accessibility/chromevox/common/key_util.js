@@ -21,7 +21,7 @@ goog.require('KeySequence');
  *            shiftKey: (boolean|undefined),
  *            keyCode: (number|undefined)}}
  */
-var SimpleKeyEvent;
+let SimpleKeyEvent;
 
 /**
  * Create the namespace
@@ -36,7 +36,7 @@ KeyUtil = class {
    * @return {KeySequence} A key sequence representation of the key event.
    */
   static keyEventToKeySequence(keyEvent) {
-    var util = KeyUtil;
+    const util = KeyUtil;
     if (util.prevKeySequence &&
         (util.maxSeqLength == util.prevKeySequence.length())) {
       // Reset the sequence buffer if max sequence length is reached.
@@ -45,15 +45,15 @@ KeyUtil = class {
     }
     // Either we are in the middle of a key sequence (N > H), or the key prefix
     // was pressed before (Ctrl+Z), or sticky mode is enabled
-    var keyIsPrefixed =
+    const keyIsPrefixed =
         util.sequencing || keyEvent['keyPrefix'] || keyEvent['stickyMode'];
 
     // Create key sequence.
-    var keySequence = new KeySequence(keyEvent);
+    let keySequence = new KeySequence(keyEvent);
 
     // Check if the Cvox key should be considered as pressed because the
     // modifier key combination is active.
-    var keyWasCvox = keySequence.cvoxModifier;
+    const keyWasCvox = keySequence.cvoxModifier;
 
     if (keyIsPrefixed || keyWasCvox) {
       if (!util.sequencing && util.isSequenceSwitchKeyCode(keySequence)) {
@@ -77,11 +77,11 @@ KeyUtil = class {
     }
 
     // Repeated keys pressed.
-    var currTime = new Date().getTime();
+    const currTime = new Date().getTime();
     if (KeyUtil.isDoubleTapKey(keySequence) && util.prevKeySequence &&
         keySequence.equals(util.prevKeySequence)) {
-      var prevTime = util.modeKeyPressTime;
-      var delta = currTime - prevTime;
+      const prevTime = util.modeKeyPressTime;
+      const delta = currTime - prevTime;
       if (prevTime > 0 && delta > 100 && delta < 300) /* Double tap */ {
         keySequence = util.prevKeySequence;
         keySequence.doubleTap = true;
@@ -169,8 +169,8 @@ KeyUtil = class {
    * @return {Array<number>} Array of key codes.
    */
   static cvoxModKeyCodes() {
-    var modKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
-    var modKeyCodes = modKeyCombo.map(function(keyString) {
+    const modKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
+    const modKeyCodes = modKeyCombo.map(function(keyString) {
       return KeyUtil.modStringToKeyCode(keyString);
     });
     return modKeyCodes;
@@ -185,8 +185,8 @@ KeyUtil = class {
    * @return {boolean} true if it is a sequence switch keycode, false otherwise.
    */
   static isSequenceSwitchKeyCode(rhKeySeq) {
-    for (var i = 0; i < ChromeVox.sequenceSwitchKeyCodes.length; i++) {
-      var lhKeySeq = ChromeVox.sequenceSwitchKeyCodes[i];
+    for (let i = 0; i < ChromeVox.sequenceSwitchKeyCodes.length; i++) {
+      const lhKeySeq = ChromeVox.sequenceSwitchKeyCodes[i];
       if (lhKeySeq.equals(rhKeySeq)) {
         return true;
       }
@@ -201,7 +201,7 @@ KeyUtil = class {
    * @return {string} Returns a string description.
    */
   static getReadableNameForKeyCode(keyCode) {
-    var msg = Msgs.getMsg.bind(Msgs);
+    const msg = Msgs.getMsg.bind(Msgs);
     if (keyCode == 0) {
       return 'Power button';
     } else if (keyCode == 17) {
@@ -346,11 +346,11 @@ KeyUtil = class {
     // do it earlier because isModifierActive uses
     // KeyUtil.getReadableNameForKeyCode, and I don't want KeySequence to depend
     // on KeyUtil.
-    var str = '';
+    let str = '';
 
-    var numKeys = keySequence.length();
+    const numKeys = keySequence.length();
 
-    for (var index = 0; index < numKeys; index++) {
+    for (let index = 0; index < numKeys; index++) {
       if (str != '' && !opt_modifiers) {
         str += '>';
       } else if (str != '') {
@@ -359,14 +359,14 @@ KeyUtil = class {
 
       // This iterates through the sequence. Either we're on the first key
       // pressed or the second
-      var tempStr = '';
-      for (var keyPressed in keySequence.keys) {
+      let tempStr = '';
+      for (const keyPressed in keySequence.keys) {
         // This iterates through the actual key, taking into account any
         // modifiers.
         if (!keySequence.keys[keyPressed][index]) {
           continue;
         }
-        var modifier = '';
+        let modifier = '';
         switch (keyPressed) {
           case 'ctrlKey':
             // TODO(rshearer): This is a hack to work around the special casing
@@ -436,8 +436,8 @@ KeyUtil = class {
    * @return {boolean} True if key is triggered via double tap.
    */
   static isDoubleTapKey(key) {
-    var isSet = false;
-    var originalState = key.doubleTap;
+    let isSet = false;
+    const originalState = key.doubleTap;
     key.doubleTap = true;
     for (var i = 0, keySeq; keySeq = KeySequence.doubleTapCache[i]; i++) {
       if (keySeq.equals(key)) {

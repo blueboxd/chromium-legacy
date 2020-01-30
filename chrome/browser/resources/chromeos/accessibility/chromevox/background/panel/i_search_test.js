@@ -54,8 +54,8 @@ class FakeISearchHandler {
 
   expect(str, opt_callback) {
     this.expect_.push(this.test.newCallback(function(args) {
-      var node = args.node;
-      var actual = node.name || node.role;
+      const node = args.node;
+      let actual = node.name || node.role;
       if (args.start && args.end) {
         actual = 'start=' + args.start + ' end=' + args.end + ' text=' + actual;
       }
@@ -71,8 +71,8 @@ class FakeISearchHandler {
 
 TEST_F('ChromeVoxISearchTest', 'Simple', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function(rootNode) {
-    var handler = new FakeISearchHandler(this);
-    var search = new ISearch(new cursors.Cursor(rootNode, 0));
+    const handler = new FakeISearchHandler(this);
+    const search = new ISearch(new cursors.Cursor(rootNode, 0));
     search.handler = handler;
 
     // Simple forward search.

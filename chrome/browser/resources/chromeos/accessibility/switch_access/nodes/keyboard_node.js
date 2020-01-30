@@ -51,7 +51,7 @@ class KeyboardNode extends NodeWrapper {
     if (action !== SAConstants.MenuAction.SELECT) {
       return false;
     }
-    let keyLocation = this.location;
+    const keyLocation = this.location;
     if (!keyLocation) {
       return false;
     }
@@ -75,7 +75,7 @@ class KeyboardNode extends NodeWrapper {
     const childConstructor = (node) => new KeyboardNode(node, root);
 
     /** @type {!Array<!chrome.automation.AutomationNode>} */
-    let interestingChildren = RootNodeWrapper.getInterestingChildren(root);
+    const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
     let children = interestingChildren.map(childConstructor);
     if (interestingChildren.length > SAConstants.KEYBOARD_MAX_ROW_LENGTH) {
       children = GroupNode.separateByRow(children);

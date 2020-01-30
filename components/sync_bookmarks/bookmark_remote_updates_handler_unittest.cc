@@ -436,7 +436,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
-       ShouldLogGuidMismatchUponInvalidRemoteUpdate) {
+       ShouldUpdateGUIDValueUponRemoteUpdate) {
   const std::string kId = "id";
   const std::string kTitle = "title";
   const std::string kOldGuid = base::GenerateGUID();
@@ -478,16 +478,16 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
-  // The GUID should not have been updated.
+  // The GUID should have been updated.
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-  EXPECT_THAT(bookmark_bar_node->children().front()->guid(), Eq(kOldGuid));
+  EXPECT_THAT(bookmark_bar_node->children().front()->guid(), Eq(kNewGuid));
 
   histogram_tester.ExpectBucketCount(
       "Sync.ProblematicServerSideBookmarks",
       /*sample=*/ExpectedRemoteBookmarkUpdateError::kUnexpectedGuid,
-      /*count=*/1);
+      /*count=*/0);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,

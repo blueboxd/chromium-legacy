@@ -278,7 +278,7 @@ class NavigationManager {
    */
   buildGroupStack_(node) {
     // Create a list of ancestors.
-    let ancestorList = [];
+    const ancestorList = [];
     while (node.parent) {
       ancestorList.push(node.parent);
       node = node.parent;
@@ -287,7 +287,7 @@ class NavigationManager {
     this.groupStack_ = [];
     let group = RootNodeWrapper.buildDesktopTree(this.desktop_);
     while (ancestorList.length > 0) {
-      let ancestor = ancestorList.pop();
+      const ancestor = ancestorList.pop();
       if (ancestor.role === chrome.automation.RoleType.DESKTOP) {
         continue;
       }

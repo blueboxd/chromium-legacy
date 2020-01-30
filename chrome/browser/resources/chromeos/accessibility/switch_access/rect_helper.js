@@ -168,7 +168,7 @@ const RectHelper = {
       return outer;
     }
 
-    let newOuter = RectHelper.deepCopy(outer);
+    const newOuter = RectHelper.deepCopy(outer);
 
     if (newOuter.top > inner.top - padding) {
       newOuter.top = inner.top - padding;

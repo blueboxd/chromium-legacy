@@ -91,7 +91,7 @@ TabsApiHandler = class {
       }
 
       if (TabsApiHandler.shouldOutputSpeechAndBraille) {
-        var title = tab.title ? tab.title : tab.url;
+        const title = tab.title ? tab.title : tab.url;
         ChromeVox.tts.speak(
             this.msg_('chrome_tab_selected', [title]), QueueMode.FLUSH,
             AbstractTts.PERSONALITY_ANNOUNCEMENT);

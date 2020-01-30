@@ -33,9 +33,9 @@ class TestUtils {
    * @return {string} The html text.
    */
   static extractHtmlFromCommentEncodedString(html, opt_args) {
-    var stringified = html.toString();
+    let stringified = html.toString();
     if (opt_args) {
-      for (var i = 0; i < opt_args.length; i++) {
+      for (let i = 0; i < opt_args.length; i++) {
         stringified = stringified.replace('$' + i, opt_args[i]);
       }
     }
@@ -48,7 +48,7 @@ class TestUtils {
    * @return {string}
    */
   static createUrlForDoc(doc) {
-    var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
+    const docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
     return 'data:text/html,<!doctype html>' +
         encodeURIComponent(TestUtils.collapseWhitespace(
             docString.replace(/[\n\r]/g, '').trim()));

@@ -142,10 +142,10 @@ PanStrategy = class {
      */
     getCurrentBrailleViewportContents(opt_showCursor) {
       opt_showCursor = opt_showCursor === undefined ? true : opt_showCursor;
-      var buf =
+      const buf =
           this.panStrategyWrapped_ ? this.wrappedBuffer_ : this.fixedBuffer_;
 
-      var startIndex, endIndex;
+      let startIndex, endIndex;
       if (this.panStrategyWrapped_) {
         startIndex = this.wrappedCursor_.start;
         endIndex = this.wrappedCursor_.end;
@@ -156,9 +156,9 @@ PanStrategy = class {
 
       if (startIndex >= 0 && startIndex < buf.byteLength &&
           endIndex >= startIndex && endIndex <= buf.byteLength) {
-        var dataView = new DataView(buf);
+        const dataView = new DataView(buf);
         while (startIndex < endIndex) {
-          var value = dataView.getUint8(startIndex);
+          let value = dataView.getUint8(startIndex);
           if (opt_showCursor) {
             value |= BrailleDisplayManager.CURSOR_DOTS;
           } else {
@@ -179,12 +179,12 @@ PanStrategy = class {
      *    the current braille slice.
      */
     getCurrentTextViewportContents() {
-      var brailleToText = this.brailleToText;
+      const brailleToText = this.brailleToText;
       // Index of last braille character in slice.
-      var index = (this.viewPort_.lastRow + 1) * this.displaySize_.columns - 1;
+      let index = (this.viewPort_.lastRow + 1) * this.displaySize_.columns - 1;
       // Index of first text character that the last braille character points
       // to.
-      var end = brailleToText[index];
+      const end = brailleToText[index];
       // Increment index until brailleToText[index] points to a different char.
       // This is the cutoff point, as substring cuts up to, but not including,
       // brailleToText[index].
@@ -237,12 +237,12 @@ PanStrategy = class {
       this.fixedBuffer_ = translatedContent;
 
       // Convert the cells to Unicode braille pattern characters.
-      var view = new Uint8Array(translatedContent);
-      var wrappedBrailleArray = [];
+      const view = new Uint8Array(translatedContent);
+      const wrappedBrailleArray = [];
 
-      var lastBreak = 0;
-      var cellsPadded = 0;
-      var index;
+      let lastBreak = 0;
+      let cellsPadded = 0;
+      let index;
       for (index = 0; index < translatedContent.byteLength + cellsPadded;
            index++) {
         // Is index at the beginning of a new line?
@@ -263,7 +263,7 @@ PanStrategy = class {
             // to index. The braille to text map is also updated. If lastBreak
             // is at the beginning of a line, that means the current word is
             // bigger than |this.displaySize_.columns| so we shouldn't wrap.
-            for (var j = lastBreak + 1; j < index; j++) {
+            for (let j = lastBreak + 1; j < index; j++) {
               wrappedBrailleArray[j] = 0;
               this.wrappedBrailleToText_[j] = this.wrappedBrailleToText_[j - 1];
               cellsPadded++;
@@ -297,7 +297,7 @@ PanStrategy = class {
           index - cellsPadded, wrappedBrailleArray.length);
 
       // Convert the wrapped Braille Uint8 Array back to ArrayBuffer.
-      var wrappedBrailleUint8Array = new Uint8Array(wrappedBrailleArray);
+      const wrappedBrailleUint8Array = new Uint8Array(wrappedBrailleArray);
       this.wrappedBuffer_ = new ArrayBuffer(wrappedBrailleUint8Array.length);
       new Uint8Array(this.wrappedBuffer_).set(wrappedBrailleUint8Array);
       this.panToPosition_(targetPosition);
@@ -345,10 +345,10 @@ PanStrategy = class {
      * @return {boolean} {@code true} if the viewport was changed.
      */
     next() {
-      var contentLength = this.panStrategyWrapped_ ? this.wrappedLineCount :
-                                                     this.fixedLineCount;
-      var newStart = this.viewPort_.lastRow + 1;
-      var newEnd;
+      const contentLength = this.panStrategyWrapped_ ? this.wrappedLineCount :
+                                                       this.fixedLineCount;
+      const newStart = this.viewPort_.lastRow + 1;
+      let newEnd;
       if (newStart + this.displaySize_.rows - 1 < contentLength) {
         newEnd = newStart + this.displaySize_.rows - 1;
       } else {
@@ -367,10 +367,10 @@ PanStrategy = class {
      * @return {boolean} {@code true} if the viewport was changed.
      */
     previous() {
-      var contentLength = this.panStrategyWrapped_ ? this.wrappedLineCount :
-                                                     this.fixedLineCount;
+      const contentLength = this.panStrategyWrapped_ ? this.wrappedLineCount :
+                                                       this.fixedLineCount;
       if (this.viewPort_.firstRow > 0) {
-        var newStart, newEnd;
+        let newStart, newEnd;
         if (this.viewPort_.firstRow < this.displaySize_.rows) {
           newStart = 0;
           newEnd = Math.min(this.displaySize_.rows, contentLength);

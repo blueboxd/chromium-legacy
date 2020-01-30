@@ -324,7 +324,7 @@ class SwitchAccess {
    * @return {!Error}
    */
   static error(errorType, errorString) {
-    let errorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;
+    const errorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;
     chrome.metricsPrivate.recordEnumerationValue(
         'Accessibility.CrosSwitchAccess.Error', errorType,
         errorTypeCountForUMA);

@@ -121,7 +121,7 @@ class FocusRingManager {
       this.updateFocusRings_();
 
       let focusRect = primary.location;
-      let childRect = firstChild ? firstChild.location : null;
+      const childRect = firstChild ? firstChild.location : null;
       if (childRect) {
         // If the current element is not the back button, the focus rect should
         // expand to contain the child rect.
@@ -152,7 +152,7 @@ class FocusRingManager {
    * changes.
    */
   updateFocusRings_() {
-    let focusRings = [];
+    const focusRings = [];
     this.rings_.forEach((ring) => focusRings.push(ring));
     chrome.accessibilityPrivate.setFocusRings(focusRings);
   }

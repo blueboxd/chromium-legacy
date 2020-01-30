@@ -59,9 +59,9 @@ ChromeVoxAutomationUtilE2ETest = class extends ChromeVoxNextE2ETest {
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetAncestors', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
-    var expectedLength = 1;
+    let expectedLength = 1;
     while (root) {
-      var ancestors = getNonDesktopAncestors(root);
+      const ancestors = getNonDesktopAncestors(root);
       assertEquals(expectedLength++, ancestors.length);
       root = root.firstChild;
     }
@@ -70,7 +70,7 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetAncestors', function() {
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetUniqueAncestors', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
-    var leftmost = root, rightmost = root;
+    let leftmost = root, rightmost = root;
     while (leftmost.firstChild) {
       leftmost = leftmost.firstChild;
     }
@@ -78,8 +78,8 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetUniqueAncestors', function() {
       rightmost = rightmost.lastChild;
     }
 
-    var leftAncestors = getNonDesktopAncestors(leftmost);
-    var rightAncestors = getNonDesktopAncestors(rightmost);
+    const leftAncestors = getNonDesktopAncestors(leftmost);
+    const rightAncestors = getNonDesktopAncestors(rightmost);
     assertEquals(RoleType.LINK, leftmost.role);
     assertEquals(RoleType.BUTTON, rightmost.role);
     assertEquals(
@@ -88,8 +88,9 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetUniqueAncestors', function() {
     assertEquals(
         -1, AutomationUtil.getDivergence(leftAncestors, leftAncestors));
 
-    var uniqueAncestorsLeft = getNonDesktopUniqueAncestors(rightmost, leftmost);
-    var uniqueAncestorsRight =
+    const uniqueAncestorsLeft =
+        getNonDesktopUniqueAncestors(rightmost, leftmost);
+    const uniqueAncestorsRight =
         getNonDesktopUniqueAncestors(leftmost, rightmost);
 
     assertEquals(2, uniqueAncestorsLeft.length);
@@ -107,7 +108,7 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetUniqueAncestors', function() {
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetDirection', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
-    var left = root, right = root;
+    let left = root, right = root;
 
     // Same node.
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
@@ -128,18 +129,18 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetDirection', function() {
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'VisitContainer', function() {
   this.runWithLoadedTree(toolbarDoc, function(r) {
-    var pred = function(n) {
+    const pred = function(n) {
       return n.role != 'rootWebArea';
     };
 
-    var toolbar = AutomationUtil.findNextNode(r, 'forward', pred);
+    const toolbar = AutomationUtil.findNextNode(r, 'forward', pred);
     assertEquals('toolbar', toolbar.role);
 
-    var back = AutomationUtil.findNextNode(toolbar, 'forward', pred);
+    const back = AutomationUtil.findNextNode(toolbar, 'forward', pred);
     assertEquals('Back', back.name);
     assertEquals(toolbar, AutomationUtil.findNextNode(back, 'backward', pred));
 
-    var forward = AutomationUtil.findNextNode(back, 'forward', pred);
+    const forward = AutomationUtil.findNextNode(back, 'forward', pred);
     assertEquals('Forward', forward.name);
     assertEquals(back, AutomationUtil.findNextNode(forward, 'backward', pred));
   });
@@ -149,7 +150,7 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'HitTest', function() {
   this.runWithLoadedTree(headingDoc, function(r) {
     // Gets the center point of a rect.
     function getCP(node) {
-      var loc = node.location;
+      const loc = node.location;
       return {x: loc.left + loc.width / 2, y: loc.top + loc.height / 2};
     }
     var h1, h2, a;

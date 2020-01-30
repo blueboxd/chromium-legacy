@@ -11,8 +11,8 @@ goog.provide('RecoveryStrategy');
 goog.provide('TreePathRecoveryStrategy');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var RoleType = chrome.automation.RoleType;
+const AutomationNode = chrome.automation.AutomationNode;
+const RoleType = chrome.automation.RoleType;
 
 RecoveryStrategy = class {
   /**
@@ -60,7 +60,7 @@ AncestryRecoveryStrategy = class extends RecoveryStrategy {
 
     /** @type {!Array<AutomationNode>} @private */
     this.ancestry_ = [];
-    var nodeWalker = node;
+    let nodeWalker = node;
     while (nodeWalker) {
       this.ancestry_.push(nodeWalker);
       nodeWalker = nodeWalker.parent;
@@ -80,8 +80,8 @@ AncestryRecoveryStrategy = class extends RecoveryStrategy {
    * @protected
    */
   getFirstValidNodeIndex_() {
-    for (var i = 0; i < this.ancestry_.length; i++) {
-      var firstValidNode = this.ancestry_[i];
+    for (let i = 0; i < this.ancestry_.length; i++) {
+      const firstValidNode = this.ancestry_[i];
       if (firstValidNode != null && firstValidNode.role !== undefined &&
           firstValidNode.root != undefined) {
         return i;
@@ -101,7 +101,7 @@ TreePathRecoveryStrategy = class extends AncestryRecoveryStrategy {
 
     /** @type {!Array<number>} @private */
     this.recoveryChildIndex_ = [];
-    var nodeWalker = node;
+    let nodeWalker = node;
     while (nodeWalker) {
       this.recoveryChildIndex_.push(nodeWalker.indexInParent);
       nodeWalker = nodeWalker.parent;
@@ -113,16 +113,16 @@ TreePathRecoveryStrategy = class extends AncestryRecoveryStrategy {
 
   /** @override */
   recover() {
-    var index = this.getFirstValidNodeIndex_();
+    const index = this.getFirstValidNodeIndex_();
     if (index == 0) {
       return this.ancestry_[index];
     }
 
     // Otherwise, attempt to recover.
-    var node = this.ancestry_[index];
-    for (var j = index - 1; j >= 0; j--) {
-      var childIndex = this.recoveryChildIndex_[j];
-      var children = node.children;
+    let node = this.ancestry_[index];
+    for (let j = index - 1; j >= 0; j--) {
+      const childIndex = this.recoveryChildIndex_[j];
+      const children = node.children;
       if (!children[childIndex]) {
         return node;
       }
@@ -131,5 +131,4 @@ TreePathRecoveryStrategy = class extends AncestryRecoveryStrategy {
     return node;
   }
 };
-
 });  // goog.scope

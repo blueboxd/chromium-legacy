@@ -104,8 +104,8 @@ BrailleInputHandler = class {
    *     have changed.
    */
   onDisplayContentChanged(text, listener) {
-    var valueSpan = text.getSpanInstanceOf(ValueSpan);
-    var selectionSpan = text.getSpanInstanceOf(ValueSelectionSpan);
+    const valueSpan = text.getSpanInstanceOf(ValueSpan);
+    const selectionSpan = text.getSpanInstanceOf(ValueSelectionSpan);
     if (!(valueSpan && selectionSpan)) {
       return;
     }
@@ -113,16 +113,16 @@ BrailleInputHandler = class {
     // set.  If the old listener is not cleared here, it could be called
     // spuriously if the entry state is cleared below.
     this.uncommittedCellsChangedListener_ = null;
-    var valueStart = text.getSpanStart(valueSpan);
-    var valueEnd = text.getSpanEnd(valueSpan);
-    var selectionStart = text.getSpanStart(selectionSpan);
-    var selectionEnd = text.getSpanEnd(selectionSpan);
+    const valueStart = text.getSpanStart(valueSpan);
+    const valueEnd = text.getSpanEnd(valueSpan);
+    const selectionStart = text.getSpanStart(selectionSpan);
+    const selectionEnd = text.getSpanEnd(selectionSpan);
     if (selectionStart < valueStart || selectionEnd > valueEnd) {
       console.error('Selection outside of value in braille content');
       this.clearEntryState_();
       return;
     }
-    var newTextBefore = text.toString().substring(valueStart, selectionStart);
+    const newTextBefore = text.toString().substring(valueStart, selectionStart);
     if (this.currentTextBefore_ !== newTextBefore && this.entryState_) {
       this.entryState_.onTextBeforeChanged(newTextBefore);
     }
@@ -187,7 +187,7 @@ BrailleInputHandler = class {
      * @private
      */
     inAlwaysUncontractedContext_() {
-      var inputType = this.inputContext_ ? this.inputContext_.type : '';
+      const inputType = this.inputContext_ ? this.inputContext_.type : '';
       return inputType === 'url' || inputType === 'email';
     }
 
@@ -238,16 +238,16 @@ BrailleInputHandler = class {
      * @private
      */
     createEntryState_() {
-      var translator = this.translatorManager_.getDefaultTranslator();
+      let translator = this.translatorManager_.getDefaultTranslator();
       if (!translator) {
         return null;
       }
-      var uncontractedTranslator =
+      const uncontractedTranslator =
           this.translatorManager_.getUncontractedTranslator();
-      var constructor = BrailleInputHandler.EditsEntryState_;
+      let constructor = BrailleInputHandler.EditsEntryState_;
       if (uncontractedTranslator) {
-        var textBefore = this.currentTextBefore_;
-        var textAfter = this.currentTextAfter_;
+        const textBefore = this.currentTextBefore_;
+        const textAfter = this.currentTextAfter_;
         if (this.inAlwaysUncontractedContext_() ||
             (BrailleInputHandler.ENDS_WITH_NON_WHITESPACE_RE_.test(
                 textBefore)) ||
@@ -403,12 +403,12 @@ BrailleInputHandler = class {
       chrome.virtualKeyboardPrivate.getKeyboardConfig(function(config) {
         // Use the virtual keyboard API instead of the IME key event API
         // so that these keys work even if the Braille IME is not active.
-        var keyName = /** @type {string} */ (event.standardKeyCode);
-        var numericCode = BrailleKeyEvent.keyCodeToLegacyCode(keyName);
+        const keyName = /** @type {string} */ (event.standardKeyCode);
+        const numericCode = BrailleKeyEvent.keyCodeToLegacyCode(keyName);
         if (!goog.isDef(numericCode)) {
           throw Error('Unknown key code in event: ' + JSON.stringify(event));
         }
-        var keyEvent = {
+        const keyEvent = {
           type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
           keyCode: numericCode,
           modifiers: {
@@ -544,7 +544,7 @@ BrailleInputHandler.EntryState_ = class {
     // See if we are expecting this change as a result of one of our own
     // edits. Allow changes to be coalesced by the input system in an attempt
     // to not be too brittle.
-    for (var i = 0; i < this.pendingTextsBefore_.length; ++i) {
+    for (let i = 0; i < this.pendingTextsBefore_.length; ++i) {
       if (newText === this.pendingTextsBefore_[i]) {
         // Delete all previous expected changes and ignore this one.
         this.pendingTextsBefore_.splice(0, i + 1);
@@ -575,8 +575,8 @@ BrailleInputHandler.EntryState_ = class {
    * @private
    */
   updateText_() {
-    var cellsBuffer = new Uint8Array(this.cells_).buffer;
-    var commit = this.lastCellIsBlank_;
+    const cellsBuffer = new Uint8Array(this.cells_).buffer;
+    const commit = this.lastCellIsBlank_;
     if (!commit && this.usesUncommittedCells) {
       this.inputHandler_.updateUncommittedCells_(cellsBuffer);
     }
@@ -631,19 +631,19 @@ BrailleInputHandler.EditsEntryState_ =
 
   /** @override */
   sendTextChange_(newText) {
-    var oldText = this.text_;
+    const oldText = this.text_;
     // Find the common prefix of the old and new text.
-    var commonPrefixLength =
+    const commonPrefixLength =
         StringUtil.longestCommonPrefixLength(oldText, newText);
     // How many characters we need to delete from the existing text to replace
     // them with characters from the new text.
-    var deleteLength = oldText.length - commonPrefixLength;
+    const deleteLength = oldText.length - commonPrefixLength;
     // New text, if any, to insert after deleting the deleteLength characters
     // before the cursor.
-    var toInsert = newText.substring(commonPrefixLength);
+    const toInsert = newText.substring(commonPrefixLength);
     if (deleteLength > 0 || toInsert.length > 0) {
       // After deleting, we expect this text to be present before the cursor.
-      var textBeforeAfterDelete =
+      const textBeforeAfterDelete =
           this.inputHandler_.currentTextBefore_.substring(
               0, this.inputHandler_.currentTextBefore_.length - deleteLength);
       if (deleteLength > 0) {

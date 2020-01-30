@@ -51,7 +51,7 @@ ChromeVoxUnitTestBase = class extends testing.Test {
    *     comment inside an anonymous function - see example, above.
    */
   loadDoc(commentEncodedHtml) {
-    var html =
+    const html =
         TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.loadHtml(html);
   }
@@ -69,7 +69,7 @@ ChromeVoxUnitTestBase = class extends testing.Test {
    *     comment inside an anonymous function - see example, above.
    */
   appendDoc(commentEncodedHtml) {
-    var html =
+    const html =
         TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.appendHtml(html);
   }
@@ -80,9 +80,9 @@ ChromeVoxUnitTestBase = class extends testing.Test {
    * @param {string} html The html to load as a string.
    */
   appendHtml(html) {
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     div.innerHTML = html;
-    var fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
     while (div.firstChild) {
       fragment.appendChild(div.firstChild);
     }

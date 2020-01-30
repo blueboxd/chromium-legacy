@@ -12,9 +12,9 @@ goog.require('LogStore');
 goog.require('EventLog');
 
 goog.scope(function() {
-var AutomationEvent = chrome.automation.AutomationEvent;
-var AutomationNode = chrome.automation.AutomationNode;
-var EventType = chrome.automation.EventType;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationNode = chrome.automation.AutomationNode;
+const EventType = chrome.automation.EventType;
 EventStreamLogger = class {
   constructor(node) {
     /**
@@ -72,7 +72,7 @@ EventStreamLogger = class {
    * @param {boolean} checked
    */
   notifyEventStreamFilterChangedAll(checked) {
-    for (var type in chrome.automation.EventType) {
+    for (const type in chrome.automation.EventType) {
       if (localStorage[chrome.automation.EventType[type]] == 'true') {
         this.notifyEventStreamFilterChanged(
             chrome.automation.EventType[type], checked);
@@ -102,5 +102,4 @@ EventStreamLogger.instance;
 
 
 EventStreamLogger.init_();
-
 });  // goog.scope

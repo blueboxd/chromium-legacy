@@ -23,9 +23,9 @@ ApiImplementation = class {
    */
   static init(opt_onload) {
     window.addEventListener('message', ApiImplementation.portSetup, true);
-    var scripts = [window.chrome.extension.getURL('injected/api.js')];
+    const scripts = [window.chrome.extension.getURL('injected/api.js')];
 
-    var didInstall =
+    const didInstall =
         ScriptInstaller.installScript(scripts, 'cvoxapi', opt_onload);
     if (!didInstall) {
       console.error('Unable to install api scripts');
@@ -62,7 +62,7 @@ ApiImplementation = class {
    * @param {*} message The message.
    */
   static dispatchApiMessage(message) {
-    var method;
+    let method;
     switch (message['cmd']) {
       case 'speak':
         method = ApiImplementation.speak;
@@ -89,7 +89,7 @@ ApiImplementation = class {
       properties = {};
     }
     setupEndCallback_(properties, callbackId);
-    var message = {
+    const message = {
       'target': 'TTS',
       'action': 'speak',
       'text': textString,
@@ -117,7 +117,7 @@ ApiImplementation.DISCONNECT_MSG = 'Disconnect';
  * @private
  */
 function setupEndCallback_(properties, callbackId) {
-  var endCallback = function() {
+  const endCallback = function() {
     ApiImplementation.port.postMessage(JSON.stringify({'id': callbackId}));
   };
   if (properties) {

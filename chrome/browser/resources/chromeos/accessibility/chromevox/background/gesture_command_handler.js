@@ -13,7 +13,7 @@ goog.require('EventSourceState');
 goog.require('GestureCommandData');
 
 goog.scope(function() {
-var RoleType = chrome.automation.RoleType;
+const RoleType = chrome.automation.RoleType;
 
 /**
  * Global setting for the enabled state of this handler.
@@ -45,7 +45,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
 
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
-  var commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+  const commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
   if (!commandData) {
     return;
   }
@@ -53,7 +53,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
   Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
 
   // Map gestures to arrow keys while within menus.
-  var range = ChromeVoxState.instance.currentRange;
+  const range = ChromeVoxState.instance.currentRange;
   if (commandData.menuKeyOverride && range.start && range.start.node &&
       range.start.node.role == RoleType.MENU_ITEM &&
       (range.start.node.root.docUrl.indexOf(chrome.extension.getURL('')) == 0 ||
@@ -63,7 +63,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
     return;
   }
 
-  var textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
+  const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
   if (textEditHandler && commandData.keyOverride) {
     var key = commandData.keyOverride;
     if (!key.multiline ||
@@ -74,7 +74,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
     }
   }
 
-  var command = commandData.command;
+  const command = commandData.command;
   if (command) {
     CommandHandler.onCommand(command);
   }
@@ -96,5 +96,4 @@ GestureCommandHandler.init_ = function() {
 GestureCommandHandler.granularity = GestureGranularity.LINE;
 
 GestureCommandHandler.init_();
-
 });  // goog.scope

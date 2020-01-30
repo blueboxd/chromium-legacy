@@ -14,10 +14,10 @@ goog.require('BaseAutomationHandler');
 goog.require('TtsCapturingEventListener');
 
 goog.scope(function() {
-var AutomationEvent = chrome.automation.AutomationEvent;
-var AutomationNode = chrome.automation.AutomationNode;
-var EventType = chrome.automation.EventType;
-var RoleType = chrome.automation.RoleType;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationNode = chrome.automation.AutomationNode;
+const EventType = chrome.automation.EventType;
+const RoleType = chrome.automation.RoleType;
 
 /**
  * @implements {TtsCapturingEventListener}
@@ -51,9 +51,9 @@ MediaAutomationHandler = class extends BaseAutomationHandler {
 
   /** @override */
   onTtsEnd() {
-    var now = new Date();
+    const now = new Date();
     setTimeout(function() {
-      var then = this.lastTtsEvent_;
+      const then = this.lastTtsEvent_;
       if (now < then) {
         return;
       }
@@ -72,7 +72,7 @@ MediaAutomationHandler = class extends BaseAutomationHandler {
    */
   onMediaStartedPlaying(evt) {
     this.mediaRoots_.add(evt.target);
-    var audioStrategy = localStorage['audioStrategy'];
+    const audioStrategy = localStorage['audioStrategy'];
     if (ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck') {
       this.update_({start: true});
     }
@@ -92,11 +92,11 @@ MediaAutomationHandler = class extends BaseAutomationHandler {
    * @private
    */
   update_(options) {
-    var it = this.mediaRoots_.values();
-    var item = it.next();
-    var audioStrategy = localStorage['audioStrategy'];
+    const it = this.mediaRoots_.values();
+    let item = it.next();
+    const audioStrategy = localStorage['audioStrategy'];
     while (!item.done) {
-      var root = item.value;
+      const root = item.value;
       if (options.start) {
         if (audioStrategy == 'audioDuck') {
           root.startDuckingMedia();

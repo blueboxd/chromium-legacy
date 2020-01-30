@@ -30,7 +30,7 @@ KbExplorer = class {
    * Initialize keyboard explorer.
    */
   static init() {
-    var backgroundWindow = chrome.extension.getBackgroundPage();
+    const backgroundWindow = chrome.extension.getBackgroundPage();
     backgroundWindow.addEventListener('keydown', KbExplorer.onKeyDown, true);
     backgroundWindow.addEventListener('keyup', KbExplorer.onKeyUp, true);
     backgroundWindow.addEventListener('keypress', KbExplorer.onKeyPress, true);
@@ -110,9 +110,9 @@ KbExplorer = class {
    */
   static onBrailleKeyEvent(evt) {
     KbExplorer.maybeClose_();
-    var msgid;
-    var msgArgs = [];
-    var text;
+    let msgid;
+    const msgArgs = [];
+    let text;
     switch (evt.command) {
       case BrailleKeyCommand.PAN_LEFT:
         msgid = 'braille_pan_left';
@@ -153,8 +153,8 @@ KbExplorer = class {
         // Next, check for the modifier mappings.
         var mods = BrailleKeyEvent.brailleDotsToModifiers[dots];
         if (mods) {
-          var outputs = [];
-          for (var mod in mods) {
+          const outputs = [];
+          for (const mod in mods) {
             if (mod == 'ctrlKey') {
               outputs.push('control');
             } else if (mod == 'altKey') {
@@ -204,7 +204,7 @@ KbExplorer = class {
    */
   static onAccessibilityGesture(gesture) {
     KbExplorer.maybeClose_();
-    var gestureData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+    const gestureData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
     if (gestureData) {
       KbExplorer.onCommand(gestureData.command);
     }
@@ -216,9 +216,9 @@ KbExplorer = class {
    * @return {boolean|undefined} True if command existed and was handled.
    */
   static onCommand(command) {
-    var msg = CommandStore.messageForCommand(command);
+    const msg = CommandStore.messageForCommand(command);
     if (msg) {
-      var commandText = Msgs.getMsg(msg);
+      const commandText = Msgs.getMsg(msg);
       KbExplorer.output(commandText);
       KbExplorer.clearRange();
       return true;
@@ -244,7 +244,7 @@ KbExplorer = class {
 
   /** @private */
   static resetListeners_() {
-    var backgroundWindow = chrome.extension.getBackgroundPage();
+    const backgroundWindow = chrome.extension.getBackgroundPage();
     backgroundWindow.removeEventListener('keydown', KbExplorer.onKeyDown, true);
     backgroundWindow.removeEventListener('keyup', KbExplorer.onKeyUp, true);
     backgroundWindow.removeEventListener(

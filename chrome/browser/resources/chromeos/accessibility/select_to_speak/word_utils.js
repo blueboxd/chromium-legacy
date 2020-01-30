@@ -7,7 +7,7 @@
 /**
  * @constructor
  */
-let WordUtils = function() {};
+const WordUtils = function() {};
 
 /**
  * Regular expression to find the start of the next word after a word boundary.
@@ -37,9 +37,9 @@ WordUtils.WORD_END_REGEXP = /\S\s/;
  */
 WordUtils.getNextWordStart = function(text, indexAfter, nodeGroupItem) {
   if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
-    let node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
+    const node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
         nodeGroupItem.node, indexAfter - nodeGroupItem.startChar);
-    let startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
+    const startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
     for (var i = 0; i < node.wordStarts.length; i++) {
       if (node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent <
           indexAfter) {
@@ -69,15 +69,15 @@ WordUtils.getNextWordStart = function(text, indexAfter, nodeGroupItem) {
  */
 WordUtils.getNextWordEnd = function(text, indexAfter, nodeGroupItem) {
   if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
-    let node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
+    const node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
         nodeGroupItem.node, indexAfter - nodeGroupItem.startChar + 1);
-    let startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
+    const startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
     for (var i = 0; i < node.wordEnds.length; i++) {
       if (node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent - 1 <
           indexAfter) {
         continue;
       }
-      let result =
+      const result =
           node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent;
       return text.length > result ? result : text.length;
     }
@@ -108,7 +108,7 @@ WordUtils.nextWordHelper = function(text, indexAfter, re, defaultValue) {
   if (text === undefined) {
     return defaultValue;
   }
-  let result = re.exec(text.substr(indexAfter));
+  const result = re.exec(text.substr(indexAfter));
   if (result != null && result.length > 0) {
     return indexAfter + result.index;
   }

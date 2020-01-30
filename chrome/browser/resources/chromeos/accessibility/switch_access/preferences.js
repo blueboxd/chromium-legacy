@@ -42,7 +42,7 @@ class SwitchAccessPreferences {
    * @private
    */
   updateFromSettings_(preferences, opt_onUpdate) {
-    let updatedPreferences = {};
+    const updatedPreferences = {};
     for (const pref of preferences) {
       // Ignore preferences that are not used by Switch Access.
       if (!Object.values(SAConstants.Preference).includes(pref.key)) {
@@ -71,7 +71,7 @@ class SwitchAccessPreferences {
    * @private
    */
   init_(onReady) {
-    let readyFunction = () => {
+    const readyFunction = () => {
       this.isReady_ = true;
       onReady();
 

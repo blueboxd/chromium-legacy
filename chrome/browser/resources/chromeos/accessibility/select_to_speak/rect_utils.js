@@ -7,7 +7,7 @@
 /**
  * @constructor
  */
-let RectUtils = function() {};
+const RectUtils = function() {};
 
 /**
  * Return the rect that encloses two points.

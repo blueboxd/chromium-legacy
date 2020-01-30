@@ -26,7 +26,7 @@ ChromeVoxLiveRegionsTest = class extends ChromeVoxNextE2ETest {
    * @return {!MockFeedback}
    */
   createMockFeedback() {
-    var mockFeedback =
+    const mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
@@ -54,7 +54,7 @@ ChromeVoxLiveRegionsTest = class extends ChromeVoxNextE2ETest {
 
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionAddElement', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <h1>Document with live region</h1>
@@ -67,7 +67,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionAddElement', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(go.doDefault.bind(go))
             .expectCategoryFlushSpeech('Hello, world');
         mockFeedback.replay();
@@ -75,7 +75,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionAddElement', function() {
 });
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionRemoveElement', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <h1>Document with live region</h1>
@@ -88,7 +88,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionRemoveElement', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         go.doDefault();
         mockFeedback.expectCategoryFlushSpeech('removed:')
             .expectQueuedSpeech('Hello, world');
@@ -98,7 +98,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionRemoveElement', function() {
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeAtomic', function() {
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <div id="live" aria-live="assertive" aria-atomic="true">
@@ -113,7 +113,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeAtomic', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(go.doDefault.bind(go))
             .expectCategoryFlushSpeech('Alpha Bravo Charlie');
         mockFeedback.replay();
@@ -122,7 +122,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeAtomic', function() {
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeAtomicText', function() {
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <h1 aria-atomic="true" id="live"aria-live="assertive">foo</h1>
@@ -134,7 +134,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeAtomicText', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(go.doDefault.bind(go))
             .expectCategoryFlushSpeech('bar', 'Heading 1');
         mockFeedback.replay();
@@ -148,7 +148,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
   // announcements on the same node. Set that timeout to 0 to prevent
   // flakeyness.
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <div id="live" aria-live="assertive">
@@ -162,7 +162,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(go.doDefault.bind(go))
             .expectCategoryFlushSpeech('After');
         mockFeedback.replay();
@@ -170,7 +170,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
 });
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <div id="live" aria-live="assertive"></div>
@@ -192,9 +192,9 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
         // be part of the bundle with the focus change. In either case, the
         // first event should be flushed; the second should either be queued (in
         // the case of the focus) or category flushed for the live region.
-        var sawFocus = false;
-        var sawLive = false;
-        var focusOrLive = function(candidate) {
+        let sawFocus = false;
+        let sawLive = false;
+        const focusOrLive = function(candidate) {
           sawFocus = candidate.text == 'Focus' || sawFocus;
           sawLive = candidate.text == 'Live' || sawLive;
           if (sawFocus && sawLive) {
@@ -203,7 +203,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
             return candidate.queueMode == QueueMode.FLUSH;
           }
         };
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(this.simulateUserInteraction.bind(this))
             .call(go.doDefault.bind(go))
             .expectSpeech(focusOrLive)
@@ -213,7 +213,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
 });
 
 TEST_F('ChromeVoxLiveRegionsTest', 'FocusThenLiveRegion', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <div id="live" aria-live="assertive"></div>
@@ -229,7 +229,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'FocusThenLiveRegion', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(this.simulateUserInteraction.bind(this))
             .call(go.doDefault.bind(go))
             .expectFlushingSpeech('Focus')
@@ -242,7 +242,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionCategoryFlush', function() {
   // Adjust the live region queue time to be shorter (i.e. flushes happen for
   // live regions coming 1 ms in time). Also, can help with flakeyness.
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 1;
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
       <div id="live1" aria-live="assertive"></div>
@@ -259,7 +259,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionCategoryFlush', function() {
       </script>
     `,
       function(rootNode) {
-        var go = rootNode.find({role: RoleType.BUTTON});
+        const go = rootNode.find({role: RoleType.BUTTON});
         mockFeedback.call(go.doDefault.bind(go))
             .expectCategoryFlushSpeech('Live1')
             .expectCategoryFlushSpeech('Live2');
@@ -268,7 +268,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionCategoryFlush', function() {
 });
 
 TEST_F('ChromeVoxLiveRegionsTest', 'SilentOnNodeChange', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
     <p>start</p>
@@ -286,7 +286,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SilentOnNodeChange', function() {
     </script>
   `,
       function(root) {
-        var focusAfterNodeChange = window.setTimeout.bind(window, function() {
+        const focusAfterNodeChange = window.setTimeout.bind(window, function() {
           root.firstChild.nextSibling.focus();
         }, 1000);
         mockFeedback.call(focusAfterNodeChange)
@@ -298,7 +298,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SilentOnNodeChange', function() {
 });
 
 TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
     <button></button>
@@ -307,7 +307,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
     </div>
   `,
       function(root) {
-        var live = new LiveRegions(ChromeVoxState.instance);
+        const live = new LiveRegions(ChromeVoxState.instance);
         var t1, t2;
         [t1, t2] = root.findAll({role: RoleType.STATIC_TEXT});
         mockFeedback.expectSpeech('hello there')
@@ -338,7 +338,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
 
 // Flaky: https://crbug.com/945199
 TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveStatusOff', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
     <div><input aria-live="off" type="text"></input></div>
@@ -361,8 +361,8 @@ TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveStatusOff', function() {
     </script>
   `,
       function(root) {
-        var input = root.find({role: RoleType.TEXT_FIELD});
-        var clickInput = input.parent.doDefault.bind(input.parent);
+        const input = root.find({role: RoleType.TEXT_FIELD});
+        const clickInput = input.parent.doDefault.bind(input.parent);
         mockFeedback.call(input.focus.bind(input))
             .call(clickInput)
             .expectSpeech('bb')

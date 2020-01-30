@@ -72,7 +72,7 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype.isAsync = true;
 
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'NoDisplays', function() {
-      var ui = new BluetoothBrailleDisplayUI();
+      const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
       assertEqualsDOM(
           this.buildUIExpectation(`
@@ -85,15 +85,15 @@ SYNC_TEST_F(
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
     'ControlStateUpdatesNotConnectedOrPaired', function() {
-      var ui = new BluetoothBrailleDisplayUI();
+      const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
-      var displays = [];
+      let displays = [];
 
       // Fake out getDevice using |display| as the backing source which changes
       // below.
       chrome.bluetooth.getDevice = (address, callback) => {
-        var display = displays.find((display) => display.address == address);
+        const display = displays.find((display) => display.address == address);
         assertNotNullNorUndefined(display);
         callback(display);
       };
@@ -116,15 +116,15 @@ SYNC_TEST_F(
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
     'ControlStateUpdatesPairedNotConnected', function() {
-      var ui = new BluetoothBrailleDisplayUI();
+      const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
-      var display = [];
+      const display = [];
 
       // Fake out getDevice using |display| as the backing source which changes
       // below.
       chrome.bluetooth.getDevice = (address, callback) => {
-        var display = displays.find((display) => display.address == address);
+        const display = displays.find((display) => display.address == address);
         assertNotNullNorUndefined(display);
         callback(display);
       };
@@ -186,9 +186,9 @@ SYNC_TEST_F(
 
       // The user picks the second display.
       // The manager has to ask for the device details.
-      var select = document.body.querySelector('select');
+      const select = document.body.querySelector('select');
       select.selectedIndex = 1;
-      var changeEvt = document.createEvent('HTMLEvents');
+      const changeEvt = document.createEvent('HTMLEvents');
       changeEvt.initEvent('change');
       select.dispatchEvent(changeEvt);
       // The controls update based on the newly selected display.
@@ -205,7 +205,7 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'PincodeRequest', function() {
-      var ui = new BluetoothBrailleDisplayUI();
+      const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
       // Trigger pincode screen.
@@ -231,15 +231,15 @@ SYNC_TEST_F(
 
 TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'ClickControls', function() {
-      var ui = new BluetoothBrailleDisplayUI();
+      const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
-      var displays = [];
+      let displays = [];
 
       // Fake out getDevice using |display| as the backing source which changes
       // below.
       chrome.bluetooth.getDevice = (address, callback) => {
-        var display = displays.find((display) => display.address == address);
+        const display = displays.find((display) => display.address == address);
         assertNotNullNorUndefined(display);
         callback(display);
       };

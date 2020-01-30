@@ -5,7 +5,7 @@
 /**
  * @constructor
  */
-let SelectToSpeakOptionsPage = function() {
+const SelectToSpeakOptionsPage = function() {
   this.init_();
 };
 
@@ -23,8 +23,8 @@ SelectToSpeakOptionsPage.prototype = {
     this.syncSelectControlToPref_('voice', 'voice', 'voiceName');
     this.syncCheckboxControlToPref_(
         'wordHighlight', 'wordHighlight', function(checked) {
-          let elem = document.getElementById('highlightSubOption');
-          let select = document.getElementById('highlightColor');
+          const elem = document.getElementById('highlightSubOption');
+          const select = document.getElementById('highlightColor');
           if (checked) {
             elem.classList.remove('hidden');
             elem.setAttribute('aria-hidden', false);
@@ -73,11 +73,11 @@ SelectToSpeakOptionsPage.prototype = {
    */
   populateVoiceList_(selectId) {
     chrome.tts.getVoices(function(voices) {
-      let select = document.getElementById(selectId);
+      const select = document.getElementById(selectId);
       select.innerHTML = '';
 
       // Add the system voice.
-      let option = document.createElement('option');
+      const option = document.createElement('option');
       option.voiceName = PrefsManager.SYSTEM_VOICE;
       option.innerText = chrome.i18n.getMessage('select_to_speak_system_voice');
       select.add(option);
@@ -99,7 +99,7 @@ SelectToSpeakOptionsPage.prototype = {
           // Required event types for Select-to-Speak.
           return;
         }
-        let option = document.createElement('option');
+        const option = document.createElement('option');
         option.voiceName = voice.voiceName;
         option.innerText = option.voiceName;
         select.add(option);
@@ -119,11 +119,11 @@ SelectToSpeakOptionsPage.prototype = {
    * @private
    */
   syncCheckboxControlToPref_(checkboxId, pref, opt_onChange) {
-    let checkbox = document.getElementById(checkboxId);
+    const checkbox = document.getElementById(checkboxId);
 
     function updateFromPref() {
       chrome.storage.sync.get(pref, function(items) {
-        let value = items[pref];
+        const value = items[pref];
         if (value != null) {
           checkbox.checked = value;
           if (opt_onChange) {
@@ -141,7 +141,7 @@ SelectToSpeakOptionsPage.prototype = {
     });
 
     checkbox.addEventListener('change', function() {
-      let setParams = {};
+      const setParams = {};
       setParams[pref] = checkbox.checked;
       chrome.storage.sync.set(setParams);
     });
@@ -196,8 +196,8 @@ SelectToSpeakOptionsPage.prototype = {
    * @private
    */
   setUpHighlightListener_() {
-    let onChange = function(value) {
-      let examples = document.getElementsByClassName('highlight');
+    const onChange = function(value) {
+      const examples = document.getElementsByClassName('highlight');
       for (let i = 0; i < examples.length; i++) {
         examples[i].style.background = value;
       }
@@ -209,7 +209,7 @@ SelectToSpeakOptionsPage.prototype = {
     document.getElementById('wordHighlightOption')
         .addEventListener('click', function(e) {
           e.stopPropagation();
-          let checkbox = document.getElementById('wordHighlight');
+          const checkbox = document.getElementById('wordHighlight');
           // Make sure it isn't the auto-generated click itself.
           if (e.srcElement !== checkbox) {
             checkbox.click();
@@ -222,7 +222,7 @@ SelectToSpeakOptionsPage.prototype = {
    * @private
    */
   setUpTtsButtonClickListener_() {
-    let button = document.getElementById('ttsSettingsBtn');
+    const button = document.getElementById('ttsSettingsBtn');
     button.addEventListener('click', () => {
       chrome.accessibilityPrivate.openSettingsSubpage(
           'manageAccessibility/tts');

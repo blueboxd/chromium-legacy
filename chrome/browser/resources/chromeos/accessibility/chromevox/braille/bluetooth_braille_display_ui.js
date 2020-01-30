@@ -43,26 +43,26 @@ BluetoothBrailleDisplayUI = class {
    */
   attach(element) {
     this.manager_.start();
-    var container = document.createElement('div');
+    const container = document.createElement('div');
     element.appendChild(container);
     this.root_ = container;
 
-    var title = document.createElement('h2');
+    const title = document.createElement('h2');
     title.textContent = Msgs.getMsg('options_bluetooth_braille_display_title');
     container.appendChild(title);
 
-    var controls = document.createElement('div');
+    const controls = document.createElement('div');
     container.appendChild(controls);
     this.controls_ = controls;
     controls.className = 'option';
 
-    var selectLabel = document.createElement('span');
+    const selectLabel = document.createElement('span');
     controls.appendChild(selectLabel);
     selectLabel.id = 'bluetoothBrailleSelectLabel';
     selectLabel.textContent =
         Msgs.getMsg('options_bluetooth_braille_display_select_label');
 
-    var displaySelect = document.createElement('select');
+    const displaySelect = document.createElement('select');
     this.displaySelect_ = displaySelect;
     controls.appendChild(displaySelect);
     displaySelect.setAttribute(
@@ -71,14 +71,14 @@ BluetoothBrailleDisplayUI = class {
       this.updateControls_();
     });
 
-    var connectOrDisconnect = document.createElement('button');
+    const connectOrDisconnect = document.createElement('button');
     controls.appendChild(connectOrDisconnect);
     connectOrDisconnect.id = 'connectOrDisconnect';
     connectOrDisconnect.disabled = true;
     connectOrDisconnect.textContent =
         Msgs.getMsg('options_bluetooth_braille_display_connect');
 
-    var forget = document.createElement('button');
+    const forget = document.createElement('button');
     controls.appendChild(forget);
     forget.id = 'forget';
     forget.textContent =
@@ -105,7 +105,7 @@ BluetoothBrailleDisplayUI = class {
     }
 
     // Remove any displays that were removed.
-    for (var i = 0; i < this.displaySelect_.children.length; i++) {
+    for (let i = 0; i < this.displaySelect_.children.length; i++) {
       var domDisplay = this.displaySelect_.children[i];
       if (!displays.find((display) => domDisplay.id == display.address)) {
         domDisplay.remove();
@@ -114,7 +114,7 @@ BluetoothBrailleDisplayUI = class {
 
     displays.forEach((display) => {
       // Check if the element already exists.
-      var displayContainer =
+      let displayContainer =
           this.displaySelect_.querySelector('#' + CSS.escape(display.address));
 
       // If the display already exists, no further processing is needed.
@@ -125,7 +125,7 @@ BluetoothBrailleDisplayUI = class {
       displayContainer = document.createElement('option');
       this.displaySelect_.appendChild(displayContainer);
       displayContainer.id = display.address;
-      var name = document.createElement('span');
+      const name = document.createElement('span');
       displayContainer.appendChild(name);
       name.textContent = display.name;
     });
@@ -135,17 +135,17 @@ BluetoothBrailleDisplayUI = class {
   /** @override */
   onPincodeRequested(display) {
     this.controls_.hidden = true;
-    var form = document.createElement('form');
+    let form = document.createElement('form');
     this.controls_.parentElement.insertBefore(form, this.controls_);
 
     // Create the text field and its label.
-    var label = document.createElement('label');
+    const label = document.createElement('label');
     form.appendChild(label);
     label.id = 'pincodeLabel';
     label.textContent =
         Msgs.getMsg('options_bluetooth_braille_display_pincode_label');
     label.for = 'pincode';
-    var pincodeField = document.createElement('input');
+    const pincodeField = document.createElement('input');
     pincodeField.id = 'pincode';
     pincodeField.type = 'text';
     pincodeField.setAttribute('aria-labelledby', 'pincodeLabel');
@@ -185,7 +185,7 @@ BluetoothBrailleDisplayUI = class {
    */
   updateControls_() {
     // Only update controls if there is a selected display.
-    var sel = this.displaySelect_.options[this.displaySelect_.selectedIndex];
+    const sel = this.displaySelect_.options[this.displaySelect_.selectedIndex];
     if (!sel) {
       this.selectedAndConnectedDisplayAddress_ = undefined;
       return;
@@ -208,7 +208,7 @@ BluetoothBrailleDisplayUI = class {
         }
       }
 
-      var connectOrDisconnect =
+      const connectOrDisconnect =
           this.controls_.querySelector('#connectOrDisconnect');
       connectOrDisconnect.disabled = display.connecting;
       this.displaySelect_.disabled = display.connecting;
@@ -226,7 +226,7 @@ BluetoothBrailleDisplayUI = class {
         }
       }.bind(this, display);
 
-      var forget = this.controls_.querySelector('#forget');
+      const forget = this.controls_.querySelector('#forget');
       forget.disabled = !display.paired || display.connecting;
       forget.onclick = function(savedDisplay) {
         this.manager_.forget(savedDisplay);

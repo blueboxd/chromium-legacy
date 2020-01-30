@@ -42,9 +42,9 @@ LogStore = class {
    * @return {!Array<BaseLog>}
    */
   getLogsOfType(LogType) {
-    var returnLogs = [];
-    for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
-      var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
+    const returnLogs = [];
+    for (let i = 0; i < LogStore.LOG_LIMIT; i++) {
+      const index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
       if (!this.logs_[index]) {
         continue;
       }
@@ -62,9 +62,9 @@ LogStore = class {
    * @return {!Array<BaseLog>}
    */
   getLogs() {
-    var returnLogs = [];
-    for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
-      var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
+    const returnLogs = [];
+    for (let i = 0; i < LogStore.LOG_LIMIT; i++) {
+      const index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
       if (!this.logs_[index]) {
         continue;
       }
@@ -128,7 +128,8 @@ LogStore = class {
 
   /** @private @return {boolean} */
   shouldSkipOutput_() {
-    var ChromeVoxState = chrome.extension.getBackgroundPage()['ChromeVoxState'];
+    const ChromeVoxState =
+        chrome.extension.getBackgroundPage()['ChromeVoxState'];
     if (ChromeVoxState.instance && ChromeVoxState.instance.currentRange &&
         ChromeVoxState.instance.currentRange.start &&
         ChromeVoxState.instance.currentRange.start.node &&

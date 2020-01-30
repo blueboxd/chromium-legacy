@@ -38,15 +38,15 @@ goog.provide('CommandStore');
  * @return {Array<string>} The collection of categories.
  */
 CommandStore.categories = function() {
-  var categorySet = {};
-  for (var cmd in CommandStore.CMD_WHITELIST) {
-    var struct = CommandStore.CMD_WHITELIST[cmd];
+  const categorySet = {};
+  for (const cmd in CommandStore.CMD_WHITELIST) {
+    const struct = CommandStore.CMD_WHITELIST[cmd];
     if (struct.category) {
       categorySet[struct.category] = true;
     }
   }
-  var ret = [];
-  for (var category in categorySet) {
+  const ret = [];
+  for (const category in categorySet) {
     ret.push(category);
   }
   return ret;
@@ -79,9 +79,9 @@ CommandStore.categoryForCommand = function(command) {
  * @return {Array<string>} The commands, if any.
  */
 CommandStore.commandsForCategory = function(category) {
-  var ret = [];
-  for (var cmd in CommandStore.CMD_WHITELIST) {
-    var struct = CommandStore.CMD_WHITELIST[cmd];
+  const ret = [];
+  for (const cmd in CommandStore.CMD_WHITELIST) {
+    const struct = CommandStore.CMD_WHITELIST[cmd];
     if (category == struct.category) {
       ret.push(cmd);
     }

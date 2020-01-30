@@ -27,8 +27,8 @@ BrailleKeyEventRewriter = class {
    * @return {boolean} False to continue event propagation.
    */
   onBrailleKeyEvent(evt) {
-    var standardKeyCode;
-    var dots = evt.brailleDots;
+    let standardKeyCode;
+    const dots = evt.brailleDots;
     if (!dots) {
       this.incrementalKey_ = null;
       return false;
@@ -36,12 +36,12 @@ BrailleKeyEventRewriter = class {
 
     if (evt.command == BrailleKeyCommand.CHORD) {
       Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
-      var modifiers = BrailleKeyEvent.brailleDotsToModifiers[dots];
+      const modifiers = BrailleKeyEvent.brailleDotsToModifiers[dots];
 
       // Check for a modifier mapping.
       if (modifiers) {
         this.incrementalKey_ = this.incrementalKey_ || {};
-        for (var key in modifiers) {
+        for (const key in modifiers) {
           this.incrementalKey_[key] = true;
         }
 

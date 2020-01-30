@@ -262,7 +262,7 @@ class MenuManager {
 
     if (shouldReloadMenu) {
       this.buildMenuTree_();
-      let buttonId = actionNode ? actionNode.htmlAttributes.id : '';
+      const buttonId = actionNode ? actionNode.htmlAttributes.id : '';
       if (actions.includes(buttonId)) {
         // Highlight the same action that was highlighted before the menu was
         // reloaded.
@@ -502,12 +502,12 @@ class MenuManager {
    * @private
    */
   reloadMenuForSelectionChange_() {
-    let newSelectionState = this.nodeHasSelection_();
+    const newSelectionState = this.nodeHasSelection_();
     if (this.selectionExists_ != newSelectionState) {
       this.selectionExists_ = newSelectionState;
       if (this.menuOriginNode_ &&
           !this.textNavigationManager_.currentlySelecting()) {
-        let currentMenuId = this.menuPanel_.currentMenuId();
+        const currentMenuId = this.menuPanel_.currentMenuId();
         if (currentMenuId) {
           this.openMenu_(this.menuOriginNode_, currentMenuId);
         } else {
@@ -527,7 +527,7 @@ class MenuManager {
    * @private
    */
   getMainMenuActionsForNode_(node) {
-    let actions = node.actions;
+    const actions = node.actions;
 
     // Add text editing and navigation options.
     // TODO(anastasi): Move these actions into the node.

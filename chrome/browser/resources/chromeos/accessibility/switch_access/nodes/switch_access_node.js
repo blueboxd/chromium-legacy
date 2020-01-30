@@ -250,8 +250,9 @@ class SARootNode {
 
   /** @return {!chrome.accessibilityPrivate.ScreenRect} */
   get location() {
-    let children = this.children_.filter((c) => !(c instanceof BackButtonNode));
-    let childLocations = children.map((c) => c.location);
+    const children =
+        this.children_.filter((c) => !(c instanceof BackButtonNode));
+    const childLocations = children.map((c) => c.location);
     return RectHelper.unionAll(childLocations);
   }
 
@@ -359,7 +360,7 @@ class SARootNode {
     let previous = this.children_[this.children_.length - 1];
 
     for (let i = 0; i < this.children_.length; i++) {
-      let current = this.children_[i];
+      const current = this.children_[i];
       previous.next = current;
       current.previous = previous;
 

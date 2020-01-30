@@ -48,7 +48,7 @@ SelectToSpeakPrefsTest.prototype = {
   // This must be done before setting STS rate and pitch for tests to work
   // properly.
   setGlobalRateAndPitch(rate, pitch) {
-    let unused = () => {};
+    const unused = () => {};
     this.mockSettingsPrivate_.setPref(
         'settings.tts.speech_rate', rate, '', unused);
     this.mockSettingsPrivate_.setPref(
@@ -61,7 +61,7 @@ SelectToSpeakPrefsTest.prototype = {
   },
 
   ensurePrefsRemovedAndGlobalSetTo(rate, pitch) {
-    let onPrefsRemovedFromStorage = this.newCallback(() => {
+    const onPrefsRemovedFromStorage = this.newCallback(() => {
       // Once prefs are removed from storage, make sure the global prefs are
       // updated to the appropriate values.
       this.mockSettingsPrivate_.getPref(

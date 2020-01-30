@@ -61,20 +61,20 @@ ChromeVoxAutomationTreeWalkerTest = class extends ChromeVoxNextE2ETest {
 
 TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Forward', function() {
   chrome.automation.getDesktop(this.newCallback(function(d) {
-    var resultList = [];
+    const resultList = [];
     this.flattenTree(d, resultList);
-    var it = new AutomationTreeWalker(d, 'forward');
-    for (var i = 1; i < resultList.length; i++) {
+    let it = new AutomationTreeWalker(d, 'forward');
+    for (let i = 1; i < resultList.length; i++) {
       assertEquals(resultList[i], it.next().node);
     }
     assertEquals(null, it.next().node);
 
-    for (var j = 0; j < resultList.length; j++) {
+    for (let j = 0; j < resultList.length; j++) {
       it = new AutomationTreeWalker(resultList[j], 'forward');
-      var start = it.node;
-      var cur = it.next().node;
+      const start = it.node;
+      let cur = it.next().node;
       while (cur) {
-        var isDescendant = this.isDescendant(cur, start);
+        const isDescendant = this.isDescendant(cur, start);
         if (it.phase == 'descendant') {
           assertTrue(isDescendant);
         } else if (it.phase == 'other') {
@@ -90,20 +90,20 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Forward', function() {
 
 TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Backward', function() {
   chrome.automation.getDesktop(this.newCallback(function(d) {
-    var resultList = [];
+    const resultList = [];
     this.flattenTree(d, resultList);
-    var it =
+    let it =
         new AutomationTreeWalker(resultList[resultList.length - 1], 'backward');
-    for (var i = resultList.length - 2; i >= 0; i--) {
+    for (let i = resultList.length - 2; i >= 0; i--) {
       assertEquals(resultList[i], it.next().node);
     }
 
-    for (var j = resultList.length - 1; j >= 0; j--) {
+    for (let j = resultList.length - 1; j >= 0; j--) {
       it = new AutomationTreeWalker(resultList[j], 'backward');
-      var start = it.node;
-      var cur = it.next().node;
+      const start = it.node;
+      let cur = it.next().node;
       while (cur) {
-        var isAncestor = this.isAncestor(cur, start);
+        const isAncestor = this.isAncestor(cur, start);
         if (it.phase == 'ancestor') {
           assertTrue(isAncestor);
         } else if (it.phase == 'other') {
@@ -131,24 +131,24 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootLeafRestriction', function() {
       </div>
     `,
       function(r) {
-        var node2 = r.firstChild.firstChild;
+        const node2 = r.firstChild.firstChild;
         assertEquals('2', node2.name);
 
         // Restrict to 2's subtree and consider 3 and 5 leaves.
-        var leafP = function(n) {
+        const leafP = function(n) {
           return n.name == '3' || n.name == '5';
         };
-        var rootP = function(n) {
+        const rootP = function(n) {
           return n.name == '2';
         };
 
         // Track the nodes we've visited.
-        var visited = '';
-        var visit = function(n) {
+        let visited = '';
+        const visit = function(n) {
           visited += n.name;
         };
-        var restrictions = {leaf: leafP, root: rootP, visit};
-        var walker = new AutomationTreeWalker(node2, 'forward', restrictions);
+        const restrictions = {leaf: leafP, root: rootP, visit};
+        let walker = new AutomationTreeWalker(node2, 'forward', restrictions);
         while (walker.next().node) {
         }
         assertEquals('35', visited);
@@ -157,7 +157,7 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootLeafRestriction', function() {
         // And the reverse.
         // Note that walking into a root is allowed.
         visited = '';
-        var node6 = r.lastChild.lastChild;
+        const node6 = r.lastChild.lastChild;
         assertEquals('6', node6.name);
         walker = new AutomationTreeWalker(node6, 'backward', restrictions);
         while (walker.next().node) {
@@ -165,7 +165,7 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootLeafRestriction', function() {
         assertEquals('532', visited);
 
         // Test not visiting ancestors of initial node.
-        var node5 = r.firstChild.firstChild.lastChild;
+        const node5 = r.firstChild.firstChild.lastChild;
         assertEquals('5', node5.name);
         restrictions.root = function(n) {
           return n.name == '1';
@@ -199,9 +199,9 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootLeafRestriction', function() {
 TEST_F(
     'ChromeVoxAutomationTreeWalkerTest', 'LeafPredicateSymmetry', function() {
       this.runWithLoadedTree(toolbarDoc, function(r) {
-        var d = r.root.parent.root;
-        var forwardWalker = new AutomationTreeWalker(d, 'forward');
-        var forwardNodes = [];
+        const d = r.root.parent.root;
+        const forwardWalker = new AutomationTreeWalker(d, 'forward');
+        const forwardNodes = [];
 
         // Get all nodes according to the walker in the forward direction.
         do {
@@ -209,11 +209,11 @@ TEST_F(
         } while (forwardWalker.next().node);
 
         // Now, verify the walker moving backwards matches the forwards list.
-        var backwardWalker = new AutomationTreeWalker(
+        const backwardWalker = new AutomationTreeWalker(
             forwardNodes[forwardNodes.length - 1], 'backward');
 
         do {
-          var next = forwardNodes.pop();
+          const next = forwardNodes.pop();
           assertEquals(next, backwardWalker.node);
         } while (backwardWalker.next().node);
       });
@@ -221,7 +221,7 @@ TEST_F(
 
 TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootPredicateEnding', function() {
   this.runWithLoadedTree(toolbarDoc, function(r) {
-    var backwardWalker = new AutomationTreeWalker(r.firstChild, 'backward', {
+    const backwardWalker = new AutomationTreeWalker(r.firstChild, 'backward', {
       root(node) {
         return node === r;
       }
@@ -229,7 +229,7 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootPredicateEnding', function() {
     assertEquals(r, backwardWalker.next().node);
     assertEquals(null, backwardWalker.next().node);
 
-    var forwardWalker =
+    const forwardWalker =
         new AutomationTreeWalker(r.firstChild.lastChild, 'forward', {
           root(node) {
             return node === r;

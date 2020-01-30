@@ -11,11 +11,11 @@ goog.provide('LiveRegions');
 goog.require('ChromeVoxState');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var RoleType = chrome.automation.RoleType;
-var TreeChange = chrome.automation.TreeChange;
-var TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
-var TreeChangeType = chrome.automation.TreeChangeType;
+const AutomationNode = chrome.automation.AutomationNode;
+const RoleType = chrome.automation.RoleType;
+const TreeChange = chrome.automation.TreeChange;
+const TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
+const TreeChangeType = chrome.automation.TreeChangeType;
 
 /**
  * ChromeVox2 live region handler.
@@ -63,19 +63,19 @@ LiveRegions = class {
    * @param {TreeChange} treeChange
    */
   onTreeChange(treeChange) {
-    var type = treeChange.type;
-    var node = treeChange.target;
+    const type = treeChange.type;
+    const node = treeChange.target;
     if ((!node.containerLiveStatus || node.containerLiveStatus == 'off') &&
         type != TreeChangeType.SUBTREE_UPDATE_END) {
       return;
     }
 
-    var currentRange = this.chromeVoxState_.currentRange;
+    const currentRange = this.chromeVoxState_.currentRange;
     if (!currentRange) {
       return;
     }
 
-    var webView = AutomationUtil.getTopLevelRoot(node);
+    let webView = AutomationUtil.getTopLevelRoot(node);
     webView = webView ? webView.parent : null;
     if (!LiveRegions.announceLiveRegionsFromBackgroundTabs_ &&
         currentRange.start.node.role != RoleType.DESKTOP &&
@@ -83,11 +83,11 @@ LiveRegions = class {
       return;
     }
 
-    var relevant = node.containerLiveRelevant || '';
-    var additions = relevant.indexOf('additions') >= 0;
-    var text = relevant.indexOf('text') >= 0;
-    var removals = relevant.indexOf('removals') >= 0;
-    var all = relevant.indexOf('all') >= 0;
+    const relevant = node.containerLiveRelevant || '';
+    const additions = relevant.indexOf('additions') >= 0;
+    const text = relevant.indexOf('text') >= 0;
+    const removals = relevant.indexOf('removals') >= 0;
+    const all = relevant.indexOf('all') >= 0;
 
     if (all ||
         (additions &&
@@ -123,8 +123,8 @@ LiveRegions = class {
     // EventBundle.
     this.liveRegionNodeSet_ = new WeakSet();
     setTimeout(function() {
-      for (var i = 0; i < this.changedNodes_.length; i++) {
-        var node = this.changedNodes_[i];
+      for (let i = 0; i < this.changedNodes_.length; i++) {
+        const node = this.changedNodes_[i];
         this.outputLiveRegionChange_(node, null);
       }
       this.changedNodes_ = [];
@@ -164,21 +164,21 @@ LiveRegions = class {
    * @private
    */
   outputLiveRegionChangeForNode_(node, opt_prependFormatStr) {
-    var range = cursors.Range.fromNode(node);
-    var output = new Output();
+    const range = cursors.Range.fromNode(node);
+    const output = new Output();
     output.withSpeechCategory(TtsCategory.LIVE);
 
     // Queue live regions coming from background tabs.
-    var webView = AutomationUtil.getTopLevelRoot(node);
+    let webView = AutomationUtil.getTopLevelRoot(node);
     webView = webView ? webView.parent : null;
-    var forceQueue = !webView || !webView.state.focused ||
+    const forceQueue = !webView || !webView.state.focused ||
         node.containerLiveStatus == 'polite';
 
     // Enqueue live region updates that were received at approximately
     // the same time, otherwise flush previous live region updates.
-    var queueTime = LiveRegions.LIVE_REGION_QUEUE_TIME_MS;
-    var currentTime = new Date();
-    var delta = currentTime - this.lastLiveRegionTime_;
+    const queueTime = LiveRegions.LIVE_REGION_QUEUE_TIME_MS;
+    const currentTime = new Date();
+    const delta = currentTime - this.lastLiveRegionTime_;
     if (delta > queueTime && !forceQueue) {
       output.withQueueMode(QueueMode.CATEGORY_FLUSH);
     } else {
@@ -214,7 +214,7 @@ LiveRegions = class {
    */
   addNodeToNodeSetRecursive_(root) {
     this.liveRegionNodeSet_.add(root);
-    for (var child = root.firstChild; child; child = child.nextSibling) {
+    for (let child = root.firstChild; child; child = child.nextSibling) {
       this.addNodeToNodeSetRecursive_(child);
     }
   }
@@ -242,5 +242,4 @@ LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
  * @private
  */
 LiveRegions.announceLiveRegionsFromBackgroundTabs_ = false;
-
 });  // goog.scope

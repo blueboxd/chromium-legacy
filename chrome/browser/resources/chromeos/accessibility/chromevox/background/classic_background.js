@@ -39,7 +39,7 @@ ChromeVoxBackground = class {
     this.prefs = new ChromeVoxPrefs();
     ChromeVoxBackground.readPrefs();
 
-    var consoleTts = ConsoleTts.getInstance();
+    const consoleTts = ConsoleTts.getInstance();
     consoleTts.setEnabled(
         this.prefs.getPrefs()['enableSpeechLogging'] == 'true');
 
@@ -79,7 +79,7 @@ ChromeVoxBackground = class {
     // within the content scripts.
     chrome.extension.onMessage.addListener(function(request, sender, callback) {
       if (request['srcFile']) {
-        var srcFile = request['srcFile'];
+        const srcFile = request['srcFile'];
         InjectedScriptLoader.fetchCode([srcFile], function(code) {
           callback({'code': code[srcFile]});
         });
@@ -88,7 +88,7 @@ ChromeVoxBackground = class {
     });
 
     // Build a regexp to match all allowed urls.
-    var matches = [];
+    let matches = [];
     try {
       matches = chrome.runtime.getManifest()['content_scripts'][0]['matches'];
     } catch (e) {
@@ -97,14 +97,14 @@ ChromeVoxBackground = class {
     }
 
     // Build one large regexp.
-    var matchesRe = new RegExp(matches.join('|'));
+    const matchesRe = new RegExp(matches.join('|'));
 
     // Inject the content script into all running tabs allowed by the
     // manifest. This block is still necessary because the extension system
     // doesn't re-inject content scripts into already running tabs.
     chrome.windows.getAll({'populate': true}, (windows) => {
-      for (var i = 0; i < windows.length; i++) {
-        var tabs = windows[i].tabs.filter((tab) => matchesRe.test(tab.url));
+      for (let i = 0; i < windows.length; i++) {
+        const tabs = windows[i].tabs.filter((tab) => matchesRe.test(tab.url));
         this.injectChromeVoxIntoTabs(tabs);
       }
     });
@@ -127,7 +127,7 @@ ChromeVoxBackground = class {
             Msgs.getMsg('sticky_mode_disabled'), QueueMode.FLUSH);
       }
     } else if (pref == 'typingEcho' && announce) {
-      var announceStr = '';
+      let announceStr = '';
       switch (value) {
         case TypingEcho.CHARACTER:
           announceStr = Msgs.getMsg('character_echo');
@@ -166,7 +166,7 @@ ChromeVoxBackground = class {
       return;
     }
 
-    var prefs = window['prefs'].getPrefs();
+    const prefs = window['prefs'].getPrefs();
     ChromeVoxEditableTextBase.useIBeamCursor =
         (prefs['useIBeamCursor'] == 'true');
     ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
@@ -178,7 +178,7 @@ ChromeVoxBackground = class {
    *     injected.
    */
   injectChromeVoxIntoTabs(tabs) {
-    var listOfFiles;
+    let listOfFiles;
 
     // These lists of files must match the content_scripts section in
     // the manifest files.
@@ -191,7 +191,7 @@ ChromeVoxBackground = class {
       ];
     }
 
-    var stageTwo = function(code) {
+    const stageTwo = function(code) {
       for (var i = 0, tab; tab = tabs[i]; i++) {
         window.console.log('Injecting into ' + tab.id, tab);
         var sawError = false;
@@ -268,11 +268,11 @@ ChromeVoxBackground = class {
       this.tts.stop();
     } else if (msg['action'] == 'increaseOrDecrease') {
       this.tts.increaseOrDecreaseProperty(msg['property'], msg['increase']);
-      var property = msg['property'];
-      var engine = this.backgroundTts_;
-      var valueAsPercent =
+      const property = msg['property'];
+      const engine = this.backgroundTts_;
+      const valueAsPercent =
           Math.round(this.backgroundTts_.propertyToPercentage(property) * 100);
-      var announcement;
+      let announcement;
       switch (msg['property']) {
         case AbstractTts.RATE:
           announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
@@ -301,8 +301,8 @@ ChromeVoxBackground = class {
    */
   addBridgeListener() {
     ExtensionBridge.addMessageListener(goog.bind(function(msg, port) {
-      var target = msg['target'];
-      var action = msg['action'];
+      const target = msg['target'];
+      const action = msg['action'];
 
       switch (target) {
         case 'TTS':
@@ -357,7 +357,7 @@ ChromeVoxBackground = class {
 // Create the background page object and export a function window['speak']
 // so that other background pages can access it. Also export the prefs object
 // for access by the options page.
-let background = new ChromeVoxBackground();
+const background = new ChromeVoxBackground();
 
 // TODO: this needs to be cleaned up (move to init?).
 window['speak'] = goog.bind(background.tts.speak, background.tts);

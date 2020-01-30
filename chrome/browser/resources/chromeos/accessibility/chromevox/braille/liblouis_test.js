@@ -25,17 +25,17 @@ ChromeVoxLibLouisTest = class extends ChromeVoxE2ETest {
 
 
 function assertEqualsUint8Array(expected, actual) {
-  var asArray = [];
-  var uint8array = new Uint8Array(actual);
-  for (var i = 0; i < uint8array.length; ++i) {
+  const asArray = [];
+  const uint8array = new Uint8Array(actual);
+  for (let i = 0; i < uint8array.length; ++i) {
     asArray[i] = uint8array[i];
   }
   assertEqualsJSON(expected, asArray);
 }
 
 function LIBLOUIS_TEST_F(testName, testFunc, opt_preamble) {
-  var wrappedTestFunc = function() {
-    var liblouis = new LibLouis(
+  const wrappedTestFunc = function() {
+    const liblouis = new LibLouis(
         chrome.extension.getURL('braille/liblouis_wrapper.js'), '',
         testFunc.bind(this));
   };
@@ -68,9 +68,9 @@ LIBLOUIS_TEST_F_WITH_PREAMBLE(
 `,
     'MAYBE_checkAllTables', function(liblouis) {
       BrailleTable.getAll(this.newCallback(function(tables) {
-        var i = 0;
+        let i = 0;
         var checkNextTable = function() {
-          var table = tables[i++];
+          const table = tables[i++];
           if (table) {
             this.withTranslator(
                 liblouis, table.fileNames, function(translator) {
@@ -87,7 +87,7 @@ LIBLOUIS_TEST_F_WITH_PREAMBLE(
 
 LIBLOUIS_TEST_F('testBackTranslateComputerBraille', function(liblouis) {
   this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
-    var cells = new Uint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e]);
+    const cells = new Uint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e]);
     translator.backTranslate(cells.buffer, this.newCallback(function(text) {
       assertEquals('Hello!', text);
     }));
@@ -109,7 +109,7 @@ LIBLOUIS_TEST_F('testTranslateGermanGrade2Braille', function(liblouis) {
 
 LIBLOUIS_TEST_F('testBackTranslateGermanComputerBraille', function(liblouis) {
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
-    var cells = new Uint8Array([0xb3]);
+    const cells = new Uint8Array([0xb3]);
     translator.backTranslate(cells.buffer, this.newCallback(function(text) {
       assertEquals('ü', text);
     }));
@@ -138,7 +138,7 @@ LIBLOUIS_TEST_F('testKeyEventStaticData', function(liblouis) {
         'abcdefghijklmnopqrstuvwxyz 0123456789', [],
         this.newCallback(function(cells, textToBraille, brailleToText) {
           // A-Z.
-          var view = new Uint8Array(cells);
+          const view = new Uint8Array(cells);
           for (var i = 0; i < 26; i++) {
             assertEquals(
                 String.fromCharCode(i + 65),

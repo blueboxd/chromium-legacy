@@ -122,14 +122,14 @@ AutoclickE2ETest.prototype = {
 TEST_F('AutoclickE2ETest', 'HighlightsRootWebAreaIfNotScrollable', function() {
   this.runWithLoadedTree(
       'data:text/html;charset=utf-8,<p>Cats rock!</p>', function(desktop) {
-        let node = desktop.find(
+        const node = desktop.find(
             {role: 'staticText', attributes: {name: 'Cats rock!'}});
         this.mockAccessibilityPrivate.callFindScrollableBoundsForPoint(
             // Offset slightly into the node to ensure the hittest happens
             // within the node.
             node.location.left + 1, node.location.top + 1,
             this.newCallback(() => {
-              let expected = node.root.location;
+              const expected = node.root.location;
               this.assertSameRect(
                   this.mockAccessibilityPrivate.getScrollableBounds(),
                   expected);
@@ -146,7 +146,7 @@ TEST_F('AutoclickE2ETest', 'HighlightsScrollableDiv', function() {
           '<div style="margin:50px">cats rock! this text wraps and overflows!' +
           '</div></div>',
       function(desktop) {
-        let node = desktop.find({
+        const node = desktop.find({
           role: 'staticText',
           attributes: {name: 'cats rock! this text wraps and overflows!'}
         });
@@ -158,7 +158,7 @@ TEST_F('AutoclickE2ETest', 'HighlightsScrollableDiv', function() {
               // The outer div, which is the parent of the parent of the
               // text, is scrollable.
               assertTrue(node.parent.parent.scrollable);
-              let expected = node.parent.parent.location;
+              const expected = node.parent.parent.location;
               this.assertSameRect(
                   this.mockAccessibilityPrivate.getScrollableBounds(),
                   expected);

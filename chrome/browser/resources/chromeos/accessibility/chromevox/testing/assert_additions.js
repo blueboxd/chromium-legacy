@@ -52,11 +52,11 @@ function assertException(msg, fn, error) {
  * @param {Array<string>} array2 The test array.
  */
 function assertEqualStringArrays(array1, array2) {
-  var same = true;
+  let same = true;
   if (array1.length != array2.length) {
     same = false;
   }
-  for (var i = 0; i < Math.min(array1.length, array2.length); i++) {
+  for (let i = 0; i < Math.min(array1.length, array2.length); i++) {
     if (array1[i].trim() != array2[i].trim()) {
       same = false;
     }
@@ -89,8 +89,8 @@ function assertEqualsJSON(expected, actual, opt_message) {
  * @param {ArrayBuffer} arrayBufB The test ArrayBuffer.
  */
 function assertArrayBuffersEquals(arrayBufA, arrayBufB) {
-  var view1 = new Uint8Array(arrayBufA);
-  var view2 = new Uint8Array(arrayBufB);
+  const view1 = new Uint8Array(arrayBufA);
+  const view2 = new Uint8Array(arrayBufB);
   assertEquals(JSON.stringify(view1), JSON.stringify(view2));
 }
 
@@ -118,10 +118,10 @@ function assertNotReached(opt_msg) {
  */
 function assertEqualsDOM(expected, actual) {
   expected = expected.replace(/>\s+</gm, '><').trim(/\s/gm);
-  var actualStr = actual.outerHTML;
+  let actualStr = actual.outerHTML;
   actualStr = actualStr.replace(/>\s+</gm, '><').trim(/\s/gm);
 
-  for (var i = 0; i < expected.length; i++) {
+  for (let i = 0; i < expected.length; i++) {
     assertEquals(
         expected[i], actualStr[i],
         'Mismatch at index ' + i + ' in expected:\n' + expected +

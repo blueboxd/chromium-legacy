@@ -24,7 +24,7 @@ ExtensionBridge = class {
    * corresponding function for more specific initialization.
    */
   static init() {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
     self.messageListeners = [];
     self.disconnectListeners = [];
 
@@ -52,7 +52,7 @@ ExtensionBridge = class {
    * @param {Object} message The message to be sent.
    */
   static send(message) {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
     switch (self.context) {
       case self.BACKGROUND:
         self.sendBackgroundToContentScript(message);
@@ -108,7 +108,7 @@ ExtensionBridge = class {
    * a listener for connections from the content script.
    */
   static initBackground() {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
 
     /** @type {!Array<Port>} @private */
     self.portCache_ = [];
@@ -117,7 +117,7 @@ ExtensionBridge = class {
     /** @type {number} */
     self.id_ = 0;
 
-    var onConnectHandler = function(port) {
+    const onConnectHandler = function(port) {
       if (port.name != self.PORT_NAME) {
         return;
       }
@@ -126,19 +126,19 @@ ExtensionBridge = class {
 
       port.onMessage.addListener(function(message) {
         if (message[ExtensionBridge.PING_MSG]) {
-          var pongMessage = {};
+          const pongMessage = {};
           pongMessage[ExtensionBridge.PONG_MSG] = self.nextPongId_++;
           port.postMessage(pongMessage);
           return;
         }
 
-        for (var i = 0; i < self.messageListeners.length; i++) {
+        for (let i = 0; i < self.messageListeners.length; i++) {
           self.messageListeners[i](message, port);
         }
       });
 
       port.onDisconnect.addListener(function(message) {
-        for (var i = 0; i < self.portCache_.length; i++) {
+        for (let i = 0; i < self.portCache_.length; i++) {
           if (self.portCache_[i] == port) {
             self.portCache_.splice(i, 1);
             break;
@@ -155,14 +155,14 @@ ExtensionBridge = class {
    * for messages from the background page.
    */
   static initContentScript() {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
     self.connected = false;
     self.pingAttempts = 0;
     self.queuedMessages = [];
     /** @type {number} */
     self.id_ = -1;
 
-    var onMessageHandler = function(request, sender, sendResponse) {
+    const onMessageHandler = function(request, sender, sendResponse) {
       if (request && request['srcFile']) {
         // TODO (clchen, deboer): Investigate this further and come up with a
         // cleaner solution. The root issue is that this should never be run on
@@ -172,7 +172,7 @@ ExtensionBridge = class {
       if (request[ExtensionBridge.PONG_MSG]) {
         self.gotPongFromBackgroundPage(request[ExtensionBridge.PONG_MSG]);
       } else {
-        for (var i = 0; i < self.messageListeners.length; i++) {
+        for (let i = 0; i < self.messageListeners.length; i++) {
           self.messageListeners[i](request, ExtensionBridge.backgroundPort);
         }
       }
@@ -193,7 +193,7 @@ ExtensionBridge = class {
    */
   static setupBackgroundPort() {
     // Set up the connection to the background page.
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
     self.backgroundPort = chrome.extension.connect({name: self.PORT_NAME});
     if (!self.backgroundPort) {
       return;
@@ -202,7 +202,7 @@ ExtensionBridge = class {
       if (message[ExtensionBridge.PONG_MSG]) {
         self.gotPongFromBackgroundPage(message[ExtensionBridge.PONG_MSG]);
       } else {
-        for (var i = 0; i < self.messageListeners.length; i++) {
+        for (let i = 0; i < self.messageListeners.length; i++) {
           self.messageListeners[i](message, self.backgroundPort);
         }
       }
@@ -216,7 +216,7 @@ ExtensionBridge = class {
 
       self.backgroundPort = null;
       self.connected = false;
-      for (var i = 0; i < self.disconnectListeners.length; i++) {
+      for (let i = 0; i < self.disconnectListeners.length; i++) {
         self.disconnectListeners[i]();
       }
     });
@@ -226,7 +226,7 @@ ExtensionBridge = class {
    * Try to ping the background page.
    */
   static tryToPingBackgroundPage() {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
 
     // If we already got a pong, great - we're done.
     if (self.connected) {
@@ -237,14 +237,14 @@ ExtensionBridge = class {
     if (self.pingAttempts > 5) {
       // Could not connect after 5 ping attempts. Call the disconnect
       // handlers, which will disable ChromeVox.
-      for (var i = 0; i < self.disconnectListeners.length; i++) {
+      for (let i = 0; i < self.disconnectListeners.length; i++) {
         self.disconnectListeners[i]();
       }
       return;
     }
 
     // Send the ping.
-    var msg = {};
+    const msg = {};
     msg[ExtensionBridge.PING_MSG] = 1;
     if (!self.backgroundPort) {
       self.setupBackgroundPort();
@@ -263,7 +263,7 @@ ExtensionBridge = class {
    * @param {number} pongId unique id assigned to us by the background page
    */
   static gotPongFromBackgroundPage(pongId) {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
     self.connected = true;
     self.id_ = pongId;
 
@@ -278,7 +278,7 @@ ExtensionBridge = class {
    * @param {Object} message The message to send.
    */
   static sendContentScriptToBackground(message) {
-    var self = ExtensionBridge;
+    const self = ExtensionBridge;
     if (!self.connected) {
       // We're not connected to the background page, so queue this message
       // until we're connected.

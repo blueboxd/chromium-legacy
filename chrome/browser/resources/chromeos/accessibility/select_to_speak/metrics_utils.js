@@ -7,7 +7,7 @@
 /**
  * @constructor
  */
-let MetricsUtils = function() {};
+const MetricsUtils = function() {};
 
 /**
  * Defines an enumeration metric. The |EVENT_COUNT| must be kept in sync

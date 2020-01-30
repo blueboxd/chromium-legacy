@@ -50,7 +50,7 @@ class GroupNode extends SAChildNode {
   asRootNode() {
     const root = new SARootNode();
 
-    let children = [];
+    const children = [];
     for (const child of this.children_) {
       children.push(child);
     }
@@ -122,10 +122,10 @@ class GroupNode extends SAChildNode {
    * @return {!Array<!GroupNode>}
    */
   static separateByRow(nodes) {
-    let result = [];
+    const result = [];
 
     for (let i = 0; i < nodes.length;) {
-      let children = [];
+      const children = [];
       children.push(nodes[i]);
       i++;
 

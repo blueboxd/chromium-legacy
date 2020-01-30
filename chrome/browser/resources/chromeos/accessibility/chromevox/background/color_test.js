@@ -13,11 +13,11 @@ ChromeVoxColorTest = class extends ChromeVoxNextE2ETest {};
 
 SYNC_TEST_F('ChromeVoxColorTest', 'FindDistanceTest', function() {
   // Hexadecimal representations of colors.
-  var red = 0xff0000;
-  var lime = 0x00ff00;
-  var blue = 0x0000ff;
-  var opaqueRed = 0xffff0000;
-  var transparentLime = 0x0000ff00;
+  const red = 0xff0000;
+  const lime = 0x00ff00;
+  const blue = 0x0000ff;
+  const opaqueRed = 0xffff0000;
+  const transparentLime = 0x0000ff00;
 
   assertEquals(Color.findDistance(red, lime), Color.findDistance(lime, blue));
   // Opacity should not factor into this calculation.
@@ -27,17 +27,17 @@ SYNC_TEST_F('ChromeVoxColorTest', 'FindDistanceTest', function() {
 });
 
 SYNC_TEST_F('ChromeVoxColorTest', 'FindClosestMatchingColorTest', function() {
-  var white = 0xffffff;
-  var red = 0xff0000;
-  var lime = 0x00ff00;
-  var blue = 0x0000ff;
-  var black = 0x000000;
+  const white = 0xffffff;
+  const red = 0xff0000;
+  const lime = 0x00ff00;
+  const blue = 0x0000ff;
+  const black = 0x000000;
 
-  var gmailDefaultTextColor = 0x222222;
-  var looksLikePink = 0xF4CCCC;
-  var looksLikeGreen = 0x38761D;
-  var looksLikeDarkGrey = 0x0C343D;
-  var unknownColor = 0x003DAC;
+  const gmailDefaultTextColor = 0x222222;
+  const looksLikePink = 0xF4CCCC;
+  const looksLikeGreen = 0x38761D;
+  const looksLikeDarkGrey = 0x0C343D;
+  const unknownColor = 0x003DAC;
 
   // Exact matches.
   assertEquals('White', Color.findClosestMatchingColor(white));
@@ -58,9 +58,9 @@ SYNC_TEST_F('ChromeVoxColorTest', 'FindClosestMatchingColorTest', function() {
 });
 
 SYNC_TEST_F('ChromeVoxColorTest', 'GetOpacityPercentageTest', function() {
-  var opaqueRed = 0xffff0000;
-  var transparentLime = 0x0000ff00;
-  var translucentBlue = 0x800000ff;
+  const opaqueRed = 0xffff0000;
+  const transparentLime = 0x0000ff00;
+  const translucentBlue = 0x800000ff;
 
   assertEquals(100, Color.getOpacityPercentage(opaqueRed));
   assertEquals(0, Color.getOpacityPercentage(transparentLime));

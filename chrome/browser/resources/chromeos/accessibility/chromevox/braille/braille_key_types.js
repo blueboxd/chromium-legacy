@@ -84,7 +84,7 @@ BrailleKeyEvent.keyCodeToLegacyCode = function(code) {
  */
 BrailleKeyEvent.keyCodeToCharValue = function(keyCode) {
   /** @const */
-  var SPECIAL_CODES = {'Backspace': 0x08, 'Tab': 0x09, 'Enter': 0x0A};
+  const SPECIAL_CODES = {'Backspace': 0x08, 'Tab': 0x09, 'Enter': 0x0A};
   // Note, the Chrome virtual keyboard falls back on the first character of the
   // key code if the key is not one of the above.  Do the same here.
   return SPECIAL_CODES[keyCode] || keyCode.charCodeAt(0);
@@ -220,4 +220,4 @@ for (var i = 0; i < 12; ++i) {
  * @typedef {{available: boolean, textRowCount: number,
  *     textColumnCount: number}}
  */
-var BrailleDisplayState;
+let BrailleDisplayState;

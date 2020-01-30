@@ -97,7 +97,7 @@ BackgroundKeyboardHandler = class {
    * @return {boolean}
    */
   static sendKeyPress(keyCode, modifiers) {
-    var key = {
+    const key = {
       type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
       keyCode,
       modifiers

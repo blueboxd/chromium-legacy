@@ -10,9 +10,9 @@
 goog.provide('BaseAutomationHandler');
 
 goog.scope(function() {
-var AutomationEvent = chrome.automation.AutomationEvent;
-var AutomationNode = chrome.automation.AutomationNode;
-var EventType = chrome.automation.EventType;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationNode = chrome.automation.AutomationNode;
+const EventType = chrome.automation.EventType;
 
 BaseAutomationHandler = class {
   /**
@@ -42,7 +42,7 @@ BaseAutomationHandler = class {
       throw 'Listener already added: ' + eventType;
     }
 
-    var listener = this.makeListener_(eventCallback.bind(this));
+    const listener = this.makeListener_(eventCallback.bind(this));
     this.node_.addEventListener(eventType, listener, true);
     this.listeners_[eventType] = listener;
   }
@@ -51,7 +51,7 @@ BaseAutomationHandler = class {
    * Removes all listeners from this handler.
    */
   removeAllListeners() {
-    for (var eventType in this.listeners_) {
+    for (const eventType in this.listeners_) {
       this.node_.removeEventListener(
           eventType, this.listeners_[eventType], true);
     }
@@ -88,5 +88,4 @@ BaseAutomationHandler = class {
    */
   didHandleEvent_(evt) {}
 };
-
 });  // goog.scope

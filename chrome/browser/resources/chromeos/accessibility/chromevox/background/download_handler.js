@@ -55,9 +55,9 @@ DownloadHandler.init = function() {
           return;
         }
 
-        for (var i = 0; i < results.length; ++i) {
-          var item = results[i];
-          var state = item.state;
+        for (let i = 0; i < results.length; ++i) {
+          const item = results[i];
+          const state = item.state;
           if (!state) {
             continue;
           }
@@ -79,13 +79,13 @@ DownloadHandler.init = function() {
     // The type of notification ChromeVox reports can be inferred based on the
     // available properties, as they have been observed to be mutually
     // exclusive.
-    var name = item.filename;
-    var state = item.state;
-    var paused = item.paused;
+    const name = item.filename;
+    const state = item.state;
+    const paused = item.paused;
     // The item ID is always set no matter what.
-    var id = item.id;
+    const id = item.id;
 
-    var storedItem = DownloadHandler.downloadItemData_[id];
+    const storedItem = DownloadHandler.downloadItemData_[id];
 
     // New download if we're not tracking the item and if the filename was
     // previously empty.
@@ -98,7 +98,7 @@ DownloadHandler.init = function() {
       DownloadHandler.speechAndBrailleOutput(
           'download_started', QueueMode.FLUSH, optSubs);
     } else if (state) {
-      var currentState = state.current;
+      const currentState = state.current;
       var msgId = '';
       // Only give notification for COMPLETE and INTERRUPTED.
       // IN_PROGRESS notifications are given by notifyProgress function.
@@ -146,19 +146,19 @@ DownloadHandler.notifyProgress = function(id) {
       return;
     }
     // Results should have only one item because IDs are unique.
-    var updatedItem = results[0];
-    var storedItem = DownloadHandler.downloadItemData_[updatedItem.id];
+    const updatedItem = results[0];
+    const storedItem = DownloadHandler.downloadItemData_[updatedItem.id];
 
-    var percentComplete =
+    const percentComplete =
         Math.round((updatedItem.bytesReceived / updatedItem.totalBytes) * 100);
-    var percentDelta = percentComplete - storedItem.percentComplete;
+    const percentDelta = percentComplete - storedItem.percentComplete;
     // Convert time delta from milliseconds to seconds.
-    var timeDelta = Math.round((Date.now() - storedItem.time) / 1000);
+    const timeDelta = Math.round((Date.now() - storedItem.time) / 1000);
 
     // Calculate notification score for this download.
     // This equation was determined by targeting 30 seconds and 50% complete
     // as reasonable milestones before giving an update.
-    var score = percentDelta + (5 / 3) * timeDelta;
+    const score = percentDelta + (5 / 3) * timeDelta;
     // Only report downloads that have scores above the threshold value.
     if (score > DownloadHandler.UPDATE_THRESHOLD_) {
       // Update state.
@@ -169,9 +169,9 @@ DownloadHandler.notifyProgress = function(id) {
       if (!updatedItem.estimatedEndTime) {
         return;
       }
-      var endTime = new Date(updatedItem.estimatedEndTime);
-      var timeRemaining = Math.round((endTime.getTime() - Date.now()) / 1000);
-      var timeUnit = '';
+      const endTime = new Date(updatedItem.estimatedEndTime);
+      let timeRemaining = Math.round((endTime.getTime() - Date.now()) / 1000);
+      let timeUnit = '';
 
       if (!timeRemaining || (timeRemaining < 0)) {
         return;
@@ -197,7 +197,7 @@ DownloadHandler.notifyProgress = function(id) {
         return;
       }
 
-      var optSubs = [
+      const optSubs = [
         storedItem.percentComplete, storedItem.fileName, timeRemaining, timeUnit
       ];
       DownloadHandler.speechAndBrailleOutput(
@@ -212,18 +212,18 @@ DownloadHandler.notifyProgress = function(id) {
  * track.
  */
 DownloadHandler.startTrackingDownload = function(item) {
-  var id = item.id;
+  const id = item.id;
   // Don't add if we are already tracking file.
   if (DownloadHandler.downloadItemData_[id]) {
     return;
   }
 
-  var fullPath = (item.filename.current || item.filename);
-  var fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
-  var notifyProgressId = setInterval(
+  const fullPath = (item.filename.current || item.filename);
+  const fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+  const notifyProgressId = setInterval(
       DownloadHandler.notifyProgress.bind(DownloadHandler, id),
       DownloadHandler.INTERVAL_TIME_MILLISECONDS_);
-  var percentComplete = 0;
+  let percentComplete = 0;
   if (item.bytesReceived && item.totalBytes) {
     percentComplete = Math.round((item.bytesReceived / item.totalBytes) * 100);
   }
@@ -240,7 +240,7 @@ DownloadHandler.startTrackingDownload = function(item) {
  */
 DownloadHandler.speechAndBrailleOutput = function(msgId, queueMode, optSubs) {
   if (localStorage['announceDownloadNotifications'] == 'true') {
-    var msg = Msgs.getMsg(msgId, optSubs);
+    const msg = Msgs.getMsg(msgId, optSubs);
     new Output().withString(msg).withQueueMode(queueMode).go();
   }
 };

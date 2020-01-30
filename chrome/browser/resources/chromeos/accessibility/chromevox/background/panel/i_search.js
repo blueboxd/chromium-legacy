@@ -17,9 +17,9 @@ goog.require('constants');
 goog.require('cursors.Cursor');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var RoleType = chrome.automation.RoleType;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const RoleType = chrome.automation.RoleType;
 
 /**
  * An interface implemented by objects that wish to handle events related to
@@ -63,8 +63,8 @@ ISearch = class {
     /** @private {ISearchHandler} */
     this.handler_;
 
-    var leaf = AutomationUtil.findNodePre(
-                   cursor.node, Dir.FORWARD, AutomationPredicate.leaf) ||
+    const leaf = AutomationUtil.findNodePre(
+                     cursor.node, Dir.FORWARD, AutomationPredicate.leaf) ||
         cursor.node;
 
     /** @type {!cursors.Cursor} */
@@ -93,10 +93,10 @@ ISearch = class {
    */
   search(searchStr, dir, opt_nextObject) {
     clearTimeout(this.callbackId_);
-    var step = function() {
+    const step = function() {
       searchStr = searchStr.toLocaleLowerCase();
-      var node = this.cursor.node;
-      var result = node;
+      const node = this.cursor.node;
+      let result = node;
 
       if (opt_nextObject) {
         // We want to start/continue the search at the next object.
@@ -111,8 +111,8 @@ ISearch = class {
 
       if (result) {
         this.cursor = cursors.Cursor.fromNode(result);
-        var start = result.name.toLocaleLowerCase().indexOf(searchStr);
-        var end = start + searchStr.length;
+        const start = result.name.toLocaleLowerCase().indexOf(searchStr);
+        const end = start + searchStr.length;
         this.handler_.onSearchResultChanged(result, start, end);
       } else {
         this.handler_.onSearchReachedBoundary(this.cursor.node);
@@ -188,7 +188,7 @@ ISearchUI = class {
         return false;
       case 'Enter':
         Panel.setPendingCallback(function() {
-          var node = this.iSearch_.cursor.node;
+          const node = this.iSearch_.cursor.node;
           if (!node) {
             return;
           }
@@ -213,7 +213,7 @@ ISearchUI = class {
    * @return {boolean}
    */
   onTextInput(evt) {
-    var searchStr = evt.target.value + evt.data;
+    const searchStr = evt.target.value + evt.data;
     this.iSearch_.clear();
     this.iSearch_.search(searchStr, this.dir_);
     return true;
@@ -242,7 +242,7 @@ ISearchUI = class {
    */
   output_(node, opt_start, opt_end) {
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
-    var o = new Output();
+    const o = new Output();
     if (opt_start && opt_end) {
       o.withString([
         node.name.substr(0, opt_start),
@@ -263,11 +263,10 @@ ISearchUI = class {
   destroy() {
     this.iSearch_.handler_ = null;
     this.iSearch_ = null;
-    var input = this.input_;
+    const input = this.input_;
     this.input_ = null;
     input.removeEventListener('keydown', this.onKeyDown, true);
     input.removeEventListener('textInput', this.onTextInput, false);
   }
 };
-
 });  // goog.scope

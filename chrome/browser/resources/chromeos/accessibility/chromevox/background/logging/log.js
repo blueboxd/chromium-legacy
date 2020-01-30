@@ -25,41 +25,41 @@ LogPage = class {
 
     /** Create filter checkboxes. */
     for (var type of Object.values(LogStore.LogType)) {
-      var label = document.createElement('label');
-      var input = document.createElement('input');
+      const label = document.createElement('label');
+      const input = document.createElement('input');
       input.id = type + 'Filter';
       input.type = 'checkbox';
       input.classList.add('log-filter');
       label.appendChild(input);
 
-      var span = document.createElement('span');
+      const span = document.createElement('span');
       span.textContent = type;
       label.appendChild(span);
 
       document.getElementById('logFilters').appendChild(label);
     }
 
-    var clearLogButton = document.getElementById('clearLog');
+    const clearLogButton = document.getElementById('clearLog');
     clearLogButton.onclick = function(event) {
       LogPage.LogStore.clearLog();
       location.reload();
     };
 
-    var params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(location.search);
     for (var type of Object.values(LogStore.LogType)) {
-      var typeFilter = type + 'Filter';
+      const typeFilter = type + 'Filter';
       LogPage.setFilterTypeEnabled(typeFilter, params.get(typeFilter));
     }
-    var saveLogButton = document.getElementById('saveLog');
+    const saveLogButton = document.getElementById('saveLog');
     saveLogButton.onclick = LogPage.saveLogEvent;
 
-    var checkboxes = document.getElementsByClassName('log-filter');
-    var filterEventListener = function(event) {
-      var target = event.target;
+    const checkboxes = document.getElementsByClassName('log-filter');
+    const filterEventListener = function(event) {
+      const target = event.target;
       LogPage.setFilterTypeEnabled(target.id, String(target.checked));
       location.search = LogPage.createUrlParams();
     };
-    for (var i = 0; i < checkboxes.length; i++) {
+    for (let i = 0; i < checkboxes.length; i++) {
       checkboxes[i].onclick = filterEventListener;
     }
 
@@ -72,18 +72,18 @@ LogPage = class {
    * @param {Event} event
    */
   static saveLogEvent(event) {
-    var outputText = '';
-    var logs = document.querySelectorAll('#logList p');
-    for (var i = 0; i < logs.length; i++) {
-      var logText = [];
+    let outputText = '';
+    const logs = document.querySelectorAll('#logList p');
+    for (let i = 0; i < logs.length; i++) {
+      const logText = [];
       logText.push(logs[i].querySelector('.log-type-tag').textContent);
       logText.push(logs[i].querySelector('.log-time-tag').textContent);
       logText.push(logs[i].querySelector('.log-text').textContent);
       outputText += logText.join(' ') + '\n';
     }
 
-    var a = document.createElement('a');
-    var date = new Date();
+    const a = document.createElement('a');
+    const date = new Date();
     a.download =
         [
           'chromevox_logpage', date.getMonth() + 1, date.getDate(),
@@ -99,13 +99,13 @@ LogPage = class {
    * update logs.
    */
   static update() {
-    for (var type of Object.values(LogStore.LogType)) {
-      var typeFilter = type + 'Filter';
-      var element = document.getElementById(typeFilter);
+    for (const type of Object.values(LogStore.LogType)) {
+      const typeFilter = type + 'Filter';
+      const element = document.getElementById(typeFilter);
       element.checked = LogPage.urlPrefs_[typeFilter];
     }
 
-    var log = LogPage.LogStore.getLogs();
+    const log = LogPage.LogStore.getLogs();
     LogPage.updateLog(log, document.getElementById('logList'));
   }
 
@@ -115,20 +115,20 @@ LogPage = class {
    * @param {Element} div
    */
   static updateLog(log, div) {
-    for (var i = 0; i < log.length; i++) {
+    for (let i = 0; i < log.length; i++) {
       if (!LogPage.urlPrefs_[log[i].logType + 'Filter']) {
         continue;
       }
 
-      var p = document.createElement('p');
-      var typeName = document.createElement('span');
+      const p = document.createElement('p');
+      const typeName = document.createElement('span');
       typeName.textContent = log[i].logType;
       typeName.className = 'log-type-tag';
-      var timeStamp = document.createElement('span');
+      const timeStamp = document.createElement('span');
       timeStamp.textContent = LogPage.formatTimeStamp(log[i].date);
       timeStamp.className = 'log-time-tag';
       /** textWrapper should be in block scope, not function scope. */
-      let textWrapper = document.createElement('pre');
+      const textWrapper = document.createElement('pre');
       textWrapper.textContent = log[i].toString();
       textWrapper.className = 'log-text';
 
@@ -137,14 +137,14 @@ LogPage = class {
 
       /** Add hide tree button when logType is tree. */
       if (log[i].logType == LogStore.LogType.TREE) {
-        var toggle = document.createElement('label');
-        var toggleCheckbox = document.createElement('input');
+        const toggle = document.createElement('label');
+        const toggleCheckbox = document.createElement('input');
         toggleCheckbox.type = 'checkbox';
         toggleCheckbox.checked = true;
         toggleCheckbox.onclick = function(event) {
           textWrapper.hidden = !event.target.checked;
         };
-        var toggleText = document.createElement('span');
+        const toggleText = document.createElement('span');
         toggleText.textContent = 'show tree';
         toggle.appendChild(toggleCheckbox);
         toggle.appendChild(toggleText);
@@ -174,9 +174,9 @@ LogPage = class {
    * @return {string}
    */
   static createUrlParams() {
-    var urlParams = [];
-    for (var type of Object.values(LogStore.LogType)) {
-      var typeFilter = type + 'Filter';
+    const urlParams = [];
+    for (const type of Object.values(LogStore.LogType)) {
+      const typeFilter = type + 'Filter';
       urlParams.push(typeFilter + '=' + LogPage.urlPrefs_[typeFilter]);
     }
     return '?' + urlParams.join('&');
@@ -190,9 +190,9 @@ LogPage = class {
    * @return {!string}
    */
   static formatTimeStamp(date) {
-    var time = date.getTime();
+    let time = date.getTime();
     time -= date.getTimezoneOffset() * 1000 * 60;
-    var timeStr =
+    let timeStr =
         ('00' + Math.floor(time / 1000 / 60 / 60) % 24).slice(-2) + ':';
     timeStr += ('00' + Math.floor(time / 1000 / 60) % 60).slice(-2) + ':';
     timeStr += ('00' + Math.floor(time / 1000) % 60).slice(-2) + '.';

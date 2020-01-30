@@ -20,10 +20,10 @@ CallbackHelper.prototype = {
    * @return {Function}
    */
   wrap(opt_callback) {
-    var callback = opt_callback || function() {};
-    var savedArgs = new SaveMockArguments();
-    var lastCall = null;
-    var completionAction = callFunctionWithSavedArgs(savedArgs, function() {
+    const callback = opt_callback || function() {};
+    const savedArgs = new SaveMockArguments();
+    let lastCall = null;
+    const completionAction = callFunctionWithSavedArgs(savedArgs, function() {
       if (lastCall) {
         throw new Error('Called more than once, first call here: ' + lastCall);
       } else {
@@ -36,7 +36,7 @@ CallbackHelper.prototype = {
     }.bind(this));
     // runAllActionsAsync catches exceptions and puts them in the test
     // framework's list of errors and fails the test if appropriate.
-    var runAll = runAllActionsAsync(WhenTestDone.ASSERT, completionAction);
+    const runAll = runAllActionsAsync(WhenTestDone.ASSERT, completionAction);
     ++this.pendingCallbacks_;
     return function() {
       savedArgs.arguments = Array.prototype.slice.call(arguments);

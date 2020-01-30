@@ -56,15 +56,15 @@ ChromeVoxNodeIdentifierTest = class extends ChromeVoxNextE2ETest {
 // Tests that we can distinguish between two similar buttons.
 TEST_F('ChromeVoxNodeIdentifierTest', 'BasicButtonTest', function() {
   this.runWithLoadedTree(this.basicButtonDoc, function(rootNode) {
-    var appleNode =
+    const appleNode =
         rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Apple'}});
-    var orangeNode =
+    const orangeNode =
         rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Orange'}});
     assertFalse(!appleNode);
     assertFalse(!orangeNode);
-    var appleId = new NodeIdentifier(appleNode);
-    var duplicateAppleId = new NodeIdentifier(appleNode);
-    var orangeId = new NodeIdentifier(orangeNode);
+    const appleId = new NodeIdentifier(appleNode);
+    const duplicateAppleId = new NodeIdentifier(appleNode);
+    const orangeId = new NodeIdentifier(orangeNode);
 
     assertTrue(appleId.equals(duplicateAppleId));
     assertFalse(appleId.equals(orangeId));
@@ -75,11 +75,11 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'BasicButtonTest', function() {
 TEST_F('ChromeVoxNodeIdentifierTest', 'DuplicateButtonTest', function() {
   this.runWithLoadedTree(this.duplicateButtonDoc, function() {
     CommandHandler.onCommand('nextButton');
-    var firstButton = this.getRangeStart();
-    var firstButtonId = new NodeIdentifier(firstButton);
+    const firstButton = this.getRangeStart();
+    const firstButtonId = new NodeIdentifier(firstButton);
     CommandHandler.onCommand('nextButton');
-    var secondButton = this.getRangeStart();
-    var secondButtonId = new NodeIdentifier(secondButton);
+    const secondButton = this.getRangeStart();
+    const secondButtonId = new NodeIdentifier(secondButton);
 
     assertFalse(firstButtonId.equals(secondButtonId));
   });
@@ -92,16 +92,16 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'IdenticalListsTest', function() {
     // Create NodeIdentifiers for each item.
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    var firstApple = new NodeIdentifier(this.getRangeStart());
+    const firstApple = new NodeIdentifier(this.getRangeStart());
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    var firstOrange = new NodeIdentifier(this.getRangeStart());
+    const firstOrange = new NodeIdentifier(this.getRangeStart());
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    var secondApple = new NodeIdentifier(this.getRangeStart());
+    const secondApple = new NodeIdentifier(this.getRangeStart());
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    var secondOrange = new NodeIdentifier(this.getRangeStart());
+    const secondOrange = new NodeIdentifier(this.getRangeStart());
 
     assertFalse(firstApple.equals(secondApple));
     assertFalse(firstOrange.equals(secondOrange));

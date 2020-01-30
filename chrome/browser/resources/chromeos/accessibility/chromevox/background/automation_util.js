@@ -13,9 +13,9 @@ goog.require('AutomationTreeWalker');
 goog.require('constants');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var RoleType = chrome.automation.RoleType;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const RoleType = chrome.automation.RoleType;
 
 AutomationUtil = class {
   constructor() {}
@@ -39,9 +39,9 @@ AutomationUtil = class {
       return cur;
     }
 
-    var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
+    let child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
     while (child) {
-      var ret = AutomationUtil.findNodePre(child, dir, pred);
+      const ret = AutomationUtil.findNodePre(child, dir, pred);
       if (ret) {
         return ret;
       }
@@ -65,9 +65,9 @@ AutomationUtil = class {
       return null;
     }
 
-    var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
+    let child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
     while (child) {
-      var ret = AutomationUtil.findNodePost(child, dir, pred);
+      const ret = AutomationUtil.findNodePost(child, dir, pred);
       if (ret) {
         return ret;
       }
@@ -107,7 +107,7 @@ AutomationUtil = class {
    * @return {AutomationNode}
    */
   static findNextNode(cur, dir, pred, opt_restrictions) {
-    var restrictions = {};
+    const restrictions = {};
     opt_restrictions = opt_restrictions || {
       leaf: undefined,
       root: undefined,
@@ -128,7 +128,7 @@ AutomationUtil = class {
       return pred(node) && !AutomationPredicate.shouldIgnoreNode(node);
     };
 
-    var walker = new AutomationTreeWalker(cur, dir, restrictions);
+    const walker = new AutomationTreeWalker(cur, dir, restrictions);
     return walker.next().node;
   }
 
@@ -144,8 +144,8 @@ AutomationUtil = class {
    * @return {AutomationNode}
    */
   static findNodeUntil(cur, dir, pred, opt_before) {
-    var before = cur;
-    var after = before;
+    let before = cur;
+    let after = before;
     do {
       before = after;
       after =
@@ -161,8 +161,8 @@ AutomationUtil = class {
    * @return {!Array<AutomationNode>}
    */
   static getAncestors(node) {
-    var ret = [];
-    var candidate = node;
+    const ret = [];
+    let candidate = node;
     while (candidate) {
       ret.push(candidate);
 
@@ -179,7 +179,7 @@ AutomationUtil = class {
    * @return {number}
    */
   static getDivergence(ancestorsA, ancestorsB) {
-    for (var i = 0; i < ancestorsA.length; i++) {
+    for (let i = 0; i < ancestorsA.length; i++) {
       if (ancestorsA[i] !== ancestorsB[i]) {
         return i;
       }
@@ -197,9 +197,9 @@ AutomationUtil = class {
    * @return {!Array<!AutomationNode>}
    */
   static getUniqueAncestors(prevNode, node) {
-    var prevAncestors = AutomationUtil.getAncestors(prevNode);
-    var ancestors = AutomationUtil.getAncestors(node);
-    var divergence = AutomationUtil.getDivergence(prevAncestors, ancestors);
+    const prevAncestors = AutomationUtil.getAncestors(prevNode);
+    const ancestors = AutomationUtil.getAncestors(node);
+    const divergence = AutomationUtil.getDivergence(prevAncestors, ancestors);
     return ancestors.slice(divergence);
   }
 
@@ -211,17 +211,17 @@ AutomationUtil = class {
    * @return {Dir}
    */
   static getDirection(nodeA, nodeB) {
-    var ancestorsA = AutomationUtil.getAncestors(nodeA);
-    var ancestorsB = AutomationUtil.getAncestors(nodeB);
-    var divergence = AutomationUtil.getDivergence(ancestorsA, ancestorsB);
+    const ancestorsA = AutomationUtil.getAncestors(nodeA);
+    const ancestorsB = AutomationUtil.getAncestors(nodeB);
+    const divergence = AutomationUtil.getDivergence(ancestorsA, ancestorsB);
 
     // Default to Dir.FORWARD.
     if (divergence == -1) {
       return Dir.FORWARD;
     }
 
-    var divA = ancestorsA[divergence];
-    var divB = ancestorsB[divergence];
+    const divA = ancestorsA[divergence];
+    const divB = ancestorsB[divergence];
 
     // One of the nodes is an ancestor of the other. Order this relationship in
     // the same way dfs would. nodeA <= nodeB if nodeA is a descendant of
@@ -267,7 +267,7 @@ AutomationUtil = class {
    * @return {boolean}
    */
   static isDescendantOf(node, ancestor) {
-    var testNode = node;
+    let testNode = node;
     while (testNode && testNode !== ancestor) {
       testNode = testNode.parent;
     }
@@ -284,16 +284,16 @@ AutomationUtil = class {
    * @return {AutomationNode}
    */
   static hitTest(node, point) {
-    var child = node.firstChild;
+    let child = node.firstChild;
     while (child) {
-      var hit = AutomationUtil.hitTest(child, point);
+      const hit = AutomationUtil.hitTest(child, point);
       if (hit) {
         return hit;
       }
       child = child.nextSibling;
     }
 
-    var loc = node.unclippedLocation;
+    const loc = node.unclippedLocation;
 
     // When |node| is partially or fully offscreen, try to find a better match.
     if (loc.left < 0 || loc.top < 0) {
@@ -313,7 +313,7 @@ AutomationUtil = class {
    * @return {AutomationNode}
    */
   static getTopLevelRoot(node) {
-    var root = node.root;
+    let root = node.root;
     if (!root || root.role == RoleType.DESKTOP) {
       return null;
     }
@@ -335,9 +335,9 @@ AutomationUtil = class {
       return node;
     }
 
-    var prevAncestors = AutomationUtil.getAncestors(prevNode);
-    var ancestors = AutomationUtil.getAncestors(node);
-    var divergence = AutomationUtil.getDivergence(prevAncestors, ancestors);
+    const prevAncestors = AutomationUtil.getAncestors(prevNode);
+    const ancestors = AutomationUtil.getAncestors(node);
+    const divergence = AutomationUtil.getDivergence(prevAncestors, ancestors);
     return ancestors[divergence - 1];
   }
 
@@ -364,8 +364,8 @@ AutomationUtil = class {
    * @return {!AutomationNode|undefined}
    */
   static getEditableRoot(node) {
-    var testNode = node;
-    var rootEditable;
+    let testNode = node;
+    let rootEditable;
     do {
       if (testNode.state.editable && testNode.state.focused) {
         rootEditable = testNode;
@@ -394,7 +394,7 @@ AutomationUtil = class {
    * @return {AutomationNode}
    */
   static findLastNode(root, pred) {
-    var node = root;
+    let node = root;
     while (node.lastChild) {
       node = node.lastChild;
     }
@@ -405,8 +405,8 @@ AutomationUtil = class {
       }
 
       // Get the shallowest node matching the predicate.
-      var walker = node;
-      var shallowest = null;
+      let walker = node;
+      let shallowest = null;
       while (walker) {
         if (walker == root) {
           break;
@@ -428,5 +428,4 @@ AutomationUtil = class {
     return null;
   }
 };
-
 });  // goog.scope

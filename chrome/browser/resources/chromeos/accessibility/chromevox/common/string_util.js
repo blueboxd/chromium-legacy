@@ -19,8 +19,8 @@ StringUtil = class {
    *     for an empty common prefix.
    */
   static longestCommonPrefixLength(first, second) {
-    var limit = Math.min(first.length, second.length);
-    var i;
+    const limit = Math.min(first.length, second.length);
+    let i;
     for (i = 0; i < limit; ++i) {
       if (first.charAt(i) != second.charAt(i)) {
         break;

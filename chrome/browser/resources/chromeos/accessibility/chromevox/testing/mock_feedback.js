@@ -111,7 +111,7 @@ MockFeedback = class {
   install() {
     assertFalse(this.replaying_);
 
-    var MockTts = function() {};
+    const MockTts = function() {};
     MockTts.prototype = {
       __proto__: TtsInterface.prototype,
       speak: this.addUtterance_.bind(this)
@@ -119,7 +119,7 @@ MockFeedback = class {
 
     ChromeVox.tts = new MockTts();
 
-    var MockBraille = function() {};
+    const MockBraille = function() {};
     MockBraille.prototype = {
       __proto__: BrailleInterface.prototype,
       write: this.addBraille_.bind(this)
@@ -127,7 +127,7 @@ MockFeedback = class {
 
     ChromeVox.braille = new MockBraille();
 
-    var MockEarcons = function() {};
+    const MockEarcons = function() {};
     MockEarcons.prototype = {
       __proto__: AbstractEarcons.prototype,
       playEarcon: this.addEarcon_.bind(this)
@@ -277,10 +277,10 @@ MockFeedback = class {
    */
   expectBraille(text, opt_props) {
     assertFalse(this.replaying_);
-    var props = opt_props || {};
+    const props = opt_props || {};
     this.pendingActions_.push({
       perform: function() {
-        var match =
+        const match =
             MockFeedback.matchAndConsume_(text, props, this.pendingBraille_);
         if (match) {
           this.lastMatchedBraille_ = match;
@@ -303,7 +303,7 @@ MockFeedback = class {
     assertFalse(this.replaying_);
     this.pendingActions_.push({
       perform: function() {
-        var match =
+        const match =
             MockFeedback.matchAndConsume_(earconName, {}, this.pendingEarcons_);
         return !!match;
       }.bind(this),
@@ -382,10 +382,10 @@ MockFeedback = class {
    * @private
    */
   addUtterance_(textString, queueMode, properties) {
-    var callback;
+    let callback;
     if (properties && (properties.startCallback || properties.endCallback)) {
-      var startCallback = properties.startCallback;
-      var endCallback = properties.endCallback;
+      const startCallback = properties.startCallback;
+      const endCallback = properties.endCallback;
       callback = function() {
         startCallback && startCallback();
         endCallback && endCallback();
@@ -393,7 +393,7 @@ MockFeedback = class {
     }
     // Make a copy of all properties in a single object to be used in
     // matchAndConsume.
-    var allProperties = {text: textString, queueMode, properties, callback};
+    const allProperties = {text: textString, queueMode, properties, callback};
     this.pendingUtterances_.push(allProperties);
     this.process_();
   }
@@ -418,7 +418,7 @@ MockFeedback = class {
     try {
       this.inProcess_ = true;
       while (this.pendingActions_.length > 0) {
-        var action = this.pendingActions_[0];
+        const action = this.pendingActions_[0];
         if (action.perform()) {
           this.pendingActions_.shift();
           if (this.logTimeoutId_) {
@@ -457,7 +457,7 @@ MockFeedback = class {
         console.log(
             'Pending ' + desc + ':\n  ' +
             list.map(function(i) {
-                  var ret = '\'' + i.text + '\'';
+                  let ret = '\'' + i.text + '\'';
                   if ('properties' in i) {
                     ret += ' properties=' + JSON.stringify(i.properties);
                   }
@@ -489,7 +489,7 @@ MockFeedback = class {
      */
     static matchAndConsume_(text, props, pending) {
       for (var i = 0, candidate; candidate = pending[i]; ++i) {
-        var candidateText = candidate.text;
+        let candidateText = candidate.text;
         if (typeof (candidateText) != 'string') {
           candidateText = candidateText.toString();
         }
@@ -497,8 +497,8 @@ MockFeedback = class {
         if (text === candidateText ||
             (text instanceof RegExp && text.test(candidateText)) ||
             (typeof (text) == 'function' && text(candidate))) {
-          var matched = true;
-          for (let prop in props) {
+          let matched = true;
+          for (const prop in props) {
             if (candidate[prop] !== props[prop] &&
                 (!candidate.properties ||
                  candidate.properties[prop] != props[prop])) {
@@ -512,7 +512,7 @@ MockFeedback = class {
         }
       }
       if (candidate) {
-        var consumed = pending.splice(0, i + 1);
+        const consumed = pending.splice(0, i + 1);
         consumed.forEach(function(item) {
           if (item.callback) {
             item.callback();

@@ -28,8 +28,8 @@ PanelCommand = class {
    * Send this command to the ChromeVox Panel window.
    */
   send() {
-    var views = chrome.extension.getViews();
-    for (var i = 0; i < views.length; i++) {
+    const views = chrome.extension.getViews();
+    for (let i = 0; i < views.length; i++) {
       if (views[i].location.href.indexOf('background/panel/panel.html') > 0) {
         views[i].postMessage(JSON.stringify(this), window.location.origin);
       }

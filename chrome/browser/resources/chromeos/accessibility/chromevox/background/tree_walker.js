@@ -35,7 +35,7 @@ AutomationTreeWalkerPhase = {
  *          skipInitialAncestry: (boolean|undefined),
  *          skipInitialSubtree: (boolean|undefined)}}
  */
-var AutomationTreeWalkerRestriction;
+let AutomationTreeWalkerRestriction;
 
 /**
  * An AutomationTreeWalker provides an incremental pre order traversal of the
@@ -85,7 +85,7 @@ AutomationTreeWalker = class {
      * @type {chrome.automation.AutomationNode} @private
      */
     this.backwardAncestor_ = node.parent || null;
-    var restrictions = opt_restrictions || {};
+    const restrictions = opt_restrictions || {};
 
     this.visitPred_ = function(node) {
       if (this.skipInitialAncestry_ &&
@@ -177,7 +177,7 @@ AutomationTreeWalker = class {
       }
     }
 
-    var searchNode = node;
+    let searchNode = node;
     while (searchNode) {
       // We have crossed out of the initial node's subtree for either a
       // sibling or parent move.

@@ -54,13 +54,13 @@ OptionsPage = class {
       $('virtual_braille_display_columns_input').value =
           items['virtualBrailleColumns'];
     });
-    var changeToInterleave =
+    const changeToInterleave =
         Msgs.getMsg('options_change_current_display_style_interleave');
-    var changeToSideBySide =
+    const changeToSideBySide =
         Msgs.getMsg('options_change_current_display_style_side_by_side');
-    var currentlyDisplayingInterleave =
+    const currentlyDisplayingInterleave =
         Msgs.getMsg('options_current_display_style_interleave');
-    var currentlyDisplayingSideBySide =
+    const currentlyDisplayingSideBySide =
         Msgs.getMsg('options_current_display_style_side_by_side');
     $('changeDisplayStyle').textContent =
         localStorage['brailleSideBySide'] === 'true' ? changeToInterleave :
@@ -70,9 +70,9 @@ OptionsPage = class {
         currentlyDisplayingSideBySide :
         currentlyDisplayingInterleave;
 
-    var showEventStreamFilters =
+    const showEventStreamFilters =
         Msgs.getMsg('options_show_event_stream_filters');
-    var hideEventStreamFilters =
+    const hideEventStreamFilters =
         Msgs.getMsg('options_hide_event_stream_filters');
     $('toggleEventStreamFilters').textContent = showEventStreamFilters;
     OptionsPage.disableEventStreamFilterCheckBoxes(
@@ -154,19 +154,19 @@ OptionsPage = class {
       }
     });
 
-    var clearVirtualDisplay = function() {
-      var groups = [];
-      var sizeOfDisplay =
+    const clearVirtualDisplay = function() {
+      const groups = [];
+      const sizeOfDisplay =
           parseInt($('virtual_braille_display_rows_input').innerHTML, 10) *
           parseInt($('virtual_braille_display_columns_input').innerHTML, 10);
-      for (var i = 0; i < sizeOfDisplay; i++) {
+      for (let i = 0; i < sizeOfDisplay; i++) {
         groups.push(['X', 'X']);
       }
       (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, {groups})).send();
     };
 
     $('changeDisplayStyle').addEventListener('click', function(evt) {
-      var sideBySide = localStorage['brailleSideBySide'] !== 'true';
+      const sideBySide = localStorage['brailleSideBySide'] !== 'true';
       localStorage['brailleSideBySide'] = sideBySide;
       $('changeDisplayStyle').textContent =
           sideBySide ? changeToInterleave : changeToSideBySide;
@@ -184,7 +184,7 @@ OptionsPage = class {
     /** @type {!BluetoothBrailleDisplayUI} */
     OptionsPage.bluetoothBrailleDisplayUI = new BluetoothBrailleDisplayUI();
 
-    var bluetoothBraille = $('bluetoothBraille');
+    const bluetoothBraille = $('bluetoothBraille');
     if (bluetoothBraille) {
       OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
     }
@@ -196,12 +196,12 @@ OptionsPage = class {
    * pref.
    */
   static update() {
-    var prefs = OptionsPage.prefs.getPrefs();
-    for (var key in prefs) {
+    const prefs = OptionsPage.prefs.getPrefs();
+    for (const key in prefs) {
       // TODO(rshearer): 'active' is a pref, but there's no place in the
       // options page to specify whether you want ChromeVox active.
-      var elements = document.querySelectorAll('*[name="' + key + '"]');
-      for (var i = 0; i < elements.length; i++) {
+      const elements = document.querySelectorAll('*[name="' + key + '"]');
+      for (let i = 0; i < elements.length; i++) {
         OptionsPage.setValue(elements[i], prefs[key]);
       }
     }
@@ -211,13 +211,13 @@ OptionsPage = class {
    * Populates the voices select with options.
    */
   static populateVoicesSelect() {
-    var select = $('voices');
+    const select = $('voices');
 
     function setVoiceList() {
-      var selectedVoice =
+      const selectedVoice =
           chrome.extension.getBackgroundPage()['getCurrentVoice']();
-      let addVoiceOption = (visibleVoiceName, voiceName) => {
-        let option = document.createElement('option');
+      const addVoiceOption = (visibleVoiceName, voiceName) => {
+        const option = document.createElement('option');
         option.voiceName = voiceName;
         option.innerText = visibleVoiceName;
         if (selectedVoice === voiceName) {
@@ -248,8 +248,8 @@ OptionsPage = class {
     setVoiceList();
 
     select.addEventListener('change', function(evt) {
-      var selIndex = select.selectedIndex;
-      var sel = select.options[selIndex];
+      const selIndex = select.selectedIndex;
+      const sel = select.options[selIndex];
       chrome.storage.local.set({voiceName: sel.voiceName});
     }, true);
   }
@@ -258,11 +258,11 @@ OptionsPage = class {
    * Populates the braille select control.
    */
   static populateBrailleTablesSelect() {
-    var tables = OptionsPage.brailleTables;
-    var populateSelect = function(node, dots) {
-      var activeTable = localStorage[node.id] || localStorage['brailleTable'];
+    const tables = OptionsPage.brailleTables;
+    const populateSelect = function(node, dots) {
+      const activeTable = localStorage[node.id] || localStorage['brailleTable'];
       // Gather the display names and sort them according to locale.
-      var items = [];
+      const items = [];
       for (var i = 0, table; table = tables[i]; i++) {
         if (table.dots !== dots) {
           continue;
@@ -273,7 +273,7 @@ OptionsPage = class {
         return a.name.localeCompare(b.name);
       });
       for (var i = 0, item; item = items[i]; ++i) {
-        var elem = document.createElement('option');
+        const elem = document.createElement('option');
         elem.id = item.id;
         elem.textContent = item.name;
         if (item.id == activeTable) {
@@ -282,15 +282,15 @@ OptionsPage = class {
         node.appendChild(elem);
       }
     };
-    var select6 = $('brailleTable6');
-    var select8 = $('brailleTable8');
+    const select6 = $('brailleTable6');
+    const select8 = $('brailleTable8');
     populateSelect(select6, '6');
     populateSelect(select8, '8');
 
-    var handleBrailleSelect = function(node) {
+    const handleBrailleSelect = function(node) {
       return function(evt) {
-        var selIndex = node.selectedIndex;
-        var sel = node.options[selIndex];
+        const selIndex = node.selectedIndex;
+        const sel = node.options[selIndex];
         localStorage['brailleTable'] = sel.id;
         localStorage[node.id] = sel.id;
         OptionsPage.getBrailleTranslatorManager().refresh(
@@ -301,9 +301,9 @@ OptionsPage = class {
     select6.addEventListener('change', handleBrailleSelect(select6), true);
     select8.addEventListener('change', handleBrailleSelect(select8), true);
 
-    var tableTypeButton = $('brailleTableType');
-    var updateTableType = function(setFocus) {
-      var currentTableType =
+    const tableTypeButton = $('brailleTableType');
+    const updateTableType = function(setFocus) {
+      const currentTableType =
           localStorage['brailleTableType'] || 'brailleTable6';
       if (currentTableType == 'brailleTable6') {
         select6.parentElement.style.display = 'block';
@@ -332,7 +332,7 @@ OptionsPage = class {
     updateTableType(false);
 
     tableTypeButton.addEventListener('click', function(evt) {
-      var oldTableType = localStorage['brailleTableType'];
+      const oldTableType = localStorage['brailleTableType'];
       localStorage['brailleTableType'] =
           oldTableType == 'brailleTable6' ? 'brailleTable8' : 'brailleTable6';
       updateTableType(true);
@@ -360,8 +360,8 @@ OptionsPage = class {
    * @param {boolean} disable
    */
   static disableEventStreamFilterCheckBoxes(disable) {
-    var filters = document.querySelectorAll('.option-eventstream > input');
-    for (var i = 0; i < filters.length; i++) {
+    const filters = document.querySelectorAll('.option-eventstream > input');
+    for (let i = 0; i < filters.length; i++) {
       filters[i].disabled = disable;
     }
   }
@@ -371,7 +371,7 @@ OptionsPage = class {
    * @param {boolean} enabled
    */
   static setAllEventStreamLoggingFilters(enabled) {
-    for (let checkbox of document.querySelectorAll(
+    for (const checkbox of document.querySelectorAll(
              '.option-eventstream > input')) {
       if (checkbox.checked != enabled) {
         OptionsPage.setEventStreamFilter(checkbox.name, enabled);
@@ -399,7 +399,7 @@ OptionsPage = class {
    */
   static eventListener(event) {
     window.setTimeout(function() {
-      var target = event.target;
+      const target = event.target;
       if (target.id == 'brailleWordWrap') {
         chrome.storage.local.set({brailleWordWrap: target.checked});
       } else if (target.className.indexOf('logging') != -1) {
@@ -413,17 +413,17 @@ OptionsPage = class {
         if (target.tagName == 'INPUT' && target.type == 'checkbox') {
           OptionsPage.prefs.setPref(target.name, target.checked);
         } else if (target.tagName == 'INPUT' && target.type == 'radio') {
-          var key = target.name;
-          var elements = document.querySelectorAll('*[name="' + key + '"]');
-          for (var i = 0; i < elements.length; i++) {
+          const key = target.name;
+          const elements = document.querySelectorAll('*[name="' + key + '"]');
+          for (let i = 0; i < elements.length; i++) {
             if (elements[i].checked) {
               OptionsPage.prefs.setPref(target.name, elements[i].value);
             }
           }
         } else if (target.tagName == 'SELECT') {
-          var selIndex = target.selectedIndex;
-          var sel = target.options[selIndex];
-          var value = sel ? sel.id : 'audioNormal';
+          const selIndex = target.selectedIndex;
+          const sel = target.options[selIndex];
+          const value = sel ? sel.id : 'audioNormal';
           OptionsPage.prefs.setPref(target.id, value);
         }
       }
@@ -473,7 +473,7 @@ var handleNumericalInputPref = function(id, pref) {
         $(id).value = items[pref];
       });
     } else {
-      var items = {};
+      const items = {};
       items[pref] = $(id).value;
       chrome.storage.local.set(items);
     }

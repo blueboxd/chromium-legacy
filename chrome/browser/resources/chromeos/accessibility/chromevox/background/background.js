@@ -43,11 +43,11 @@ goog.require('NavBraille');
 goog.require('NodeIdentifier');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var EventType = chrome.automation.EventType;
-var RoleType = chrome.automation.RoleType;
-var StateType = chrome.automation.StateType;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const EventType = chrome.automation.EventType;
+const RoleType = chrome.automation.RoleType;
+const StateType = chrome.automation.StateType;
 
 /**
  * ChromeVox2 background page.
@@ -97,7 +97,7 @@ Background = class extends ChromeVoxState {
 
     Object.defineProperty(ChromeVox, 'typingEcho', {
       get() {
-        var typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
+        const typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
         return typingEcho;
       },
       set(value) {
@@ -204,19 +204,19 @@ Background = class extends ChromeVoxState {
       return;
     }
 
-    var start = this.currentRange_.start.node;
+    const start = this.currentRange_.start.node;
     start.makeVisible();
 
-    var root = AutomationUtil.getTopLevelRoot(start);
+    const root = AutomationUtil.getTopLevelRoot(start);
     if (!root || root.role == RoleType.DESKTOP || root == start) {
       return;
     }
 
-    var position = {};
-    var loc = start.unclippedLocation;
+    const position = {};
+    const loc = start.unclippedLocation;
     position.x = loc.left + loc.width / 2;
     position.y = loc.top + loc.height / 2;
-    var url = root.docUrl;
+    let url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
     ChromeVox.position[url] = position;
   }
@@ -228,10 +228,10 @@ Background = class extends ChromeVoxState {
     opt_focus = opt_focus === undefined ? true : opt_focus;
     opt_speechProps = opt_speechProps || {};
     opt_skipSettingSelection = opt_skipSettingSelection || false;
-    var prevRange = this.currentRange_;
+    const prevRange = this.currentRange_;
 
     // Specialization for math output.
-    var skipOutput = false;
+    let skipOutput = false;
     if (MathHandler.init(range)) {
       skipOutput = MathHandler.instance.speak();
       opt_focus = false;
@@ -243,9 +243,9 @@ Background = class extends ChromeVoxState {
 
     this.setCurrentRange(range);
 
-    var o = new Output();
-    var selectedRange;
-    var msg;
+    const o = new Output();
+    let selectedRange;
+    let msg;
 
     if (this.pageSel_ && this.pageSel_.isValid() && range.isValid() &&
         !opt_skipSettingSelection) {
@@ -253,10 +253,10 @@ Background = class extends ChromeVoxState {
       o.withoutHints();
 
       // Selection across roots isn't supported.
-      var pageRootStart = this.pageSel_.start.node.root;
-      var pageRootEnd = this.pageSel_.end.node.root;
-      var curRootStart = range.start.node.root;
-      var curRootEnd = range.end.node.root;
+      const pageRootStart = this.pageSel_.start.node.root;
+      const pageRootEnd = this.pageSel_.end.node.root;
+      const curRootStart = range.start.node.root;
+      const curRootEnd = range.end.node.root;
 
       // Disallow crossing over the start of the page selection and roots.
       if (pageRootStart != pageRootEnd || pageRootStart != curRootStart ||
@@ -272,7 +272,7 @@ Background = class extends ChromeVoxState {
         // selections. It is important to keep track of the directedness in
         // places, but when comparing to other ranges, take the undirected
         // range.
-        var dir = this.pageSel_.normalize().compare(range);
+        const dir = this.pageSel_.normalize().compare(range);
 
         if (dir) {
           // Directed expansion.
@@ -282,7 +282,7 @@ Background = class extends ChromeVoxState {
           msg = '@unselected';
           selectedRange = prevRange;
         }
-        var wasBackwardSel =
+        const wasBackwardSel =
             this.pageSel_.start.compare(this.pageSel_.end) == Dir.BACKWARD ||
             dir == Dir.BACKWARD;
         this.pageSel_ = new cursors.Range(
@@ -293,7 +293,7 @@ Background = class extends ChromeVoxState {
       }
     } else if (!opt_skipSettingSelection) {
       // Ensure we don't select the editable when we first encounter it.
-      var lca = null;
+      let lca = null;
       if (range.start.node && prevRange.start.node) {
         lca = AutomationUtil.getLeastCommonAncestor(
             prevRange.start.node, range.start.node);
@@ -322,7 +322,7 @@ Background = class extends ChromeVoxState {
    * Open the options page in a new tab.
    */
   showOptionsPage() {
-    var optionsPage = {url: 'background/options/options.html'};
+    const optionsPage = {url: 'background/options/options.html'};
     chrome.tabs.create(optionsPage);
   }
 
@@ -339,14 +339,14 @@ Background = class extends ChromeVoxState {
    * @private
    */
   onMessage_(msg, port) {
-    var target = msg['target'];
-    var action = msg['action'];
+    const target = msg['target'];
+    const action = msg['action'];
 
     switch (target) {
       case 'next':
         if (action == 'getIsClassicEnabled') {
-          var url = msg['url'];
-          var isClassicEnabled = false;
+          const url = msg['url'];
+          const isClassicEnabled = false;
           port.postMessage({target: 'next', isClassicEnabled});
         } else if (action == 'onCommand') {
           CommandHandler.onCommand(msg['command']);
@@ -365,7 +365,7 @@ Background = class extends ChromeVoxState {
       return;
     }
 
-    var root = AutomationUtil.getTopLevelRoot(this.currentRange.start.node);
+    const root = AutomationUtil.getTopLevelRoot(this.currentRange.start.node);
     if (root) {
       this.focusRecoveryMap_.set(root, this.currentRange);
     }
@@ -382,7 +382,7 @@ Background = class extends ChromeVoxState {
    * @private
    */
   onClipboardEvent_(evt) {
-    var text = '';
+    let text = '';
     if (evt.type == 'paste') {
       if (this.preventPasteOutput_) {
         this.preventPasteOutput_ = false;
@@ -392,11 +392,11 @@ Background = class extends ChromeVoxState {
       ChromeVox.tts.speak(Msgs.getMsg(evt.type, [text]), QueueMode.QUEUE);
     } else if (evt.type == 'copy' || evt.type == 'cut') {
       this.preventPasteOutput_ = true;
-      var textarea = document.createElement('textarea');
+      const textarea = document.createElement('textarea');
       document.body.appendChild(textarea);
       textarea.focus();
       document.execCommand('paste');
-      var clipboardContent = textarea.value;
+      const clipboardContent = textarea.value;
       textarea.remove();
       ChromeVox.tts.speak(
           Msgs.getMsg(evt.type, [clipboardContent]), QueueMode.FLUSH);
@@ -421,13 +421,13 @@ Background = class extends ChromeVoxState {
    * @private
    */
   setFocusToRange_(range, prevRange) {
-    var start = range.start.node;
-    var end = range.end.node;
+    const start = range.start.node;
+    const end = range.end.node;
 
     // First, see if we've crossed a root. Remove once webview handles focus
     // correctly.
     if (prevRange && prevRange.start.node && start) {
-      var entered =
+      const entered =
           AutomationUtil.getUniqueAncestors(prevRange.start.node, start);
 
       entered
@@ -446,7 +446,7 @@ Background = class extends ChromeVoxState {
       return;
     }
 
-    var isFocusableLinkOrControl = function(node) {
+    const isFocusableLinkOrControl = function(node) {
       return node.state[StateType.FOCUSABLE] &&
           AutomationPredicate.linkOrControl(node);
     };
@@ -468,7 +468,7 @@ Background = class extends ChromeVoxState {
     }
 
     // If a common ancestor of |start| and |end| is a link, focus that.
-    var ancestor = AutomationUtil.getLeastCommonAncestor(start, end);
+    let ancestor = AutomationUtil.getLeastCommonAncestor(start, end);
     while (ancestor && ancestor.root == start.root) {
       if (isFocusableLinkOrControl(ancestor)) {
         if (!ancestor.state[StateType.FOCUSED]) {
@@ -511,5 +511,4 @@ Background = class extends ChromeVoxState {
 
 
 new Background();
-
 });  // goog.scope

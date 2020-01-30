@@ -9,7 +9,7 @@ goog.provide('FindHandler');
 goog.require('Output');
 
 goog.scope(function() {
-var TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
+const TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
 
 /**
  * Initializes this module.
@@ -38,11 +38,10 @@ FindHandler.onTextMatch_ = function(evt) {
     return;
   }
 
-  var range = cursors.Range.fromNode(evt.target);
+  const range = cursors.Range.fromNode(evt.target);
   ChromeVoxState.instance.setCurrentRange(range);
   new Output()
       .withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
       .go();
 };
-
 });  // goog.scope

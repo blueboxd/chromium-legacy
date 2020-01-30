@@ -91,12 +91,12 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     return;
   }
 
-  var stringAttributeValue = node[stringAttribute];
+  const stringAttributeValue = node[stringAttribute];
   if (!stringAttributeValue) {
     return;
   }
 
-  var languageAnnotation;
+  let languageAnnotation;
   // Quick note:
   // The decideNewLanguage function, which contains the core language switching
   // logic, is setup to prefer sub-node switching if the detected language's
@@ -106,7 +106,7 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     languageAnnotation =
         node.languageAnnotationForStringAttribute(stringAttribute);
   } else {
-    var nodeLevelLanguageData = {};
+    const nodeLevelLanguageData = {};
     // Ensure that we span the entire stringAttributeValue.
     nodeLevelLanguageData.startIndex = 0;
     nodeLevelLanguageData.endIndex = stringAttributeValue.length;
@@ -126,18 +126,18 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
   // Split output based on language annotation.
   // Each object in languageAnnotation contains a language, probability,
   // and start/end indices that define a substring of stringAttributeValue.
-  for (var i = 0; i < languageAnnotation.length; ++i) {
-    var speechProps = new Output.SpeechProperties();
-    var startIndex = languageAnnotation[i].startIndex;
-    var endIndex = languageAnnotation[i].endIndex;
-    var language = languageAnnotation[i].language.toLowerCase();
-    var probability = languageAnnotation[i].probability;
+  for (let i = 0; i < languageAnnotation.length; ++i) {
+    const speechProps = new Output.SpeechProperties();
+    const startIndex = languageAnnotation[i].startIndex;
+    const endIndex = languageAnnotation[i].endIndex;
+    const language = languageAnnotation[i].language.toLowerCase();
+    const probability = languageAnnotation[i].probability;
 
-    var outputString = LanguageSwitching.buildOutputString(
+    let outputString = LanguageSwitching.buildOutputString(
         stringAttributeValue, startIndex, endIndex);
-    var newLanguage =
+    const newLanguage =
         LanguageSwitching.decideNewLanguage(node, language, probability);
-    var displayLanguage = '';
+    let displayLanguage = '';
 
     if (LanguageSwitching.didLanguageSwitch(newLanguage)) {
       LanguageSwitching.currentLanguage_ = newLanguage;
@@ -189,7 +189,7 @@ LanguageSwitching.decideNewLanguage = function(
     return subNodeLanguage;
   }
 
-  var nodeLevelLanguage = node.detectedLanguage || node.language;
+  let nodeLevelLanguage = node.detectedLanguage || node.language;
   // We do not have enough information to make a confident language assignment,
   // so we fall back on the UI language of the browser.
   if (!nodeLevelLanguage) {
@@ -213,9 +213,9 @@ LanguageSwitching.decideNewLanguage = function(
  * @return {string}
  */
 LanguageSwitching.buildOutputString = function(text, startIndex, endIndex) {
-  var result = '';
-  var textSymbolArray = [...text];
-  for (var i = startIndex; i < endIndex; ++i) {
+  let result = '';
+  const textSymbolArray = [...text];
+  for (let i = startIndex; i < endIndex; ++i) {
     result += textSymbolArray[i];
   }
   return result;
@@ -239,8 +239,9 @@ LanguageSwitching.buildOutputString = function(text, startIndex, endIndex) {
  */
 LanguageSwitching.didLanguageSwitch = function(newLanguage) {
   // Compare language components of current and new language codes.
-  var newLanguageComponents = newLanguage.split('-');
-  var currentLanguageComponents = LanguageSwitching.currentLanguage_.split('-');
+  const newLanguageComponents = newLanguage.split('-');
+  const currentLanguageComponents =
+      LanguageSwitching.currentLanguage_.split('-');
   if (newLanguageComponents[0] !== currentLanguageComponents[0]) {
     return true;
   }
@@ -259,7 +260,7 @@ LanguageSwitching.isValidLanguageCode = function(languageCode) {
   // valid language component for the engine not to crash.
   // For example, given the language code 'en-US', 'en' is the language
   // component.
-  var langComponentArray = languageCode.split('-');
+  const langComponentArray = languageCode.split('-');
   if (!langComponentArray || (langComponentArray.length === 0)) {
     return false;
   }
@@ -290,16 +291,16 @@ LanguageSwitching.isValidLanguageCode = function(languageCode) {
  */
 LanguageSwitching.hasVoiceForLanguage = function(languageCode) {
   // Extract language from languageCode.
-  var languageCodeComponents = languageCode.split('-');
+  const languageCodeComponents = languageCode.split('-');
   if (!languageCodeComponents || (languageCodeComponents.length === 0)) {
     return false;
   }
-  var language = languageCodeComponents[0];
-  for (var i = 0; i < LanguageSwitching.availableVoices_.length; ++i) {
+  const language = languageCodeComponents[0];
+  for (let i = 0; i < LanguageSwitching.availableVoices_.length; ++i) {
     // Note: availableVoices_[i].lang is always in the form of
     // 'language-region'. See link for documentation on chrome.tts api:
     // https://developer.chrome.com/apps/tts#type-TtsVoice
-    var candidateLanguage =
+    const candidateLanguage =
         LanguageSwitching.availableVoices_[i].lang.toLowerCase().split('-')[0];
     if (language === candidateLanguage) {
       return true;

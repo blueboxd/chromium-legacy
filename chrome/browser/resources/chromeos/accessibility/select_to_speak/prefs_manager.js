@@ -6,7 +6,7 @@
  * Manages getting and storing user preferences.
  * @constructor
  */
-let PrefsManager = function() {
+const PrefsManager = function() {
   /** @private {?string} */
   this.voiceNameFromPrefs_ = null;
 
@@ -134,7 +134,7 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
   }
   // Get global prefs using promises so that we can receive both pitch and
   // rate before doing migration logic.
-  let getPrefsPromises = [];
+  const getPrefsPromises = [];
   getPrefsPromises.push(new Promise((resolve, reject) => {
     chrome.settingsPrivate.getPref('settings.tts.speech_rate', (pref) => {
       if (pref === undefined) {
@@ -156,12 +156,13 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
   Promise.all(getPrefsPromises)
       .then(
           () => {
-            let stsOptionsModified = stsRate != PrefsManager.DEFAULT_RATE ||
+            const stsOptionsModified = stsRate != PrefsManager.DEFAULT_RATE ||
                 stsPitch != PrefsManager.DEFAULT_PITCH;
-            let globalOptionsModified =
+            const globalOptionsModified =
                 globalRate != PrefsManager.DEFAULT_RATE ||
                 globalPitch != PrefsManager.DEFAULT_PITCH;
-            let optionsEqual = stsRate == globalRate && stsPitch == globalPitch;
+            const optionsEqual =
+                stsRate == globalRate && stsPitch == globalPitch;
             if (optionsEqual) {
               // No need to write global prefs if all the prefs are the same
               // as defaults. Just remove STS rate and pitch.
@@ -172,7 +173,7 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
               // Set global prefs using promises so we can set both rate and
               // pitch successfully before removing the preferences from
               // chrome.storage.sync.
-              let setPrefsPromises = [];
+              const setPrefsPromises = [];
               setPrefsPromises.push(new Promise((resolve, reject) => {
                 chrome.settingsPrivate.setPref(
                     'settings.tts.speech_rate', stsRate,
@@ -273,7 +274,7 @@ PrefsManager.prototype.initPreferences = function() {
  * @public
  */
 PrefsManager.prototype.speechOptions = function() {
-  let options = {enqueue: true};
+  const options = {enqueue: true};
 
   // To use the default (system) voice: don't specify options['voiceName'].
   if (this.voiceNameFromPrefs_ === PrefsManager.SYSTEM_VOICE) {

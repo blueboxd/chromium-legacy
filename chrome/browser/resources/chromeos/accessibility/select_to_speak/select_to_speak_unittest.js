@@ -19,12 +19,12 @@ SelectToSpeakUnitTest.prototype = {
 };
 
 TEST_F('SelectToSpeakUnitTest', 'getGSuiteAppRoot', function() {
-  let root = {url: 'https://docs.google.com/presentation/p/cats_r_awesome'};
-  let div1 = {root};
-  let frame1 = {url: 'about:blank', parent: div1};
-  let div2 = {root: frame1};
-  let frame2 = {url: 'about:blank', parent: div2};
-  let focus = {root: frame2};
+  const root = {url: 'https://docs.google.com/presentation/p/cats_r_awesome'};
+  const div1 = {root};
+  const frame1 = {url: 'about:blank', parent: div1};
+  const div2 = {root: frame1};
+  const frame2 = {url: 'about:blank', parent: div2};
+  const focus = {root: frame2};
   assertEquals(getGSuiteAppRoot(focus), root);
   assertEquals(getGSuiteAppRoot(div2), root);
 
@@ -33,8 +33,8 @@ TEST_F('SelectToSpeakUnitTest', 'getGSuiteAppRoot', function() {
   assertEquals(getGSuiteAppRoot(focus), root);
 
   // GSuite app embedded in something else
-  let parent = {url: 'https://www.has_embedded_doc.com'};
-  let div3 = {root: parent};
+  const parent = {url: 'https://www.has_embedded_doc.com'};
+  const div3 = {root: parent};
   root.parent = div3;
   assertEquals(getGSuiteAppRoot(focus), root);
   assertEquals(getGSuiteAppRoot(div2), root);

@@ -63,9 +63,12 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
       data->unique_position = metadata->unique_position();
       // Assign specifics only for the non-deletion case. In case of deletion,
       // EntityData should contain empty specifics to indicate deletion.
+      // TODO(crbug.com/978430): has_final_guid() should be enough below
+      // assuming that all codepaths that populate the final GUID make sure the
+      // local model has the appropriate GUID too (and update if needed).
       data->specifics = CreateSpecificsFromBookmarkNode(
           node, bookmark_model_, /*force_favicon_load=*/true,
-          entity->has_final_guid());
+          entity->final_guid_matches(node->guid()));
       data->name = data->specifics.bookmark().title();
     }
     auto request = std::make_unique<syncer::CommitRequestData>();

@@ -14,7 +14,7 @@ goog.provide('JaPhoneticData');
  * this information for Hiragana, Katakana, and half-width characters.
  */
 JaPhoneticData.init = function() {
-  for (var [char, reading] of Object.entries(
+  for (const [char, reading] of Object.entries(
            JaPhoneticData.phoneticMap_ || {})) {
     if (JaPhoneticData.isHiragana(char)) {
       JaPhoneticData.phoneticMap_[char] = reading + ' ひらがな';

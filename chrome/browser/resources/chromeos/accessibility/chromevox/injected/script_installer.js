@@ -51,7 +51,7 @@ ScriptInstaller.installScript = function(
  * @param {string} uid Id of the script node.
  */
 ScriptInstaller.uninstallScript = function(uid) {
-  var scriptNode;
+  let scriptNode;
   if (scriptNode = document.querySelector('script[' + uid + ']')) {
     scriptNode.remove();
   }
@@ -80,25 +80,25 @@ ScriptInstaller.installScriptHelper_ = function(
     }
   }
 
-  var scriptSrc = srcs.shift();
+  const scriptSrc = srcs.shift();
   if (!scriptSrc) {
     next();
     return;
   }
 
-  var xhr = new XMLHttpRequest();
-  var url = scriptSrc + '?' + new Date().getTime();
+  const xhr = new XMLHttpRequest();
+  const url = scriptSrc + '?' + new Date().getTime();
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
-      var scriptText = xhr.responseText;
-      var apiScript = document.createElement('script');
+      const scriptText = xhr.responseText;
+      const apiScript = document.createElement('script');
       apiScript.type = 'text/javascript';
       apiScript.setAttribute(uid, '1');
       apiScript.textContent = scriptText;
       if (opt_chromevoxScriptBase) {
         apiScript.setAttribute('chromevoxScriptBase', opt_chromevoxScriptBase);
       }
-      var scriptOwner = document.head || document.body;
+      const scriptOwner = document.head || document.body;
       scriptOwner.appendChild(apiScript);
       next();
     }

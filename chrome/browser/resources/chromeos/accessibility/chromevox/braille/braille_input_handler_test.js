@@ -123,7 +123,7 @@ FakeEditor = class {
    *     start to indicate a cursor.
    */
   assertContentIs(text, selectionStart, opt_selectionEnd) {
-    var selectionEnd =
+    const selectionEnd =
         goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
     assertEquals(text, this.text_);
     assertEquals(selectionStart, this.selectionStart_);
@@ -153,20 +153,20 @@ FakeEditor = class {
    * @private
    */
   message_(msg) {
-    var listener = this.port_.onMessage.getListener();
+    const listener = this.port_.onMessage.getListener();
     assertNotEquals(null, listener);
     listener(msg);
   }
 
   createValue(text, opt_selStart, opt_selEnd, opt_textOffset) {
-    var spannable = new Spannable(text, new ValueSpan(opt_textOffset || 0));
+    const spannable = new Spannable(text, new ValueSpan(opt_textOffset || 0));
     if (goog.isDef(opt_selStart)) {
       opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
       // TODO(plundblad): This looses the distinction between the selection
       // anchor (start) and focus (end).  We should use that information to
       // decide where to pan the braille display.
       if (opt_selStart > opt_selEnd) {
-        var temp = opt_selStart;
+        const temp = opt_selStart;
         opt_selStart = opt_selEnd;
         opt_selEnd = temp;
       }
@@ -182,10 +182,10 @@ FakeEditor = class {
    * @private
    */
   callOnDisplayContentChanged_() {
-    var content =
+    const content =
         this.createValue(this.text_, this.selectionStart_, this.selectionEnd_);
-    var grabExtraCells = function() {
-      var span = content.getSpanInstanceOf(ExtraCellsSpan);
+    const grabExtraCells = function() {
+      const span = content.getSpanInstanceOf(ExtraCellsSpan);
       assertNotEquals(null, span);
       // Convert the ArrayBuffer to a normal array for easier comparision.
       this.extraCells_ =
@@ -278,7 +278,7 @@ function FakePort() {
  * Mapping from braille cells to Unicode characters.
  * @const Array<Array<string> >
  */
-var UNCONTRACTED_TABLE = [
+const UNCONTRACTED_TABLE = [
   ['0', ' '],   ['1', 'a'],    ['12', 'b'],    ['14', 'c'],   ['145', 'd'],
   ['15', 'e'],  ['124', 'f'],  ['1245', 'g'],  ['125', 'h'],  ['24', 'i'],
   ['245', 'j'], ['13', 'k'],   ['123', 'l'],   ['134', 'm'],  ['1345', 'n'],
@@ -297,7 +297,7 @@ var UNCONTRACTED_TABLE = [
  * table.  First match wins.
  * @const
  */
-var CONTRACTED_TABLE = [
+const CONTRACTED_TABLE = [
   ['12 1235 123', 'braille'], ['^12$', 'but'], ['1456', 'this']
 ].concat(UNCONTRACTED_TABLE);
 
@@ -313,8 +313,8 @@ FakeTranslator = class {
   constructor(table, opt_capitalize) {
     /** @private */
     this.table_ = table.map(function(entry) {
-      var cells = entry[0];
-      var result = [];
+      let cells = entry[0];
+      const result = [];
       if (cells[0] === '^') {
         result.start = true;
         cells = cells.substring(1);
@@ -337,11 +337,11 @@ FakeTranslator = class {
    * @param {function(?string)} callback Callback for result.
    */
   backTranslate(cells, callback) {
-    var cellsArray = new Uint8Array(cells);
-    var result = '';
-    var pos = 0;
+    const cellsArray = new Uint8Array(cells);
+    let result = '';
+    let pos = 0;
     while (pos < cellsArray.length) {
-      var match = null;
+      let match = null;
       outer: for (var i = 0, entry; entry = this.table_[i]; ++i) {
         if (pos + entry[0].length > cellsArray.length) {
           continue;
@@ -420,11 +420,11 @@ function cellsToArray(cells) {
     return [];
   }
   return cells.split(/\s+/).map(function(cellString) {
-    var cell = 0;
+    let cell = 0;
     assertTrue(cellString.length > 0);
     if (cellString != '0') {
-      for (var i = 0; i < cellString.length; ++i) {
-        var dot = cellString.charCodeAt(i) - '0'.charCodeAt(0);
+      for (let i = 0; i < cellString.length; ++i) {
+        const dot = cellString.charCodeAt(i) - '0'.charCodeAt(0);
         assertTrue(dot >= 1);
         assertTrue(dot <= 8);
         cell |= 1 << (dot - 1);
@@ -455,7 +455,7 @@ ChromeVoxBrailleInputHandlerUnitTest = class extends ChromeVoxUnitTestBase {
    */
   sendCells(cells) {
     return cellsToArray(cells).reduce(function(prevResult, cell) {
-      var event = {command: BrailleKeyCommand.DOTS, brailleDots: cell};
+      const event = {command: BrailleKeyCommand.DOTS, brailleDots: cell};
       return prevResult && this.inputHandler.onBrailleKeyEvent(event);
     }.bind(this), true);
   }
@@ -467,7 +467,7 @@ ChromeVoxBrailleInputHandlerUnitTest = class extends ChromeVoxUnitTestBase {
    * @return {boolean} Whether the event was handled.
    */
   sendKeyEvent(keyCode) {
-    var event = {
+    const event = {
       command: BrailleKeyCommand.STANDARD_KEY,
       standardKeyCode: keyCode
     };
@@ -502,7 +502,7 @@ ChromeVoxBrailleInputHandlerUnitTest = class extends ChromeVoxUnitTestBase {
   }
 
   storeKeyEvent(event, opt_callback) {
-    var storedCopy = {keyCode: event.keyCode};
+    const storedCopy = {keyCode: event.keyCode};
     if (event.type == 'keydown') {
       this.keyEvents.push(storedCopy);
     } else {
@@ -552,7 +552,7 @@ TEST_F(
 
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'NoTranslator', function() {
-  var editor = this.createEditor();
+  const editor = this.createEditor();
   editor.setContent('blah', 0);
   editor.setActive(true);
   editor.focus('email');
@@ -565,7 +565,7 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'NoTranslator', function() {
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputUncontracted', function() {
   this.translatorManager.setTranslators(this.uncontractedTranslator, null);
-  var editor = this.createEditor();
+  const editor = this.createEditor();
   editor.setActive(true);
 
   // Focus and type in a text field.
@@ -591,7 +591,7 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputUncontracted', function() {
 
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
-  var editor = this.createEditor();
+  const editor = this.createEditor();
   this.translatorManager.setTranslators(
       this.contractedTranslator, this.uncontractedTranslator);
   editor.setContent('', 0);
@@ -653,7 +653,7 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
 TEST_F(
     'ChromeVoxBrailleInputHandlerUnitTest', 'TypingUrlWithContracted',
     function() {
-      var editor = this.createEditor();
+      const editor = this.createEditor();
       this.translatorManager.setTranslators(
           this.contractedTranslator, this.uncontractedTranslator);
       editor.setActive(true);
@@ -676,7 +676,7 @@ TEST_F(
 
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'Backspace', function() {
-  var editor = this.createEditor();
+  const editor = this.createEditor();
   this.translatorManager.setTranslators(
       this.contractedTranslator, this.uncontractedTranslator);
   editor.setActive(true);
@@ -705,7 +705,7 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'Backspace', function() {
 
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'KeysImeNotActive', function() {
-  var editor = this.createEditor();
+  const editor = this.createEditor();
   this.sendKeyEvent('Enter');
   this.sendKeyEvent('ArrowUp');
   assertEqualsJSON([{keyCode: 13}, {keyCode: 38}], this.keyEvents);

@@ -104,8 +104,8 @@ KeyMap = class {
     if (this.commandToKey_ != null) {
       return this.commandToKey_[command] == sequence;
     } else {
-      for (var i = 0; i < this.bindings_.length; i++) {
-        var binding = this.bindings_[i];
+      for (let i = 0; i < this.bindings_.length; i++) {
+        const binding = this.bindings_[i];
         if (binding.command == command && binding.sequence == sequence) {
           return true;
         }
@@ -123,8 +123,8 @@ KeyMap = class {
     if (this.commandToKey_ != null) {
       return this.commandToKey_[command] != undefined;
     } else {
-      for (var i = 0; i < this.bindings_.length; i++) {
-        var binding = this.bindings_[i];
+      for (let i = 0; i < this.bindings_.length; i++) {
+        const binding = this.bindings_[i];
         if (binding.command == command) {
           return true;
         }
@@ -139,8 +139,8 @@ KeyMap = class {
    * @return {boolean} Whether 'key' has a binding.
    */
   hasKey(key) {
-    for (var i = 0; i < this.bindings_.length; i++) {
-      var binding = this.bindings_[i];
+    for (let i = 0; i < this.bindings_.length; i++) {
+      const binding = this.bindings_[i];
       if (binding.sequence.equals(key)) {
         return true;
       }
@@ -155,8 +155,8 @@ KeyMap = class {
    */
   commandForKey(key) {
     if (key != null) {
-      for (var i = 0; i < this.bindings_.length; i++) {
-        var binding = this.bindings_[i];
+      for (let i = 0; i < this.bindings_.length; i++) {
+        const binding = this.bindings_[i];
         if (binding.sequence.equals(key)) {
           return binding.command;
         }
@@ -176,8 +176,8 @@ KeyMap = class {
       return [this.commandToKey_[command]];
     } else {
       var keySequenceArray = [];
-      for (var i = 0; i < this.bindings_.length; i++) {
-        var binding = this.bindings_[i];
+      for (let i = 0; i < this.bindings_.length; i++) {
+        const binding = this.bindings_[i];
         if (binding.command == command) {
           keySequenceArray.push(binding.sequence);
         }
@@ -195,11 +195,11 @@ KeyMap = class {
    * @return {boolean} True if there were no merge conflicts.
    */
   merge(inputMap) {
-    var keys = inputMap.keys();
-    var cleanMerge = true;
-    for (var i = 0; i < keys.length; ++i) {
-      var key = keys[i];
-      var command = inputMap.commandForKey(key);
+    const keys = inputMap.keys();
+    let cleanMerge = true;
+    for (let i = 0; i < keys.length; ++i) {
+      const key = keys[i];
+      const command = inputMap.commandForKey(key);
       if (command == 'toggleStickyMode') {
         // TODO(dtseng): More uglyness because of sticky key.
         continue;
@@ -238,8 +238,8 @@ KeyMap = class {
   bind_(command, newKey) {
     // TODO(dtseng): Need unit test to ensure command is valid for every *.json
     // keymap.
-    var bound = false;
-    for (var i = 0; i < this.bindings_.length; i++) {
+    let bound = false;
+    for (let i = 0; i < this.bindings_.length; i++) {
       var binding = this.bindings_[i];
       if (binding.command == command) {
         // Replace the key with the new key.
@@ -301,7 +301,7 @@ KeyMap = class {
     if (typeof (commandsAndKeySequences) != 'object') {
       return null;
     }
-    for (var i = 0; i < commandsAndKeySequences.length; i++) {
+    for (let i = 0; i < commandsAndKeySequences.length; i++) {
       if (commandsAndKeySequences[i].command == undefined ||
           commandsAndKeySequences[i].sequence == undefined) {
         return null;
@@ -340,7 +340,7 @@ KeyMap = class {
    * @return {!KeyMap} The currently selected key map.
    */
   static fromCurrentKeyMap() {
-    var map = localStorage['currentKeyMap'];
+    const map = localStorage['currentKeyMap'];
     if (map && KeyMap.AVAILABLE_MAP_INFO[map]) {
       return /** @type {!KeyMap} */ (KeyMap.fromPath(
           KeyMap.KEYMAP_PATH + KeyMap.AVAILABLE_MAP_INFO[map].file));
@@ -357,12 +357,12 @@ KeyMap = class {
    * @suppress {missingProperties}
    */
   static readJSON_(path) {
-    var url = chrome.extension.getURL(path);
+    const url = chrome.extension.getURL(path);
     if (!url) {
       throw 'Invalid path: ' + path;
     }
 
-    var xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.open('GET', url, false);
     xhr.send();
     return xhr.responseText;
@@ -383,8 +383,8 @@ KeyMap = class {
   buildCommandToKey_() {
     // TODO (dtseng): What about more than one sequence mapped to the same
     // command?
-    for (var i = 0; i < this.bindings_.length; i++) {
-      var binding = this.bindings_[i];
+    for (let i = 0; i < this.bindings_.length; i++) {
+      const binding = this.bindings_[i];
       if (this.commandToKey_[binding.command] != undefined) {
         // There's at least two key sequences mapped to the same
         // command. continue.

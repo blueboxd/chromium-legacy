@@ -20,10 +20,10 @@ goog.require('StringUtil');
 goog.require('constants');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var RoleType = chrome.automation.RoleType;
-var StateType = chrome.automation.StateType;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const RoleType = chrome.automation.RoleType;
+const StateType = chrome.automation.StateType;
 
 
 /**
@@ -84,7 +84,7 @@ cursors.Cursor = class {
     // TODO(dtseng): Pass through affinity; if upstream, skip below.
     if (node.role == RoleType.STATIC_TEXT && node.name.length == index) {
       // Re-interpret this case as the beginning of the next node.
-      var nextNode = AutomationUtil.findNextNode(
+      const nextNode = AutomationUtil.findNextNode(
           node, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
 
       // The exception is when a user types at the end of a line. In that
@@ -135,8 +135,8 @@ cursors.Cursor = class {
   contentEquals(rhs) {
     // First, normalize the two nodes so they both point to the first non-text
     // node.
-    var lNode = this.node;
-    var rNode = rhs.node;
+    let lNode = this.node;
+    let rNode = rhs.node;
     while (lNode &&
            (lNode.role == RoleType.INLINE_TEXT_BOX ||
             lNode.role == RoleType.STATIC_TEXT)) {
@@ -196,7 +196,7 @@ cursors.Cursor = class {
    * @private
    */
   get selectionNode_() {
-    var adjustedNode = this.node;
+    let adjustedNode = this.node;
     if (!adjustedNode) {
       return null;
     }
@@ -208,8 +208,8 @@ cursors.Cursor = class {
     }
 
     // Selections over line break nodes are broken.
-    var parent = adjustedNode.parent;
-    var grandparent = parent && parent.parent;
+    const parent = adjustedNode.parent;
+    const grandparent = parent && parent.parent;
     if (parent && parent.role == RoleType.LINE_BREAK) {
       adjustedNode = grandparent;
     } else if (grandparent && grandparent.role == RoleType.LINE_BREAK) {
@@ -237,7 +237,7 @@ cursors.Cursor = class {
    * @private
    */
   get selectionIndex_() {
-    var adjustedIndex = this.index_;
+    let adjustedIndex = this.index_;
 
     if (!this.node) {
       return -1;
@@ -258,7 +258,7 @@ cursors.Cursor = class {
         adjustedIndex = 0;
       }
 
-      var sibling = this.node.previousSibling;
+      let sibling = this.node.previousSibling;
       while (sibling) {
         adjustedIndex += sibling.name.length;
         sibling = sibling.previousSibling;
@@ -269,7 +269,7 @@ cursors.Cursor = class {
       // A node offset or unselectable character offset.
 
       // The selected node could have been adjusted upwards in the tree.
-      var childOfSelection = this.node;
+      let childOfSelection = this.node;
       do {
         adjustedIndex = childOfSelection.indexInParent || 0;
         childOfSelection = childOfSelection.parent;
@@ -298,13 +298,13 @@ cursors.Cursor = class {
    * @return {!cursors.Cursor} The moved cursor.
    */
   move(unit, movement, dir) {
-    var originalNode = this.node;
+    const originalNode = this.node;
     if (!originalNode) {
       return this;
     }
 
-    var newNode = originalNode;
-    var newIndex = this.index_;
+    let newNode = originalNode;
+    let newIndex = this.index_;
 
     switch (unit) {
       case cursors.Unit.CHARACTER:
@@ -320,7 +320,7 @@ cursors.Cursor = class {
           newNode = AutomationUtil.findNextNode(
               newNode, dir, AutomationPredicate.leafWithText);
           if (newNode) {
-            var newText = AutomationUtil.getText(newNode);
+            const newText = AutomationUtil.getText(newNode);
             newIndex = dir == Dir.FORWARD ?
                 0 :
                 StringUtil.previousCodePointOffset(newText, newText.length);
@@ -384,7 +384,7 @@ cursors.Cursor = class {
             // Go to the next word stop in the same piece of text.
             for (var i = 0; i < wordStarts.length; i++) {
               if (newIndex >= wordStarts[i] && newIndex <= wordEnds[i]) {
-                var nextIndex = dir == Dir.FORWARD ? i + 1 : i - 1;
+                const nextIndex = dir == Dir.FORWARD ? i + 1 : i - 1;
                 start = wordStarts[nextIndex];
                 break;
               }
@@ -402,7 +402,7 @@ cursors.Cursor = class {
                 newNode = AutomationUtil.findNextNode(
                     newNode, dir, AutomationPredicate.leafWithWordStop);
                 if (newNode) {
-                  var starts;
+                  let starts;
                   if (newNode.role == RoleType.INLINE_TEXT_BOX) {
                     starts = newNode.wordStarts;
                   } else {
@@ -461,18 +461,18 @@ cursors.Cursor = class {
    * @return {!cursors.Cursor}
    */
   get deepEquivalent() {
-    var newNode = this.node;
-    var newIndex = this.index_;
-    var isTextIndex = false;
+    let newNode = this.node;
+    let newIndex = this.index_;
+    let isTextIndex = false;
     while (newNode.firstChild) {
       if (newNode.role == RoleType.STATIC_TEXT) {
         // Text offset.
         // Re-interpret the index as an offset into an inlineTextBox.
         isTextIndex = true;
-        var target = newNode.firstChild;
-        var length = 0;
+        let target = newNode.firstChild;
+        let length = 0;
         while (target && length < newIndex) {
-          var newLength = length + target.name.length;
+          const newLength = length + target.name.length;
 
           // Either |newIndex| falls between target's text or |newIndex| is
           // the total length of all sibling text content.
@@ -523,14 +523,14 @@ cursors.Cursor = class {
         // This offset is a text offset into the descendant visible
         // text. Approximate this by indexing into the inline text boxes.
         isTextIndex = true;
-        var lines = this.getAllLeaves_(newNode);
+        const lines = this.getAllLeaves_(newNode);
         if (!lines.length) {
           break;
         }
 
         var targetLine, targetIndex = 0;
         for (var i = 0, line, cur = 0; line = lines[i]; i++) {
-          var lineLength = line.name ? line.name.length : 1;
+          const lineLength = line.name ? line.name.length : 1;
           cur += lineLength;
           if (cur > newIndex) {
             targetLine = line;
@@ -575,13 +575,13 @@ cursors.Cursor = class {
    * @return {!Array<!AutomationNode>}
    */
   getAllLeaves_(node) {
-    var ret = [];
+    let ret = [];
     if (!node.firstChild) {
       ret.push(node);
       return ret;
     }
 
-    for (var i = 0; i < node.children.length; i++) {
+    for (let i = 0; i < node.children.length; i++) {
       ret = ret.concat(this.getAllLeaves_(node.children[i]));
     }
 
@@ -617,7 +617,7 @@ cursors.WrappingCursor = class extends cursors.Cursor {
 
   /** @override */
   move(unit, movement, dir) {
-    var result = this;
+    let result = this;
     if (!result.node) {
       return this;
     }
@@ -641,20 +641,20 @@ cursors.WrappingCursor = class extends cursors.Cursor {
     // For 2, place range on the root (if not already there). If at root,
     // try to descend to the first leaf-like object.
     if (movement == cursors.Movement.DIRECTIONAL && result.equals(this)) {
-      var pred = unit == cursors.Unit.NODE ? AutomationPredicate.object :
-                                             AutomationPredicate.leaf;
-      var endpoint = this.node;
+      const pred = unit == cursors.Unit.NODE ? AutomationPredicate.object :
+                                               AutomationPredicate.leaf;
+      let endpoint = this.node;
       if (!endpoint) {
         return this;
       }
 
       // Finds any explicitly provided focus.
-      var getDirectedFocus = function(node) {
+      const getDirectedFocus = function(node) {
         return dir == Dir.FORWARD ? node.nextFocus : node.previousFocus;
       };
 
       // Case 1: forwards (find the root-like node).
-      var directedFocus;
+      let directedFocus;
       while (!AutomationPredicate.root(endpoint) && endpoint.parent) {
         if (directedFocus = getDirectedFocus(endpoint)) {
           break;
@@ -673,7 +673,7 @@ cursors.WrappingCursor = class extends cursors.Cursor {
       }
 
       // Always play a wrap earcon when moving forward.
-      var playEarcon = dir == Dir.FORWARD;
+      let playEarcon = dir == Dir.FORWARD;
 
       // Case 2: backward (sync downwards to a leaf), if already on the root.
       if (dir == Dir.BACKWARD && endpoint == this.node) {
@@ -715,7 +715,7 @@ cursors.Range = class {
    * @return {!cursors.Range}
    */
   static fromNode(node) {
-    var cursor = cursors.WrappingCursor.fromNode(node);
+    const cursor = cursors.WrappingCursor.fromNode(node);
     return new cursors.Range(cursor, cursor);
   }
 
@@ -742,9 +742,9 @@ cursors.Range = class {
       return Dir.FORWARD;
     }
 
-    var testDirA =
+    const testDirA =
         AutomationUtil.getDirection(rangeA.start.node, rangeB.end.node);
-    var testDirB =
+    const testDirB =
         AutomationUtil.getDirection(rangeB.start.node, rangeA.end.node);
 
     // The two ranges are either partly overlapping or non overlapping.
@@ -813,8 +813,8 @@ cursors.Range = class {
    * @return {boolean}
    */
   isSubNode() {
-    var startIndex = this.start.index;
-    var endIndex = this.end.index;
+    const startIndex = this.start.index;
+    const endIndex = this.end.index;
     return this.start.node === this.end.node && startIndex != -1 &&
         endIndex != -1 && startIndex != endIndex &&
         (startIndex != 0 || endIndex != this.start.getText().length);
@@ -839,12 +839,12 @@ cursors.Range = class {
    * @return {cursors.Range}
    */
   move(unit, dir) {
-    var newStart = this.start_;
+    let newStart = this.start_;
     if (!newStart.node) {
       return this;
     }
 
-    var newEnd;
+    let newEnd;
     switch (unit) {
       case cursors.Unit.CHARACTER:
         newStart = newStart.move(unit, cursors.Movement.DIRECTIONAL, dir);
@@ -874,13 +874,13 @@ cursors.Range = class {
    * Select the text contained within this range.
    */
   select() {
-    var start = this.start_, end = this.end_;
+    let start = this.start_, end = this.end_;
     if (this.start.compare(this.end) == Dir.BACKWARD) {
       start = this.end;
       end = this.start;
     }
-    var startNode = start.selectionNode_;
-    var endNode = end.selectionNode_;
+    const startNode = start.selectionNode_;
+    const endNode = end.selectionNode_;
 
     if (!startNode || !endNode) {
       return;
@@ -891,8 +891,8 @@ cursors.Range = class {
         startNode.root == endNode.root) {
       // We want to adjust to select the entire node for node offsets;
       // otherwise, use the plain character offset.
-      var startIndex = start.selectionIndex_;
-      var endIndex = end.index_ == cursors.NODE_INDEX ?
+      const startIndex = start.selectionIndex_;
+      let endIndex = end.index_ == cursors.NODE_INDEX ?
           end.selectionIndex_ + 1 :
           end.selectionIndex_;
 
@@ -940,8 +940,8 @@ cursors.Range = class {
    * Undefined otherwise.
    */
   compare(rhs) {
-    var startDir = this.start.compare(rhs.start);
-    var endDir = this.end.compare(rhs.end);
+    const startDir = this.start.compare(rhs.start);
+    const endDir = this.end.compare(rhs.end);
     if (startDir != endDir) {
       return undefined;
     }

@@ -54,7 +54,7 @@ Earcon = {
  * used to generate tutorial content.
  * @type {Object<string, string>}
  */
-var EarconDescription = {
+const EarconDescription = {
   alert_modal: 'alert_modal_earcon_description',
   alert_nonmodal: 'alert_nonmodal_earcon_description',
   button: 'button_earcon_description',

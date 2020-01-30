@@ -29,7 +29,7 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   get actions() {
-    let actions = [];
+    const actions = [];
     if (SwitchAccessPredicate.isTextInput(this.baseNode_)) {
       actions.push(SAConstants.MenuAction.OPEN_KEYBOARD);
       actions.push(SAConstants.MenuAction.DICTATION);
@@ -377,7 +377,7 @@ class RootNodeWrapper extends SARootNode {
           SAConstants.ErrorType.NO_CHILDREN,
           'Root node must have at least 1 interesting child.');
     }
-    let children = interestingChildren.map(childConstructor);
+    const children = interestingChildren.map(childConstructor);
     children.push(new BackButtonNode(root));
     root.children = children;
   }
@@ -387,8 +387,8 @@ class RootNodeWrapper extends SARootNode {
    * @return {!Array<!AutomationNode>}
    */
   static getInterestingChildren(root) {
-    let interestingChildren = [];
-    let treeWalker = new AutomationTreeWalker(
+    const interestingChildren = [];
+    const treeWalker = new AutomationTreeWalker(
         root.baseNode_, constants.Dir.FORWARD,
         SwitchAccessPredicate.restrictions(root));
     let node = treeWalker.next().node;

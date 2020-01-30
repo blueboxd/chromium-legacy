@@ -59,19 +59,19 @@ ExpandingBrailleTranslator = class {
    *         braille cells and positional mappings as parameters.
    */
   translate(text, expansionType, callback) {
-    var expandRanges = this.findExpandRanges_(text, expansionType);
-    var extraCellsSpans =
+    const expandRanges = this.findExpandRanges_(text, expansionType);
+    const extraCellsSpans =
         text.getSpansInstanceOf(ExtraCellsSpan).filter(function(span) {
           return span.cells.byteLength > 0;
         });
-    var extraCellsPositions = extraCellsSpans.map(function(span) {
+    const extraCellsPositions = extraCellsSpans.map(function(span) {
       return text.getSpanStart(span);
     });
-    var formTypeMap = new Array(text.length).fill(0);
+    const formTypeMap = new Array(text.length).fill(0);
     text.getSpansInstanceOf(BrailleTextStyleSpan).forEach(function(span) {
-      var start = text.getSpanStart(span);
-      var end = text.getSpanEnd(span);
-      for (var i = start; i < end; i++) {
+      const start = text.getSpanStart(span);
+      const end = text.getSpanEnd(span);
+      for (let i = start; i < end; i++) {
         formTypeMap[i] |= span.formType;
       }
     });
@@ -84,14 +84,14 @@ ExpandingBrailleTranslator = class {
       return;
     }
 
-    var chunks = [];
+    const chunks = [];
     function maybeAddChunkToTranslate(translator, start, end) {
       if (start < end) {
         chunks.push({translator, start, end});
       }
     }
     function addExtraCellsChunk(pos, cells) {
-      var chunk = {
+      const chunk = {
         translator: null,
         start: pos,
         end: pos,
@@ -99,7 +99,7 @@ ExpandingBrailleTranslator = class {
         textToBraille: [],
         brailleToText: new Array(cells.byteLength)
       };
-      for (var i = 0; i < cells.byteLength; ++i) {
+      for (let i = 0; i < cells.byteLength; ++i) {
         chunk.brailleToText[i] = 0;
       }
       chunks.push(chunk);
@@ -112,9 +112,9 @@ ExpandingBrailleTranslator = class {
       }
       maybeAddChunkToTranslate(translator, start, end);
     }
-    var lastEnd = 0;
-    for (var i = 0; i < expandRanges.length; ++i) {
-      var range = expandRanges[i];
+    let lastEnd = 0;
+    for (let i = 0; i < expandRanges.length; ++i) {
+      const range = expandRanges[i];
       if (lastEnd < range.start) {
         addChunk(this.defaultTranslator_, lastEnd, range.start);
       }
@@ -123,10 +123,10 @@ ExpandingBrailleTranslator = class {
     }
     addChunk(this.defaultTranslator_, lastEnd, text.length);
 
-    var chunksToTranslate = chunks.filter(function(chunk) {
+    const chunksToTranslate = chunks.filter(function(chunk) {
       return chunk.translator;
     });
-    var numPendingCallbacks = chunksToTranslate.length;
+    let numPendingCallbacks = chunksToTranslate.length;
 
     function chunkTranslated(chunk, cells, textToBraille, brailleToText) {
       chunk.cells = cells;
@@ -138,13 +138,13 @@ ExpandingBrailleTranslator = class {
     }
 
     function finish() {
-      var totalCells = chunks.reduce(function(accum, chunk) {
+      const totalCells = chunks.reduce(function(accum, chunk) {
         return accum + chunk.cells.byteLength;
       }, 0);
-      var cells = new Uint8Array(totalCells);
-      var cellPos = 0;
-      var textToBraille = [];
-      var brailleToText = [];
+      const cells = new Uint8Array(totalCells);
+      let cellPos = 0;
+      const textToBraille = [];
+      const brailleToText = [];
       function appendAdjusted(array, toAppend, adjustment) {
         array.push.apply(array, toAppend.map(function(elem) {
           return adjustment + elem;
@@ -213,13 +213,13 @@ ExpandingBrailleTranslator = class {
    * @private
    */
   findExpandRanges_(text, expansionType) {
-    var result = [];
+    const result = [];
     if (this.uncontractedTranslator_ &&
         expansionType != ExpandingBrailleTranslator.ExpansionType.NONE) {
-      var value = text.getSpanInstanceOf(ValueSpan);
+      const value = text.getSpanInstanceOf(ValueSpan);
       if (value) {
-        var valueStart = text.getSpanStart(value);
-        var valueEnd = text.getSpanEnd(value);
+        const valueStart = text.getSpanStart(value);
+        const valueEnd = text.getSpanEnd(value);
         switch (expansionType) {
           case ExpandingBrailleTranslator.ExpansionType.SELECTION:
             this.addRangesForSelection_(text, valueStart, valueEnd, result);
@@ -246,16 +246,16 @@ ExpandingBrailleTranslator = class {
    * @private
    */
   addRangesForSelection_(text, valueStart, valueEnd, outRanges) {
-    var selection = text.getSpanInstanceOf(ValueSelectionSpan);
+    const selection = text.getSpanInstanceOf(ValueSelectionSpan);
     if (!selection) {
       return;
     }
-    var selectionStart = text.getSpanStart(selection);
-    var selectionEnd = text.getSpanEnd(selection);
+    const selectionStart = text.getSpanStart(selection);
+    const selectionEnd = text.getSpanEnd(selection);
     if (selectionStart < valueStart || selectionEnd > valueEnd) {
       return;
     }
-    var expandPositions = [];
+    const expandPositions = [];
     if (selectionStart == valueEnd) {
       if (selectionStart > valueStart) {
         expandPositions.push(selectionStart - 1);
@@ -274,9 +274,9 @@ ExpandingBrailleTranslator = class {
       }
     }
 
-    var lastRange = outRanges[outRanges.length - 1] || null;
-    for (var i = 0; i < expandPositions.length; ++i) {
-      var range = ExpandingBrailleTranslator.rangeForPosition_(
+    let lastRange = outRanges[outRanges.length - 1] || null;
+    for (let i = 0; i < expandPositions.length; ++i) {
+      const range = ExpandingBrailleTranslator.rangeForPosition_(
           text.toString(), expandPositions[i], valueStart, valueEnd);
       if (lastRange && lastRange.end >= range.start) {
         lastRange.end = range.end;
@@ -302,7 +302,7 @@ ExpandingBrailleTranslator = class {
     return function(cells, textToBraille, brailleToText) {
       if (!textToBraille) {
         textToBraille = new Array(inputLength);
-        for (var i = 0; i < inputLength; ++i) {
+        for (let i = 0; i < inputLength; ++i) {
           textToBraille[i] = 0;
         }
       }

@@ -15,7 +15,7 @@ goog.provide('CustomAutomationEvent');
 /**
  * @typedef{chrome.automation.AutomationEvent|CustomAutomationEvent}
  */
-var ChromeVoxEvent;
+let ChromeVoxEvent;
 
 /**
  * An object we can use instead of a chrome.automation.AutomationEvent.

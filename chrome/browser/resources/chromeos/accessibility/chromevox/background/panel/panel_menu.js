@@ -28,7 +28,7 @@ PanelMenu = class {
     this.menuBarItemElement = document.createElement('div');
     this.menuBarItemElement.className = 'menu-bar-item';
     this.menuBarItemElement.setAttribute('role', 'menu');
-    var menuTitle = Msgs.getMsg(menuMsg);
+    const menuTitle = Msgs.getMsg(menuMsg);
     this.menuBarItemElement.textContent = menuTitle;
 
     // The container for the menu. This part is fixed and scrolls its
@@ -84,7 +84,7 @@ PanelMenu = class {
   addMenuItem(
       menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
       opt_id) {
-    var menuItem = new PanelMenuItem(
+    const menuItem = new PanelMenuItem(
         menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
         opt_id);
     this.items_.push(menuItem);
@@ -103,8 +103,8 @@ PanelMenu = class {
     if (!this.updateScrollbarsTimeout_) {
       this.updateScrollbarsTimeout_ = window.setTimeout(
           (function() {
-            var menuBounds = this.menuElement.getBoundingClientRect();
-            var maxHeight = window.innerHeight - menuBounds.top;
+            const menuBounds = this.menuElement.getBoundingClientRect();
+            const maxHeight = window.innerHeight - menuBounds.top;
             this.menuContainerElement.style.maxHeight = maxHeight + 'px';
             this.updateScrollbarsTimeout_ = null;
           }).bind(this),
@@ -125,10 +125,10 @@ PanelMenu = class {
     this.menuContainerElement.style.visibility = 'visible';
     this.menuContainerElement.style.opacity = 1;
     this.menuBarItemElement.classList.add('active');
-    var barBounds =
+    const barBounds =
         this.menuBarItemElement.parentElement.getBoundingClientRect();
-    var titleBounds = this.menuBarItemElement.getBoundingClientRect();
-    var menuBounds = this.menuElement.getBoundingClientRect();
+    const titleBounds = this.menuBarItemElement.getBoundingClientRect();
+    const menuBounds = this.menuElement.getBoundingClientRect();
 
     this.menuElement.style.minWidth = titleBounds.width + 'px';
     this.menuContainerElement.style.minWidth = titleBounds.width + 'px';
@@ -225,7 +225,7 @@ PanelMenu = class {
    * @return {Function} The callback.
    */
   getCallbackForElement(element) {
-    for (var i = 0; i < this.items_.length; i++) {
+    for (let i = 0; i < this.items_.length; i++) {
       if (element == this.items_[i].element) {
         return this.items_[i].callback;
       }
@@ -241,8 +241,8 @@ PanelMenu = class {
       return;
     }
 
-    var query = String.fromCharCode(evt.charCode).toLowerCase();
-    for (var i = this.activeIndex_ + 1; i != this.activeIndex_;
+    const query = String.fromCharCode(evt.charCode).toLowerCase();
+    for (let i = this.activeIndex_ + 1; i != this.activeIndex_;
          i = (i + 1) % this.items_.length) {
       if (this.items_[i].text.toLowerCase().indexOf(query) == 0) {
         this.activateItem(i);
@@ -305,7 +305,7 @@ PanelNodeMenu = class extends PanelMenu {
         return;
       }
 
-      var root = AutomationUtil.getTopLevelRoot(this.node_);
+      const root = AutomationUtil.getTopLevelRoot(this.node_);
       if (!root) {
         this.finish_();
         return;
@@ -338,13 +338,13 @@ PanelNodeMenu = class extends PanelMenu {
           this.selectNext_ = true;
         }
         if (this.pred_(node)) {
-          var output = new Output();
-          var range = cursors.Range.fromNode(node);
+          const output = new Output();
+          const range = cursors.Range.fromNode(node);
           output.withoutHints();
           output.withSpeech(range, range, Output.EventType.NAVIGATE);
-          var label = output.toString();
+          const label = output.toString();
           this.addMenuItem(label, '', '', '', (function() {
-                             var savedNode = node;
+                             const savedNode = node;
                              return function() {
                                chrome.extension.getBackgroundPage()
                                    .ChromeVoxState.instance['navigateToRange'](
@@ -445,7 +445,7 @@ PanelSearchMenu = class extends PanelMenu {
       }
     }
     this.activeIndex_ = index;
-    var item = this.items_[this.activeIndex_];
+    const item = this.items_[this.activeIndex_];
     this.searchBar.setAttribute('aria-activedescendant', item.element.id);
     item.element.classList.add('active');
   }

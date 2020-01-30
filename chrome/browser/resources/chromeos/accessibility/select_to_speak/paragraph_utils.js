@@ -8,7 +8,7 @@ var RoleType = chrome.automation.RoleType;
 /**
  * @constructor
  */
-let ParagraphUtils = function() {};
+const ParagraphUtils = function() {};
 
 /**
  * Gets the first ancestor of a node which is a paragraph or is not inline,
@@ -18,7 +18,7 @@ let ParagraphUtils = function() {};
  */
 ParagraphUtils.getFirstBlockAncestor = function(node) {
   let parent = node.parent;
-  let root = node.root;
+  const root = node.root;
   while (parent != null) {
     if (parent == root) {
       return parent;
@@ -58,8 +58,8 @@ ParagraphUtils.inSameParagraph = function(first, second) {
     // 'block' or 'inline-block' elements cannot be in the same paragraph.
     return false;
   }
-  let firstBlock = ParagraphUtils.getFirstBlockAncestor(first);
-  let secondBlock = ParagraphUtils.getFirstBlockAncestor(second);
+  const firstBlock = ParagraphUtils.getFirstBlockAncestor(first);
+  const secondBlock = ParagraphUtils.getFirstBlockAncestor(second);
   return firstBlock != undefined && firstBlock == secondBlock;
 };
 
@@ -73,7 +73,7 @@ ParagraphUtils.isWhitespace = function(name) {
     return true;
   }
   // Search for one or more whitespace characters
-  let re = /^\s+$/;
+  const re = /^\s+$/;
   return re.exec(name) != null;
 };
 
@@ -93,7 +93,7 @@ ParagraphUtils.getNodeName = function(node) {
   } else if (
       node.role === RoleType.CHECK_BOX ||
       node.role === RoleType.MENU_ITEM_CHECK_BOX) {
-    let stateString = chrome.i18n.getMessage(
+    const stateString = chrome.i18n.getMessage(
         'select_to_speak_checkbox_' +
         (node.checked === 'true' ?
              'checked' :
@@ -104,7 +104,7 @@ ParagraphUtils.getNodeName = function(node) {
   } else if (
       node.role === RoleType.RADIO_BUTTON ||
       node.role === RoleType.MENU_ITEM_RADIO) {
-    let stateString = chrome.i18n.getMessage(
+    const stateString = chrome.i18n.getMessage(
         'select_to_speak_radiobutton_' +
         (node.checked === 'true' ?
              'selected' :
@@ -152,7 +152,7 @@ ParagraphUtils.findInlineTextNodeByCharacterIndex = function(
   }
   let textLength = 0;
   for (var i = 0; i < staticTextNode.children.length; i++) {
-    let node = staticTextNode.children[i];
+    const node = staticTextNode.children[i];
     if (node.name.length + textLength > index) {
       return node;
     }
@@ -174,7 +174,7 @@ ParagraphUtils.findInlineTextNodeByCharacterIndex = function(
 ParagraphUtils.buildNodeGroup = function(nodes, index, splitOnLanguage) {
   let node = nodes[index];
   let next = nodes[index + 1];
-  let result = new ParagraphUtils.NodeGroup(
+  const result = new ParagraphUtils.NodeGroup(
       ParagraphUtils.getFirstBlockAncestor(nodes[index]));
   let staticTextParent = null;
   let currentLanguage = undefined;
@@ -186,7 +186,7 @@ ParagraphUtils.buildNodeGroup = function(nodes, index, splitOnLanguage) {
   // While next node is in the same paragraph as this node AND is
   // a text type node, continue building the paragraph.
   while (index < nodes.length) {
-    let name = ParagraphUtils.getNodeName(node);
+    const name = ParagraphUtils.getNodeName(node);
     if (!ParagraphUtils.isWhitespace(name)) {
       let newNode;
       if (node.role == RoleType.INLINE_TEXT_BOX && node.parent !== undefined) {

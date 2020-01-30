@@ -9,7 +9,7 @@
 goog.provide('SimpleAutomationNode');
 goog.provide('TreeDumper');
 
-var AutomationNode = chrome.automation.AutomationNode;
+const AutomationNode = chrome.automation.AutomationNode;
 
 SimpleAutomationNode = class {
   /**
@@ -23,7 +23,7 @@ SimpleAutomationNode = class {
     /** Object Rect must be copied in the different pointer. */
     this.location = Object.assign({}, node.location);
     this.children = [];
-    for (var i = 0; i < node.children.length; i++) {
+    for (let i = 0; i < node.children.length; i++) {
       this.children.push(new SimpleAutomationNode(node.children[i]));
     }
 
@@ -96,13 +96,13 @@ TreeDumper = class {
    * @private
    */
   createTreeRecursive_(node, rank) {
-    var nodeStr = '';
+    let nodeStr = '';
     nodeStr += '++'.repeat(rank);
     nodeStr += node.toString();
     nodeStr += '\n';
 
-    for (var i = 0; i < node.children.length; i++) {
-      var nextNode = node.children[i];
+    for (let i = 0; i < node.children.length; i++) {
+      const nextNode = node.children[i];
       nodeStr += this.createTreeRecursive_(nextNode, rank + 1);
     }
     return nodeStr;
@@ -113,7 +113,7 @@ TreeDumper = class {
    * @private
    * */
   formatTree_() {
-    var treeStr = this.createTreeRecursive_(this.rootNode, 0);
+    const treeStr = this.createTreeRecursive_(this.rootNode, 0);
     return treeStr;
   }
 };

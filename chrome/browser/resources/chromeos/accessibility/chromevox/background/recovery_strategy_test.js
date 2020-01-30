@@ -34,15 +34,15 @@ TEST_F('ChromeVoxRecoveryStrategyTest', 'ReparentedRecovery', function() {
     </script>
   `,
       function(root) {
-        var p = root.find({role: RoleType.PARAGRAPH});
-        var s = root.find({role: RoleType.STATIC_TEXT});
-        var b = root.find({role: RoleType.BUTTON});
-        var bAncestryRecovery = new AncestryRecoveryStrategy(b);
-        var pAncestryRecovery = new AncestryRecoveryStrategy(p);
-        var sAncestryRecovery = new AncestryRecoveryStrategy(s);
-        var bTreePathRecovery = new TreePathRecoveryStrategy(b);
-        var pTreePathRecovery = new TreePathRecoveryStrategy(p);
-        var sTreePathRecovery = new TreePathRecoveryStrategy(s);
+        const p = root.find({role: RoleType.PARAGRAPH});
+        const s = root.find({role: RoleType.STATIC_TEXT});
+        const b = root.find({role: RoleType.BUTTON});
+        const bAncestryRecovery = new AncestryRecoveryStrategy(b);
+        const pAncestryRecovery = new AncestryRecoveryStrategy(p);
+        const sAncestryRecovery = new AncestryRecoveryStrategy(s);
+        const bTreePathRecovery = new TreePathRecoveryStrategy(b);
+        const pTreePathRecovery = new TreePathRecoveryStrategy(p);
+        const sTreePathRecovery = new TreePathRecoveryStrategy(s);
         this.listenOnce(b, 'clicked', function() {
           assertFalse(
               bAncestryRecovery.requiresRecovery(),

@@ -117,7 +117,7 @@ function runTextSelectionTest(testHelper, textParams) {
     const inputNode = findNodeById(desktop, textId, testHelper);
     assertNotEquals(inputNode, null);
     checkNodeIsFocused(inputNode);
-    let callback = testHelper.newCallback(function() {
+    const callback = testHelper.newCallback(function() {
       setUpCursorChangeListener(
           testHelper, inputNode, targetTextEndIndex, targetTextStartIndex,
           targetTextEndIndex);
@@ -349,7 +349,7 @@ TEST_F(
         checkNodeIsFocused(inputNode);
 
         this.textNavigationManager.saveSelectStart();
-        let startIndex = this.textNavigationManager.getSelStartIndex();
+        const startIndex = this.textNavigationManager.getSelStartIndex();
         assertEquals(startIndex, 3);
       });
     });
@@ -370,11 +370,11 @@ TEST_F(
         checkNodeIsFocused(inputNode);
 
 
-        let startIndex = 3;
+        const startIndex = 3;
         this.textNavigationManager.setSelStartIndexAndNode(
             startIndex, inputNode);
         this.textNavigationManager.saveSelectEnd();
-        let endIndex = inputNode.textSelEnd;
+        const endIndex = inputNode.textSelEnd;
         assertEquals(6, endIndex);
       });
     });

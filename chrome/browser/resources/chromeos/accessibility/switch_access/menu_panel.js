@@ -39,7 +39,7 @@ class Panel {
   init() {
     this.panel_ = document.getElementById(SAConstants.MENU_PANEL_ID);
 
-    let menuList = Object.values(SAConstants.MenuId);
+    const menuList = Object.values(SAConstants.MenuId);
     for (const menuId of menuList) {
       this.updateButtonOrder_(menuId);
 
@@ -75,7 +75,7 @@ class Panel {
    * @private
    */
   setupButton_(button) {
-    let action = button.id;
+    const action = button.id;
     button.addEventListener('click', function(action) {
       this.menuManager_.performAction(action);
     }.bind(this, action));
@@ -164,8 +164,8 @@ class Panel {
   updatePositionAttributes_(buttonOrder, menuId) {
     this.menuManager_.exit();
     for (let pos = 0; pos < buttonOrder.length; pos++) {
-      let buttonPosition = pos;
-      let button = document.getElementById(buttonOrder[pos]);
+      const buttonPosition = pos;
+      const button = document.getElementById(buttonOrder[pos]);
       button.setAttribute('data-position', String(buttonPosition));
     }
     this.updateButtonOrder_(menuId);
@@ -178,11 +178,11 @@ class Panel {
    * @private
    */
   updateButtonOrder_(menuId) {
-    let buttonList = document.getElementById(menuId);
-    let menuButtons = buttonList.children;
+    const buttonList = document.getElementById(menuId);
+    const menuButtons = buttonList.children;
     // Call slice() on menuButtons indirectly, as .children returns an
     // HTMLCollection rather than an array.
-    let buttonArray = [].slice.call(menuButtons);
+    const buttonArray = [].slice.call(menuButtons);
     buttonArray.sort(this.buttonComesBefore_);
     for (const button of buttonArray) {
       if (button.id) {
@@ -238,7 +238,7 @@ class Panel {
     if (this.switchAccess_.improvedTextInputEnabled()) {
       rowHeight = 85;
       const actions = document.getElementsByClassName('action');
-      for (let action of actions) {
+      for (const action of actions) {
         action.classList.add('improvedTextInputEnabled');
       }
     } else {
@@ -280,7 +280,7 @@ class Panel {
   }
 }
 
-let switchAccessMenuPanel = new Panel();
+const switchAccessMenuPanel = new Panel();
 
 if (document.readyState === 'complete') {
   switchAccessMenuPanel.init();

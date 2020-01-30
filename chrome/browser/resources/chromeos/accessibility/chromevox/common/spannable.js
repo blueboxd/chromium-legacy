@@ -36,7 +36,7 @@ Spannable = class {
 
     // Optionally annotate the entire string.
     if (goog.isDef(opt_annotation)) {
-      var len = this.string_.length;
+      const len = this.string_.length;
       this.spans_.push({value: opt_annotation, start: 0, end: len});
     }
   }
@@ -74,7 +74,7 @@ Spannable = class {
       // query for position by annotation as well as the reverse.
       this.spans_.push({value, start, end});
       this.spans_.sort(function(a, b) {
-        var ret = a.start - b.start;
+        let ret = a.start - b.start;
         if (ret == 0) {
           ret = a.end - b.end;
         }
@@ -92,7 +92,7 @@ Spannable = class {
    * @param {*} value Annotation.
    */
   removeSpan(value) {
-    for (var i = this.spans_.length - 1; i >= 0; i--) {
+    for (let i = this.spans_.length - 1; i >= 0; i--) {
       if (this.spans_[i].value === value) {
         this.spans_.splice(i, 1);
       }
@@ -105,8 +105,8 @@ Spannable = class {
    */
   append(other) {
     if (other instanceof Spannable) {
-      var otherSpannable = /** @type {!Spannable} */ (other);
-      var originalLength = this.length;
+      const otherSpannable = /** @type {!Spannable} */ (other);
+      const originalLength = this.length;
       this.string_ += otherSpannable.string_;
       other.spans_.forEach(function(span) {
         this.setSpan(
@@ -206,7 +206,7 @@ Spannable = class {
    * @return {number}
    */
   getSpanLength(value) {
-    var span = this.getSpanByValueOrThrow_(value);
+    const span = this.getSpanByValueOrThrow_(value);
     return span.end - span.start;
   }
 
@@ -217,7 +217,7 @@ Spannable = class {
    * @private
    */
   getSpanByValueOrThrow_(value) {
-    var span = this.spans_.find(spanValueIs(value));
+    const span = this.spans_.find(spanValueIs(value));
     if (span) {
       return span;
     }
@@ -236,17 +236,17 @@ Spannable = class {
    * @return {!Spannable} Substring requested.
    */
   substring(start, opt_end) {
-    var end = goog.isDef(opt_end) ? opt_end : this.string_.length;
+    const end = goog.isDef(opt_end) ? opt_end : this.string_.length;
 
     if (start < 0 || end > this.string_.length || start > end) {
       throw new RangeError('substring indices out of range');
     }
 
-    var result = new Spannable(this.string_.substring(start, end));
+    const result = new Spannable(this.string_.substring(start, end));
     this.spans_.forEach(function(span) {
       if (span.start <= end && span.end >= start) {
-        var newStart = Math.max(0, span.start - start);
-        var newEnd = Math.min(end - start, span.end - start);
+        const newStart = Math.max(0, span.start - start);
+        const newEnd = Math.min(end - start, span.end - start);
         result.spans_.push({value: span.value, start: newStart, end: newEnd});
       }
     });
@@ -299,8 +299,8 @@ Spannable = class {
 
     // Otherwise, we have at least one non-whitespace character to use as an
     // anchor when trimming.
-    var trimmedStart = trimStart ? this.string_.match(/^\s*/)[0].length : 0;
-    var trimmedEnd =
+    const trimmedStart = trimStart ? this.string_.match(/^\s*/)[0].length : 0;
+    const trimmedEnd =
         trimEnd ? this.string_.match(/\s*$/).index : this.string_.length;
     return this.substring(trimmedStart, trimmedEnd);
   }
@@ -312,14 +312,14 @@ Spannable = class {
    * @return {!SerializedSpannable} the json serializable form.
    */
   toJson() {
-    var result = {};
+    const result = {};
     result.string = this.string_;
     result.spans = [];
     this.spans_.forEach(function(span) {
-      var serializeInfo =
+      const serializeInfo =
           serializableSpansByConstructor.get(span.value.constructor);
       if (serializeInfo) {
-        var spanObj = {
+        const spanObj = {
           type: serializeInfo.name,
           start: span.start,
           end: span.end
@@ -347,7 +347,7 @@ Spannable = class {
     if (!(obj.spans instanceof Array)) {
       throw new Error('Invalid spannable json object: no spans array');
     }
-    var result = new Spannable(obj.string);
+    const result = new Spannable(obj.string);
     result.spans_ = obj.spans.map(function(span) {
       if (typeof span.type !== 'string') {
         throw new Error(
@@ -357,8 +357,8 @@ Spannable = class {
         throw new Error(
             'Invalid span in spannable json object: start or end not a number');
       }
-      var serializeInfo = serializableSpansByName.get(span.type);
-      var value = serializeInfo.fromJson(span.value);
+      const serializeInfo = serializableSpansByName.get(span.type);
+      const value = serializeInfo.fromJson(span.value);
       return {value, start: span.start, end: span.end};
     });
     return result;
@@ -375,7 +375,7 @@ Spannable = class {
    *     |this| set to the object to convert.
    */
   static registerSerializableSpan(constructor, name, fromJson, toJson) {
-    var obj = {name, fromJson, toJson};
+    const obj = {name, fromJson, toJson};
     serializableSpansByName.set(name, obj);
     serializableSpansByConstructor.set(constructor, obj);
   }
@@ -390,7 +390,7 @@ Spannable = class {
    * @param {string} name Name of the type used in the serializable object.
    */
   static registerStatelessSerializableSpan(constructor, name) {
-    var obj = {name, toJson: undefined};
+    const obj = {name, toJson: undefined};
     /**
      * @param {!Object} obj
      * @return {!Object}
@@ -426,7 +426,7 @@ MultiSpannable = class extends Spannable {
 
   /** @override */
   substring(start, opt_end) {
-    var ret = Spannable.prototype.substring.call(this, start, opt_end);
+    const ret = Spannable.prototype.substring.call(this, start, opt_end);
     return new MultiSpannable(ret);
     }
 };
@@ -436,7 +436,7 @@ MultiSpannable = class extends Spannable {
  * An annotation with its start and end points.
  * @typedef {{value: *, start: number, end: number}}
  */
-var SpanStruct;
+let SpanStruct;
 
 /**
  * Describes how to convert a span type to/from serializable json.
@@ -444,20 +444,20 @@ var SpanStruct;
  *            fromJson: function(!Object): !Object,
  *            toJson: ((function(): !Object)|undefined)}}
  */
-var SerializeInfo;
+let SerializeInfo;
 
 /**
  * The serialized format of a spannable.
  * @typedef {{string: string, spans: Array<SerializedSpan>}}
  * @private
  */
-var SerializedSpannable;
+let SerializedSpannable;
 
 /**
  * The format of a single annotation in a serialized spannable.
  * @typedef {{type: string, value: !Object, start: number, end: number}}
  */
-var SerializedSpan;
+let SerializedSpan;
 
 /**
  * Maps type names to serialization info objects.

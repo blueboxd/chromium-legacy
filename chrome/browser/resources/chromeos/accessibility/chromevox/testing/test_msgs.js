@@ -33,12 +33,12 @@ TestMsgs = class {
     }
     var messageString = TestMsgs.Untranslated[messageId.toUpperCase()];
     if (messageString === undefined) {
-      var messageObj = TestMessages[('chromevox_' + messageId).toUpperCase()];
+      const messageObj = TestMessages[('chromevox_' + messageId).toUpperCase()];
       if (messageObj === undefined) {
         throw Error('missing-msg: ' + messageId);
       }
       var messageString = messageObj.message;
-      var placeholders = messageObj.placeholders;
+      const placeholders = messageObj.placeholders;
       if (placeholders) {
         for (name in placeholders) {
           messageString = messageString.replace(

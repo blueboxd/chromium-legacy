@@ -160,7 +160,7 @@ KeySequence = class {
     // So only one of them has the ChromeVox modifier. If the one that doesn't
     // have the ChromeVox modifier has sticky mode or the prefix key then the
     // keys are still considered equal.
-    var unmodified = this.cvoxModifier ? rhs : this;
+    const unmodified = this.cvoxModifier ? rhs : this;
     return unmodified.stickyMode || unmodified.prefixKey;
   }
 
@@ -173,7 +173,7 @@ KeySequence = class {
    * @private
    */
   extractKey_(keyEvent) {
-    for (var prop in this.keys) {
+    for (const prop in this.keys) {
       if (prop == 'keyCode') {
         var keyCode;
         // TODO (rshearer): This is temporary until we find a library that can
@@ -217,9 +217,9 @@ KeySequence = class {
 
     // TODO (rshearer): This is a hack. When the modifier key becomes
     // customizable then we will not have to deal with strings here.
-    var modifierKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
+    const modifierKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
 
-    var index = this.keys.keyCode.length - 1;
+    const index = this.keys.keyCode.length - 1;
     // For each modifier that is part of the CVox modifier, remove it from keys.
     if (modifierKeyCombo.indexOf('Ctrl') != -1) {
       this.keys.ctrlKey[index] = false;
@@ -230,7 +230,7 @@ KeySequence = class {
     if (modifierKeyCombo.indexOf('Shift') != -1) {
       this.keys.shiftKey[index] = false;
     }
-    var metaKeyName = this.getMetaKeyName_();
+    const metaKeyName = this.getMetaKeyName_();
     if (modifierKeyCombo.indexOf(metaKeyName) != -1) {
       if (metaKeyName == 'Search') {
         this.keys.searchKeyHeld[index] = false;
@@ -263,8 +263,8 @@ KeySequence = class {
    * @private
    */
   checkKeyEquality_(rhs) {
-    for (var i in this.keys) {
-      for (var j = this.keys[i].length; j--;) {
+    for (const i in this.keys) {
+      for (let j = this.keys[i].length; j--;) {
         if (this.keys[i][j] !== rhs.keys[i][j]) {
           return false;
         }
@@ -311,7 +311,7 @@ KeySequence = class {
    */
   isCVoxModifierActive(keyEvent) {
     // TODO (rshearer): Update this when the modifier key becomes customizable
-    var modifierKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
+    let modifierKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
 
     // For each modifier that is held down, remove it from the combo.
     // If the combo string becomes empty, then the user has activated the combo.
@@ -332,7 +332,7 @@ KeySequence = class {
     }
     if (this.isKeyModifierActive(keyEvent, 'metaKey') ||
         this.isKeyModifierActive(keyEvent, 'searchKeyHeld')) {
-      var metaKeyName = this.getMetaKeyName_();
+      const metaKeyName = this.getMetaKeyName_();
       modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
         return modifier != metaKeyName;
       });
@@ -378,8 +378,8 @@ KeySequence = class {
    * @return {boolean} The result.
    */
   isAnyModifierActive() {
-    for (var modifierType in this.keys) {
-      for (var i = 0; i < this.length(); i++) {
+    for (const modifierType in this.keys) {
+      for (let i = 0; i < this.length(); i++) {
         if (this.keys[modifierType][i] && modifierType != 'keyCode') {
           return true;
         }
@@ -394,7 +394,7 @@ KeySequence = class {
    * @return {KeySequence} The created KeySequence object.
    */
   static deserialize(sequenceObject) {
-    var firstSequenceEvent = {};
+    const firstSequenceEvent = {};
 
     firstSequenceEvent['stickyMode'] =
         (sequenceObject.stickyMode == undefined) ? false :
@@ -403,19 +403,19 @@ KeySequence = class {
         false :
         sequenceObject.prefixKey;
 
-    var secondKeyPressed = sequenceObject.keys.keyCode.length > 1;
-    var secondSequenceEvent = {};
+    const secondKeyPressed = sequenceObject.keys.keyCode.length > 1;
+    const secondSequenceEvent = {};
 
-    for (var keyPressed in sequenceObject.keys) {
+    for (const keyPressed in sequenceObject.keys) {
       firstSequenceEvent[keyPressed] = sequenceObject.keys[keyPressed][0];
       if (secondKeyPressed) {
         secondSequenceEvent[keyPressed] = sequenceObject.keys[keyPressed][1];
       }
     }
-    var skipStripping = sequenceObject.skipStripping !== undefined ?
+    const skipStripping = sequenceObject.skipStripping !== undefined ?
         sequenceObject.skipStripping :
         true;
-    var keySeq = new KeySequence(
+    const keySeq = new KeySequence(
         firstSequenceEvent, sequenceObject.cvoxModifier,
         sequenceObject.doubleTap, skipStripping,
         sequenceObject.requireStickyMode);
@@ -440,33 +440,33 @@ KeySequence = class {
    * @return {!KeySequence} The created KeySequence object.
    */
   static fromStr(keyStr) {
-    var sequenceEvent = {};
-    var secondSequenceEvent = {};
+    const sequenceEvent = {};
+    const secondSequenceEvent = {};
 
-    var secondKeyPressed;
+    let secondKeyPressed;
     if (keyStr.indexOf('>') == -1) {
       secondKeyPressed = false;
     } else {
       secondKeyPressed = true;
     }
 
-    var cvoxPressed = false;
+    let cvoxPressed = false;
     sequenceEvent['stickyMode'] = false;
     sequenceEvent['prefixKey'] = false;
 
-    var tokens = keyStr.split('+');
-    for (var i = 0; i < tokens.length; i++) {
-      var seqs = tokens[i].split('>');
-      for (var j = 0; j < seqs.length; j++) {
+    const tokens = keyStr.split('+');
+    for (let i = 0; i < tokens.length; i++) {
+      const seqs = tokens[i].split('>');
+      for (let j = 0; j < seqs.length; j++) {
         if (seqs[j].charAt(0) == '#') {
-          var keyCode = parseInt(seqs[j].substr(1), 10);
+          const keyCode = parseInt(seqs[j].substr(1), 10);
           if (j > 0) {
             secondSequenceEvent['keyCode'] = keyCode;
           } else {
             sequenceEvent['keyCode'] = keyCode;
           }
         }
-        var keyName = seqs[j];
+        const keyName = seqs[j];
         if (seqs[j].length == 1) {
           // Key is A/B/C...1/2/3 and we don't need to worry about setting
           // modifiers.
@@ -491,7 +491,7 @@ KeySequence = class {
         }
       }
     }
-    var keySeq = new KeySequence(sequenceEvent, cvoxPressed);
+    const keySeq = new KeySequence(sequenceEvent, cvoxPressed);
     if (secondKeyPressed) {
       keySeq.addKeyEvent(secondSequenceEvent);
     }

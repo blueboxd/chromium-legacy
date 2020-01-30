@@ -95,8 +95,15 @@ bool SyncedBookmarkTracker::Entity::has_final_guid() const {
   return metadata_->has_client_tag_hash();
 }
 
+bool SyncedBookmarkTracker::Entity::final_guid_matches(
+    const std::string& guid) const {
+  return metadata_->has_client_tag_hash() &&
+         metadata_->client_tag_hash() ==
+             syncer::ClientTagHash::FromUnhashed(syncer::BOOKMARKS, guid)
+                 .value();
+}
+
 void SyncedBookmarkTracker::Entity::set_final_guid(const std::string& guid) {
-  DCHECK(!has_final_guid());
   metadata_->set_client_tag_hash(
       syncer::ClientTagHash::FromUnhashed(syncer::BOOKMARKS, guid).value());
 }
@@ -302,7 +309,6 @@ void SyncedBookmarkTracker::PopulateFinalGuid(const std::string& sync_id,
                                               const std::string& guid) {
   Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
-  DCHECK(!entity->has_final_guid());
   entity->set_final_guid(guid);
 }
 
@@ -537,6 +543,18 @@ void SyncedBookmarkTracker::UpdateSyncForLocalCreationIfNeeded(
   entity->metadata()->set_server_id(new_id);
   sync_id_to_entities_map_[new_id] = std::move(entity);
   sync_id_to_entities_map_.erase(old_id);
+}
+
+void SyncedBookmarkTracker::UpdateBookmarkNodePointer(
+    const bookmarks::BookmarkNode* old_node,
+    const bookmarks::BookmarkNode* new_node) {
+  if (old_node == new_node) {
+    return;
+  }
+  bookmark_node_to_entities_map_[new_node] =
+      bookmark_node_to_entities_map_[old_node];
+  bookmark_node_to_entities_map_[new_node]->set_bookmark_node(new_node);
+  bookmark_node_to_entities_map_.erase(old_node);
 }
 
 void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {

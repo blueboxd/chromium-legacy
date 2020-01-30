@@ -29,11 +29,11 @@ PhoneticData.init = function() {
     // set by the user. Behind the scenes, the getUIlanguage() API retrieves the
     // locale that was passed from the browser to the renderer via the --lang
     // command line flag.
-    var browserUILanguage = chrome.i18n.getUILanguage().toLowerCase();
+    const browserUILanguage = chrome.i18n.getUILanguage().toLowerCase();
     // Phonetic disambiguation data for the browserUI language.
     // This is loaded from a chromevox_strings_*.xtb file, where * is a variable
     // language code that corresponds to the system language.
-    var browserUILanguagePhoneticMap = /** @type {Object<string,string>} */
+    const browserUILanguagePhoneticMap = /** @type {Object<string,string>} */
         (JSON.parse(Msgs.getMsg('phonetic_map')));
     PhoneticData.phoneticMap_[browserUILanguage] = browserUILanguagePhoneticMap;
   } catch (e) {

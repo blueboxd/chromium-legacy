@@ -13,11 +13,11 @@ goog.provide('AutomationPredicate.Unary');
 goog.require('constants');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var Restriction = chrome.automation.Restriction;
-var Role = chrome.automation.RoleType;
-var State = chrome.automation.StateType;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const Restriction = chrome.automation.Restriction;
+const Role = chrome.automation.RoleType;
+const State = chrome.automation.StateType;
 
 /**
  * A helper to find any actionable children.
@@ -30,8 +30,8 @@ var hasActionableDescendant = function(node) {
     return true;
   }
 
-  var result = false;
-  for (var i = 0; i < node.children.length; i++) {
+  let result = false;
+  for (let i = 0; i < node.children.length; i++) {
     result = hasActionableDescendant(node.children[i]);
   }
 
@@ -58,9 +58,9 @@ AutomationPredicate = class {
    * @return {!AutomationPredicate.Unary}
    */
   static match(params) {
-    var anyRole = params.anyRole || [];
-    var anyPredicate = params.anyPredicate || [];
-    var anyAttribute = params.anyAttribute || {};
+    const anyRole = params.anyRole || [];
+    const anyPredicate = params.anyPredicate || [];
+    const anyAttribute = params.anyAttribute || {};
     return function(node) {
       return anyRole.some(function(role) {
         return role == node.role;
@@ -218,8 +218,8 @@ AutomationPredicate = class {
     // Containers who have name from contents should be treated like objects if
     // the contents is all static text and not large.
     if (node.name && node.nameFrom == 'contents') {
-      var onlyStaticText = true;
-      var textLength = 0;
+      let onlyStaticText = true;
+      let textLength = 0;
       for (var i = 0, child; child = node.children[i]; i++) {
         if (child.role != Role.STATIC_TEXT) {
           onlyStaticText = false;
@@ -250,8 +250,8 @@ AutomationPredicate = class {
    */
   static linebreak(first, second) {
     // TODO(dtseng): Use next/previousOnLine once available.
-    var fl = first.unclippedLocation;
-    var sl = second.unclippedLocation;
+    const fl = first.unclippedLocation;
+    const sl = second.unclippedLocation;
     return fl.top != sl.top || (fl.top + fl.height != sl.top + sl.height);
   }
 
@@ -424,11 +424,11 @@ AutomationPredicate = class {
       throw new Error('You must set either row or col to true');
     }
 
-    var dir = opts.dir || Dir.FORWARD;
+    const dir = opts.dir || Dir.FORWARD;
 
     // Compute the row/col index defaulting to 0.
-    var rowIndex = 0, colIndex = 0;
-    var tableNode = start;
+    let rowIndex = 0, colIndex = 0;
+    let tableNode = start;
     while (tableNode) {
       if (AutomationPredicate.table(tableNode)) {
         break;
@@ -570,7 +570,7 @@ AutomationPredicate = class {
   static makeListPredicate(node) {
     // Scan upward for a list-like ancestor. We do not want to match against
     // this node.
-    var avoidNode = node;
+    let avoidNode = node;
     while (avoidNode && !AutomationPredicate.listLike(avoidNode)) {
       avoidNode = avoidNode.parent;
     }
@@ -730,5 +730,4 @@ AutomationPredicate.menuItem = AutomationPredicate.roles(
  */
 AutomationPredicate.text = AutomationPredicate.roles(
     [Role.STATIC_TEXT, Role.INLINE_TEXT_BOX, Role.LINE_BREAK]);
-
 });  // goog.scope

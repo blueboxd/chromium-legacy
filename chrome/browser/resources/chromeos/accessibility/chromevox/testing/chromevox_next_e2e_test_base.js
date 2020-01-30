@@ -28,7 +28,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     DesktopAutomationHandler.announceActions = true;
 
     this.originalOutputContextValues_ = {};
-    for (var role in Output.ROLE_INFO_) {
+    for (const role in Output.ROLE_INFO_) {
       this.originalOutputContextValues_[role] =
           Output.ROLE_INFO_[role]['outputContextFirst'];
     }
@@ -57,7 +57,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
   runWithLoadedTree(doc, callback, opt_url) {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(r) {
-      var url = opt_url || TestUtils.createUrlForDoc(doc);
+      const url = opt_url || TestUtils.createUrlForDoc(doc);
       var listener = function(evt) {
         if (evt.target.root.url != url) {
           return;
@@ -75,7 +75,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
       };
       r.addEventListener('focus', listener, true);
       r.addEventListener('loadComplete', listener, true);
-      var createParams = {active: true, url};
+      const createParams = {active: true, url};
       chrome.tabs.create(createParams);
     }.bind(this));
   }
@@ -93,7 +93,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
    * rebaselining when changing context ordering for a specific role.
    */
   forceContextualLastOutput() {
-    for (var role in Output.ROLE_INFO_) {
+    for (const role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
     }
   }
@@ -102,14 +102,14 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
    * Forces output to place context utterances at the beginning of output.
    */
   forceContextualFirstOutput() {
-    for (var role in Output.ROLE_INFO_) {
+    for (const role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = true;
     }
   }
 
   /** Resets contextual output values to their defaults. */
   resetContextualOutput() {
-    for (var role in Output.ROLE_INFO_) {
+    for (const role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] =
           this.originalOutputContextValues_[role];
     }

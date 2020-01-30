@@ -32,7 +32,7 @@ const EventHelper = {
     let type = chrome.accessibilityPrivate.SyntheticMouseEventType.PRESS;
     chrome.accessibilityPrivate.sendSyntheticMouseEvent({type, x, y});
 
-    let callback = () => {
+    const callback = () => {
       type = chrome.accessibilityPrivate.SyntheticMouseEventType.RELEASE;
       chrome.accessibilityPrivate.sendSyntheticMouseEvent({type, x, y});
     };

@@ -25,7 +25,7 @@ MathHandler = class {
    * @return {boolean} Whether any math was spoken.
    */
   speak() {
-    var mathml;
+    let mathml;
 
     // Math can exist either as explicit innerHtml (handled by the Blink
     // renderer for nodes with role math) or as a data attribute.
@@ -40,7 +40,7 @@ MathHandler = class {
       return false;
     }
 
-    var text;
+    let text;
 
     try {
       text = SRE.walk(mathml);
@@ -63,7 +63,7 @@ MathHandler = class {
    * @return {boolean} True if an instance was created.
    */
   static init(range) {
-    var node = range.start.node;
+    const node = range.start.node;
     if (node && AutomationPredicate.math(node)) {
       MathHandler.instance = new MathHandler(node);
     } else {
@@ -86,8 +86,8 @@ MathHandler = class {
       return true;
     }
 
-    var instance = MathHandler.instance;
-    var output = SRE.move(evt.keyCode);
+    const instance = MathHandler.instance;
+    const output = SRE.move(evt.keyCode);
     if (output) {
       ChromeVox.tts.speak(output, QueueMode.FLUSH);
     }

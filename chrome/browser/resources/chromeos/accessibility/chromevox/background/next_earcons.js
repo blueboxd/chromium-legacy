@@ -64,9 +64,9 @@ NextEarcons = class extends AbstractEarcons {
     }
     if (ChromeVoxState.instance.currentRange &&
         ChromeVoxState.instance.currentRange.isValid()) {
-      var node = ChromeVoxState.instance.currentRange.start.node;
-      var rect = opt_location || node.location;
-      var container = node.root.location;
+      const node = ChromeVoxState.instance.currentRange.start.node;
+      const rect = opt_location || node.location;
+      const container = node.root.location;
       if (this.shouldPan_) {
         this.engine_.setPositionForRect(rect, container);
       } else {

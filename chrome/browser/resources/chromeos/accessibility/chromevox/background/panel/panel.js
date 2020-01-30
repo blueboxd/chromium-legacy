@@ -96,7 +96,7 @@ Panel = class {
     }, false);
 
     window.addEventListener('message', function(message) {
-      var command = JSON.parse(message.data);
+      const command = JSON.parse(message.data);
       Panel.exec(/** @type {PanelCommand} */ (command));
     }, false);
 
@@ -278,14 +278,14 @@ Panel = class {
     Panel.clearMenus();
     Panel.pendingCallback_ = null;
 
-    var searchMenu = (Panel.menuSearchEnabled_) ?
+    const searchMenu = (Panel.menuSearchEnabled_) ?
         Panel.addSearchMenu('panel_search_menu') :
         null;
-    var jumpMenu = Panel.addMenu('panel_menu_jump');
-    var speechMenu = Panel.addMenu('panel_menu_speech');
-    var tabsMenu = Panel.addMenu('panel_menu_tabs');
-    var chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
-    var actionsMenu = Panel.addMenu('panel_menu_actions');
+    const jumpMenu = Panel.addMenu('panel_menu_jump');
+    const speechMenu = Panel.addMenu('panel_menu_speech');
+    const tabsMenu = Panel.addMenu('panel_menu_tabs');
+    const chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
+    const actionsMenu = Panel.addMenu('panel_menu_actions');
 
     // Add a menu item that opens the full list of ChromeBook keyboard
     // shortcuts. We want this to be at the top of the ChromeVox menu.
@@ -298,7 +298,7 @@ Panel = class {
 
     // Create a mapping between categories from CommandStore, and our
     // top-level menus. Some categories aren't mapped to any menu.
-    var categoryToMenu = {
+    const categoryToMenu = {
       'navigation': jumpMenu,
       'jump_commands': jumpMenu,
       'overview': jumpMenu,
@@ -314,23 +314,23 @@ Panel = class {
     };
 
     // Get the key map from the background page.
-    var bkgnd = chrome.extension.getBackgroundPage();
-    var keymap = bkgnd['KeyMap']['fromCurrentKeyMap']();
+    const bkgnd = chrome.extension.getBackgroundPage();
+    const keymap = bkgnd['KeyMap']['fromCurrentKeyMap']();
 
     // Make a copy of the key bindings, get the localized title of each
     // command, and then sort them.
-    var sortedBindings = keymap.bindings().slice();
+    const sortedBindings = keymap.bindings().slice();
     sortedBindings.forEach(goog.bind(function(binding) {
-      var command = binding.command;
-      var keySeq = binding.sequence;
+      const command = binding.command;
+      const keySeq = binding.sequence;
       binding.keySeq = KeyUtil.keySequenceToString(keySeq, true);
-      var titleMsgId = CommandStore.messageForCommand(command);
+      const titleMsgId = CommandStore.messageForCommand(command);
       if (!titleMsgId) {
         console.error('No localization for: ' + command);
         binding.title = '';
         return;
       }
-      var title = Msgs.getMsg(titleMsgId);
+      let title = Msgs.getMsg(titleMsgId);
       // Convert to title case.
       title = title.replace(/\w\S*/g, function(word) {
         return word.charAt(0).toUpperCase() + word.substr(1);
@@ -342,24 +342,24 @@ Panel = class {
     });
 
     // Insert items from the bindings into the menus.
-    var sawBindingSet = {};
-    var gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
+    const sawBindingSet = {};
+    const gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
     sortedBindings.forEach(goog.bind(function(binding) {
-      var command = binding.command;
+      const command = binding.command;
       if (sawBindingSet[command]) {
         return;
       }
       sawBindingSet[command] = true;
-      var category = CommandStore.categoryForCommand(binding.command);
-      var menu = category ? categoryToMenu[category] : null;
-      var eventSource = bkgnd['EventSourceState']['get']();
+      const category = CommandStore.categoryForCommand(binding.command);
+      const menu = category ? categoryToMenu[category] : null;
+      const eventSource = bkgnd['EventSourceState']['get']();
       if (binding.title && menu) {
-        var keyText;
-        var brailleText;
-        var gestureText;
+        let keyText;
+        let brailleText;
+        let gestureText;
         if (eventSource == EventSourceType.TOUCH_GESTURE) {
           for (var i = 0, gesture; gesture = gestures[i]; i++) {
-            var data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+            const data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
             if (data && data.command == command) {
               gestureText = Msgs.getMsg(data.msgId);
               break;
@@ -373,7 +373,7 @@ Panel = class {
 
         menu.addMenuItem(
             binding.title, keyText, brailleText, gestureText, function() {
-              var CommandHandler =
+              const CommandHandler =
                   chrome.extension.getBackgroundPage()['CommandHandler'];
               CommandHandler['onCommand'](binding.command);
             });
@@ -394,10 +394,10 @@ Panel = class {
       // Add all open tabs to the Tabs menu.
       bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
         bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
-          for (var i = 0; i < windows.length; i++) {
-            var tabs = windows[i].tabs;
-            for (var j = 0; j < tabs.length; j++) {
-              var title = tabs[j].title;
+          for (let i = 0; i < windows.length; i++) {
+            const tabs = windows[i].tabs;
+            for (let j = 0; j < tabs.length; j++) {
+              let title = tabs[j].title;
               if (tabs[j].active && windows[i].id == lastFocusedWindow.id) {
                 title += ' ' + Msgs.getMsg('active_tab');
               }
@@ -421,7 +421,7 @@ Panel = class {
           Panel.onClose();
         });
 
-    var roleListMenuMapping = [
+    const roleListMenuMapping = [
       {menuTitle: 'role_heading', predicate: AutomationPredicate.heading},
       {menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark},
       {menuTitle: 'role_link', predicate: AutomationPredicate.link},
@@ -429,25 +429,25 @@ Panel = class {
       {menuTitle: 'role_table', predicate: AutomationPredicate.table}
     ];
 
-    var node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
+    const node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
     for (var i = 0; i < roleListMenuMapping.length; ++i) {
-      var menuTitle = roleListMenuMapping[i].menuTitle;
-      var predicate = roleListMenuMapping[i].predicate;
+      const menuTitle = roleListMenuMapping[i].menuTitle;
+      const predicate = roleListMenuMapping[i].predicate;
       // Create node menus asynchronously (because it may require searching a
       // long document) unless that's the specific menu the
       // user requested.
-      var async = (menuTitle != opt_activateMenuTitle);
+      const async = (menuTitle != opt_activateMenuTitle);
       Panel.addNodeMenu(menuTitle, node, predicate, async);
     }
 
     if (node.standardActions) {
       for (var i = 0; i < node.standardActions.length; i++) {
-        var standardAction = node.standardActions[i];
-        var actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
+        const standardAction = node.standardActions[i];
+        const actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
         if (!actionMsg) {
           continue;
         }
-        var actionDesc = Msgs.getMsg(actionMsg);
+        const actionDesc = Msgs.getMsg(actionMsg);
         actionsMenu.addMenuItem(
             actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
             '' /* gesture */,
@@ -457,7 +457,7 @@ Panel = class {
 
     if (node.customActions) {
       for (var i = 0; i < node.customActions.length; i++) {
-        var customAction = node.customActions[i];
+        const customAction = node.customActions[i];
         actionsMenu.addMenuItem(
             customAction.description, '' /* menuItemShortcut */,
             '' /* menuItemBraille */, '' /* gesture */,
@@ -467,14 +467,14 @@ Panel = class {
 
     // Activate either the specified menu or the search menu.
     // Search menu can be null, since it is hidden behind a flag.
-    var selectedMenu = Panel.searchMenu || Panel.menus_[0];
+    let selectedMenu = Panel.searchMenu || Panel.menus_[0];
     for (var i = 0; i < Panel.menus_.length; i++) {
       if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
         selectedMenu = Panel.menus_[i];
       }
     }
 
-    var activateFirstItem = (selectedMenu != Panel.searchMenu);
+    const activateFirstItem = (selectedMenu != Panel.searchMenu);
     Panel.activateMenu(selectedMenu, activateFirstItem);
   }
 
@@ -493,7 +493,7 @@ Panel = class {
    */
   static clearMenus() {
     while (Panel.menus_.length) {
-      var menu = Panel.menus_.pop();
+      const menu = Panel.menus_.pop();
       $('menu-bar').removeChild(menu.menuBarItemElement);
       $('menus_background').removeChild(menu.menuContainerElement);
     }
@@ -509,7 +509,7 @@ Panel = class {
    * @return {!PanelMenu} The menu just created.
    */
   static addMenu(menuMsg) {
-    var menu = new PanelMenu(menuMsg);
+    const menu = new PanelMenu(menuMsg);
     $('menu-bar').appendChild(menu.menuBarItemElement);
     menu.menuBarItemElement.addEventListener('mouseover', function() {
       Panel.activateMenu(menu, true /* activateFirstItem */);
@@ -526,30 +526,30 @@ Panel = class {
    * @param {*=} data The data sent through the PanelCommand.
    */
   static onUpdateBraille(data) {
-    var groups = data.groups;
-    var cols = data.cols;
-    var rows = data.rows;
-    var sideBySide = localStorage['brailleSideBySide'] === 'true';
+    const groups = data.groups;
+    const cols = data.cols;
+    const rows = data.rows;
+    const sideBySide = localStorage['brailleSideBySide'] === 'true';
 
-    var addBorders = function(event) {
-      var cell = event.target;
+    const addBorders = function(event) {
+      const cell = event.target;
       if (cell.tagName == 'TD') {
         cell.className = 'highlighted-cell';
-        var companionIDs = cell.getAttribute('data-companionIDs');
+        const companionIDs = cell.getAttribute('data-companionIDs');
         companionIDs.split(' ').map(function(companionID) {
-          var companion = $(companionID);
+          const companion = $(companionID);
           companion.className = 'highlighted-cell';
         });
       }
     };
 
-    var removeBorders = function(event) {
-      var cell = event.target;
+    const removeBorders = function(event) {
+      const cell = event.target;
       if (cell.tagName == 'TD') {
         cell.className = 'unhighlighted-cell';
-        var companionIDs = cell.getAttribute('data-companionIDs');
+        const companionIDs = cell.getAttribute('data-companionIDs');
         companionIDs.split(' ').map(function(companionID) {
-          var companion = $(companionID);
+          const companion = $(companionID);
           companion.className = 'unhighlighted-cell';
         });
       }
@@ -559,7 +559,7 @@ Panel = class {
     Panel.brailleContainer_.addEventListener('mouseout', removeBorders);
 
     // Clear the tables.
-    var rowCount = Panel.brailleTableElement_.rows.length;
+    let rowCount = Panel.brailleTableElement_.rows.length;
     for (var i = 0; i < rowCount; i++) {
       Panel.brailleTableElement_.deleteRow(0);
     }
@@ -568,11 +568,11 @@ Panel = class {
       Panel.brailleTableElement2_.deleteRow(0);
     }
 
-    var row1, row2;
+    let row1, row2;
     // Number of rows already written.
     rowCount = 0;
     // Number of cells already written in this row.
-    var cellCount = cols;
+    let cellCount = cols;
     for (var i = 0; i < groups.length; i++) {
       if (cellCount == cols) {
         cellCount = 0;
@@ -591,18 +591,18 @@ Panel = class {
         }
       }
 
-      var topCell = row1.insertCell(-1);
+      const topCell = row1.insertCell(-1);
       topCell.innerHTML = groups[i][0];
       topCell.id = i + '-textCell';
       topCell.setAttribute('data-companionIDs', i + '-brailleCell');
       topCell.className = 'unhighlighted-cell';
 
-      var bottomCell = row2.insertCell(-1);
+      let bottomCell = row2.insertCell(-1);
       bottomCell.id = i + '-brailleCell';
       bottomCell.setAttribute('data-companionIDs', i + '-textCell');
       bottomCell.className = 'unhighlighted-cell';
       if (cellCount + groups[i][1].length > cols) {
-        var brailleText = groups[i][1];
+        let brailleText = groups[i][1];
         while (cellCount + brailleText.length > cols) {
           // At this point we already have a bottomCell to fill, so fill it.
           bottomCell.innerHTML = brailleText.substring(0, cols - cellCount);
@@ -621,7 +621,7 @@ Panel = class {
             // Interleaved.
             row2 = Panel.brailleTableElement_.insertRow(-1);
           }
-          var bottomCell2 = row2.insertCell(-1);
+          const bottomCell2 = row2.insertCell(-1);
           bottomCell2.id = i + '-brailleCell2';
           bottomCell2.setAttribute(
               'data-companionIDs', i + '-textCell ' + i + '-brailleCell');
@@ -657,7 +657,7 @@ Panel = class {
    * @return {PanelMenu} The menu just created.
    */
   static addNodeMenu(menuMsg, node, pred, defer) {
-    var menu = new PanelNodeMenu(menuMsg, node, pred, defer);
+    const menu = new PanelNodeMenu(menuMsg, node, pred, defer);
     $('menu-bar').appendChild(menu.menuBarItemElement);
     menu.menuBarItemElement.addEventListener('mouseover', function() {
       Panel.activateMenu(menu, true /* activateFirstItem */);
@@ -744,8 +744,8 @@ Panel = class {
    * @param {number} delta The number to add to the active menu index.
    */
   static advanceActiveMenuBy(delta) {
-    var activeIndex = -1;
-    for (var i = 0; i < Panel.menus_.length; i++) {
+    let activeIndex = -1;
+    for (let i = 0; i < Panel.menus_.length; i++) {
       if (Panel.activeMenu_ == Panel.menus_[i]) {
         activeIndex = i;
         break;
@@ -787,7 +787,7 @@ Panel = class {
       return;
     }
 
-    var target = event.target;
+    let target = event.target;
     while (target && !target.classList.contains('menu-item')) {
       // Allow the user to click and release on the menu button and leave
       // the menu button.
@@ -852,9 +852,9 @@ Panel = class {
         case 'ArrowLeft':
         case 'ArrowRight':
           if (event.target.value) {
-            var cursorIndex = event.target.selectionStart +
+            const cursorIndex = event.target.selectionStart +
                 (event.key == 'ArrowRight' ? 1 : -1);
-            var queryLength = event.target.value.length;
+            const queryLength = event.target.value.length;
             if (cursorIndex >= 0 && cursorIndex <= queryLength) {
               return;
             }
@@ -911,7 +911,7 @@ Panel = class {
    * Open the ChromeVox Options.
    */
   static onOptions() {
-    var bkgnd =
+    const bkgnd =
         chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
     bkgnd['showOptionsPage']();
     Panel.setMode(Panel.Mode.COLLAPSED);
@@ -943,10 +943,10 @@ Panel = class {
    * was queued, execute it once focus is restored.
    */
   static closeMenusAndRestoreFocus() {
-    var bkgnd = chrome.extension.getBackgroundPage();
+    const bkgnd = chrome.extension.getBackgroundPage();
     bkgnd.chrome.automation.getDesktop(function(desktop) {
       // Watch for a blur on the panel.
-      var pendingCallback = Panel.pendingCallback_;
+      const pendingCallback = Panel.pendingCallback_;
       Panel.pendingCallback_ = null;
       var onFocus = function(evt) {
         if (evt.target.docUrl == location.href) {
@@ -1033,26 +1033,26 @@ Panel = class {
     if (!Panel.searchMenu) {
       throw Error('Panel.searchMenu must be defined');
     }
-    var query = event.target.value.toLowerCase();
+    const query = event.target.value.toLowerCase();
     Panel.searchMenu.clear();
     // Show the search results menu.
     Panel.activateMenu(Panel.searchMenu, false /* activateFirstItem */);
     // Populate.
     if (query) {
-      for (var i = 0; i < Panel.menus_.length; ++i) {
-        var menu = Panel.menus_[i];
+      for (let i = 0; i < Panel.menus_.length; ++i) {
+        const menu = Panel.menus_[i];
         if (menu === Panel.searchMenu || menu instanceof PanelNodeMenu) {
           continue;
         }
-        var items = menu.items;
-        for (var j = 0; j < items.length; ++j) {
-          var item = items[j];
+        const items = menu.items;
+        for (let j = 0; j < items.length; ++j) {
+          const item = items[j];
           if (!item.menuItemShortcut) {
             // Only add menu items that have shortcuts.
             continue;
           }
-          var itemText = item.text.toLowerCase();
-          var match = itemText.includes(query) &&
+          const itemText = item.text.toLowerCase();
+          const match = itemText.includes(query) &&
               (itemText !== Msgs.getMsg('panel_menu_item_none').toLowerCase());
           if (match) {
             Panel.searchMenu.copyAndAddMenuItem(item);
@@ -1117,7 +1117,7 @@ window.addEventListener('load', function() {
 }, false);
 
 window.addEventListener('hashchange', function() {
-  var bkgnd = chrome.extension.getBackgroundPage();
+  const bkgnd = chrome.extension.getBackgroundPage();
 
   // Save the sticky state when a user first focuses the panel.
   if (location.hash == '#fullscreen' || location.hash == '#focus') {

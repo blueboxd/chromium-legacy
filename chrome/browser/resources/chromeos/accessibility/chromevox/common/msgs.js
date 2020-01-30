@@ -31,7 +31,7 @@ Msgs = class {
    * @return {string} The localized message.
    */
   static getMsg(messageId, opt_subs) {
-    var message = Msgs.Untranslated[messageId.toUpperCase()];
+    let message = Msgs.Untranslated[messageId.toUpperCase()];
     if (message !== undefined) {
       return Msgs.applySubstitutions_(message, opt_subs);
     }
@@ -52,13 +52,13 @@ Msgs = class {
    * @param {Node} root The root node where the translation should be performed.
    */
   static addTranslatedMessagesToDom(root) {
-    var elts = root.querySelectorAll('.i18n');
-    for (var i = 0; i < elts.length; i++) {
-      var msgid = elts[i].getAttribute('msgid');
+    const elts = root.querySelectorAll('.i18n');
+    for (let i = 0; i < elts.length; i++) {
+      const msgid = elts[i].getAttribute('msgid');
       if (!msgid) {
         throw new Error('Element has no msgid attribute: ' + elts[i]);
       }
-      var val = Msgs.getMsg(msgid);
+      const val = Msgs.getMsg(msgid);
       if (elts[i].tagName == 'INPUT') {
         elts[i].setAttribute('placeholder', val);
       } else {
@@ -92,7 +92,7 @@ Msgs = class {
           /** @type {!Object<string>} */ (
               JSON.parse(Msgs.getMsg('locale_dict')));
     }
-    var name = Msgs.localeNameDict_[locale];
+    const name = Msgs.localeNameDict_[locale];
     if (!name) {
       throw Error('Unsupported locale identifier: ' + locale);
     }
@@ -109,7 +109,7 @@ Msgs = class {
    */
   static applySubstitutions_(message, opt_subs) {
     if (opt_subs) {
-      for (var i = 0; i < opt_subs.length; i++) {
+      for (let i = 0; i < opt_subs.length; i++) {
         message = message.replace('$' + (i + 1), opt_subs[i]);
       }
     }

@@ -21,7 +21,7 @@ TEST_F(
     function() {
       this.runWithLoadedTree('<p>test</p>', function() {
         // A Search keydown gets eaten.
-        var searchDown = {};
+        const searchDown = {};
         searchDown.preventDefault = this.newCallback();
         searchDown.stopPropagation = this.newCallback();
         searchDown.metaKey = true;
@@ -30,7 +30,7 @@ TEST_F(
 
         // A Search keydown does not get eaten when there's no range.
         ChromeVoxState.instance.setCurrentRange(null);
-        var searchDown2 = {};
+        const searchDown2 = {};
         searchDown2.metaKey = true;
         keyboardHandler.onKeyDown(searchDown2);
         assertEquals(1, keyboardHandler.eatenKeyDowns_.size);

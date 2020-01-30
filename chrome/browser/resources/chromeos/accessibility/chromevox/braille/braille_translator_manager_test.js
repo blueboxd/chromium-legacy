@@ -38,10 +38,10 @@ FakeLibLouis.prototype = {
 
   /** @override */
   getTranslator(fileNames, callback) {
-    var tables = this.translatorManager.getTablesForTest();
-    var result = null;
+    const tables = this.translatorManager.getTablesForTest();
+    let result = null;
     if (tables != null) {
-      var found = tables.filter(function(table) {
+      const found = tables.filter(function(table) {
         return table.fileNames === fileNames;
       })[0];
       if (found) {
@@ -62,7 +62,7 @@ FakeTranslator = class {
 };
 
 function callOnce(callback) {
-  var called = false;
+  let called = false;
   return function() {
     if (!called) {
       called = true;

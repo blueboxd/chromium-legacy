@@ -44,11 +44,11 @@ class FakeTranslator {
 
   /** @Override */
   translate(text, formTypeMap, callback) {
-    var result = new Uint8Array(text.length);
-    var textToBraille = [];
-    var brailleToText = [];
-    for (var i = 0; i < text.length; ++i) {
-      var formType = this.styleMap_[formTypeMap[i]];
+    const result = new Uint8Array(text.length);
+    const textToBraille = [];
+    const brailleToText = [];
+    for (let i = 0; i < text.length; ++i) {
+      let formType = this.styleMap_[formTypeMap[i]];
       if (formType) {
         formType = formType.charCodeAt(0);
       }
@@ -70,9 +70,9 @@ class FakeTranslator {
  */
 function assertArrayBufferMatches(expected, actual) {
   assertTrue(actual instanceof ArrayBuffer);
-  var a = new Uint8Array(actual);
+  const a = new Uint8Array(actual);
   assertEquals(expected.length, a.length);
-  for (var i = 0; i < a.length; ++i) {
+  for (let i = 0; i < a.length; ++i) {
     assertEquals(expected.charCodeAt(i), a[i], 'Position ' + i);
   }
 }
@@ -80,18 +80,18 @@ function assertArrayBufferMatches(expected, actual) {
 TEST_F(
     'ChromeVoxExpandingBrailleTranslatorUnitTest', 'TranslationError',
     function() {
-      var text = new Spannable('error ok', new ValueSpan());
+      const text = new Spannable('error ok', new ValueSpan());
       text.setSpan(new ValueSelectionSpan, 0, 0);
-      var contractedTranslator = new FakeTranslator('c');
+      const contractedTranslator = new FakeTranslator('c');
       // Translator that always results in an error.
-      var uncontractedTranslator = {
+      const uncontractedTranslator = {
         translate(text, formTypeMap, callback) {
           callback(null, null, null);
         }
       };
-      var translationResult = null;
+      const translationResult = null;
 
-      var expandingTranslator = new ExpandingBrailleTranslator(
+      const expandingTranslator = new ExpandingBrailleTranslator(
           contractedTranslator, uncontractedTranslator);
       expandingTranslator.translate(
           text, ExpandingBrailleTranslator.ExpansionType.SELECTION,
@@ -107,7 +107,7 @@ TEST_F(
 
 // Test for many variations of successful translations.
 
-var totalRunTranslationTests = 0;
+let totalRunTranslationTests = 0;
 
 /**
  * Performs the translation and checks the output.
@@ -124,23 +124,23 @@ function doTranslationTest(
     name, contracted, valueExpansion, text, expectedOutput) {
   try {
     totalRunTranslationTests++;
-    var uncontractedTranslator = new FakeTranslator('u');
-    var expandingTranslator;
+    const uncontractedTranslator = new FakeTranslator('u');
+    let expandingTranslator;
     if (contracted) {
-      var contractedTranslator = new FakeTranslator('c');
+      const contractedTranslator = new FakeTranslator('c');
       expandingTranslator = new ExpandingBrailleTranslator(
           contractedTranslator, uncontractedTranslator);
     } else {
       expandingTranslator =
           new ExpandingBrailleTranslator(uncontractedTranslator);
     }
-    var extraCellsSpan = text.getSpanInstanceOf(ExtraCellsSpan);
+    const extraCellsSpan = text.getSpanInstanceOf(ExtraCellsSpan);
     if (extraCellsSpan) {
       var extraCellsSpanPos = text.getSpanStart(extraCellsSpan);
     }
-    var expectedTextToBraille = [];
-    var expectedBrailleToText = [];
-    for (var i = 0, pos = 0; i < text.length; ++i, ++pos) {
+    const expectedTextToBraille = [];
+    const expectedBrailleToText = [];
+    for (let i = 0, pos = 0; i < text.length; ++i, ++pos) {
       if (i === extraCellsSpanPos) {
         ++pos;
       }
@@ -177,26 +177,26 @@ function doTranslationTest(
  */
 function runTranslationTestVariants(
     testCase, contracted, valueExpansion, withExtraCells) {
-  var expType = ExpandingBrailleTranslator.ExpansionType;
+  const expType = ExpandingBrailleTranslator.ExpansionType;
   // Construct the full name.
-  var fullName = contracted ? 'Contracted_' : 'Uncontracted_';
+  let fullName = contracted ? 'Contracted_' : 'Uncontracted_';
   fullName += 'Expansion' + valueExpansion + '_';
   if (withExtraCells) {
     fullName += 'ExtraCells_';
   }
   fullName += testCase.name;
-  var input = testCase.input;
+  let input = testCase.input;
   if (withExtraCells) {
     input = input.substring(0);  // Shallow copy.
     var selectionStart =
         input.getSpanStart(input.getSpanInstanceOf(ValueSelectionSpan));
-    var extraCellsSpan = new ExtraCellsSpan();
+    const extraCellsSpan = new ExtraCellsSpan();
     extraCellsSpan.cells = new Uint8Array(['e'.charCodeAt(0)]).buffer;
     input.setSpan(extraCellsSpan, selectionStart, selectionStart);
   }
   // The expected output depends on the contraction mode and value expansion.
-  var outputChar = contracted ? 'c' : 'u';
-  var expectedOutput;
+  const outputChar = contracted ? 'c' : 'u';
+  let expectedOutput;
   if (contracted && valueExpansion === expType.SELECTION) {
     expectedOutput = testCase.contractedOutput;
   } else if (contracted && valueExpansion === expType.ALL) {
@@ -212,8 +212,8 @@ function runTranslationTestVariants(
       fullName, contracted, valueExpansion, input, expectedOutput);
 
   // Run another test, with the value surrounded by some text.
-  var surroundedText = new Spannable('Name: ');
-  var surroundedExpectedOutput =
+  const surroundedText = new Spannable('Name: ');
+  let surroundedExpectedOutput =
       new Array('Name: '.length + 1).join(outputChar);
   surroundedText.append(input);
   surroundedExpectedOutput += expectedOutput;
@@ -236,7 +236,7 @@ function runTranslationTestVariants(
  * @param {=opt_selectionEnd} Selection end if selection is not a caret.
  */
 function createText(text, opt_selectionStart, opt_selectionEnd, opt_style) {
-  var result = new Spannable(text);
+  const result = new Spannable(text);
 
   result.setSpan(new ValueSpan, 0, text.length);
   if (goog.isDef(opt_selectionStart)) {
@@ -254,7 +254,7 @@ function createText(text, opt_selectionStart, opt_selectionEnd, opt_style) {
 }
 
 
-var TEXT = 'Hello, world!';
+const TEXT = 'Hello, world!';
 
 TEST_F(
     'ChromeVoxExpandingBrailleTranslatorUnitTest', 'successfulTranslations',
@@ -268,7 +268,7 @@ TEST_F(
        * where an 'u' means that the uncontracted translator was used at this
        * location and a 'c' means that the contracted translator was used.
        */
-      var TESTDATA = [
+      const TESTDATA = [
         {name: 'emptyText', input: createText(''), contractedOutput: ''}, {
           name: 'emptyTextWithCaret',
           input: createText('', 0),
@@ -305,11 +305,11 @@ TEST_F(
           contractedOutput: 'uuuuuucuuuuuu'
         }
       ];
-      var TESTDATA_WITH_SELECTION = TESTDATA.filter(function(testCase) {
+      const TESTDATA_WITH_SELECTION = TESTDATA.filter(function(testCase) {
         return testCase.input.getSpanInstanceOf(ValueSelectionSpan);
       });
 
-      var expType = ExpandingBrailleTranslator.ExpansionType;
+      const expType = ExpandingBrailleTranslator.ExpansionType;
       for (var i = 0, testCase; testCase = TESTDATA[i]; ++i) {
         runTranslationTestVariants(testCase, false, expType.SELECTION, false);
         runTranslationTestVariants(testCase, true, expType.NONE, false);
@@ -322,7 +322,7 @@ TEST_F(
 
       // Make sure that the logic above runs the tests, adjust when adding more
       // test variants.
-      var totalExpectedTranslationTests =
+      const totalExpectedTranslationTests =
           2 * (TESTDATA.length * 4 + TESTDATA_WITH_SELECTION.length);
       assertEquals(totalExpectedTranslationTests, totalRunTranslationTests);
     });
@@ -330,11 +330,11 @@ TEST_F(
 TEST_F(
     'ChromeVoxExpandingBrailleTranslatorUnitTest', 'StyleTranslations',
     function() {
-      var formTypeMap = {};
+      const formTypeMap = {};
       formTypeMap[LibLouis.FormType.BOLD] = 'b';
       formTypeMap[LibLouis.FormType.ITALIC] = 'i';
       formTypeMap[LibLouis.FormType.UNDERLINE] = 'u';
-      var translator = new ExpandingBrailleTranslator(
+      const translator = new ExpandingBrailleTranslator(
           new FakeTranslator('c', formTypeMap), new FakeTranslator('u'));
       translator.translate(
           createText(

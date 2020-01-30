@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** Constants used in Switch Access */
-let SAConstants = {};
+const SAConstants = {};
 SAConstants.Focus = {};
 
 // ========================= Constants =========================

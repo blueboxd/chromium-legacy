@@ -184,7 +184,7 @@ TtsBackground = class extends ChromeTtsBase {
 
     // |textString| gets manipulated throughout this function. Save the original
     // value for functions that may need it.
-    var originalTextString = textString;
+    const originalTextString = textString;
 
     if (this.ttsProperties[AbstractTts.VOLUME] === 0) {
       return this;
@@ -223,7 +223,7 @@ TtsBackground = class extends ChromeTtsBase {
       return this;
     }
 
-    var mergedProperties = this.mergeProperties(properties);
+    const mergedProperties = this.mergeProperties(properties);
 
     if (this.currentVoice && this.currentVoice !== constants.SYSTEM_VOICE) {
       mergedProperties['voiceName'] = this.currentVoice;
@@ -234,7 +234,7 @@ TtsBackground = class extends ChromeTtsBase {
       queueMode = QueueMode.FLUSH;
     }
 
-    var utterance = new Utterance(textString, mergedProperties);
+    const utterance = new Utterance(textString, mergedProperties);
     this.speakUsingQueue_(utterance, queueMode);
     // Attempt to queue phonetic speech with property['delay']. This ensures
     // that phonetic hints are delayed when we process them.
@@ -261,7 +261,7 @@ TtsBackground = class extends ChromeTtsBase {
         this.cancelUtterance_(this.currentUtterance_);
         this.currentUtterance_ = null;
       }
-      var i = 0;
+      let i = 0;
       while (i < this.utteranceQueue_.length) {
         if (this.shouldCancel_(this.utteranceQueue_[i], utterance, queueMode)) {
           this.cancelUtterance_(this.utteranceQueue_[i]);
@@ -316,16 +316,16 @@ TtsBackground = class extends ChromeTtsBase {
     }
 
     this.currentUtterance_ = this.utteranceQueue_.shift();
-    var utterance = this.currentUtterance_;
-    var utteranceId = utterance.id;
+    const utterance = this.currentUtterance_;
+    const utteranceId = utterance.id;
 
     utterance.properties['onEvent'] = goog.bind(function(event) {
       this.onTtsEvent_(event, utteranceId);
     }, this);
 
-    var validatedProperties = {};
-    for (var i = 0; i < TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
-      var p = TtsBackground.ALLOWED_PROPERTIES_[i];
+    const validatedProperties = {};
+    for (let i = 0; i < TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
+      const p = TtsBackground.ALLOWED_PROPERTIES_[i];
       if (utterance.properties[p]) {
         validatedProperties[p] = utterance.properties[p];
       }
@@ -363,7 +363,7 @@ TtsBackground = class extends ChromeTtsBase {
       return;
     }
 
-    var utterance = this.currentUtterance_;
+    const utterance = this.currentUtterance_;
 
     switch (event.type) {
       case 'start':
@@ -394,7 +394,7 @@ TtsBackground = class extends ChromeTtsBase {
       case 'interrupted':
         this.cancelUtterance_(utterance);
         this.currentUtterance_ = null;
-        for (var i = 0; i < this.utteranceQueue_.length; i++) {
+        for (let i = 0; i < this.utteranceQueue_.length; i++) {
           this.cancelUtterance_(this.utteranceQueue_[i]);
         }
         this.utteranceQueue_.length = 0;
@@ -461,7 +461,7 @@ TtsBackground = class extends ChromeTtsBase {
   increaseOrDecreaseProperty(propertyName, increase) {
     super.increaseOrDecreaseProperty(propertyName, increase);
 
-    var pref;
+    let pref;
     switch (propertyName) {
       case AbstractTts.RATE:
         pref = 'settings.tts.speech_rate';
@@ -475,7 +475,7 @@ TtsBackground = class extends ChromeTtsBase {
       default:
         return;
     }
-    var value = this.ttsProperties[propertyName];
+    const value = this.ttsProperties[propertyName];
     chrome.settingsPrivate.setPref(pref, value);
   }
 
@@ -492,7 +492,7 @@ TtsBackground = class extends ChromeTtsBase {
     this.cancelUtterance_(this.currentUtterance_);
     this.currentUtterance_ = null;
 
-    for (var i = 0; i < this.utteranceQueue_.length; i++) {
+    for (let i = 0; i < this.utteranceQueue_.length; i++) {
       this.cancelUtterance_(this.utteranceQueue_[i]);
     }
 
@@ -530,9 +530,9 @@ TtsBackground = class extends ChromeTtsBase {
     text = super.preprocess(text, properties);
 
     // Perform any remaining processing such as punctuation expansion.
-    var pE = null;
+    let pE = null;
     if (properties[AbstractTts.PUNCTUATION_ECHO]) {
-      for (var i = 0; pE = this.punctuationEchoes_[i]; i++) {
+      for (let i = 0; pE = this.punctuationEchoes_[i]; i++) {
         if (properties[AbstractTts.PUNCTUATION_ECHO] == pE.name) {
           break;
         }
@@ -563,8 +563,8 @@ TtsBackground = class extends ChromeTtsBase {
 
   /** @override */
   toggleSpeechOnOrOff() {
-    var previousValue = this.ttsProperties[AbstractTts.VOLUME];
-    var toggle = function() {
+    const previousValue = this.ttsProperties[AbstractTts.VOLUME];
+    const toggle = function() {
       if (previousValue == 0) {
         this.ttsProperties[AbstractTts.VOLUME] = 1;
       } else {
@@ -621,7 +621,7 @@ TtsBackground = class extends ChromeTtsBase {
    */
   createPunctuationReplace_(clear) {
     return goog.bind(function(match) {
-      var retain = this.retainPunctuation_.indexOf(match) != -1 ? match : ' ';
+      const retain = this.retainPunctuation_.indexOf(match) != -1 ? match : ' ';
       return clear ? retain :
                      ' ' +
               (new goog.i18n.MessageFormat(
@@ -655,7 +655,7 @@ TtsBackground = class extends ChromeTtsBase {
       properties['lang'] = chrome.i18n.getUILanguage();
     }
 
-    var phoneticText =
+    const phoneticText =
         PhoneticData.getPhoneticDisambiguation(properties['lang'], text);
     if (phoneticText) {
       properties['delay'] = true;
@@ -684,9 +684,9 @@ TtsBackground = class extends ChromeTtsBase {
    */
   updateVoice_(voiceName, opt_callback) {
     chrome.tts.getVoices(goog.bind(function(voices) {
-      let systemVoice = {voiceName: constants.SYSTEM_VOICE};
+      const systemVoice = {voiceName: constants.SYSTEM_VOICE};
       voices.unshift(systemVoice);
-      let newVoice = voices.find((v) => {
+      const newVoice = voices.find((v) => {
         return v.voiceName == voiceName;
       }) ||
           systemVoice;
@@ -707,8 +707,8 @@ TtsBackground = class extends ChromeTtsBase {
    */
   updateFromPrefs_(announce, prefs) {
     prefs.forEach((pref) => {
-      var msg;
-      var propertyName;
+      let msg;
+      let propertyName;
       switch (pref.key) {
         case 'settings.tts.speech_rate':
           propertyName = AbstractTts.RATE;
@@ -732,9 +732,9 @@ TtsBackground = class extends ChromeTtsBase {
         return;
       }
 
-      var valueAsPercent =
+      const valueAsPercent =
           Math.round(this.propertyToPercentage(propertyName) * 100);
-      var announcement = Msgs.getMsg(msg, [valueAsPercent]);
+      const announcement = Msgs.getMsg(msg, [valueAsPercent]);
       ChromeVox.tts.speak(
           announcement, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
     });
@@ -744,9 +744,9 @@ TtsBackground = class extends ChromeTtsBase {
   resetTextToSpeechSettings() {
     super.resetTextToSpeechSettings();
 
-    var rate = ChromeVox.tts.getDefaultProperty('rate');
-    var pitch = ChromeVox.tts.getDefaultProperty('pitch');
-    var volume = ChromeVox.tts.getDefaultProperty('volume');
+    const rate = ChromeVox.tts.getDefaultProperty('rate');
+    const pitch = ChromeVox.tts.getDefaultProperty('pitch');
+    const volume = ChromeVox.tts.getDefaultProperty('volume');
     chrome.settingsPrivate.setPref('settings.tts.speech_rate', rate);
     chrome.settingsPrivate.setPref('settings.tts.speech_pitch', pitch);
     chrome.settingsPrivate.setPref('settings.tts.speech_volume', volume);
@@ -755,9 +755,9 @@ TtsBackground = class extends ChromeTtsBase {
     // updateFromPrefs_().
     // Copy properties from AbstractTts.PERSONALITY_ANNOTATION and add the
     // doNotInterrupt property.
-    var speechProperties = {};
-    var sourceProperties = AbstractTts.PERSONALITY_ANNOTATION || {};
-    for (var [key, value] of Object.entries(sourceProperties)) {
+    const speechProperties = {};
+    const sourceProperties = AbstractTts.PERSONALITY_ANNOTATION || {};
+    for (const [key, value] of Object.entries(sourceProperties)) {
       speechProperties[key] = value;
     }
     speechProperties['doNotInterrupt'] = true;

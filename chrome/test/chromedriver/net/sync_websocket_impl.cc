@@ -58,12 +58,13 @@ bool SyncWebSocketImpl::Core::Connect(const GURL& url) {
   bool success = false;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // Connect with retries. The retry timeout starts at 2 seconds, with
+  // Connect with retries. The retry timeout starts at 4 seconds, with
   // exponential backoff, up to 16 seconds. The maximum total wait time is
   // about 30 seconds. (Normally, a successful connection takes only a few
-  // milliseconds on Linux and Mac, but around a second on Windows.)
+  // milliseconds on Linux and Mac, but around 2 seconds for Windows 10.)
+  // See https://crbug.com/chromedriver/3301 for Windows 10 startup times
   const int kMaxTimeout = 16;
-  for (int timeout = 2; timeout <= kMaxTimeout; timeout *= 2) {
+  for (int timeout = 4; timeout <= kMaxTimeout; timeout *= 2) {
     context_getter_->GetNetworkTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SyncWebSocketImpl::Core::ConnectOnIO, this,
                                   url, &success, &event));

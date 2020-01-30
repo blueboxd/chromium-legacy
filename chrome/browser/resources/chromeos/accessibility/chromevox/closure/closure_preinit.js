@@ -45,10 +45,10 @@ window.CLOSURE_IMPORT_SCRIPT = function(src) {
         return;
       }
 
-      var src = goog.global.queue_[0];
+      const src = goog.global.queue_[0];
 
       if (window.CLOSURE_USE_EXT_MESSAGES) {
-        var relativeSrc = src.substr(src.indexOf('closure/..') + 11);
+        const relativeSrc = src.substr(src.indexOf('closure/..') + 11);
         chrome.extension.sendMessage(
             {'srcFile': relativeSrc}, function(response) {
               try {
@@ -67,11 +67,11 @@ window.CLOSURE_IMPORT_SCRIPT = function(src) {
       // directly, with a magic comment that makes Chrome treat it like it
       // loaded normally. Wait until it's fetched before loading the
       // next script.
-      var xhr = new XMLHttpRequest();
-      var url = src + '?' + new Date().getTime();
+      const xhr = new XMLHttpRequest();
+      const url = src + '?' + new Date().getTime();
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-          var scriptText = xhr.responseText;
+          let scriptText = xhr.responseText;
           // Add a magic comment to the bottom of the file so that
           // Chrome knows the name of the script in the JavaScript debugger.
           scriptText += '\n//# sourceURL=' + src + '\n';

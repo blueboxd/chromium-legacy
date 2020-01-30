@@ -131,14 +131,15 @@ void ApplyRemoteUpdate(
     return;
   }
 
-  // The GUID is immutable and cannot change. This check is somewhat redundant
-  // here because there is a similar one also accounted to kUnexpectedGuid, but
-  // in theory a misbehaving server could trigger this codepath.
-  // TODO(crbug.com/1032052): If the tracker becomes client-tag-centric, this
-  // shouldn't be necessary.
-  if (update_entity.specifics.bookmark().guid() != node->guid()) {
-    LogProblematicBookmark(RemoteBookmarkUpdateError::kUnexpectedGuid);
-    return;
+  // If there is a different GUID in the specifics and it is valid, we must
+  // replace the entire node in order to use it, as GUIDs are immutable. Further
+  // updates are then applied to the new node instead.
+  if (update_entity.specifics.bookmark().guid() != node->guid() &&
+      base::IsValidGUID(update_entity.specifics.bookmark().guid())) {
+    const bookmarks::BookmarkNode* old_node = node;
+    node = ReplaceBookmarkNodeGUID(
+        node, update_entity.specifics.bookmark().guid(), model);
+    tracker->UpdateBookmarkNodePointer(old_node, node);
   }
 
   UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
@@ -227,16 +228,25 @@ void BookmarkRemoteUpdatesHandler::Process(
     // TODO(crbug.com/1032052): Remove this code once all local sync metadata
     // is required to populate the client tag (and be considered invalid
     // otherwise).
-    if (tracked_entity && !tracked_entity->has_final_guid() &&
-        !update_entity.is_deleted() &&
-        update_entity.server_defined_unique_tag.empty()) {
-      DCHECK(base::IsValidGUID(update_entity.specifics.bookmark().guid()));
-      bookmark_tracker_->PopulateFinalGuid(
-          update_entity.id, update_entity.specifics.bookmark().guid());
+    bool local_guid_needs_update = false;
+    const std::string& remote_guid = update_entity.specifics.bookmark().guid();
+    if (tracked_entity && !update_entity.is_deleted() &&
+        update_entity.server_defined_unique_tag.empty() &&
+        !tracked_entity->final_guid_matches(remote_guid)) {
+      DCHECK(base::IsValidGUID(remote_guid));
+      bookmark_tracker_->PopulateFinalGuid(update_entity.id, remote_guid);
+      // In many cases final_guid_matches() may return false because a final
+      // GUID is not known for sure, but actually it matches the local GUID.
+      if (tracked_entity->bookmark_node() &&
+          remote_guid != tracked_entity->bookmark_node()->guid()) {
+        local_guid_needs_update = true;
+      }
     }
 
-    if (tracked_entity && tracked_entity->metadata()->server_version() >=
-                              update->response_version) {
+    if (tracked_entity &&
+        tracked_entity->metadata()->server_version() >=
+            update->response_version &&
+        !local_guid_needs_update) {
       // Seen this update before; just ignore it.
       continue;
     }

@@ -33,13 +33,13 @@ Tutorial = class {
    * @private
    */
   static buildEarconPage_(container) {
-    for (var earconId in EarconDescription) {
-      var msgid = EarconDescription[earconId];
-      var earconElement = document.createElement('p');
+    for (const earconId in EarconDescription) {
+      const msgid = EarconDescription[earconId];
+      const earconElement = document.createElement('p');
       earconElement.innerText = Msgs.getMsg(msgid);
       earconElement.setAttribute('tabindex', 0);
       var prevEarcon;
-      var playEarcon = function(earcon) {
+      const playEarcon = function(earcon) {
         if (prevEarcon) {
           chrome.extension
               .getBackgroundPage()['ChromeVox']['earcons']['cancelEarcon'](
@@ -126,7 +126,7 @@ Tutorial = class {
    * Shows the page for page |this.page_|.
    */
   showCurrentPage_() {
-    var pageElements = Tutorial.PAGES[this.page] || [];
+    const pageElements = Tutorial.PAGES[this.page] || [];
     this.showPage_(pageElements);
   }
 
@@ -136,7 +136,7 @@ Tutorial = class {
    * @private
    */
   showPage_(pageElements) {
-    var tutorialContainer = $('tutorial_main');
+    const tutorialContainer = $('tutorial_main');
     tutorialContainer.innerHTML = '';
     this.buildDom_(pageElements, tutorialContainer);
     this.finalizeDom_();
@@ -149,11 +149,11 @@ Tutorial = class {
    * @private
    */
   buildDom_(pageElements, container) {
-    var focus;
-    for (var i = 0; i < pageElements.length; ++i) {
-      var pageElement = pageElements[i];
-      var msgid = pageElement.msgid;
-      var text = '';
+    let focus;
+    for (let i = 0; i < pageElements.length; ++i) {
+      const pageElement = pageElements[i];
+      const msgid = pageElement.msgid;
+      let text = '';
       if (msgid) {
         text = Msgs.getMsg(msgid);
       }
@@ -204,8 +204,8 @@ Tutorial = class {
 
   /** @private */
   finalizeDom_() {
-    var disableNext = this.page == (Tutorial.PAGES.length - 1);
-    var disablePrevious = this.page == 0;
+    const disableNext = this.page == (Tutorial.PAGES.length - 1);
+    const disablePrevious = this.page == 0;
     $('tutorial_next').setAttribute('aria-disabled', disableNext);
     $('tutorial_previous').setAttribute('aria-disabled', disablePrevious);
   }

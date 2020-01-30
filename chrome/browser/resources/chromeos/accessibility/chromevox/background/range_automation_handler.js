@@ -11,12 +11,12 @@ goog.provide('RangeAutomationHandler');
 goog.require('BaseAutomationHandler');
 
 goog.scope(function() {
-var AutomationEvent = chrome.automation.AutomationEvent;
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var EventType = chrome.automation.EventType;
-var RoleType = chrome.automation.RoleType;
-var StateType = chrome.automation.StateType;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const EventType = chrome.automation.EventType;
+const RoleType = chrome.automation.RoleType;
+const StateType = chrome.automation.StateType;
 
 /**
  * @implements {ChromeVoxStateObserver}
@@ -75,7 +75,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
       return;
     }
 
-    var prev = ChromeVoxState.instance.currentRange;
+    const prev = ChromeVoxState.instance.currentRange;
     if (!prev) {
       return;
     }
@@ -83,10 +83,10 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
     // TODO: we need more fine grained filters for attribute changes.
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
-      var prevTarget = this.lastAttributeTarget_;
+      const prevTarget = this.lastAttributeTarget_;
 
       // Re-target to active descendant if it exists.
-      var prevOutput = this.lastAttributeOutput_;
+      const prevOutput = this.lastAttributeOutput_;
       this.lastAttributeTarget_ = evt.target.activeDescendant || evt.target;
       this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
           cursors.Range.fromNode(this.lastAttributeTarget_), prev,
@@ -98,7 +98,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
 
       // If the target or an ancestor is controlled by another control, we may
       // want to delay the output.
-      var maybeControlledBy = evt.target;
+      let maybeControlledBy = evt.target;
       while (maybeControlledBy) {
         if (maybeControlledBy.controlledBy.length &&
             maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
@@ -150,7 +150,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
       return;
     }
 
-    var event = new CustomAutomationEvent(
+    const event = new CustomAutomationEvent(
         EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
     this.onEventIfInRange(event);
   }
@@ -161,7 +161,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
    * @param {!ChromeVoxEvent} evt
    */
   onLocationChanged(evt) {
-    var cur = ChromeVoxState.instance.currentRange;
+    const cur = ChromeVoxState.instance.currentRange;
     if (!cur || !cur.isValid()) {
       if (ChromeVoxState.instance.getFocusBounds().length) {
         ChromeVoxState.instance.setFocusBounds([]);
@@ -171,11 +171,11 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
 
     // Rather than trying to figure out if the current range falls somewhere
     // in |evt.target|, just update it if our cached bounds don't match.
-    var oldFocusBounds = ChromeVoxState.instance.getFocusBounds();
-    var startRect = cur.start.node.location;
-    var endRect = cur.end.node.location;
+    const oldFocusBounds = ChromeVoxState.instance.getFocusBounds();
+    const startRect = cur.start.node.location;
+    const endRect = cur.end.node.location;
 
-    var found =
+    const found =
         oldFocusBounds.some((rect) => this.areRectsEqual_(rect, startRect)) &&
         oldFocusBounds.some((rect) => this.areRectsEqual_(rect, endRect));
     if (found) {

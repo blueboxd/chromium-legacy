@@ -87,7 +87,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveTo', function() {
     assertFalse(
         this.navigator.group_.isEquivalentTo(outerGroup),
         'Omnibar is in the outer group in page contents somehow');
-    let grandGroup =
+    const grandGroup =
         this.navigator.groupStack_[this.navigator.groupStack_.length - 1];
     assertFalse(
         grandGroup.isEquivalentTo(group),
@@ -173,7 +173,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
   this.runWithLoadedTree(website, function(desktop) {
     moveToPageContents();
 
-    let node = currentNode().automationNode;
+    const node = currentNode().automationNode;
     assertNotNullNorUndefined(node, 'Node is invalid');
     assertEquals(node.name, 'First Button', 'Did not find the right node');
 

@@ -16,8 +16,8 @@ ChromeVoxTtsBackgroundTest = class extends ChromeVoxE2ETest {};
 
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
-  var tts = new TtsBackground(false);
-  var preprocess = tts.preprocess.bind(tts);
+  const tts = new TtsBackground(false);
+  const preprocess = tts.preprocess.bind(tts);
 
   // Punctuation.
   assertEquals('dot', preprocess('.'));
@@ -39,8 +39,8 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
 });
 
 TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
-  var tts = new TtsBackground(false);
-  var voices = [
+  const tts = new TtsBackground(false);
+  const voices = [
     {lang: 'zh-CN', voiceName: 'Chinese'},
     {lang: 'zh-TW', voiceName: 'Chinese (Taiwan)'},
     {lang: 'es', voiceName: 'Spanish'},
@@ -53,7 +53,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
 
   // Asks this test to process the next task immediately.
   var flushNextTask = function() {
-    var task = tasks.shift();
+    const task = tasks.shift();
     if (!task) {
       return;
     }
@@ -101,8 +101,8 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
 TEST_F(
     'ChromeVoxTtsBackgroundTest', 'DISABLED_EmptyStringCallsCallbacks',
     function() {
-      var tts = new TtsBackground(false);
-      var startCalls = 0, endCalls = 0;
+      const tts = new TtsBackground(false);
+      let startCalls = 0, endCalls = 0;
       assertCallsCallbacks = function(text, speakCalls) {
         tts.speak(text, QueueMode.QUEUE, {
           startCallback() {
@@ -124,8 +124,8 @@ TEST_F(
 SYNC_TEST_F(
     'ChromeVoxTtsBackgroundTest', 'CapitalizeSingleLettersAfterNumbers',
     function() {
-      var tts = new TtsBackground(false);
-      var preprocess = tts.preprocess.bind(tts);
+      const tts = new TtsBackground(false);
+      const preprocess = tts.preprocess.bind(tts);
 
       // Capitalize single letters if they appear directly after a number.
       assertEquals(
@@ -141,8 +141,8 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
-  var tts = new TtsBackground(false);
-  var preprocess = tts.preprocess.bind(tts);
+  const tts = new TtsBackground(false);
+  const preprocess = tts.preprocess.bind(tts);
 
   assertEquals('A', preprocess('A'));
 

@@ -24,14 +24,14 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
    * @return {!MockFeedback}
    */
   createMockFeedback() {
-    var mockFeedback =
+    const mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
   }
 
   getPanelWindow() {
-    var panelWindow = null;
+    let panelWindow = null;
     while (!panelWindow) {
       panelWindow = chrome.extension.getViews().find(function(view) {
         return view.location.href.indexOf('background/panel.html') > 0;
@@ -51,7 +51,7 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
 
   fireMockEvent(key) {
     return function() {
-      var obj = {};
+      const obj = {};
       obj.preventDefault = function() {};
       obj.stopPropagation = function() {};
       obj.key = key;
@@ -72,9 +72,9 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
 
 // TODO: Flaky timeouts. https://crbug.com/795840 and https://crbug.com/990229
 TEST_F('ChromeVoxPanelTest', 'DISABLED_ActivateMenu', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
-    var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
+    const openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
     mockFeedback.call(openMenus.send.bind(openMenus))
         .expectSpeech(
             'Jump', 'Menu',
@@ -91,9 +91,10 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_ActivateMenu', function() {
 
 // TODO: Flaky timeouts. https://crbug.com/795840 and https://crbug.com/990229
 TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
-  var mockFeedback = this.createMockFeedback();
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
-    var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
+    const openMenus =
+        new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
     mockFeedback.call(openMenus.send.bind(openMenus))
         .expectSpeech(
             'Link',

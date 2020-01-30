@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-let SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
+const SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 
 /**
  * Callbacks for InputHandler.
@@ -31,7 +31,7 @@ let SelectToSpeakCallbacks;
  * @param {SelectToSpeakCallbacks} callbacks
  * @constructor
  */
-let InputHandler = function(callbacks) {
+const InputHandler = function(callbacks) {
   /** @private {SelectToSpeakCallbacks} */
   this.callbacks_ = callbacks;
 

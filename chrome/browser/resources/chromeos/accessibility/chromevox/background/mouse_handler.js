@@ -10,8 +10,8 @@ goog.provide('BackgroundMouseHandler');
 
 goog.require('BaseAutomationHandler');
 
-var AutomationEvent = chrome.automation.AutomationEvent;
-var EventType = chrome.automation.EventType;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const EventType = chrome.automation.EventType;
 
 const INTERVAL_MS_BETWEEN_HIT_TESTS = 50;
 

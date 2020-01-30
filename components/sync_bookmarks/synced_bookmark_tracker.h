@@ -96,6 +96,9 @@ class SyncedBookmarkTracker {
     // otherwise).
     bool has_final_guid() const;
 
+    // Returns true if the final GUID is known and it matches |guid|.
+    bool final_guid_matches(const std::string& guid) const;
+
     // TODO(crbug.com/1032052): Remove this code once all local sync metadata
     // is required to populate the client tag (and be considered invalid
     // otherwise).
@@ -216,6 +219,11 @@ class SyncedBookmarkTracker {
   // the internal state of the tracker accordingly.
   void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
                                           const std::string& new_id);
+
+  // Informs the tracker that a BookmarkNode has been replaced. It updates
+  // the internal state of the tracker accordingly.
+  void UpdateBookmarkNodePointer(const bookmarks::BookmarkNode* old_node,
+                                 const bookmarks::BookmarkNode* new_node);
 
   // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
   // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is

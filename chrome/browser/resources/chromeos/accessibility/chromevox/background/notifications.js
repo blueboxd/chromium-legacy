@@ -13,7 +13,7 @@ goog.require('PanelCommand');
 /**
  * ChromeVox update notification.
  */
-var UpdateNotification = class {
+const UpdateNotification = class {
   constructor() {
     this.data = {};
     this.data.type = 'basic';

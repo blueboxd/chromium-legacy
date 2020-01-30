@@ -11,12 +11,12 @@ goog.provide('FocusAutomationHandler');
 goog.require('BaseAutomationHandler');
 
 goog.scope(function() {
-var AutomationEvent = chrome.automation.AutomationEvent;
-var AutomationNode = chrome.automation.AutomationNode;
-var Dir = constants.Dir;
-var EventType = chrome.automation.EventType;
-var RoleType = chrome.automation.RoleType;
-var StateType = chrome.automation.StateType;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
+const EventType = chrome.automation.EventType;
+const RoleType = chrome.automation.RoleType;
+const StateType = chrome.automation.StateType;
 
 
 FocusAutomationHandler = class extends BaseAutomationHandler {
@@ -55,7 +55,7 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
     // speech) and this handler. Force output to be at least category flushed.
     Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
 
-    var prev = this.previousActiveDescendant_ ?
+    const prev = this.previousActiveDescendant_ ?
         cursors.Range.fromNode(this.previousActiveDescendant_) :
         ChromeVoxState.instance.currentRange;
     new Output()

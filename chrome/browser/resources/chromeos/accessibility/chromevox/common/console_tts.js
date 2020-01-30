@@ -28,7 +28,7 @@ ConsoleTts = class {
 
   speak(textString, queueMode, properties) {
     if (this.enabled_ && window['console']) {
-      var category = TtsCategory.NAV;
+      let category = TtsCategory.NAV;
       if (properties && properties.category) {
         category = properties.category;
       }

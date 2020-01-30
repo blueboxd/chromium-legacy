@@ -47,7 +47,7 @@ TextChangeEvent = class {
 
     // Adjust offsets to be in left to right order.
     if (this.start > this.end) {
-      var tempOffset = this.end;
+      const tempOffset = this.end;
       this.end = this.start;
       this.start = tempOffset;
     }
@@ -220,8 +220,8 @@ ChromeVoxEditableTextBase = class {
    * @return {string} The text of the line.
    */
   getLine(index) {
-    var lineStart = this.getLineStart(index);
-    var lineEnd = this.getLineEnd(index);
+    const lineStart = this.getLineStart(index);
+    const lineEnd = this.getLineEnd(index);
     return this.value.substr(lineStart, lineEnd - lineStart);
   }
 
@@ -266,7 +266,7 @@ ChromeVoxEditableTextBase = class {
     if (!str) {
       return;
     }
-    var queueMode = QueueMode.QUEUE;
+    let queueMode = QueueMode.QUEUE;
     if (opt_triggeredByUser === true) {
       queueMode = QueueMode.FLUSH;
     }
@@ -324,7 +324,7 @@ ChromeVoxEditableTextBase = class {
       } else if (
           this.getLineIndex(this.start) != this.getLineIndex(evt.start)) {
         // Moved to a different line; read it.
-        var lineValue = this.getLine(this.getLineIndex(evt.start));
+        let lineValue = this.getLine(this.getLineIndex(evt.start));
         if (lineValue == '') {
           lineValue = Msgs.getMsg('text_box_blank');
         } else if (lineValue == '\n') {
@@ -415,7 +415,7 @@ ChromeVoxEditableTextBase = class {
    * @param {TextChangeEvent} evt The text change event.
    */
   describeTextChanged(prev, evt) {
-    var personality = {};
+    let personality = {};
     if (evt.value.length < (prev.value.length - 1)) {
       personality = AbstractTts.PERSONALITY_DELETED;
     }
@@ -428,14 +428,14 @@ ChromeVoxEditableTextBase = class {
       return;
     }
 
-    var value = prev.value;
-    var len = value.length;
-    var newLen = evt.value.length;
-    var autocompleteSuffix = '';
+    const value = prev.value;
+    const len = value.length;
+    const newLen = evt.value.length;
+    let autocompleteSuffix = '';
     // Make a copy of evtValue and evtEnd to avoid changing anything in
     // the event itself.
-    var evtValue = evt.value;
-    var evtEnd = evt.end;
+    let evtValue = evt.value;
+    let evtEnd = evt.end;
 
     // First, see if there's a selection at the end that might have been
     // added by autocomplete. If so, strip it off into a separate variable.
@@ -449,8 +449,8 @@ ChromeVoxEditableTextBase = class {
     // and any new text was inserted at that character position.
     // This would handle pasting and entering text by typing, both from
     // a cursor and from a selection.
-    var prefixLen = prev.start;
-    var suffixLen = len - prev.end;
+    let prefixLen = prev.start;
+    let suffixLen = len - prev.end;
     if (newLen >= prefixLen + suffixLen + (evtEnd - evt.start) &&
         evtValue.substr(0, prefixLen) == value.substr(0, prefixLen) &&
         evtValue.substr(newLen - suffixLen) == value.substr(prev.end)) {
@@ -578,14 +578,14 @@ ChromeVoxEditableTextBase = class {
    */
   describeTextChangedHelper(
       prev, evt, prefixLen, suffixLen, autocompleteSuffix, opt_personality) {
-    var len = prev.value.length;
-    var newLen = evt.value.length;
-    var deletedLen = len - prefixLen - suffixLen;
-    var deleted = prev.value.substr(prefixLen, deletedLen);
-    var insertedLen = newLen - prefixLen - suffixLen;
-    var inserted = evt.value.substr(prefixLen, insertedLen);
-    var utterance = '';
-    var triggeredByUser = evt.triggeredByUser;
+    const len = prev.value.length;
+    const newLen = evt.value.length;
+    const deletedLen = len - prefixLen - suffixLen;
+    const deleted = prev.value.substr(prefixLen, deletedLen);
+    const insertedLen = newLen - prefixLen - suffixLen;
+    const inserted = evt.value.substr(prefixLen, insertedLen);
+    let utterance = '';
+    let triggeredByUser = evt.triggeredByUser;
 
     if (insertedLen > 1) {
       if (!ChromeVoxEditableTextBase.shouldSpeakInsertions) {
@@ -598,7 +598,7 @@ ChromeVoxEditableTextBase = class {
           this.isWordBreakChar(inserted) && prefixLen > 0 &&
           !this.isWordBreakChar(evt.value.substr(prefixLen - 1, 1))) {
         // Speak previous word.
-        var index = prefixLen;
+        let index = prefixLen;
         while (index > 0 && !this.isWordBreakChar(evt.value[index - 1])) {
           index--;
         }

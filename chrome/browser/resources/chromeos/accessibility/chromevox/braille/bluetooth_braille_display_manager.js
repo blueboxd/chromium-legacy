@@ -186,7 +186,7 @@ BluetoothBrailleDisplayManager = class {
      */
     handleDevicesChanged(opt_device) {
       chrome.bluetooth.getDevices((devices) => {
-        var displayList = devices.filter((device) => {
+        const displayList = devices.filter((device) => {
           return this.displayNames_.some((name) => {
             return device.name && device.name.search(name) == 0;
           });

@@ -63,11 +63,11 @@ AbstractTts = class {
     if (AbstractTts.substitutionDictionaryRegexp_ == undefined) {
       // Create an expression that matches all words in the substitution
       // dictionary.
-      var symbols = [];
-      for (var symbol in AbstractTts.SUBSTITUTION_DICTIONARY) {
+      const symbols = [];
+      for (const symbol in AbstractTts.SUBSTITUTION_DICTIONARY) {
         symbols.push(symbol);
       }
-      var expr = '(' + symbols.join('|') + ')';
+      const expr = '(' + symbols.join('|') + ')';
       AbstractTts.substitutionDictionaryRegexp_ = new RegExp(expr, 'ig');
     }
   }
@@ -90,10 +90,10 @@ AbstractTts = class {
 
   /** @override */
   increaseOrDecreaseProperty(propertyName, increase) {
-    var min = this.propertyMin[propertyName];
-    var max = this.propertyMax[propertyName];
-    var step = this.propertyStep[propertyName];
-    var current = this.ttsProperties[propertyName];
+    const min = this.propertyMin[propertyName];
+    const max = this.propertyMax[propertyName];
+    const step = this.propertyStep[propertyName];
+    let current = this.ttsProperties[propertyName];
     current = increase ? current + step : current - step;
     this.ttsProperties[propertyName] = Math.max(Math.min(current, max), min);
   }
@@ -117,15 +117,15 @@ AbstractTts = class {
    * @protected
    */
   mergeProperties(properties) {
-    var mergedProperties = new Object();
-    var p;
+    const mergedProperties = new Object();
+    let p;
     if (this.ttsProperties) {
       for (p in this.ttsProperties) {
         mergedProperties[p] = this.ttsProperties[p];
       }
     }
     if (properties) {
-      var tts = AbstractTts;
+      const tts = AbstractTts;
       if (typeof (properties[tts.VOLUME]) == 'number') {
         mergedProperties[tts.VOLUME] = properties[tts.VOLUME];
       }
@@ -139,13 +139,13 @@ AbstractTts = class {
         mergedProperties[tts.LANG] = properties[tts.LANG];
       }
 
-      var context = this;
-      var mergeRelativeProperty = function(abs, rel) {
+      const context = this;
+      const mergeRelativeProperty = function(abs, rel) {
         if (typeof (properties[rel]) == 'number' &&
             typeof (mergedProperties[abs]) == 'number') {
           mergedProperties[abs] += properties[rel];
-          var min = context.propertyMin[abs];
-          var max = context.propertyMax[abs];
+          const min = context.propertyMin[abs];
+          const max = context.propertyMax[abs];
           if (mergedProperties[abs] > max) {
             mergedProperties[abs] = max;
           } else if (mergedProperties[abs] < min) {
@@ -188,7 +188,7 @@ AbstractTts = class {
     if (text.length == 1 && text >= 'A' && text <= 'Z') {
       // Describe capital letters according to user's setting.
       if (localStorage['capitalStrategy'] == 'increasePitch') {
-        for (var prop in AbstractTts.PERSONALITY_CAPITAL) {
+        for (const prop in AbstractTts.PERSONALITY_CAPITAL) {
           if (properties[prop] === undefined) {
             properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
           }
@@ -230,7 +230,7 @@ AbstractTts = class {
    * @private
    */
   static repetitionReplace_(match) {
-    var count = match.length;
+    const count = match.length;
     return ' ' +
         (new goog.i18n.MessageFormat(
              Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[match[0]])))
@@ -252,7 +252,7 @@ AbstractTts = class {
 
   /** @override */
   resetTextToSpeechSettings() {
-    for (var [key, value] of Object.entries(this.propertyDefault)) {
+    for (const [key, value] of Object.entries(this.propertyDefault)) {
       this.ttsProperties[key] = value;
     }
   }

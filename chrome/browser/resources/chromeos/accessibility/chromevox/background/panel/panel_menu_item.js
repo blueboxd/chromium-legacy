@@ -43,7 +43,7 @@ PanelMenuItem = class {
                      }).bind(this),
         false);
 
-    var title = document.createElement('td');
+    const title = document.createElement('td');
     title.className = 'menu-item-title';
     title.textContent = menuItemTitle;
 
@@ -51,23 +51,23 @@ PanelMenuItem = class {
     title.title = menuItemTitle;
     this.element.appendChild(title);
 
-    var backgroundWindow = chrome.extension.getBackgroundPage();
+    const backgroundWindow = chrome.extension.getBackgroundPage();
     if (backgroundWindow['EventSourceState']['get']() ==
         EventSourceType.TOUCH_GESTURE) {
-      var gestureNode = document.createElement('td');
+      const gestureNode = document.createElement('td');
       gestureNode.className = 'menu-item-shortcut';
       gestureNode.textContent = gesture;
       this.element.appendChild(gestureNode);
       return;
     }
 
-    var shortcut = document.createElement('td');
+    const shortcut = document.createElement('td');
     shortcut.className = 'menu-item-shortcut';
     shortcut.textContent = menuItemShortcut;
     this.element.appendChild(shortcut);
 
     if (localStorage['brailleCaptions'] === String(true)) {
-      var braille = document.createElement('td');
+      const braille = document.createElement('td');
       braille.className = 'menu-item-shortcut';
       braille.textContent = menuItemBraille;
       this.element.appendChild(braille);

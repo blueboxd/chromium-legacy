@@ -33,7 +33,7 @@ ChromeVoxKeySequenceUnitTest = class extends ChromeVoxUnitTestBase {
    * @return {Object} The mock event.
    */
   createMockEvent(keyCode, eventParams) {
-    var mockEvent = {};
+    const mockEvent = {};
     mockEvent.keyCode = keyCode;
 
     if (eventParams == null) {
@@ -153,7 +153,7 @@ ChromeVoxKeySequenceUnitTest.prototype.closureModuleDeps = [
 ];
 
 TEST_F('ChromeVoxKeySequenceUnitTest', 'SimpleSequenceNoModifier', function() {
-  var downKey = new KeySequence(this.downArrowEvent, false);
+  const downKey = new KeySequence(this.downArrowEvent, false);
 
   assertEqualsJSON([40], downKey.keys.keyCode);
   assertFalse(downKey.stickyMode);
@@ -174,7 +174,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'SimpleSequenceNoModifier', function() {
 /** Test another key sequence, this time with the modifier */
 TEST_F(
     'ChromeVoxKeySequenceUnitTest', 'SimpleSequenceWithModifier', function() {
-      var downKey = new KeySequence(this.downArrowEvent, true);
+      const downKey = new KeySequence(this.downArrowEvent, true);
 
       assertEqualsJSON([40], downKey.keys.keyCode);
       assertFalse(downKey.stickyMode);
@@ -194,7 +194,7 @@ TEST_F(
 
 /** Test a key sequence that includes the modifier */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'ModifiedSequence', function() {
-  var cvoxDownKey = new KeySequence(this.altDownArrowEvent, true);
+  const cvoxDownKey = new KeySequence(this.altDownArrowEvent, true);
 
   assertEqualsJSON([40], cvoxDownKey.keys.keyCode);
   assertFalse(cvoxDownKey.stickyMode);
@@ -218,8 +218,8 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'ModifiedSequence', function() {
  * sticky mode on.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'StickyEquality', function() {
-  var ctrlKey = new KeySequence(this.ctrlEvent, false);
-  var ctrlSticky = new KeySequence(this.ctrlStickyEvent, false);
+  const ctrlKey = new KeySequence(this.ctrlEvent, false);
+  const ctrlSticky = new KeySequence(this.ctrlStickyEvent, false);
 
   assertTrue(ctrlKey.equals(ctrlSticky));
 });
@@ -231,8 +231,8 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'StickyEquality', function() {
  * These should not be equal because they do not have the same modifiers.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'ShiftEquality', function() {
-  var aKey = new KeySequence(this.aEvent, false);
-  var shiftA = new KeySequence(this.shiftAEvent, false);
+  const aKey = new KeySequence(this.aEvent, false);
+  const shiftA = new KeySequence(this.shiftAEvent, false);
 
   assertFalse(aKey.equals(shiftA));
 });
@@ -244,10 +244,10 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'ShiftEquality', function() {
  * should all be equal to each other.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'FourWayEquality', function() {
-  var commandSequence = new KeySequence(this.aEvent, true);
-  var stickySequence = new KeySequence(this.aEventSticky, false);
-  var prefixSequence = new KeySequence(this.aEventPrefix, false);
-  var cvoxModifierSequence = new KeySequence(this.altAEvent);
+  const commandSequence = new KeySequence(this.aEvent, true);
+  const stickySequence = new KeySequence(this.aEventSticky, false);
+  const prefixSequence = new KeySequence(this.aEventPrefix, false);
+  const cvoxModifierSequence = new KeySequence(this.altAEvent);
 
   assertTrue(commandSequence.equals(stickySequence));
   assertTrue(commandSequence.equals(prefixSequence));
@@ -274,10 +274,10 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'FourWayEquality', function() {
  * These should all be equal to each other..
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'ShiftPrefixEquality', function() {
-  var shiftAWithModifier = new KeySequence(this.shiftAEvent, true);
-  var shiftAWithPrefix = new KeySequence(this.shiftAPrefixEvent, false);
-  var shiftASticky = new KeySequence(this.shiftAStickyEvent, false);
-  var cvoxShiftA = new KeySequence(this.altShiftAEvent);
+  const shiftAWithModifier = new KeySequence(this.shiftAEvent, true);
+  const shiftAWithPrefix = new KeySequence(this.shiftAPrefixEvent, false);
+  const shiftASticky = new KeySequence(this.shiftAStickyEvent, false);
+  const cvoxShiftA = new KeySequence(this.altShiftAEvent);
 
   assertTrue(shiftAWithModifier.equals(shiftAWithPrefix));
   assertTrue(shiftAWithModifier.equals(shiftASticky));
@@ -302,8 +302,8 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'ShiftPrefixEquality', function() {
  * These should not be equal.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'Inequality', function() {
-  var aNoModifier = new KeySequence(this.aEvent, false);
-  var aWithModifier = new KeySequence(this.aEvent, true);
+  const aNoModifier = new KeySequence(this.aEvent, false);
+  const aWithModifier = new KeySequence(this.aEvent, true);
 
   assertFalse(aNoModifier.equals(aWithModifier));
   assertFalse(aWithModifier.equals(aNoModifier));
@@ -314,7 +314,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'Inequality', function() {
  * Test equality - adding an additional key onto a sequence.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'CvoxCtrl', function() {
-  var cvoxCtrlSequence = new KeySequence(this.ctrlEvent, true);
+  const cvoxCtrlSequence = new KeySequence(this.ctrlEvent, true);
   assertTrue(cvoxCtrlSequence.addKeyEvent(this.rightArrowEvent));
 
   assertEquals(2, cvoxCtrlSequence.length());
@@ -322,10 +322,10 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'CvoxCtrl', function() {
   // Can't add more than two key events.
   assertFalse(cvoxCtrlSequence.addKeyEvent(this.rightArrowEvent));
 
-  var cvoxCtrlStickySequence = new KeySequence(this.ctrlStickyEvent, false);
+  const cvoxCtrlStickySequence = new KeySequence(this.ctrlStickyEvent, false);
   assertTrue(cvoxCtrlStickySequence.addKeyEvent(this.rightArrowEvent));
 
-  var mockCtrlPrefixSequence = new KeySequence(this.ctrlPrefixEvent, false);
+  const mockCtrlPrefixSequence = new KeySequence(this.ctrlPrefixEvent, false);
   assertTrue(mockCtrlPrefixSequence.addKeyEvent(this.rightArrowEvent));
 
   assertTrue(cvoxCtrlSequence.equals(cvoxCtrlStickySequence));
@@ -343,10 +343,10 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'CvoxCtrl', function() {
  * Test for inequality - key sequences in different orders.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'DifferentSequences', function() {
-  var cvoxBSequence = new KeySequence(this.bEvent, true);
+  const cvoxBSequence = new KeySequence(this.bEvent, true);
   assertTrue(cvoxBSequence.addKeyEvent(this.cEvent));
 
-  var cvoxCSequence = new KeySequence(this.cEvent, false);
+  const cvoxCSequence = new KeySequence(this.cEvent, false);
   assertTrue(cvoxCSequence.addKeyEvent(this.bEvent));
 
   assertFalse(cvoxBSequence.equals(cvoxCSequence));
@@ -359,12 +359,12 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'DifferentSequences', function() {
  * held down then they aren't equal.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'MoreModifiers', function() {
-  var ctrlASequence = new KeySequence(this.ctrlAEvent, false);
-  var ctrlModifierKeyASequence = new KeySequence(this.ctrlAEvent, true);
+  const ctrlASequence = new KeySequence(this.ctrlAEvent, false);
+  const ctrlModifierKeyASequence = new KeySequence(this.ctrlAEvent, true);
 
-  var ctrlBSequence = new KeySequence(this.ctrlBEvent, false);
+  const ctrlBSequence = new KeySequence(this.ctrlBEvent, false);
 
-  var metaASequence = new KeySequence(this.metaAEvent, false);
+  const metaASequence = new KeySequence(this.metaAEvent, false);
 
   assertFalse(ctrlASequence.equals(metaASequence));
   assertFalse(ctrlASequence.equals(ctrlModifierKeyASequence));
@@ -377,8 +377,8 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'MoreModifiers', function() {
  * modifiers but held down in a different order then they aren't equal.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'ModifierOrder', function() {
-  var ctrlShiftSequence = new KeySequence(this.ctrlShiftEvent, false);
-  var shiftCtrlSequence = new KeySequence(this.shiftCtrlEvent, true);
+  const ctrlShiftSequence = new KeySequence(this.ctrlShiftEvent, false);
+  const shiftCtrlSequence = new KeySequence(this.shiftCtrlEvent, true);
 
   assertFalse(ctrlShiftSequence.equals(shiftCtrlSequence));
 });
@@ -388,34 +388,34 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'ModifierOrder', function() {
  * Tests converting from a string to a KeySequence object.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'FromStr', function() {
-  var ctrlString = KeySequence.fromStr('Ctrl');
+  const ctrlString = KeySequence.fromStr('Ctrl');
   assertEqualsJSON(ctrlString.keys.ctrlKey, [true]);
   assertEqualsJSON(ctrlString.keys.keyCode, [17]);
 
-  var modifiedLetterString = KeySequence.fromStr('Ctrl+Z');
+  const modifiedLetterString = KeySequence.fromStr('Ctrl+Z');
   assertEqualsJSON(modifiedLetterString.keys.ctrlKey, [true]);
   assertEqualsJSON(modifiedLetterString.keys.keyCode, [90]);
 
-  var keyCodeString = KeySequence.fromStr('#9');
+  const keyCodeString = KeySequence.fromStr('#9');
   assertEqualsJSON(keyCodeString.keys.keyCode, [9]);
 
-  var modifiedKeyCodeString = KeySequence.fromStr('Shift+#9');
+  const modifiedKeyCodeString = KeySequence.fromStr('Shift+#9');
   assertEqualsJSON(modifiedKeyCodeString.keys.shiftKey, [true]);
   assertEqualsJSON(modifiedKeyCodeString.keys.keyCode, [9]);
 
-  var cvoxLetterString = KeySequence.fromStr('Cvox+U');
+  const cvoxLetterString = KeySequence.fromStr('Cvox+U');
   assertTrue(cvoxLetterString.cvoxModifier);
   assertEqualsJSON(cvoxLetterString.keys.keyCode, [85]);
 
-  var cvoxSequenceString = KeySequence.fromStr('Cvox+C>T');
+  const cvoxSequenceString = KeySequence.fromStr('Cvox+C>T');
   assertTrue(cvoxSequenceString.cvoxModifier);
   assertEqualsJSON(cvoxSequenceString.keys.keyCode, [67, 84]);
 
-  var cvoxSequenceKeyCodeString = KeySequence.fromStr('Cvox+L>#186');
+  const cvoxSequenceKeyCodeString = KeySequence.fromStr('Cvox+L>#186');
   assertTrue(cvoxSequenceKeyCodeString.cvoxModifier);
   assertEqualsJSON(cvoxSequenceKeyCodeString.keys.keyCode, [76, 186]);
 
-  var stickyString = KeySequence.fromStr('Insert>Insert+');
+  const stickyString = KeySequence.fromStr('Insert>Insert+');
   assertEqualsJSON(stickyString.keys.keyCode, [45, 45]);
 });
 
@@ -424,7 +424,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'FromStr', function() {
  * Tests converting from a JSON string to a KeySequence object.
  */
 TEST_F('ChromeVoxKeySequenceUnitTest', 'Deserialize', function() {
-  var forwardSequence = KeySequence.deserialize({
+  const forwardSequence = KeySequence.deserialize({
     'cvoxModifier': true,
     'stickyMode': false,
     'prefixKey': false,
@@ -441,7 +441,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'Deserialize', function() {
   assertTrue(forwardSequence.cvoxModifier);
   assertEqualsJSON(forwardSequence.keys.keyCode, [40]);
 
-  var ctrlSequence = KeySequence.deserialize({
+  const ctrlSequence = KeySequence.deserialize({
     'cvoxModifier': false,
     'stickyMode': true,
     'prefixKey': false,
@@ -471,8 +471,8 @@ TEST_F(
       // For example, at runtime, a user presses Shift+H with sticky mode on.
       // This should match against a key sequence that has cvoxModifier set
       // along with shift key set.
-      var prevHeadingUnstripped = {'shiftKey': [true], keyCode: [72]};
-      var prevHeadingSeq = KeySequence.deserialize(
+      const prevHeadingUnstripped = {'shiftKey': [true], keyCode: [72]};
+      const prevHeadingSeq = KeySequence.deserialize(
           {'cvoxModifier': true, keys: prevHeadingUnstripped});
 
       assertTrue(prevHeadingSeq.cvoxModifier);
@@ -488,7 +488,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'DeserializeSearchCvoxMod', function() {
   ChromeVox.modKeyStr = 'Search';
 
   // First, assert that unstripped seqs imply various modifier fields get set.
-  var stickySeq = KeySequence.deserialize({keys: {keyCode: [91]}});
+  let stickySeq = KeySequence.deserialize({keys: {keyCode: [91]}});
   assertTrue(stickySeq.cvoxModifier);
   assertTrue(stickySeq.keys.metaKey[0]);
   assertTrue(stickySeq.keys.searchKeyHeld[0]);
@@ -504,7 +504,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'DeserializeSearchCvoxMod', function() {
 });
 
 TEST_F('ChromeVoxKeySequenceUnitTest', 'RequireStickyMode', function() {
-  var oneFromMap =
+  const oneFromMap =
       KeySequence.deserialize({requireStickyMode: true, keys: {keyCode: [49]}});
 
   assertFalse(oneFromMap.cvoxModifier);
@@ -512,21 +512,21 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'RequireStickyMode', function() {
   assertFalse(oneFromMap.stickyMode);
 
   // Pressing one doesn't trigger the key because it requires sticky mode.
-  var oneFromEvt = KeySequence.deserialize({keys: {keyCode: [49]}});
+  const oneFromEvt = KeySequence.deserialize({keys: {keyCode: [49]}});
   assertFalse(oneFromMap.equals(oneFromEvt));
 
   // Even modified, it should not match.
-  var modOneFromEvt =
+  const modOneFromEvt =
       KeySequence.deserialize({cvoxModifier: true, keys: {keyCode: [49]}});
   assertFalse(oneFromMap.equals(modOneFromEvt));
 
   // But, with sticky mode on in the event, it should match.
-  var stickyOneFromEvt =
+  const stickyOneFromEvt =
       KeySequence.deserialize({stickyMode: true, keys: {keyCode: [49]}});
   assertTrue(stickyOneFromEvt.equals(oneFromMap));
 
   // Finally, with both modifier and sticky on, it doesn't match.
-  var stickyModOneFromEvt = KeySequence.deserialize(
+  const stickyModOneFromEvt = KeySequence.deserialize(
       {stickyMode: true, cvoxModifier: true, keys: {keyCode: [49]}});
   assertFalse(stickyModOneFromEvt.equals(oneFromMap));
 });

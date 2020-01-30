@@ -76,9 +76,17 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
                           jboolean all_permissions_granted);
 
  private:
+  static infobars::InfoBar* Create(
+      content::WebContents* web_contents,
+      const std::vector<std::string>& android_permissions,
+      const std::vector<ContentSettingsType> content_settings_types,
+      int permission_msg_id,
+      PermissionUpdatedCallback callback);
+
   PermissionUpdateInfoBarDelegate(
       content::WebContents* web_contents,
       const std::vector<std::string>& android_permissions,
+      const std::vector<ContentSettingsType>& content_settings_types,
       int permission_msg_id,
       PermissionUpdatedCallback callback);
   ~PermissionUpdateInfoBarDelegate() override;
@@ -101,6 +109,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   std::vector<std::string> android_permissions_;
+  std::vector<ContentSettingsType> content_settings_types_;
   int permission_msg_id_;
   PermissionUpdatedCallback callback_;
 

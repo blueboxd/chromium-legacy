@@ -12,6 +12,7 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -74,7 +75,8 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
   }
 
   return PermissionUpdateInfoBarDelegate::Create(
-      web_contents, permissions, message_id, std::move(callback));
+      web_contents, permissions, content_settings_types, message_id,
+      std::move(callback));
 }
 
 // static
@@ -83,18 +85,10 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
     const std::vector<std::string>& android_permissions,
     int permission_msg_id,
     PermissionUpdatedCallback callback) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service) {
-    std::move(callback).Run(false);
-    return nullptr;
-  }
-
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
-          new PermissionUpdateInfoBarDelegate(web_contents, android_permissions,
-                                              permission_msg_id,
-                                              std::move(callback)))));
+  std::vector<ContentSettingsType> content_settings_types;
+  return PermissionUpdateInfoBarDelegate::Create(
+      web_contents, android_permissions, content_settings_types,
+      permission_msg_id, std::move(callback));
 }
 
 // static
@@ -115,11 +109,16 @@ PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
         content_settings_type, &android_permissions);
 
     for (const auto& android_permission : android_permissions) {
-      if (!window_android->HasPermission(android_permission))
+      if (!window_android->HasPermission(android_permission)) {
+        PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
+            true, content_settings_types);
         return ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR;
+      }
     }
   }
 
+  PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
+      false, content_settings_types);
   return ShowPermissionInfoBarState::NO_NEED_TO_SHOW_PERMISSION_INFOBAR;
 }
 
@@ -127,17 +126,44 @@ void PermissionUpdateInfoBarDelegate::OnPermissionResult(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean all_permissions_granted) {
+  PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+      permissions::PermissionAction::GRANTED, content_settings_types_);
   std::move(callback_).Run(all_permissions_granted);
   infobar()->RemoveSelf();
+}
+
+// static
+infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
+    content::WebContents* web_contents,
+    const std::vector<std::string>& android_permissions,
+    const std::vector<ContentSettingsType> content_settings_types,
+    int permission_msg_id,
+    PermissionUpdatedCallback callback) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service) {
+    std::move(callback).Run(false);
+    return nullptr;
+  }
+
+  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      // Using WrapUnique as the PermissionUpdateInfoBarDelegate ctor is
+      // private.
+      base::WrapUnique<ConfirmInfoBarDelegate>(
+          new PermissionUpdateInfoBarDelegate(
+              web_contents, android_permissions, content_settings_types,
+              permission_msg_id, std::move(callback)))));
 }
 
 PermissionUpdateInfoBarDelegate::PermissionUpdateInfoBarDelegate(
     content::WebContents* web_contents,
     const std::vector<std::string>& android_permissions,
+    const std::vector<ContentSettingsType>& content_settings_types,
     int permission_msg_id,
     PermissionUpdatedCallback callback)
     : ConfirmInfoBarDelegate(),
       android_permissions_(android_permissions),
+      content_settings_types_(content_settings_types),
       permission_msg_id_(permission_msg_id),
       callback_(std::move(callback)) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -182,9 +208,13 @@ bool PermissionUpdateInfoBarDelegate::Accept() {
 
 bool PermissionUpdateInfoBarDelegate::Cancel() {
   std::move(callback_).Run(false);
+  PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+      permissions::PermissionAction::DENIED, content_settings_types_);
   return true;
 }
 
 void PermissionUpdateInfoBarDelegate::InfoBarDismissed() {
+  PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+      permissions::PermissionAction::DISMISSED, content_settings_types_);
   std::move(callback_).Run(false);
 }

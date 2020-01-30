@@ -432,8 +432,13 @@ void ArcAppListPrefs::StartPrefs() {
       // Note: If ArcSessionManager has profile, it should be as same as the one
       // this instance has, because ArcAppListPrefsFactory creates an instance
       // only if the given Profile meets ARC's requirement.
-      // Anyway, just in case, check it here.
-      DCHECK_EQ(profile_, arc_session_manager->profile());
+      // Anyway, just in case, check it here and log. Only some browser tests
+      // will log the error. If you see the log outside browser_tests, something
+      // unexpected may have happened.
+      if (profile_ != arc_session_manager->profile()) {
+        LOG(ERROR)
+            << "This object's profile_ and ArcSessionManager's don't match.";
+      }
       OnArcPlayStoreEnabledChanged(
           arc::IsArcPlayStoreEnabledForProfile(profile_));
     }

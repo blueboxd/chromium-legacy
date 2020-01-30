@@ -404,6 +404,30 @@ void PermissionUmaUtil::RecordInfobarDetailsExpanded(bool expanded) {
                             expanded);
 }
 
+void PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
+    bool should_show,
+    const std::vector<ContentSettingsType>& content_settings_types) {
+  for (const auto& content_settings_type : content_settings_types) {
+    base::UmaHistogramBoolean(
+        "Permissions.MissingOSLevelPermission.ShouldShow." +
+            permissions::PermissionUtil::GetPermissionString(
+                content_settings_type),
+        should_show);
+  }
+}
+
+void PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+    permissions::PermissionAction action,
+    const std::vector<ContentSettingsType>& content_settings_types) {
+  for (const auto& content_settings_type : content_settings_types) {
+    base::UmaHistogramEnumeration(
+        "Permissions.MissingOSLevelPermission.Action." +
+            permissions::PermissionUtil::GetPermissionString(
+                content_settings_type),
+        action, permissions::PermissionAction::NUM);
+  }
+}
+
 PermissionUmaUtil::ScopedRevocationReporter::ScopedRevocationReporter(
     Profile* profile,
     const GURL& primary_url,

@@ -145,6 +145,14 @@ class PermissionUmaUtil {
 
   static void RecordInfobarDetailsExpanded(bool expanded);
 
+  // Record UMAs related to the Android "Missing permissions" infobar.
+  static void RecordMissingPermissionInfobarShouldShow(
+      bool should_show,
+      const std::vector<ContentSettingsType>& content_settings_types);
+  static void RecordMissingPermissionInfobarAction(
+      permissions::PermissionAction action,
+      const std::vector<ContentSettingsType>& content_settings_types);
+
   // A scoped class that will check the current resolved content setting on
   // construction and report a revocation metric accordingly if the revocation
   // condition is met (from ALLOW to something else).

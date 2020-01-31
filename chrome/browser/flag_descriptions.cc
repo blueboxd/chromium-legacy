@@ -3747,6 +3747,10 @@ const char kPdfFormSaveName[] = "Save PDF Forms";
 const char kPdfFormSaveDescription[] =
     "Enable saving PDFs with filled form data.";
 
+const char kPdfTwoUpViewName[] = "PDF Two-up View";
+const char kPdfTwoUpViewDescription[] =
+    "Enable a new option to display two pages side by side in the PDF viewer.";
+
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)

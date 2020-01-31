@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/bubble_controllers/pending_bubble_controller.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/save_update_bubble_controller.h"
 
 #include "base/metrics/field_trial_params.h"
 #include "base/time/default_clock.h"
@@ -88,7 +88,7 @@ bool IsSyncUser(Profile* profile) {
 
 }  // namespace
 
-PendingBubbleController::PendingBubbleController(
+SaveUpdateBubbleController::SaveUpdateBubbleController(
     base::WeakPtr<PasswordsModelDelegate> delegate,
     PasswordBubbleControllerBase::DisplayReason display_reason)
     : PasswordBubbleControllerBase(
@@ -151,12 +151,12 @@ PendingBubbleController::PendingBubbleController(
                                              origin_, type, &title_);
 }
 
-PendingBubbleController::~PendingBubbleController() {
+SaveUpdateBubbleController::~SaveUpdateBubbleController() {
   if (!interaction_reported_)
     OnBubbleClosing();
 }
 
-void PendingBubbleController::OnSaveClicked() {
+void SaveUpdateBubbleController::OnSaveClicked() {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   dismissal_reason_ = metrics_util::CLICKED_SAVE;
@@ -167,14 +167,14 @@ void PendingBubbleController::OnSaveClicked() {
   }
 }
 
-void PendingBubbleController::OnNopeUpdateClicked() {
+void SaveUpdateBubbleController::OnNopeUpdateClicked() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, state_);
   dismissal_reason_ = metrics_util::CLICKED_CANCEL;
   if (delegate_)
     delegate_->OnNopeUpdateClicked();
 }
 
-void PendingBubbleController::OnNeverForThisSiteClicked() {
+void SaveUpdateBubbleController::OnNeverForThisSiteClicked() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   dismissal_reason_ = metrics_util::CLICKED_NEVER;
   if (delegate_) {
@@ -183,15 +183,16 @@ void PendingBubbleController::OnNeverForThisSiteClicked() {
   }
 }
 
-void PendingBubbleController::OnCredentialEdited(base::string16 new_username,
-                                                 base::string16 new_password) {
+void SaveUpdateBubbleController::OnCredentialEdited(
+    base::string16 new_username,
+    base::string16 new_password) {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   pending_password_.username_value = std::move(new_username);
   pending_password_.password_value = std::move(new_password);
 }
 
-bool PendingBubbleController::IsCurrentStateUpdate() const {
+bool SaveUpdateBubbleController::IsCurrentStateUpdate() const {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_STATE);
   return std::any_of(local_credentials_.begin(), local_credentials_.end(),
@@ -201,13 +202,13 @@ bool PendingBubbleController::IsCurrentStateUpdate() const {
                      });
 }
 
-bool PendingBubbleController::ShouldShowFooter() const {
+bool SaveUpdateBubbleController::ShouldShowFooter() const {
   return (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
           state_ == password_manager::ui::PENDING_PASSWORD_STATE) &&
          IsSyncUser(GetProfile());
 }
 
-int PendingBubbleController::GetTopIllustration(bool dark_mode) const {
+int SaveUpdateBubbleController::GetTopIllustration(bool dark_mode) const {
   if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
       state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     int image = base::GetFieldTrialParamByFeatureAsInt(
@@ -226,7 +227,7 @@ int PendingBubbleController::GetTopIllustration(bool dark_mode) const {
   return 0;
 }
 
-bool PendingBubbleController::ReplaceToShowPromotionIfNeeded() {
+bool SaveUpdateBubbleController::ReplaceToShowPromotionIfNeeded() {
   Profile* profile = GetProfile();
   if (!profile)
     return false;
@@ -249,7 +250,7 @@ bool PendingBubbleController::ReplaceToShowPromotionIfNeeded() {
   return false;
 }
 
-bool PendingBubbleController::RevealPasswords() {
+bool SaveUpdateBubbleController::RevealPasswords() {
   bool reveal_immediately = !password_revealing_requires_reauth_ ||
                             (delegate_ && delegate_->AuthenticateUser());
   if (reveal_immediately)
@@ -258,18 +259,18 @@ bool PendingBubbleController::RevealPasswords() {
 }
 
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
-void PendingBubbleController::OnToggleAccountStore(bool is_checked) {
+void SaveUpdateBubbleController::OnToggleAccountStore(bool is_checked) {
   delegate_->GetPasswordFeatureManager()->SetDefaultPasswordStore(
       is_checked ? Store::kAccountStore : Store::kProfileStore);
 }
 
-bool PendingBubbleController::IsUsingAccountStore() {
+bool SaveUpdateBubbleController::IsUsingAccountStore() {
   return delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
          Store::kAccountStore;
 }
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
-void PendingBubbleController::ReportInteractions() {
+void SaveUpdateBubbleController::ReportInteractions() {
   if (state_ == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE)
     return;
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
@@ -315,6 +316,6 @@ void PendingBubbleController::ReportInteractions() {
     metrics_recorder_->RecordUIDismissalReason(dismissal_reason_);
 }
 
-base::string16 PendingBubbleController::GetTitle() const {
+base::string16 SaveUpdateBubbleController::GetTitle() const {
   return title_;
 }

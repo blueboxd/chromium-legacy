@@ -450,10 +450,6 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
-  // TODO(ericrk): Remove this once hang issues have been debugged.
-  // https://crbug.com/899705
-  SCOPED_UMA_HISTOGRAM_LONG_TIMER("CompositorImplAndroid.TearDownDisplayTime");
-
   // Make a best effort to try to complete pending readbacks.
   // TODO(crbug.com/637035): Consider doing this in a better way,
   // ideally with the guarantee of readbacks completing.

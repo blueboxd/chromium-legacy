@@ -253,15 +253,14 @@ void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
 MockJobTask::~MockJobTask() = default;
 
 MockJobTask::MockJobTask(
-    base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+    base::RepeatingCallback<void(JobDelegate*)> worker_task,
     size_t num_tasks_to_run)
     : worker_task_(std::move(worker_task)),
       remaining_num_tasks_to_run_(num_tasks_to_run) {}
 
 MockJobTask::MockJobTask(base::OnceClosure worker_task)
     : worker_task_(base::BindRepeating(
-          [](base::OnceClosure&& worker_task,
-             experimental::JobDelegate*) mutable {
+          [](base::OnceClosure&& worker_task, JobDelegate*) mutable {
             std::move(worker_task).Run();
           },
           base::Passed(std::move(worker_task)))),
@@ -271,7 +270,7 @@ size_t MockJobTask::GetMaxConcurrency() const {
   return remaining_num_tasks_to_run_.load();
 }
 
-void MockJobTask::Run(experimental::JobDelegate* delegate) {
+void MockJobTask::Run(JobDelegate* delegate) {
   worker_task_.Run(delegate);
   size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
   DCHECK_GT(before, 0U);

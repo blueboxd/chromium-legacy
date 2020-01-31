@@ -248,7 +248,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd1e28ea0ef92720c6332a7525d324d5032439cfe',
+  'devtools_frontend_revision': '023284c1ce323b8a2d22ffa153432366b4eae273',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -535,7 +535,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '5aaf54801f29f98e8e9ead3949805c8102ab119b',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '6c2b38e46faed1f8707f88b22bd5328a09949d68',
       'condition': 'checkout_ios',
   },
 
@@ -1293,7 +1293,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd1b176ec137a9bb88f6f6a39c6d148b856885eba',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'fe37d1fa52f1a0a673dc72331f7dcef44412193f',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

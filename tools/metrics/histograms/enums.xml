@@ -38399,6 +38399,7 @@ from previous Chrome versions.
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>
   <int value="-91767554" label="enable-de-jelly"/>
+  <int value="-90521375" label="PDFTwoUpView:enabled"/>
   <int value="-90032223" label="BuiltInModuleInfra:disabled"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-89567017" label="ChromeColorsCustomColorPicker:enabled"/>
@@ -38620,6 +38621,7 @@ from previous Chrome versions.
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
   <int value="157318016" label="AutomaticTabDiscarding:enabled"/>
+  <int value="160524775" label="PDFTwoUpView:disabled"/>
   <int value="160838658" label="SmartDimModelV3:enabled"/>
   <int value="161409456" label="AutofillUseMobileLabelDisambiguation:disabled"/>
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>

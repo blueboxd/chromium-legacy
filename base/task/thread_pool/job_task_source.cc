@@ -136,7 +136,7 @@ bool JobTaskSource::JoinFlag::ShouldWorkerSignal() {
 JobTaskSource::JobTaskSource(
     const Location& from_here,
     const TaskTraits& traits,
-    RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+    RepeatingCallback<void(JobDelegate*)> worker_task,
     RepeatingCallback<size_t()> max_concurrency_callback,
     PooledTaskRunnerDelegate* delegate)
     : TaskSource(traits, nullptr, TaskSourceExecutionMode::kJob),
@@ -146,7 +146,7 @@ JobTaskSource::JobTaskSource(
       primary_task_(base::BindRepeating(
           [](JobTaskSource* self) {
             // Each worker task has its own delegate with associated state.
-            experimental::JobDelegate job_delegate{self, self->delegate_};
+            JobDelegate job_delegate{self, self->delegate_};
             self->worker_task_.Run(&job_delegate);
           },
           base::Unretained(this))),
@@ -183,7 +183,7 @@ bool JobTaskSource::WillJoin() {
 }
 
 bool JobTaskSource::RunJoinTask() {
-  experimental::JobDelegate job_delegate{this, nullptr};
+  JobDelegate job_delegate{this, nullptr};
   worker_task_.Run(&job_delegate);
 
   // std::memory_order_relaxed on |worker_count_| is sufficient because the call

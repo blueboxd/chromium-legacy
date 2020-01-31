@@ -2218,6 +2218,9 @@ extern const char kPdfAnnotationsDescription[];
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
 
+extern const char kPdfTwoUpViewName[];
+extern const char kPdfTwoUpViewDescription[];
+
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)

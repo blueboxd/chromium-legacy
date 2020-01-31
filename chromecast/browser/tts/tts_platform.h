@@ -18,11 +18,6 @@ class TtsPlatformImpl {
 
   virtual ~TtsPlatformImpl() {}
 
-  // TODO(rdaum): Delete declaration after downstream implementation is using
-  // SetPlatformImpl. (This is no longer used and the platform used is selected
-  // by SetPlatformImpl on TtsController instead)
-  static TtsPlatformImpl* GetInstance();
-
   // Returns true if this platform implementation is supported and available.
   virtual bool PlatformImplAvailable() = 0;
 

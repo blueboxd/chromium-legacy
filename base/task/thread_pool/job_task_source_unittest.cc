@@ -329,7 +329,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, NotifyConcurrencyIncrease) {
 // Verifies that ShouldYield() calls the delegate.
 TEST_F(ThreadPoolJobTaskSourceTest, ShouldYield) {
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([](experimental::JobDelegate* delegate) {
+      BindLambdaForTesting([](JobDelegate* delegate) {
         // As set up below, the mock will return false once and true the second
         // time.
         EXPECT_FALSE(delegate->ShouldYield());
@@ -360,8 +360,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, ShouldYield) {
 TEST_F(ThreadPoolJobTaskSourceTest, MaxConcurrencyStagnateIfShouldYield) {
   scoped_refptr<JobTaskSource> task_source =
       base::MakeRefCounted<JobTaskSource>(
-          FROM_HERE, TaskTraits(),
-          BindRepeating([](experimental::JobDelegate* delegate) {
+          FROM_HERE, TaskTraits(), BindRepeating([](JobDelegate* delegate) {
             // As set up below, the mock will return true once.
             ASSERT_TRUE(delegate->ShouldYield());
           }),
@@ -392,7 +391,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidConcurrency) {
 
   scoped_refptr<test::MockJobTask> job_task;
   job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&](experimental::JobDelegate* delegate) {
+      BindLambdaForTesting([&](JobDelegate* delegate) {
         EXPECT_FALSE(delegate->ShouldYield());
         job_task->SetNumTasksToRun(2);
         EXPECT_FALSE(delegate->ShouldYield());

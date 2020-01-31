@@ -253,7 +253,7 @@ class PLATFORM_EXPORT ThreadState final {
   }
 
   void PerformIdleLazySweep(base::TimeTicks deadline);
-  void PerformConcurrentSweep(base::experimental::JobDelegate*);
+  void PerformConcurrentSweep(base::JobDelegate*);
 
   void SchedulePreciseGC();
   void ScheduleForcedGCForTesting();
@@ -617,7 +617,7 @@ class PLATFORM_EXPORT ThreadState final {
   base::Lock concurrent_marker_bootstrapping_lock_;
   size_t concurrently_marked_bytes_ = 0;
 
-  base::experimental::JobHandle sweeper_handle_;
+  base::JobHandle sweeper_handle_;
   std::atomic_bool has_unswept_pages_{false};
 
   friend class BlinkGCObserver;

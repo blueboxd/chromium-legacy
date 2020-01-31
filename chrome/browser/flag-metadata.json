@@ -3052,6 +3052,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "pdf-two-up-view",
+    "owners": ["nigi", "thestig"],
+    "expiry_milestone": 86
+  },
+  {
     "name": "per-method-can-make-payment-quota",
     "owners": [ "rouslan" ],
     "expiry_milestone": 78

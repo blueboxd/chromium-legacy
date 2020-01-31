@@ -302,11 +302,11 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&threads_running_barrier, &threads_continue](
-                               experimental::JobDelegate* delegate) {
-        threads_running_barrier.Run();
-        test::WaitWithoutBlockingObserver(&threads_continue);
-      }),
+      BindLambdaForTesting(
+          [&threads_running_barrier, &threads_continue](JobDelegate* delegate) {
+            threads_running_barrier.Run();
+            test::WaitWithoutBlockingObserver(&threads_continue);
+          }),
       /* num_tasks_to_run */ kMaxTasks);
   scoped_refptr<JobTaskSource> task_source =
       job_task->GetJobTaskSource(FROM_HERE, {TaskPriority::USER_VISIBLE},

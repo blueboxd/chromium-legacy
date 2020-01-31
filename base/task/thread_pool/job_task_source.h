@@ -34,13 +34,13 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
  public:
   JobTaskSource(const Location& from_here,
                 const TaskTraits& traits,
-                RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+                RepeatingCallback<void(JobDelegate*)> worker_task,
                 RepeatingCallback<size_t()> max_concurrency_callback,
                 PooledTaskRunnerDelegate* delegate);
 
-  static experimental::JobHandle CreateJobHandle(
+  static JobHandle CreateJobHandle(
       scoped_refptr<internal::JobTaskSource> task_source) {
-    return experimental::JobHandle(std::move(task_source));
+    return JobHandle(std::move(task_source));
   }
 
   // Notifies this task source that max concurrency was increased, and the
@@ -199,7 +199,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   RepeatingCallback<size_t()> max_concurrency_callback_;
 
   // Worker task set by the job owner.
-  RepeatingCallback<void(experimental::JobDelegate*)> worker_task_;
+  RepeatingCallback<void(JobDelegate*)> worker_task_;
   // Task returned from TakeTask(), that calls |worker_task_| internally.
   RepeatingClosure primary_task_;
 

@@ -11,7 +11,6 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 
 namespace base {
-namespace experimental {
 
 JobDelegate::JobDelegate(
     internal::JobTaskSource* task_source,
@@ -188,5 +187,4 @@ JobHandle PostJob(const Location& from_here,
   return JobHandle();
 }
 
-}  // namespace experimental
 }  // namespace base

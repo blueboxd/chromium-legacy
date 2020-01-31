@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_generation_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
-#include "chrome/browser/ui/views/passwords/password_pending_view.h"
+#include "chrome/browser/ui/views/passwords/password_save_update_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -71,7 +71,7 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
   } else if (model_state ==
                  password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
              model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
-    view = new PasswordPendingView(web_contents, anchor_view, reason);
+    view = new PasswordSaveUpdateView(web_contents, anchor_view, reason);
   } else {
     NOTREACHED();
   }

@@ -586,7 +586,7 @@ bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
   return true;
 }
 
-bool ThreadHeap::AdvanceConcurrentSweep(base::experimental::JobDelegate* job) {
+bool ThreadHeap::AdvanceConcurrentSweep(base::JobDelegate* job) {
   for (size_t i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     while (!arenas_[i]->ConcurrentSweepOnePage()) {
       if (job->ShouldYield())

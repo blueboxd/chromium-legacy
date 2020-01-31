@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_PENDING_BUBBLE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_PENDING_BUBBLE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_SAVE_UPDATE_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_SAVE_UPDATE_BUBBLE_CONTROLLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
@@ -16,13 +16,13 @@ namespace base {
 class Clock;
 }
 
-// This controller provides data and actions for the PasswordPendingView.
-class PendingBubbleController : public PasswordBubbleControllerBase {
+// This controller provides data and actions for the PasswordSaveUpdateView.
+class SaveUpdateBubbleController : public PasswordBubbleControllerBase {
  public:
-  explicit PendingBubbleController(
+  explicit SaveUpdateBubbleController(
       base::WeakPtr<PasswordsModelDelegate> delegate,
       DisplayReason display_reason);
-  ~PendingBubbleController() override;
+  ~SaveUpdateBubbleController() override;
 
   // Called by the view code when the save/update button is clicked by the user.
   void OnSaveClicked();
@@ -126,4 +126,4 @@ class PendingBubbleController : public PasswordBubbleControllerBase {
   base::Clock* clock_;
 };
 
-#endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_PENDING_BUBBLE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_SAVE_UPDATE_BUBBLE_CONTROLLER_H_

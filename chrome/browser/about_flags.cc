@@ -3312,6 +3312,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
+
+    {"pdf-two-up-view", flag_descriptions::kPdfTwoUpViewName,
+     flag_descriptions::kPdfTwoUpViewDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFTwoUpView)},
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)

@@ -528,7 +528,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   }
 }
 
-void ThreadState::PerformConcurrentSweep(base::experimental::JobDelegate* job) {
+void ThreadState::PerformConcurrentSweep(base::JobDelegate* job) {
   VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
           << "ConcurrentSweep";
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
@@ -567,7 +567,7 @@ void ThreadState::ScheduleConcurrentAndLazySweep() {
   }
 
   has_unswept_pages_ = true;
-  sweeper_handle_ = base::experimental::PostJob(
+  sweeper_handle_ = base::PostJob(
       FROM_HERE,
       {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},

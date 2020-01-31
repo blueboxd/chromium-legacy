@@ -18,10 +18,9 @@ namespace base {
 TEST(PostJobTest, PostJobSimple) {
   test::TaskEnvironment task_environment;
   std::atomic_size_t num_tasks_to_run(4);
-  auto handle = experimental::PostJob(
+  auto handle = PostJob(
       FROM_HERE, {},
-      BindLambdaForTesting(
-          [&](experimental::JobDelegate* delegate) { --num_tasks_to_run; }),
+      BindLambdaForTesting([&](JobDelegate* delegate) { --num_tasks_to_run; }),
       BindLambdaForTesting([&]() -> size_t { return num_tasks_to_run; }));
   handle.Join();
   DCHECK_EQ(num_tasks_to_run, 0U);
@@ -30,10 +29,9 @@ TEST(PostJobTest, PostJobSimple) {
 TEST(PostJobTest, PostJobExtension) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH({
-    auto handle = experimental::PostJob(
-        FROM_HERE, TestExtensionBoolTrait(),
-        BindRepeating([](experimental::JobDelegate* delegate) {}),
-        BindRepeating([]() -> size_t { return 0; }));
+    auto handle = PostJob(FROM_HERE, TestExtensionBoolTrait(),
+                          BindRepeating([](JobDelegate* delegate) {}),
+                          BindRepeating([]() -> size_t { return 0; }));
   });
 }
 

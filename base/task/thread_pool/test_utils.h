@@ -82,9 +82,8 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
 class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
  public:
   // Gives |worker_task| to requesting workers |num_tasks_to_run| times.
-  MockJobTask(
-      base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
-      size_t num_tasks_to_run);
+  MockJobTask(base::RepeatingCallback<void(JobDelegate*)> worker_task,
+              size_t num_tasks_to_run);
 
   // Gives |worker_task| to a single requesting worker.
   MockJobTask(base::OnceClosure worker_task);
@@ -96,7 +95,7 @@ class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
   }
 
   size_t GetMaxConcurrency() const;
-  void Run(experimental::JobDelegate* delegate);
+  void Run(JobDelegate* delegate);
 
   scoped_refptr<JobTaskSource> GetJobTaskSource(
       const Location& from_here,
@@ -108,7 +107,7 @@ class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
 
   ~MockJobTask();
 
-  base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task_;
+  base::RepeatingCallback<void(JobDelegate*)> worker_task_;
   std::atomic_size_t remaining_num_tasks_to_run_;
 
   DISALLOW_COPY_AND_ASSIGN(MockJobTask);

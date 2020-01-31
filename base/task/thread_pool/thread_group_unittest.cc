@@ -588,11 +588,11 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&threads_running_barrier,
-                            &threads_continue](experimental::JobDelegate*) {
-        threads_running_barrier.Run();
-        test::WaitWithoutBlockingObserver(&threads_continue);
-      }),
+      BindLambdaForTesting(
+          [&threads_running_barrier, &threads_continue](JobDelegate*) {
+            threads_running_barrier.Run();
+            test::WaitWithoutBlockingObserver(&threads_continue);
+          }),
       /* num_tasks_to_run */ kMaxTasks);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
@@ -619,12 +619,11 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSourceMultipleTime) {
   WaitableEvent thread_running;
   WaitableEvent thread_continue;
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting(
-          [&thread_running, &thread_continue](experimental::JobDelegate*) {
-            DCHECK(!thread_running.IsSignaled());
-            thread_running.Signal();
-            test::WaitWithoutBlockingObserver(&thread_continue);
-          }),
+      BindLambdaForTesting([&thread_running, &thread_continue](JobDelegate*) {
+        DCHECK(!thread_running.IsSignaled());
+        thread_running.Signal();
+        test::WaitWithoutBlockingObserver(&thread_continue);
+      }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
@@ -664,7 +663,7 @@ TEST_P(ThreadGroupTest, CancelJobTaskSource) {
 
   // Schedule a big number of tasks.
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&](experimental::JobDelegate* delegate) {
+      BindLambdaForTesting([&](JobDelegate* delegate) {
         {
           CheckedAutoLock auto_lock(tasks_running_lock);
           tasks_running = true;
@@ -679,8 +678,7 @@ TEST_P(ThreadGroupTest, CancelJobTaskSource) {
       FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
-  experimental::JobHandle job_handle =
-      internal::JobTaskSource::CreateJobHandle(task_source);
+  JobHandle job_handle = internal::JobTaskSource::CreateJobHandle(task_source);
 
   // Wait for at least 1 task to start running.
   {
@@ -710,11 +708,11 @@ TEST_P(ThreadGroupTest, JobTaskSourceConcurrencyIncrease) {
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running_a)));
 
   auto job_state = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&threads_running_barrier,
-                            &threads_continue](experimental::JobDelegate*) {
-        threads_running_barrier.Run();
-        test::WaitWithoutBlockingObserver(&threads_continue);
-      }),
+      BindLambdaForTesting(
+          [&threads_running_barrier, &threads_continue](JobDelegate*) {
+            threads_running_barrier.Run();
+            test::WaitWithoutBlockingObserver(&threads_continue);
+          }),
       /* num_tasks_to_run */ kMaxTasks / 2);
   auto task_source = job_state->GetJobTaskSource(
       FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
@@ -753,7 +751,7 @@ TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
   task_tracker_.SetCanRunPolicy(CanRunPolicy::kNone);
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindRepeating([](experimental::JobDelegate*) { ShouldNotRun(); }),
+      BindRepeating([](JobDelegate*) { ShouldNotRun(); }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
@@ -786,7 +784,7 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_continue)));
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&](experimental::JobDelegate*) {
+      BindLambdaForTesting([&](JobDelegate*) {
         threads_continue_barrier.Run();
         test::WaitWithoutBlockingObserver(&threads_continue);
       }),
@@ -795,8 +793,7 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
       FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
-  experimental::JobHandle job_handle =
-      internal::JobTaskSource::CreateJobHandle(task_source);
+  JobHandle job_handle = internal::JobTaskSource::CreateJobHandle(task_source);
   job_handle.Join();
   // All worker tasks should complete before Join() returns.
   EXPECT_EQ(0U, job_task->GetMaxConcurrency());
@@ -818,7 +815,7 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
   size_t num_tasks_running = 0;
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&](experimental::JobDelegate*) {
+      BindLambdaForTesting([&](JobDelegate*) {
         // Increment the number of tasks running.
         {
           CheckedAutoLock auto_lock(num_tasks_running_lock);

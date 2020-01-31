@@ -1218,9 +1218,8 @@ TEST_P(ThreadPoolImplTest, ScheduleJobTaskSource) {
   WaitableEvent threads_running;
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&threads_running](experimental::JobDelegate*) {
-        threads_running.Signal();
-      }),
+      BindLambdaForTesting(
+          [&threads_running](JobDelegate*) { threads_running.Signal(); }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source =
       job_task->GetJobTaskSource(FROM_HERE, {}, thread_pool_.get());
@@ -1238,8 +1237,8 @@ TEST_P(ThreadPoolImplTest, ThreadGroupChangeShouldYield) {
   WaitableEvent threads_continue;
 
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&threads_running, &threads_continue](
-                               experimental::JobDelegate* delegate) {
+      BindLambdaForTesting([&threads_running,
+                            &threads_continue](JobDelegate* delegate) {
         EXPECT_FALSE(delegate->ShouldYield());
 
         threads_running.Signal();

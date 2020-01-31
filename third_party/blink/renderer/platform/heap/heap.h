@@ -359,7 +359,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void Compact();
 
   bool AdvanceLazySweep(base::TimeTicks deadline);
-  bool AdvanceConcurrentSweep(base::experimental::JobDelegate*);
+  bool AdvanceConcurrentSweep(base::JobDelegate*);
 
   void PrepareForSweep();
   void RemoveAllPages();

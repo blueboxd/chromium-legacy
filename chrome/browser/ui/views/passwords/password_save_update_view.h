@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_VIEW_H_
 
-#include "chrome/browser/ui/passwords/bubble_controllers/pending_bubble_controller.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/save_update_bubble_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
@@ -25,18 +25,18 @@ class PasswordSignInPromoView;
 // A view offering the user the ability to save or update credentials (depending
 // on |is_update_bubble|). Contains a username and password field, along with a
 // "Save"/"Update" button and a "Never"/"Nope" button.
-class PasswordPendingView : public PasswordBubbleViewBase,
-                            public views::ButtonListener,
-                            public views::EditableComboboxListener {
+class PasswordSaveUpdateView : public PasswordBubbleViewBase,
+                               public views::ButtonListener,
+                               public views::EditableComboboxListener {
  public:
-  PasswordPendingView(content::WebContents* web_contents,
-                      views::View* anchor_view,
-                      DisplayReason reason);
+  PasswordSaveUpdateView(content::WebContents* web_contents,
+                         views::View* anchor_view,
+                         DisplayReason reason);
 
   views::View* GetUsernameTextfieldForTest() const;
 
  private:
-  ~PasswordPendingView() override;
+  ~PasswordSaveUpdateView() override;
 
   // PasswordBubbleViewBase
   PasswordBubbleControllerBase* GetController() override;
@@ -70,7 +70,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void UpdateDialogButtons();
   std::unique_ptr<views::View> CreateFooterView();
 
-  PendingBubbleController controller_;
+  SaveUpdateBubbleController controller_;
 
   // True iff it is an update password bubble on creation. False iff it is a
   // save bubble.
@@ -92,8 +92,6 @@ class PasswordPendingView : public PasswordBubbleViewBase,
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
   bool are_passwords_revealed_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordPendingView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_VIEW_H_

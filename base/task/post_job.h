@@ -19,7 +19,6 @@ namespace internal {
 class JobTaskSource;
 class PooledTaskRunnerDelegate;
 }
-namespace experimental {
 
 // Delegate that's passed to Job's worker task, providing an entry point to
 // communicate with the scheduler.
@@ -163,7 +162,6 @@ PostJob(const Location& from_here,
         RepeatingCallback<void(JobDelegate*)> worker_task,
         RepeatingCallback<size_t()> max_concurrency_callback);
 
-}  // namespace experimental
 }  // namespace base
 
 #endif  // BASE_TASK_POST_JOB_H_

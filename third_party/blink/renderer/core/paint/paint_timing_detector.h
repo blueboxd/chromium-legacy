@@ -124,7 +124,8 @@ class CORE_EXPORT PaintTimingDetector
       const Node*,
       const Image*,
       const StyleFetchedImage*,
-      const PropertyTreeState& current_paint_chunk_properties);
+      const PropertyTreeState& current_paint_chunk_properties,
+      const IntRect& image_border);
   static void NotifyImagePaint(
       const LayoutObject&,
       const IntSize& intrinsic_size,

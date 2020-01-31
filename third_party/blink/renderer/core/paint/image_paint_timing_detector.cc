@@ -215,7 +215,8 @@ void ImagePaintTimingDetector::RecordImage(
     const IntSize& intrinsic_size,
     const ImageResourceContent& cached_image,
     const PropertyTreeState& current_paint_chunk_properties,
-    const StyleFetchedImage* style_image) {
+    const StyleFetchedImage* style_image,
+    const IntRect* image_border) {
   Node* node = object.GetNode();
   if (!node)
     return;
@@ -234,7 +235,8 @@ void ImagePaintTimingDetector::RecordImage(
             frame_view_->GetPaintTimingDetector().Visualizer()) {
       FloatRect mapped_visual_rect =
           frame_view_->GetPaintTimingDetector().CalculateVisualRect(
-              object.FragmentsVisualRectBoundingBox(),
+              image_border ? *image_border
+                           : object.FragmentsVisualRectBoundingBox(),
               current_paint_chunk_properties);
       visualizer->DumpImageDebuggingRect(object, mapped_visual_rect,
                                          cached_image);
@@ -244,7 +246,8 @@ void ImagePaintTimingDetector::RecordImage(
 
   if (is_recored_visible_image || !is_recording_)
     return;
-  IntRect visual_rect = object.FragmentsVisualRectBoundingBox();
+  IntRect visual_rect =
+      image_border ? *image_border : object.FragmentsVisualRectBoundingBox();
   // Before the image resource starts loading, <img> has no size info. We wait
   // until the size is known.
   if (visual_rect.IsEmpty())

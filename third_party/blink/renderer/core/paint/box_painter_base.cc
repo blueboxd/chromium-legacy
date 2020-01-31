@@ -610,14 +610,16 @@ inline bool PaintFastBottomLayer(Node* node,
   if (info.image && info.image->IsImageResource()) {
     PaintTimingDetector::NotifyBackgroundImagePaint(
         node, image, To<StyleFetchedImage>(info.image),
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties(),
+        RoundedIntRect(image_border.Rect()));
   }
   if (node && info.image && info.image->IsImageResource()) {
     LocalDOMWindow* window = node->GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
         node, To<StyleFetchedImage>(info.image),
-        context.GetPaintController().CurrentPaintChunkProperties());
+        context.GetPaintController().CurrentPaintChunkProperties(),
+        RoundedIntRect(image_border.Rect()));
   }
   return true;
 }
@@ -740,14 +742,16 @@ void PaintFillLayerBackground(GraphicsContext& context,
     if (info.image && info.image->IsImageResource()) {
       PaintTimingDetector::NotifyBackgroundImagePaint(
           node, image, To<StyleFetchedImage>(info.image),
-          context.GetPaintController().CurrentPaintChunkProperties());
+          context.GetPaintController().CurrentPaintChunkProperties(),
+          EnclosingIntRect(geometry.SnappedDestRect()));
     }
     if (node && info.image && info.image->IsImageResource()) {
       LocalDOMWindow* window = node->GetDocument().domWindow();
       DCHECK(window);
       ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
           node, To<StyleFetchedImage>(info.image),
-          context.GetPaintController().CurrentPaintChunkProperties());
+          context.GetPaintController().CurrentPaintChunkProperties(),
+          EnclosingIntRect(geometry.SnappedDestRect()));
     }
   }
 }

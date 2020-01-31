@@ -99,7 +99,8 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     const Node* node,
     const Image* image,
     const StyleFetchedImage* style_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeState& current_paint_chunk_properties,
+    const IntRect& image_border) {
   DCHECK(image);
   DCHECK(style_image->CachedImage());
   if (!node)
@@ -117,7 +118,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
       *object, image->Size(), *style_image->CachedImage(),
-      current_paint_chunk_properties, style_image);
+      current_paint_chunk_properties, style_image, &image_border);
 }
 
 // static
@@ -136,7 +137,7 @@ void PaintTimingDetector::NotifyImagePaint(
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
       object, intrinsic_size, *cached_image, current_paint_chunk_properties,
-      nullptr);
+      nullptr, nullptr);
 }
 
 void PaintTimingDetector::NotifyImageFinished(

@@ -101,7 +101,7 @@ void ImageElementTiming::NotifyImagePainted(
     it->value.is_painted_ = true;
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
                                *cached_image, current_paint_chunk_properties,
-                               it->value.load_time_);
+                               it->value.load_time_, nullptr);
   }
 }
 
@@ -110,7 +110,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
     const LayoutObject& layout_object,
     const ImageResourceContent& cached_image,
     const PropertyTreeState& current_paint_chunk_properties,
-    base::TimeTicks load_time) {
+    base::TimeTicks load_time,
+    const IntRect* image_border) {
   LocalFrame* frame = GetSupplementable()->GetFrame();
   DCHECK(frame == layout_object.GetDocument().GetFrame());
   DCHECK(node);
@@ -138,7 +139,9 @@ void ImageElementTiming::NotifyImagePaintedInternal(
       LayoutObject::ShouldRespectImageOrientation(&layout_object);
 
   FloatRect intersection_rect = ElementTimingUtils::ComputeIntersectionRect(
-      frame, layout_object.FirstFragment().VisualRect(),
+      frame,
+      image_border ? *image_border
+                   : layout_object.FragmentsVisualRectBoundingBox(),
       current_paint_chunk_properties);
   const AtomicString attr =
       element->FastGetAttribute(html_names::kElementtimingAttr);
@@ -205,7 +208,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
 void ImageElementTiming::NotifyBackgroundImagePainted(
     Node* node,
     const StyleFetchedImage* background_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeState& current_paint_chunk_properties,
+    const IntRect& image_border) {
   DCHECK(node);
   DCHECK(background_image);
 
@@ -231,7 +235,7 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
     info.is_painted_ = true;
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
                                *cached_image, current_paint_chunk_properties,
-                               it->value);
+                               it->value, &image_border);
   }
 }
 

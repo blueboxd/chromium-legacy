@@ -35,7 +35,7 @@ UseCreditCardAction::UseCreditCardAction(ActionDelegate* delegate,
   for (const auto& required_field_proto : proto_.use_card().required_fields()) {
     if (required_field_proto.card_field() ==
         UseCreditCardProto::RequiredField::UNDEFINED) {
-      DVLOG(1) << "card_field enum not set, skipping required field";
+      VLOG(1) << "card_field enum not set, skipping required field";
       continue;
     }
 

@@ -56,7 +56,7 @@
         subtitle-key="adUnlockSubtitle"
         aria-label$="[[i18nDynamic(locale, adWelcomeMessagekey)]]" has-buttons>
       <hd-iron-icon slot="oobe-icon"
-          icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
+          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
       </hd-iron-icon>
       <div slot="footer" id="adUnlock">
         <cr-input id="unlockPasswordInput" type="password" slot="inputs"
@@ -78,7 +78,7 @@
         title-key="[[adWelcomeMessageKey]]"
         aria-label$="[[i18nDynamic(locale, adWelcomeMessagekey)]]" has-buttons>
       <hd-iron-icon slot="oobe-icon" hidden="[[!isDomainJoin]]"
-          icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
+          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
       </hd-iron-icon>
       <div slot="subtitle" hidden="[[isDomainJoin]]">
         [[i18nDynamic(locale, 'enterpriseInfoMessage', realm)]]

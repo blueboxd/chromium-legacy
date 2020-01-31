@@ -89,7 +89,7 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
   }
 
   LocalFrame* local_frame = window.GetFrame();
-  if (!local_frame || local_frame->IsCrossOriginSubframe()) {
+  if (!local_frame || local_frame->IsCrossOriginToMainFrame()) {
     exception_state.ThrowSecurityError(
         "Cross origin sub frames aren't allowed to show a file picker.");
     return ScriptPromise();

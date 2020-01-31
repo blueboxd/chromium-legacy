@@ -68,14 +68,14 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
 
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    VLOG(1) << "Remote Media added: " << object_path.value();
+    DVLOG(1) << "Remote Media added: " << object_path.value();
     for (auto& observer : observers_)
       observer.MediaAdded(object_path);
   }
 
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    VLOG(1) << "Remote Media removed: " << object_path.value();
+    DVLOG(1) << "Remote Media removed: " << object_path.value();
     for (auto& observer : observers_)
       observer.MediaRemoved(object_path);
   }
@@ -97,7 +97,7 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
                         const EndpointProperties& properties,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) override {
-    VLOG(1) << "RegisterEndpoint - endpoint: " << endpoint_path.value();
+    DVLOG(1) << "RegisterEndpoint - endpoint: " << endpoint_path.value();
 
     dbus::MethodCall method_call(kBluetoothMediaInterface, kRegisterEndpoint);
 
@@ -150,7 +150,7 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
                           const dbus::ObjectPath& endpoint_path,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) override {
-    VLOG(1) << "UnregisterEndpoint - endpoint: " << endpoint_path.value();
+    DVLOG(1) << "UnregisterEndpoint - endpoint: " << endpoint_path.value();
 
     dbus::MethodCall method_call(kBluetoothMediaInterface, kUnregisterEndpoint);
 

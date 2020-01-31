@@ -105,7 +105,6 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
   DCHECK(!init_cb_);
   init_cb_ = std::move(init_cb);
 
-  demuxer_stream_ = stream;
   client_ = client;
 
   audio_consumer_.Bind(std::move(audio_consumer_handle_));
@@ -116,6 +115,32 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
 
   audio_consumer_.events().OnEndOfStream = [this]() { OnEndOfStream(); };
   RequestAudioConsumerStatus();
+
+  InitializeStreamSync(stream->audio_decoder_config());
+
+  // DecryptingDemuxerStream handles both encrypted and clear streams, so
+  // initialize it long as we have cdm_context.
+  if (cdm_context) {
+    WaitingCB waiting_cb = base::BindRepeating(&RendererClient::OnWaiting,
+                                               base::Unretained(client_));
+    decrypting_demuxer_stream_ = std::make_unique<DecryptingDemuxerStream>(
+        base::ThreadTaskRunnerHandle::Get(), media_log_, waiting_cb);
+    decrypting_demuxer_stream_->Initialize(
+        stream, cdm_context,
+        base::BindRepeating(&FuchsiaAudioRenderer::OnDecryptorInitialized,
+                            base::Unretained(this)));
+    return;
+  }
+
+  demuxer_stream_ = stream;
+
+  std::move(init_cb_).Run(PIPELINE_OK);
+}
+
+void FuchsiaAudioRenderer::InitializeStreamSync(
+    const AudioDecoderConfig& config) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!stream_sink_);
 
   // Allocate input buffers for the StreamSink.
   stream_sink_buffers_.resize(kNumBuffers);
@@ -140,8 +165,6 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
 
     vmos_for_stream_sink.push_back(std::move(readonly_vmo));
   }
-
-  AudioDecoderConfig config = demuxer_stream_->audio_decoder_config();
 
   auto compression = GetFuchsiaCompressionFromAudioCodec(config.codec());
   if (!compression) {
@@ -174,21 +197,6 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
   audio_consumer_->CreateStreamSink(
       std::move(vmos_for_stream_sink), std::move(stream_type),
       std::move(compression).value(), stream_sink_.NewRequest());
-
-  // If the stream is encrypted then initialize |decrypting_demuxer_stream_|.
-  if (demuxer_stream_->audio_decoder_config().is_encrypted() && cdm_context) {
-    WaitingCB waiting_cb = base::BindRepeating(&RendererClient::OnWaiting,
-                                               base::Unretained(client_));
-    decrypting_demuxer_stream_ = std::make_unique<DecryptingDemuxerStream>(
-        base::ThreadTaskRunnerHandle::Get(), media_log_, waiting_cb);
-    decrypting_demuxer_stream_->Initialize(
-        demuxer_stream_, cdm_context,
-        base::BindRepeating(&FuchsiaAudioRenderer::OnDecryptorInitialized,
-                            base::Unretained(this)));
-    return;
-  }
-
-  std::move(init_cb_).Run(PIPELINE_OK);
 }
 
 TimeSource* FuchsiaAudioRenderer::GetTimeSource() {
@@ -334,8 +342,11 @@ void FuchsiaAudioRenderer::OnError(PipelineStatus status) {
 void FuchsiaAudioRenderer::OnDecryptorInitialized(PipelineStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!init_cb_)
+  // |init_cb_| may be cleared in OnError(), e.g. if AudioConsumer was
+  // disconnected.
+  if (!init_cb_) {
     return;
+  }
 
   if (status == PIPELINE_OK) {
     demuxer_stream_ = decrypting_demuxer_stream_.get();
@@ -437,6 +448,8 @@ void FuchsiaAudioRenderer::ScheduleReadDemuxerStream() {
 
 void FuchsiaAudioRenderer::ReadDemuxerStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(demuxer_stream_);
+
   demuxer_stream_->Read(
       base::BindOnce(&FuchsiaAudioRenderer::OnDemuxerStreamReadDone,
                      weak_factory_.GetWeakPtr()));
@@ -451,9 +464,9 @@ void FuchsiaAudioRenderer::OnDemuxerStreamReadDone(
     if (read_status == DemuxerStream::kError) {
       OnError(PIPELINE_ERROR_READ);
     } else if (read_status == DemuxerStream::kConfigChanged) {
-      LOG(ERROR)
-          << "FuchsiaAudioRenderer doesn't support mid-stream config change.";
-      OnError(PIPELINE_ERROR_READ);
+      stream_sink_.Unbind();
+      InitializeStreamSync(demuxer_stream_->audio_decoder_config());
+      ScheduleReadDemuxerStream();
     } else {
       DCHECK_EQ(read_status, DemuxerStream::kAborted);
     }

@@ -40,8 +40,8 @@ class InstanceIDHandler {
   using DeleteTokenCallback =
       base::OnceCallback<void(GCMClient::Result result)>;
   using GetInstanceIDDataCallback =
-      base::Callback<void(const std::string& instance_id,
-                          const std::string& extra_data)>;
+      base::OnceCallback<void(const std::string& instance_id,
+                              const std::string& extra_data)>;
 
   InstanceIDHandler();
   virtual ~InstanceIDHandler();
@@ -70,7 +70,7 @@ class InstanceIDHandler {
                                  const std::string& extra_data) = 0;
   virtual void RemoveInstanceIDData(const std::string& app_id) = 0;
   virtual void GetInstanceIDData(const std::string& app_id,
-                                 const GetInstanceIDDataCallback& callback) = 0;
+                                 GetInstanceIDDataCallback callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstanceIDHandler);
@@ -88,8 +88,8 @@ class GCMDriver {
                               GCMClient::Result result)>;
   using ValidateRegistrationCallback = base::OnceCallback<void(bool is_valid)>;
   using UnregisterCallback = base::OnceCallback<void(GCMClient::Result result)>;
-  using SendCallback = base::Callback<void(const std::string& message_id,
-                                           GCMClient::Result result)>;
+  using SendCallback = base::OnceCallback<void(const std::string& message_id,
+                                               GCMClient::Result result)>;
   using GetEncryptionInfoCallback =
       base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
   using EncryptMessageCallback =
@@ -98,7 +98,9 @@ class GCMDriver {
       base::OnceCallback<void(GCMDecryptionResult result, std::string message)>;
 
   using GetGCMStatisticsCallback =
-      base::Callback<void(const GCMClient::GCMStatistics& stats)>;
+      base::OnceCallback<void(const GCMClient::GCMStatistics& stats)>;
+  using GCMStatisticsRecordingCallback =
+      base::RepeatingCallback<void(const GCMClient::GCMStatistics& stats)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
@@ -152,7 +154,7 @@ class GCMDriver {
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const OutgoingMessage& message,
-            const SendCallback& callback);
+            SendCallback callback);
 
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
@@ -223,11 +225,12 @@ class GCMDriver {
 
   // Get GCM client internal states and statistics. The activity logs will be
   // cleared before returning the stats when |clear_logs| is set to CLEAR_LOGS.
-  virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+  virtual void GetGCMStatistics(GetGCMStatisticsCallback callback,
                                 ClearActivityLogs clear_logs) = 0;
 
   // Enables/disables GCM activity recording, and then returns the stats.
-  virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+  // |callback| will be called for new activity.
+  virtual void SetGCMRecording(const GCMStatisticsRecordingCallback& callback,
                                bool recording) = 0;
 
   // sets a list of signed in accounts with OAuth2 access tokens, when GCMDriver

@@ -21,6 +21,7 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
   // DedicatedWorkerService:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  void EnumerateDedicatedWorkers(Observer* observer) override;
 
   DedicatedWorkerId GenerateNextDedicatedWorkerId();
 
@@ -37,6 +38,13 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
   DedicatedWorkerId::Generator dedicated_worker_id_generator_;
 
   base::ObserverList<Observer> observers_;
+
+  struct DedicatedWorkerInfo {
+    int worker_process_id;
+    GlobalFrameRoutingId ancestor_render_frame_host_id;
+  };
+  base::flat_map<DedicatedWorkerId, DedicatedWorkerInfo>
+      dedicated_worker_infos_;
 };
 
 }  // namespace content

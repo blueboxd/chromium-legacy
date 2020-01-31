@@ -131,7 +131,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/outline_shorthand.html [ Failure ]
 crbug.com/982194 external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Timeout ]
 crbug.com/982194 fast/backgrounds/background-clip-text-multiline-linebreak.html [ Failure ]
-crbug.com/982194 fast/backgrounds/background-clip-text-multiline.html [ Crash ]
 crbug.com/982194 fast/block/positioning/absolute-in-inline-dynamic.html [ Failure ]
 crbug.com/982194 fast/block/positioning/rel-positioned-inline-changes-width.html [ Failure ]
 crbug.com/982194 fast/css/first-line-hover-001.html [ Failure Pass ]

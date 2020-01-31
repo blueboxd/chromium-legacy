@@ -112,7 +112,8 @@ class InterstitialHTMLSource : public content::URLDataSource {
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
 
-SSLBlockingPage* CreateSslBlockingPage(content::WebContents* web_contents) {
+std::unique_ptr<SSLBlockingPage> CreateSslBlockingPage(
+    content::WebContents* web_contents) {
   // Random parameters for SSL blocking page.
   int cert_error = net::ERR_CERT_CONTAINS_ERRORS;
   GURL request_url("https://example.com");
@@ -163,7 +164,7 @@ SSLBlockingPage* CreateSslBlockingPage(content::WebContents* web_contents) {
                                              time_triggered_, GURL(), nullptr);
 }
 
-MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
+std::unique_ptr<MITMSoftwareBlockingPage> CreateMITMSoftwareBlockingPage(
     content::WebContents* web_contents) {
   const int cert_error = net::ERR_CERT_AUTHORITY_INVALID;
   const GURL request_url("https://example.com");
@@ -186,8 +187,8 @@ MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
       mitm_software_name);
 }
 
-BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
-    content::WebContents* web_contents) {
+std::unique_ptr<BlockedInterceptionBlockingPage>
+CreateBlockedInterceptionBlockingPage(content::WebContents* web_contents) {
   const int cert_error = net::ERR_CERT_AUTHORITY_INVALID;
   const GURL request_url("https://example.com");
 
@@ -198,7 +199,7 @@ BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
       web_contents, cert_error, request_url, nullptr, ssl_info);
 }
 
-LegacyTLSBlockingPage* CreateLegacyTLSBlockingPage(
+std::unique_ptr<LegacyTLSBlockingPage> CreateLegacyTLSBlockingPage(
     content::WebContents* web_contents) {
   const int cert_error = net::ERR_SSL_OBSOLETE_VERSION;
   const GURL request_url("https://example.com");
@@ -210,7 +211,7 @@ LegacyTLSBlockingPage* CreateLegacyTLSBlockingPage(
       web_contents, cert_error, request_url, nullptr, ssl_info);
 }
 
-BadClockBlockingPage* CreateBadClockBlockingPage(
+std::unique_ptr<BadClockBlockingPage> CreateBadClockBlockingPage(
     content::WebContents* web_contents) {
   // Set up a fake clock error.
   int cert_error = net::ERR_CERT_DATE_INVALID;
@@ -261,20 +262,20 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
       clock_state, nullptr);
 }
 
-LookalikeUrlInterstitialPage* CreateLookalikeInterstitialPage(
+std::unique_ptr<LookalikeUrlInterstitialPage> CreateLookalikeInterstitialPage(
     content::WebContents* web_contents) {
   GURL request_url("https://example.net");
   GURL safe_url("https://example.com");
 
-  return new LookalikeUrlInterstitialPage(
+  return std::make_unique<LookalikeUrlInterstitialPage>(
       web_contents, safe_url, ukm::kInvalidSourceId,
       LookalikeUrlInterstitialPage::MatchType::kNone,
       std::make_unique<LookalikeUrlControllerClient>(web_contents, request_url,
                                                      safe_url));
 }
 
-safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
-    content::WebContents* web_contents) {
+std::unique_ptr<safe_browsing::SafeBrowsingBlockingPage>
+CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
   safe_browsing::SBThreatType threat_type =
       safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
@@ -326,13 +327,14 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   // creates a SafeBrowsingBlockingPage but does not actually show a real
   // interstitial. Instead it extracts the html and displays it manually, so the
   // parts which depend on the NavigationEntry are not hit.
-  return safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
-      g_browser_process->safe_browsing_service()->ui_manager().get(),
-      web_contents, main_frame_url, resource, true);
+  return base::WrapUnique<safe_browsing::SafeBrowsingBlockingPage>(
+      safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
+          g_browser_process->safe_browsing_service()->ui_manager().get(),
+          web_contents, main_frame_url, resource, true));
 }
 
-TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
-    content::WebContents* web_contents) {
+std::unique_ptr<TestSafeBrowsingBlockingPageQuiet>
+CreateSafeBrowsingQuietBlockingPage(content::WebContents* web_contents) {
   safe_browsing::SBThreatType threat_type =
       safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
@@ -377,13 +379,14 @@ TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
   // creates a SafeBrowsingBlockingPage but does not actually show a real
   // interstitial. Instead it extracts the html and displays it manually, so the
   // parts which depend on the NavigationEntry are not hit.
-  return TestSafeBrowsingBlockingPageQuiet::CreateBlockingPage(
-      g_browser_process->safe_browsing_service()->ui_manager().get(),
-      web_contents, main_frame_url, resource, is_giant_webview);
+  return base::WrapUnique<TestSafeBrowsingBlockingPageQuiet>(
+      TestSafeBrowsingBlockingPageQuiet::CreateBlockingPage(
+          g_browser_process->safe_browsing_service()->ui_manager().get(),
+          web_contents, main_frame_url, resource, is_giant_webview));
 }
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
+std::unique_ptr<CaptivePortalBlockingPage> CreateCaptivePortalBlockingPage(
     content::WebContents* web_contents) {
   bool is_wifi_connection = false;
   GURL landing_url("https://captive.portal/login");
@@ -417,7 +420,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
   ChromeSecurityBlockingPageFactory blocking_page_factory;
-  CaptivePortalBlockingPage* blocking_page =
+  std::unique_ptr<CaptivePortalBlockingPage> blocking_page =
       blocking_page_factory.CreateCaptivePortalBlockingPage(
           web_contents, request_url, landing_url, nullptr, ssl_info,
           net::ERR_CERT_COMMON_NAME_INVALID);
@@ -426,11 +429,12 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 }
 #endif
 
-security_interstitials::SecurityInterstitialPage*
+std::unique_ptr<security_interstitials::SecurityInterstitialPage>
 CreateOriginPolicyInterstitialPage(content::WebContents* web_contents) {
-  return security_interstitials::OriginPolicyUI::GetBlockingPage(
-      network::OriginPolicyState::kCannotLoadPolicy, web_contents,
-      GURL("https://example.com/broken/origin/policy"));
+  return base::WrapUnique<security_interstitials::SecurityInterstitialPage>(
+      security_interstitials::OriginPolicyUI::GetBlockingPage(
+          network::OriginPolicyState::kCannotLoadPolicy, web_contents,
+          GURL("https://example.com/broken/origin/policy")));
 }
 
 }  //  namespace
@@ -489,34 +493,32 @@ void InterstitialHTMLSource::StartDataRequest(
       GURL(chrome::kChromeUIInterstitialURL).GetWithEmptyPath().Resolve(path);
   std::string path_without_query = url.path();
   if (path_without_query == "/ssl") {
-    interstitial_delegate.reset(CreateSslBlockingPage(web_contents));
+    interstitial_delegate = CreateSslBlockingPage(web_contents);
   } else if (path_without_query == "/mitm-software-ssl") {
-    interstitial_delegate.reset(CreateMITMSoftwareBlockingPage(web_contents));
+    interstitial_delegate = CreateMITMSoftwareBlockingPage(web_contents);
   } else if (path_without_query == "/blocked-interception") {
-    interstitial_delegate.reset(
-        CreateBlockedInterceptionBlockingPage(web_contents));
+    interstitial_delegate = CreateBlockedInterceptionBlockingPage(web_contents);
   } else if (path_without_query == "/legacy-tls") {
-    interstitial_delegate.reset(CreateLegacyTLSBlockingPage(web_contents));
+    interstitial_delegate = CreateLegacyTLSBlockingPage(web_contents);
   } else if (path_without_query == "/safebrowsing") {
-    interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
+    interstitial_delegate = CreateSafeBrowsingBlockingPage(web_contents);
   } else if (path_without_query == "/clock") {
-    interstitial_delegate.reset(CreateBadClockBlockingPage(web_contents));
+    interstitial_delegate = CreateBadClockBlockingPage(web_contents);
   } else if (path_without_query == "/lookalike") {
-    interstitial_delegate.reset(CreateLookalikeInterstitialPage(web_contents));
+    interstitial_delegate = CreateLookalikeInterstitialPage(web_contents);
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   } else if (path_without_query == "/captiveportal") {
-    interstitial_delegate.reset(CreateCaptivePortalBlockingPage(web_contents));
+    interstitial_delegate = CreateCaptivePortalBlockingPage(web_contents);
 #endif
   } else if (path_without_query == "/origin_policy") {
-    interstitial_delegate.reset(
-        CreateOriginPolicyInterstitialPage(web_contents));
+    interstitial_delegate = CreateOriginPolicyInterstitialPage(web_contents);
   }
 
   if (path_without_query == "/quietsafebrowsing") {
-    TestSafeBrowsingBlockingPageQuiet* blocking_page =
+    std::unique_ptr<TestSafeBrowsingBlockingPageQuiet> blocking_page =
         CreateSafeBrowsingQuietBlockingPage(web_contents);
-    interstitial_delegate.reset(blocking_page);
     html = blocking_page->GetHTML();
+    interstitial_delegate = std::move(blocking_page);
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   } else if (path_without_query == "/supervised_user") {
     html = GetSupervisedUserInterstitialHTML(path);

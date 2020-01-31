@@ -29,6 +29,11 @@ void TestSupportingGC::ConservativelyCollectGarbage(
       BlinkGC::GCReason::kForcedGCForTesting);
 }
 
+TestSupportingGC::~TestSupportingGC() {
+  // Complete sweeping before |task_environment_| is destroyed.
+  CompleteSweepingIfNeeded();
+}
+
 void TestSupportingGC::ClearOutOldGarbage() {
   PreciselyCollectGarbage();
   ThreadHeap& heap = ThreadState::Current()->Heap();

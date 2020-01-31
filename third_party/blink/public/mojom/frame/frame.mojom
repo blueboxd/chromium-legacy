@@ -192,6 +192,11 @@ interface LocalFrameHost {
   // should render fallback content.
   RenderFallbackContentInParentProcess();
 
+  // Indicates that the user activation state in the current frame has been
+  // updated, so the replicated states need to be synced (in the browser process
+  // as well as in all other renderer processes).
+  UpdateUserActivationState(UserActivationUpdateType update_type);
+
   // Provides accessibility information about a find in page result.
   HandleAccessibilityFindInPageResult(FindInPageResultAXParams params);
 

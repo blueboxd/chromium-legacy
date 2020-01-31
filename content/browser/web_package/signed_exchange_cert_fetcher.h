@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace network {
@@ -64,7 +65,8 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy,
       SignedExchangeReporter* reporter,
-      const base::Optional<base::UnguessableToken>& throttling_profile_id);
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key);
 
   ~SignedExchangeCertFetcher() override;
 
@@ -86,7 +88,8 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy,
       SignedExchangeReporter* reporter,
-      const base::Optional<base::UnguessableToken>& throttling_profile_id);
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key);
   void Start();
   void Abort();
   void OnHandleReady(MojoResult result);

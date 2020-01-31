@@ -70,22 +70,21 @@ InstanceIDAndroid::~InstanceIDAndroid() {
   Java_InstanceIDBridge_destroy(env, java_ref_);
 }
 
-void InstanceIDAndroid::GetID(const GetIDCallback& callback) {
+void InstanceIDAndroid::GetID(GetIDCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id =
-      get_id_callbacks_.Add(std::make_unique<GetIDCallback>(callback));
+  int32_t request_id = get_id_callbacks_.Add(
+      std::make_unique<GetIDCallback>(std::move(callback)));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getId(env, java_ref_, request_id);
 }
 
-void InstanceIDAndroid::GetCreationTime(
-    const GetCreationTimeCallback& callback) {
+void InstanceIDAndroid::GetCreationTime(GetCreationTimeCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   int32_t request_id = get_creation_time_callbacks_.Add(
-      std::make_unique<GetCreationTimeCallback>(callback));
+      std::make_unique<GetCreationTimeCallback>(std::move(callback)));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getCreationTime(env, java_ref_, request_id);
@@ -165,7 +164,7 @@ void InstanceIDAndroid::DidGetID(
 
   GetIDCallback* callback = get_id_callbacks_.Lookup(request_id);
   DCHECK(callback);
-  callback->Run(ConvertJavaStringToUTF8(jid));
+  std::move(*callback).Run(ConvertJavaStringToUTF8(jid));
   get_id_callbacks_.Remove(request_id);
 }
 
@@ -187,7 +186,7 @@ void InstanceIDAndroid::DidGetCreationTime(
   GetCreationTimeCallback* callback =
       get_creation_time_callbacks_.Lookup(request_id);
   DCHECK(callback);
-  callback->Run(creation_time);
+  std::move(*callback).Run(creation_time);
   get_creation_time_callbacks_.Remove(request_id);
 }
 

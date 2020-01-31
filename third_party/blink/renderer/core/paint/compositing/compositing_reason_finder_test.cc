@@ -242,7 +242,7 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   ASSERT_TRUE(iframe_layer);
   ASSERT_FALSE(To<HTMLFrameOwnerElement>(iframe)
                    ->ContentFrame()
-                   ->IsCrossOriginSubframe());
+                   ->IsCrossOriginToMainFrame());
   EXPECT_EQ(kNotComposited, iframe_layer->DirectCompositingReasons());
 
   SetBodyInnerHTML(R"HTML(
@@ -257,7 +257,7 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   ASSERT_TRUE(iframe_layer);
   ASSERT_TRUE(To<HTMLFrameOwnerElement>(iframe)
                   ->ContentFrame()
-                  ->IsCrossOriginSubframe());
+                  ->IsCrossOriginToMainFrame());
   EXPECT_EQ(CompositingReason::kIFrame,
             iframe_layer->DirectCompositingReasons());
 }

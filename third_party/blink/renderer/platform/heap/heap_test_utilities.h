@@ -29,6 +29,8 @@ class TestSupportingGC : public testing::Test {
   static void ConservativelyCollectGarbage(
       BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
 
+  ~TestSupportingGC() override;
+
   // Performs multiple rounds of garbage collections until no more memory can be
   // freed. This is useful to avoid other garbage collections having to deal
   // with stale memory.

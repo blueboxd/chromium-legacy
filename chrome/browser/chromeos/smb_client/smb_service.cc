@@ -38,8 +38,6 @@
 #include "net/base/network_interfaces.h"
 #include "url/url_util.h"
 
-using chromeos::file_system_provider::Service;
-
 namespace chromeos {
 namespace smb_client {
 
@@ -478,7 +476,7 @@ base::File::Error SmbService::Unmount(
   return result;
 }
 
-Service* SmbService::GetProviderService() const {
+file_system_provider::Service* SmbService::GetProviderService() const {
   return file_system_provider::Service::Get(profile_);
 }
 

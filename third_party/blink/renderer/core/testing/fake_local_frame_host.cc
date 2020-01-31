@@ -91,6 +91,9 @@ void FakeLocalFrameHost::DispatchLoad() {}
 
 void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
 
+void FakeLocalFrameHost::UpdateUserActivationState(
+    mojom::blink::UserActivationUpdateType update_type) {}
+
 void FakeLocalFrameHost::ForwardResourceTimingToParent(
     mojom::blink::ResourceTimingInfoPtr timing) {}
 

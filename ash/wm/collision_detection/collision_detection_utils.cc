@@ -5,8 +5,10 @@
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/macros.h"
@@ -86,6 +88,23 @@ std::vector<gfx::Rect> CollectCollisionRects(
         !ShouldIgnoreWindowForCollision(shelf_window, priority))
       rects.push_back(ComputeCollisionRectFromBounds(
           shelf_window->GetTargetBounds(), shelf_window->parent()));
+
+    // The hotseat doesn't span the whole width of the display, but to allow
+    // a PIP window to be slided horizontally along the hotseat, we extend the
+    // width of the hotseat to that of the display.
+    auto* hotseat_widget = shelf->shelf_widget()->hotseat_widget();
+    if (hotseat_widget) {
+      auto* hotseat_window = hotseat_widget->GetNativeWindow();
+      gfx::Rect hotseat_rect{root_window->bounds().x(),
+                             hotseat_window->GetTargetBounds().y(),
+                             root_window->bounds().width(),
+                             hotseat_window->GetTargetBounds().height()};
+      if (hotseat_widget->state() != HotseatState::kHidden &&
+          !ShouldIgnoreWindowForCollision(hotseat_window, priority)) {
+        rects.push_back(ComputeCollisionRectFromBounds(
+            hotseat_rect, hotseat_window->parent()));
+      }
+    }
 
     // Check the Automatic Clicks windows.
     // TODO(Katie): The PIP isn't re-triggered to check the autoclick window

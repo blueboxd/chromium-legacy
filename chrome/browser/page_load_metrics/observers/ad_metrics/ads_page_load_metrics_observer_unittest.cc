@@ -898,7 +898,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
 
   // Navigate the ad frame again.
-  ad_frame = NavigateFrame(kNonAdUrl, ad_frame);
+  ad_frame = NavigateFrame(kAdUrl, ad_frame);
 
   // In total, 30KB for entire page and 20 in one ad frame.
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
@@ -1018,7 +1018,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
   // Renavigate the subframe to a successful commit. But again, the resource
   // loads before the observer sees the finished navigation.
   ResourceDataUpdate(subframe_ad, ResourceCached::kNotCached, 10);
-  NavigateFrame(kNonAdUrl, subframe_ad);
+  NavigateFrame(kAdUrl, subframe_ad);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);

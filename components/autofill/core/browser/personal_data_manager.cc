@@ -1502,10 +1502,16 @@ void PersonalDataManager::DedupeCreditCardToSuggest(
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
-  if (is_off_the_record_)
+  if (is_off_the_record_) {
+    // TODO(crbug.com/997629): Remove after investigation is over.
+    DLOG(WARNING) << "Cannot SetProfiles because off-the-record";
     return;
-  if (!database_helper_->GetLocalDatabase())
+  }
+  if (!database_helper_->GetLocalDatabase()) {
+    // TODO(crbug.com/997629): Remove after investigation is over.
+    DLOG(WARNING) << "Cannot SetProfiles because no local DB";
     return;
+  }
 
   ClearOnGoingProfileChanges();
 

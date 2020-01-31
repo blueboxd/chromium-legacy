@@ -52,7 +52,7 @@ void SetFormFieldValueAction::InternalProcessAction(
   process_action_callback_ = std::move(callback);
   selector_ = Selector(proto_.set_form_value().element()).MustBeVisible();
   if (selector_.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
+    VLOG(1) << __func__ << ": empty selector";
     EndAction(ClientStatus(INVALID_SELECTOR));
     return;
   }
@@ -66,9 +66,9 @@ void SetFormFieldValueAction::InternalProcessAction(
         // text, this field is now deprecated and only works for US-ASCII
         // characters. You should use the `keyboard_input' field instead.
         if (keypress.keycode() >= 128) {
-          DVLOG(1) << "SetFormFieldValueAction: field `keycode' is deprecated "
-                   << "and only supports US-ASCII values (encountered "
-                   << keypress.keycode() << "). Use field `key' instead.";
+          VLOG(1) << "SetFormFieldValueAction: field `keycode' is deprecated "
+                  << "and only supports US-ASCII values (encountered value > "
+                     "127). Use field `key' instead.";
           EndAction(ClientStatus(INVALID_ACTION));
           return;
         }
@@ -78,8 +78,8 @@ void SetFormFieldValueAction::InternalProcessAction(
         break;
       case SetFormFieldValueProto_KeyPress::kKeyboardInput:
         if (keypress.keyboard_input().empty()) {
-          DVLOG(1) << "SetFormFieldValueAction: field 'keyboard_input' must be "
-                      "non-empty if set.";
+          VLOG(1) << "SetFormFieldValueAction: field 'keyboard_input' must be "
+                     "non-empty if set.";
           EndAction(ClientStatus(INVALID_ACTION));
           return;
         }
@@ -92,8 +92,8 @@ void SetFormFieldValueAction::InternalProcessAction(
       case SetFormFieldValueProto_KeyPress::kUsePassword:
         // Login information must have been stored by a previous action.
         if (!delegate_->GetUserData()->selected_login_.has_value()) {
-          DVLOG(1) << "SetFormFieldValueAction: requested login details not "
-                      "available in client memory.";
+          VLOG(1) << "SetFormFieldValueAction: requested login details not "
+                     "available in client memory.";
           EndAction(ClientStatus(PRECONDITION_FAILED));
           return;
         }
@@ -112,15 +112,15 @@ void SetFormFieldValueAction::InternalProcessAction(
         break;
       case SetFormFieldValueProto_KeyPress::kClientMemoryKey:
         if (keypress.client_memory_key().empty()) {
-          DVLOG(1) << "SetFormFieldValueAction: empty |client_memory_key|";
+          VLOG(1) << "SetFormFieldValueAction: empty |client_memory_key|";
           EndAction(ClientStatus(INVALID_ACTION));
           return;
         }
         if (!delegate_->GetUserData()->has_additional_value(
                 keypress.client_memory_key())) {
-          DVLOG(1) << "SetFormFieldValueAction: requested key '"
-                   << keypress.client_memory_key()
-                   << "' not available in client memory";
+          VLOG(1) << "SetFormFieldValueAction: requested key '"
+                  << keypress.client_memory_key()
+                  << "' not available in client memory";
           EndAction(ClientStatus(PRECONDITION_FAILED));
           return;
         }
@@ -130,8 +130,8 @@ void SetFormFieldValueAction::InternalProcessAction(
         break;
       case SetFormFieldValueProto_KeyPress::kGeneratePassword:
         if (keypress.generate_password().memory_key().empty()) {
-          DVLOG(1) << "SetFormFieldValueAction_kGeneratePassword: "
-                      "|memory_key| cannot be empty.";
+          VLOG(1) << "SetFormFieldValueAction_kGeneratePassword: "
+                     "|memory_key| cannot be empty.";
           EndAction(ClientStatus(INVALID_ACTION));
           return;
         }
@@ -140,7 +140,7 @@ void SetFormFieldValueAction::InternalProcessAction(
             /* memory_key = */ keypress.generate_password().memory_key());
         break;
       default:
-        DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
+        VLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
         EndAction(ClientStatus(INVALID_ACTION));
         return;
     }

@@ -22,6 +22,10 @@
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
+namespace features {
+extern const base::Feature kRestrictedNavigationAdTagging;
+}
+
 class HeavyAdBlocklist;
 
 // This observer labels each sub-frame as an ad or not, and keeps track of
@@ -96,10 +100,6 @@ class AdsPageLoadMetricsObserver
   void OnCpuTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override;
-  void RecordAdFrameData(FrameTreeNodeId ad_id,
-                         bool is_adframe,
-                         content::RenderFrameHost* ad_host,
-                         bool frame_navigated);
   void ReadyToCommitNextNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(
@@ -139,6 +139,12 @@ class AdsPageLoadMetricsObserver
       const subresource_filter::mojom::ActivationState& activation_state)
       override;
 
+  void UpdateAdFrameData(FrameTreeNodeId ad_id,
+                         bool is_adframe,
+                         bool should_ignored_detected_ad,
+                         content::RenderFrameHost* ad_host,
+                         bool frame_navigated);
+
   // Gets the number of bytes that we may have not attributed to ad
   // resources due to the resource being reported as an ad late.
   int GetUnaccountedAdBytes(
@@ -170,6 +176,13 @@ class AdsPageLoadMetricsObserver
   // RenderFrameHost to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
   void ProcessOngoingNavigationResource(content::RenderFrameHost* rfh);
+
+  // Records whether an ad frame was ignored by the Restricted Navigation
+  // AdTagging feature. For frames that are ignored, this is recorded when a
+  // FrameData object would have been created for them, or when their FrameData
+  // is deleted. For non-ignored frames, this is recorded when it is logged to
+  // metrics.
+  void RecordAdFrameIgnoredByRestrictedAdTagging(bool ignored);
 
   // Find the FrameData object associated with a given FrameTreeNodeId in
   // |ad_frames_data_storage_|.
@@ -244,6 +257,10 @@ class AdsPageLoadMetricsObserver
   // Whether the page load currently being observed is a reload of a previous
   // page.
   bool page_load_is_reload_ = false;
+
+  // Whether the restricted navigation ad tagging feature is enabled on this
+  // page load.
+  const bool restricted_navigation_ad_tagging_enabled_;
 
   // Stores whether the heavy ad intervention is blocklisted or not for the user
   // on the URL of this page. Incognito Profiles will cause this to be set to

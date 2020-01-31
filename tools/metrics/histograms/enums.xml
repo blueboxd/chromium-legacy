@@ -124,6 +124,24 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
 </enum>
 
+<enum name="AccessibilityId">
+  <int value="1" label="SpokenFeedback"/>
+  <int value="2" label="SelectToSpeak"/>
+  <int value="3" label="Dictation"/>
+  <int value="4" label="HighContrast"/>
+  <int value="5" label="Magnifier"/>
+  <int value="6" label="DockedMagnifier"/>
+  <int value="7" label="LargeCursor"/>
+  <int value="8" label="AutoClick"/>
+  <int value="9" label="VirtualKeyboard"/>
+  <int value="10" label="SwitchAccess"/>
+  <int value="11" label="CaretHighlight"/>
+  <int value="12" label="MonoAudio"/>
+  <int value="13" label="HighlightMouseCursor"/>
+  <int value="14" label="HighlightKeyboardFocus"/>
+  <int value="15" label="StickyKeys"/>
+</enum>
+
 <enum name="AccessibilityImageLabelMode">
   <summary>
     Tracks what mode the user has selected for accessibility image labels,
@@ -22711,8 +22729,6 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="ExtensionPolicyReinstallReason">
   <int value="0" label="Tried to load a corrupted extension"/>
   <int value="1" label="Corrupted Chrome Web Store extension"/>
-  <int value="2" label="Corrupted non-webstore extension"/>
-  <int value="4" label="Non-webstore extension without hashes skipped"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -42019,6 +42035,8 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Web"/>
   <int value="2" label="Assistant"/>
   <int value="3" label="Arc"/>
+  <int value="4" label="Local Cast session"/>
+  <int value="5" label="Non-local Cast session"/>
 </enum>
 
 <enum name="MediaOutputProtectionStatus">

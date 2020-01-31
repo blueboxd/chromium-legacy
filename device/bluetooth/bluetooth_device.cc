@@ -91,8 +91,9 @@ BluetoothDevice::ConnectionInfo::ConnectionInfo()
       transmit_power(kUnknownPower),
       max_transmit_power(kUnknownPower) {}
 
-BluetoothDevice::ConnectionInfo::ConnectionInfo(
-    int rssi, int transmit_power, int max_transmit_power)
+BluetoothDevice::ConnectionInfo::ConnectionInfo(int rssi,
+                                                int transmit_power,
+                                                int max_transmit_power)
     : rssi(rssi),
       transmit_power(transmit_power),
       max_transmit_power(max_transmit_power) {}
@@ -454,7 +455,9 @@ bool BluetoothDevice::ParseAddress(base::StringPiece input,
   return false;
 }
 
-std::string BluetoothDevice::GetIdentifier() const { return GetAddress(); }
+std::string BluetoothDevice::GetIdentifier() const {
+  return GetAddress();
+}
 
 void BluetoothDevice::UpdateAdvertisementData(
     int8_t rssi,
@@ -485,9 +488,9 @@ void BluetoothDevice::ClearAdvertisementData() {
 
 std::vector<BluetoothRemoteGattService*> BluetoothDevice::GetPrimaryServices() {
   std::vector<BluetoothRemoteGattService*> services;
-  VLOG(2) << "Looking for services.";
+  DVLOG(2) << "Looking for services.";
   for (BluetoothRemoteGattService* service : GetGattServices()) {
-    VLOG(2) << "Service in cache: " << service->GetUUID().canonical_value();
+    DVLOG(2) << "Service in cache: " << service->GetUUID().canonical_value();
     if (service->IsPrimary()) {
       services.push_back(service);
     }
@@ -498,9 +501,9 @@ std::vector<BluetoothRemoteGattService*> BluetoothDevice::GetPrimaryServices() {
 std::vector<BluetoothRemoteGattService*>
 BluetoothDevice::GetPrimaryServicesByUUID(const BluetoothUUID& service_uuid) {
   std::vector<BluetoothRemoteGattService*> services;
-  VLOG(2) << "Looking for service: " << service_uuid.canonical_value();
+  DVLOG(2) << "Looking for service: " << service_uuid.canonical_value();
   for (BluetoothRemoteGattService* service : GetGattServices()) {
-    VLOG(2) << "Service in cache: " << service->GetUUID().canonical_value();
+    DVLOG(2) << "Service in cache: " << service->GetUUID().canonical_value();
     if (service->GetUUID() == service_uuid && service->IsPrimary()) {
       services.push_back(service);
     }

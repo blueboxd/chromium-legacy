@@ -35,7 +35,7 @@
 #include "base/feature_list.h"
 #include "components/printing/browser/ipp_l10n.h"
 #include "components/strings/grit/components_strings.h"
-#include "printing/printing_features_chromeos.h"
+#include "printing/printing_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -119,7 +119,7 @@ base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
   if (!has_secure_protocol)
     info.pin_supported = false;
 
-  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+  if (base::FeatureList::IsEnabled(printing::features::kAdvancedPpdAttributes))
     PopulateAdvancedCapsLocalization(&info.advanced_capabilities);
 #endif  // defined(OS_CHROMEOS)
 

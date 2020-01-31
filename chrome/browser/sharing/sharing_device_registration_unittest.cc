@@ -65,9 +65,9 @@ class FakeInstanceID : public instance_id::InstanceID {
   FakeInstanceID() : InstanceID(kAppID, /*gcm_driver = */ nullptr) {}
   ~FakeInstanceID() override = default;
 
-  void GetID(const GetIDCallback& callback) override { NOTIMPLEMENTED(); }
+  void GetID(GetIDCallback callback) override { NOTIMPLEMENTED(); }
 
-  void GetCreationTime(const GetCreationTimeCallback& callback) override {
+  void GetCreationTime(GetCreationTimeCallback callback) override {
     NOTIMPLEMENTED();
   }
 

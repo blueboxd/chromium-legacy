@@ -41,9 +41,6 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
-  // The container shouldn't show unless / until we have extensions available.
-  SetVisible(false);
-
   model_observer_.Add(model_);
   // Do not flip the Extensions icon in RTL.
   extensions_button_->EnableCanvasFlippingForRTLUI(false);
@@ -286,7 +283,6 @@ void ExtensionsToolbarContainer::OnToolbarActionAdded(
     int index) {
   CreateActionForId(action_id);
   ReorderViews();
-  UpdateContainerVisibility();
 }
 
 void ExtensionsToolbarContainer::OnToolbarActionRemoved(
@@ -308,8 +304,6 @@ void ExtensionsToolbarContainer::OnToolbarActionRemoved(
     UndoPopOut();
 
   icons_.erase(action_id);
-
-  UpdateContainerVisibility();
 }
 
 void ExtensionsToolbarContainer::OnToolbarActionMoved(
@@ -364,13 +358,13 @@ void ExtensionsToolbarContainer::CreateActions() {
     CreateActionForId(action_id);
 
   ReorderViews();
-  UpdateContainerVisibility();
 }
 
 void ExtensionsToolbarContainer::CreateActionForId(
     const ToolbarActionsModel::ActionId& action_id) {
   actions_.push_back(
       model_->CreateActionForId(browser_, this, false, action_id));
+
   auto icon = std::make_unique<ToolbarActionView>(actions_.back().get(), this);
   // Set visibility before adding to prevent extraneous animation.
   icon->SetVisible(model_->IsActionPinned(action_id));
@@ -550,10 +544,4 @@ void ExtensionsToolbarContainer::SetExtensionIconVisibility(
   extension_view->SetImage(
       views::Button::STATE_NORMAL,
       visible ? GetExtensionIcon(extension_view) : gfx::ImageSkia());
-}
-
-void ExtensionsToolbarContainer::UpdateContainerVisibility() {
-  // The container (and extensions-menu button) should be visible if we have at
-  // least one extension.
-  SetVisible(!actions_.empty());
 }

@@ -139,15 +139,20 @@ bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
       false, FindRuleStrategy::kAny);
 }
 
-bool IndexedRulesetMatcher::ShouldDisallowResourceLoad(
+LoadPolicy IndexedRulesetMatcher::GetLoadPolicyForResourceLoad(
     const GURL& url,
     const FirstPartyOrigin& first_party,
     proto::ElementType element_type,
     bool disable_generic_rules) const {
   const url_pattern_index::flat::UrlRule* rule =
       MatchedUrlRule(url, first_party, element_type, disable_generic_rules);
-  return rule &&
-         !(rule->options() & url_pattern_index::flat::OptionFlag_IS_WHITELIST);
+
+  if (!rule)
+    return LoadPolicy::ALLOW;
+
+  return rule->options() & url_pattern_index::flat::OptionFlag_IS_WHITELIST
+             ? LoadPolicy::EXPLICITLY_ALLOW
+             : LoadPolicy::DISALLOW;
 }
 
 const url_pattern_index::flat::UrlRule* IndexedRulesetMatcher::MatchedUrlRule(

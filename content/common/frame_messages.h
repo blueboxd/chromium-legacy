@@ -954,13 +954,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateRenderThrottlingStatus,
                     bool /* is_throttled */,
                     bool /* subtree_throttled */)
 
-// Indicates that the user activation state in the current frame has been
-// updated, so the replicated states need to be synced (in the browser process
-// as well as in all other renderer processes).
-IPC_MESSAGE_ROUTED1(
-    FrameHostMsg_UpdateUserActivationState,
-    blink::mojom::UserActivationUpdateType /* type of state update */)
-
 // Transfers user activation state from the source frame to the current frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_TransferUserActivationFrom,
                     int /* source_routing_id */)

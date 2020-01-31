@@ -181,6 +181,9 @@ class CORE_EXPORT HTMLSelectElement final
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
 
+  // This should be called only if UsesMenuList().
+  Element& InnerElement() const;
+
  private:
   const AtomicString& FormControlType() const override;
   void UpdateFromElement();
@@ -299,6 +302,7 @@ class CORE_EXPORT HTMLSelectElement final
   // Apply changes to rendering as a result of attribute changes (multiple,
   // size).
   void ChangeRendering();
+  void UpdateUserAgentShadowTree(ShadowRoot& root);
 
   // list_items_ contains HTMLOptionElement, HTMLOptGroupElement, and
   // HTMLHRElement objects.

@@ -512,7 +512,7 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
 
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
   EXPECT_TRUE(
-      frame_element->contentDocument()->GetFrame()->IsCrossOriginSubframe());
+      frame_element->contentDocument()->GetFrame()->IsCrossOriginToMainFrame());
   EXPECT_FALSE(frame_element->contentDocument()
                    ->View()
                    ->GetLayoutView()
@@ -526,7 +526,7 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
                                               exception_state);
 
   EXPECT_FALSE(
-      frame_element->contentDocument()->GetFrame()->IsCrossOriginSubframe());
+      frame_element->contentDocument()->GetFrame()->IsCrossOriginToMainFrame());
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
   EXPECT_TRUE(frame_element->contentDocument()

@@ -1009,7 +1009,6 @@ if (!is_ios) {
       data_deps = [
         "//chrome:chrome",
         "//chrome/test/chromedriver",
-        "//third_party/catapult/third_party/typ",
       ]
     }
     group("wpt_tests_isolate") {
@@ -1018,10 +1017,7 @@ if (!is_ios) {
         "//chrome:chrome",
         "//chrome/test/chromedriver",
       ]
-      deps = [
-        "//third_party/blink/tools:wpt_tests_isolate",
-        "//third_party/catapult/third_party/typ",
-      ]
+      deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
     }
   }
 

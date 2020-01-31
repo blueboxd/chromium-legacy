@@ -223,8 +223,6 @@ ThreadState::ThreadState()
       incremental_marking_scheduler_(
           std::make_unique<IncrementalMarkingScheduler>(this)),
       marker_scheduler_(std::make_unique<CancelableTaskScheduler>(
-          base::MakeRefCounted<WorkerPoolTaskRunner>())),
-      sweeper_scheduler_(std::make_unique<CancelableTaskScheduler>(
           base::MakeRefCounted<WorkerPoolTaskRunner>())) {
   DCHECK(CheckThread());
   DCHECK(!**thread_specific_);
@@ -515,8 +513,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
         "idleDeltaInSeconds", (deadline - base::TimeTicks::Now()).InSecondsF());
-    sweep_completed =
-        Heap().AdvanceSweep(ThreadHeap::SweepingType::kMutator, deadline);
+    sweep_completed = Heap().AdvanceLazySweep(deadline);
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
     if (sweep_completed) {
@@ -531,29 +528,15 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   }
 }
 
-void ThreadState::PerformConcurrentSweep() {
+void ThreadState::PerformConcurrentSweep(base::experimental::JobDelegate* job) {
   VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
           << "ConcurrentSweep";
-  // As opposed to PerformIdleLazySweep, this function doesn't receive deadline
-  // from the scheduler, but defines it itself.
-  static constexpr base::TimeDelta kConcurrentSweepStepDuration =
-      base::TimeDelta::FromMilliseconds(2);
-  // Concurrent sweeper doesn't call finalizers - this guarantees that sweeping
-  // is not called recursively.
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kConcurrentSweepingStep);
-  const bool finished = Heap().AdvanceSweep(
-      ThreadHeap::SweepingType::kConcurrent,
-      base::TimeTicks::Now() + kConcurrentSweepStepDuration);
-  if (!finished) {
-    // Reschedule itself. It is safe even if the task timeouts and reposts
-    // itself while the mutator thread is waiting on CancelAndWait(). The
-    // mutator thread will simply wake up and cancel the newly post task itself.
-    sweeper_scheduler_->ScheduleTask(
-        WTF::CrossThreadBindOnce(&ThreadState::PerformConcurrentSweep,
-                                 WTF::CrossThreadUnretained(this)));
-  }
+
+  if (Heap().AdvanceConcurrentSweep(job))
+    has_unswept_pages_.store(false, std::memory_order_relaxed);
 }
 
 void ThreadState::StartIncrementalMarking(BlinkGC::GCReason reason) {
@@ -583,13 +566,21 @@ void ThreadState::ScheduleConcurrentAndLazySweep() {
     return;
   }
 
-  static constexpr size_t kNumberOfSweepingTasks = 1u;
-
-  for (size_t i = 0; i < kNumberOfSweepingTasks; ++i) {
-    sweeper_scheduler_->ScheduleTask(
-        WTF::CrossThreadBindOnce(&ThreadState::PerformConcurrentSweep,
-                                 WTF::CrossThreadUnretained(this)));
-  }
+  has_unswept_pages_ = true;
+  sweeper_handle_ = base::experimental::PostJob(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      ConvertToBaseRepeatingCallback(
+          WTF::CrossThreadBindRepeating(&ThreadState::PerformConcurrentSweep,
+                                        WTF::CrossThreadUnretained(this))),
+      ConvertToBaseRepeatingCallback(WTF::CrossThreadBindRepeating(
+          [](ThreadState* state) -> size_t {
+            return state->has_unswept_pages_.load(std::memory_order_relaxed)
+                       ? 1
+                       : 0;
+          },
+          WTF::CrossThreadUnretained(this))));
 }
 
 void ThreadState::SchedulePreciseGC() {
@@ -814,6 +805,10 @@ void ThreadState::CompleteSweep() {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep,
         "forced", IsForcedGC(current_gc_data_.reason));
+    // Boost priority of sweeping job to complete ASAP and avoid taking time on
+    // the main thread.
+    if (sweeper_handle_)
+      sweeper_handle_.UpdatePriority(base::TaskPriority::USER_BLOCKING);
     Heap().CompleteSweep();
     SynchronizeAndFinishConcurrentSweeping();
 
@@ -829,7 +824,8 @@ void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
   DCHECK(SweepForbidden());
 
   // Wait for concurrent sweepers.
-  sweeper_scheduler_->CancelAndWait();
+  if (sweeper_handle_)
+    sweeper_handle_.Cancel();
 
   // Concurrent sweepers may perform some work at the last stage (e.g.
   // sweeping the last page and preparing finalizers).

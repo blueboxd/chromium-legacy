@@ -155,13 +155,13 @@ void ElementFinder::OnGetDocumentElement(
   ClientStatus status =
       CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
-    DVLOG(1) << __func__ << " Failed to get document root element.";
+    VLOG(1) << __func__ << " Failed to get document root element.";
     SendResult(status);
     return;
   }
   std::string object_id;
   if (!SafeGetObjectId(result->GetResult(), &object_id)) {
-    DVLOG(1) << __func__ << " Failed to get document root element.";
+    VLOG(1) << __func__ << " Failed to get document root element.";
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
@@ -234,16 +234,16 @@ void ElementFinder::OnQuerySelectorAll(
     // available yet to query because the document hasn't been loaded. This
     // results in OnQuerySelectorAll getting a nullptr result. For this specific
     // call, it is expected.
-    DVLOG(1) << __func__ << ": Context doesn't exist yet to query selector "
-             << index << " of " << selector_;
+    VLOG(1) << __func__ << ": Context doesn't exist yet to query selector "
+            << index << " of " << selector_;
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
   ClientStatus status =
       CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
-    DVLOG(1) << __func__ << ": Failed to query selector " << index << " of "
-             << selector_;
+    VLOG(1) << __func__ << ": Failed to query selector " << index << " of "
+            << selector_;
     SendResult(status);
     return;
   }
@@ -298,7 +298,7 @@ void ElementFinder::OnDescribeNodeForPseudoElement(
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
-    DVLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
+    VLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
     SendResult(UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
@@ -339,7 +339,7 @@ void ElementFinder::OnDescribeNode(
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
-    DVLOG(1) << __func__ << " Failed to describe the node.";
+    VLOG(1) << __func__ << " Failed to describe the node.";
     SendResult(UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
@@ -355,7 +355,7 @@ void ElementFinder::OnDescribeNode(
         FindCorrespondingRenderFrameHost(node->GetFrameId());
 
     if (!element_result_->container_frame_host) {
-      DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
+      VLOG(1) << __func__ << " Failed to find corresponding owner frame.";
       SendResult(ClientStatus(FRAME_HOST_NOT_FOUND));
       return;
     }
@@ -410,7 +410,7 @@ void ElementFinder::OnResolveNode(
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
-    DVLOG(1) << __func__ << " Failed to resolve object id from backend id.";
+    VLOG(1) << __func__ << " Failed to resolve object id from backend id.";
     SendResult(UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }

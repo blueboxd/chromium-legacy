@@ -29,6 +29,7 @@
 #include "components/page_load_metrics/common/page_end_reason.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/common/common_features.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -45,6 +47,23 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+
+namespace features {
+
+// Enables of disabled the restricted navigation ad tagging feature. When
+// enabled, the AdTagging heuristic is modified to additional information to
+// determine if a frame is an ad. If the frame's navigation url matches an allow
+// list rule, it is not an ad.
+//
+// If a frame's navigation url does not match a blocked rule, but was created by
+// ad script and is same domain to the top-level frame, it is not an ad.
+//
+// Currently this feature only changes AdTagging behavior for metrics recorded
+// in AdsPageLoadMetricsObserver, and for triggering the Heavy Ad Intervention.
+const base::Feature kRestrictedNavigationAdTagging{
+    "RestrictedNavigationAdTagging", base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace features
 
 namespace {
 
@@ -159,6 +178,8 @@ AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
     HeavyAdBlocklist* blocklist)
     : subresource_observer_(this),
       clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
+      restricted_navigation_ad_tagging_enabled_(base::FeatureList::IsEnabled(
+          features::kRestrictedNavigationAdTagging)),
       heavy_ad_blocklist_(blocklist),
       heavy_ad_privacy_mitigations_enabled_(
           base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations)),
@@ -203,6 +224,7 @@ AdsPageLoadMetricsObserver::OnCommit(
       navigation_handle->GetRenderFrameHost(), true /* frame_navigated */);
   main_frame_data_->UpdateForNavigation(navigation_handle->GetRenderFrameHost(),
                                         true /* frame_navigated */);
+
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] =
       ad_frames_data_storage_.end();
@@ -265,9 +287,10 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
 
 // Given an ad being triggered for a frame or navigation, get its FrameData
 // and record it into the appropriate data structures.
-void AdsPageLoadMetricsObserver::RecordAdFrameData(
+void AdsPageLoadMetricsObserver::UpdateAdFrameData(
     FrameTreeNodeId ad_id,
     bool is_adframe,
+    bool should_ignore_detected_ad,
     content::RenderFrameHost* ad_host,
     bool frame_navigated) {
   // If an existing subframe is navigating and it was an ad previously that
@@ -276,12 +299,30 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   FrameData* previous_data = nullptr;
   if (id_and_data != ad_frames_data_.end() &&
       id_and_data->second != ad_frames_data_storage_.end()) {
+    // We should not get new ad frame notifications for frames that have already
+    // navigated unless there is a ongoing navigation in the frame.
     DCHECK(frame_navigated);
-    if ((*id_and_data->second).frame_navigated()) {
+    previous_data = &*id_and_data->second;
+
+    if (should_ignore_detected_ad &&
+        (ad_id == previous_data->root_frame_tree_node_id())) {
+      ad_frames_data_storage_.erase(id_and_data->second);
+      ad_frames_data_.erase(id_and_data);
+
+      // Make sure to set the ad_frame_data_ entry to the storage end iterator.
+      // This means the frame was seen by AdsPLMO and not tagged as an ad. This
+      // allows child frames to still be tracked as ads.
+      ad_frames_data_[ad_id] = ad_frames_data_storage_.end();
+      RecordAdFrameIgnoredByRestrictedAdTagging(true /* ignored */);
+      return;
+    }
+
+    // If the frame has already navigated we need to process the new navigation
+    // resource in the frame.
+    if (previous_data->frame_navigated()) {
       ProcessOngoingNavigationResource(ad_host);
       return;
     }
-    previous_data = &*id_and_data->second;
   }
 
   // Determine who the parent frame's ad ancestor is.  If we don't know who it
@@ -296,13 +337,24 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   if (!parent_exists)
     return;
 
+  // |ad_data_iterator->second| can point to |ad_frames_data_storage.end()|
+  // indicating that the parent of this frame is not an ad.
   auto ad_data_iterator = parent_id_and_data->second;
 
   FrameData* ad_data = nullptr;
   if (parent_id_and_data->second != ad_frames_data_storage_.end())
     ad_data = &*ad_data_iterator;
 
-  if (!ad_data && is_adframe) {
+  bool should_create_new_frame_data =
+      !ad_data && is_adframe && !should_ignore_detected_ad;
+
+  // If would've recorded a new ad data normally, record that a frame was
+  // ignored.
+  if (!ad_data && is_adframe && should_ignore_detected_ad) {
+    RecordAdFrameIgnoredByRestrictedAdTagging(true);
+  }
+
+  if (should_create_new_frame_data) {
     if (previous_data) {
       previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
@@ -357,8 +409,41 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 
   bool is_adframe = client->GetThrottleManager()->IsFrameTaggedAsAd(frame_host);
 
-  RecordAdFrameData(frame_tree_node_id, is_adframe, frame_host,
-                    /*frame_navigated=*/true);
+  // TODO(https://crbug.com): The following block is a hack to ignore certain
+  // frames that are detected by AdTagging. These frames are ignored
+  // specifically for ad metrics and for the heavy ad intervention. The frames
+  // ignored here are still considered ads by the heavy ad intervention. This
+  // logic should be moved into /subresource_filter/ and applied to all of ad
+  // tagging, rather than being implemented in AdsPLMO.
+  bool should_ignore_detected_ad = false;
+  base::Optional<subresource_filter::LoadPolicy> load_policy =
+      client->GetThrottleManager()->LoadPolicyForLastCommittedNavigation(
+          frame_host);
+
+  // If there is not load policy use |is_adframe| solely.
+  if (restricted_navigation_ad_tagging_enabled_ && load_policy &&
+      navigation_handle->GetNetErrorCode() == net::OK) {
+    // If a filter list explicitly allows the rule, we should ignore a detected
+    // ad.
+    bool navigation_is_explicitly_allowed =
+        *load_policy == subresource_filter::LoadPolicy::EXPLICITLY_ALLOW;
+
+    // If a frame is detected to be an ad, but is same domain to the top frame,
+    // and does not match a disallowed rule, ignore it.
+    bool should_ignore_same_domain_ad =
+        (*load_policy != subresource_filter::LoadPolicy::DISALLOW) &&
+        (*load_policy != subresource_filter::LoadPolicy::WOULD_DISALLOW) &&
+        net::registry_controlled_domains::SameDomainOrHost(
+            frame_host->GetLastCommittedURL(),
+            navigation_handle->GetWebContents()->GetLastCommittedURL(),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    should_ignore_detected_ad =
+        navigation_is_explicitly_allowed || should_ignore_same_domain_ad;
+  }
+
+  UpdateAdFrameData(frame_tree_node_id, is_adframe, should_ignore_detected_ad,
+                    frame_host, true /*frame_navigated=*/);
+
   ProcessOngoingNavigationResource(frame_host);
 }
 
@@ -490,8 +575,8 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
 void AdsPageLoadMetricsObserver::OnAdSubframeDetected(
     content::RenderFrameHost* render_frame_host) {
   FrameTreeNodeId frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
-  RecordAdFrameData(frame_tree_node_id, true /* is_adframe */,
-                    render_frame_host,
+  UpdateAdFrameData(frame_tree_node_id, true /* is_adframe */,
+                    false /* should_ignore_detected_ad */, render_frame_host,
                     /*frame_navigated=*/false);
 }
 
@@ -814,6 +899,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistograms(
   RecordPerFrameHistogramsForCpuUsage(ad_frame_data);
   RecordPerFrameHistogramsForAdTagging(ad_frame_data);
   RecordPerFrameHistogramsForHeavyAds(ad_frame_data);
+  RecordAdFrameIgnoredByRestrictedAdTagging(false /*ignored */);
 }
 
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
@@ -980,6 +1066,12 @@ void AdsPageLoadMetricsObserver::ProcessOngoingNavigationResource(
     return;
   ProcessResourceForFrame(rfh, frame_id_and_request->second);
   ongoing_navigation_resources_.erase(frame_id_and_request);
+}
+
+void AdsPageLoadMetricsObserver::RecordAdFrameIgnoredByRestrictedAdTagging(
+    bool ignored) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "PageLoad.Clients.Ads.FrameCounts.IgnoredByRestrictedAdTagging", ignored);
 }
 
 FrameData* AdsPageLoadMetricsObserver::FindFrameData(FrameTreeNodeId id) {

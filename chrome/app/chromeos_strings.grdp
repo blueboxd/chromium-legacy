@@ -1808,6 +1808,11 @@
     Learn more.
   </message>
 
+  <!-- Common strings used in OOBE -->
+  <message name="IDS_CHROMEOS_OOBE_CLOSE_DIALOG" desc="Message to shown on a button for closing a modal dialog in OOBE">
+    Close
+  </message>
+
   <!-- Auto launch managed guest sessions privacy notification -->
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_TITLE" desc="Title of the notification which is shown when the managed guest session auto launched.">
     Managed guest session
@@ -2578,17 +2583,26 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The subtitle on the device attribute prompt screen.">
     Device information
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_TITLE" desc="Title of the screen to be shown upon an error during enterprise enrollment.">
+    Enrollment Error
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_ILLUSTRATION_TITLE" desc="Accessible title of the enterprise enrollment screen illustration depicting error during enrollment.">
+    Enrollment error illustration
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_RETRY" desc="Label for the retry button on the error step in the enterprise enrollment dialog.">
     Try again
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_DONE" desc="Label for the done button on the success screen in the enterprise enrollment dialog.">
     Done
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ENROLL_MANUALLY" desc="Label for the button on the error step in the enterprise enrollment dialog that allows to run manual enrollment (after an error during automated enrollment).">
+    Enroll manually
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SKIP" desc="Label for the skip button on the device attribute prompt screen in the enterprise enrollment dialog.">
     Skip
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_TITLE" desc="Title of the screen to be shown once enterprise enrollment completes.">
-    You are enrolled successfully
+    Enterprise enrollment complete
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management.
@@ -2596,8 +2610,8 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ILLUSTRATION_TITLE" desc="Accessible title of the enterprise enrollment screen illustration depicting successful enrollment.">
     Successful enrollment illustration
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_DOMAIN" desc="Success message to be shown once attestation-based enterprise enrollment completes.">
-    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_DOMAIN" desc="Success message to be shown once enterprise enrollment completes.">
+    This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be managed by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_SUPPORT" desc="Recommendation to contact support. Shown once attestation-based enterprise enrollment completes.">
     If this is unexpected, please contact support.
@@ -3000,6 +3014,9 @@
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_CLOSE" desc="Text for close button in learn more dialog">
     Close
   </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_TITLE" desc="Title for pop up overlay dialog when user clicks learn more UMA">
+    Usage and diagnostic data
+  </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS" desc="Message shown in pop up overlay dialog when user clicks learn more UMA">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about your device and how you use it (such as battery level, system and app activity, and errors). The data will be used to improve Android, and some aggregated information will also help Google apps and partners, such as Android developers, make their apps and products better.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
@@ -3011,6 +3028,9 @@
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>The owner can control this feature from Settings &gt; Advanced &gt; Automatically send diagnostic and usage data to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. Learn more about these settings and how to adjust them at families.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_TITLE" desc="Title for pop up overlay dialog when user clicks learn more backup and restore">
+    Back up to Google Drive
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE" desc="Message shown in pop up overlay dialog when user clicks learn more backup and restore">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
@@ -3024,6 +3044,9 @@
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Backup data will not count toward your child's Drive storage quota.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can turn this service off in Settings.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_TITLE" desc="Title for pop up overlay dialog when user clicks learn more location services">
+    Location Services
+  </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
@@ -3031,6 +3054,9 @@
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD" desc="Message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE_TITLE" desc="Title for pop up overlay dialog when user clicks learn more play auto install services">
+    Install Updates and Apps
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE" desc="Message shown in pop up overlay dialog when user clicks learn more play auto install services.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>

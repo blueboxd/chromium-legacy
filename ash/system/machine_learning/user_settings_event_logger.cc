@@ -151,6 +151,24 @@ void UserSettingsEventLogger::LogQuietModeUkmEvent(const bool enabled) {
   SendToUkm(settings_event);
 }
 
+void UserSettingsEventLogger::LogAccessibilityUkmEvent(
+    UserSettingsEvent::Event::AccessibilityId id,
+    bool enabled) {
+  UserSettingsEvent settings_event;
+  auto* const event = settings_event.mutable_event();
+
+  event->set_setting_id(UserSettingsEvent::Event::ACCESSIBILITY);
+  event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
+  // Convert the setting state to an int. Some settings have multiple states, so
+  // all setting states are stored as ints.
+  event->set_previous_value(!enabled ? 1 : 0);
+  event->set_current_value(enabled ? 1 : 0);
+  event->set_accessibility_id(id);
+
+  PopulateSharedFeatures(&settings_event);
+  SendToUkm(settings_event);
+}
+
 void UserSettingsEventLogger::LogVolumeUkmEvent(const int previous_level,
                                                 const int current_level) {
   UserSettingsEvent settings_event;
@@ -254,6 +272,8 @@ void UserSettingsEventLogger::SendToUkm(
     ukm_event.SetPreviousValue(event.previous_value());
   if (event.has_current_value())
     ukm_event.SetCurrentValue(event.current_value());
+  if (event.has_accessibility_id())
+    ukm_event.SetAccessibilityId(event.accessibility_id());
 
   if (features.has_is_playing_audio())
     ukm_event.SetIsPlayingAudio(features.is_playing_audio());

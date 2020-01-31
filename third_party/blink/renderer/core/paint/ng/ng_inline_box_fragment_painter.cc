@@ -122,7 +122,7 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
   // TODO(kojii): not applicable for line box
   NGBoxFragmentPainter box_painter(
       To<NGPhysicalBoxFragment>(inline_box_fragment_),
-      inline_box_paint_fragment_);
+      inline_box_paint_fragment_, inline_box_item_);
   const NGBorderEdges& border_edges = BorderEdges();
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
                                adjusted_frame_rect, geometry,

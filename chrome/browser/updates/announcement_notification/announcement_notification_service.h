@@ -15,9 +15,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
-namespace {
+namespace base {
+class Clock;
 class FilePath;
-}  // namespace
+}  // namespace base
 
 class PrefRegistrySimple;
 class PrefService;
@@ -28,6 +29,12 @@ extern const base::Feature kAnnouncementNotification;
 // The Finch parameter name for a boolean value that whether to show
 // notification on first run.
 constexpr char kSkipFirstRun[] = "skip_first_run";
+
+// The Finch parameter name for a string value that represents a time.
+// If first run happens after this time, notification will not show.
+// The string defined in Finch config should specify UTC time, and will be
+// parsed by base::Time::FromString().
+constexpr char kSkipFirstRunAfterTime[] = "skip_first_run_after_time";
 
 // The Finch parameter name for a boolean value that whether to show
 // notification for new profile.
@@ -54,6 +61,10 @@ constexpr char kAnnouncementUrl[] = "announcement_url";
 constexpr char kCurrentVersionPrefName[] =
     "announcement_notification_service_current_version";
 
+// Preference name to persist the time of Chrome first run.
+constexpr char kAnnouncementFirstRunTimePrefName[] =
+    "announcement_notification_service_first_run_time";
+
 // Used to show a notification when the version defined in Finch parameter is
 // higher than the last version saved in the preference service.
 class AnnouncementNotificationService : public KeyedService {
@@ -78,7 +89,8 @@ class AnnouncementNotificationService : public KeyedService {
       const base::FilePath& profile_path,
       bool new_profile,
       PrefService* pref_service,
-      std::unique_ptr<Delegate> delegate);
+      std::unique_ptr<Delegate> delegate,
+      base::Clock* clock);
   static GURL GetAnnouncementURL();
 
   AnnouncementNotificationService();

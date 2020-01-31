@@ -1375,6 +1375,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetFloating(bool is_floating) { bitfields_.SetFloating(is_floating); }
   void SetInline(bool is_inline) { bitfields_.SetIsInline(is_inline); }
 
+  // Return whether we can directly traverse fragments generated for this layout
+  // object, when it comes to painting, hit-testing and other layout read
+  // operations. If false is returned, we need to traverse the layout object
+  // tree instead.
+  //
+  // It is not allowed to call this method on a non-LayoutBox object, unless its
+  // containing block is an NG object (e.g. not allowed to call it on a
+  // LayoutInline that's contained by a legacy LayoutBlockFlow).
+  inline bool CanTraversePhysicalFragments() const;
+
   // Returns the associated |NGPaintFragment|. When this is not a |nullptr|,
   // this is the root of an inline formatting context, laid out by LayoutNG.
   virtual const NGPaintFragment* PaintFragment() const { return nullptr; }
@@ -3337,6 +3347,33 @@ inline bool LayoutObject::IsMarkerContent() const {
 
 inline bool LayoutObject::IsBeforeOrAfterContent() const {
   return IsBeforeContent() || IsAfterContent();
+}
+
+inline bool LayoutObject::CanTraversePhysicalFragments() const {
+  if (LIKELY(!RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled()))
+    return false;
+  // Non-NG objects should be painted by legacy.
+  if (!IsLayoutNGObject()) {
+    if (IsBox())
+      return false;
+    // Non-LayoutBox objects (such as LayoutInline) don't necessarily create NG
+    // LayoutObjects, even if they are laid out by an NG container. Allow their
+    // fragments to be traversed, assuming that we're contained by an NG
+    // container.
+    DCHECK(RootInlineFormattingContext());
+  }
+  // Bail if we have an NGPaintFragment. NGPaintFragment will be removed, and we
+  // will not attempt to add support for them here.
+  if (PaintFragment())
+    return false;
+  // We don't support fragmentation traversal inside block fragmentation just
+  // yet.
+  if (IsInsideFlowThread())
+    return false;
+  // The NG paint system currently doesn't support table-cells.
+  if (IsTableCell())
+    return false;
+  return true;
 }
 
 // setNeedsLayout() won't cause full paint invalidations as

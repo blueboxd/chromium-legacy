@@ -352,14 +352,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual AssociatedInterfaceProvider*
   GetRemoteNavigationAssociatedInterfaces() = 0;
 
-  // Notify the embedder that the associated frame has user activation so that
-  // the replicated states in the browser and other renderers can be updated.
-  virtual void NotifyUserActivation(bool need_browser_verification) {}
-
-  // Tell the embedder that the associated frame has consumed user activation so
-  // that the replicated states in the browser and other renderers can be
-  // updated.
-  virtual void ConsumeTransientUserActivation() {}
+  virtual void NotifyUserActivation() {}
 
   virtual void AbortClientNavigation() {}
 

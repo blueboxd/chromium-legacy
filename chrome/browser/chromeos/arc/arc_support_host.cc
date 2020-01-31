@@ -536,20 +536,34 @@ bool ArcSupportHost::Initialize() {
       "controlledByPolicy",
       l10n_util::GetStringUTF16(IDS_CONTROLLED_SETTING_POLICY));
   loadtime_data->SetString(
+      "learnMoreStatisticsTitle",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_TITLE));
+  loadtime_data->SetString(
       "learnMoreStatistics",
       l10n_util::GetStringUTF16(is_child
                                     ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD
                                     : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS));
+  loadtime_data->SetString(
+      "learnMoreBackupAndRestoreTitle",
+      l10n_util::GetStringUTF16(
+          IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_TITLE));
   loadtime_data->SetString(
       "learnMoreBackupAndRestore",
       l10n_util::GetStringUTF16(
           is_child ? IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD
                    : IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE));
   loadtime_data->SetString(
+      "learnMoreLocationServicesTitle",
+      l10n_util::GetStringUTF16(
+          IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_TITLE));
+  loadtime_data->SetString(
       "learnMoreLocationServices",
       l10n_util::GetStringUTF16(
           is_child ? IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD
                    : IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES));
+  loadtime_data->SetString(
+      "learnMorePaiServiceTitle",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE_TITLE));
   loadtime_data->SetString(
       "learnMorePaiService",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE));

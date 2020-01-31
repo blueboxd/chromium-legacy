@@ -36,9 +36,9 @@ class FakeGCMDriver : public GCMDriver {
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;
-  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+  void GetGCMStatistics(GetGCMStatisticsCallback callback,
                         ClearActivityLogs clear_logs) override;
-  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+  void SetGCMRecording(const GCMStatisticsRecordingCallback& callback,
                        bool recording) override;
   void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;

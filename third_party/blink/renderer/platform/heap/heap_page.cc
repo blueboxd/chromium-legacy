@@ -371,18 +371,12 @@ void BaseArena::InvokeFinalizersOnSweptPages() {
   }
 }
 
-bool BaseArena::ConcurrentSweepWithDeadline(base::TimeTicks deadline) {
-  static constexpr size_t kDeadlineCheckInterval = 10;
-  size_t page_count = 1;
-  while (BasePage* page = unswept_pages_.PopLocked()) {
-    SweepUnsweptPageOnConcurrentThread(page);
-    if (page_count % kDeadlineCheckInterval == 0 &&
-        deadline <= base::TimeTicks::Now()) {
-      return SweepingCompleted();
-    }
-    ++page_count;
-  }
-  return true;
+bool BaseArena::ConcurrentSweepOnePage() {
+  BasePage* page = unswept_pages_.PopLocked();
+  if (!page)
+    return true;
+  SweepUnsweptPageOnConcurrentThread(page);
+  return false;
 }
 
 void BaseArena::CompleteSweep() {

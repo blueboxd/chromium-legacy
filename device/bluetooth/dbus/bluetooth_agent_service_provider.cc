@@ -31,7 +31,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
         bus_(bus),
         delegate_(delegate),
         object_path_(object_path) {
-    VLOG(1) << "Creating Bluetooth Agent: " << object_path_.value();
+    DVLOG(1) << "Creating Bluetooth Agent: " << object_path_.value();
 
     exported_object_ = bus_->GetExportedObject(object_path_);
 
@@ -107,7 +107,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   }
 
   ~BluetoothAgentServiceProviderImpl() override {
-    VLOG(1) << "Cleaning up Bluetooth Agent: " << object_path_.value();
+    DVLOG(1) << "Cleaning up Bluetooth Agent: " << object_path_.value();
 
     // Unregister the object path so we can reuse with a new agent.
     bus_->UnregisterExportedObject(object_path_);
@@ -314,8 +314,8 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success) {
-    LOG_IF(WARNING, !success) << "Failed to export " << interface_name << "."
-                              << method_name;
+    DVLOG_IF(1, !success) << "Failed to export " << interface_name << "."
+                          << method_name;
   }
 
   // Called by the Delegate to response to a method requesting a PIN code.

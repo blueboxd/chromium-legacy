@@ -44,6 +44,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -1704,22 +1705,25 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ContextMenuFilter);
 };
 
-// This class allows tests to wait until FrameHostMsg_UpdateUserActivationState
-// IPC reaches the browser process from a renderer.
-class UpdateUserActivationStateMsgWaiter : public BrowserMessageFilter {
+class UpdateUserActivationStateInterceptor
+    : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
-  UpdateUserActivationStateMsgWaiter() : BrowserMessageFilter(FrameMsgStart) {}
+  UpdateUserActivationStateInterceptor();
+  ~UpdateUserActivationStateInterceptor() override;
 
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void Wait();
+  void Init(content::RenderFrameHost* render_frame_host);
+  void set_quit_handler(base::OnceClosure handler);
+  bool update_user_activation_state() { return update_user_activation_state_; }
+
+  blink::mojom::LocalFrameHost* GetForwardingInterface() override;
+  void UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType update_type) override;
 
  private:
-  ~UpdateUserActivationStateMsgWaiter() override = default;
-
-  void OnUpdateUserActivationState(blink::mojom::UserActivationUpdateType);
-
-  bool received_ = false;
-  base::RunLoop run_loop_;
+  content::RenderFrameHost* render_frame_host_;
+  blink::mojom::LocalFrameHost* impl_;
+  base::OnceClosure quit_handler_;
+  bool update_user_activation_state_ = false;
 };
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest);

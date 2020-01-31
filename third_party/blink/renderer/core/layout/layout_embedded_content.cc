@@ -133,7 +133,7 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
       return true;
     if (base::FeatureList::IsEnabled(
             blink::features::kCompositeCrossOriginIframes) &&
-        content_frame->IsCrossOriginSubframe()) {
+        content_frame->IsCrossOriginToMainFrame()) {
       return true;
     }
   }

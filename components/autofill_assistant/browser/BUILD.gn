@@ -181,13 +181,43 @@ jumbo_static_library("browser") {
   ]
 }
 
+static_library("unit_test_support") {
+  testonly = true
+  sources = [
+    "actions/mock_action_delegate.cc",
+    "actions/mock_action_delegate.h",
+    "fake_script_executor_delegate.cc",
+    "fake_script_executor_delegate.h",
+    "mock_controller_observer.cc",
+    "mock_controller_observer.h",
+    "mock_personal_data_manager.cc",
+    "mock_personal_data_manager.h",
+    "mock_service.cc",
+    "mock_service.h",
+    "mock_user_model_observer.cc",
+    "mock_user_model_observer.h",
+    "mock_website_login_fetcher.cc",
+    "mock_website_login_fetcher.h",
+    "web/mock_web_controller.cc",
+    "web/mock_web_controller.h",
+  ]
+
+  deps = [
+    ":browser",
+    ":proto",
+    "//base",
+    "//base/test:test_support",
+    "//components/autofill/core/browser:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
     "actions/collect_user_data_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
-    "actions/mock_action_delegate.cc",
-    "actions/mock_action_delegate.h",
     "actions/popup_message_action_unittest.cc",
     "actions/prompt_action_unittest.cc",
     "actions/required_fields_fallback_handler_unittest.cc",
@@ -204,18 +234,6 @@ source_set("unit_tests") {
     "element_area_unittest.cc",
     "element_precondition_unittest.cc",
     "event_handler_unittest.cc",
-    "fake_script_executor_delegate.cc",
-    "fake_script_executor_delegate.h",
-    "mock_controller_observer.cc",
-    "mock_controller_observer.h",
-    "mock_personal_data_manager.cc",
-    "mock_personal_data_manager.h",
-    "mock_service.cc",
-    "mock_service.h",
-    "mock_user_model_observer.cc",
-    "mock_user_model_observer.h",
-    "mock_website_login_fetcher.cc",
-    "mock_website_login_fetcher.h",
     "protocol_utils_unittest.cc",
     "retry_timer_unittest.cc",
     "script_executor_unittest.cc",
@@ -226,13 +244,12 @@ source_set("unit_tests") {
     "trigger_context_unittest.cc",
     "user_data_util_unittest.cc",
     "user_model_unittest.cc",
-    "web/mock_web_controller.cc",
-    "web/mock_web_controller.h",
   ]
 
   deps = [
     ":browser",
     ":proto",
+    ":unit_test_support",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",

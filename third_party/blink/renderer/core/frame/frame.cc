@@ -128,7 +128,7 @@ bool Frame::IsMainFrame() const {
   return !Tree().Parent();
 }
 
-bool Frame::IsCrossOriginSubframe() const {
+bool Frame::IsCrossOriginToMainFrame() const {
   DCHECK(GetSecurityContext());
   const SecurityOrigin* security_origin =
       GetSecurityContext()->GetSecurityOrigin();

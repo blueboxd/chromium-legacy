@@ -380,7 +380,7 @@ void XRInputSource::ProcessOverlayHitTest(
     if (hit_document) {
       Frame* hit_frame = hit_document->GetFrame();
       DCHECK(hit_frame);
-      if (hit_frame->IsCrossOriginSubframe()) {
+      if (hit_frame->IsCrossOriginToMainFrame()) {
         // Mark the input source as invisible until the primary button is
         // released.
         state_.is_visible = false;

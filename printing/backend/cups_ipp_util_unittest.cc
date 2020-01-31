@@ -12,7 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/cups_printer.h"
-#include "printing/printing_features_chromeos.h"
+#include "printing/printing_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -316,7 +316,7 @@ TEST_F(PrintBackendCupsIppUtilTest, PinTooShort) {
 TEST_F(PrintBackendCupsIppUtilTest, AdvancedCaps) {
   base::HistogramTester histograms;
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(printing::kAdvancedPpdAttributes);
+  features.InitAndEnableFeature(printing::features::kAdvancedPpdAttributes);
 
   printer_->SetSupportedOptions(
       "job-creation-attributes",

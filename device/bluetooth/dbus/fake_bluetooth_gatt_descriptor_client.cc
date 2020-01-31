@@ -36,18 +36,18 @@ FakeBluetoothGattDescriptorClient::Properties::~Properties() = default;
 void FakeBluetoothGattDescriptorClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
-  VLOG(1) << "Get " << property->name();
+  DVLOG(1) << "Get " << property->name();
   std::move(callback).Run(true);
 }
 
 void FakeBluetoothGattDescriptorClient::Properties::GetAll() {
-  VLOG(1) << "GetAll";
+  DVLOG(1) << "GetAll";
 }
 
 void FakeBluetoothGattDescriptorClient::Properties::Set(
     dbus::PropertyBase* property,
     dbus::PropertySet::SetCallback callback) {
-  VLOG(1) << "Set " << property->name();
+  DVLOG(1) << "Set " << property->name();
   std::move(callback).Run(false);
 }
 
@@ -146,7 +146,7 @@ dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(
     const dbus::ObjectPath& characteristic_path,
     const std::string& uuid) {
   if (uuid != kClientCharacteristicConfigurationUUID) {
-    VLOG(2) << "Unsupported UUID: " << uuid;
+    DVLOG(2) << "Unsupported UUID: " << uuid;
     return dbus::ObjectPath();
   }
 
@@ -157,7 +157,7 @@ dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(
   DCHECK(object_path.IsValid());
   PropertiesMap::const_iterator iter = properties_.find(object_path);
   if (iter != properties_.end()) {
-    VLOG(1) << "Descriptor already exposed: " << object_path.value();
+    DVLOG(1) << "Descriptor already exposed: " << object_path.value();
     return dbus::ObjectPath();
   }
 
@@ -181,7 +181,7 @@ void FakeBluetoothGattDescriptorClient::HideDescriptor(
     const dbus::ObjectPath& descriptor_path) {
   auto iter = properties_.find(descriptor_path);
   if (iter == properties_.end()) {
-    VLOG(1) << "Descriptor not exposed: " << descriptor_path.value();
+    DVLOG(1) << "Descriptor not exposed: " << descriptor_path.value();
     return;
   }
 
@@ -194,8 +194,8 @@ void FakeBluetoothGattDescriptorClient::HideDescriptor(
 void FakeBluetoothGattDescriptorClient::OnPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  VLOG(2) << "Descriptor property changed: " << object_path.value() << ": "
-          << property_name;
+  DVLOG(2) << "Descriptor property changed: " << object_path.value() << ": "
+           << property_name;
 
   for (auto& observer : observers_)
     observer.GattDescriptorPropertyChanged(object_path, property_name);

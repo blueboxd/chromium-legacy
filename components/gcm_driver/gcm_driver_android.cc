@@ -152,12 +152,9 @@ bool GCMDriverAndroid::IsConnected() const {
   return true;
 }
 
-void GCMDriverAndroid::GetGCMStatistics(
-    const GetGCMStatisticsCallback& callback,
-    ClearActivityLogs clear_logs) {
+void GCMDriverAndroid::GetGCMStatistics(GetGCMStatisticsCallback callback,
+                                        ClearActivityLogs clear_logs) {
   DCHECK(!callback.is_null());
-
-  get_gcm_statistics_callback_ = callback;
 
   if (clear_logs == CLEAR_LOGS)
     recorder_.Clear();
@@ -167,16 +164,23 @@ void GCMDriverAndroid::GetGCMStatistics(
 
   recorder_.CollectActivities(&stats.recorded_activities);
 
-  callback.Run(stats);
+  std::move(callback).Run(stats);
 }
 
-void GCMDriverAndroid::SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                                       bool recording) {
+void GCMDriverAndroid::SetGCMRecording(
+    const GCMStatisticsRecordingCallback& callback,
+    bool recording) {
   DCHECK(!callback.is_null());
 
+  gcm_statistics_recording_callback_ = callback;
   recorder_.set_is_recording(recording);
 
-  GetGCMStatistics(callback, recording ? KEEP_LOGS : CLEAR_LOGS);
+  GCMClient::GCMStatistics stats;
+  stats.is_recording = recording;
+
+  recorder_.CollectActivities(&stats.recorded_activities);
+
+  callback.Run(stats);
 }
 
 void GCMDriverAndroid::SetAccountTokens(
@@ -215,9 +219,14 @@ void GCMDriverAndroid::AddHeartbeatInterval(const std::string& scope,
 void GCMDriverAndroid::RemoveHeartbeatInterval(const std::string& scope) {}
 
 void GCMDriverAndroid::OnActivityRecorded() {
-  DCHECK(!get_gcm_statistics_callback_.is_null());
+  DCHECK(gcm_statistics_recording_callback_);
 
-  GetGCMStatistics(get_gcm_statistics_callback_, KEEP_LOGS);
+  GCMClient::GCMStatistics stats;
+  stats.is_recording = recorder_.is_recording();
+
+  recorder_.CollectActivities(&stats.recorded_activities);
+
+  gcm_statistics_recording_callback_.Run(stats);
 }
 
 GCMClient::Result GCMDriverAndroid::EnsureStarted(

@@ -111,7 +111,7 @@ void BluetoothAdapterCast::SetPowered(bool powered,
 }
 
 bool BluetoothAdapterCast::IsDiscoverable() const {
-  VLOG(2) << __func__ << " GATT server mode not supported";
+  DVLOG(2) << __func__ << " GATT server mode not supported";
   return false;
 }
 

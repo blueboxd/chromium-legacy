@@ -153,6 +153,25 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
   int basic_count_ = 0;
 };
 
+class UserActivationUpdateWaiter {
+ public:
+  explicit UserActivationUpdateWaiter(content::WebContents* web_contents) {
+    user_activation_interceptor_.Init(web_contents->GetMainFrame());
+  }
+  ~UserActivationUpdateWaiter() = default;
+
+  void Wait() {
+    if (user_activation_interceptor_.update_user_activation_state())
+      return;
+    base::RunLoop run_loop;
+    user_activation_interceptor_.set_quit_handler(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+ private:
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor_;
+};
+
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
   RunTest("test_embedded.html");
   // Sanity check. Navigate the page and verify the guest goes away.
@@ -485,16 +504,12 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
 
   // Make sure we have a guestviewmanager.
   auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
-
-  // Add a filter for FrameHostMsg_UpdateUserActivationState IPC.
-  auto filter =
-      base::MakeRefCounted<content::UpdateUserActivationStateMsgWaiter>();
-  guest_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+  UserActivationUpdateWaiter activation_waiter(guest_contents);
 
   // Activate |guest_contents| through a click, then wait until the activation
   // IPC reaches the browser process.
   SimulateMouseClick(guest_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  filter->Wait();
+  activation_waiter.Wait();
 
   // Wait for a round trip to the outer renderer to ensure any beforeunload
   // toggle IPC has had time to reach the browser.

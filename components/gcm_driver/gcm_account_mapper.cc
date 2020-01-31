@@ -293,12 +293,11 @@ void GCMAccountMapper::CreateAndSendMessage(
     outgoing_message.time_to_live = kGCMAddMappingMessageTTL;
   }
 
-  gcm_driver_->Send(kGCMAccountMapperAppId,
-                    kGCMAccountMapperSendTo,
+  gcm_driver_->Send(kGCMAccountMapperAppId, kGCMAccountMapperSendTo,
                     outgoing_message,
-                    base::Bind(&GCMAccountMapper::OnSendFinished,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               account_mapping.account_id));
+                    base::BindOnce(&GCMAccountMapper::OnSendFinished,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   account_mapping.account_id));
 }
 
 void GCMAccountMapper::OnSendFinished(const CoreAccountId& account_id,
@@ -327,10 +326,9 @@ void GCMAccountMapper::GetRegistration() {
   DCHECK(registration_id_.empty());
   std::vector<std::string> sender_ids;
   sender_ids.push_back(kGCMAccountMapperSenderId);
-  gcm_driver_->Register(kGCMAccountMapperAppId,
-                        sender_ids,
-                        base::Bind(&GCMAccountMapper::OnRegisterFinished,
-                                   weak_ptr_factory_.GetWeakPtr()));
+  gcm_driver_->Register(kGCMAccountMapperAppId, sender_ids,
+                        base::BindOnce(&GCMAccountMapper::OnRegisterFinished,
+                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMAccountMapper::OnRegisterFinished(const std::string& registration_id,

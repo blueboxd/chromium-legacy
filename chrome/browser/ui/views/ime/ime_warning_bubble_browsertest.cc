@@ -7,9 +7,14 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 
 class ImeWarningBubbleTest : public extensions::ExtensionBrowserTest {
  public:
@@ -30,6 +35,9 @@ class ImeWarningBubbleTest : public extensions::ExtensionBrowserTest {
   bool ok_button_pressed_;
   bool never_show_checked_;
 
+  ui::ScopedAnimationDurationScaleMode disable_animation_{
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION};
+
   DISALLOW_COPY_AND_ASSIGN(ImeWarningBubbleTest);
 };
 
@@ -48,6 +56,14 @@ void ImeWarningBubbleTest::SetUpOnMainThread() {
                  base::Unretained(this));
   browser()->window()->ShowImeWarningBubble(extension_, callback_);
   ime_warning_bubble_ = ImeWarningBubbleView::ime_warning_bubble_for_test_;
+
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    // Wait for the animation to finish so that the bubble is visible.
+    views::test::WaitForAnimatingLayoutManager(
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar_button_provider()
+            ->GetExtensionsToolbarContainer());
+  }
 }
 
 void ImeWarningBubbleTest::OnPermissionBubbleFinished(

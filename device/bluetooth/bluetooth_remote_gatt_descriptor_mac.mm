@@ -96,14 +96,14 @@ void BluetoothRemoteGattDescriptorMac::ReadRemoteDescriptor(
     ValueCallback callback,
     ErrorCallback error_callback) {
   if (value_read_or_write_in_progress_) {
-    VLOG(1) << *this << ": Read failed, already in progress.";
+    DVLOG(1) << *this << ": Read failed, already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
-  VLOG(1) << *this << ": Read value.";
+  DVLOG(1) << *this << ": Read value.";
   value_read_or_write_in_progress_ = true;
   read_value_callbacks_ =
       std::make_pair(std::move(callback), std::move(error_callback));
@@ -115,14 +115,14 @@ void BluetoothRemoteGattDescriptorMac::WriteRemoteDescriptor(
     base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (value_read_or_write_in_progress_) {
-    VLOG(1) << *this << ": Write failed, already in progress.";
+    DVLOG(1) << *this << ": Write failed, already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
-  VLOG(1) << *this << ": Write value.";
+  DVLOG(1) << *this << ": Write value.";
   value_read_or_write_in_progress_ = true;
   write_value_callbacks_ =
       std::make_pair(std::move(callback), std::move(error_callback));
@@ -134,7 +134,7 @@ void BluetoothRemoteGattDescriptorMac::WriteRemoteDescriptor(
 void BluetoothRemoteGattDescriptorMac::DidUpdateValueForDescriptor(
     NSError* error) {
   if (!value_read_or_write_in_progress_) {
-    VLOG(1) << *this << ": Value updated, no read in progress.";
+    DVLOG(1) << *this << ": Value updated, no read in progress.";
     return;
   }
   std::pair<ValueCallback, ErrorCallback> callbacks;
@@ -144,13 +144,13 @@ void BluetoothRemoteGattDescriptorMac::DidUpdateValueForDescriptor(
   if (error) {
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
-    VLOG(1) << *this << ": Read value failed with error: "
-            << BluetoothAdapterMac::String(error)
-            << ", converted to error code: " << error_code;
+    DVLOG(1) << *this << ": Read value failed with error: "
+             << BluetoothAdapterMac::String(error)
+             << ", converted to error code: " << error_code;
     std::move(callbacks.second).Run(error_code);
     return;
   }
-  VLOG(1) << *this << ": Value read.";
+  DVLOG(1) << *this << ": Value read.";
   value_ = VectorValueFromObjC([cb_descriptor_ value]);
   std::move(callbacks.first).Run(value_);
 }
@@ -158,7 +158,7 @@ void BluetoothRemoteGattDescriptorMac::DidUpdateValueForDescriptor(
 void BluetoothRemoteGattDescriptorMac::DidWriteValueForDescriptor(
     NSError* error) {
   if (!value_read_or_write_in_progress_) {
-    VLOG(1) << *this << ": Value written, no write in progress.";
+    DVLOG(1) << *this << ": Value written, no write in progress.";
     return;
   }
   std::pair<base::OnceClosure, ErrorCallback> callbacks;
@@ -168,13 +168,13 @@ void BluetoothRemoteGattDescriptorMac::DidWriteValueForDescriptor(
   if (error) {
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
-    VLOG(1) << *this << ": Write value failed with error: "
-            << BluetoothAdapterMac::String(error)
-            << ", converted to error code: " << error_code;
+    DVLOG(1) << *this << ": Write value failed with error: "
+             << BluetoothAdapterMac::String(error)
+             << ", converted to error code: " << error_code;
     std::move(callbacks.second).Run(error_code);
     return;
   }
-  VLOG(1) << *this << ": Value written.";
+  DVLOG(1) << *this << ": Value written.";
   std::move(callbacks.first).Run();
 }
 

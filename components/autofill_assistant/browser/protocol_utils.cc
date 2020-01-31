@@ -303,7 +303,7 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        DVLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
+        VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
         client_action = std::make_unique<UnsupportedAction>(delegate, action);
         break;
       }
@@ -311,9 +311,9 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
         // cases added to the proto.
     }
     if (client_action == nullptr) {
-      DVLOG(1) << "Encountered action with Unknown or unsupported action with "
-                  "action_case="
-               << action.action_info_case();
+      VLOG(1) << "Encountered action with Unknown or unsupported action with "
+                 "action_case="
+              << action.action_info_case();
       client_action = std::make_unique<UnsupportedAction>(delegate, action);
     }
     actions->emplace_back(std::move(client_action));

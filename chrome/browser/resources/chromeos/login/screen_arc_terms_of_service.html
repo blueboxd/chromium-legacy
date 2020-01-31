@@ -6,29 +6,16 @@
     role="group" hidden>
   <arc-tos-root id="arc-tos-root"></arc-tos-root>
 
-  <div id="arc-tos-overlay" class="popup-overlay"
-      role="dialog" aria-modal="true" hidden>
-    <a href="#" id="arc-tos-overlay-start" class="arc-tos-invisible-link"></a>
-    <div id="arc-tos-overlay-container" class="oobe-popup not-resizable flex
-        layout vertical stretch" role="dialog" aria-modal="true">
-      <div id="arc-tos-overlay-close-top"
-          class="arc-tos-overlay-close-top arc-overlay-close-button self-end">
-      </div>
-      <div id="arc-tos-overlay-webview-container">
-        <webview id="arc-tos-overlay-webview"></webview>
-        <div class="arc-tos-overlay-webview-loading">
-          <p i18n-content="arcOverlayLoading"></p>
-        </div>
-      </div>
-      <div id="arc-tos-overlay-content-text">
-        <span id="arc-learn-more-content"></span>
-      </div>
-      <div class="arc-tos-button-strip">
-        <oobe-text-button inverse id="arc-tos-overlay-close-bottom"
-            text-key="arcOverlayClose" class="arc-overlay-close-button">
-        </oobe-text-button>
+  <oobe-help-dialog id="arc-tos-overlay-privacy-policy">
+    <div slot="content" id="arc-tos-overlay-webview-container" >
+      <webview id="arc-tos-overlay-webview"></webview>
+      <div class="flex layout center-justified vertical" style="height: 100%;">
+        <throbber-notice></throbber-notice>
       </div>
     </div>
-    <a href="#" id="arc-tos-overlay-end" class="arc-tos-invisible-link"></a>
-  </div>
+  </oobe-help-dialog>
+
+  <oobe-help-dialog id="arc-tos-overlay-learn-more">
+    <span slot="content" id="arc-learn-more-content"></span>
+  </oobe-help-dialog>
 </div>

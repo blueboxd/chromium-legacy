@@ -235,7 +235,6 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
 BrowserSwitcherService::~BrowserSwitcherService() = default;
 
 void BrowserSwitcherService::Init() {
-  LOG(ERROR) << "XXX Init()";
   LoadRulesFromPrefs();
   StartDownload(fetch_delay());
 }

@@ -133,7 +133,8 @@ class AdsPageLoadMetricsObserverBrowserTest
         {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js"),
          subresource_filter::testing::CreateSuffixRule("ad_script.js"),
          subresource_filter::testing::CreateSuffixRule(
-             "expensive_animation_frame.html*")});
+             "expensive_animation_frame.html*"),
+         subresource_filter::testing::CreateSuffixRule("ad.html")});
   }
 
  protected:
@@ -174,6 +175,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 // Test that an ad with the same origin as the main page is same origin.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        OriginStatusMetricSame) {
+  // Set the frame's resource as a rule.
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("pixel.png")});
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -418,13 +422,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
   // Create a second frame that will not receive activation.
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      web_contents, "createAdFrame('/ad_tagging/frame_factory.html', '');"));
+      web_contents, "createAdFrame('/ad_tagging/ad.html', '');"));
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      web_contents, "createAdFrame('/ad_tagging/frame_factory.html', '');"));
+      web_contents, "createAdFrame('/ad_tagging/ad.html', '');"));
 
   // Wait for the frames resources to be loaded as we only log histograms for
-  // frames that have non-zero bytes. Four resources per frame and one favicon.
-  waiter->AddMinimumCompleteResourcesExpectation(13);
+  // frames that have non-zero bytes. Four resources in the main frame and one
+  // favicon.
+  waiter->AddMinimumCompleteResourcesExpectation(7);
   waiter->Wait();
 
   // Activate one frame by executing a dummy script.
@@ -559,6 +564,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FrameDepth) {
 // Test that a frame without display:none is reported as visible.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        VisibleAdframeRecorded) {
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("pixel.png")});
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -612,6 +619,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 // frame will cause size updates to not be received. Verify that we record the
 // correct sizes for display: none iframes.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("pixel.png")});
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -686,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ASSERT_TRUE(
       ExecJs(web_contents,
              "let frame = createAdIframe(); frame.width=4; frame.height = 4; "
-             "frame.src = '/ads_observer/pixel.png';"));
+             "frame.src = '/ads_observer/ad.html';"));
 
   // Wait for each frames resource to load so that they will have non-zero
   // bytes.
@@ -741,6 +750,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        AdFrameRecordMediaStatusNotPlayed) {
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("pixel.png")});
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
 
@@ -799,6 +810,95 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
       static_cast<int>(FrameData::MediaStatus::kPlayed));
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       SameDomainFrameCreatedByAdScript_NotRecorddedAsAd) {
+  base::HistogramTester histogram_tester;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "a.com", "/ads_observer/blank_with_adiframe_writer.html"));
+
+  waiter->AddSubframeDataExpectation();
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace("createAdIframeWithSrc($1);",
+                                embedded_test_server()
+                                    ->GetURL("a.com", "/ads_observer/pixel.png")
+                                    .spec())));
+  waiter->Wait();
+
+  // Re-navigate to record histograms.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // There should be no observed ads because the ad iframe was same domain.
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.FrameCounts.IgnoredByRestrictedAdTagging", 1, 1);
+
+  waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "a.com", "/ads_observer/blank_with_adiframe_writer.html"));
+
+  // This time create a frame that is not same-domain.
+  waiter->AddSubframeDataExpectation();
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace("createAdIframeWithSrc($1);",
+                                embedded_test_server()
+                                    ->GetURL("b.com", "/ads_observer/pixel.png")
+                                    .spec())));
+  waiter->Wait();
+
+  // The frame should be tagged an ad.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.FrameCounts.IgnoredByRestrictedAdTagging", 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AdsPageLoadMetricsObserverBrowserTest,
+    FrameCreatedByAdScriptNavigatedToAllowListRule_NotRecorddedAsAd) {
+  // Whitelist rules are only checked if there is a matching blacklist rule.
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js"),
+       subresource_filter::testing::CreateSuffixRule("ixel.png"),
+       subresource_filter::testing::CreateWhitelistSuffixRule("xel.png")});
+  base::HistogramTester histogram_tester;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "a.com", "/ads_observer/blank_with_adiframe_writer.html"));
+
+  waiter->AddSubframeDataExpectation();
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace("createAdIframeWithSrc($1);",
+                                embedded_test_server()
+                                    ->GetURL("b.com", "/ads_observer/pixel.png")
+                                    .spec())));
+  waiter->Wait();
+
+  // Re-navigate to record histograms.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // There should be no observed ads because the ad iframe was navigated to a
+  // whitelist rule.
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.FrameCounts.IgnoredByRestrictedAdTagging", 1, 1);
 }
 
 class AdsPageLoadMetricsTestWaiter
@@ -933,6 +1033,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 // Verify that per-resource metrics are recorded correctly.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        ReceivedAdResourceMetrics) {
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("ad.html"),
+       subresource_filter::testing::CreateSuffixRule("ad_script.js")});
   base::HistogramTester histogram_tester;
 
   auto main_html_response =
@@ -945,8 +1048,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
           true /*relative_url_is_prefix*/);
   auto iframe_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/iframe.html",
-          true /*relative_url_is_prefix*/);
+          embedded_test_server(), "/ad.html", true /*relative_url_is_prefix*/);
   auto vanilla_script_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
           embedded_test_server(), "/vanilla_script.js",
@@ -970,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ad_script_response->Send(kHttpOkResponseHeader);
   ad_script_response->Send(
       "var iframe = document.createElement(\"iframe\");"
-      "iframe.src =\"iframe.html\";"
+      "iframe.src =\"ad.html\";"
       "document.body.appendChild(iframe);");
   ad_script_response->Send(std::string(1000, ' '));
   ad_script_response->Done();
@@ -1130,6 +1232,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 // Verifies that reports are sent to all children.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        HeavyAdInterventionFired_ReportsToAllChildren) {
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("frame_factory.html")});
   base::HistogramTester histogram_tester;
   auto large_resource =
       std::make_unique<net::test_server::ControllableHttpResponse>(

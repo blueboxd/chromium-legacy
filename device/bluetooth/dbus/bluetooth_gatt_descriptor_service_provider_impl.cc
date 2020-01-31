@@ -40,8 +40,8 @@ BluetoothGattDescriptorServiceProviderImpl::
       delegate_(std::move(delegate)),
       object_path_(object_path),
       characteristic_path_(characteristic_path) {
-  VLOG(1) << "Created Bluetooth GATT characteristic descriptor: "
-          << object_path.value() << " UUID: " << uuid;
+  DVLOG(1) << "Created Bluetooth GATT characteristic descriptor: "
+           << object_path.value() << " UUID: " << uuid;
   if (!bus_)
     return;
 
@@ -95,15 +95,15 @@ BluetoothGattDescriptorServiceProviderImpl::
 
 BluetoothGattDescriptorServiceProviderImpl::
     ~BluetoothGattDescriptorServiceProviderImpl() {
-  VLOG(1) << "Cleaning up Bluetooth GATT characteristic descriptor: "
-          << object_path_.value();
+  DVLOG(1) << "Cleaning up Bluetooth GATT characteristic descriptor: "
+           << object_path_.value();
   if (bus_)
     bus_->UnregisterExportedObject(object_path_);
 }
 
 void BluetoothGattDescriptorServiceProviderImpl::SendValueChanged(
     const std::vector<uint8_t>& value) {
-  VLOG(2) << "Emitting a PropertiesChanged signal for descriptor value.";
+  DVLOG(2) << "Emitting a PropertiesChanged signal for descriptor value.";
   dbus::Signal signal(dbus::kDBusPropertiesInterface,
                       dbus::kDBusPropertiesChangedSignal);
   dbus::MessageWriter writer(&signal);
@@ -139,8 +139,8 @@ bool BluetoothGattDescriptorServiceProviderImpl::OnOriginThread() {
 void BluetoothGattDescriptorServiceProviderImpl::Get(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattDescriptorServiceProvider::Get: "
-          << object_path_.value();
+  DVLOG(2) << "BluetoothGattDescriptorServiceProvider::Get: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
@@ -197,8 +197,8 @@ void BluetoothGattDescriptorServiceProviderImpl::Get(
 void BluetoothGattDescriptorServiceProviderImpl::Set(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattDescriptorServiceProviderImpl::Set: "
-          << object_path_.value();
+  DVLOG(2) << "BluetoothGattDescriptorServiceProviderImpl::Set: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
   // All of the properties on this interface are read-only, so just return
   // error.
@@ -211,8 +211,8 @@ void BluetoothGattDescriptorServiceProviderImpl::Set(
 void BluetoothGattDescriptorServiceProviderImpl::GetAll(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattDescriptorServiceProvider::GetAll: "
-          << object_path_.value();
+  DVLOG(2) << "BluetoothGattDescriptorServiceProvider::GetAll: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
@@ -247,8 +247,8 @@ void BluetoothGattDescriptorServiceProviderImpl::GetAll(
 void BluetoothGattDescriptorServiceProviderImpl::ReadValue(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(3) << "BluetoothGattDescriptorServiceProvider::ReadValue: "
-          << object_path_.value();
+  DVLOG(3) << "BluetoothGattDescriptorServiceProvider::ReadValue: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
@@ -284,8 +284,8 @@ void BluetoothGattDescriptorServiceProviderImpl::ReadValue(
 void BluetoothGattDescriptorServiceProviderImpl::WriteValue(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(3) << "BluetoothGattDescriptorServiceProvider::WriteValue: "
-          << object_path_.value();
+  DVLOG(3) << "BluetoothGattDescriptorServiceProvider::WriteValue: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
@@ -334,16 +334,16 @@ void BluetoothGattDescriptorServiceProviderImpl::OnExported(
     const std::string& interface_name,
     const std::string& method_name,
     bool success) {
-  LOG_IF(WARNING, !success) << "Failed to export " << interface_name << "."
-                            << method_name;
+  DVLOG_IF(1, !success) << "Failed to export " << interface_name << "."
+                        << method_name;
 }
 
 void BluetoothGattDescriptorServiceProviderImpl::OnReadValue(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender,
     const std::vector<uint8_t>& value) {
-  VLOG(3) << "Descriptor value obtained from delegate. Responding to "
-             "ReadValue.";
+  DVLOG(3) << "Descriptor value obtained from delegate. Responding to "
+              "ReadValue.";
 
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
@@ -355,7 +355,7 @@ void BluetoothGattDescriptorServiceProviderImpl::OnReadValue(
 void BluetoothGattDescriptorServiceProviderImpl::OnWriteValue(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(3) << "Responding to WriteValue.";
+  DVLOG(3) << "Responding to WriteValue.";
 
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
@@ -397,7 +397,7 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteProperties(
 void BluetoothGattDescriptorServiceProviderImpl::OnFailure(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "Failed to get/set descriptor value. Report error.";
+  DVLOG(2) << "Failed to get/set descriptor value. Report error.";
   std::unique_ptr<dbus::ErrorResponse> error_response =
       dbus::ErrorResponse::FromMethodCall(
           method_call, kErrorFailed, "Failed to get/set descriptor value.");

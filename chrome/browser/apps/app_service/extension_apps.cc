@@ -783,9 +783,13 @@ void ExtensionApps::OnAppWindowAdded(extensions::AppWindow* app_window) {
   // Attach window to multi-user manager now to let it manage visibility state
   // of the window correctly.
   if (SessionControllerClientImpl::IsMultiProfileAvailable()) {
-    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
-        app_window->GetNativeWindow(),
-        multi_user_util::GetAccountIdFromProfile(profile_));
+    auto* multi_user_window_manager =
+        MultiUserWindowManagerHelper::GetWindowManager();
+    if (multi_user_window_manager) {
+      multi_user_window_manager->SetWindowOwner(
+          app_window->GetNativeWindow(),
+          multi_user_util::GetAccountIdFromProfile(profile_));
+    }
   }
   RegisterInstance(app_window, InstanceState::kStarted);
 }

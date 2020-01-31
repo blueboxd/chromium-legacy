@@ -198,6 +198,12 @@
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
+    "prefix": "layout_ng_fragment_traversal",
+    "bases": ["fast/block",
+              "fast/table"],
+    "args": ["--enable-blink-features=LayoutNGFragmentTraversal"]
+  },
+  {
     "prefix": "layout_ng_flex_box",
     "bases": ["css3/flexbox",
               "external/wpt/css/css-flexbox",
@@ -698,7 +704,8 @@
   },
   {
     "prefix": "split-http-cache",
-    "bases": ["external/wpt/fetch/http-cache"],
+    "bases": ["external/wpt/fetch/http-cache",
+              "external/wpt/signed-exchange"],
     "args": ["--enable-features=SplitCacheByNetworkIsolationKey"]
   },
   {

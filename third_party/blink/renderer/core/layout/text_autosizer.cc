@@ -1171,10 +1171,9 @@ const LayoutObject* TextAutosizer::FindTextLeaf(
 }
 
 static bool IsCrossSite(const Frame& frame1, const Frame& frame2) {
-  // Cross-site differs from cross-origin (LocalFrame::IsCrossOriginSubframe).
-  // For example, http://foo.com and http://sub.foo.com are cross-origin but
-  // same-site.  Only cross-site text autosizing is impacted by site isolation
-  // (crbug.com/393285).
+  // Cross-site differs from cross-origin. For example, http://foo.com and
+  // http://sub.foo.com are cross-origin but same-site. Only cross-site text
+  // autosizing is impacted by site isolation (crbug.com/393285).
 
   const auto* origin1 = frame1.GetSecurityContext()->GetSecurityOrigin();
   const auto* origin2 = frame2.GetSecurityContext()->GetSecurityOrigin();

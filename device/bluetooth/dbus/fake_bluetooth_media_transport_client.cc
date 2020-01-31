@@ -73,18 +73,18 @@ FakeBluetoothMediaTransportClient::Properties::~Properties() = default;
 void FakeBluetoothMediaTransportClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
-  VLOG(1) << "Get " << property->name();
+  DVLOG(1) << "Get " << property->name();
   std::move(callback).Run(false);
 }
 
 void FakeBluetoothMediaTransportClient::Properties::GetAll() {
-  VLOG(1) << "GetAll called.";
+  DVLOG(1) << "GetAll called.";
 }
 
 void FakeBluetoothMediaTransportClient::Properties::Set(
     dbus::PropertyBase* property,
     dbus::PropertySet::SetCallback callback) {
-  VLOG(1) << "Set " << property->name();
+  DVLOG(1) << "Set " << property->name();
   std::move(callback).Run(false);
 }
 
@@ -130,7 +130,7 @@ void FakeBluetoothMediaTransportClient::Acquire(
     const ObjectPath& object_path,
     const AcquireCallback& callback,
     const ErrorCallback& error_callback) {
-  VLOG(1) << "Acquire - transport path: " << object_path.value();
+  DVLOG(1) << "Acquire - transport path: " << object_path.value();
   AcquireInternal(false, object_path, callback, error_callback);
 }
 
@@ -138,7 +138,7 @@ void FakeBluetoothMediaTransportClient::TryAcquire(
     const ObjectPath& object_path,
     const AcquireCallback& callback,
     const ErrorCallback& error_callback) {
-  VLOG(1) << "TryAcquire - transport path: " << object_path.value();
+  DVLOG(1) << "TryAcquire - transport path: " << object_path.value();
   AcquireInternal(true, object_path, callback, error_callback);
 }
 
@@ -162,8 +162,8 @@ void FakeBluetoothMediaTransportClient::SetValid(
 
   if (valid) {
     ObjectPath transport_path = GenerateTransportPath();
-    VLOG(1) << "New transport, " << transport_path.value()
-            << " is created for endpoint " << endpoint_path.value();
+    DVLOG(1) << "New transport, " << transport_path.value()
+             << " is created for endpoint " << endpoint_path.value();
 
     // Sets the fake property set with default values.
     std::unique_ptr<Properties> properties(new Properties(base::BindRepeating(
@@ -202,7 +202,7 @@ void FakeBluetoothMediaTransportClient::SetValid(
 void FakeBluetoothMediaTransportClient::SetState(
     const ObjectPath& endpoint_path,
     const std::string& state) {
-  VLOG(1) << "SetState - state: " << state;
+  DVLOG(1) << "SetState - state: " << state;
 
   Transport* transport = GetTransport(endpoint_path);
   if (!transport)
@@ -232,30 +232,30 @@ void FakeBluetoothMediaTransportClient::SetVolume(
 void FakeBluetoothMediaTransportClient::WriteData(
     const ObjectPath& endpoint_path,
     const std::vector<char>& bytes) {
-  VLOG(1) << "WriteData - write " << bytes.size() << " bytes";
+  DVLOG(1) << "WriteData - write " << bytes.size() << " bytes";
 
   Transport* transport = GetTransport(endpoint_path);
 
   if (!transport || transport->properties->state.value() != "active") {
-    VLOG(1) << "WriteData - write operation rejected, since the state isn't "
-               "active for endpoint: "
-            << endpoint_path.value();
+    DVLOG(1) << "WriteData - write operation rejected, since the state isn't "
+                "active for endpoint: "
+             << endpoint_path.value();
     return;
   }
 
   if (!transport->input_fd.get()) {
-    VLOG(1) << "WriteData - invalid input file descriptor";
+    DVLOG(1) << "WriteData - invalid input file descriptor";
     return;
   }
 
   ssize_t written_len =
       write(transport->input_fd->GetPlatformFile(), bytes.data(), bytes.size());
   if (written_len < 0) {
-    VLOG(1) << "WriteData - failed to write to the socket";
+    DVLOG(1) << "WriteData - failed to write to the socket";
     return;
   }
 
-  VLOG(1) << "WriteData - wrote " << written_len << " bytes to the socket";
+  DVLOG(1) << "WriteData - wrote " << written_len << " bytes to the socket";
 }
 
 ObjectPath FakeBluetoothMediaTransportClient::GetTransportPath(
@@ -266,7 +266,7 @@ ObjectPath FakeBluetoothMediaTransportClient::GetTransportPath(
 
 void FakeBluetoothMediaTransportClient::OnPropertyChanged(
     const std::string& property_name) {
-  VLOG(1) << "Property " << property_name << " changed";
+  DVLOG(1) << "Property " << property_name << " changed";
 }
 
 ObjectPath FakeBluetoothMediaTransportClient::GetEndpointPath(

@@ -59,11 +59,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.pageReady_ = true;
       $('arc-tos-root').screen = this;
 
-      var closeButtons = document.querySelectorAll('.arc-overlay-close-button');
-      for (var i = 0; i < closeButtons.length; i++) {
-        closeButtons[i].addEventListener('click', this.hideOverlay.bind(this));
-      }
-
       var termsView = this.getElement_('arc-tos-view');
       var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
@@ -113,22 +108,10 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         run_at: 'document_end'
       }]);
 
-      var closeOverlayButton = $('arc-tos-overlay-close-bottom');
-      var overlayUrlContainer = $('arc-tos-overlay-webview-container');
-      $('arc-tos-overlay-start').onfocus = function() {
-        closeOverlayButton.focus();
-      };
-      $('arc-tos-overlay-end').onfocus = function() {
-        var style = window.getComputedStyle(overlayUrlContainer);
-        if (style.display == 'none') {
-          closeOverlayButton.focus();
-        } else {
-          overlayUrl.focus();
-        }
-      };
-
-      $('arc-tos-overlay-close-top').title =
-          loadTimeData.getString('arcOverlayClose');
+      $('arc-tos-overlay-learn-more')
+          .addEventListener('close', this.hideOverlay.bind(this));
+      $('arc-tos-overlay-privacy-policy')
+          .addEventListener('close', this.hideOverlay.bind(this));
 
       // Update the screen size after setup layout.
       if (Oobe.getInstance().currentScreen === this)
@@ -151,11 +134,18 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       }
 
       var self = this;
+      var leanMoreStatisticsTitle =
+          loadTimeData.getString('arcLearnMoreStatisticsTitle');
       var leanMoreStatisticsText =
           loadTimeData.getString('arcLearnMoreStatistics');
-      metrics.querySelector('#learn-more-link-metrics').onclick = function() {
-        self.showLearnMoreOverlay(leanMoreStatisticsText);
-      };
+
+      var anchor = metrics.querySelector('#learn-more-link-metrics');
+      if (anchor) {
+        anchor.onclick = function() {
+          self.showLearnMoreOverlay(
+              leanMoreStatisticsText, leanMoreStatisticsTitle);
+        };
+      }
     },
 
     /**
@@ -348,30 +338,20 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Shows overlay dialog.
-     * @param {string} defines overlay type, text or url.
+     * Shows an OOBE Help Dialog with the given title and content
+     * @param {string} content HTML formatted text to show.
+     * @param {string} title   Title for the dialog.
      */
-    showOverlay(overlayType) {
+    showLearnMoreOverlay(content, title) {
+      $('arc-tos-overlay-learn-more').titleKey = title;
+      $('arc-learn-more-content').innerHTML = content;
+
       this.lastFocusedElement = document.activeElement;
       if (this.lastFocusedElement == $('arc-tos-root')) {
         this.lastFocusedElement = this.lastFocusedElement.getActiveElement();
       }
 
-      var overlayRoot = $('arc-tos-overlay');
-      overlayRoot.classList.remove('arc-overlay-text');
-      overlayRoot.classList.remove('arc-overlay-url');
-      overlayRoot.classList.add(overlayType);
-      overlayRoot.hidden = false;
-      $('arc-tos-overlay-close-bottom').focus();
-    },
-
-    /**
-     * Sets learn more content text and shows it as overlay dialog.
-     * @param {string} content HTML formatted text to show.
-     */
-    showLearnMoreOverlay(content) {
-      $('arc-learn-more-content').innerHTML = content;
-      this.showOverlay('arc-overlay-text');
+      $('arc-tos-overlay-learn-more').showDialog();
     },
 
     /**
@@ -387,15 +367,20 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       } else {
         webView.src = targetUrl;
       }
+
+      this.lastFocusedElement = document.activeElement;
+      if (this.lastFocusedElement == $('arc-tos-root')) {
+        this.lastFocusedElement = this.lastFocusedElement.getActiveElement();
+      }
+
       $('arc-tos-overlay-webview-container').classList.add('overlay-loading');
-      this.showOverlay('arc-overlay-url');
+      $('arc-tos-overlay-privacy-policy').showDialog();
     },
 
     /**
      * Hides overlay dialog.
      */
     hideOverlay() {
-      $('arc-tos-overlay').hidden = true;
       if (this.lastFocusedElement) {
         this.lastFocusedElement.focus();
         this.lastFocusedElement = null;
@@ -571,7 +556,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     onBeforeShow(data) {
       this.setLearnMoreHandlers_();
 
-      this.hideOverlay();
       this.focusButton_();
 
       $('arc-tos-root').onBeforeShow();
@@ -666,34 +650,40 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     setLearnMoreHandlers_() {
       var self = this;
 
-      var learnMoreBackupAndRestoreText =
-          loadTimeData.getString('arcLearnMoreBackupAndRestore');
-      var backupAndRestore = this.getElement_('arc-enable-backup-restore');
-      backupAndRestore.parentElement
-          .querySelector('#learn-more-link-backup-restore')
-          .onclick = function(event) {
-        event.stopPropagation();
-        self.showLearnMoreOverlay(learnMoreBackupAndRestoreText);
-      };
+      /* Checkboxes on the ARC TOS screen have a special link within their
+         description with a unique link_id that should open an overlay showing
+         some content related to it.
+      */
+      function SetUpLearnMoreCheckBox(title, content, checkbox_id, link_id) {
+        var content = loadTimeData.getString(content);
+        var checkbox = self.getElement_(checkbox_id);
 
-      var learnMoreLocationServiceText =
-          loadTimeData.getString('arcLearnMoreLocationService');
-      var locationService = this.getElement_('arc-enable-location-service');
-      locationService.parentElement
-          .querySelector('#learn-more-link-location-service')
-          .onclick = function(event) {
-        event.stopPropagation();
-        self.showLearnMoreOverlay(learnMoreLocationServiceText);
-      };
+        var anchor = checkbox.parentElement.querySelector('#' + link_id);
+        if (anchor) {
+          anchor.onclick = function(event) {
+            event.stopPropagation();
+            self.showLearnMoreOverlay(content, title);
+          };
+        }
+      }
 
-      var learnMorePaiServiceText =
-          loadTimeData.getString('arcLearnMorePaiService');
-      var paiService = this.getElement_('arc-pai-service');
-      paiService.querySelector('#learn-more-link-pai').onclick = function(
-          event) {
-        event.stopPropagation();
-        self.showLearnMoreOverlay(learnMorePaiServiceText);
-      };
+      SetUpLearnMoreCheckBox(
+          title = 'arcLearnMoreBackupAndRestoreTitle',
+          content = 'arcLearnMoreBackupAndRestore',
+          checkbox_id = 'arc-enable-backup-restore',
+          link_id = 'learn-more-link-backup-restore');
+
+      SetUpLearnMoreCheckBox(
+          title = 'arcLearnMoreLocationServiceTitle',
+          content = 'arcLearnMoreLocationService',
+          checkbox_id = 'arc-enable-location-service',
+          link_id = 'learn-more-link-location-service');
+
+      SetUpLearnMoreCheckBox(
+          title = 'arcLearnMorePaiServiceTitle',
+          content = 'arcLearnMorePaiService',
+          checkbox_id = 'arc-pai-service',
+          link_id = 'learn-more-link-pai');
     },
 
     /**

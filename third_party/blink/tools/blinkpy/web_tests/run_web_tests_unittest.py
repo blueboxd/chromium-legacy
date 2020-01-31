@@ -46,7 +46,6 @@ from blinkpy.common.system.system_host import SystemHost
 from blinkpy.web_tests import run_web_tests
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
-from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port import test
 from blinkpy.web_tests.views.printing import Printer
 
@@ -465,7 +464,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # This tests that we skip both known failing and known flaky tests. Because there are
         # no known flaky tests in the default test_expectations, we add additional expectations.
         host = MockHost()
-        host.filesystem.write_text_file('/tmp/overrides.txt', '# results: [ Failure Pass ]\npasses/image.html [ Failure Pass ]\n')
+        host.filesystem.write_text_file('/tmp/overrides.txt', 'Bug(x) passes/image.html [ Failure Pass ]\n')
 
         batches = get_test_batches(['--skip-failing-tests', '--additional-expectations', '/tmp/overrides.txt'], host=host)
         has_passes_text = False
@@ -1286,7 +1285,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_result = run_details.initial_results.all_results[0]
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(len(test_result.failures), 1)
-        self.assertEqual(test_result.type, ResultType.Failure)
+        self.assertEqual(test_result.type, test_expectations.FAIL)
 
     def test_reftest_mismatching_pixel_matching_text(self):
         test_name = 'failures/unexpected/reftest-with-matching-text.html'
@@ -1297,7 +1296,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_result = run_details.initial_results.all_results[0]
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(len(test_result.failures), 1)
-        self.assertEqual(test_result.type, ResultType.Failure)
+        self.assertEqual(test_result.type, test_expectations.FAIL)
 
     def test_reftest_mismatching_both_text_and_pixel(self):
         test_name = 'failures/unexpected/reftest.html'
@@ -1309,7 +1308,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_result = run_details.initial_results.all_results[0]
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(len(test_result.failures), 2)
-        self.assertEqual(test_result.type, ResultType.Failure)
+        self.assertEqual(test_result.type, test_expectations.FAIL)
 
     def test_extra_baselines(self):
         host = MockHost()
@@ -1466,7 +1465,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_additional_expectations(self):
         host = MockHost()
-        host.filesystem.write_text_file('/tmp/overrides.txt', '# results: [ Failure ]\nfailures/unexpected/mismatch.html [ Failure ]\n')
+        host.filesystem.write_text_file('/tmp/overrides.txt', 'Bug(x) failures/unexpected/mismatch.html [ Failure ]\n')
         self.assertTrue(passing_run(['--additional-expectations', '/tmp/overrides.txt', 'failures/unexpected/mismatch.html'],
                                     tests_included=True, host=host))
 

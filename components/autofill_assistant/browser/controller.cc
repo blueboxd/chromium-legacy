@@ -404,7 +404,7 @@ bool Controller::SetForm(
         break;
       }
       case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
-        DVLOG(1) << "Encountered input with INPUT_TYPE_NOT_SET";
+        VLOG(1) << "Encountered input with INPUT_TYPE_NOT_SET";
         return false;
         // Intentionally no default case to make compilation fail if a new value
         // was added to the enum but not to this list.
@@ -552,7 +552,7 @@ bool Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return false;
 
-  DVLOG(2) << __func__ << ": " << state_ << " -> " << state;
+  VLOG(2) << __func__ << ": " << state_ << " -> " << state;
 
   // The only valid way of leaving the STOPPED state is to go back to tracking
   // mode.
@@ -609,7 +609,12 @@ void Controller::GetOrCheckScripts() {
   if (script_domain_ != url.host()) {
     StopPeriodicScriptChecks();
     script_domain_ = url.host();
-    DVLOG(2) << "GetScripts for " << script_domain_;
+#ifdef NDEBUG
+    VLOG(2) << "GetScripts for <redacted>";
+#else
+    VLOG(2) << "GetScripts for " << script_domain_;
+#endif
+
     GetService()->GetScriptsForUrl(
         url, *trigger_context_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
@@ -649,7 +654,7 @@ void Controller::OnPeriodicScriptCheck() {
 
   if (allow_autostart() && !autostart_timeout_script_path_.empty() &&
       tick_clock_->NowTicks() >= absolute_autostart_timeout_) {
-    DVLOG(1) << __func__ << " giving up waiting on autostart.";
+    VLOG(1) << __func__ << " giving up waiting on autostart.";
     std::string script_path = autostart_timeout_script_path_;
     autostart_timeout_script_path_.clear();
     periodic_script_check_scheduled_ = false;
@@ -677,7 +682,11 @@ void Controller::OnGetScripts(const GURL& url,
     return;
 
   if (!result) {
-    DVLOG(1) << "Failed to get assistant scripts for " << script_domain_;
+#ifdef NDEBUG
+    VLOG(1) << "Failed to get assistant scripts for <redacted>";
+#else
+    VLOG(1) << "Failed to get assistant scripts for " << script_domain_;
+#endif
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
                  Metrics::DropOutReason::GET_SCRIPTS_FAILED);
     return;
@@ -685,8 +694,12 @@ void Controller::OnGetScripts(const GURL& url,
 
   SupportsScriptResponseProto response_proto;
   if (!response_proto.ParseFromString(response)) {
-    DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
-             << "unparseable response";
+#ifdef NDEBUG
+    VLOG(2) << __func__ << " from <redacted> returned unparseable response";
+#else
+    VLOG(2) << __func__ << " from " << script_domain_ << " returned "
+            << "unparseable response";
+#endif
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
                  Metrics::DropOutReason::GET_SCRIPTS_UNPARSABLE);
     return;
@@ -710,8 +723,14 @@ void Controller::OnGetScripts(const GURL& url,
   if (allow_autostart())
     absolute_autostart_timeout_ = tick_clock_->NowTicks() + autostart_timeout_;
 
-  DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
-           << scripts.size() << " scripts";
+#ifdef NDEBUG
+  VLOG(2) << __func__ << " from <redacted> returned " << scripts.size()
+          << " scripts";
+#else
+  VLOG(2) << __func__ << " from " << script_domain_ << " returned "
+          << scripts.size() << " scripts";
+#endif
+
   if (VLOG_IS_ON(3)) {
     for (const auto& script : scripts) {
       // Strip domain from beginning if possible (redundant with log above).
@@ -773,7 +792,12 @@ void Controller::OnScriptExecuted(const std::string& script_path,
                                   AutofillAssistantState end_state,
                                   const ScriptExecutor::Result& result) {
   if (!result.success) {
+#ifdef NDEBUG
+    VLOG(1) << "Failed to execute script";
+#else
     DVLOG(1) << "Failed to execute script " << script_path;
+#endif
+
     OnScriptError(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
         Metrics::DropOutReason::SCRIPT_FAILED);
@@ -817,7 +841,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       break;
 
     default:
-      DVLOG(1) << "Unexpected value for at_end: " << result.at_end;
+      VLOG(1) << "Unexpected value for at_end: " << result.at_end;
       break;
   }
   EnterState(end_state);

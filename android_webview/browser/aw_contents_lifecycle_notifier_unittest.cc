@@ -58,12 +58,12 @@ class AwContentsLifecycleNotifierTest : public testing::Test {
 
   AwContentsLifecycleNotifier* notifier() { return notifier_.get(); }
 
-  void VerifyAwContentsStateCount(size_t unknown_count,
+  void VerifyAwContentsStateCount(size_t detached_count,
                                   size_t foreground_count,
                                   size_t background_count) {
     ASSERT_EQ(GetAwContentsStateCount(
                   AwContentsLifecycleNotifier::AwContentsState::kDetached),
-              unknown_count);
+              detached_count);
     ASSERT_EQ(GetAwContentsStateCount(
                   AwContentsLifecycleNotifier::AwContentsState::kForeground),
               foreground_count);
@@ -207,6 +207,53 @@ TEST_F(AwContentsLifecycleNotifierTest, MultipleAwContents) {
 
   notifier()->OnWebViewCreated(fake_aw_contents1);
   VerifyAwContentsStateCount(1u, 0, 0);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kUnknown);
+  ASSERT_TRUE(HasAwContentsEverCreated());
+}
+
+TEST_F(AwContentsLifecycleNotifierTest, AttachedToWindowAfterWindowVisible) {
+  const AwContents* fake_aw_contents = reinterpret_cast<const AwContents*>(1);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kDestroyed);
+  ASSERT_FALSE(HasAwContentsEverCreated());
+
+  notifier()->OnWebViewCreated(fake_aw_contents);
+  VerifyAwContentsStateCount(1u, 0, 0);
+  notifier()->OnWebViewWindowBeVisible(fake_aw_contents);
+  VerifyAwContentsStateCount(1u, 0, 0);
+  notifier()->OnWebViewAttachedToWindow(fake_aw_contents);
+  VerifyAwContentsStateCount(0, 1u, 0);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kForeground);
+  ASSERT_TRUE(HasAwContentsEverCreated());
+}
+
+TEST_F(AwContentsLifecycleNotifierTest, AttachedToWindowAfterWindowInvisible) {
+  const AwContents* fake_aw_contents = reinterpret_cast<const AwContents*>(1);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kDestroyed);
+  ASSERT_FALSE(HasAwContentsEverCreated());
+
+  notifier()->OnWebViewCreated(fake_aw_contents);
+  VerifyAwContentsStateCount(1u, 0, 0);
+  notifier()->OnWebViewWindowBeInvisible(fake_aw_contents);
+  VerifyAwContentsStateCount(1u, 0, 0);
+  notifier()->OnWebViewAttachedToWindow(fake_aw_contents);
+  VerifyAwContentsStateCount(0, 0, 1u);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kBackground);
+  ASSERT_TRUE(HasAwContentsEverCreated());
+}
+
+TEST_F(AwContentsLifecycleNotifierTest, DetachFromVisibleWindow) {
+  const AwContents* fake_aw_contents = reinterpret_cast<const AwContents*>(1);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kDestroyed);
+  ASSERT_FALSE(HasAwContentsEverCreated());
+
+  notifier()->OnWebViewCreated(fake_aw_contents);
+  VerifyAwContentsStateCount(1u, 0, 0);
+  notifier()->OnWebViewWindowBeVisible(fake_aw_contents);
+  VerifyAwContentsStateCount(1u, 0, 0);
+  notifier()->OnWebViewAttachedToWindow(fake_aw_contents);
+  VerifyAwContentsStateCount(0, 1u, 0);
+  ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kForeground);
+  notifier()->OnWebViewDetachedFromWindow(fake_aw_contents);
   ASSERT_EQ(GetState(), WebViewAppStateObserver::State::kUnknown);
   ASSERT_TRUE(HasAwContentsEverCreated());
 }

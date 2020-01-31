@@ -41,8 +41,8 @@ class InstanceIDAndroid : public InstanceID {
   ~InstanceIDAndroid() override;
 
   // InstanceID implementation:
-  void GetID(const GetIDCallback& callback) override;
-  void GetCreationTime(const GetCreationTimeCallback& callback) override;
+  void GetID(GetIDCallback callback) override;
+  void GetCreationTime(GetCreationTimeCallback callback) override;
   void GetToken(const std::string& audience,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,

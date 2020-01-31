@@ -32,9 +32,9 @@ void FakeBluetoothAgentManagerClient::RegisterAgent(
     const std::string& capability,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  VLOG(1) << "RegisterAgent: " << agent_path.value();
+  DVLOG(1) << "RegisterAgent: " << agent_path.value();
 
-  if (service_provider_ == NULL) {
+  if (service_provider_ == nullptr) {
     std::move(error_callback)
         .Run(bluetooth_agent_manager::kErrorInvalidArguments,
              "No agent created");
@@ -51,8 +51,8 @@ void FakeBluetoothAgentManagerClient::UnregisterAgent(
     const dbus::ObjectPath& agent_path,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  VLOG(1) << "UnregisterAgent: " << agent_path.value();
-  if (service_provider_ == NULL) {
+  DVLOG(1) << "UnregisterAgent: " << agent_path.value();
+  if (service_provider_ == nullptr) {
     std::move(error_callback)
         .Run(bluetooth_agent_manager::kErrorDoesNotExist,
              "No agent registered");
@@ -69,7 +69,7 @@ void FakeBluetoothAgentManagerClient::RequestDefaultAgent(
     const dbus::ObjectPath& agent_path,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  VLOG(1) << "RequestDefaultAgent: " << agent_path.value();
+  DVLOG(1) << "RequestDefaultAgent: " << agent_path.value();
   std::move(callback).Run();
 }
 

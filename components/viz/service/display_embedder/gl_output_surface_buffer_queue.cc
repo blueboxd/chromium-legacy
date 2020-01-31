@@ -199,10 +199,6 @@ unsigned GLOutputSurfaceBufferQueue::GetOverlayTextureId() const {
   return last_bound_texture_;
 }
 
-gpu::Mailbox GLOutputSurfaceBufferQueue::GetOverlayMailbox() const {
-  return buffer_queue_->GetCurrentBuffer(nullptr);
-}
-
 gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {
   DCHECK(buffer_queue_);
   return buffer_queue_->buffer_format();

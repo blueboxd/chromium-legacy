@@ -37,7 +37,7 @@ void ClickAction::InternalProcessAction(ProcessActionCallback callback) {
   Selector selector =
       Selector(proto_.click().element_to_click()).MustBeVisible();
   if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
+    VLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;

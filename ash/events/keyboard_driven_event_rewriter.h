@@ -20,17 +20,13 @@ class ASH_EXPORT KeyboardDrivenEventRewriter : public ui::EventRewriter {
   ~KeyboardDrivenEventRewriter() override;
 
   // Calls Rewrite for testing.
-  ui::EventRewriteStatus RewriteForTesting(
-      const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event);
+  ui::EventDispatchDetails RewriteForTesting(const ui::Event& event,
+                                             const Continuation continuation);
 
   // EventRewriter overrides:
-  ui::EventRewriteStatus RewriteEvent(
+  ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override;
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
+      const Continuation continuation) override;
 
   void set_enabled(bool enabled) { enabled_ = enabled; }
   void set_arrow_to_tab_rewriting_enabled(bool enabled) {
@@ -38,8 +34,8 @@ class ASH_EXPORT KeyboardDrivenEventRewriter : public ui::EventRewriter {
   }
 
  private:
-  ui::EventRewriteStatus Rewrite(const ui::Event& event,
-                                 std::unique_ptr<ui::Event>* new_event);
+  ui::EventDispatchDetails Rewrite(const ui::Event& event,
+                                   const Continuation continuation);
 
   // If true, this rewriter is enabled. It is only active before user login.
   bool enabled_ = false;

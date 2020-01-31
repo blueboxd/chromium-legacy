@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -317,6 +318,7 @@ void HTMLSelectElement::ParseAttribute(
     if (size_ != old_size) {
       ChangeRendering();
       ResetToDefaultSelection();
+      UpdateUserAgentShadowTree(*UserAgentShadowRoot());
       if (!UsesMenuList())
         SaveListboxActiveSelection();
     }
@@ -1283,6 +1285,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
     else
       ResetToDefaultSelection();
   }
+  UpdateUserAgentShadowTree(*UserAgentShadowRoot());
 }
 
 void HTMLSelectElement::AppendToFormData(FormData& form_data) {
@@ -1983,8 +1986,37 @@ void HTMLSelectElement::Trace(Visitor* visitor) {
 }
 
 void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
+  // Even if UsesMenuList(), the <slot> is necessary to have ComputedStyles
+  // for <option>s. LayoutMenuList::IsChildAllowed() rejects all of
+  // LayoutObject children except for MenuListInnerElement's.
   root.AppendChild(
       HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));
+  UpdateUserAgentShadowTree(root);
+}
+
+void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
+  // Remove all children of the ShadowRoot except for <slot>.
+  Node* node = root.firstChild();
+  while (node) {
+    if (IsA<HTMLSlotElement>(node)) {
+      node = node->nextSibling();
+    } else {
+      auto* will_be_removed = node;
+      node = node->nextSibling();
+      will_be_removed->remove();
+    }
+  }
+  if (UsesMenuList()) {
+    root.insertBefore(MakeGarbageCollected<MenuListInnerElement>(GetDocument()),
+                      root.firstChild());
+  }
+}
+
+Element& HTMLSelectElement::InnerElement() const {
+  DCHECK(UsesMenuList());
+  auto* inner_element = DynamicTo<Element>(UserAgentShadowRoot()->firstChild());
+  DCHECK(inner_element);
+  return *inner_element;
 }
 
 HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {

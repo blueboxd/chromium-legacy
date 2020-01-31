@@ -16,19 +16,19 @@ FakeBluetoothMediaEndpointServiceProvider::
     FakeBluetoothMediaEndpointServiceProvider(const ObjectPath& object_path,
                                               Delegate* delegate)
     : object_path_(object_path), delegate_(delegate) {
-  VLOG(1) << "Create Bluetooth Media Endpoint: " << object_path_.value();
+  DVLOG(1) << "Create Bluetooth Media Endpoint: " << object_path_.value();
 }
 
 FakeBluetoothMediaEndpointServiceProvider::
     ~FakeBluetoothMediaEndpointServiceProvider() {
-  VLOG(1) << "Cleaning up Bluetooth Media Endpoint: " << object_path_.value();
+  DVLOG(1) << "Cleaning up Bluetooth Media Endpoint: " << object_path_.value();
 }
 
 void FakeBluetoothMediaEndpointServiceProvider::SetConfiguration(
     const ObjectPath& transport_path,
     const Delegate::TransportProperties& properties) {
-  VLOG(1) << object_path_.value() << ": SetConfiguration for "
-          << transport_path.value();
+  DVLOG(1) << object_path_.value() << ": SetConfiguration for "
+           << transport_path.value();
 
   delegate_->SetConfiguration(transport_path, properties);
 }
@@ -36,7 +36,7 @@ void FakeBluetoothMediaEndpointServiceProvider::SetConfiguration(
 void FakeBluetoothMediaEndpointServiceProvider::SelectConfiguration(
     const std::vector<uint8_t>& capabilities,
     const Delegate::SelectConfigurationCallback& callback) {
-  VLOG(1) << object_path_.value() << ": SelectConfiguration";
+  DVLOG(1) << object_path_.value() << ": SelectConfiguration";
 
   delegate_->SelectConfiguration(capabilities, callback);
 
@@ -50,14 +50,14 @@ void FakeBluetoothMediaEndpointServiceProvider::SelectConfiguration(
 
 void FakeBluetoothMediaEndpointServiceProvider::ClearConfiguration(
     const ObjectPath& transport_path) {
-  VLOG(1) << object_path_.value() << ": ClearConfiguration on "
-          << transport_path.value();
+  DVLOG(1) << object_path_.value() << ": ClearConfiguration on "
+           << transport_path.value();
 
   delegate_->ClearConfiguration(transport_path);
 }
 
 void FakeBluetoothMediaEndpointServiceProvider::Released() {
-  VLOG(1) << object_path_.value() << ": Released";
+  DVLOG(1) << object_path_.value() << ": Released";
 
   delegate_->Released();
 }

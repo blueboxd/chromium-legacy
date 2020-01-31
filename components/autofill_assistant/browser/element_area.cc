@@ -58,9 +58,9 @@ void ElementArea::AddRectangles(
     Rectangle& rectangle = rectangles_.back();
     rectangle.full_width = rectangle_proto.full_width();
     rectangle.restricted = restricted;
-    DVLOG(3) << "Rectangle (full_width="
-             << (rectangle.full_width ? "true" : "false")
-             << ", restricted=" << (restricted ? "true" : "false") << "):";
+    VLOG(3) << "Rectangle (full_width="
+            << (rectangle.full_width ? "true" : "false")
+            << ", restricted=" << (restricted ? "true" : "false") << "):";
     for (const auto& element_proto : rectangle_proto.elements()) {
       rectangle.positions.emplace_back();
       ElementPosition& position = rectangle.positions.back();

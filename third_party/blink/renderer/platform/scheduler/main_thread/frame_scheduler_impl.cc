@@ -170,7 +170,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                     PausedStateToString),
       frame_origin_type_(frame_type == FrameType::kMainFrame
                              ? FrameOriginType::kMainFrame
-                             : FrameOriginType::kSameOriginFrame,
+                             : FrameOriginType::kSameOriginToMainFrame,
                          "FrameScheduler.Origin",
                          this,
                          &tracing_controller_,
@@ -322,16 +322,16 @@ bool FrameSchedulerImpl::IsFrameVisible() const {
   return frame_visible_;
 }
 
-void FrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
+void FrameSchedulerImpl::SetCrossOriginToMainFrame(bool cross_origin) {
   DCHECK(parent_page_scheduler_);
   if (frame_origin_type_ == FrameOriginType::kMainFrame) {
     DCHECK(!cross_origin);
     return;
   }
   if (cross_origin) {
-    frame_origin_type_ = FrameOriginType::kCrossOriginFrame;
+    frame_origin_type_ = FrameOriginType::kCrossOriginToMainFrame;
   } else {
-    frame_origin_type_ = FrameOriginType::kSameOriginFrame;
+    frame_origin_type_ = FrameOriginType::kSameOriginToMainFrame;
   }
   UpdatePolicy();
 }
@@ -345,8 +345,8 @@ bool FrameSchedulerImpl::IsAdFrame() const {
   return is_ad_frame_;
 }
 
-bool FrameSchedulerImpl::IsCrossOrigin() const {
-  return frame_origin_type_ == FrameOriginType::kCrossOriginFrame;
+bool FrameSchedulerImpl::IsCrossOriginToMainFrame() const {
+  return frame_origin_type_ == FrameOriginType::kCrossOriginToMainFrame;
 }
 
 void FrameSchedulerImpl::TraceUrlChange(const String& url) {
@@ -763,7 +763,7 @@ void FrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
   state->SetBoolean("page_visible", parent_page_scheduler_->IsPageVisible());
-  state->SetBoolean("cross_origin", IsCrossOrigin());
+  state->SetBoolean("cross_origin_to_main_frame", IsCrossOriginToMainFrame());
   state->SetString("frame_type",
                    frame_type_ == FrameScheduler::FrameType::kMainFrame
                        ? "MainFrame"
@@ -912,7 +912,7 @@ bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
   if (!parent_page_scheduler_->IsPageVisible())
     return true;
   return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
-         !frame_visible_ && IsCrossOrigin();
+         !frame_visible_ && IsCrossOriginToMainFrame();
 }
 
 void FrameSchedulerImpl::UpdateTaskQueueThrottling(
@@ -1038,7 +1038,7 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   }
 
   // Frame origin type experiment.
-  if (IsCrossOrigin()) {
+  if (IsCrossOriginToMainFrame()) {
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_cross_origin ||
         (main_thread_scheduler_->scheduling_settings()

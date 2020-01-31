@@ -1800,6 +1800,16 @@ void PaintLayer::CollectFragments(
     fragment.root_fragment_data = root_fragment_data;
     fragment.fragment_data = fragment_data;
 
+    if (GetLayoutObject().CanTraversePhysicalFragments()) {
+      if (const auto* block = DynamicTo<LayoutBlock>(&GetLayoutObject())) {
+        fragment.physical_fragment = block->CurrentFragment();
+        DCHECK(fragment.physical_fragment);
+
+        // TODO(mstensho): Implement support for multiple fragments per node.
+        DCHECK(!fragment_data->NextFragment());
+      }
+    }
+
     fragments.push_back(fragment);
   }
 }

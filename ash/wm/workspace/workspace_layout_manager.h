@@ -96,6 +96,8 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
 
   // ShelfObserver:
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override;
 
  private:
   friend class WorkspaceControllerTestApi;

@@ -937,23 +937,9 @@ KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
   return web_frame_->Client()->OverrideFlashEmbedWithHTML(WebURL(url));
 }
 
-void LocalFrameClientImpl::NotifyUserActivation(
-    bool need_browser_verification) {
-  DCHECK(web_frame_->Client());
-  mojom::blink::UserActivationUpdateType update_type =
-      need_browser_verification
-          ? mojom::blink::UserActivationUpdateType::
-                kNotifyActivationPendingBrowserVerification
-          : mojom::blink::UserActivationUpdateType::kNotifyActivation;
-  web_frame_->Client()->UpdateUserActivationState(update_type);
+void LocalFrameClientImpl::NotifyUserActivation() {
   if (WebAutofillClient* autofill_client = web_frame_->AutofillClient())
     autofill_client->UserGestureObserved();
-}
-
-void LocalFrameClientImpl::ConsumeTransientUserActivation() {
-  DCHECK(web_frame_->Client());
-  web_frame_->Client()->UpdateUserActivationState(
-      mojom::blink::UserActivationUpdateType::kConsumeTransientActivation);
 }
 
 void LocalFrameClientImpl::AbortClientNavigation() {

@@ -29,12 +29,6 @@ void PositionIteratorTest::TestDecrement(const char* markup) {
   dom_iterator.Decrement();
   EXPECT_EQ(Position::AfterNode(element), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
-  if (element.HasTagName(html_names::kSelectTag)) {
-    EXPECT_EQ(Position::AfterNode(element), dom_iterator.ComputePosition())
-        << "This is redundant result, we should not have. see "
-           "http://crbug.com/697283";
-    dom_iterator.Decrement();
-  }
   EXPECT_EQ(Position::BeforeNode(element), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position(body, 1), dom_iterator.ComputePosition());
@@ -72,12 +66,6 @@ void PositionIteratorTest::TestIncrement(const char* markup) {
   dom_iterator.Increment();
   EXPECT_EQ(Position::AfterNode(element), dom_iterator.ComputePosition());
   dom_iterator.Increment();
-  if (element.HasTagName(html_names::kSelectTag)) {
-    EXPECT_EQ(Position::AfterNode(element), dom_iterator.ComputePosition())
-        << "This is redundant result, we should not have. see "
-           "http://crbug.com/697283";
-    dom_iterator.Increment();
-  }
   EXPECT_EQ(Position(body, 1), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position(text, 0), dom_iterator.ComputePosition());

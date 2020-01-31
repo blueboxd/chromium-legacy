@@ -149,6 +149,13 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
     DCHECK_EQ(inline_box_fragment.BoxType(),
               NGPhysicalFragment::NGBoxType::kInlineBox);
   }
+  NGInlineBoxFragmentPainter(const NGFragmentItem& inline_box_item,
+                             NGInlineCursor* descendants = nullptr)
+      : NGInlineBoxFragmentPainter(inline_box_item,
+                                   *inline_box_item.BoxFragment(),
+                                   descendants) {
+    DCHECK(inline_box_item.BoxFragment());
+  }
 
   void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
 

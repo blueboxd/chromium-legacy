@@ -73,20 +73,19 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
+  LayoutBlock* InnerBlock() const;
   void CreateInnerBlock();
   scoped_refptr<ComputedStyle> CreateInnerStyle();
   void UpdateInnerStyle();
   void AdjustInnerStyle(const ComputedStyle& parent_style,
                         ComputedStyle& inner_style) const;
   bool HasOptionStyleChanged(const ComputedStyle& inner_style) const;
-  void UpdateInnerBlockHeight();
   void UpdateOptionsWidth() const;
   void SetIndexToSelectOnCancel(int list_index);
 
   LayoutText* button_text_;
   LayoutBlock* inner_block_;
 
-  LayoutUnit inner_block_height_;
   // m_optionsWidth is calculated and cached on demand.
   // updateOptionsWidth() should be called before reading them.
   mutable int options_width_;

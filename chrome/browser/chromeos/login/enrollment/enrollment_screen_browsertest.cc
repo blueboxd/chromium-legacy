@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
   view->ShowEnrollmentSpinnerScreen();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepWorking);
 
-  view->ShowAttestationBasedEnrollmentSuccessScreen("fake domain");
+  view->ShowEnrollmentSuccessScreen();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 

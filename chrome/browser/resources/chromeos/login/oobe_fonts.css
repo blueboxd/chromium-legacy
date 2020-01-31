@@ -8,10 +8,12 @@
   --oobe-header-font-family: "Google Sans", Roboto, sans-serif;
 
   --oobe-header-font-size: 28px;
+  --oobe-help-dialog-header-font-size: 15px;
   --oobe-default-font-size: 13px;
 
   --oobe-default-font-weight: 400; /* regular */
   --oobe-header-font-weight: 400; /* regular */
+  --oobe-help-dialog-header-font-weight: 500; /* medium */
 
   --oobe-header-text-color: var(--google-grey-900);
   --oobe-subheader-text-color: var(--google-grey-700);
@@ -27,5 +29,13 @@
       font-family: var(--oobe-header-font-family);
       font-size: var(--oobe-header-font-size);
       font-weight: var(--oobe-default-font-weight);
+  };
+
+  /* OOBE Help Dialog
+  */
+  --oobe-help-dialog-header-font: {
+    font-family: var(--oobe-default-font-family);
+    font-size: var(--oobe-help-dialog-header-font-size);
+    font-weight: var(--oobe-help-dialog-header-font-weight);
   };
 }

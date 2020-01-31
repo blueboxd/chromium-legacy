@@ -35,7 +35,7 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
        proto_.use_address().required_fields()) {
     if (required_field_proto.address_field() ==
         UseAddressProto::RequiredField::UNDEFINED) {
-      DVLOG(1) << "address_field enum not set, skipping required field";
+      VLOG(1) << "address_field enum not set, skipping required field";
       continue;
     }
 
@@ -106,7 +106,7 @@ void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
   }
 
   DCHECK(!selector_.empty());
-  DVLOG(3) << "Retrieving address from client memory under '" << name_ << "'.";
+  VLOG(3) << "Retrieving address from client memory under '" << name_ << "'.";
   const autofill::AutofillProfile* profile =
       delegate_->GetUserData()->selected_address(name_);
   DCHECK(profile);

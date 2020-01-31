@@ -43,16 +43,22 @@ void DefaultOverlayRequestCancelHandler::NavigationHelper::DidFinishNavigation(
   if (navigation_context->HasCommitted() &&
       !navigation_context->IsSameDocument()) {
     cancel_handler_->Cancel();
+    // The cancel handler is destroyed after Cancel(), so no code can be added
+    // after this call.
   }
 }
 
 void DefaultOverlayRequestCancelHandler::NavigationHelper::RenderProcessGone(
     web::WebState* web_state) {
   cancel_handler_->Cancel();
+  // The cancel handler is destroyed after Cancel(), so no code can be added
+  // after this call.
 }
 
 void DefaultOverlayRequestCancelHandler::NavigationHelper::WebStateDestroyed(
     web::WebState* web_state) {
-  cancel_handler_->Cancel();
   scoped_observer_.RemoveAll();
+  cancel_handler_->Cancel();
+  // The cancel handler is destroyed after Cancel(), so no code can be added
+  // after this call.
 }

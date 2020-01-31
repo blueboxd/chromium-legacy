@@ -36,6 +36,9 @@ _CONFIG = [
             'base::CreateSequencedTaskRunner',
             'base::DefaultTickClock',
             'base::ElapsedTimer',
+            'base::experimental::JobDelegate',
+            'base::experimental::JobHandle',
+            'base::experimental::PostJob',
             'base::File',
             'base::FilePath',
             'base::GetUniqueIdForProcess',
@@ -185,6 +188,7 @@ _CONFIG = [
             'base::TaskPriority',
             'base::TaskShutdownBehavior',
             'base::WithBaseSyncPrimitives',
+            'base::ThreadPolicy',
             'base::ThreadPool',
 
             # Byte order
@@ -427,8 +431,7 @@ _CONFIG = [
             'base::(scoped_nsobject|ScopedCFTypeRef)',
         ],
         'disallowed': [
-            ('base::Bind(|Once|Repeating)',
-             'Use WTF::Bind or WTF::BindRepeating.'),
+            ('base::Bind(|Once|Repeating)', 'Use WTF::Bind or WTF::BindRepeating.'),
             ('std::(deque|map|multimap|set|vector|unordered_set|unordered_map)',
              'Use WTF containers like WTF::Deque, WTF::HashMap, WTF::HashSet or WTF::Vector instead of the banned std containers. '
              'However, it is fine to use std containers at the boundary layer between Blink and Chromium. '
@@ -478,9 +481,10 @@ _CONFIG = [
         ],
     },
     {
-        'paths': ['third_party/blink/renderer/core/animation_frame',
-                  'third_party/blink/renderer/core/offscreencanvas',
-                  'third_party/blink/renderer/core/html/canvas'],
+        'paths': [
+            'third_party/blink/renderer/core/animation_frame', 'third_party/blink/renderer/core/offscreencanvas',
+            'third_party/blink/renderer/core/html/canvas'
+        ],
         'allowed': [
             'viz::BeginFrameArgs',
         ],
@@ -536,7 +540,6 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
-
             'paint_property_tree_printer::UpdateDebugNames',
         ],
     },
@@ -709,7 +712,6 @@ _CONFIG = [
             'base::data',
             # TODO(crbug.com/960665): Remove it once it is replaced with a WTF equivalent.
             'base::queue',
-
             'base::SharedMemory',
             'base::StringPiece',
             'base::ThreadTaskRunnerHandle',
@@ -820,10 +822,7 @@ _CONFIG = [
         # base::RefCounted should still be explicitly blocked, since
         # WTF::RefCounted should be used instead. base::RefCountedThreadSafe is
         # still needed for cross_thread_copier.h though.
-        'allowed': [
-            'base::RefCountedThreadSafe',
-            '(?!base::RefCounted).+'
-        ],
+        'allowed': ['base::RefCountedThreadSafe', '(?!base::RefCounted).+'],
     },
     {
         'paths': [
@@ -890,7 +889,6 @@ _CONFIG = [
         ],
         'allowed': ['crypto::.+'],
     },
-
     {
         'paths': [
             'third_party/blink/renderer/modules/p2p',

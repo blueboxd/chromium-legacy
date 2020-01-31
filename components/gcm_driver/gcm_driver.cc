@@ -126,25 +126,25 @@ void GCMDriver::UnregisterInternal(const std::string& app_id,
 void GCMDriver::Send(const std::string& app_id,
                      const std::string& receiver_id,
                      const OutgoingMessage& message,
-                     const SendCallback& callback) {
+                     SendCallback callback) {
   DCHECK(!app_id.empty());
   DCHECK(!receiver_id.empty());
   DCHECK(!callback.is_null());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
-    callback.Run(std::string(), result);
+    std::move(callback).Run(std::string(), result);
     return;
   }
 
   // If the message with send ID is still in progress, bail out.
   std::pair<std::string, std::string> key(app_id, message.id);
   if (send_callbacks_.find(key) != send_callbacks_.end()) {
-    callback.Run(message.id, GCMClient::INVALID_PARAMETER);
+    std::move(callback).Run(message.id, GCMClient::INVALID_PARAMETER);
     return;
   }
 
-  send_callbacks_[key] = callback;
+  send_callbacks_[key] = std::move(callback);
 
   SendImpl(app_id, receiver_id, message);
 }
@@ -178,8 +178,8 @@ void GCMDriver::RemoveEncryptionInfoAfterUnregister(const std::string& app_id,
                                                     GCMClient::Result result) {
   encryption_provider_.RemoveEncryptionInfo(
       app_id, "" /* authorized_entity */,
-      base::Bind(&GCMDriver::UnregisterFinished, weak_ptr_factory_.GetWeakPtr(),
-                 app_id, result));
+      base::BindOnce(&GCMDriver::UnregisterFinished,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, result));
 }
 
 void GCMDriver::UnregisterFinished(const std::string& app_id,
@@ -203,9 +203,9 @@ void GCMDriver::SendFinished(const std::string& app_id,
     return;
   }
 
-  SendCallback callback = callback_iter->second;
+  SendCallback callback = std::move(callback_iter->second);
   send_callbacks_.erase(callback_iter);
-  callback.Run(message_id, result);
+  std::move(callback).Run(message_id, result);
 }
 
 void GCMDriver::Shutdown() {

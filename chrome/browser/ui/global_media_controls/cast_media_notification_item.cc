@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
@@ -144,6 +145,9 @@ CastMediaNotificationItem::CastMediaNotificationItem(
       session_info_(CreateSessionInfo()) {
   metadata_.source_title = GetSourceTitle(route);
   notification_controller_->ShowNotification(media_route_id_);
+  base::UmaHistogramEnumeration(
+      kSourceHistogramName, route.is_local() ? Source::kLocalCastSession
+                                             : Source::kNonLocalCastSession);
 }
 
 CastMediaNotificationItem::~CastMediaNotificationItem() {
@@ -158,6 +162,7 @@ void CastMediaNotificationItem::SetView(
 
 void CastMediaNotificationItem::OnMediaSessionActionButtonPressed(
     media_session::mojom::MediaSessionAction action) {
+  base::UmaHistogramEnumeration(kUserActionHistogramName, action);
   session_controller_->Send(action);
 }
 

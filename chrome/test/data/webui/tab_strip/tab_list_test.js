@@ -695,6 +695,22 @@ suite('TabList', () => {
     assertEquals(1, index);
   });
 
+  test('DragTabIntoListFromOutside', () => {
+    const mockDataTransfer = new MockDataTransfer();
+    mockDataTransfer.setData(strings.tabIdDataType, '1000');
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    tabList.dispatchEvent(dragOverEvent);
+    assertTrue(
+        tabList.$('#unpinnedTabs').lastElementChild.id === 'dropPlaceholder');
+
+    tabList.dispatchEvent(new DragEvent('drop', dragOverEvent));
+    assertEquals(null, tabList.$('dropPlaceholder'));
+  });
+
   test('DropTabIntoList', async () => {
     const droppedTabId = 9000;
     const mockDataTransfer = new MockDataTransfer();

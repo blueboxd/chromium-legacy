@@ -118,6 +118,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void ServiceOnNextFrame();
   void ScheduleWakeUp(base::TimeDelta delay_time, FrameSchedulingState);
   bool HasPendingSynchronization() const;
+  SMILTime ClampPresentationTime(SMILTime presentation_time) const;
 
   void UpdateDocumentOrderIndexes();
 
@@ -127,6 +128,9 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   // The latest "restart" time for the time container's timeline. If the
   // timeline has not been manipulated (seeked, paused) this will be zero.
   SMILTime presentation_time_;
+  // The maximum possible presentation time. When this time is reached
+  // animations will stop.
+  SMILTime max_presentation_time_;
   // The state all SVGSMILElements should be at.
   SMILTime latest_update_time_;
   // The time on the document timeline corresponding to |presentation_time_|.

@@ -171,10 +171,9 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   if (is_constrained_by_outer_fragmentation_context_) {
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
-    FinishFragmentation(ConstraintSpace(), block_size, intrinsic_block_size_,
-                        previously_consumed_block_size,
-                        FragmentainerSpaceAtBfcStart(ConstraintSpace()),
-                        &container_builder_);
+    FinishFragmentation(
+        ConstraintSpace(), BreakToken(), block_size, intrinsic_block_size_,
+        FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
   } else {
     container_builder_.SetBlockSize(block_size);
     container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);

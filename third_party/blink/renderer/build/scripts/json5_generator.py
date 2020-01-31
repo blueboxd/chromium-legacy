@@ -216,6 +216,31 @@ class Json5File(object):
         self._process(doc)
 
 
+def reject_duplicates(entries):
+    assert isinstance(entries, list), 'The data should be a list.'
+    name_dict = {}
+    for entry in entries:
+        name = entry['name'].original
+        if name in name_dict:
+            raise Exception('The data contains multiple entries for "%s".' % name)
+        name_dict[name] = entry
+
+
+def remove_duplicates(entries):
+    assert isinstance(entries, list), 'The data should be a list.'
+    name_dict = {}
+    filtered_list = []
+    for entry in entries:
+        name = entry['name'].original
+        if name in name_dict:
+            if entry != name_dict[name]:
+                raise Exception('Duplicated entries for "%s" must be identical.' % name)
+        else:
+            name_dict[name] = entry
+            filtered_list.append(entry)
+    return filtered_list
+
+
 class Writer(object):
     # Subclasses should override.
     class_name = None

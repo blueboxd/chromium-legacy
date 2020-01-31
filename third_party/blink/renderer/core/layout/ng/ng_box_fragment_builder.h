@@ -119,6 +119,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // building now.
   void SetConsumedBlockSize(LayoutUnit size) { consumed_block_size_ = size; }
 
+  void SetSequenceNumber(unsigned sequence_number) {
+    sequence_number_ = sequence_number;
+  }
+
+  // Return whether this will be the first fragment generated for the node.
+  bool IsFirstForNode() const { return sequence_number_ == 0; }
+
   // Specify that we broke.
   //
   // This will result in a fragment which has an unfinished break token.
@@ -312,6 +319,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool subtree_modified_margin_strut_ = false;
   bool has_seen_all_children_ = false;
   LayoutUnit consumed_block_size_;
+  unsigned sequence_number_ = 0;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();
   LayoutUnit tallest_unbreakable_block_size_ = LayoutUnit::Min();

@@ -99,9 +99,9 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
 
 // Write fragmentation information to the fragment builder after layout.
 void FinishFragmentation(const NGConstraintSpace&,
+                         const NGBlockBreakToken* previous_break_token,
                          LayoutUnit block_size,
                          LayoutUnit intrinsic_block_size,
-                         LayoutUnit previously_consumed_block_size,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder*);
 

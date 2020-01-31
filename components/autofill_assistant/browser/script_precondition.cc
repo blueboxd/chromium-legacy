@@ -25,8 +25,13 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   for (const auto& pattern : script_precondition_proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
+#ifdef NDEBUG
+      DVLOG(1) << "Invalid regexp in script precondition";
+#else
       DVLOG(1) << "Invalid regexp in script precondition '" << pattern
                << "' for script path: " << script_path << ".";
+#endif
+
       return nullptr;
     }
     path_pattern.emplace_back(std::move(re));

@@ -39,7 +39,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
     const Options& options,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  VLOG(1) << "RegisterProfile: " << profile_path.value() << ": " << uuid;
+  DVLOG(1) << "RegisterProfile: " << profile_path.value() << ": " << uuid;
 
   if (uuid == kUnregisterableUuid) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -72,7 +72,7 @@ void FakeBluetoothProfileManagerClient::UnregisterProfile(
     const dbus::ObjectPath& profile_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  VLOG(1) << "UnregisterProfile: " << profile_path.value();
+  DVLOG(1) << "UnregisterProfile: " << profile_path.value();
 
   auto iter = service_provider_map_.find(profile_path);
   if (iter == service_provider_map_.end()) {

@@ -6,7 +6,6 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_LIFECYCLE_NOTIFIER_H_
 
 #include <map>
-#include <set>
 
 #include "android_webview/browser/webview_app_state_observer.h"
 #include "base/android/jni_android.h"
@@ -46,6 +45,12 @@ class AwContentsLifecycleNotifier {
   }
 
  private:
+  struct AwContentsData {
+    bool attached_to_window = false;
+    bool window_visible = false;
+    AwContentsState aw_content_state = AwContentsState::kDetached;
+  };
+
   friend base::NoDestructor<AwContentsLifecycleNotifier>;
   friend class TestAwContentsLifecycleNotifier;
 
@@ -53,14 +58,19 @@ class AwContentsLifecycleNotifier {
   virtual ~AwContentsLifecycleNotifier();
 
   size_t ToIndex(AwContentsState state) const;
-  void OnAwContentsStateChanged(const AwContents* aw_contents,
-                                AwContentsState state);
+  void OnAwContentsStateChanged(
+      AwContentsLifecycleNotifier::AwContentsData* data);
 
   void UpdateAppState();
 
   bool HasAwContentsInstance() const;
-  // The AwContentId to AwContentState mapping.
-  std::map<uint64_t, AwContentsState> aw_contents_id_to_state_;
+
+  AwContentsLifecycleNotifier::AwContentsData* GetAwContentsData(
+      const AwContents* aw_contents);
+
+  // The AwContentId to AwContentsData mapping.
+  std::map<uint64_t, AwContentsLifecycleNotifier::AwContentsData>
+      aw_contents_id_to_data_;
 
   // The number of AwContents instances in each AwContentsState.
   int state_count_[3]{};

@@ -25,14 +25,12 @@
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/scrollable_shelf_view.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
@@ -403,7 +401,10 @@ void ShelfWidget::DelegateView::OnHotseatTransitionAnimationEnded(
     HotseatState from_state,
     HotseatState to_state) {
   ShowAnimatingBackground(false);
-  if (from_state == HotseatState::kShown)
+  // NOTE: The from and to state may not match the transition states for which
+  // the background was hidden (if the original animation got interrupted by
+  // another transition, only the later animation end will be reported).
+  if (hide_background_for_transitions_)
     ShowOpaqueBackground();
 }
 
@@ -480,7 +481,7 @@ ShelfWidget::~ShelfWidget() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
 
   // Must call Shutdown() before destruction.
-  DCHECK(!status_area_widget_);
+  DCHECK(!status_area_widget());
 }
 
 void ShelfWidget::Initialize(aura::Window* shelf_container) {
@@ -533,10 +534,9 @@ void ShelfWidget::Shutdown() {
   // access it later in shutdown.
   shelf_layout_manager_->PrepareForShutdown();
 
-  Shell::Get()->focus_cycler()->RemoveWidget(status_area_widget_.get());
-
-  Shell::Get()->focus_cycler()->RemoveWidget(navigation_widget_.get());
-  Shell::Get()->focus_cycler()->RemoveWidget(hotseat_widget_.get());
+  Shell::Get()->focus_cycler()->RemoveWidget(shelf_->status_area_widget());
+  Shell::Get()->focus_cycler()->RemoveWidget(navigation_widget());
+  Shell::Get()->focus_cycler()->RemoveWidget(hotseat_widget());
 
   // Don't need to update the shelf background during shutdown.
   background_animator_.RemoveObserver(delegate_view_);
@@ -545,43 +545,6 @@ void ShelfWidget::Shutdown() {
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
-
-  // The contents view of |hotseat_widget_| may rely on |status_area_widget_|.
-  // So do explicit destruction here.
-  hotseat_widget_.reset();
-
-  status_area_widget_.reset();
-}
-
-void ShelfWidget::CreateNavigationWidget(aura::Window* container) {
-  DCHECK(container);
-  DCHECK(!navigation_widget_);
-  navigation_widget_ = std::make_unique<ShelfNavigationWidget>(
-      shelf_, hotseat_widget()->GetShelfView());
-  navigation_widget_->Initialize(container);
-  Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
-}
-
-void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
-  DCHECK(container);
-  DCHECK(!hotseat_widget_);
-  hotseat_widget_ = std::make_unique<HotseatWidget>();
-  hotseat_widget_->Initialize(container, shelf_);
-
-  // Show a context menu for right clicks anywhere on the shelf widget.
-  delegate_view_->set_context_menu_controller(hotseat_widget_->GetShelfView());
-  hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
-  hotseat_transition_animator_->AddObserver(delegate_view_);
-}
-
-void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
-  DCHECK(status_container);
-  DCHECK(!status_area_widget_);
-  status_area_widget_ =
-      std::make_unique<StatusAreaWidget>(status_container, shelf_);
-  status_area_widget_->Initialize();
-  Shell::Get()->focus_cycler()->AddWidget(status_area_widget_.get());
-  status_container->SetLayoutManager(new StatusAreaLayoutManager(this));
 }
 
 ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
@@ -593,10 +556,14 @@ int ShelfWidget::GetBackgroundAlphaValue(
   return SkColorGetA(background_animator_.GetBackgroundColor(background_type));
 }
 
+void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
+  // Show a context menu for right clicks anywhere on the shelf widget.
+  delegate_view_->set_context_menu_controller(hotseat_widget->GetShelfView());
+  hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
+  hotseat_transition_animator_->AddObserver(delegate_view_);
+}
+
 void ShelfWidget::OnShelfAlignmentChanged() {
-  // Check added for http://crbug.com/738011.
-  CHECK(status_area_widget_);
-  status_area_widget_->UpdateAfterShelfAlignmentChange();
   // This call will in turn trigger a call to delegate_view_->SchedulePaint().
   delegate_view_->UpdateOpaqueBackground();
 }

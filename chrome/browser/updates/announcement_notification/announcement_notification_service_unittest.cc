@@ -11,6 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,11 +56,44 @@ class AnnouncementNotificationServiceTest : public testing::Test {
 
   MockDelegate* delegate() { return delegate_; }
 
-  int CurrentVersionPref() {
+  base::SimpleTestClock* clock() { return &clock_; }
+
+  int CurrentVersionPref() const {
     return pref_service_->GetInteger(kCurrentVersionPrefName);
   }
 
-  void InitProfile(bool sign_in) {
+  base::Time FirstRunTimePref() const {
+    return pref_service_->GetTime(kAnnouncementFirstRunTimePrefName);
+  }
+
+  base::Time SetFirstRunTimePref(const char* time_str) {
+    base::Time time;
+    EXPECT_TRUE(base::Time::FromString(time_str, &time));
+    pref_service_->SetTime(kAnnouncementFirstRunTimePrefName, time);
+    return time;
+  }
+
+  base::Time SetNow(const char* now_str) {
+    base::Time now;
+    EXPECT_TRUE(base::Time::FromString(now_str, &now));
+    clock()->SetNow(now);
+    EXPECT_FALSE(now.is_null());
+    return now;
+  }
+
+  void Init(const std::map<std::string, std::string>& parameters,
+            bool enable_feature,
+            bool sign_in,
+            int current_version,
+            bool new_profile) {
+    if (enable_feature) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          kAnnouncementNotification, parameters);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(kAnnouncementNotification);
+    }
+
+    // Setup sign in status.
     test_profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(test_profile_manager_->SetUp());
@@ -70,30 +105,6 @@ class AnnouncementNotificationServiceTest : public testing::Test {
         base::ASCIIToUTF16("dummy_name"), gaia_id, base::string16(),
         sign_in /*is_consented_primary_account*/, 0, std::string(),
         EmptyAccountId());
-  }
-
-  void Init(bool enable_feature,
-            bool skip_first_run,
-            int version,
-            int current_version) {
-    // Setup Finch config.
-    std::map<std::string, std::string> parameters = {
-        {kSkipFirstRun, skip_first_run ? "true" : "false"},
-        {kVersion, base::NumberToString(version)}};
-    InitProfile(false);
-    Init(parameters, enable_feature, current_version, false);
-  }
-
-  void Init(const std::map<std::string, std::string>& parameters,
-            bool enable_feature,
-            int current_version,
-            bool new_profile) {
-    if (enable_feature) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          kAnnouncementNotification, parameters);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(kAnnouncementNotification);
-    }
 
     // Register pref.
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
@@ -107,13 +118,14 @@ class AnnouncementNotificationServiceTest : public testing::Test {
     service_ = base::WrapUnique<AnnouncementNotificationService>(
         AnnouncementNotificationService::Create(
             test_profile_manager_->profiles_dir().AppendASCII(kProfileId),
-            new_profile, pref_service_.get(), std::move(delegate)));
+            new_profile, pref_service_.get(), std::move(delegate), &clock_));
   }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile* test_profile_;
   std::unique_ptr<TestingProfileManager> test_profile_manager_;
+  base::SimpleTestClock clock_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<AnnouncementNotificationService> service_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -125,8 +137,7 @@ TEST_F(AnnouncementNotificationServiceTest, RequireSignOut) {
   std::map<std::string, std::string> parameters = {
       {kSkipFirstRun, "false"}, {kVersion, "2"}, {kRequireSignout, "true"}};
   // Profile now is signed in.
-  InitProfile(true /*sign_in*/);
-  Init(parameters, true, 1, false);
+  Init(parameters, true, true /*sign_in*/, 1, false);
 
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
@@ -137,9 +148,7 @@ TEST_F(AnnouncementNotificationServiceTest, RequireSignOut) {
 TEST_F(AnnouncementNotificationServiceTest, SkipNewProfile) {
   std::map<std::string, std::string> parameters = {
       {kSkipFirstRun, "false"}, {kVersion, "2"}, {kSkipNewProfile, "true"}};
-  // Profile now is signed in.
-  InitProfile(false);
-  Init(parameters, true, 1, true /*new_profile*/);
+  Init(parameters, true, false, 1, true /*new_profile*/);
 
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
@@ -153,13 +162,88 @@ TEST_F(AnnouncementNotificationServiceTest, RemoteUrl) {
       {kVersion, "4"},
       {kSkipNewProfile, "true"},
       {kAnnouncementUrl, kRemoteUrl}};
-  // Profile now is signed in.
-  InitProfile(false);
-  Init(parameters, true, 1, false);
+  Init(parameters, true, false, 1, false);
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification());
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), 4);
+}
+
+// First run timestamp should be persisted even if the Finch parameter is not
+// received or the feature is disabled.
+TEST_F(AnnouncementNotificationServiceTest, SaveFirstRunTimeOnFirstRun) {
+  base::Time now = SetNow("30 May 2018 12:00:00");
+  std::map<std::string, std::string> parameters;
+  Init(parameters, false /*enable_feature*/, false, -1, true);
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(true));
+  EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), -1);
+  EXPECT_EQ(FirstRunTimePref(), now);
+}
+
+// First run timestamp should not be persisted when not on first run.
+TEST_F(AnnouncementNotificationServiceTest, SaveFirstRunTimeNotFirstRun) {
+  SetNow("30 May 2018 12:00:00");
+  std::map<std::string, std::string> parameters;
+  Init(parameters, false /*enable_feature*/, false, -1, true);
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), -1);
+  EXPECT_EQ(FirstRunTimePref(), base::Time());
+}
+
+// Not to show notification if first run timestamp happens after Finch parameter
+// timestamp.
+TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterTimeNotShow) {
+  SetNow("10 Feb 2020 13:00:00");
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, "false"},
+      {kVersion, "2"},
+      {kSkipNewProfile, "false"},
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00"}};
+  Init(parameters, true, false, 1, false);
+  auto first_run_time = SetFirstRunTimePref("10 Feb 2020 12:30:00");
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), 2);
+  EXPECT_EQ(FirstRunTimePref(), first_run_time);
+}
+
+// Show notification if first run timestamp happens before Finch parameter
+// timestamp.
+TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterTimeShow) {
+  SetNow("10 Feb 2020 13:00:00");
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, "false"},
+      {kVersion, "2"},
+      {kSkipNewProfile, "false"},
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00"}};
+  Init(parameters, true, false, 1, false);
+  SetFirstRunTimePref("10 Feb 2020 12:10:00");
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), ShowNotification());
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), 2);
+}
+
+// Show notification if there is no first run timestamp but Finch has
+// "skip_first_run_after_time" parameter.
+TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterNoFirstRunPref) {
+  SetNow("10 Feb 2020 13:00:00");
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, "false"},
+      {kVersion, "2"},
+      {kSkipNewProfile, "false"},
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00"}};
+  Init(parameters, true, false, 1, false);
+  EXPECT_EQ(FirstRunTimePref(), base::Time());
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), ShowNotification());
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), 2);
+  EXPECT_EQ(FirstRunTimePref(), base::Time());
 }
 
 struct VersionTestParam {
@@ -205,13 +289,19 @@ const VersionTestParam kVersionTestParams[] = {
 
 TEST_P(AnnouncementNotificationServiceVersionTest, VersionTest) {
   const auto& param = GetParam();
-  Init(param.enable_feature, param.skip_first_run, param.version,
-       param.current_version);
+  auto now = SetNow("10 Feb 2020 13:00:00");
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, param.skip_first_run ? "true" : "false"},
+      {kVersion, base::NumberToString(param.version)}};
+  Init(parameters, param.enable_feature, false /*sign_in*/,
+       param.current_version, false);
+
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(param.is_first_run));
   EXPECT_CALL(*delegate(), ShowNotification())
       .Times(param.show_notification_called ? 1 : 0);
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), param.expected_version_pref);
+  EXPECT_EQ(FirstRunTimePref(), param.is_first_run ? now : base::Time());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

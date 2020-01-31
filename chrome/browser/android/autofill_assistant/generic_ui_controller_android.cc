@@ -26,8 +26,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
               env, jcontext,
               base::android::ConvertUTF8ToJavaString(
                   env, proto.resource_identifier()))) {
-        DVLOG(1) << "Encountered invalid drawable resource identifier: "
-                 << proto.resource_identifier();
+        VLOG(1) << "Encountered invalid drawable resource identifier: "
+                << proto.resource_identifier();
         return nullptr;
       }
       return Java_AssistantDrawable_createFromResource(

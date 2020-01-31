@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 // TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should
 // move PaintLayerFlags to PaintPhase and rename it. Thus removing the need for
 // this #include
@@ -166,6 +167,17 @@ struct CORE_EXPORT PaintInfo {
     // No fragment of the current painting object matches the layer fragment,
     // which means the object should not paint in this fragment.
     return nullptr;
+  }
+
+  // Returns the FragmentData of the specified physical fragment. If fragment
+  // traversal is supported, it will map directly to the right FragmentData.
+  // Otherwise we'll fall back to matching against the current
+  // PaintLayerFragment.
+  const FragmentData* FragmentToPaint(
+      const NGPhysicalFragment& fragment) const {
+    if (fragment.CanTraverse())
+      return fragment.GetFragmentData();
+    return FragmentToPaint(*fragment.GetLayoutObject());
   }
 
   void SetFragmentLogicalTopInFlowThread(LayoutUnit fragment_logical_top) {

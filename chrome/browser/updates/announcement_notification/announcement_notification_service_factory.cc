@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -54,7 +55,8 @@ KeyedService* AnnouncementNotificationServiceFactory::BuildServiceInstanceFor(
       std::make_unique<AnnouncementNotificationDelegate>(display_service);
 #endif  // OS_ANDROID
   return AnnouncementNotificationService::Create(
-      profile->GetPath(), profile->IsNewProfile(), pref, std::move(delegate));
+      profile->GetPath(), profile->IsNewProfile(), pref, std::move(delegate),
+      base::DefaultClock::GetInstance());
 }
 
 content::BrowserContext*

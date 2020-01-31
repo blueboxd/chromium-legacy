@@ -43,7 +43,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "childNodeIndexes": [
         4,
         5,
-        33
+        34
       ],
       "attributes": [
         {
@@ -67,11 +67,10 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "childNodeIndexes": [
         6,
         7,
-        13,
         14,
-        17,
+        15,
         18,
-        20,
+        19,
         21,
         22,
         23,
@@ -81,7 +80,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
         27,
         28,
         29,
-        32
+        30,
+        33
       ],
       "attributes": [
         {
@@ -103,9 +103,17 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        8
+        8,
+        9
       ],
       "layoutNodeIndex": 4
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "shadowRootType": "user-agent"
     },
     {
       "nodeType": 1,
@@ -113,8 +121,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        9,
-        11
+        10,
+        12
       ],
       "attributes": [
         {
@@ -131,7 +139,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "optionSelected": true,
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        10
+        11
       ],
       "attributes": [
         {
@@ -154,7 +162,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "optionSelected": false,
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        12
+        13
       ],
       "attributes": [
         {
@@ -184,7 +192,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "inputValue": "InputValue",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        15
+        16
       ],
       "attributes": [
         {
@@ -205,7 +213,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        16
+        17
       ],
       "layoutNodeIndex": 7,
       "shadowRootType": "user-agent",
@@ -234,7 +242,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "inputValue": "ButtonValue",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        19
+        20
       ],
       "attributes": [
         {
@@ -403,7 +411,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "textValue": "TextAreaValue",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        30
+        31
       ],
       "attributes": [
         {
@@ -419,7 +427,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        31
+        32
       ],
       "layoutNodeIndex": 22,
       "shadowRootType": "user-agent",

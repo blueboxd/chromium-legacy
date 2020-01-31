@@ -139,7 +139,11 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle response_body) {
   auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
       url_loader_factory_, url_loader_throttles_getter_,
-      outer_request_.throttling_profile_id);
+      outer_request_.throttling_profile_id,
+      outer_request_.trusted_params
+          ? base::make_optional(
+                outer_request_.trusted_params->network_isolation_key)
+          : base::nullopt);
 
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(

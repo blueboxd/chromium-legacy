@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 #include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
@@ -231,38 +232,38 @@ bool IsValidDateTimeRange(
 bool IsValidUserFormSection(
     const autofill_assistant::UserFormSectionProto& proto) {
   if (proto.title().empty()) {
-    DVLOG(2) << "UserFormSectionProto: Empty title not allowed.";
+    VLOG(2) << "UserFormSectionProto: Empty title not allowed.";
     return false;
   }
   switch (proto.section_case()) {
     case autofill_assistant::UserFormSectionProto::kStaticTextSection:
       if (proto.static_text_section().text().empty()) {
-        DVLOG(2) << "StaticTextSectionProto: Empty text not allowed.";
+        VLOG(2) << "StaticTextSectionProto: Empty text not allowed.";
         return false;
       }
       break;
     case autofill_assistant::UserFormSectionProto::kTextInputSection: {
       if (proto.text_input_section().input_fields().empty()) {
-        DVLOG(2) << "TextInputProto: At least one input must be specified.";
+        VLOG(2) << "TextInputProto: At least one input must be specified.";
         return false;
       }
       std::set<std::string> memory_keys;
       for (const auto& input_field :
            proto.text_input_section().input_fields()) {
         if (input_field.client_memory_key().empty()) {
-          DVLOG(2) << "TextInputProto: Memory key must be specified.";
+          VLOG(2) << "TextInputProto: Memory key must be specified.";
           return false;
         }
         if (!memory_keys.insert(input_field.client_memory_key()).second) {
-          DVLOG(2) << "TextInputProto: Duplicate memory keys ("
-                   << input_field.client_memory_key() << ").";
+          VLOG(2) << "TextInputProto: Duplicate memory keys ("
+                  << input_field.client_memory_key() << ").";
           return false;
         }
       }
       break;
     }
     case autofill_assistant::UserFormSectionProto::SECTION_NOT_SET:
-      DVLOG(2) << "UserFormSectionProto: section oneof not set.";
+      VLOG(2) << "UserFormSectionProto: section oneof not set.";
       return false;
   }
   return true;
@@ -631,7 +632,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
             (AutofillContactField)field);
       }
       if (contact_details.max_number_summary_lines() <= 0) {
-        DVLOG(1) << "max_number_summary_lines must be > 0";
+        VLOG(1) << "max_number_summary_lines must be > 0";
         return false;
       }
       collect_user_data_options_->contact_summary_max_lines =
@@ -648,7 +649,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
             (AutofillContactField)field);
       }
       if (contact_details.max_number_full_lines() <= 0) {
-        DVLOG(1) << "max_number_full_lines must be > 0";
+        VLOG(1) << "max_number_full_lines must be > 0";
         return false;
       }
       collect_user_data_options_->contact_full_max_lines =
@@ -658,7 +659,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         collect_user_data_options_->request_payer_name ||
         collect_user_data_options_->request_payer_phone) {
       if (!contact_details.has_contact_details_name()) {
-        DVLOG(1) << "Contact details name missing";
+        VLOG(1) << "Contact details name missing";
         return false;
       }
     }
@@ -670,7 +671,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
   for (const auto& network :
        collect_user_data.supported_basic_card_networks()) {
     if (!autofill::data_util::IsValidBasicCardIssuerNetwork(network)) {
-      DVLOG(1) << "Invalid basic card network: " << network;
+      VLOG(1) << "Invalid basic card network: " << network;
       return false;
     }
   }
@@ -691,12 +692,14 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       collect_user_data.billing_postal_code_missing_text();
   if (collect_user_data_options_->require_billing_postal_code &&
       collect_user_data_options_->billing_postal_code_missing_text.empty()) {
+    VLOG(1) << "Required postal code without error text";
     return false;
   }
   collect_user_data_options_->billing_address_name =
       collect_user_data.billing_address_name();
   if (collect_user_data_options_->request_payment_method &&
       collect_user_data_options_->billing_address_name.empty()) {
+    VLOG(1) << "Required payment method without address name";
     return false;
   }
 
@@ -748,7 +751,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       }
       case LoginDetailsProto::LoginOptionProto::TYPE_NOT_SET: {
         // Login option specified, but type not set (should never happen).
-        DVLOG(1) << "LoginDetailsProto::LoginOptionProto::TYPE_NOT_SET";
+        VLOG(1) << "LoginDetailsProto::LoginOptionProto::TYPE_NOT_SET";
         return false;
       }
     }
@@ -758,7 +761,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
     std::string error_message;
     if (!IsValidDateTimeRangeProto(collect_user_data.date_time_range(),
                                    &error_message)) {
-      DVLOG(1) << "Invalid action: " << error_message;
+      VLOG(1) << "Invalid action: " << error_message;
       return false;
     }
     if (collect_user_data.date_time_range().start_time_slot() < 0 ||
@@ -767,7 +770,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
             collect_user_data.date_time_range().time_slots().size() ||
         collect_user_data.date_time_range().end_time_slot() >=
             collect_user_data.date_time_range().time_slots().size()) {
-      DVLOG(1) << "Invalid action: time slot index out of range";
+      VLOG(1) << "Invalid action: time slot index out of range";
       return false;
     }
     collect_user_data_options_->request_date_time_range = true;
@@ -778,7 +781,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
   for (const auto& section :
        collect_user_data.additional_prepended_sections()) {
     if (!IsValidUserFormSection(section)) {
-      DVLOG(1)
+      VLOG(1)
           << "Invalid UserFormSectionProto in additional_prepended_sections";
       return false;
     }
@@ -787,8 +790,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
   }
   for (const auto& section : collect_user_data.additional_appended_sections()) {
     if (!IsValidUserFormSection(section)) {
-      DVLOG(1)
-          << "Invalid UserFormSectionProto in additional_appended_sections";
+      VLOG(1) << "Invalid UserFormSectionProto in additional_appended_sections";
       return false;
     }
     collect_user_data_options_->additional_appended_sections.emplace_back(
@@ -797,7 +799,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
 
   if (collect_user_data.has_info_section_text() &&
       collect_user_data.info_section_text().empty()) {
-    DVLOG(1) << "Info text set but empty.";
+    VLOG(1) << "Info text set but empty.";
     return false;
   }
 
@@ -829,6 +831,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         collect_user_data.show_terms_as_checkbox();
 
     if (collect_user_data.accept_terms_and_conditions_text().empty()) {
+      VLOG(1) << "Required terms and conditions without text";
       return false;
     }
     collect_user_data_options_->accept_terms_and_conditions_text =
@@ -836,6 +839,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
 
     if (!collect_user_data.show_terms_as_checkbox() &&
         collect_user_data.terms_require_review_text().empty()) {
+      VLOG(1) << "Required terms review without text";
       return false;
     }
     collect_user_data_options_->terms_require_review_text =

@@ -76,7 +76,7 @@ void ElementPositionGetter::OnGetBoxModelForStableCheck(
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::GetBoxModelResult> result) {
   if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
-    DVLOG(1) << __func__ << " Failed to get box model.";
+    VLOG(1) << __func__ << " Failed to get box model.";
     OnError();
     return;
   }
@@ -148,7 +148,7 @@ void ElementPositionGetter::OnScrollIntoView(
   ClientStatus status =
       CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
-    DVLOG(1) << __func__ << " Failed to scroll the element: " << status;
+    VLOG(1) << __func__ << " Failed to scroll the element: " << status;
     OnError();
     return;
   }

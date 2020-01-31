@@ -2086,8 +2086,8 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     }
   }
 
-  FinishFragmentation(ConstraintSpace(), block_size, intrinsic_block_size_,
-                      consumed_block_size, space_left, &container_builder_);
+  FinishFragmentation(ConstraintSpace(), BreakToken(), block_size,
+                      intrinsic_block_size_, space_left, &container_builder_);
 
   return true;
 }

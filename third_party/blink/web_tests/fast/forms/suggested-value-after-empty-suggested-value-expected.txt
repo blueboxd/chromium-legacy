@@ -64,6 +64,7 @@ Input before setting suggested values:
 |     <shadow:root>
 |       "TX"
 |   <shadow:root>
+|     <div>
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"
@@ -153,6 +154,7 @@ Input after setting suggestedValue:
 |     <shadow:root>
 |       "TX"
 |   <shadow:root>
+|     <div>
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"
@@ -240,6 +242,7 @@ After resetting suggestedValue value:
 |     <shadow:root>
 |       "TX"
 |   <shadow:root>
+|     <div>
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"

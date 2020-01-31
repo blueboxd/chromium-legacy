@@ -73,7 +73,7 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
   // If this canvas is cross-origin, then the associated offscreen canvas
   // should prefer using the low-power GPU.
   LocalFrame* frame = canvas.GetDocument().GetFrame();
-  if (!(frame && frame->IsCrossOriginSubframe()))
+  if (!(frame && frame->IsCrossOriginToMainFrame()))
     offscreen_canvas->AllowHighPerformancePowerPreference();
 
   DOMNodeId canvas_id = DOMNodeIds::IdForNode(&canvas);

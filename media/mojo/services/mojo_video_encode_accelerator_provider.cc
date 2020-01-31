@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
-#include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -42,13 +41,6 @@ void MojoVideoEncodeAcceleratorProvider::CreateVideoEncodeAccelerator(
     mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver) {
   MojoVideoEncodeAcceleratorService::Create(
       std::move(receiver), create_vea_callback_, gpu_preferences_);
-}
-
-void MojoVideoEncodeAcceleratorProvider::
-    GetVideoEncodeAcceleratorSupportedProfiles(
-        GetVideoEncodeAcceleratorSupportedProfilesCallback callback) {
-  std::move(callback).Run(
-      GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(gpu_preferences_));
 }
 
 }  // namespace media

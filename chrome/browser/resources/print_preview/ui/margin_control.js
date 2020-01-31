@@ -117,7 +117,7 @@ Polymer({
   setTextboxValue(valueInPts) {
     const textbox = this.$.input;
     const pts = textbox.value ? this.parseValueToPts_(textbox.value) : null;
-    if (!!pts && valueInPts === Math.round(pts)) {
+    if (pts !== null && valueInPts === Math.round(pts)) {
       // If the textbox's value represents the same value in pts as the new one,
       // don't reset. This allows the "undo" command to work as expected, see
       // https://crbug.com/452844.
@@ -125,6 +125,7 @@ Polymer({
     }
 
     textbox.value = this.serializeValueFromPts_(valueInPts);
+    this.resetString();
   },
 
   /** @return {number} The current position of the margin control. */
@@ -233,11 +234,12 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent<string>} e Contains the new value of the input.
+   * @param {!CustomEvent<string|undefined>} e Contains the new value of the
+   *     input.
    * @private
    */
   onInputChange_(e) {
-    if (!e.detail) {
+    if (e.detail === '' || e.detail === undefined) {
       return;
     }
 

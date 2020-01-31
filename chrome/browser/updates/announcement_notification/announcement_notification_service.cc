@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -35,21 +36,23 @@ class AnnouncementNotificationServiceImpl
   AnnouncementNotificationServiceImpl(const base::FilePath& profile_path,
                                       bool new_profile,
                                       PrefService* pref_service,
-                                      std::unique_ptr<Delegate> delegate)
+                                      std::unique_ptr<Delegate> delegate,
+                                      base::Clock* clock)
       : profile_path_(profile_path),
         new_profile_(new_profile),
         pref_service_(pref_service),
         delegate_(std::move(delegate)),
+        clock_(clock),
         skip_first_run_(true),
         skip_new_profile_(false),
         skip_display_(false),
         remote_version_(kInvalidVersion),
         require_signout_(false),
         show_one_(false) {
+    DCHECK(delegate_);
+
     if (!IsFeatureEnabled())
       return;
-
-    DCHECK(delegate_);
 
     // By default do nothing in first run.
     skip_first_run_ = base::GetFieldTrialParamByFeatureAsBool(
@@ -66,6 +69,14 @@ class AnnouncementNotificationServiceImpl
         kAnnouncementNotification, kShowOneAllProfiles, false);
     remote_url_ = base::GetFieldTrialParamValueByFeature(
         kAnnouncementNotification, kAnnouncementUrl);
+
+    bool success = base::Time::FromString(
+        base::GetFieldTrialParamValueByFeature(kAnnouncementNotification,
+                                               kSkipFirstRunAfterTime)
+            .c_str(),
+        &skip_first_run_after_);
+    if (!success)
+      skip_first_run_after_ = base::Time();
   }
 
   ~AnnouncementNotificationServiceImpl() override = default;
@@ -73,6 +84,10 @@ class AnnouncementNotificationServiceImpl
  private:
   // AnnouncementNotificationService implementation.
   void MaybeShowNotification() override {
+    // Finch config may not be delivered on first run. Records the first run
+    // timestamp to check whether we want to skip the notification.
+    RecordFirstRunIfNeeded();
+
     if (!IsFeatureEnabled())
       return;
 
@@ -92,6 +107,13 @@ class AnnouncementNotificationServiceImpl
     }
   }
 
+  void RecordFirstRunIfNeeded() {
+    if (!delegate_->IsFirstRun())
+      return;
+
+    pref_service_->SetTime(kAnnouncementFirstRunTimePrefName, clock_->Now());
+  }
+
   bool IsFeatureEnabled() const {
     return base::FeatureList::IsEnabled(kAnnouncementNotification);
   }
@@ -99,14 +121,9 @@ class AnnouncementNotificationServiceImpl
   bool IsVersionValid(int version) const { return version >= 0; }
 
   void OnNewVersion() {
-    // Skip first run if needed.
-    if (delegate_->IsFirstRun() && skip_first_run_)
+    if (ShouldSkipDueToFirstRun())
       return;
 
-    ShowNotification();
-  }
-
-  void ShowNotification() {
     if (skip_display_)
       return;
 
@@ -122,8 +139,36 @@ class AnnouncementNotificationServiceImpl
     if (show_one_ && notification_shown)
       return;
 
+    ShowNotification();
+  }
+
+  void ShowNotification() {
     notification_shown = true;
     delegate_->ShowNotification();
+  }
+
+  // Returns whether the notification should be skipped based on first run
+  // controls defined in Finch.
+  bool ShouldSkipDueToFirstRun() const {
+    // Don't show notification for first run if Finch parameter specified
+    // "skip_first_run" to true.
+    if (delegate_->IsFirstRun() && skip_first_run_)
+      return true;
+
+    // Finch parameters is not guaranteed to receive by Chrome on first run.
+    // Don't show notification if first run happens after the timestamp
+    // specified in Finch parameter "skip_first_run_after_time".
+    base::Time first_run_time =
+        pref_service_->GetTime(kAnnouncementFirstRunTimePrefName);
+    if (!first_run_time.is_null() && !skip_first_run_after_.is_null() &&
+        first_run_time >= skip_first_run_after_) {
+      return true;
+    }
+
+    // Notice that the first run can happen before
+    // kAnnouncementFirstRunTimePrefName was added to the code base . In this
+    // case, we do want to show the announcement.
+    return false;
   }
 
   bool IsUserSignIn() {
@@ -147,6 +192,7 @@ class AnnouncementNotificationServiceImpl
   bool new_profile_;
   PrefService* pref_service_;
   std::unique_ptr<Delegate> delegate_;
+  base::Clock* clock_;
 
   // Whether to skip first Chrome launch. Parsed from Finch.
   bool skip_first_run_;
@@ -171,6 +217,9 @@ class AnnouncementNotificationServiceImpl
   // URL.
   std::string remote_url_;
 
+  // If first run happens after this time, then notification should not show.
+  base::Time skip_first_run_after_;
+
   base::WeakPtrFactory<AnnouncementNotificationServiceImpl> weak_ptr_factory_{
       this};
 
@@ -185,6 +234,7 @@ void AnnouncementNotificationService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   DCHECK(registry);
   registry->RegisterIntegerPref(kCurrentVersionPrefName, kInvalidVersion);
+  registry->RegisterTimePref(kAnnouncementFirstRunTimePrefName, base::Time());
 }
 
 // static
@@ -192,9 +242,10 @@ AnnouncementNotificationService* AnnouncementNotificationService::Create(
     const base::FilePath& profile_path,
     bool new_profile,
     PrefService* pref_service,
-    std::unique_ptr<Delegate> delegate) {
+    std::unique_ptr<Delegate> delegate,
+    base::Clock* clock) {
   return new AnnouncementNotificationServiceImpl(
-      profile_path, new_profile, pref_service, std::move(delegate));
+      profile_path, new_profile, pref_service, std::move(delegate), clock);
 }
 
 // static

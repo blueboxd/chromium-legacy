@@ -24,7 +24,7 @@ UploadDomAction::~UploadDomAction() {}
 void UploadDomAction::InternalProcessAction(ProcessActionCallback callback) {
   Selector selector = Selector(proto_.upload_dom().tree_root());
   if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
+    VLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     return;
   }

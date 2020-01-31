@@ -43,13 +43,6 @@
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
-  enum class ExtensionRemovalMethod {
-    kDisable,
-    kUninstall,
-    kBlocklist,
-    kTerminate,
-  };
-
   Profile* profile() { return browser()->profile(); }
 
   void LoadTestExtension(const std::string& extension,
@@ -270,51 +263,6 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
   }
 
-  void RemoveExtension(ExtensionRemovalMethod method,
-                       const std::string& extension_id) {
-    extensions::ExtensionService* const extension_service =
-        extensions::ExtensionSystem::Get(browser()->profile())
-            ->extension_service();
-    switch (method) {
-      case ExtensionRemovalMethod::kDisable:
-        extension_service->DisableExtension(
-            extension_id, extensions::disable_reason::DISABLE_USER_ACTION);
-        break;
-      case ExtensionRemovalMethod::kUninstall:
-        extension_service->UninstallExtension(
-            extension_id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
-        break;
-      case ExtensionRemovalMethod::kBlocklist:
-        extension_service->BlacklistExtensionForTest(extension_id);
-        break;
-      case ExtensionRemovalMethod::kTerminate:
-        extension_service->TerminateExtension(extension_id);
-        break;
-    }
-  }
-
-  void VerifyContainerVisibility(ExtensionRemovalMethod method,
-                                 bool expected_visibility) {
-    // An empty container should not be shown.
-    EXPECT_FALSE(GetExtensionsToolbarContainer()->GetVisible());
-
-    // Loading the first extension should show the button (and container).
-    LoadTestExtension("extensions/uitest/long_name");
-    EXPECT_TRUE(GetExtensionsToolbarContainer()->IsDrawn());
-
-    // Add another extension so we can make sure that removing some don't change
-    // the visibility.
-    LoadTestExtension("extensions/uitest/window_open");
-
-    // Remove 1/2 extensions, should still be drawn.
-    RemoveExtension(method, extensions_[0]->id());
-    EXPECT_TRUE(GetExtensionsToolbarContainer()->IsDrawn());
-
-    // Removing the last extension. All actions now have the same state.
-    RemoveExtension(method, extensions_[1]->id());
-    EXPECT_EQ(expected_visibility, GetExtensionsToolbarContainer()->IsDrawn());
-  }
-
   std::string ui_test_name_;
   base::test::ScopedFeatureList scoped_feature_list_;
   Browser* incognito_browser_ = nullptr;
@@ -328,29 +276,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       InvisibleWithoutExtension_Disable) {
-  VerifyContainerVisibility(ExtensionRemovalMethod::kDisable, false);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       InvisibleWithoutExtension_Uninstall) {
-  VerifyContainerVisibility(ExtensionRemovalMethod::kUninstall, false);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       InvisibleWithoutExtension_Blocklist) {
-  VerifyContainerVisibility(ExtensionRemovalMethod::kBlocklist, false);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       InvisibleWithoutExtension_Terminate) {
-  // TODO(pbos): Keep the container visible when extensions are terminated
-  // (crash). This lets users find and restart them. Then update this test
-  // expectation to be kept visible by terminated extensions. Also update the
-  // test name to reflect that the container should be visible with only
-  // terminated extensions.
-  VerifyContainerVisibility(ExtensionRemovalMethod::kTerminate, false);
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_NoExtensions) {
+  ShowAndVerifyUi();
 }
 
 // Invokes the UI shown when a user has to reload a page in order to run an
@@ -526,8 +453,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
                        ManageExtensionsOpensExtensionsPage) {
-  // Ensure the menu is visible by adding an extension.
-  LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
   VerifyUi();
 

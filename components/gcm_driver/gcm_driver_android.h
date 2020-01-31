@@ -64,9 +64,9 @@ class GCMDriverAndroid : public GCMDriver,
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;
-  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+  void GetGCMStatistics(GetGCMStatisticsCallback callback,
                         ClearActivityLogs clear_logs) override;
-  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+  void SetGCMRecording(const GCMStatisticsRecordingCallback& callback,
                        bool recording) override;
   void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
@@ -101,8 +101,8 @@ class GCMDriverAndroid : public GCMDriver,
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  // Callback for GetGCMStatistics.
-  GetGCMStatisticsCallback get_gcm_statistics_callback_;
+  // Callback for SetGCMRecording.
+  GCMStatisticsRecordingCallback gcm_statistics_recording_callback_;
 
   // Recorder that logs GCM activities.
   GCMStatsRecorderAndroid recorder_;

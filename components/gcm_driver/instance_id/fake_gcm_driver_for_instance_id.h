@@ -60,9 +60,8 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
                          const std::string& instance_id,
                          const std::string& extra_data) override;
   void RemoveInstanceIDData(const std::string& app_id) override;
-  void GetInstanceIDData(
-      const std::string& app_id,
-      const GetInstanceIDDataCallback& callback) override;
+  void GetInstanceIDData(const std::string& app_id,
+                         GetInstanceIDDataCallback callback) override;
 
  private:
   std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;

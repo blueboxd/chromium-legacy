@@ -326,8 +326,8 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::CloseWithErrorPropagation(
   }
 
   //  6. Assert: state is "writable" or "erroring".
-  DCHECK(state == WritableStream::kWritable ||
-         state == WritableStream::kErroring);
+  CHECK(state == WritableStream::kWritable ||
+        state == WritableStream::kErroring);
 
   //  7. Return ! WritableStreamDefaultWriterClose(writer).
   return Close(script_state, writer);

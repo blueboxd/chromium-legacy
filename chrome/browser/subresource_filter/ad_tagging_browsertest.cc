@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   // This triggers the subresource_filter ad detection.
   ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
   RenderFrameHost* ad_child = CreateSrcFrameFromAdScript(
-      GetWebContents(), GetURL("frame_factory.html"));
+      GetWebContents(), GetURL("frame_factory.html?ad=true"));
 
   // Navigate the subframe to a cross origin site.
   NavigateFrame(ad_child, embedded_test_server()->GetURL(

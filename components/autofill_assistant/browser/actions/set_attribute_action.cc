@@ -25,7 +25,7 @@ SetAttributeAction::~SetAttributeAction() {}
 void SetAttributeAction::InternalProcessAction(ProcessActionCallback callback) {
   Selector selector = Selector(proto_.set_attribute().element());
   if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
+    VLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;

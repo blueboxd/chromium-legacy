@@ -10020,6 +10020,11 @@ be describing additional metrics about the same event.
   <summary>
     Contains information about user activities relating to settings changes.
   </summary>
+  <metric name="AccessibilityId" enum="AccessibilityId">
+    <summary>
+      The accessibility setting that was changed.
+    </summary>
+  </metric>
   <metric name="BatteryPercentage">
     <summary>
       Battery percentage from 0 to 100.

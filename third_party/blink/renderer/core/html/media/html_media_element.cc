@@ -362,11 +362,6 @@ String PreloadTypeToString(WebMediaPlayer::Preload preload_type) {
   return String();
 }
 
-bool IsDocumentCrossOrigin(Document& document) {
-  const LocalFrame* frame = document.GetFrame();
-  return frame && frame->IsCrossOriginSubframe();
-}
-
 void RecordPlayPromiseRejected(PlayPromiseRejectReason reason) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                       ("Media.MediaElement.PlayPromiseReject",
@@ -1514,10 +1509,6 @@ bool HTMLMediaElement::IsMediaDataCorsSameOrigin() const {
     return false;
 
   return !GetWebMediaPlayer()->WouldTaintOrigin();
-}
-
-bool HTMLMediaElement::IsInCrossOriginFrame() const {
-  return IsDocumentCrossOrigin(GetDocument());
 }
 
 void HTMLMediaElement::StartProgressEventTimer() {

@@ -63,7 +63,8 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
 
     kPlaying,
 
-    // We've reached end of stream from the demuxer,
+    // Received end-of-stream packet from the |demuxer_stream_|. Waiting for
+    // EndOfStream event from |audio_consumer_|.
     kEndOfStream,
   };
 
@@ -76,6 +77,10 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
 
   // Resets AudioConsumer and reports error to the |client_|.
   void OnError(PipelineStatus Status);
+
+  // Initializes |stream_sink_|. Called during initialization and every time
+  // configuration changes.
+  void InitializeStreamSync(const AudioDecoderConfig& config);
 
   // Callback for DecryptingDemuxerStream::Initialize().
   void OnDecryptorInitialized(PipelineStatus status);

@@ -103,7 +103,7 @@ class InstanceIDDriverTest : public testing::Test {
   InstanceID::Result result_;
 
   bool async_operation_completed_;
-  base::Closure async_operation_completed_callback_;
+  base::OnceClosure async_operation_completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceIDDriverTest);
 };
@@ -146,8 +146,8 @@ void InstanceIDDriverTest::WaitForAsyncOperation() {
 std::string InstanceIDDriverTest::GetID(InstanceID* instance_id) {
   async_operation_completed_ = false;
   id_.clear();
-  instance_id->GetID(base::Bind(&InstanceIDDriverTest::GetIDCompleted,
-                     base::Unretained(this)));
+  instance_id->GetID(base::BindOnce(&InstanceIDDriverTest::GetIDCompleted,
+                                    base::Unretained(this)));
   WaitForAsyncOperation();
   return id_;
 }
@@ -155,9 +155,8 @@ std::string InstanceIDDriverTest::GetID(InstanceID* instance_id) {
 base::Time InstanceIDDriverTest::GetCreationTime(InstanceID* instance_id) {
   async_operation_completed_ = false;
   creation_time_ = base::Time();
-  instance_id->GetCreationTime(
-      base::Bind(&InstanceIDDriverTest::GetCreationTimeCompleted,
-                 base::Unretained(this)));
+  instance_id->GetCreationTime(base::BindOnce(
+      &InstanceIDDriverTest::GetCreationTimeCompleted, base::Unretained(this)));
   WaitForAsyncOperation();
   return creation_time_;
 }
@@ -165,8 +164,8 @@ base::Time InstanceIDDriverTest::GetCreationTime(InstanceID* instance_id) {
 InstanceID::Result InstanceIDDriverTest::DeleteID(InstanceID* instance_id) {
   async_operation_completed_ = false;
   result_ = InstanceID::UNKNOWN_ERROR;
-  instance_id->DeleteID(base::Bind(&InstanceIDDriverTest::DeleteIDCompleted,
-                        base::Unretained(this)));
+  instance_id->DeleteID(base::BindOnce(&InstanceIDDriverTest::DeleteIDCompleted,
+                                       base::Unretained(this)));
   WaitForAsyncOperation();
   return result_;
 }
@@ -195,10 +194,9 @@ InstanceID::Result InstanceIDDriverTest::DeleteToken(
   async_operation_completed_ = false;
   result_ = InstanceID::UNKNOWN_ERROR;
   instance_id->DeleteToken(
-      authorized_entity,
-      scope,
-      base::Bind(&InstanceIDDriverTest::DeleteTokenCompleted,
-                 base::Unretained(this)));
+      authorized_entity, scope,
+      base::BindOnce(&InstanceIDDriverTest::DeleteTokenCompleted,
+                     base::Unretained(this)));
   WaitForAsyncOperation();
   return result_;
 }
@@ -207,8 +205,8 @@ void InstanceIDDriverTest::GetIDCompleted(const std::string& id) {
   DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   id_ = id;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  if (async_operation_completed_callback_)
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void InstanceIDDriverTest::GetCreationTimeCompleted(
@@ -216,16 +214,16 @@ void InstanceIDDriverTest::GetCreationTimeCompleted(
   DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   creation_time_ = creation_time;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  if (async_operation_completed_callback_)
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void InstanceIDDriverTest::DeleteIDCompleted(InstanceID::Result result) {
   DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   result_ = result;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  if (async_operation_completed_callback_)
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void InstanceIDDriverTest::GetTokenCompleted(
@@ -234,16 +232,16 @@ void InstanceIDDriverTest::GetTokenCompleted(
   async_operation_completed_ = true;
   token_ = token;
   result_ = result;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  if (async_operation_completed_callback_)
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void InstanceIDDriverTest::DeleteTokenCompleted(InstanceID::Result result) {
   DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   result_ = result;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  if (async_operation_completed_callback_)
+    std::move(async_operation_completed_callback_).Run();
 }
 
 TEST_F(InstanceIDDriverTest, GetAndRemoveInstanceID) {

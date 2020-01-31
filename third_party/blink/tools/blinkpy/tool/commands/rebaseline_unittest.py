@@ -391,11 +391,8 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
     def test_rebaseline_updates_expectations_file(self):
         self._write(
             self.test_expectations_path,
-            ('# tags: [ Mac10.10 Mac Linux ]\n'
-             '# tags: [ Debug ]\n'
-             '# results: [ Failure ]\n'
-             'crbug.com/123 [ Debug Mac ] userscripts/first-test.html [ Failure ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'))
+            ('Bug(x) [ Mac ] userscripts/first-test.html [ Failure ]\n'
+             'bug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n'))
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('userscripts/first-test.html', Build('MOCK Mac10.11'))
@@ -405,16 +402,11 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
             new_expectations,
-            ('# tags: [ Mac10.10 Mac Linux ]\n'
-             '# tags: [ Debug ]\n'
-             '# results: [ Failure ]\n'
-             'crbug.com/123 [ Debug Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'))
+            ('Bug(x) [ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
+             'bug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n'))
 
     def test_rebaseline_updates_expectations_file_all_platforms(self):
-        self._write(self.test_expectations_path,
-                    ('# tags: [ linux mac10.10 win ]\n# results: [ Failure ]\n'
-                     'userscripts/first-test.html [ Failure ]\n'))
+        self._write(self.test_expectations_path, 'userscripts/first-test.html [ Failure ]\n')
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('userscripts/first-test.html', Build('MOCK Mac10.11'))
@@ -423,23 +415,16 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations,
-            ('# tags: [ linux mac10.10 win ]\n'
-             '# results: [ Failure ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-             '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
-             '[ Win ] userscripts/first-test.html [ Failure ]\n'))
+            new_expectations, ('[ Win ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Linux ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'))
 
     def test_rebaseline_handles_platform_skips(self):
         # This test is just like test_rebaseline_updates_expectations_file_all_platforms(),
         # except that if a particular port happens to SKIP a test in an overrides file,
         # we count that as passing, and do not think that we still need to rebaseline it.
-        self._write(self.test_expectations_path,
-                    '# tags: [ Linux Mac10.10 Win ]\n# results: [ Failure ]\nuserscripts/first-test.html [ Failure ]\n')
-        self._write('NeverFixTests',
-                    ('# tags: [ Android ]\n'
-                     '# results: [ Skip ]\n'
-                     '[ Android ] userscripts [ Skip ]\n'))
+        self._write(self.test_expectations_path, 'userscripts/first-test.html [ Failure ]\n')
+        self._write('NeverFixTests', 'Bug(y) [ Android ] userscripts [ WontFix ]\n')
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('userscripts/first-test.html', Build('MOCK Mac10.11'))
@@ -448,12 +433,9 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations,
-            ('# tags: [ Linux Mac10.10 Win ]\n'
-             '# results: [ Failure ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-             '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
-             '[ Win ] userscripts/first-test.html [ Failure ]\n'))
+            new_expectations, ('[ Win ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Linux ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'))
 
     def test_rebaseline_handles_skips_in_file(self):
         # This test is like test_rebaseline_handles_platform_skips, except that the
@@ -462,11 +444,8 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         # qualified as "[Linux Mac Win]"; if it was unqualified, it would conflict with
         # the second line.
         self._write(self.test_expectations_path,
-                    ('# tags: [ Linux Mac Mac10.10 Win ]\n'
-                     '# results: [ Failure Skip ]\n'
-                     '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-                     '[ Mac ] userscripts/first-test.html [ Failure ]\n'
-                     '[ Win ] userscripts/first-test.html [ Skip ]\n'))
+                    ('Bug(x) [ Linux Mac ] userscripts/first-test.html [ Failure ]\n'
+                     'Bug(y) [ Win ] userscripts/first-test.html [ Skip ]\n'))
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('userscripts/first-test.html', Build('MOCK Mac10.11'))
@@ -476,41 +455,16 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
             new_expectations,
-            ('# tags: [ Linux Mac Mac10.10 Win ]\n'
-             '# results: [ Failure Skip ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-             '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
-             '[ Win ] userscripts/first-test.html [ Skip ]\n'))
-
-    def test_rebaseline_handles_slow_in_file(self):
-        self._write(self.test_expectations_path,
-                    ('# tags: [ Linux Mac Mac10.10 Win ]\n'
-                     '# results: [ Failure Slow ]\n'
-                     '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-                     '[ Mac ] userscripts/first-test.html [ Failure ]\n'
-                     '[ Win ] userscripts/first-test.html [ Failure Slow ]\n'))
-        self._setup_mock_build_data()
-        test_baseline_set = TestBaselineSet(self.tool)
-        test_baseline_set.add('userscripts/first-test.html', Build('MOCK Mac10.11'))
-
-        self.command.rebaseline(self.options(), test_baseline_set)
-
-        new_expectations = self._read(self.test_expectations_path)
-        self.assertMultiLineEqual(
-            new_expectations,
-            ('# tags: [ Linux Mac Mac10.10 Win ]\n'
-             '# results: [ Failure Slow ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-             '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
-             '[ Win ] userscripts/first-test.html [ Failure Slow ]\n'))
+            ('Bug(x) [ Linux ] userscripts/first-test.html [ Failure ]\n'
+             'Bug(x) [ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
+             'Bug(y) [ Win ] userscripts/first-test.html [ Skip ]\n'))
 
     def test_rebaseline_handles_smoke_tests(self):
         # This test is just like test_rebaseline_handles_platform_skips, except that we check for
         # a test not being in the SmokeTests file, instead of using overrides files.
         # If a test is not part of the smoke tests, we count that as passing on ports that only
         # run smoke tests, and do not think that we still need to rebaseline it.
-        self._write(self.test_expectations_path,
-                    '# tags: [ Linux Mac10.10 Win ]\n# results: [ Failure ]\nuserscripts/first-test.html [ Failure ]\n')
+        self._write(self.test_expectations_path, 'Bug(x) userscripts/first-test.html [ Failure ]\n')
         self._write('SmokeTests', 'fast/html/article-element.html')
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
@@ -520,12 +474,9 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations,
-            ('# tags: [ Linux Mac10.10 Win ]\n'
-             '# results: [ Failure ]\n'
-             '[ Linux ] userscripts/first-test.html [ Failure ]\n'
-             '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
-             '[ Win ] userscripts/first-test.html [ Failure ]\n'))
+            new_expectations, ('Bug(x) [ Win ] userscripts/first-test.html [ Failure ]\n'
+                               'Bug(x) [ Linux ] userscripts/first-test.html [ Failure ]\n'
+                               'Bug(x) [ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'))
 
     # In the following test cases, the tests produce no outputs (e.g. clean
     # passing reftests, skipped tests, etc.). Hence, there are no baselines to
@@ -533,18 +484,16 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
     # called. However, in some cases the expectations still need to be updated.
 
     def test_rebaseline_keeps_skip_expectations(self):
-        # [ Skip ] expectations should always be kept.
+        # [ Skip ], [ WontFix ] expectations should always be kept.
         self._write(self.test_expectations_path,
-                    ('# tags: [ Mac Win ]\n'
-                     '# results: [ Skip ]\n'
-                     '[ Mac ] userscripts/skipped-test.html [ Skip ]\n'
-                     '[ Win ] userscripts/skipped-test.html [ Skip ]\n'))
+                    ('Bug(x) [ Mac ] userscripts/skipped-test.html [ WontFix ]\n'
+                     'Bug(y) [ Win ] userscripts/skipped-test.html [ Skip ]\n'))
         self._write('userscripts/skipped-test.html', 'Dummy test contents')
         self.tool.results_fetcher.set_results(Build('MOCK Mac10.11'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'skipped-test.html': {
-                        'expected': 'SKIP',
+                        'expected': 'WONTFIX',
                         'actual': 'SKIP',
                     }
                 }
@@ -569,16 +518,13 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
             new_expectations,
-            ('# tags: [ Mac Win ]\n'
-             '# results: [ Skip ]\n'
-             '[ Mac ] userscripts/skipped-test.html [ Skip ]\n'
-             '[ Win ] userscripts/skipped-test.html [ Skip ]\n'))
+            ('Bug(x) [ Mac ] userscripts/skipped-test.html [ WontFix ]\n'
+             'Bug(y) [ Win ] userscripts/skipped-test.html [ Skip ]\n'))
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_keeps_flaky_expectations(self):
         # Flaky expectations should be kept even if the test passes.
-        self._write(self.test_expectations_path,
-                    '# results: [ Pass Failure ]\nuserscripts/flaky-test.html [ Pass Failure ]\n')
+        self._write(self.test_expectations_path, 'Bug(x) userscripts/flaky-test.html [ Pass Failure ]\n')
         self._write('userscripts/flaky-test.html', 'Dummy test contents')
         self.tool.results_fetcher.set_results(Build('MOCK Mac10.11'), WebTestResults({
             'tests': {
@@ -597,15 +543,13 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations,
-            '# results: [ Pass Failure ]\nuserscripts/flaky-test.html [ Pass Failure ]\n')
+            new_expectations, 'Bug(x) userscripts/flaky-test.html [ Pass Failure ]\n')
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_test_passes_unexpectedly(self):
         # The test passes without any output. Its expectation should be updated
         # without calling rebaseline-test-internal.
-        self._write(self.test_expectations_path,
-                    '# tags: [ Linux Mac10.10 Win ]\n# results: [ Failure ]\nuserscripts/all-pass.html [ Failure ]\n')
+        self._write(self.test_expectations_path, 'Bug(foo) userscripts/all-pass.html [ Failure ]\n')
         self._write('userscripts/all-pass.html', 'Dummy test contents')
         test_baseline_set = TestBaselineSet(self.tool)
         self.tool.results_fetcher.set_results(Build('MOCK Mac10.11'), WebTestResults({
@@ -625,19 +569,15 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations,
-            ('# tags: [ Linux Mac10.10 Win ]\n'
-             '# results: [ Failure ]\n'
-             '[ Linux ] userscripts/all-pass.html [ Failure ]\n'
-             '[ Mac10.10 ] userscripts/all-pass.html [ Failure ]\n'
-             '[ Win ] userscripts/all-pass.html [ Failure ]\n'))
+            new_expectations, ('Bug(foo) [ Win ] userscripts/all-pass.html [ Failure ]\n'
+                               'Bug(foo) [ Linux ] userscripts/all-pass.html [ Failure ]\n'
+                               'Bug(foo) [ Mac10.10 ] userscripts/all-pass.html [ Failure ]\n'))
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_test_passes_unexpectedly_everywhere(self):
         # Similar to test_rebaseline_test_passes_unexpectedly, except that the
         # test passes on all ports.
-        self._write(self.test_expectations_path,
-                    '# results: [ Failure ]\nuserscripts/all-pass.html [ Failure ]\n')
+        self._write(self.test_expectations_path, 'Bug(foo) userscripts/all-pass.html [ Failure ]\n')
         self._write('userscripts/all-pass.html', 'Dummy test contents')
         test_baseline_set = TestBaselineSet(self.tool)
         for builder in ['MOCK Win7', 'MOCK Win10', 'MOCK Mac10.10', 'MOCK Mac10.11', 'MOCK Precise', 'MOCK Trusty']:
@@ -657,7 +597,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         self.command.rebaseline(self.options(), test_baseline_set)
 
         new_expectations = self._read(self.test_expectations_path)
-        self.assertMultiLineEqual(new_expectations, '# results: [ Failure ]\n')
+        self.assertMultiLineEqual(new_expectations, '')
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_test_passes_unexpectedly_but_on_another_port(self):
@@ -665,8 +605,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         # build was run on a different port than the port we are rebaselining
         # (possible when rebaseline-cl --fill-missing), in which case we don't
         # update the expectations.
-        self._write(self.test_expectations_path,
-                    '# results: [ Failure ]\nuserscripts/all-pass.html [ Failure ]\n')
+        self._write(self.test_expectations_path, 'Bug(foo) userscripts/all-pass.html [ Failure ]\n')
         self._write('userscripts/all-pass.html', 'Dummy test contents')
         test_baseline_set = TestBaselineSet(self.tool)
         self.tool.results_fetcher.set_results(Build('MOCK Mac10.11'), WebTestResults({
@@ -686,7 +625,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations, '# results: [ Failure ]\nuserscripts/all-pass.html [ Failure ]\n')
+            new_expectations, 'Bug(foo) userscripts/all-pass.html [ Failure ]\n')
         self.assertEqual(self.tool.executive.calls, [])
 
 

@@ -391,6 +391,7 @@ TEST_P(ParameterizedTextOffsetMappingTest, RangeWithNestedPosition) {
 TEST_P(ParameterizedTextOffsetMappingTest, RangeWithSelect) {
   EXPECT_EQ(
       "^<select>"
+      "<div></div>"
       "<slot name=\"user-agent-custom-assign-slot\"></slot>"
       "</select>foo|",
       GetRange("<select>|</select>foo"));

@@ -109,8 +109,9 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
   LayoutUnit preferred_logical_width[2];
-  void* pointers[4];
+  void* pointers[3];
   Persistent<void*> rare_data;
+  Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results;
 };
 
 static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
@@ -187,6 +188,8 @@ void LayoutBox::WillBeDestroyed() {
   if (!DocumentBeingDestroyed()) {
     if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
       first_inline_fragment->LayoutObjectWillBeDestroyed();
+    for (auto result : layout_results_)
+      result->PhysicalFragment().LayoutObjectWillBeDestroyed();
   }
 
   SetSnapContainer(nullptr);
@@ -777,7 +780,7 @@ void LayoutBox::UpdateAfterLayout() {
   // e.g. an OOF-positioned object is laid out by an NG containing block, then
   // Legacy, then NG again, NG won't use a stale layout result.
   if (IsOutOfFlowPositioned() && !IsLayoutNGObject())
-    cached_layout_result_.reset();
+    layout_results_.clear();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
@@ -2386,33 +2389,48 @@ void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
   DCHECK(new_value ? !first_paint_fragment_ : !inline_box_wrapper_);
 }
 
-void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
-                                      const NGBreakToken* break_token) {
-  DCHECK_EQ(layout_result.Status(), NGLayoutResult::kSuccess);
-
-  if (break_token)
-    return;
-  if (layout_result.PhysicalFragment().BreakToken())
-    return;
-
-  ClearCachedLayoutResult();
-  cached_layout_result_ = &layout_result;
+void LayoutBox::SetCachedLayoutResult(
+    scoped_refptr<const NGLayoutResult> result) {
+  DCHECK(!result->PhysicalFragment().BreakToken());
+  DCHECK(!result->IsSingleUse());
+  ClearLayoutResults();
+  AddLayoutResult(result, 0);
 }
 
-void LayoutBox::ClearCachedLayoutResult() {
-  if (!cached_layout_result_)
-    return;
+void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
+                                wtf_size_t index) {
+  DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
+  if (index != WTF::kNotFound) {
+    DCHECK_GE(layout_results_.size(), index);
+    layout_results_.Shrink(index);
+  }
+  layout_results_.push_back(result);
+}
 
-  // Invalidate if inline |DisplayItemClient|s will be destroyed.
-  if (const auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(
-          &cached_layout_result_->PhysicalFragment())) {
-    if (box_fragment->HasItems()) {
-      DCHECK_EQ(this, box_fragment->GetLayoutObject());
-      ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
+void LayoutBox::ClearLayoutResults() {
+  for (auto result : layout_results_) {
+    // Invalidate if inline |DisplayItemClient|s will be destroyed.
+    if (const auto* box_fragment =
+            DynamicTo<NGPhysicalBoxFragment>(&result->PhysicalFragment())) {
+      if (box_fragment->HasItems()) {
+        DCHECK_EQ(this, box_fragment->GetLayoutObject());
+        ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
+        break;
+      }
     }
   }
+  layout_results_.clear();
+}
 
-  cached_layout_result_ = nullptr;
+const NGLayoutResult* LayoutBox::GetCachedLayoutResult() const {
+  if (!layout_results_.size())
+    return nullptr;
+  // Only return re-usable results.
+  const NGLayoutResult* result = layout_results_[0].get();
+  if (result->IsSingleUse())
+    return nullptr;
+  DCHECK_EQ(layout_results_.size(), 1u);
+  return result;
 }
 
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
@@ -2598,9 +2616,27 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
                                         bfc_block_offset, block_offset_delta));
 
   if (needs_cached_result_update)
-    SetCachedLayoutResult(*new_result, break_token);
+    SetCachedLayoutResult(new_result);
 
   return new_result;
+}
+
+const NGPhysicalBoxFragment* LayoutBox::GetPhysicalFragment(
+    wtf_size_t index) const {
+  return &To<NGPhysicalBoxFragment>(layout_results_[index]->PhysicalFragment());
+}
+
+const FragmentData* LayoutBox::FragmentDataFromPhysicalFragment(
+    const NGPhysicalBoxFragment& physical_fragment) const {
+  const FragmentData* fragment_data = &FirstFragment();
+  for (auto result : layout_results_) {
+    if (&result->PhysicalFragment() == &physical_fragment)
+      return fragment_data;
+    DCHECK(fragment_data->NextFragment());
+    fragment_data = fragment_data->NextFragment();
+  }
+  NOTREACHED();
+  return fragment_data;
 }
 
 void LayoutBox::PositionLineBox(InlineBox* box) {

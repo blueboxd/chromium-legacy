@@ -8,6 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
@@ -15,14 +16,17 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind_helpers.h"
@@ -200,6 +204,34 @@ void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
                               base::DoNothing());
 }
 
+void Shelf::CreateNavigationWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!navigation_widget_);
+  navigation_widget_ = std::make_unique<ShelfNavigationWidget>(
+      this, hotseat_widget()->GetShelfView());
+  navigation_widget_->Initialize(container);
+  Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
+}
+
+void Shelf::CreateHotseatWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!hotseat_widget_);
+  hotseat_widget_ = std::make_unique<HotseatWidget>();
+  hotseat_widget_->Initialize(container, this);
+  shelf_widget_->RegisterHotseatWidget(hotseat_widget());
+}
+
+void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
+  DCHECK(status_container);
+  DCHECK(!status_area_widget_);
+  status_area_widget_ =
+      std::make_unique<StatusAreaWidget>(status_container, this);
+  status_area_widget_->Initialize();
+  Shell::Get()->focus_cycler()->AddWidget(status_area_widget_.get());
+  status_container->SetLayoutManager(
+      new StatusAreaLayoutManager(shelf_widget()));
+}
+
 void Shelf::CreateShelfWidget(aura::Window* root) {
   DCHECK(!shelf_widget_);
   aura::Window* shelf_container =
@@ -210,27 +242,31 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();
   shelf_layout_manager_->AddObserver(this);
 
-  DCHECK(!shelf_widget_->hotseat_widget());
+  // Create the various shelf components.
   aura::Window* control_container =
       root->GetChildById(kShellWindowId_ShelfControlContainer);
-  shelf_widget_->CreateHotseatWidget(control_container);
 
-  DCHECK(!shelf_widget_->navigation_widget());
-  shelf_widget_->CreateNavigationWidget(control_container);
+  CreateHotseatWidget(control_container);
+  CreateNavigationWidget(control_container);
 
   // Must occur after |shelf_widget_| is constructed because the system tray
   // constructors call back into Shelf::shelf_widget().
-  DCHECK(!shelf_widget_->status_area_widget());
   aura::Window* status_container =
       root->GetChildById(kShellWindowId_ShelfControlContainer);
-  shelf_widget_->CreateStatusAreaWidget(status_container);
+  CreateStatusAreaWidget(status_container);
   shelf_widget_->Initialize(shelf_container);
 
   // The Hotseat should be above everything in the shelf.
-  shelf_widget_->hotseat_widget()->StackAtTop();
+  hotseat_widget()->StackAtTop();
 }
 
 void Shelf::ShutdownShelfWidget() {
+  // The contents view of the hotseat widget may rely on the status area widget.
+  // So do explicit destruction here.
+  hotseat_widget_.reset();
+  status_area_widget_.reset();
+  navigation_widget_.reset();
+
   shelf_widget_->Shutdown();
 }
 
@@ -266,6 +302,9 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
 
   ShelfAlignment old_alignment = alignment_;
   alignment_ = alignment;
+  // Check added for http://crbug.com/738011.
+  CHECK(status_area_widget_);
+  status_area_widget()->UpdateAfterShelfAlignmentChange();
   // The ShelfWidget notifies the ShelfView of the alignment change.
   shelf_widget_->OnShelfAlignmentChanged();
   tooltip_->Close();
@@ -491,6 +530,12 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
 
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
+}
+
+void Shelf::OnHotseatStateChanged(HotseatState old_state,
+                                  HotseatState new_state) {
+  for (auto& observer : observers_)
+    observer.OnHotseatStateChanged(old_state, new_state);
 }
 
 void Shelf::OnWorkAreaInsetsChanged() {

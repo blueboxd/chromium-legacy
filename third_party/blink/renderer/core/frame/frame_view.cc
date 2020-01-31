@@ -30,7 +30,7 @@ bool FrameView::CanThrottleRenderingForPropagation() const {
     return false;
   Frame& frame = GetFrame();
   LayoutEmbeddedContent* owner = frame.OwnerLayoutObject();
-  return !owner && frame.IsCrossOriginSubframe();
+  return !owner && frame.IsCrossOriginToMainFrame();
 }
 
 bool FrameView::DisplayLockedInParentFrame() {

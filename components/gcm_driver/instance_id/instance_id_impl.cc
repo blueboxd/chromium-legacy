@@ -60,31 +60,32 @@ InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
                                gcm::GCMDriver* gcm_driver)
     : InstanceID(app_id, gcm_driver) {
   Handler()->GetInstanceIDData(
-      app_id, base::Bind(&InstanceIDImpl::GetInstanceIDDataCompleted,
-                         weak_ptr_factory_.GetWeakPtr()));
+      app_id, base::BindOnce(&InstanceIDImpl::GetInstanceIDDataCompleted,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 InstanceIDImpl::~InstanceIDImpl() {
 }
 
-void InstanceIDImpl::GetID(const GetIDCallback& callback) {
-  RunWhenReady(base::Bind(&InstanceIDImpl::DoGetID,
-                          weak_ptr_factory_.GetWeakPtr(), callback));
+void InstanceIDImpl::GetID(GetIDCallback callback) {
+  RunWhenReady(base::BindOnce(&InstanceIDImpl::DoGetID,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              std::move(callback)));
 }
 
-void InstanceIDImpl::DoGetID(const GetIDCallback& callback) {
+void InstanceIDImpl::DoGetID(GetIDCallback callback) {
   EnsureIDGenerated();
-  callback.Run(id_);
+  std::move(callback).Run(id_);
 }
 
-void InstanceIDImpl::GetCreationTime(const GetCreationTimeCallback& callback) {
+void InstanceIDImpl::GetCreationTime(GetCreationTimeCallback callback) {
   RunWhenReady(base::BindOnce(&InstanceIDImpl::DoGetCreationTime,
-                              weak_ptr_factory_.GetWeakPtr(), callback));
+                              weak_ptr_factory_.GetWeakPtr(),
+                              std::move(callback)));
 }
 
-void InstanceIDImpl::DoGetCreationTime(
-    const GetCreationTimeCallback& callback) {
-  callback.Run(creation_time_);
+void InstanceIDImpl::DoGetCreationTime(GetCreationTimeCallback callback) {
+  std::move(callback).Run(creation_time_);
 }
 
 void InstanceIDImpl::GetToken(const std::string& authorized_entity,

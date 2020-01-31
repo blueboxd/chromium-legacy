@@ -60,6 +60,7 @@ void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
     content::RenderFrameHost* frame_host) {
   activated_frame_hosts_.erase(frame_host);
   ad_frames_.erase(frame_host);
+  navigation_load_policies_.erase(frame_host);
   DestroyRulesetHandleIfNoLongerUsed();
 }
 
@@ -76,7 +77,7 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
       navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
           navigation_handle->GetFrameTreeNodeId());
 
-  // If a known ad RenderFrameHost has moved to a new host, update ad_frames_.
+  // If a known ad RenderFrameHost has moved to a new host, update |ad_frames_|.
   bool transferred_ad_frame = false;
   if (previous_rfh && previous_rfh != navigation_handle->GetRenderFrameHost()) {
     auto previous_rfh_it = ad_frames_.find(previous_rfh);
@@ -84,6 +85,17 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
       ad_frames_.erase(previous_rfh_it);
       ad_frames_.insert(navigation_handle->GetRenderFrameHost());
       transferred_ad_frame = true;
+    }
+
+    // If |previous_rfh| exists and is different than the final render frame
+    // host for the navigation, we need to associate the load policy with the
+    // new rfh.
+    auto navigation_load_policy_it =
+        navigation_load_policies_.find(previous_rfh);
+    if (navigation_load_policy_it != navigation_load_policies_.end()) {
+      navigation_load_policies_.emplace(navigation_handle->GetRenderFrameHost(),
+                                        navigation_load_policy_it->second);
+      navigation_load_policies_.erase(navigation_load_policy_it);
     }
   }
 
@@ -233,8 +245,6 @@ void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(
     LoadPolicy load_policy,
     bool is_ad_subframe) {
   DCHECK(!navigation_handle->IsInMainFrame());
-  if (!is_ad_subframe)
-    return;
 
   // TODO(crbug.com/843646): Use an API that NavigationHandle supports rather
   // than trying to infer what the NavigationHandle is doing.
@@ -242,7 +252,11 @@ void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(
       navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
           navigation_handle->GetFrameTreeNodeId());
   DCHECK(starting_rfh);
-  ad_frames_.insert(starting_rfh);
+
+  navigation_load_policies_[starting_rfh] = load_policy;
+
+  if (is_ad_subframe)
+    ad_frames_.insert(starting_rfh);
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
@@ -272,7 +286,8 @@ bool ContentSubresourceFilterThrottleManager::CalculateIsAdSubframe(
   content::RenderFrameHost* parent_frame = frame_host->GetParent();
   DCHECK(parent_frame);
 
-  return load_policy != LoadPolicy::ALLOW ||
+  return (load_policy != LoadPolicy::ALLOW &&
+          load_policy != LoadPolicy::EXPLICITLY_ALLOW) ||
          base::Contains(ad_frames_, frame_host) ||
          base::Contains(ad_frames_, parent_frame);
 }
@@ -280,6 +295,15 @@ bool ContentSubresourceFilterThrottleManager::CalculateIsAdSubframe(
 bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAd(
     const content::RenderFrameHost* frame_host) const {
   return base::Contains(ad_frames_, frame_host);
+}
+
+base::Optional<LoadPolicy>
+ContentSubresourceFilterThrottleManager::LoadPolicyForLastCommittedNavigation(
+    const content::RenderFrameHost* frame_host) const {
+  auto it = navigation_load_policies_.find(frame_host);
+  if (it != navigation_load_policies_.end())
+    return it->second;
+  return base::nullopt;
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>

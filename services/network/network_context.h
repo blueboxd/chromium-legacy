@@ -64,6 +64,7 @@ class UnguessableToken;
 
 namespace net {
 class CertNetFetcher;
+class CertNetFetcherURLRequest;
 class CertVerifier;
 class CertVerifyProc;
 class HostPortPair;
@@ -72,10 +73,6 @@ class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
 }  // namespace net
-
-namespace cert_verifier {
-class CertNetFetcherURLLoader;
-}
 
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
@@ -470,9 +467,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   size_t NumOpenQuicTransports() const;
 
  private:
-  URLRequestContextOwner MakeURLRequestContext(
-      mojo::PendingReceiver<mojom::URLLoaderFactory>*
-          cert_net_url_loader_factory_pending_receiver);
+  URLRequestContextOwner MakeURLRequestContext();
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
@@ -623,7 +618,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // CertNetFetcher used by the context's CertVerifier. May be nullptr if
   // CertNetFetcher is not used by the current platform.
-  scoped_refptr<cert_verifier::CertNetFetcherURLLoader> cert_net_fetcher_;
+  scoped_refptr<net::CertNetFetcherURLRequest> cert_net_fetcher_;
 
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;

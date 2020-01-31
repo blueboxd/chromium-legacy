@@ -12,7 +12,7 @@ namespace android_webview {
 class WebViewAppStateObserver {
  public:
   enum class State {
-    // All WebViews are in unknown state.
+    // All WebViews are detached from window.
     kUnknown,
     // At least one WebView is foreground.
     kForeground,

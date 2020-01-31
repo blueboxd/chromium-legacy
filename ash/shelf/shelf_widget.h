@@ -13,6 +13,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_component.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -57,10 +58,6 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // Returns true if the views-based shelf is being shown.
   static bool IsUsingViewsShelf();
 
-  void CreateNavigationWidget(aura::Window* container);
-  void CreateHotseatWidget(aura::Window* container);
-  void CreateStatusAreaWidget(aura::Window* status_container);
-
   void OnShelfAlignmentChanged();
 
   void OnTabletModeChanged();
@@ -71,18 +68,18 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
 
   const Shelf* shelf() const { return shelf_; }
+  void RegisterHotseatWidget(HotseatWidget* hotseat_widget);
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
 
-  // TODO(manucornet): Move these three getters directly to |Shelf| to make it
-  // clear that they are on the same level as the shelf widget.
+  // TODO(manucornet): Remove these getters once all callers get the shelf
+  // components from the shelf directly.
   ShelfNavigationWidget* navigation_widget() const {
-    return navigation_widget_.get();
+    return shelf_->navigation_widget();
   }
-  HotseatWidget* hotseat_widget() const { return hotseat_widget_.get(); }
+  HotseatWidget* hotseat_widget() const { return shelf_->hotseat_widget(); }
   StatusAreaWidget* status_area_widget() const {
-    return status_area_widget_.get();
+    return shelf_->status_area_widget();
   }
-
   void PostCreateShelf();
 
   bool IsShowingAppList() const;
@@ -185,11 +182,6 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
 
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
-
-  // Pointers to widgets that are visually part of the shelf.
-  std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
-  std::unique_ptr<HotseatWidget> hotseat_widget_;
-  std::unique_ptr<StatusAreaWidget> status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.

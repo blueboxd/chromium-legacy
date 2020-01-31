@@ -457,6 +457,7 @@ jumbo_static_library("test_support") {
     "test/test_event_processor.h",
     "test/test_event_rewriter.cc",
     "test/test_event_rewriter.h",
+    "test/test_event_rewriter_continuation.h",
     "test/test_event_source.cc",
     "test/test_event_source.h",
     "test/test_event_target.cc",

@@ -75,8 +75,6 @@ source_set("dns") {
       "notify_watcher_mac.h",
       "record_parsed.cc",
       "record_rdata.cc",
-      "resolve_context.cc",
-      "resolve_context.h",
       "serial_worker.cc",
       "serial_worker.h",
       "system_dns_config_change_notifier.cc",
@@ -389,7 +387,6 @@ source_set("tests") {
     "mapped_host_resolver_unittest.cc",
     "record_parsed_unittest.cc",
     "record_rdata_unittest.cc",
-    "resolve_context_unittest.cc",
     "serial_worker_unittest.cc",
     "system_dns_config_change_notifier_unittest.cc",
   ]

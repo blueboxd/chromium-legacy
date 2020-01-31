@@ -34,7 +34,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
     kWeb,
     kAssistant,
     kArc,
-    kMaxValue = kArc,
+    kLocalCastSession,
+    kNonLocalCastSession,
+    kMaxValue = kNonLocalCastSession,
   };
 
   MediaNotificationItem() = default;

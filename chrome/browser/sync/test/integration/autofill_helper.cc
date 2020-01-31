@@ -292,6 +292,9 @@ void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
   EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
       .Times(testing::AnyNumber());
 
+  // TODO(crbug.com/997629): Remove after investigation is over.
+  DLOG(WARNING) << "SetProfiles " << autofill_profiles->size();
+
   pdm->SetProfiles(autofill_profiles);
 
   run_loop.Run();

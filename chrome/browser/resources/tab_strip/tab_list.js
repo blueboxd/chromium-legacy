@@ -110,6 +110,10 @@ class TabListElement extends CustomElement {
      */
     this.draggedItem_;
 
+    /** @private {!Element} */
+    this.dropPlaceholder_ = document.createElement('div');
+    this.dropPlaceholder_.id = 'dropPlaceholder';
+
     /** @private @const {!FocusOutlineManager} */
     this.focusOutlineManager_ = FocusOutlineManager.forDocument(document);
 
@@ -182,6 +186,7 @@ class TabListElement extends CustomElement {
         'dragstart', (e) => this.onDragStart_(/** @type {!DragEvent} */ (e)));
     this.addEventListener(
         'dragend', (e) => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
+    this.addEventListener('dragleave', () => this.onDragLeave_());
     this.addEventListener(
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
     this.addEventListener(
@@ -500,6 +505,11 @@ class TabListElement extends CustomElement {
     this.draggedItem_ = undefined;
   }
 
+  /** @private */
+  onDragLeave_() {
+    this.dropPlaceholder_.remove();
+  }
+
   /**
    * @param {!DragEvent} event
    * @private
@@ -508,16 +518,17 @@ class TabListElement extends CustomElement {
     event.preventDefault();
 
     if (!this.draggedItem_) {
-      // Invalid drag.
+      this.unpinnedTabsElement_.appendChild(this.dropPlaceholder_);
+      this.animateScrollPosition_(this.dropPlaceholder_.offsetLeft);
       return;
     }
 
     event.dataTransfer.dropEffect = 'move';
     if (isTabGroupElement(this.draggedItem_)) {
       this.onDragOverWithGroupElement_(event);
-      return;
+    } else if (isTabElement(this.draggedItem_)) {
+      this.onDragOverWithTabElement_(event);
     }
-    this.onDragOverWithTabElement_(event);
   }
 
   /**
@@ -623,6 +634,8 @@ class TabListElement extends CustomElement {
       // and is handled already by previous dragover events.
       return;
     }
+
+    this.dropPlaceholder_.remove();
 
     if (event.dataTransfer.types.includes(getTabIdDataType())) {
       const tabId = Number(event.dataTransfer.getData(getTabIdDataType()));

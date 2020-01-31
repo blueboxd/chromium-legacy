@@ -2160,6 +2160,133 @@ ScrubbyScrollBar.prototype.onScrollTimer = function() {
   this.scrollView.scrollBy(scrollAmount, false);
 };
 
+// Mixin containing utilities for identifying and navigating between
+// valid day/week/month ranges.
+var DateRangeManager = {
+  _setValidDateConfig(config) {
+    this.config = {};
+
+    this.config.minimum = (typeof config.min !== 'undefined' && config.min) ?
+        parseDateString(config.min) :
+        this._dateTypeConstructor.Minimum;
+    this.config.maximum = (typeof config.max !== 'undefined' && config.max) ?
+        parseDateString(config.max) :
+        this._dateTypeConstructor.Maximum;
+    this.config.minimumValue = this.config.minimum.valueOf();
+    this.config.maximumValue = this.config.maximum.valueOf();
+    this.config.step = (typeof config.step !== undefined) ?
+        Number(config.step) :
+        this._dateTypeConstructor.DefaultStep;
+    this.config.stepBase = (typeof config.stepBase !== 'undefined') ?
+        Number(config.stepBase) :
+        this._dateTypeConstructor.DefaultStepBase;
+  },
+
+  _isValidForStep(value) {
+    // nextAllowedValue is the time closest (looking forward) to value that is
+    // within the interval specified by the step and the stepBase.  This may
+    // be equal to value.
+    var nextAllowedValue =
+        (Math.ceil((value - this.config.stepBase) / this.config.step) *
+         this.config.step) +
+        this.config.stepBase;
+    // If the nextAllowedValue is between value and the next nearest possible time
+    // for this control type (determined by adding the smallest time interval, given
+    // by DefaultStep, to value) then we consider it to be valid.
+    return nextAllowedValue < (value + this._dateTypeConstructor.DefaultStep);
+  },
+
+  /**
+   * @param {!number} value
+   * @return {!boolean}
+   */
+  _outOfRange(value) {
+    return value < this.config.minimumValue || value > this.config.maximumValue;
+  },
+
+  /**
+   * @param {!DateType} dayOrWeekOrMonth
+   * @return {!boolean}
+   */
+  isValid(dayOrWeekOrMonth) {
+    var value = dayOrWeekOrMonth.valueOf();
+    return dayOrWeekOrMonth instanceof this._dateTypeConstructor &&
+        !this._outOfRange(value) && this._isValidForStep(value);
+  },
+
+  /**
+   * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
+   * @return {?DayOrWeekOrMonth}
+   */
+  getNearestValidRangeLookingForward(dayOrWeekOrMonth) {
+    if (dayOrWeekOrMonth < this.config.minimumValue) {
+      // Performance optimization: avoid wasting lots of time in the below
+      // loop if dayOrWeekOrMonth is significantly less than the min.
+      dayOrWeekOrMonth =
+          this._dateTypeConstructor.createFromValue(this.config.minimumValue);
+    }
+
+    while (!this.isValid(dayOrWeekOrMonth) &&
+           dayOrWeekOrMonth < this.config.maximumValue) {
+      dayOrWeekOrMonth = dayOrWeekOrMonth.next();
+    }
+
+    return this.isValid(dayOrWeekOrMonth) ? dayOrWeekOrMonth : null;
+  },
+
+  /**
+  * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
+  * @return {?DayOrWeekOrMonth}
+  */
+  getNearestValidRangeLookingBackward(dayOrWeekOrMonth) {
+    if (dayOrWeekOrMonth > this.config.maximumValue) {
+      // Performance optimization: avoid wasting lots of time in the below
+      // loop if dayOrWeekOrMonth is significantly greater than the max.
+      dayOrWeekOrMonth =
+          this._dateTypeConstructor.createFromValue(this.config.maximumValue);
+    }
+
+    while (!this.isValid(dayOrWeekOrMonth) &&
+           dayOrWeekOrMonth > this.config.minimumValue) {
+      dayOrWeekOrMonth = dayOrWeekOrMonth.previous();
+    }
+
+    return this.isValid(dayOrWeekOrMonth) ? dayOrWeekOrMonth : null;
+  },
+
+  /**
+  * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
+  * @param {!boolean} lookForwardFirst
+  * @return {?DayOrWeekOrMonth}
+  */
+  getNearestValidRange(dayOrWeekOrMonth, lookForwardFirst) {
+    var result = null;
+    if (lookForwardFirst) {
+      if (!(result =
+                this.getNearestValidRangeLookingForward(dayOrWeekOrMonth))) {
+        result = this.getNearestValidRangeLookingBackward(dayOrWeekOrMonth);
+      }
+    } else {
+      if (!(result =
+                this.getNearestValidRangeLookingBackward(dayOrWeekOrMonth))) {
+        result = this.getNearestValidRangeLookingForward(dayOrWeekOrMonth);
+      }
+    }
+
+    return result;
+  },
+
+  /**
+  * @param {!Day} day
+  * @param {!boolean} lookForwardFirst
+  * @return {?DayOrWeekOrMonth}
+  */
+  getValidRangeNearestToDay(day, lookForwardFirst) {
+    var dayOrWeekOrMonth = this._dateTypeConstructor.createFromDay(day);
+    return this.getNearestValidRange(dayOrWeekOrMonth, lookForwardFirst);
+  }
+};
+
 /**
  * @constructor
  * @extends ListCell
@@ -2294,7 +2421,7 @@ YearListCell.prototype.setHeight = function(height) {
  * @param {!Month} minimumMonth
  * @param {!Month} maximumMonth
  */
-function YearListView(minimumMonth, maximumMonth) {
+function YearListView(minimumMonth, maximumMonth, config) {
   ListView.call(this);
   this.element.classList.add('year-list-view');
 
@@ -2354,9 +2481,34 @@ function YearListView(minimumMonth, maximumMonth) {
   this.element.addEventListener('mouseout', this.onMouseOut, false);
   this.element.addEventListener('keydown', this.onKeyDown, false);
   this.element.addEventListener('touchstart', this.onTouchStart, false);
+
+  if (global.params.isFormControlsRefreshEnabled && config &&
+      config.mode == 'month') {
+    this.type = 'month';
+    this._dateTypeConstructor = Month;
+
+    this._setValidDateConfig(config);
+
+    this._hadValidValueWhenOpened = false;
+    var initialSelection = parseDateString(config.currentValue);
+    if (initialSelection) {
+      this._hadValidValueWhenOpened = this.isValid(initialSelection);
+      this._selectedMonth = this.getNearestValidRange(
+          initialSelection, /*lookForwardFirst*/ true);
+    } else {
+      // Ensure that the next month closest to today is selected to start with so that
+      // the user can simply submit the popup to choose it.
+      this._selectedMonth = this.getValidRangeNearestToDay(
+          this._dateTypeConstructor.createFromToday(),
+          /*lookForwardFirst*/ true);
+    }
+
+    this._initialSelectedMonth = this._selectedMonth;
+  }
 }
 
 YearListView.prototype = Object.create(ListView.prototype);
+Object.assign(YearListView.prototype, DateRangeManager);
 
 YearListView._Height = YearListCell._SelectedHeight - 1;
 YearListView._VisibleYearsRefresh = 4;
@@ -2592,10 +2744,15 @@ YearListView.prototype.prepareNewCell = function(row) {
   for (var i = 0; i < cell.monthButtons.length; ++i) {
     var month = new Month(row + 1, i);
     cell.monthButtons[i].id = month.toString();
-    cell.monthButtons[i].setAttribute(
-        'aria-disabled',
-        this._minimumMonth > month || this._maximumMonth < month ? 'true' :
-                                                                   'false');
+    if (global.params.isFormControlsRefreshEnabled && this.type === 'month') {
+      cell.monthButtons[i].setAttribute(
+          'aria-disabled', this.isValid(month) ? 'false' : 'true');
+    } else {
+      cell.monthButtons[i].setAttribute(
+          'aria-disabled',
+          this._minimumMonth > month || this._maximumMonth < month ? 'true' :
+                                                                     'false');
+    }
     cell.monthButtons[i].setAttribute('aria-label', month.toLocaleString());
   }
   if (this.highlightedMonth && row === this.highlightedMonth.year - 1) {
@@ -2695,8 +2852,11 @@ YearListView.prototype.select = function(row) {
         this.selectedRow, YearListView.RowAnimationDirection.Opening);
     if (selectedCell)
       selectedCell.setSelected(true);
-    var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
-    this.highlightMonth(new Month(this.selectedRow + 1, month));
+    if (!(global.params.isFormControlsRefreshEnabled &&
+          this.type === 'month')) {
+      var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
+      this.highlightMonth(new Month(this.selectedRow + 1, month));
+    }
   }
   this.setNeedsUpdateCells(true);
 };
@@ -2717,8 +2877,6 @@ YearListView.prototype.selectWithoutAnimating = function(row) {
       selectedCell.setSelected(true);
       selectedCell.setHeight(YearListCell.GetSelectedHeight());
     }
-    var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
-    this.highlightMonth(new Month(this.selectedRow + 1, month));
   }
   this.setNeedsUpdateCells(true);
 };
@@ -2769,6 +2927,24 @@ YearListView.prototype.setSelectedMonth = function(month) {
   this._selectedMonth = month;
 };
 
+YearListView.prototype.setSelectedMonthAndUpdateView = function(month) {
+  var oldMonthButton = this.buttonForMonth(this._selectedMonth);
+  if (oldMonthButton) {
+    oldMonthButton.classList.remove(YearListCell.ClassNameSelected);
+  }
+
+  this.setSelectedMonth(month);
+
+  var newMonthButton = this.buttonForMonth(this._selectedMonth);
+  if (newMonthButton) {
+    newMonthButton.classList.add(YearListCell.ClassNameSelected);
+  }
+
+  this.select(this._selectedMonth.year - 1);
+
+  this.scrollView.scrollTo(this.selectedRow * YearListCell.GetHeight(), true);
+};
+
 YearListView.prototype.showSelectedMonth = function() {
   var monthButton = this.buttonForMonth(this._selectedMonth);
   if (monthButton) {
@@ -2815,13 +2991,64 @@ YearListView.prototype.onKeyDown = function(event) {
   var key = event.key;
   var eventHandled = false;
   if (key == 't') {
-    eventHandled = this._moveHighlightTo(Month.createFromToday());
-    if (global.params.isFormControlsRefreshEnabled) {
-      this.dispatchEvent(
-          YearListView.EventTypeYearListViewDidSelectMonth, this,
-          this.highlightedMonth);
+    if (global.params.isFormControlsRefreshEnabled && this.type === 'month') {
+      var newSelection = this.getValidRangeNearestToDay(
+          Day.createFromToday(), /*lookForwardFirst*/ true);
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else {
+      eventHandled = this._moveHighlightTo(Month.createFromToday());
+      if (global.params.isFormControlsRefreshEnabled) {
+        this.dispatchEvent(
+            YearListView.EventTypeYearListViewDidSelectMonth, this,
+            this.highlightedMonth);
+      }
     }
-  } else if (this.highlightedMonth) {
+  } else if (
+      global.params.isFormControlsRefreshEnabled && this.type === 'month' &&
+      this._selectedMonth) {
+    if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft') {
+      var newSelection = this.getNearestValidRangeLookingBackward(
+          this._selectedMonth.previous());
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else if (key == 'ArrowUp') {
+      var newSelection = this.getNearestValidRangeLookingBackward(
+          this._selectedMonth.previous(YearListCell.ButtonColumns));
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else if (
+        global.params.isLocaleRTL ? key == 'ArrowLeft' : key == 'ArrowRight') {
+      var newSelection =
+          this.getNearestValidRangeLookingForward(this._selectedMonth.next());
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else if (key == 'ArrowDown') {
+      var newSelection = this.getNearestValidRangeLookingForward(
+          this._selectedMonth.next(YearListCell.ButtonColumns));
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else if (key == 'PageUp') {
+      var newSelection = this.getNearestValidRangeLookingBackward(
+          this._selectedMonth.previous(MonthsPerYear));
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else if (key == 'PageDown') {
+      var newSelection = this.getNearestValidRangeLookingForward(
+          this._selectedMonth.next(MonthsPerYear));
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    }
+  } else if (
+      !(global.params.isFormControlsRefreshEnabled && this.type === 'month') &&
+      this.highlightedMonth) {
     if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft')
       eventHandled = this._moveHighlightTo(this.highlightedMonth.previous());
     else if (key == 'ArrowUp')
@@ -4005,12 +4232,9 @@ function CalendarPicker(type, config) {
     this._dateTypeConstructor = Month;
   else
     this._dateTypeConstructor = Day;
-  /**
-   * @type {!Object}
-   * @const
-   */
-  this.config = {};
-  this._setConfig(config);
+
+  this._setValidDateConfig(config);
+
   /**
    * @type {!Month}
    * @const
@@ -4095,7 +4319,8 @@ function CalendarPicker(type, config) {
 
     if (global.params.isFormControlsRefreshEnabled) {
       this._hadValidValueWhenOpened = this.isValid(initialSelection);
-      this.selectNearestValidRange(initialSelection, /*lookForwardFirst*/ true);
+      this.setSelection(this.getNearestValidRange(
+          initialSelection, /*lookForwardFirst*/ true));
     } else {
       this.setSelection(initialSelection);
     }
@@ -4106,9 +4331,9 @@ function CalendarPicker(type, config) {
     if (global.params.isFormControlsRefreshEnabled) {
       // Ensure that the next date closest to today is selected to start with so that
       // the user can simply submit the popup to choose it.
-      this.selectValidRangeNearestToDay(
+      this.setSelection(this.getValidRangeNearestToDay(
           this._dateTypeConstructor.createFromToday(),
-          /*lookForwardFirst*/ true);
+          /*lookForwardFirst*/ true));
     }
   }
 
@@ -4120,6 +4345,7 @@ function CalendarPicker(type, config) {
 }
 
 CalendarPicker.prototype = Object.create(View.prototype);
+Object.assign(CalendarPicker.prototype, DateRangeManager);
 
 CalendarPicker.Padding = 10;
 CalendarPicker.BorderWidth = 1;
@@ -4201,23 +4427,6 @@ CalendarPicker.prototype.onMonthPopupButtonClick = function(sender) {
   } else {
     this.adjustHeight();
   }
-};
-
-CalendarPicker.prototype._setConfig = function(config) {
-  this.config.minimum = (typeof config.min !== 'undefined' && config.min) ?
-      parseDateString(config.min) :
-      this._dateTypeConstructor.Minimum;
-  this.config.maximum = (typeof config.max !== 'undefined' && config.max) ?
-      parseDateString(config.max) :
-      this._dateTypeConstructor.Maximum;
-  this.config.minimumValue = this.config.minimum.valueOf();
-  this.config.maximumValue = this.config.maximum.valueOf();
-  this.config.step = (typeof config.step !== undefined) ?
-      Number(config.step) :
-      this._dateTypeConstructor.DefaultStep;
-  this.config.stepBase = (typeof config.stepBase !== 'undefined') ?
-      Number(config.stepBase) :
-      this._dateTypeConstructor.DefaultStepBase;
 };
 
 /**
@@ -4338,85 +4547,6 @@ CalendarPicker.prototype.highlightRangeContainingDay = function(day) {
 };
 
 /**
- * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
- * @return {!boolean}
- */
-CalendarPicker.prototype.selectNearestValidRangeLookingForward = function(
-    dayOrWeekOrMonth) {
-  if (dayOrWeekOrMonth < this.config.minimumValue) {
-    // Performance optimization: avoid wasting lots of time in the below
-    // loop if dayOrWeekOrMonth is significantly less than the min.
-    dayOrWeekOrMonth =
-        this._dateTypeConstructor.createFromValue(this.config.minimumValue);
-  }
-
-  while (!this.isValid(dayOrWeekOrMonth) &&
-         dayOrWeekOrMonth < this.config.maximumValue) {
-    dayOrWeekOrMonth = dayOrWeekOrMonth.next();
-  }
-
-  if (this.isValid(dayOrWeekOrMonth)) {
-    this.setSelection(dayOrWeekOrMonth);
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
- * @return {!boolean}
- */
-CalendarPicker.prototype.selectNearestValidRangeLookingBackward = function(
-    dayOrWeekOrMonth) {
-  if (dayOrWeekOrMonth > this.config.maximumValue) {
-    // Performance optimization: avoid wasting lots of time in the below
-    // loop if dayOrWeekOrMonth is significantly greater than the max.
-    dayOrWeekOrMonth =
-        this._dateTypeConstructor.createFromValue(this.config.maximumValue);
-  }
-
-  while (!this.isValid(dayOrWeekOrMonth) &&
-         dayOrWeekOrMonth > this.config.minimumValue) {
-    dayOrWeekOrMonth = dayOrWeekOrMonth.previous();
-  }
-
-  if (this.isValid(dayOrWeekOrMonth)) {
-    this.setSelection(dayOrWeekOrMonth);
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
- * @param {!boolean} lookForwardFirst
- */
-CalendarPicker.prototype.selectNearestValidRange = function(
-    dayOrWeekOrMonth, lookForwardFirst) {
-  if (lookForwardFirst) {
-    if (!this.selectNearestValidRangeLookingForward(dayOrWeekOrMonth)) {
-      this.selectNearestValidRangeLookingBackward(dayOrWeekOrMonth);
-    }
-  } else {
-    if (!this.selectNearestValidRangeLookingBackward(dayOrWeekOrMonth)) {
-      this.selectNearestValidRangeLookingForward(dayOrWeekOrMonth);
-    }
-  }
-};
-
-/**
- * @param {!Day} day
- * @param {!boolean} lookForwardFirst
- */
-CalendarPicker.prototype.selectValidRangeNearestToDay = function(
-    day, lookForwardFirst) {
-  var dayOrWeekOrMonth = this._dateTypeConstructor.createFromDay(day);
-  this.selectNearestValidRange(dayOrWeekOrMonth, lookForwardFirst);
-};
-
-/**
  * Select the specified date.
  * @param {?DateType} dayOrWeekOrMonth
  */
@@ -4518,36 +4648,6 @@ CalendarPicker.prototype._setHighlight = function(dayOrWeekOrMonth) {
 };
 
 /**
- * @param {!number} value
- * @return {!boolean}
- */
-CalendarPicker.prototype._stepMismatch = function(value) {
-  var nextAllowedValue =
-      Math.ceil((value - this.config.stepBase) / this.config.step) *
-          this.config.step +
-      this.config.stepBase;
-  return nextAllowedValue >= value + this._dateTypeConstructor.DefaultStep;
-};
-
-/**
- * @param {!number} value
- * @return {!boolean}
- */
-CalendarPicker.prototype._outOfRange = function(value) {
-  return value < this.config.minimumValue || value > this.config.maximumValue;
-};
-
-/**
- * @param {!DateType} dayOrWeekOrMonth
- * @return {!boolean}
- */
-CalendarPicker.prototype.isValid = function(dayOrWeekOrMonth) {
-  var value = dayOrWeekOrMonth.valueOf();
-  return dayOrWeekOrMonth instanceof this._dateTypeConstructor &&
-      !this._outOfRange(value) && !this._stepMismatch(value);
-};
-
-/**
  * @param {!Day} day
  * @return {!boolean}
  */
@@ -4581,8 +4681,8 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
 
   if (!event.target.matches('.today-button-refresh')) {
     if (key == 't') {
-      this.selectValidRangeNearestToDay(
-          Day.createFromToday(), /*lookForwardFirst*/ true);
+      this.setSelection(this.getValidRangeNearestToDay(
+          Day.createFromToday(), /*lookForwardFirst*/ true));
     } else if (key == 'PageUp') {
       var previousMonth = this.currentMonth().previous();
       if (previousMonth && previousMonth >= this.config.minimumValue) {
@@ -4601,17 +4701,31 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
                                                                    1;
       if (global.params.isLocaleRTL ? key == 'ArrowRight' :
                                       key == 'ArrowLeft') {
-        this.selectNearestValidRangeLookingBackward(this._selection.previous());
+        var newSelection = this.getNearestValidRangeLookingBackward(
+            this._selection.previous());
+        if (newSelection) {
+          this.setSelection(newSelection);
+        }
       } else if (key == 'ArrowUp') {
-        this.selectNearestValidRangeLookingBackward(
+        var newSelection = this.getNearestValidRangeLookingBackward(
             this._selection.previous(upOrDownArrowStepSize));
+        if (newSelection) {
+          this.setSelection(newSelection);
+        }
       } else if (
           global.params.isLocaleRTL ? key == 'ArrowLeft' :
                                       key == 'ArrowRight') {
-        this.selectNearestValidRangeLookingForward(this._selection.next());
+        var newSelection =
+            this.getNearestValidRangeLookingForward(this._selection.next());
+        if (newSelection) {
+          this.setSelection(newSelection);
+        }
       } else if (key == 'ArrowDown') {
-        this.selectNearestValidRangeLookingForward(
+        var newSelection = this.getNearestValidRangeLookingForward(
             this._selection.next(upOrDownArrowStepSize));
+        if (newSelection) {
+          this.setSelection(newSelection);
+        }
       }
     }
     // else if there is no selection it must be the case that there are no

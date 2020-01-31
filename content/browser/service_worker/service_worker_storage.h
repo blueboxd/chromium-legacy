@@ -71,9 +71,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
   using FindRegistrationDataCallback = base::OnceCallback<void(
-      blink::ServiceWorkerStatusCode status,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
-      std::unique_ptr<ResourceList> resources)>;
+      std::unique_ptr<ResourceList> resources,
+      ServiceWorkerDatabase::Status status)>;
   using GetRegistrationsDataCallback = base::OnceCallback<void(
       blink::ServiceWorkerStatusCode status,
       std::unique_ptr<RegistrationList> registrations,
@@ -365,11 +365,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void LazyInitialize(base::OnceClosure callback);
   void DidReadInitialData(std::unique_ptr<InitialData> data,
                           ServiceWorkerDatabase::Status status);
-  void DidFindRegistration(
-      FindRegistrationDataCallback callback,
-      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
-      std::unique_ptr<ResourceList> resources,
-      ServiceWorkerDatabase::Status status);
   void DidGetRegistrationsForOrigin(
       GetRegistrationsDataCallback callback,
       std::unique_ptr<RegistrationList> registrations,

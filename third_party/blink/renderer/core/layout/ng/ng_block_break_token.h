@@ -27,6 +27,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   static scoped_refptr<NGBlockBreakToken> Create(
       NGLayoutInputNode node,
       LayoutUnit consumed_block_size,
+      unsigned sequence_number,
       const NGBreakTokenVector& child_break_tokens,
       NGBreakAppeal break_appeal,
       bool has_seen_all_children) {
@@ -38,8 +39,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
     new (data) NGBlockBreakToken(PassKey(), node, consumed_block_size,
-                                 child_break_tokens, break_appeal,
-                                 has_seen_all_children);
+                                 sequence_number, child_break_tokens,
+                                 break_appeal, has_seen_all_children);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
   }
 
@@ -68,6 +69,17 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // fragment will become 50px tall, assuming no additional fragmentation (if
   // the fragmentainer is shorter than 50px, for instance).
   LayoutUnit ConsumedBlockSize() const { return consumed_block_size_; }
+
+  // A unique identifier for a fragment that generates a break token. This is
+  // unique within the generating layout input node. The break token of the
+  // first fragment gets 0, then second 1, and so on. Note that we don't "count"
+  // break tokens that aren't associated with a fragment (this happens when we
+  // want a fragmentainer break before laying out the node). What the sequence
+  // number is for such a break token is undefined.
+  unsigned SequenceNumber() const {
+    DCHECK(!IsBreakBefore());
+    return sequence_number_;
+  }
 
   // Return true if this is a break token that was produced without any
   // "preceding" fragment. This happens when we determine that the first
@@ -110,6 +122,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   NGBlockBreakToken(PassKey,
                     NGLayoutInputNode node,
                     LayoutUnit consumed_block_size,
+                    unsigned sequence_number,
                     const NGBreakTokenVector& child_break_tokens,
                     NGBreakAppeal break_appeal,
                     bool has_seen_all_children);
@@ -118,6 +131,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
  private:
   LayoutUnit consumed_block_size_;
+  unsigned sequence_number_ = 0;
 
   wtf_size_t num_children_;
   // This must be the last member, because it is a flexible array.

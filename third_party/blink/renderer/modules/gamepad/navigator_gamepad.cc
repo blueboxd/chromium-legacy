@@ -101,7 +101,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
   ExecutionContext* context =
       DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
 
-  if (GetFrame() && GetFrame()->IsCrossOriginSubframe()) {
+  if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame()) {
     UseCounter::Count(context, WebFeature::kGetGamepadsFromCrossOriginSubframe);
   }
 

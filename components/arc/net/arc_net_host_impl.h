@@ -107,6 +107,7 @@ class ArcNetHostImpl : public KeyedService,
  private:
   const chromeos::NetworkState* GetDefaultNetworkFromChrome();
   void UpdateDefaultNetwork();
+  void UpdateActiveNetworks();
   void DefaultNetworkSuccessCallback(const std::string& service_path,
                                      const base::DictionaryValue& dictionary);
 

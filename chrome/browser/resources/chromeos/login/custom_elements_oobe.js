@@ -31,6 +31,7 @@
 // <include src="oobe_adb_sideloading_screen.js">
 // <include src="oobe_buttons.js">
 // <include src="oobe_dialog.js">
+// <include src="oobe_help_dialog.js">
 // <include src="oobe_eula.js">
 // <include src="oobe_enable_kiosk.js">
 // <include src="oobe_terms_of_service.js">

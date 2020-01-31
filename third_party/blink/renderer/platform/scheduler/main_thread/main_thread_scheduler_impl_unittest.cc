@@ -3035,7 +3035,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
 
   TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
 
-  frame_scheduler->SetCrossOrigin(true);
+  frame_scheduler->SetCrossOriginToMainFrame(true);
   frame_scheduler->SetFrameVisible(false);
   EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
 

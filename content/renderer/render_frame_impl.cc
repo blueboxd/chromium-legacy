@@ -4225,11 +4225,6 @@ void RenderFrameImpl::DidMatchCSS(
     observer.DidMatchCSS(newly_matching_selectors, stopped_matching_selectors);
 }
 
-void RenderFrameImpl::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType update_type) {
-  Send(new FrameHostMsg_UpdateUserActivationState(routing_id_, update_type));
-}
-
 void RenderFrameImpl::SetMouseCapture(bool capture) {
   GetLocalRootRenderWidget()->SetMouseCapture(capture);
 }

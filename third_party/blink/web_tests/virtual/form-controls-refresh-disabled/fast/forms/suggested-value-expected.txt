@@ -90,6 +90,7 @@ instead of "initial value".
 |     <shadow:root>
 |       "inserted value"
 |   <shadow:root>
+|     <div>
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"

@@ -160,7 +160,7 @@ class BluetoothGattDescriptorClientImpl
   // dbus::ObjectManager::Interface override.
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    VLOG(2) << "Remote GATT descriptor added: " << object_path.value();
+    DVLOG(2) << "Remote GATT descriptor added: " << object_path.value();
     for (auto& observer : observers_)
       observer.GattDescriptorAdded(object_path);
   }
@@ -168,7 +168,7 @@ class BluetoothGattDescriptorClientImpl
   // dbus::ObjectManager::Interface override.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    VLOG(2) << "Remote GATT descriptor removed: " << object_path.value();
+    DVLOG(2) << "Remote GATT descriptor removed: " << object_path.value();
     for (auto& observer : observers_)
       observer.GattDescriptorRemoved(object_path);
   }
@@ -191,8 +191,8 @@ class BluetoothGattDescriptorClientImpl
   // observers.
   virtual void OnPropertyChanged(const dbus::ObjectPath& object_path,
                                  const std::string& property_name) {
-    VLOG(2) << "Remote GATT descriptor property changed: "
-            << object_path.value() << ": " << property_name;
+    DVLOG(2) << "Remote GATT descriptor property changed: "
+             << object_path.value() << ": " << property_name;
     for (auto& observer : observers_)
       observer.GattDescriptorPropertyChanged(object_path, property_name);
   }
@@ -213,7 +213,7 @@ class BluetoothGattDescriptorClientImpl
     size_t length = 0;
 
     if (!reader.PopArrayOfBytes(&bytes, &length))
-      VLOG(2) << "Error reading array of bytes in ValueCallback";
+      DVLOG(2) << "Error reading array of bytes in ValueCallback";
 
     std::vector<uint8_t> value;
 

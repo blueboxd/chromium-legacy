@@ -1,0 +1,51 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="stylesheet" href="oobe_flex_layout.css">
+
+<!--
+OOBE Help Dialog
+
+Implements the 'OOBE Help Dialog' according to MD specs.
+
+The dialog provides two properties that can be set directly from HTML.
+  - titleKey - ID of the localized string to be used for the title.
+  - contentKey - ID of the localized string to be used for the content.
+
+  Alternatively, one can set their own title and content into the 'title'
+  and 'content' slots.
+-->
+<dom-module id="oobe-help-dialog">
+  <template>
+    <link rel="stylesheet" href="oobe_fonts.css">
+    <link rel="stylesheet" href="oobe_help_dialog.css">
+    <dialog id="help-dialog" part="dialog" aria-labelledby="help-dialog-title">
+      <!-- Title -->
+      <div id="help-dialog-title">
+        <slot name="title">
+            <h1>[[i18nDynamic(locale, titleKey)]]</h1>
+        </slot>
+      </div>
+      <!-- Content to be shown -->
+      <div id="content-container"
+          class="flex-grow layout vertical not-resizable">
+        <slot name="content">
+            <h1>[[i18nDynamic(locale, contentKey)]]</h1>
+        </slot>
+      </div>
+      <!-- Close Button -->
+      <div id="button-container" class="layout horizontal">
+        <oobe-text-button inverse id="closeButton" on-click="hideDialog"
+            text-key="oobeModalDialogClose">
+        </oobe-text-button>
+      </div>
+    </dialog>
+  </template>
+</dom-module>
+
+
+

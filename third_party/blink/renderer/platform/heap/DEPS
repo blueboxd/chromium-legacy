@@ -12,6 +12,7 @@ include_rules = [
     "+base/strings/string_number_conversions.h",
     "+base/synchronization/lock.h",
     "+base/task_runner.h",
+    "+base/task/post_job.h",
     "+base/template_util.h",
     "+testing/perf/perf_test.h",
 

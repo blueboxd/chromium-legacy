@@ -532,12 +532,22 @@ void NGBlockNode::FinishLayout(
   // up in a state where the layout-object tree doesn't match fragment tree
   // referenced by this layout-result.
   if (layout_result->Status() != NGLayoutResult::kSuccess) {
-    box_->ClearCachedLayoutResult();
+    box_->ClearLayoutResults();
     return;
   }
 
-  if (!constraint_space.HasBlockFragmentation())
-    box_->SetCachedLayoutResult(*layout_result, break_token);
+  // Add all layout results (and fragments) generated from a node to a list in
+  // the layout object. Some extra care is required to correctly overwrite
+  // intermediate layout results: The sequence number of an incoming break token
+  // corresponds with the fragment index in the layout object (off by 1,
+  // though). When writing back a layout result, we remove any fragments in the
+  // layout box at higher indices than that of the one we're writing back.
+  const auto& physical_fragment =
+      To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
+  wtf_size_t fragment_index = 0;
+  if (break_token && !break_token->IsBreakBefore())
+    fragment_index = break_token->SequenceNumber() + 1;
+  box_->AddLayoutResult(layout_result, fragment_index);
 
   if (block_flow) {
     auto* child = GetLayoutObjectForFirstChildNode(block_flow);
@@ -563,8 +573,6 @@ void NGBlockNode::FinishLayout(
     }
 
     if (has_inline_children) {
-      const auto& physical_fragment =
-          To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
       if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
         CopyFragmentDataToLayoutBoxForInlineChildren(
             physical_fragment, physical_fragment.Size().width,
@@ -1242,7 +1250,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     CopyBaselinesFromLegacyLayout(constraint_space, &builder);
     layout_result = builder.ToBoxFragment();
 
-    box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+    box_->SetCachedLayoutResult(layout_result);
 
     // If |SetCachedLayoutResult| did not update cached |LayoutResult|,
     // |NeedsLayout()| flag should not be cleared.
@@ -1269,7 +1277,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
           *layout_result, constraint_space, layout_result->EndMarginStrut(),
           layout_result->BfcLineOffset(), layout_result->BfcBlockOffset(),
           LayoutUnit() /* block_offset_delta */));
-      box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+      box_->SetCachedLayoutResult(layout_result);
     }
   }
 

@@ -31,10 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_THREAD_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_THREAD_STATE_H_
 
+#include <atomic>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_job.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
@@ -251,7 +253,7 @@ class PLATFORM_EXPORT ThreadState final {
   }
 
   void PerformIdleLazySweep(base::TimeTicks deadline);
-  void PerformConcurrentSweep();
+  void PerformConcurrentSweep(base::experimental::JobDelegate*);
 
   void SchedulePreciseGC();
   void ScheduleForcedGCForTesting();
@@ -615,7 +617,8 @@ class PLATFORM_EXPORT ThreadState final {
   base::Lock concurrent_marker_bootstrapping_lock_;
   size_t concurrently_marked_bytes_ = 0;
 
-  std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
+  base::experimental::JobHandle sweeper_handle_;
+  std::atomic_bool has_unswept_pages_{false};
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;

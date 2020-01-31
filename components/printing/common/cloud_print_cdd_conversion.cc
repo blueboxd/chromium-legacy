@@ -15,7 +15,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/feature_list.h"
-#include "printing/printing_features_chromeos.h"
+#include "printing/printing_features.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace printer = cloud_devices::printer;
@@ -164,7 +164,8 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   pin.set_value(semantic_info.pin_supported);
   pin.SaveTo(&description);
 
-  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes) &&
+  if (base::FeatureList::IsEnabled(
+          printing::features::kAdvancedPpdAttributes) &&
       !semantic_info.advanced_capabilities.empty()) {
     printer::VendorCapabilities vendor_capabilities;
     for (const auto& capability : semantic_info.advanced_capabilities) {

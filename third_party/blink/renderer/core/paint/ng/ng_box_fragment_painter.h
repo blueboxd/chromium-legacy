@@ -24,6 +24,7 @@ class HitTestResult;
 class NGFragmentItems;
 class NGInlineCursor;
 class NGInlineBackwardCursor;
+class NGInlineBoxFragmentPainter;
 class NGPhysicalFragment;
 class ScopedPaintState;
 struct PaintInfo;
@@ -41,6 +42,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // Construct for an inline formatting context.
   NGBoxFragmentPainter(const NGPaintFragment&);
   // Construct for an inline box.
+  NGBoxFragmentPainter(const NGPhysicalBoxFragment& box_fragment,
+                       const NGPaintFragment* paint_fragment,
+                       const NGFragmentItem* box_item);
   NGBoxFragmentPainter(const NGFragmentItem& item,
                        const NGPhysicalBoxFragment& fragment,
                        NGInlineCursor* descendants);
@@ -73,6 +77,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                          const IntRect& mask_rect,
                          const PhysicalOffset& paint_offset,
                          bool object_has_multiple_boxes) override;
+  void PaintTextClipMask(const PaintInfo& paint_info,
+                         PhysicalOffset paint_offset,
+                         NGInlineBoxFragmentPainter* inline_box_painter);
   PhysicalRect AdjustRectForScrolledContent(
       const PaintInfo&,
       const BoxPainterBase::FillLayerInfo&,
@@ -82,6 +89,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   NGBoxFragmentPainter(const NGPhysicalBoxFragment&,
                        const DisplayItemClient& display_item_client,
                        const NGPaintFragment* = nullptr,
+                       const NGFragmentItem* = nullptr,
                        NGInlineCursor* descendants = nullptr);
 
   enum MoveTo { kDontSkipChildren, kSkipChildren };
@@ -281,19 +289,24 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPhysicalBoxFragment& box,
     const DisplayItemClient& display_item_client,
     const NGPaintFragment* paint_fragment,
+    const NGFragmentItem* box_item,
     NGInlineCursor* descendants)
     : BoxPainterBase(&box.GetDocument(), box.Style(), box.GeneratingNode()),
       box_fragment_(box),
       display_item_client_(display_item_client),
       paint_fragment_(paint_fragment),
       items_(box.Items()),
+      box_item_(box_item),
       descendants_(descendants) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
   DCHECK(!paint_fragment || !descendants);
 #if DCHECK_IS_ON()
   if (box.IsInlineBox()) {
+    DCHECK(paint_fragment_ || box_item_);
     if (paint_fragment)
       DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
+    if (box_item)
+      DCHECK_EQ(box_item->BoxFragment(), &box);
   } else if (box.ChildrenInline()) {
     // If no children, there maybe or may not be NGPaintFragment.
     // TODO(kojii): To be investigated if this correct or should be fixed.
@@ -321,6 +334,7 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     : NGBoxFragmentPainter(fragment,
                            *fragment.GetLayoutObject(),
                            /* paint_fragment */ nullptr,
+                           /* box_item */ nullptr,
                            /* descendants */ nullptr) {}
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
@@ -333,6 +347,20 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
               : *static_cast<const DisplayItemClient*>(
                     fragment.GetLayoutObject()),
           paint_fragment,
+          /* box_item */ nullptr,
+          /* descendants */ nullptr) {}
+
+inline NGBoxFragmentPainter::NGBoxFragmentPainter(
+    const NGPhysicalBoxFragment& fragment,
+    const NGPaintFragment* paint_fragment,
+    const NGFragmentItem* box_item)
+    : NGBoxFragmentPainter(
+          fragment,
+          paint_fragment
+              ? *static_cast<const DisplayItemClient*>(paint_fragment)
+              : *static_cast<const DisplayItemClient*>(box_item),
+          paint_fragment,
+          box_item,
           /* descendants */ nullptr) {}
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
@@ -349,10 +377,10 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     : NGBoxFragmentPainter(fragment,
                            item,
                            /* paint_fragment */ nullptr,
+                           &item,
                            descendants) {
   DCHECK_EQ(item.BoxFragment(), &fragment);
   DCHECK(fragment.IsInlineBox());
-  box_item_ = &item;
 }
 
 }  // namespace blink

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 790 tests; 774 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 791 tests; 775 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -436,6 +436,7 @@ PASS PromiseRejectionEvent interface: existence and properties of interface prot
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PromiseRejectionEvent interface: attribute promise
 PASS PromiseRejectionEvent interface: attribute reason
+PASS DOMParser interface: existence and properties of interface object
 PASS Navigator interface: existence and properties of interface object
 PASS PluginArray interface: existence and properties of interface object
 PASS MimeTypeArray interface: existence and properties of interface object

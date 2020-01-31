@@ -553,6 +553,23 @@ def bind_return_value(code_node, cg_context):
         SymbolNode("return_value", definition_constructor=create_definition))
 
 
+def make_bindings_trace_event(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+    assert cg_context.property_.identifier
+
+    event_name = "{}.{}".format(cg_context.class_like.identifier,
+                                cg_context.property_.identifier)
+    if cg_context.attribute_get:
+        event_name = "{}.{}".format(event_name, "get")
+    elif cg_context.attribute_set:
+        event_name = "{}.{}".format(event_name, "set")
+    elif cg_context.constructor_group:
+        event_name = "{}.{}".format(cg_context.class_like.identifier,
+                                    "constructor")
+
+    return TextNode("BLINK_BINDINGS_TRACE_EVENT(\"{}\");".format(event_name))
+
+
 def make_check_argument_length(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -1304,6 +1321,7 @@ def make_attribute_get_callback_def(cg_context, function_name):
 
     body.extend([
         make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
@@ -1348,6 +1366,7 @@ def make_attribute_set_callback_def(cg_context, function_name):
 
     body.extend([
         make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
@@ -1410,6 +1429,7 @@ def make_constant_callback_def(cg_context, function_name):
         constant_name(cg_context))
     body.extend([
         make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
         logging_nodes,
         EmptyNode(),
         TextNode(v8_set_return_value),
@@ -1461,6 +1481,7 @@ def make_constructor_function_def(cg_context, function_name):
 
     body.extend([
         make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
@@ -1530,6 +1551,7 @@ def make_exposed_construct_callback_def(cg_context, function_name):
         v8_bridge_class_name(cg_context.exposed_construct))
     body.extend([
         make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
@@ -1549,6 +1571,7 @@ def make_operation_function_def(cg_context, function_name):
 
     body.extend([
         make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
@@ -2747,9 +2770,6 @@ def _collect_include_headers(interface):
         for argument in operation.arguments:
             collect_from_idl_type(argument.idl_type)
 
-    if interface.inherited:
-        headers.add(PathManager(interface.inherited).api_path(ext="h"))
-
     path_manager = PathManager(interface)
     headers.discard(path_manager.api_path(ext="h"))
     headers.discard(path_manager.impl_path(ext="h"))
@@ -3059,6 +3079,9 @@ def generate_interface(interface):
         interface.code_generator_info.blink_headers[0],
         "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
     ])
+    if interface.inherited:
+        api_source_node.accumulator.add_include_header(
+            PathManager(interface.inherited).api_path(ext="h"))
     if is_cross_components:
         impl_header_node.accumulator.add_include_headers([
             api_header_path,
@@ -3151,5 +3174,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Node")
+    interface = web_idl_database.find("Element")
     generate_interface(interface)

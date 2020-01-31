@@ -53,25 +53,25 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
         protocol_error_ref;
     HRESULT hr = i->get_ProtocolError(&protocol_error_ref);
     if (FAILED(hr)) {
-      VLOG(2) << "Getting Protocol Error Reference failed: "
-              << logging::SystemErrorCodeToString(hr);
+      DVLOG(2) << "Getting Protocol Error Reference failed: "
+               << logging::SystemErrorCodeToString(hr);
       return GattErrorCode::GATT_ERROR_UNKNOWN;
     }
 
     if (!protocol_error_ref) {
-      VLOG(2) << "Got Null Protocol Error Reference.";
+      DVLOG(2) << "Got Null Protocol Error Reference.";
       return GattErrorCode::GATT_ERROR_UNKNOWN;
     }
 
     uint8_t protocol_error;
     hr = protocol_error_ref->get_Value(&protocol_error);
     if (FAILED(hr)) {
-      VLOG(2) << "Getting Protocol Error Value failed: "
-              << logging::SystemErrorCodeToString(hr);
+      DVLOG(2) << "Getting Protocol Error Value failed: "
+               << logging::SystemErrorCodeToString(hr);
       return GattErrorCode::GATT_ERROR_UNKNOWN;
     }
 
-    VLOG(2) << "Got Protocol Error: " << static_cast<int>(protocol_error);
+    DVLOG(2) << "Got Protocol Error: " << static_cast<int>(protocol_error);
 
     // GATT Protocol Errors are described in the Bluetooth Core Specification
     // Version 5.0 Vol 3, Part F, 3.4.1.1.

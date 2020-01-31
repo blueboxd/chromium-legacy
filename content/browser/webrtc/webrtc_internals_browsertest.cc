@@ -564,6 +564,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdatePeerConnection) {
   ExecuteAndVerifyUpdatePeerConnection(pc_2, "setRemoteDescription",
       ssrc1.GetSsrcAttributeString());
 
+  ExecuteAndVerifyUpdatePeerConnection(pc_2, "createAnswerOnSuccess",
+                                       ssrc2.GetSsrcAttributeString());
   ExecuteAndVerifyUpdatePeerConnection(pc_2, "setLocalDescription",
       ssrc2.GetSsrcAttributeString());
 

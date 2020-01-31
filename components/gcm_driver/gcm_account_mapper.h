@@ -29,10 +29,10 @@ extern const char kGCMAccountMapperAppId[];
 class GCMAccountMapper : public GCMAppHandler {
  public:
   // List of account mappings.
-  typedef std::vector<AccountMapping> AccountMappings;
-  typedef base::Callback<void(const std::string& app_id,
-                              const IncomingMessage& message)>
-      DispatchMessageCallback;
+  using AccountMappings = std::vector<AccountMapping>;
+  using DispatchMessageCallback =
+      base::RepeatingCallback<void(const std::string& app_id,
+                                   const IncomingMessage& message)>;
 
   explicit GCMAccountMapper(GCMDriver* gcm_driver);
   ~GCMAccountMapper() override;

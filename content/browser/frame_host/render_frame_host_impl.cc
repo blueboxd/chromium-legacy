@@ -1702,8 +1702,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
-                        OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DownloadUrl, OnDownloadUrl)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -4202,7 +4200,7 @@ void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
   delegate_->DidReceiveFirstUserActivation(this);
 }
 
-void RenderFrameHostImpl::OnUpdateUserActivationState(
+void RenderFrameHostImpl::UpdateUserActivationState(
     blink::mojom::UserActivationUpdateType update_type) {
   if (!is_active())
     return;

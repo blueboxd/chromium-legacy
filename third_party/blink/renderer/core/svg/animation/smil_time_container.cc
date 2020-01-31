@@ -77,7 +77,9 @@ class SMILTimeContainer::TimingUpdate {
                MovePolicy policy)
       : target_time_(target_time),
         policy_(policy),
-        time_container_(&time_container) {}
+        time_container_(&time_container) {
+    DCHECK_LE(target_time_, time_container_->max_presentation_time_);
+  }
   ~TimingUpdate();
 
   const SMILTime& Time() const { return time_container_->latest_update_time_; }
@@ -151,7 +153,10 @@ static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
     base::TimeDelta::FromSeconds(3);
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
-    : frame_scheduling_state_(kIdle),
+    // We can't seek beyond this time, because at Latest() any additions will
+    // yield the same value.
+    : max_presentation_time_(SMILTime::Latest() - SMILTime::Epsilon()),
+      frame_scheduling_state_(kIdle),
       started_(false),
       paused_(false),
       should_dispatch_events_(!SVGImage::IsInSVGImage(&owner)),
@@ -242,7 +247,7 @@ SMILTime SMILTimeContainer::Elapsed() const {
   SMILTime elapsed = presentation_time_ +
                      SMILTime::FromMicroseconds(time_offset.InMicroseconds());
   DCHECK_GE(elapsed, SMILTime());
-  return elapsed;
+  return ClampPresentationTime(elapsed);
 }
 
 void SMILTimeContainer::ResetDocumentTime() {
@@ -326,8 +331,13 @@ void SMILTimeContainer::Unpause() {
   ScheduleWakeUp(base::TimeDelta(), kSynchronizeAnimations);
 }
 
+SMILTime SMILTimeContainer::ClampPresentationTime(
+    SMILTime presentation_time) const {
+  return std::min(presentation_time, max_presentation_time_);
+}
+
 void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
-  presentation_time_ = elapsed;
+  presentation_time_ = ClampPresentationTime(elapsed);
 
   if (!GetDocument().IsActive())
     return;
@@ -512,6 +522,8 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 }
 
 SMILTime SMILTimeContainer::NextProgressTime(SMILTime presentation_time) const {
+  if (presentation_time == max_presentation_time_)
+    return SMILTime::Unresolved();
   SMILTime next_progress_time = SMILTime::Unresolved();
   for (const auto& entry : priority_queue_) {
     next_progress_time = std::min(

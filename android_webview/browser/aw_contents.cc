@@ -943,6 +943,10 @@ void AwContents::SetWindowVisibility(JNIEnv* env,
                                      bool visible) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.SetWindowVisibility(visible);
+  if (visible)
+    AwContentsLifecycleNotifier::GetInstance().OnWebViewWindowBeVisible(this);
+  else
+    AwContentsLifecycleNotifier::GetInstance().OnWebViewWindowBeInvisible(this);
 }
 
 void AwContents::SetIsPaused(JNIEnv* env,
@@ -958,12 +962,14 @@ void AwContents::OnAttachedToWindow(JNIEnv* env,
                                     int h) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnAttachedToWindow(w, h);
+  AwContentsLifecycleNotifier::GetInstance().OnWebViewAttachedToWindow(this);
 }
 
 void AwContents::OnDetachedFromWindow(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnDetachedFromWindow();
+  AwContentsLifecycleNotifier::GetInstance().OnWebViewDetachedFromWindow(this);
 }
 
 bool AwContents::IsVisible(JNIEnv* env, const JavaParamRef<jobject>& obj) {

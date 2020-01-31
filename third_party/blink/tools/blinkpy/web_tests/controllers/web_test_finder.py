@@ -35,7 +35,7 @@ import re
 
 from blinkpy.web_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from blinkpy.web_tests.models import test_expectations
-from blinkpy.web_tests.models.typ_types import ResultType
+
 
 _log = logging.getLogger(__name__)
 
@@ -167,15 +167,15 @@ class WebTestFinder(object):
             return []
 
         all_tests = set(all_tests_list)
-        tests_to_skip = set()
-        for test in all_tests:
-            expected_results = expectations.get_expectations(test).results
-            if ResultType.Skip in expected_results:
-                tests_to_skip.update({test})
-            if self._options.skip_timeouts and ResultType.Timeout in expected_results:
-                tests_to_skip.update({test})
-            if self._options.skip_failing_tests and ResultType.Failure in expected_results:
-                tests_to_skip.update({test})
+
+        tests_to_skip = expectations.get_tests_with_result_type(test_expectations.SKIP)
+
+        if self._options.skip_timeouts:
+            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.TIMEOUT))
+        if self._options.skip_failing_tests:
+            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.FAIL))
+            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.FLAKY))
+
         if self._options.skipped == 'only':
             tests_to_skip = all_tests - tests_to_skip
         elif self._options.skipped == 'ignore':

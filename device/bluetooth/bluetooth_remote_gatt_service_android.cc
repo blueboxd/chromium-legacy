@@ -71,7 +71,7 @@ BluetoothRemoteGattServiceAndroid::GetGattErrorCode(int bluetooth_gatt_code) {
     case 0x00000003:  // GATT_WRITE_NOT_PERMITTED
       return GATT_ERROR_NOT_PERMITTED;
     default:
-      VLOG(1) << "Unhandled status: " << bluetooth_gatt_code;
+      DVLOG(1) << "Unhandled status: " << bluetooth_gatt_code;
       return BluetoothRemoteGattService::GATT_ERROR_UNKNOWN;
   }
 }
@@ -102,7 +102,7 @@ int BluetoothRemoteGattServiceAndroid::GetAndroidErrorCode(
     case GATT_ERROR_NOT_SUPPORTED:
       return 0x00000006;  // GATT_REQUEST_NOT_SUPPORTED
   }
-  VLOG(1) << "Unhandled error_code: " << error_code;
+  DVLOG(1) << "Unhandled error_code: " << error_code;
   return 0x00000101;  // GATT_FAILURE. No good match.
 }
 
@@ -170,9 +170,9 @@ void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
     const JavaParamRef<jobject>& caller,
     const JavaParamRef<jstring>& instance_id,
     const JavaParamRef<jobject>& /* BluetoothGattCharacteristicWrapper */
-    bluetooth_gatt_characteristic_wrapper,
-    const JavaParamRef<
-        jobject>& /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
+        bluetooth_gatt_characteristic_wrapper,
+    const JavaParamRef<jobject>& /* ChromeBluetoothDevice */
+        chrome_bluetooth_device) {
   std::string instance_id_string =
       base::android::ConvertJavaStringToUTF8(env, instance_id);
 

@@ -28,9 +28,10 @@ class ScopedPaintState {
   STACK_ALLOCATED();
 
  public:
-  ScopedPaintState(const LayoutObject& object, const PaintInfo& paint_info)
-      : fragment_to_paint_(paint_info.FragmentToPaint(object)),
-        input_paint_info_(paint_info) {
+  ScopedPaintState(const LayoutObject& object,
+                   const PaintInfo& paint_info,
+                   const FragmentData* fragment_data)
+      : fragment_to_paint_(fragment_data), input_paint_info_(paint_info) {
     if (!fragment_to_paint_) {
       // The object has nothing to paint in the current fragment.
       // TODO(wangxianzhu): Use DCHECK(fragment_to_paint_) in PaintOffset()
@@ -55,9 +56,16 @@ class ScopedPaintState {
     }
   }
 
+  ScopedPaintState(const LayoutObject& object, const PaintInfo& paint_info)
+      : ScopedPaintState(object,
+                         paint_info,
+                         paint_info.FragmentToPaint(object)) {}
+
   ScopedPaintState(const NGPhysicalFragment& fragment,
                    const PaintInfo& paint_info)
-      : ScopedPaintState(*fragment.GetLayoutObject(), paint_info) {}
+      : ScopedPaintState(*fragment.GetLayoutObject(),
+                         paint_info,
+                         paint_info.FragmentToPaint(fragment)) {}
 
   ~ScopedPaintState() {
     if (paint_offset_translation_as_drawing_)

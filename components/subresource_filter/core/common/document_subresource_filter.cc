@@ -65,9 +65,11 @@ LoadPolicy DocumentSubresourceFilter::GetLoadPolicy(
 
   ++statistics_.num_loads_evaluated;
   DCHECK(document_origin_);
-  if (ruleset_matcher_.ShouldDisallowResourceLoad(
-          subresource_url, *document_origin_, subresource_type,
-          activation_state_.generic_blocking_rules_disabled)) {
+  LoadPolicy result = ruleset_matcher_.GetLoadPolicyForResourceLoad(
+      subresource_url, *document_origin_, subresource_type,
+      activation_state_.generic_blocking_rules_disabled);
+  DCHECK_NE(LoadPolicy::WOULD_DISALLOW, result);
+  if (result == LoadPolicy::DISALLOW) {
     ++statistics_.num_loads_matching_rules;
     if (activation_state_.activation_level ==
         mojom::ActivationLevel::kEnabled) {
@@ -78,7 +80,7 @@ LoadPolicy DocumentSubresourceFilter::GetLoadPolicy(
       return LoadPolicy::WOULD_DISALLOW;
     }
   }
-  return LoadPolicy::ALLOW;
+  return result;
 }
 
 const url_pattern_index::flat::UrlRule*

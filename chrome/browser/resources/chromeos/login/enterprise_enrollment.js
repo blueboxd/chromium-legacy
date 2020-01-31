@@ -90,7 +90,10 @@ Polymer({
     },
 
     /**
-     * Controls if there will be "retry" button on the error screen.
+     * Controls if there will be "Try Again" button on the error screen.
+     *
+     * True:  Error Nature Recoverable
+     * False: Error Nature Fatal
      */
     canRetryAfterError_: {
       type: Boolean,
@@ -111,6 +114,28 @@ Polymer({
     deviceLocation_: {
       type: String,
       value: '',
+    },
+
+    /**
+     * Whether the enrollment is automatic
+     *
+     * True:  Automatic (Attestation-based)
+     * False: Manual (OAuth)
+     */
+    isAutoEnroll_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether the enrollment is enforced and cannot be skipped.
+     *
+     * True:  Enrollment Enforced
+     * False: Enrollment Optional
+     */
+    isForced_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -301,12 +326,10 @@ Polymer({
     this.authenticator_.load(
         cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
 
-    var modes = ['manual', 'forced', 'recovery'];
-    for (var i = 0; i < modes.length; ++i) {
-      this.classList.toggle(
-          'mode-' + modes[i], data.enrollment_mode == modes[i]);
-    }
     this.isManualEnrollment_ = data.enrollment_mode === 'manual';
+    this.isForced_ = data.is_enrollment_enforced;
+    this.isAutoEnroll_ = data.attestationBased;
+
     this.authenticatorDialogDisplayed_ = false;
 
     this.offlineAdUi_.onBeforeShow();
@@ -324,6 +347,14 @@ Polymer({
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
   },
 
+  /*
+   * Executed on language change.
+   */
+  updateLocalizedContent: function() {
+    this.offlineAdUi_.i18nUpdateLocale();
+    this.i18nUpdateLocale();
+  },
+
   /**
    * Shows attribute-prompt step with pre-filled asset ID and
    * location.
@@ -334,15 +365,16 @@ Polymer({
     this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT);
   },
 
+
   /**
-   * Shows a success card for attestation-based enrollment that shows
-   * which domain the device was enrolled into.
+   * Sets the type of the device and the enterprise domain to be shown.
+   *
+   * @param {string} enterprise_domain
+   * @param {string} device_type
    */
-  showAttestationBasedEnrollmentSuccess(
-      device, enterpriseEnrollmentDomain) {
-    this.enrolledDomain_ = enterpriseEnrollmentDomain;
-    this.deviceName_ = device;
-    this.showStep(ENROLLMENT_STEP.SUCCESS);
+  setEnterpriseDomainAndDeviceType(enterprise_domain, device_type) {
+    this.enrolledDomain_ = enterprise_domain;
+    this.deviceName_ = device_type;
   },
 
   /**
@@ -369,7 +401,7 @@ Polymer({
     this.currentStep_ = step;
 
     if (this.isErrorStep_(step)) {
-      this.$['oauth-enroll-error-card'].submitButton.focus();
+      this.$['oauth-enroll-error-card'].show();
     } else if (step == ENROLLMENT_STEP.SIGNIN) {
       this.$['oauth-enroll-auth-view'].focus();
     } else if (step == ENROLLMENT_STEP.SUCCESS) {
@@ -384,24 +416,6 @@ Polymer({
 
     this.lastBackMessageValue_ = false;
     this.updateControlsState();
-  },
-
-  /**
-   * Sets an error message and switches to the error screen.
-   * @param {string} message the error message.
-   * @param {boolean} retry whether the retry link should be shown.
-   */
-  showError(message, retry) {
-    this.errorText_ = message;
-    this.canRetryAfterError_ = retry;
-
-    if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
-      this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR);
-    } else if (this.currentStep_ == ENROLLMENT_STEP.AD_JOIN) {
-      this.showStep(ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR);
-    } else {
-      this.showStep(ENROLLMENT_STEP.ERROR);
-    }
   },
 
   doReload() {
@@ -419,8 +433,7 @@ Polymer({
    * @param {boolean} showUnlockConfig true if there is an encrypted
    * configuration (and not unlocked yet).
    */
-  setAdJoinParams(
-      machineName, userName, errorState, showUnlockConfig) {
+  setAdJoinParams(machineName, userName, errorState, showUnlockConfig) {
     this.offlineAdUi_.disabled = false;
     this.offlineAdUi_.machineName = machineName;
     this.offlineAdUi_.userName = userName;
@@ -436,15 +449,6 @@ Polymer({
     this.offlineAdUi_.disabled = false;
     this.offlineAdUi_.setJoinConfigurationOptions(options);
     this.offlineAdUi_.unlockPasswordStep = false;
-  },
-
-  /**
-   * Retries the enrollment process after an error occurred in a previous
-   * attempt. This goes to the C++ side through |chrome| first to clean up the
-   * profile, so that the next attempt is performed with a clean state.
-   */
-  doRetry_() {
-    chrome.send('oauthEnrollRetry');
   },
 
   /**
@@ -495,9 +499,6 @@ Polymer({
   updateControlsState() {
     this.navigation_.refreshVisible = this.isAtTheBeginning() &&
         this.isManualEnrollment_ === false;
-    this.navigation_.closeVisible =
-        (this.currentStep_ == ENROLLMENT_STEP.ERROR &&
-         !this.navigation_.refreshVisible);
   },
 
   /**
@@ -505,24 +506,6 @@ Polymer({
    */
   onEnrollmentFinished_() {
     this.screen.closeEnrollment_('done');
-  },
-
-  /*
-   * Executed on language change.
-   */
-  updateLocalizedContent() {
-    this.offlineAdUi_.i18nUpdateLocale();
-    this.i18nUpdateLocale();
-  },
-
-  onErrorButtonPressed_: function () {
-    if (this.currentStep_ == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR) {
-      this.showStep(ENROLLMENT_STEP.AD_JOIN);
-    } else if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR) {
-      this.onEnrollmentFinished_();
-    } else {
-      this.doRetry_();
-    }
   },
 
   /**
@@ -545,6 +528,50 @@ Polymer({
   },
 
   /**
+   * ERROR DIALOG LOGIC:
+   *
+   *    The error displayed on the enrollment error dialog depends on the nature
+   *    of the error (_recoverable_/_fatal_), on the authentication mechanism
+   *    (_manual_/_automatic_), and on whether the enrollment is _enforced_ or
+   *    _optional_.
+   *
+   *    AUTH MECH |  ENROLLMENT |  ERROR NATURE            Buttons Layout
+   *    ----------------------------------------
+   *    AUTOMATIC |   ENFORCED  |  RECOVERABLE    [    [Enroll Man.][Try Again]]
+   *    AUTOMATIC |   ENFORCED  |  FATAL          [               [Enroll Man.]]
+   *    AUTOMATIC |   OPTIONAL  |  RECOVERABLE    [    [Enroll Man.][Try Again]]
+   *    AUTOMATIC |   OPTIONAL  |  FATAL          [               [Enroll Man.]]
+   *
+   *    MANUAL    |   ENFORCED  |  RECOVERABLE    [[Back]           [Try Again]]
+   *    MANUAL    |   ENFORCED  |  FATAL          [[Back]                      ]
+   *    MANUAL    |   OPTIONAL  |  RECOVERABLE    [           [Skip][Try Again]]
+   *    MANUAL    |   OPTIONAL  |  FATAL          [                      [Skip]]
+   *
+   *    -  The buttons [Back], [Enroll Manually] and [Skip] all call 'cancel'.
+   *    - [Enroll Manually] and [Skip] are the same button (GENERIC CANCEL) and
+   *      are relabeled depending on the situation.
+   *    - [Back] is only shown the button "GENERIC CANCEL" above isn't shown.
+   */
+
+  /**
+   * Sets an error message and switches to the error screen.
+   * @param {string} message the error message.
+   * @param {boolean} retry whether the retry link should be shown.
+   */
+  showError: function(message, retry) {
+    this.errorText_ = message;
+    this.canRetryAfterError_ = retry;
+
+    if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
+      this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR);
+    } else if (this.currentStep_ == ENROLLMENT_STEP.AD_JOIN) {
+      this.showStep(ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR);
+    } else {
+      this.showStep(ENROLLMENT_STEP.ERROR);
+    }
+  },
+
+  /**
    * Simple equality comparison function.
    */
   isErrorStep_(currentStep) {
@@ -554,16 +581,49 @@ Polymer({
   },
 
   /**
-   * Text for error screen button depending on type of error.
+   *  Provides the label for the generic cancel button (Skip / Enroll Manually)
+   *
+   *  During automatic enrollment, the label is 'Enroll Manually'.
+   *  During manual enrollment, the label is 'Skip'.
+   * @private
    */
-  errorAction_(locale, step, retry) {
-    if (this.currentStep_ == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR) {
-      return this.i18n('oauthEnrollRetry');
-    } else if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR) {
-      return this.i18n('oauthEnrollDone');
-    } else if (this.currentStep_ == ENROLLMENT_STEP.ERROR) {
-      return retry ? this.i18n('oauthEnrollRetry') : '';
+  getCancelButtonLabel_(locale_, is_automatic) {
+    if (this.isAutoEnroll_) {
+      return 'oauthEnrollManualEnrollment';
+    } else {
+      return 'oauthEnrollSkip';
     }
-  }
+  },
+
+  /**
+   *  Whether the "GENERIC CANCEL" (SKIP / ENROLL_MANUALLY ) button should be
+   *  shown. It is only shown when in 'AUTOMATIC' mode OR when in
+   *  manual mode without enrollment enforcement.
+   *
+   *  When the enrollment is manual AND forced, a 'BACK' button will be shown.
+   * @param {Boolean} automatic - Whether the enrollment is automatic
+   * @param {Boolean} enforced  - Whether the enrollment is enforced
+   * @private
+   */
+  isGenericCancel_(automatic, enforced) {
+    return automatic || (!automatic && !enforced);
+  },
+
+  /**
+   * Retries the enrollment process after an error occurred in a previous
+   * attempt. This goes to the C++ side through |chrome| first to clean up the
+   * profile, so that the next attempt is performed with a clean state.
+   */
+  doRetry_() {
+    chrome.send('oauthEnrollRetry');
+  },
+
+  /**
+   *  Event handler for the 'Try again' button that is shown upon an error
+   *  during ActiveDirectory join.
+   */
+  onAdJoinErrorRetry_() {
+    this.showStep(ENROLLMENT_STEP.AD_JOIN);
+  },
 
 });

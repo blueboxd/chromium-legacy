@@ -29,7 +29,7 @@ class MonthPicker extends HTMLElement {
     this.initializeFromConfig_(config);
 
     this.yearListView_ =
-        new YearListView(this.minimumMonth_, this.maximumMonth_);
+        new YearListView(this.minimumMonth_, this.maximumMonth_, config);
     this.append(this.yearListView_.element);
     this.initializeYearListView_();
 
@@ -38,6 +38,7 @@ class MonthPicker extends HTMLElement {
     this.initializeTodayButton_();
 
     window.addEventListener('resize', this.onWindowResize_);
+    this.addEventListener('keydown', this.onKeyDown_);
   }
 
   initializeFromConfig_ = (config) => {
@@ -49,20 +50,6 @@ class MonthPicker extends HTMLElement {
         Month.Maximum;
     this.minimumMonth_ = Month.createFromDay(minimum.firstDay());
     this.maximumMonth_ = Month.createFromDay(maximum.lastDay());
-
-    const initialSelection = parseDateString(config.currentValue);
-    const initialSelectedMonth = initialSelection ?
-        Month.createFromDay(initialSelection.middleDay()) :
-        Month.createFromToday();
-    this.initialValidSelection_ = false;
-    if (initialSelectedMonth < this.minimumMonth_) {
-      this.selectedMonth_ = this.minimumMonth_;
-    } else if (initialSelectedMonth > this.maximumMonth_) {
-      this.selectedMonth_ = this.maximumMonth_;
-    } else {
-      this.selectedMonth_ = initialSelectedMonth;
-      this.initialValidSelection_ = initialSelection != null;
-    }
   };
 
   initializeYearListView_ = () => {
@@ -78,24 +65,20 @@ class MonthPicker extends HTMLElement {
           MonthPicker.YearWidth + 'px';
     }
     this.yearListView_.element.style.top = MonthPicker.YearPadding + 'px';
-    if (this.initialValidSelection_) {
-      this.yearListView_.setSelectedMonth(this.selectedMonth_);
-    }
-    this.yearListView_.show(this.selectedMonth_);
+
+    let yearForInitialScroll = this.selectedMonth ?
+        this.selectedMonth.year - 1 :
+        Month.createFromToday().year - 1;
+    this.yearListView_.scrollToRow(yearForInitialScroll, false);
+    this.yearListView_.selectWithoutAnimating(yearForInitialScroll);
+
     this.yearListView_.on(
         YearListView.EventTypeYearListViewDidSelectMonth,
         this.onYearListViewDidSelectMonth_);
-    this.yearListView_.on(
-        YearListView.EventTypeYearListViewDidHide, this.onYearListViewDidHide_);
-  };
-
-  onYearListViewDidHide_ = (sender) => {
-    window.pagePopupController.closePopup();
   };
 
   onYearListViewDidSelectMonth_ = (sender, month) => {
-    this.selectedMonth_ = month;
-    const selectedValue = this.selectedMonth_.toString();
+    const selectedValue = month.toString();
     window.pagePopupController.setValueAndClosePopup(0, selectedValue);
   };
 
@@ -118,9 +101,61 @@ class MonthPicker extends HTMLElement {
     window.pagePopupController.setValueAndClosePopup(0, selectedValue);
   };
 
+  onKeyDown_ = (event) => {
+    switch (event.key) {
+      case 't':
+      case 'Enter':
+        if (this.selectedMonth) {
+          window.pagePopupController.setValueAndClosePopup(
+              0, this.selectedMonth.toString());
+        } else {
+          window.pagePopupController.closePopup();
+        }
+        break;
+      case 'Escape':
+        if (!this.selectedMonth ||
+            (this.selectedMonth.equals(this.initialSelectedMonth))) {
+          window.pagePopupController.closePopup();
+        } else {
+          this.resetToInitialValue_();
+          window.pagePopupController.setValue(
+              this.hadValidValueWhenOpened ?
+                  this.initialSelectedMonth.toString() :
+                  '');
+        }
+        break;
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 'PageUp':
+      case 'PageDown':
+        if (this.selectedMonth) {
+          window.pagePopupController.setValue(this.selectedMonth.toString());
+        }
+        break;
+    }
+  };
+
+  resetToInitialValue_ = () => {
+    this.yearListView_.setSelectedMonthAndUpdateView(this.initialSelectedMonth);
+  };
+
   onWindowResize_ = (event) => {
     window.removeEventListener('resize', this.onWindowResize_);
     this.yearListView_.element.focus();
+  };
+
+  get selectedMonth() {
+    return this.yearListView_._selectedMonth;
+  };
+
+  get initialSelectedMonth() {
+    return this.yearListView_._initialSelectedMonth;
+  };
+
+  get hadValidValueWhenOpened() {
+    return this.yearListView_._hadValidValueWhenOpened;
   };
 }
 MonthPicker.Width = 232;

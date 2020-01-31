@@ -36,6 +36,8 @@ SubframeNavigationFilteringThrottle::SubframeNavigationFilteringThrottle(
 
 SubframeNavigationFilteringThrottle::~SubframeNavigationFilteringThrottle() {
   switch (load_policy_) {
+    case LoadPolicy::EXPLICITLY_ALLOW:
+      FALLTHROUGH;
     case LoadPolicy::ALLOW:
       UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
           "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Allowed",
@@ -132,6 +134,9 @@ SubframeNavigationFilteringThrottle::MaybeDeferToCalculateLoadPolicy() {
 
 void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
     LoadPolicy policy) {
+  // TODO(https://crbug.com/1046806): Modify this call in cases where the new
+  // |policy| matches an explicitly allowed rule, rather than using the most
+  // restrictive policy for the redirect chain.
   load_policy_ = MoreRestrictiveLoadPolicy(policy, load_policy_);
   pending_load_policy_calculations_ -= 1;
 
@@ -167,11 +172,17 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
   // or resume here according to load policy.
   if (load_policy_ == LoadPolicy::DISALLOW) {
     HandleDisallowedLoad();
+
+    // Because the navigation will be canceled, this is the last LoadPolicy that
+    // will be calculated.
     NotifyLoadPolicy();
     CancelDeferredNavigation(BLOCK_REQUEST_AND_COLLAPSE);
-  } else {
-    Resume();
+    return;
   }
+
+  // We will calculate another LoadPolicy for this navigation, so do not notify
+  // the manager yet.
+  Resume();
 }
 
 void SubframeNavigationFilteringThrottle::DeferStart(DeferStage stage) {

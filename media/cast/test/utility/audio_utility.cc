@@ -6,14 +6,13 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/test/utility/audio_utility.h"
 
 namespace media {
 namespace cast {
-
-const double Pi = 3.14159265358979323846;
 
 TestAudioBusFactory::TestAudioBusFactory(int num_channels,
                                          int sample_rate,
@@ -113,8 +112,8 @@ bool EncodeTimestamp(uint16_t timestamp,
   for (size_t i = 0; i < length; i++) {
     double mix_of_components = 0.0;
     for (size_t f = 0; f < frequencies.size(); f++) {
-      mix_of_components += sin((i + sample_offset) * Pi * 2.0 * frequencies[f] /
-                                   kSamplingFrequency);
+      mix_of_components += sin((i + sample_offset) * base::kPiDouble * 2.0 *
+                               frequencies[f] / kSamplingFrequency);
     }
     mix_of_components /= kNumBits + 1;
     DCHECK_LE(fabs(mix_of_components), 1.0);
@@ -136,8 +135,10 @@ double DecodeOneFrequency(const float* samples,
   double sin_sum = 0.0;
   double cos_sum = 0.0;
   for (size_t i = 0; i < length; i++) {
-    sin_sum += samples[i] * sin(i * Pi * 2 * frequency / kSamplingFrequency);
-    cos_sum += samples[i] * cos(i * Pi * 2 * frequency / kSamplingFrequency);
+    sin_sum += samples[i] *
+               sin(i * base::kPiDouble * 2 * frequency / kSamplingFrequency);
+    cos_sum += samples[i] *
+               cos(i * base::kPiDouble * 2 * frequency / kSamplingFrequency);
   }
   return sqrt(sin_sum * sin_sum + cos_sum * cos_sum);
 }

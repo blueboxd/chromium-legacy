@@ -355,8 +355,8 @@ void GCMClientImpl::Start(StartMode start_mode) {
   // using GCM functionality yet.
   gcm_store_->Load((start_mode == IMMEDIATE_START) ? GCMStore::CREATE_IF_MISSING
                                                    : GCMStore::DO_NOT_CREATE,
-                   base::Bind(&GCMClientImpl::OnLoadCompleted,
-                              weak_ptr_factory_.GetWeakPtr()));
+                   base::BindOnce(&GCMClientImpl::OnLoadCompleted,
+                                  weak_ptr_factory_.GetWeakPtr()));
   state_ = LOADING;
 }
 
@@ -371,8 +371,8 @@ void GCMClientImpl::OnLoadCompleted(
         // An immediate start was requested during the delayed start that just
         // completed. Perform it now.
         gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
-                         base::Bind(&GCMClientImpl::OnLoadCompleted,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&GCMClientImpl::OnLoadCompleted,
+                                        weak_ptr_factory_.GetWeakPtr()));
       } else {
         // In the case that the store does not exist, set |state_| back to
         // INITIALIZED such that store loading could be triggered again when
@@ -481,11 +481,12 @@ void GCMClientImpl::InitializeMCSClient() {
       gcm_store_.get(), io_task_runner_, &recorder_);
 
   mcs_client_->Initialize(
-      base::Bind(&GCMClientImpl::OnMCSError, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&GCMClientImpl::OnMessageReceivedFromMCS,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&GCMClientImpl::OnMessageSentToMCS,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&GCMClientImpl::OnMCSError,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&GCMClientImpl::OnMessageReceivedFromMCS,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&GCMClientImpl::OnMessageSentToMCS,
+                          weak_ptr_factory_.GetWeakPtr()),
       std::move(load_result_));
 }
 
@@ -500,8 +501,8 @@ void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
   device_checkin_info_.accounts_set = true;
   gcm_store_->SetDeviceCredentials(
       checkin_info.android_id, checkin_info.secret,
-      base::Bind(&GCMClientImpl::SetDeviceCredentialsCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GCMClientImpl::SetDeviceCredentialsCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   OnReady(std::vector<AccountMapping>(), base::Time());
 }
@@ -525,8 +526,8 @@ void GCMClientImpl::DestroyStoreWhenNotNeeded() {
   if (state_ != LOADED || start_mode_ != DELAYED_START)
     return;
 
-  gcm_store_->Destroy(base::Bind(&GCMClientImpl::DestroyStoreCallback,
-                      weak_ptr_factory_.GetWeakPtr()));
+  gcm_store_->Destroy(base::BindOnce(&GCMClientImpl::DestroyStoreCallback,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::ResetStore() {
@@ -540,8 +541,8 @@ void GCMClientImpl::ResetStore() {
   gcm_store_reset_ = true;
 
   // Destroy the GCM store to start over.
-  gcm_store_->Destroy(base::Bind(&GCMClientImpl::ResetStoreCallback,
-                      weak_ptr_factory_.GetWeakPtr()));
+  gcm_store_->Destroy(base::BindOnce(&GCMClientImpl::ResetStoreCallback,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::SetAccountTokens(
@@ -591,25 +592,25 @@ void GCMClientImpl::SetAccountTokens(
 void GCMClientImpl::UpdateAccountMapping(
     const AccountMapping& account_mapping) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  gcm_store_->AddAccountMapping(account_mapping,
-                                base::Bind(&GCMClientImpl::DefaultStoreCallback,
-                                           weak_ptr_factory_.GetWeakPtr()));
+  gcm_store_->AddAccountMapping(
+      account_mapping, base::BindOnce(&GCMClientImpl::DefaultStoreCallback,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::RemoveAccountMapping(const CoreAccountId& account_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   gcm_store_->RemoveAccountMapping(
-      account_id,
-      base::Bind(&GCMClientImpl::DefaultStoreCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      account_id, base::BindOnce(&GCMClientImpl::DefaultStoreCallback,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   gcm_store_->SetLastTokenFetchTime(
-      time, base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       /*operation_suffix_for_uma=*/"SetLastTokenFetchTime"));
+      time,
+      base::BindOnce(&GCMClientImpl::IgnoreWriteResultCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*operation_suffix_for_uma=*/"SetLastTokenFetchTime"));
 }
 
 void GCMClientImpl::UpdateHeartbeatTimer(
@@ -629,18 +630,19 @@ void GCMClientImpl::AddInstanceIDData(const std::string& app_id,
   // not persisted).
   gcm_store_->AddInstanceIDData(
       app_id, SerializeInstanceIDData(instance_id, extra_data),
-      base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 /*operation_suffix_for_uma=*/"AddInstanceIDData"));
+      base::BindOnce(&GCMClientImpl::IgnoreWriteResultCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*operation_suffix_for_uma=*/"AddInstanceIDData"));
 }
 
 void GCMClientImpl::RemoveInstanceIDData(const std::string& app_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   instance_id_data_.erase(app_id);
   gcm_store_->RemoveInstanceIDData(
-      app_id, base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         /*operation_suffix_for_uma=*/"RemoveInstanceIDData"));
+      app_id,
+      base::BindOnce(&GCMClientImpl::IgnoreWriteResultCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*operation_suffix_for_uma=*/"RemoveInstanceIDData"));
 }
 
 void GCMClientImpl::GetInstanceIDData(const std::string& app_id,
@@ -684,8 +686,8 @@ void GCMClientImpl::StartCheckin() {
                                            chrome_build_proto);
   checkin_request_.reset(new CheckinRequest(
       gservices_settings_.GetCheckinURL(), request_info, GetGCMBackoffPolicy(),
-      base::Bind(&GCMClientImpl::OnCheckinCompleted,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&GCMClientImpl::OnCheckinCompleted,
+                     weak_ptr_factory_.GetWeakPtr()),
       url_loader_factory_, io_task_runner_, &recorder_));
   // Taking a snapshot of the accounts count here, as there might be an asynch
   // update of the account tokens while checkin is in progress.
@@ -727,18 +729,16 @@ void GCMClientImpl::OnCheckinCompleted(
     // First update G-services settings, as something might have changed.
     if (gservices_settings_.UpdateFromCheckinResponse(checkin_response)) {
       gcm_store_->SetGServicesSettings(
-          gservices_settings_.settings_map(),
-          gservices_settings_.digest(),
-          base::Bind(&GCMClientImpl::SetGServicesSettingsCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
+          gservices_settings_.settings_map(), gservices_settings_.digest(),
+          base::BindOnce(&GCMClientImpl::SetGServicesSettingsCallback,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
 
     last_checkin_time_ = clock_->Now();
     gcm_store_->SetLastCheckinInfo(
-        last_checkin_time_,
-        device_checkin_info_.last_checkin_accounts,
-        base::Bind(&GCMClientImpl::SetLastCheckinInfoCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+        last_checkin_time_, device_checkin_info_.last_checkin_accounts,
+        base::BindOnce(&GCMClientImpl::SetLastCheckinInfoCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
     SchedulePeriodicCheckin();
   }
 }
@@ -971,8 +971,8 @@ void GCMClientImpl::Register(
       new RegistrationRequest(
           gservices_settings_.GetRegistrationURL(), request_info,
           std::move(request_handler), GetGCMBackoffPolicy(),
-          base::Bind(&GCMClientImpl::OnRegisterCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), registration_info),
+          base::BindOnce(&GCMClientImpl::OnRegisterCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), registration_info),
           kMaxRegistrationRetries, url_loader_factory_, io_task_runner_,
           &recorder_, source_to_record));
   registration_request->Start();
@@ -1015,8 +1015,8 @@ void GCMClientImpl::OnRegisterCompleted(
     gcm_store_->AddRegistration(
         registration_info->GetSerializedKey(),
         registration_info->GetSerializedValue(registration_id),
-        base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&GCMClientImpl::UpdateRegistrationCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   delegate_->OnRegisterFinished(
@@ -1115,8 +1115,8 @@ void GCMClientImpl::Unregister(
         token_found = true;
         gcm_store_->RemoveRegistration(
             cached_instance_id_token_info->GetSerializedKey(),
-            base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
-                        weak_ptr_factory_.GetWeakPtr()));
+            base::BindOnce(&GCMClientImpl::UpdateRegistrationCallback,
+                           weak_ptr_factory_.GetWeakPtr()));
         registrations_.erase(iter++);
       } else {
         ++iter;
@@ -1139,9 +1139,9 @@ void GCMClientImpl::Unregister(
     registrations_.erase(iter);
 
     gcm_store_->RemoveRegistration(
-      registration_info->GetSerializedKey(),
-      base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
-                  weak_ptr_factory_.GetWeakPtr()));
+        registration_info->GetSerializedKey(),
+        base::BindOnce(&GCMClientImpl::UpdateRegistrationCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   bool use_subtype = instance_id_token_info &&
@@ -1158,8 +1158,8 @@ void GCMClientImpl::Unregister(
       new UnregistrationRequest(
           gservices_settings_.GetRegistrationURL(), request_info,
           std::move(request_handler), GetGCMBackoffPolicy(),
-          base::Bind(&GCMClientImpl::OnUnregisterCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), registration_info),
+          base::BindOnce(&GCMClientImpl::OnUnregisterCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), registration_info),
           kMaxUnregistrationRetries, url_loader_factory_, io_task_runner_,
           &recorder_, source_to_record));
   unregistration_request->Start();

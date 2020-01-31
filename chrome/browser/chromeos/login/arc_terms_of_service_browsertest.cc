@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
     EXPECT_EQ(
         GetEscapedMessageString(l10n_util::GetStringUTF8(content_resource_id)),
         test::OobeJS().GetString("$('arc-learn-more-content').textContent"));
-    test::OobeJS().TapOn("arc-tos-overlay-close-bottom");
+    test::OobeJS().ClickOnPath({"arc-tos-overlay-learn-more", "closeButton"});
   }
 
   EXPECT_FALSE(screen_exit_result().has_value());

@@ -300,9 +300,9 @@ void GCMAccountMapperTest::Restart() {
 
 void GCMAccountMapperTest::Initialize(
     const GCMAccountMapper::AccountMappings mappings) {
-  mapper()->Initialize(mappings,
-                       base::Bind(&GCMAccountMapperTest::MessageReceived,
-                                  base::Unretained(this)));
+  mapper()->Initialize(
+      mappings, base::BindRepeating(&GCMAccountMapperTest::MessageReceived,
+                                    base::Unretained(this)));
 }
 
 void GCMAccountMapperTest::MessageReceived(const std::string& app_id,

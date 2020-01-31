@@ -52,13 +52,12 @@ bool FakeGCMDriver::IsConnected() const {
   return true;
 }
 
-void FakeGCMDriver::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                     ClearActivityLogs clear_logs) {
-}
+void FakeGCMDriver::GetGCMStatistics(GetGCMStatisticsCallback callback,
+                                     ClearActivityLogs clear_logs) {}
 
-void FakeGCMDriver::SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                                    bool recording) {
-}
+void FakeGCMDriver::SetGCMRecording(
+    const GCMStatisticsRecordingCallback& callback,
+    bool recording) {}
 
 GCMClient::Result FakeGCMDriver::EnsureStarted(
     GCMClient::StartMode start_mode) {

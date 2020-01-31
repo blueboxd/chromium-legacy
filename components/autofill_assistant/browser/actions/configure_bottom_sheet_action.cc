@@ -96,9 +96,8 @@ void ConfigureBottomSheetAction::OnTimeout() {
   if (!callback_)
     return;
 
-  DVLOG(2)
-      << __func__
-      << " Timed out waiting for window height change. Continuing anyways.";
+  VLOG(2) << __func__
+          << " Timed out waiting for window height change. Continuing anyways.";
   UpdateProcessedAction(OkClientStatus());
   processed_action_proto_->mutable_status_details()->set_original_status(
       ProcessedActionStatusProto::TIMED_OUT);

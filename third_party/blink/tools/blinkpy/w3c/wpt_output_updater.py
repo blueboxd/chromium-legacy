@@ -90,12 +90,10 @@ class WPTOutputUpdater(object):
         delim = output_json['path_delimiter']
         # Go through each WPT expectation, try to find it in the output, and
         # then update the expected statuses in the output file.
-        for typ_expectation in self.expectations.expectations:
-            for exp_list in typ_expectation.individual_exps.values():
-                for e in exp_list:
-                    test_leaf = self._find_test_for_expectation(e, delim, output_json)
-                    if test_leaf is not None:
-                        self._update_output_for_test(e, test_leaf)
+        for e in self.expectations.expectations():
+            test_leaf = self._find_test_for_expectation(e, delim, output_json)
+            if test_leaf is not None:
+                self._update_output_for_test(e, test_leaf)
         return output_json
 
     def _find_test_for_expectation(self, exp, delim, output_json):
@@ -118,13 +116,13 @@ class WPTOutputUpdater(object):
             not supposed to be handled.
         """
         # Skip expectations for non-WPT tests
-        if not exp.test or not exp.test.startswith('external/wpt'):
+        if not exp.name or not exp.name.startswith('external/wpt'):
             return None
 
         # Split the test name by the test delimiter. We omit the first 2 entries
         # because they are 'external' and 'wpt' and these don't exist in the WPT
         # run.
-        test_name_parts = exp.test.split(delim)[2:]
+        test_name_parts = exp.name.split(delim)[2:]
 
         # Drill down through the JSON output file using the parts of the test
         # name to find the leaf node containing the results for this test.
@@ -134,7 +132,7 @@ class WPTOutputUpdater(object):
             # from the expectations file was not run in this shard. If we don't
             # find the test in the WPT output, then skip the expectation.
             if name_part not in test_leaf.keys():
-                _log.debug("Test was not run: %s", exp.test)
+                _log.debug("Test was not run: %s", exp.name)
                 return None
             test_leaf = test_leaf[name_part]
 
@@ -142,7 +140,7 @@ class WPTOutputUpdater(object):
         # do this we check that we're at a leaf, which should have 'actual' and
         # 'expected' fields.
         if 'actual' not in test_leaf or 'expected' not in test_leaf:
-            _log.debug("Expectation was not for a test, skipping: %s", exp.test)
+            _log.debug("Expectation was not for a test, skipping: %s", exp.name)
             return None
 
         # If we get this far then we have an expectation for a single test that
@@ -158,9 +156,9 @@ class WPTOutputUpdater(object):
                  file.
             test_leaf: a dictionary containing the JSON output for a test.
         """
-        expectation_string = ' '.join(sorted(exp.results))
+        expectation_string = ' '.join(exp.expectations)
         _log.info("Updating expectation for test %s from %s to %s",
-                  exp.test, test_leaf['expected'], expectation_string)
+                  exp.name, test_leaf['expected'], expectation_string)
         test_leaf['expected'] = expectation_string
 
         # Also update the "is_regression" and "is_unexpected" fields.

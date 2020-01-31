@@ -119,79 +119,87 @@ void V8SetReturnValue(const CallbackInfo& info,
 // ScriptWrappable
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      ScriptWrappable* value,
+                      const ScriptWrappable* value,
                       V8ReturnValue::MainWorld) {
   DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
   if (UNLIKELY(!value))
     return info.GetReturnValue().SetNull();
 
-  if (DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(), value))
+  ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(value);
+  if (DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(),
+                                               wrappable))
     return;
 
-  info.GetReturnValue().Set(value->Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      ScriptWrappable& value,
+                      const ScriptWrappable& value,
                       V8ReturnValue::MainWorld) {
   DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
-  if (DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(), &value))
+  ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(&value);
+  if (DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(),
+                                               wrappable))
     return;
 
-  info.GetReturnValue().Set(value.Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      ScriptWrappable* value,
+                      const ScriptWrappable* value,
                       const ScriptWrappable* receiver) {
   if (UNLIKELY(!value))
     return info.GetReturnValue().SetNull();
 
-  if (DOMDataStore::SetReturnValueFast(info.GetReturnValue(), value,
+  ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(value);
+  if (DOMDataStore::SetReturnValueFast(info.GetReturnValue(), wrappable,
                                        info.This(), receiver)) {
     return;
   }
 
-  info.GetReturnValue().Set(value->Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      const ScriptWrappable& value,
+                      const ScriptWrappable* receiver) {
+  ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(&value);
+  if (DOMDataStore::SetReturnValueFast(info.GetReturnValue(), wrappable,
+                                       info.This(), receiver)) {
+    return;
+  }
+
+  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      const ScriptWrappable* value,
+                      v8::Local<v8::Context> creation_context) {
+  if (UNLIKELY(!value))
+    return info.GetReturnValue().SetNull();
+
+  ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(value);
+  if (DOMDataStore::SetReturnValue(info.GetReturnValue(), wrappable))
+    return;
+
+  info.GetReturnValue().Set(
+      wrappable->Wrap(info.GetIsolate(), creation_context->Global()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
                       ScriptWrappable& value,
-                      const ScriptWrappable* receiver) {
-  if (DOMDataStore::SetReturnValueFast(info.GetReturnValue(), &value,
-                                       info.This(), receiver)) {
-    return;
-  }
-
-  info.GetReturnValue().Set(value.Wrap(info.GetIsolate(), info.This()));
-}
-
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      ScriptWrappable* value,
                       v8::Local<v8::Context> creation_context) {
-  if (UNLIKELY(!value))
-    return info.GetReturnValue().SetNull();
-
-  if (DOMDataStore::SetReturnValue(info.GetReturnValue(), value))
+  ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(&value);
+  if (DOMDataStore::SetReturnValue(info.GetReturnValue(), wrappable))
     return;
 
   info.GetReturnValue().Set(
-      value->Wrap(info.GetIsolate(), creation_context->Global()));
-}
-
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      ScriptWrappable& value,
-                      v8::Local<v8::Context> creation_context) {
-  if (DOMDataStore::SetReturnValue(info.GetReturnValue(), &value))
-    return;
-
-  info.GetReturnValue().Set(
-      value.Wrap(info.GetIsolate(), creation_context->Global()));
+      wrappable->Wrap(info.GetIsolate(), creation_context->Global()));
 }
 
 }  // namespace bindings

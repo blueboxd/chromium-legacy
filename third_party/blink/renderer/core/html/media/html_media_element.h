@@ -305,9 +305,6 @@ class CORE_EXPORT HTMLMediaElement
   // Checks to see if current media data is CORS-same-origin.
   bool IsMediaDataCorsSameOrigin() const;
 
-  // Returns this media element is in a cross-origin frame.
-  bool IsInCrossOriginFrame() const;
-
   void ScheduleEvent(Event*);
 
   // Returns the "effective media volume" value as specified in the HTML5 spec.

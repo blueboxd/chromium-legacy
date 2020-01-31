@@ -81,14 +81,15 @@ SignedExchangeCertFetcher::CreateAndStart(
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
     SignedExchangeReporter* reporter,
-    const base::Optional<base::UnguessableToken>& throttling_profile_id) {
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
+    base::Optional<net::NetworkIsolationKey> network_isolation_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::CreateAndStart");
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
-      new SignedExchangeCertFetcher(std::move(shared_url_loader_factory),
-                                    std::move(throttles), cert_url, force_fetch,
-                                    std::move(callback), devtools_proxy,
-                                    reporter, throttling_profile_id));
+      new SignedExchangeCertFetcher(
+          std::move(shared_url_loader_factory), std::move(throttles), cert_url,
+          force_fetch, std::move(callback), devtools_proxy, reporter,
+          throttling_profile_id, std::move(network_isolation_key)));
   cert_fetcher->Start();
   return cert_fetcher;
 }
@@ -102,7 +103,8 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
     SignedExchangeReporter* reporter,
-    const base::Optional<base::UnguessableToken>& throttling_profile_id)
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
+    base::Optional<net::NetworkIsolationKey> network_isolation_key)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
@@ -131,6 +133,12 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     resource_request_->enable_load_timing = true;
   }
   resource_request_->throttling_profile_id = throttling_profile_id;
+  if (network_isolation_key) {
+    resource_request_->trusted_params =
+        network::ResourceRequest::TrustedParams();
+    resource_request_->trusted_params->network_isolation_key =
+        *network_isolation_key;
+  }
 }
 
 SignedExchangeCertFetcher::~SignedExchangeCertFetcher() = default;

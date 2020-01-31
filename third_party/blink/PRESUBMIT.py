@@ -58,7 +58,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
             error_list = None
             match = pattern.match(line)
             if (match and match.group(1) not in allowed_interfaces):
-                if match.group(2) != '-shared':
+                if match.group(2) not in ('-shared', '-forward'):
                     if f.LocalPath().startswith(public_folder):
                         error_list = public_blink_mojom_errors
                     elif match.group(2) not in ('-blink', '-blink-forward', '-blink-test-utils'):
@@ -73,13 +73,13 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
     if non_blink_mojom_errors:
         results.append(output_api.PresubmitError(
             'Files that include non-Blink variant mojoms found. '
-            'You must include .mojom-blink.h or .mojom-shared.h instead:',
+            'You must include .mojom-blink.h, .mojom-forward.h or .mojom-shared.h instead:',
             non_blink_mojom_errors))
 
     if public_blink_mojom_errors:
         results.append(output_api.PresubmitError(
             'Public blink headers using Blink variant mojoms found. '
-            'You must include .mojom-shared.h instead:',
+            'You must include .mojom-forward.h or .mojom-shared.h instead:',
             public_blink_mojom_errors))
 
     return results

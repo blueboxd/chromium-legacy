@@ -239,6 +239,7 @@ network::mojom::NetworkService* GetNetworkService() {
   static NetworkServiceClient* g_client;
   if (!g_network_service_remote->is_bound() ||
       !g_network_service_remote->is_connected()) {
+    bool service_was_bound = g_network_service_remote->is_bound();
     g_network_service_remote->reset();
     if (GetContentClient()->browser()->IsShuttingDown()) {
       // This happens at system shutdown, since in other scenarios the network
@@ -257,6 +258,8 @@ network::mojom::NetworkService* GetNetworkService() {
         if (IsInProcessNetworkService()) {
           CreateInProcessNetworkService(std::move(receiver));
         } else {
+          if (service_was_bound)
+            LOG(ERROR) << "Network service crashed, restarting service.";
           ServiceProcessHost::Launch(
               std::move(receiver),
               ServiceProcessHost::Options()

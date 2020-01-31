@@ -52,6 +52,7 @@ class MakeNamesWriter(json5_generator.Writer):
         'Symbol': {},
     }
     default_metadata = {
+        'allowDuplicates': False,
         'export': '',
         'namespace': '',
         'suffix': '',
@@ -77,6 +78,12 @@ class MakeNamesWriter(json5_generator.Writer):
                              '"%s" is specified in %s.' %
                              (namespace, json5_file_path))
 
+        entries = self.json5_file.name_dictionaries
+        if self.json5_file.metadata['allowDuplicates']:
+            entries = json5_generator.remove_duplicates(entries)
+        else:
+            json5_generator.reject_duplicates(entries)
+
         basename, _ = os.path.splitext(os.path.basename(json5_file_path[0]))
         self._outputs = {
             (basename + '.h'): self.generate_header,
@@ -87,7 +94,7 @@ class MakeNamesWriter(json5_generator.Writer):
             'namespace': namespace,
             'suffix': suffix,
             'export': export,
-            'entries': self.json5_file.name_dictionaries,
+            'entries': entries,
             'header_guard': self.make_header_guard(qualified_header),
             'input_files': self._input_files,
             'this_include_path': qualified_header,

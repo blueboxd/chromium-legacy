@@ -66,8 +66,7 @@ TEST_F(WebStateDelegateTabHelperTest, OnAuthRequired) {
 
 // Tests that GetJavaScriptDialogPresenter() returns an overlay-based JavaScript
 // dialog presenter.
-// TODO(crbug.com/1038514): Re-enable this test.
-TEST_F(WebStateDelegateTabHelperTest, DISABLED_GetJavaScriptDialogPresenter) {
+TEST_F(WebStateDelegateTabHelperTest, GetJavaScriptDialogPresenter) {
   // Verify that the delegate returns a non-null presenter.
   web::JavaScriptDialogPresenter* presenter =
       delegate()->GetJavaScriptDialogPresenter(web_state());

@@ -48,7 +48,8 @@ namespace smb_client {
 
 namespace {
 
-const ProviderId kProviderId = ProviderId::CreateFromNativeId("smb");
+const file_system_provider::ProviderId kProviderId =
+    file_system_provider::ProviderId::CreateFromNativeId("smb");
 constexpr char kTestUser[] = "foobar";
 constexpr char kTestDomain[] = "EXAMPLE.COM";
 constexpr char kSharePath[] = "\\\\server\\foobar";

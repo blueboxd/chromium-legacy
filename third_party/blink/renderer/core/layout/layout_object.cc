@@ -880,6 +880,17 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
       (style->HasAutoLeftAndRight() || style->HasAutoTopAndBottom()))
     return false;
 
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled() &&
+               object->IsLayoutNGObject())) {
+    // We need to rebuild the entire NG fragment spine all the way from the root
+    // (or at least the nearest self-painting paint layer), since we traverse
+    // the fragments, and not objects. Fragment painting is initiated at
+    // self-painting layers, but we cannot check if it's a self-painting layer
+    // now, because it may cease to be one during layout (an object with clipped
+    // overflow that no longer has content that requires it to clip).
+    return false;
+  }
+
   if (object->ShouldApplyLayoutContainment() &&
       object->ShouldApplySizeContainment())
     return true;

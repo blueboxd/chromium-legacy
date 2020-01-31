@@ -151,11 +151,12 @@ class GCMDriverTest : public testing::Test {
   void GetEncryptionInfoCompleted(std::string p256dh, std::string auth_secret);
   void UnregisterCompleted(GCMClient::Result result);
 
-  const base::Closure& async_operation_completed_callback() const {
-    return async_operation_completed_callback_;
+  void AsyncOperationCompleted() {
+    if (async_operation_completed_callback_)
+      std::move(async_operation_completed_callback_).Run();
   }
-  void set_async_operation_completed_callback(const base::Closure& callback) {
-    async_operation_completed_callback_ = callback;
+  void set_async_operation_completed_callback(base::OnceClosure callback) {
+    async_operation_completed_callback_ = std::move(callback);
   }
 
  private:
@@ -170,7 +171,7 @@ class GCMDriverTest : public testing::Test {
   std::unique_ptr<FakeGCMAppHandler> gcm_app_handler_;
   std::unique_ptr<FakeGCMConnectionObserver> gcm_connection_observer_;
 
-  base::Closure async_operation_completed_callback_;
+  base::OnceClosure async_operation_completed_callback_;
 
   std::string registration_id_;
   GCMClient::Result registration_result_;
@@ -278,10 +279,9 @@ void GCMDriverTest::Register(const std::string& app_id,
                              WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
-  driver_->Register(app_id,
-                    sender_ids,
-                    base::Bind(&GCMDriverTest::RegisterCompleted,
-                               base::Unretained(this)));
+  driver_->Register(app_id, sender_ids,
+                    base::BindOnce(&GCMDriverTest::RegisterCompleted,
+                                   base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -292,11 +292,9 @@ void GCMDriverTest::Send(const std::string& app_id,
                          WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
-  driver_->Send(app_id,
-                receiver_id,
-                message,
-                base::Bind(&GCMDriverTest::SendCompleted,
-                           base::Unretained(this)));
+  driver_->Send(
+      app_id, receiver_id, message,
+      base::BindOnce(&GCMDriverTest::SendCompleted, base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -317,8 +315,8 @@ void GCMDriverTest::Unregister(const std::string& app_id,
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
   driver_->Unregister(app_id,
-                      base::Bind(&GCMDriverTest::UnregisterCompleted,
-                                 base::Unretained(this)));
+                      base::BindOnce(&GCMDriverTest::UnregisterCompleted,
+                                     base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -333,30 +331,26 @@ void GCMDriverTest::RegisterCompleted(const std::string& registration_id,
                                       GCMClient::Result result) {
   registration_id_ = registration_id;
   registration_result_ = result;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  AsyncOperationCompleted();
 }
 
 void GCMDriverTest::SendCompleted(const std::string& message_id,
                                   GCMClient::Result result) {
   send_message_id_ = message_id;
   send_result_ = result;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  AsyncOperationCompleted();
 }
 
 void GCMDriverTest::GetEncryptionInfoCompleted(std::string p256dh,
                                                std::string auth_secret) {
   p256dh_ = std::move(p256dh);
   auth_secret_ = std::move(auth_secret);
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  AsyncOperationCompleted();
 }
 
 void GCMDriverTest::UnregisterCompleted(GCMClient::Result result) {
   unregistration_result_ = result;
-  if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+  AsyncOperationCompleted();
 }
 
 TEST_F(GCMDriverTest, Create) {
@@ -933,8 +927,9 @@ void GCMDriverInstanceIDTest::GetInstanceID(const std::string& app_id,
   base::RunLoop run_loop;
   set_async_operation_completed_callback(run_loop.QuitClosure());
   driver()->GetInstanceIDHandlerInternal()->GetInstanceIDData(
-      app_id, base::Bind(&GCMDriverInstanceIDTest::GetInstanceIDDataCompleted,
-                         base::Unretained(this)));
+      app_id,
+      base::BindOnce(&GCMDriverInstanceIDTest::GetInstanceIDDataCompleted,
+                     base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -943,8 +938,7 @@ void GCMDriverInstanceIDTest::GetInstanceIDDataCompleted(
     const std::string& instance_id, const std::string& extra_data) {
   instance_id_ = instance_id;
   extra_data_ = extra_data;
-  if (!async_operation_completed_callback().is_null())
-    async_operation_completed_callback().Run();
+  AsyncOperationCompleted();
 }
 
 void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
@@ -956,7 +950,8 @@ void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
   std::map<std::string, std::string> options;
   driver()->GetInstanceIDHandlerInternal()->GetToken(
       app_id, authorized_entity, scope, options,
-      base::Bind(&GCMDriverTest::RegisterCompleted, base::Unretained(this)));
+      base::BindOnce(&GCMDriverTest::RegisterCompleted,
+                     base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -969,7 +964,8 @@ void GCMDriverInstanceIDTest::DeleteToken(const std::string& app_id,
   set_async_operation_completed_callback(run_loop.QuitClosure());
   driver()->GetInstanceIDHandlerInternal()->DeleteToken(
       app_id, authorized_entity, scope,
-      base::Bind(&GCMDriverTest::UnregisterCompleted, base::Unretained(this)));
+      base::BindOnce(&GCMDriverTest::UnregisterCompleted,
+                     base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }

@@ -14,9 +14,10 @@ namespace scheduler {
 // and should not be renumbered.
 enum class FrameOriginType {
   kMainFrame = 0,
-  kSameOriginFrame = 1,
-  kCrossOriginFrame = 2,
-  kCount = 3
+  kSameOriginToMainFrame = 1,
+  kCrossOriginToMainFrame = 2,
+  // TODO(dcheng): Get rid of this and use the kMaxValue idiom.
+  kCount = 3,
 };
 
 FrameOriginType GetFrameOriginType(FrameScheduler* frame_scheduler);

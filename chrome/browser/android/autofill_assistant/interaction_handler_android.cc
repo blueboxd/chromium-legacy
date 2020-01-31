@@ -65,7 +65,7 @@ CreateInteractionCallbackFromProto(const CallbackProto& proto,
   switch (proto.kind_case()) {
     case CallbackProto::kSetValue:
       if (proto.set_value().model_identifier().empty()) {
-        DVLOG(1)
+        VLOG(1)
             << "Error creating SetValue interaction: model_identifier not set";
         return base::nullopt;
       }
@@ -73,7 +73,7 @@ CreateInteractionCallbackFromProto(const CallbackProto& proto,
           base::BindRepeating(&SetValue, user_model->GetWeakPtr(),
                               proto.set_value().model_identifier()));
     case CallbackProto::KIND_NOT_SET:
-      DVLOG(1) << "Error creating interaction: kind not set";
+      VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
   }
 }
@@ -112,7 +112,7 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     auto key = CreateEventKeyFromProto(interaction_proto.trigger_event(), env,
                                        views, jdelegate);
     if (!key) {
-      DVLOG(1) << "Invalid trigger event for interaction";
+      VLOG(1) << "Invalid trigger event for interaction";
       return false;
     }
 
@@ -120,7 +120,7 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
       auto callback =
           CreateInteractionCallbackFromProto(callback_proto, user_model);
       if (!callback) {
-        DVLOG(1) << "Invalid callback for interaction";
+        VLOG(1) << "Invalid callback for interaction";
         return false;
       }
       AddInteraction(*key, *callback);

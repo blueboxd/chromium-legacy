@@ -1551,14 +1551,23 @@ bool LocalFrame::ConsumeTransientUserActivation(
 }
 
 void LocalFrame::NotifyUserActivation(bool need_browser_verification) {
-  Client()->NotifyUserActivation(need_browser_verification);
+  mojom::blink::UserActivationUpdateType update_type =
+      need_browser_verification
+          ? mojom::blink::UserActivationUpdateType::
+                kNotifyActivationPendingBrowserVerification
+          : mojom::blink::UserActivationUpdateType::kNotifyActivation;
+
+  GetLocalFrameHostRemote().UpdateUserActivationState(update_type);
+  Client()->NotifyUserActivation();
   NotifyUserActivationInLocalTree();
 }
 
 bool LocalFrame::ConsumeTransientUserActivation(
     UserActivationUpdateSource update_source) {
-  if (update_source == UserActivationUpdateSource::kRenderer)
-    Client()->ConsumeTransientUserActivation();
+  if (update_source == UserActivationUpdateSource::kRenderer) {
+    GetLocalFrameHostRemote().UpdateUserActivationState(
+        mojom::blink::UserActivationUpdateType::kConsumeTransientActivation);
+  }
   return ConsumeTransientUserActivationInLocalTree();
 }
 

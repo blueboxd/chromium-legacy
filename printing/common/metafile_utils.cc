@@ -5,7 +5,6 @@
 #include "printing/common/metafile_utils.h"
 
 #include "base/time/time.h"
-#include "printing/common/printing_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"

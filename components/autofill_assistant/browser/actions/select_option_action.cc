@@ -26,14 +26,14 @@ void SelectOptionAction::InternalProcessAction(ProcessActionCallback callback) {
 
   // A non prefilled |select_option| is not supported.
   if (!select_option.has_selected_option()) {
-    DVLOG(1) << __func__ << ": empty option";
+    VLOG(1) << __func__ << ": empty option";
     UpdateProcessedAction(INVALID_ACTION);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
   Selector selector = Selector(select_option.element());
   if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
+    VLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;

@@ -280,7 +280,8 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init,
   document_->GetViewportData().UpdateViewportDescription();
   if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler()) {
     frame_scheduler->TraceUrlChange(document_->Url().GetString());
-    frame_scheduler->SetCrossOrigin(GetFrame()->IsCrossOriginSubframe());
+    frame_scheduler->SetCrossOriginToMainFrame(
+        GetFrame()->IsCrossOriginToMainFrame());
   }
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {
@@ -706,7 +707,7 @@ void LocalDOMWindow::print(ScriptState* script_state) {
     return;
   }
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
     document()->CountUse(WebFeature::kSameOriginIframeWindowPrint);
   }
   document()->CountUseOnlyInCrossOriginIframe(
@@ -746,7 +747,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!page)
     return;
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
     document()->CountUse(WebFeature::kSameOriginIframeWindowAlert);
   }
   document()->CountUseOnlyInCrossOriginIframe(
@@ -779,7 +780,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!page)
     return false;
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
     document()->CountUse(WebFeature::kSameOriginIframeWindowConfirm);
   }
   document()->CountUseOnlyInCrossOriginIframe(
@@ -819,7 +820,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
                                                    default_value, return_value))
     return return_value;
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
     document()->CountUse(WebFeature::kSameOriginIframeWindowPrompt);
   }
   document()->CountUseOnlyInCrossOriginIframe(

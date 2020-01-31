@@ -28,7 +28,7 @@ class ChromeSecurityBlockingPageFactory : public SecurityBlockingPageFactory {
       const ChromeSecurityBlockingPageFactory&) = delete;
 
   // SecurityBlockingPageFactory:
-  SSLBlockingPage* CreateSSLPage(
+  std::unique_ptr<SSLBlockingPage> CreateSSLPage(
       content::WebContents* web_contents,
       int cert_error,
       const net::SSLInfo& ssl_info,
@@ -37,14 +37,14 @@ class ChromeSecurityBlockingPageFactory : public SecurityBlockingPageFactory {
       const base::Time& time_triggered,
       const GURL& support_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter) override;
-  CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
+  std::unique_ptr<CaptivePortalBlockingPage> CreateCaptivePortalBlockingPage(
       content::WebContents* web_contents,
       const GURL& request_url,
       const GURL& login_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
       int cert_error) override;
-  BadClockBlockingPage* CreateBadClockBlockingPage(
+  std::unique_ptr<BadClockBlockingPage> CreateBadClockBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const net::SSLInfo& ssl_info,
@@ -52,20 +52,21 @@ class ChromeSecurityBlockingPageFactory : public SecurityBlockingPageFactory {
       const base::Time& time_triggered,
       ssl_errors::ClockState clock_state,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter) override;
-  LegacyTLSBlockingPage* CreateLegacyTLSBlockingPage(
+  std::unique_ptr<LegacyTLSBlockingPage> CreateLegacyTLSBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info) override;
-  MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
+  std::unique_ptr<MITMSoftwareBlockingPage> CreateMITMSoftwareBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
       const std::string& mitm_software_name) override;
-  BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
+  std::unique_ptr<BlockedInterceptionBlockingPage>
+  CreateBlockedInterceptionBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const GURL& request_url,

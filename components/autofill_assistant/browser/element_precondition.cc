@@ -22,7 +22,7 @@ ElementPrecondition::ElementPrecondition(
     // TODO(crbug.com/806868): Check if we shouldn't skip the script when this
     // happens.
     if (element.selectors_size() == 0) {
-      DVLOG(3) << "Ignored empty selectors in script precondition.";
+      VLOG(3) << "Ignored empty selectors in script precondition.";
       continue;
     }
 

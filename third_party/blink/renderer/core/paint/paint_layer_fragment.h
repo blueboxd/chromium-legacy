@@ -33,6 +33,7 @@
 namespace blink {
 
 class FragmentData;
+class NGPhysicalBoxFragment;
 
 // PaintLayerFragment is the representation of a fragment.
 // https://drafts.csswg.org/css-break/#fragment
@@ -84,6 +85,8 @@ struct PaintLayerFragment {
 
   // The corresponding FragmentData of this structure.
   const FragmentData* fragment_data = nullptr;
+
+  const NGPhysicalBoxFragment* physical_fragment = nullptr;
 };
 
 typedef Vector<PaintLayerFragment, 1> PaintLayerFragments;

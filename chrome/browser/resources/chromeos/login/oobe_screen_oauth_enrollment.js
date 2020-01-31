@@ -9,9 +9,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showError',
       'doReload',
       'showAttributePromptStep',
-      'showAttestationBasedEnrollmentSuccess',
       'setAdJoinParams',
       'setAdJoinConfiguration',
+      'setEnterpriseDomainAndDeviceType'
     ],
 
     /**
@@ -44,13 +44,14 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
-     * Shows a success card for attestation-based enrollment that shows
-     * which domain the device was enrolled into.
+     * Sets the type of the device and the enterprise domain to be shown.
+     *
+     * @param {string} enterprise_domain
+     * @param {string} device_type
      */
-    showAttestationBasedEnrollmentSuccess(device, enterpriseEnrollmentDomain) {
+    setEnterpriseDomainAndDeviceType(enterprise_domain, device_type) {
       $('enterprise-enrollment')
-          .showAttestationBasedEnrollmentSuccess(
-              device, enterpriseEnrollmentDomain);
+          .setEnterpriseDomainAndDeviceType(enterprise_domain, device_type);
     },
 
     /**

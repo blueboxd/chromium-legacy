@@ -223,20 +223,20 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const GURL& client_url,
       int64_t trace_event_id,
       FindRegistrationCallback callback,
-      blink::ServiceWorkerStatusCode status,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
-      std::unique_ptr<ResourceList> resources);
+      std::unique_ptr<ResourceList> resources,
+      ServiceWorkerDatabase::Status database_status);
   void DidFindRegistrationForScope(
       FindRegistrationCallback callback,
-      blink::ServiceWorkerStatusCode status,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
-      std::unique_ptr<ResourceList> resources);
+      std::unique_ptr<ResourceList> resources,
+      ServiceWorkerDatabase::Status database_status);
   void DidFindRegistrationForId(
       int64_t registration_id,
       FindRegistrationCallback callback,
-      blink::ServiceWorkerStatusCode status,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
-      std::unique_ptr<ResourceList> resources);
+      std::unique_ptr<ResourceList> resources,
+      ServiceWorkerDatabase::Status database_status);
 
   void DidGetRegistrationsForOrigin(
       GetRegistrationsCallback callback,

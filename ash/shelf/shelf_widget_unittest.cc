@@ -530,6 +530,68 @@ TEST_F(ShelfWidgetTest, ScreenLockStopsHotseatTransitionAnimation) {
             gfx::Rect(360, 18, 80, 4));
 }
 
+// Tests the shelf widget's opaque background gets reshown if hotseat transition
+// from kShown state gets interrupted by a transition back to kShown state.
+TEST_F(ShelfWidgetTest,
+       OpaqueBackgroundReshownAfterTransitionFromHomeChangesBackToHome) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  UpdateDisplay("800x800");
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Create a window to transition to the in-app shelf.
+  auto window = AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 800, 800));
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()
+                  ->GetAnimatingBackground()
+                  ->GetAnimator()
+                  ->is_animating());
+  const gfx::Rect animating_background_bounds =
+      GetShelfWidget()->GetAnimatingBackground()->bounds();
+  EXPECT_NE(GetShelfWidget()->GetAnimatingBackground()->transform(),
+            GetShelfWidget()->GetAnimatingBackground()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(),
+            GetShelfWidget()->GetAnimatingBackground()->GetTargetTransform());
+
+  // Go back home before the transition to in-app shelf finishes.
+  window->Hide();
+
+  // The shelf background should still be animating at this point, but to
+  // different bounds.
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()
+                  ->GetAnimatingBackground()
+                  ->GetAnimator()
+                  ->is_animating());
+  EXPECT_NE(animating_background_bounds,
+            GetShelfWidget()->GetAnimatingBackground()->bounds());
+  EXPECT_EQ(gfx::Transform(),
+            GetShelfWidget()->GetAnimatingBackground()->GetTargetTransform());
+
+  // Run the current animation to the end, end verify the opaque background is
+  // reshown after ending tablet mode.
+  GetShelfWidget()->GetAnimatingBackground()->GetAnimator()->StopAnimating();
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_TRUE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+}
+
 class ShelfWidgetAfterLoginTest : public AshTestBase {
  public:
   ShelfWidgetAfterLoginTest() { set_start_session(false); }

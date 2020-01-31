@@ -1335,6 +1335,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
+  void UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType update_type) override;
   void HandleAccessibilityFindInPageResult(
       blink::mojom::FindInPageResultAXParamsPtr params) override;
   void HandleAccessibilityFindInPageTermination() override;
@@ -1533,8 +1535,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           const gfx::Range& range);
   void OnFocusedNodeChanged(bool is_editable_element,
                             const gfx::Rect& bounds_in_frame_widget);
-  void OnUpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type);
   void OnSetNeedsOcclusionTracking(bool needs_tracking);
   void OnFrameDidCallFocus();
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);

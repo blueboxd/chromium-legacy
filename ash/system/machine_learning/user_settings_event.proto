@@ -28,6 +28,24 @@ message UserSettingsEvent {
       BRIGHTNESS = 8;
     }
 
+    enum AccessibilityId {
+      SPOKEN_FEEDBACK = 1;
+      SELECT_TO_SPEAK = 2;
+      DICTATION = 3;
+      HIGH_CONTRAST = 4;
+      MAGNIFIER = 5;
+      DOCKED_MAGNIFIER = 6;
+      LARGE_CURSOR = 7;
+      AUTO_CLICK = 8;
+      VIRTUAL_KEYBOARD = 9;
+      SWITCH_ACCESS = 10;
+      CARET_HIGHLIGHT = 11;
+      MONO_AUDIO = 12;
+      HIGHLIGHT_MOUSE_CURSOR = 13;
+      HIGHLIGHT_KEYBOARD_FOCUS = 14;
+      STICKY_KEYS = 15;
+    }
+
     // Randomly generated ID that links together settings events that occurred
     // at the same time.
     optional int32 event_id = 1;
@@ -39,6 +57,10 @@ message UserSettingsEvent {
     optional int32 previous_value = 4;
     // Value of the setting after the change.
     optional int32 current_value = 5;
+
+    // The accessibility setting that was changed. Only populated if
+    // |setting_id| is ACCESSIBILITY.
+    optional AccessibilityId accessibility_id = 6;
   }
 
   message Features {

@@ -19,7 +19,7 @@ base::android::ScopedJavaLocalRef<jobject> GetJavaColor(
   if (!Java_AssistantColor_isValidColorString(
           env, base::android::ConvertUTF8ToJavaString(env, color_string))) {
     if (!color_string.empty()) {
-      DVLOG(1) << "Encountered invalid color string: " << color_string;
+      VLOG(1) << "Encountered invalid color string: " << color_string;
     }
     return nullptr;
   }
@@ -38,8 +38,8 @@ base::android::ScopedJavaLocalRef<jobject> GetJavaColor(
               env, jcontext,
               base::android::ConvertUTF8ToJavaString(
                   env, proto.resource_identifier()))) {
-        DVLOG(1) << "Encountered invalid color resource identifier: "
-                 << proto.resource_identifier();
+        VLOG(1) << "Encountered invalid color resource identifier: "
+                << proto.resource_identifier();
         return nullptr;
       }
       return Java_AssistantColor_createFromResource(

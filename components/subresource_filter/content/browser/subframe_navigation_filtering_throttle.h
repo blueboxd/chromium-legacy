@@ -90,7 +90,9 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   DeferStage defer_stage_ = DeferStage::kNotDeferring;
   base::TimeTicks last_defer_timestamp_;
   base::TimeDelta total_defer_time_;
-  LoadPolicy load_policy_ = LoadPolicy::ALLOW;
+
+  // Set to the least restrictive load policy by default.
+  LoadPolicy load_policy_ = LoadPolicy::EXPLICITLY_ALLOW;
 
   // As specified in the constructor comment, |delegate_| must outlive this
   // object.

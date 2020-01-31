@@ -179,11 +179,19 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
 }
 
 void FinishFragmentation(const NGConstraintSpace& space,
+                         const NGBlockBreakToken* previous_break_token,
                          LayoutUnit block_size,
                          LayoutUnit intrinsic_block_size,
-                         LayoutUnit previously_consumed_block_size,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder* builder) {
+  LayoutUnit previously_consumed_block_size;
+  unsigned sequence_number = 0;
+  if (previous_break_token && !previous_break_token->IsBreakBefore()) {
+    previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
+    sequence_number = previous_break_token->SequenceNumber() + 1;
+  }
+  builder->SetSequenceNumber(sequence_number);
+
   if (builder->DidBreak()) {
     // One of our children broke. Even if we fit within the remaining space, we
     // need to prepare a break token.

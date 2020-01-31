@@ -54,6 +54,11 @@ class EnrollmentScreenView {
   virtual void SetEnrollmentConfig(Controller* controller,
                                    const policy::EnrollmentConfig& config) = 0;
 
+  // Sets the enterprise domain and the device type to be shown for the user.
+  virtual void SetEnterpriseDomainAndDeviceType(
+      const std::string& domain,
+      const base::string16& device_type) = 0;
+
   // Shows the contents of the screen.
   virtual void Show() = 0;
 
@@ -73,9 +78,8 @@ class EnrollmentScreenView {
   virtual void ShowAttributePromptScreen(const std::string& asset_id,
                                          const std::string& location) = 0;
 
-  // Shows a success string for attestation-based enrollment.
-  virtual void ShowAttestationBasedEnrollmentSuccessScreen(
-      const std::string& enterprise_domain) = 0;
+  // Shows the success screen
+  virtual void ShowEnrollmentSuccessScreen() = 0;
 
   // Shows the spinner screen for enrollment.
   virtual void ShowEnrollmentSpinnerScreen() = 0;

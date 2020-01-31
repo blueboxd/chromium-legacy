@@ -102,8 +102,9 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
     main_thread_heap_ = this;
 
   for (int arena_index = 0; arena_index < BlinkGC::kLargeObjectArenaIndex;
-       arena_index++)
+       arena_index++) {
     arenas_[arena_index] = new NormalPageArena(thread_state_, arena_index);
+  }
   arenas_[BlinkGC::kLargeObjectArenaIndex] =
       new LargeObjectArena(thread_state_, BlinkGC::kLargeObjectArenaIndex);
 
@@ -570,20 +571,26 @@ void ThreadHeap::CollectStatistics(ThreadState::Statistics* stats) {
 #undef SNAPSHOT_ARENA
 }
 
-bool ThreadHeap::AdvanceSweep(SweepingType sweeping_type,
-                              base::TimeTicks deadline) {
+bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
   static constexpr base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
-  auto sweeping_function = sweeping_type == SweepingType::kMutator
-                               ? &BaseArena::LazySweepWithDeadline
-                               : &BaseArena::ConcurrentSweepWithDeadline;
   for (size_t i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
     const base::TimeDelta remaining_budget =
         deadline - slack - base::TimeTicks::Now();
     if (remaining_budget <= base::TimeDelta() ||
-        !(arenas_[i]->*sweeping_function)(deadline)) {
+        !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;
+    }
+  }
+  return true;
+}
+
+bool ThreadHeap::AdvanceConcurrentSweep(base::experimental::JobDelegate* job) {
+  for (size_t i = 0; i < BlinkGC::kNumberOfArenas; i++) {
+    while (!arenas_[i]->ConcurrentSweepOnePage()) {
+      if (job->ShouldYield())
+        return false;
     }
   }
   return true;

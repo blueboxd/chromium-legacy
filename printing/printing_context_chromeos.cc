@@ -28,7 +28,7 @@
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
-#include "printing/printing_features_chromeos.h"
+#include "printing/printing_features.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -154,7 +154,8 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
     options.push_back(ConstructOption(kIppPinEncryption, kPinEncryptionNone));
   }
 
-  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes)) {
+  if (base::FeatureList::IsEnabled(
+          printing::features::kAdvancedPpdAttributes)) {
     size_t regular_attr_count = options.size();
     std::map<std::string, std::vector<std::string>> multival;
     for (const auto& setting : settings.advanced_settings()) {

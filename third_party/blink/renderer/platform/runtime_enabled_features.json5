@@ -893,7 +893,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "stable",
     },
     {
@@ -907,10 +907,16 @@
     },
     {
       name: "LayoutNGFragmentItem",
+      implied_by: ["LayoutNGFragmentTraversal"],
     },
     {
       name: "LayoutNGFragmentPaint",
-      implied_by: ["LayoutNG"],
+      implied_by: ["LayoutNG", "LayoutNGFragmentTraversal"],
+    },
+    {
+      // Traverse the fragment tree when painting and hit-testing, instead of
+      // the layout object tree.
+      name: "LayoutNGFragmentTraversal",
     },
     {
       name: "LayoutNGLineCache",

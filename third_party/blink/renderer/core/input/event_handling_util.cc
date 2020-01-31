@@ -152,7 +152,7 @@ bool ShouldDiscardEventTargetingFrame(const WebInputEvent& event,
   // during lifecycle updates, in FrameView::UpdateViewportIntersection, and
   // propagated via FrameView::RectInParentIsStable.
   bool should_discard = false;
-  if (frame.NeedsOcclusionTracking() && frame.IsCrossOriginSubframe()) {
+  if (frame.NeedsOcclusionTracking() && frame.IsCrossOriginToMainFrame()) {
     should_discard =
         (event.GetModifiers() & WebInputEvent::kTargetFrameMovedRecently) ||
         !frame.View()->RectInParentIsStable(event.TimeStamp());

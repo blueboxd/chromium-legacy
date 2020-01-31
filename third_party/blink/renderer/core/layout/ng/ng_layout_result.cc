@@ -49,6 +49,10 @@ NGLayoutResult::NGLayoutResult(
   bitfields_.subtree_modified_margin_strut =
       builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
+  // We don't support fragment caching when block-fragmenting, so mark the
+  // result as non-reusable.
+  if (builder->has_block_fragmentation_)
+    EnsureRareData()->is_single_use = true;
   if (builder->minimal_space_shortage_ != LayoutUnit::Max()) {
 #if DCHECK_IS_ON()
     DCHECK(!HasRareData() || !rare_data_->has_tallest_unbreakable_block_size);

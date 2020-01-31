@@ -138,19 +138,28 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTextMetricsDemoApps", IDS_ARC_OOBE_TERMS_DIALOG_DEMO_APPS);
   builder->Add("arcAcceptAndContinueGoogleServiceConfirmation",
                IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION);
+  builder->Add("arcLearnMoreStatisticsTitle",
+               IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_TITLE);
   builder->Add("arcLearnMoreStatistics",
                is_child_account_ ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD
                                  : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS);
+  builder->Add("arcLearnMoreLocationServiceTitle",
+               IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_TITLE);
   builder->Add("arcLearnMoreLocationService",
                is_child_account_
                    ? IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD
                    : IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES);
+  builder->Add("arcLearnMoreBackupAndRestoreTitle",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_TITLE);
   builder->Add("arcLearnMoreBackupAndRestore",
                is_child_account_
                    ? IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD
                    : IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE);
+  builder->Add("arcLearnMorePaiServiceTitle",
+               IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE_TITLE);
   builder->Add("arcLearnMorePaiService", IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE);
   builder->Add("arcOverlayClose", IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON);
+  builder->Add("oobeModalDialogClose", IDS_CHROMEOS_OOBE_CLOSE_DIALOG);
   builder->Add("arcOverlayLoading", IDS_ARC_POPUP_HELP_LOADING);
 }
 

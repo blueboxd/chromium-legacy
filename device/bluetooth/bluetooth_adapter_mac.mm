@@ -536,14 +536,14 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
 
   // Only notify observers once per device.
   if (device_classic != nullptr) {
-    VLOG(3) << "Updating classic device: " << device_classic->GetAddress();
+    DVLOG(3) << "Updating classic device: " << device_classic->GetAddress();
     device_classic->UpdateTimestamp();
     return;
   }
 
   device_classic = new BluetoothClassicDeviceMac(this, device);
   devices_[device_address] = base::WrapUnique(device_classic);
-  VLOG(1) << "Adding new classic device: " << device_classic->GetAddress();
+  DVLOG(1) << "Adding new classic device: " << device_classic->GetAddress();
 
   for (auto& observer : observers_)
     observer.DeviceAdded(this, device_classic);
@@ -566,14 +566,14 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   if (is_new_device) {
     // A new device has been found.
     device_mac = new BluetoothLowEnergyDeviceMac(this, peripheral);
-    VLOG(1) << *device_mac << ": New Device.";
+    DVLOG(1) << *device_mac << ": New Device.";
   } else if (DoesCollideWithKnownDevice(peripheral, device_mac)) {
     return;
   }
 
   DCHECK(device_mac);
-  VLOG(3) << *device_mac << ": Device updated with "
-          << base::SysNSStringToUTF8([advertisement_data description]);
+  DVLOG(3) << *device_mac << ": Device updated with "
+           << base::SysNSStringToUTF8([advertisement_data description]);
 
   // Get Advertised UUIDs
   // Core Specification Supplement (CSS) v7, Part 1.1
@@ -670,8 +670,8 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
 
 // TODO(crbug.com/511025): Handle state < CBCentralManagerStatePoweredOff.
 void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {
-  VLOG(1) << "Central manager state updated: "
-          << [low_energy_central_manager_ state];
+  DVLOG(1) << "Central manager state updated: "
+           << [low_energy_central_manager_ state];
 
   // A state with a value lower than CBCentralManagerStatePoweredOn implies that
   // scanning has stopped and that any connected peripherals have been
@@ -681,7 +681,7 @@ void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {
   // https://developer.apple.com/reference/corebluetooth/cbcentralmanagerdelegate/1518888-centralmanagerdidupdatestate?language=objc
   if (GetCBManagerState(low_energy_central_manager_) <
       CBCentralManagerStatePoweredOn) {
-    VLOG(1)
+    DVLOG(1)
         << "Central no longer powered on. Notifying of device disconnection.";
     for (BluetoothDevice* device : GetDevices()) {
       BluetoothLowEnergyDeviceMac* device_mac =
@@ -709,7 +709,7 @@ BluetoothAdapterMac::RetrieveGattConnectedDevicesWithService(
     const BluetoothUUID* uuid) {
   NSArray* cbUUIDs = nil;
   if (!uuid) {
-    VLOG(1) << "Retrieving all connected devices.";
+    DVLOG(1) << "Retrieving all connected devices.";
     // It is not possible to ask for all connected peripherals with
     // -[CBCentralManager retrieveConnectedPeripheralsWithServices:] by passing
     // nil. To try to get most of the peripherals, the search is done with
@@ -717,8 +717,8 @@ BluetoothAdapterMac::RetrieveGattConnectedDevicesWithService(
     CBUUID* genericAccessServiceUUID = [CBUUID UUIDWithString:@"1800"];
     cbUUIDs = @[ genericAccessServiceUUID ];
   } else {
-    VLOG(1) << "Retrieving connected devices with UUID: "
-            << uuid->canonical_value();
+    DVLOG(1) << "Retrieving connected devices with UUID: "
+             << uuid->canonical_value();
     NSString* uuidString =
         base::SysUTF8ToNSString(uuid->canonical_value().c_str());
     cbUUIDs = @[ [CBUUID UUIDWithString:uuidString] ];
@@ -744,21 +744,21 @@ BluetoothAdapterMac::RetrieveGattConnectedDevicesWithService(
       }
     }
     connected_devices.push_back(device_mac);
-    VLOG(1) << *device_mac << ": New connected device.";
+    DVLOG(1) << *device_mac << ": New connected device.";
   }
   return connected_devices;
 }
 
 void BluetoothAdapterMac::CreateGattConnection(
     BluetoothLowEnergyDeviceMac* device_mac) {
-  VLOG(1) << *device_mac << ": Create gatt connection.";
+  DVLOG(1) << *device_mac << ": Create gatt connection.";
   [low_energy_central_manager_ connectPeripheral:device_mac->peripheral_
                                          options:nil];
 }
 
 void BluetoothAdapterMac::DisconnectGatt(
     BluetoothLowEnergyDeviceMac* device_mac) {
-  VLOG(1) << *device_mac << ": Disconnect gatt.";
+  DVLOG(1) << *device_mac << ": Disconnect gatt.";
   [low_energy_central_manager_
       cancelPeripheralConnection:device_mac->peripheral_];
 }
@@ -787,9 +787,9 @@ void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,
   if (error) {
     error_code = BluetoothDeviceMac::GetConnectErrorCodeFromNSError(error);
   }
-  VLOG(1) << *device_mac << ": Failed to connect to peripheral with error "
-          << BluetoothAdapterMac::String(error)
-          << ", error code: " << error_code;
+  DVLOG(1) << *device_mac << ": Failed to connect to peripheral with error "
+           << BluetoothAdapterMac::String(error)
+           << ", error code: " << error_code;
   device_mac->DidFailToConnectGatt(error_code);
 }
 
@@ -834,10 +834,10 @@ bool BluetoothAdapterMac::DoesCollideWithKnownDevice(
   std::string updated_device_id =
       BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral);
   if (stored_device_id != updated_device_id) {
-    VLOG(1) << "LowEnergyDeviceUpdated stored_device_id != updated_device_id: "
-            << std::endl
-            << "  " << stored_device_id << std::endl
-            << "  " << updated_device_id;
+    DVLOG(1) << "LowEnergyDeviceUpdated stored_device_id != updated_device_id: "
+             << std::endl
+             << "  " << stored_device_id << std::endl
+             << "  " << updated_device_id;
     // Collision, two identifiers map to the same hash address.  With a 48 bit
     // hash the probability of this occuring with 10,000 devices
     // simultaneously present is 1e-6 (see

@@ -153,8 +153,8 @@ void WritableStreamDefaultController::SetUp(
       // 16. Upon fulfillment of startPromise
       //      a. Assert: stream.[[state]] is "writable" or "erroring".
       const auto state = stream_->GetState();
-      DCHECK(state == WritableStream::kWritable ||
-             state == WritableStream::kErroring);
+      CHECK(state == WritableStream::kWritable ||
+            state == WritableStream::kErroring);
 
       //      b. Set controller.[[started]] to true.
       WritableStreamDefaultController* controller = stream_->Controller();
@@ -184,8 +184,8 @@ void WritableStreamDefaultController::SetUp(
       // 17. Upon rejection of startPromise with reason r,
       //      a. Assert: stream.[[state]] is "writable" or "erroring".
       const auto state = stream_->GetState();
-      DCHECK(state == WritableStream::kWritable ||
-             state == WritableStream::kErroring);
+      CHECK(state == WritableStream::kWritable ||
+            state == WritableStream::kErroring);
 
       //      b. Set controller.[[started]] to true.
       WritableStreamDefaultController* controller = stream_->Controller();
@@ -582,8 +582,8 @@ void WritableStreamDefaultController::ProcessWrite(
       const auto state = stream_->GetState();
 
       //      c. Assert: state is "writable" or "erroring".
-      DCHECK(state == WritableStream::kWritable ||
-             state == WritableStream::kErroring);
+      CHECK(state == WritableStream::kWritable ||
+            state == WritableStream::kErroring);
 
       //      d. Perform ! DequeueValue(controller).
       controller_->queue_->DequeueValue(script_state->GetIsolate());

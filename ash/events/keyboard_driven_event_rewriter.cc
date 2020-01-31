@@ -17,37 +17,30 @@ KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() = default;
 
 KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() = default;
 
-ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
+ui::EventDispatchDetails KeyboardDrivenEventRewriter::RewriteForTesting(
     const ui::Event& event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
-  return Rewrite(event, rewritten_event);
+    const Continuation continuation) {
+  return Rewrite(event, continuation);
 }
 
-ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteEvent(
+ui::EventDispatchDetails KeyboardDrivenEventRewriter::RewriteEvent(
     const ui::Event& event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
+    const Continuation continuation) {
   if (!enabled_ ||
       Shell::Get()->session_controller()->IsActiveUserSessionStarted()) {
-    return ui::EVENT_REWRITE_CONTINUE;
+    return SendEvent(continuation, &event);
   }
 
-  return Rewrite(event, rewritten_event);
+  return Rewrite(event, continuation);
 }
 
-ui::EventRewriteStatus KeyboardDrivenEventRewriter::NextDispatchEvent(
-    const ui::Event& last_event,
-    std::unique_ptr<ui::Event>* new_event) {
-  NOTREACHED();
-  return ui::EVENT_REWRITE_CONTINUE;
-}
-
-ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
+ui::EventDispatchDetails KeyboardDrivenEventRewriter::Rewrite(
     const ui::Event& event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
+    const Continuation continuation) {
   int flags = event.flags();
   const int kModifierMask = ui::EF_SHIFT_DOWN;
   if ((flags & kModifierMask) != kModifierMask)
-    return ui::EVENT_REWRITE_CONTINUE;
+    return SendEvent(continuation, &event);
 
   DCHECK(event.type() == ui::ET_KEY_PRESSED ||
          event.type() == ui::ET_KEY_RELEASED)
@@ -57,7 +50,7 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
 
   if (!keyboard_util::IsArrowKeyCode(key_code) && key_code != ui::VKEY_RETURN &&
       key_code != ui::VKEY_F6) {
-    return ui::EVENT_REWRITE_CONTINUE;
+    return SendEvent(continuation, &event);
   }
 
   ui::EventRewriterChromeOS::MutableKeyState state = {
@@ -76,9 +69,10 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
     }
   }
 
+  std::unique_ptr<ui::Event> rewritten_event;
   ui::EventRewriterChromeOS::BuildRewrittenKeyEvent(key_event, state,
-                                                    rewritten_event);
-  return ui::EVENT_REWRITE_REWRITTEN;
+                                                    &rewritten_event);
+  return SendEventFinally(continuation, rewritten_event.get());
 }
 
 }  // namespace ash

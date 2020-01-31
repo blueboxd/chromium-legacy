@@ -3309,24 +3309,36 @@ void ContextMenuFilter::OnContextMenu(
   std::move(quit_closure_).Run();
 }
 
-bool UpdateUserActivationStateMsgWaiter::OnMessageReceived(
-    const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(UpdateUserActivationStateMsgWaiter, message)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
-                        OnUpdateUserActivationState)
-  IPC_END_MESSAGE_MAP()
-  return false;
+UpdateUserActivationStateInterceptor::UpdateUserActivationStateInterceptor() =
+    default;
+
+UpdateUserActivationStateInterceptor::~UpdateUserActivationStateInterceptor() =
+    default;
+
+void UpdateUserActivationStateInterceptor::Init(
+    content::RenderFrameHost* render_frame_host) {
+  render_frame_host_ = render_frame_host;
+  impl_ = static_cast<RenderFrameHostImpl*>(render_frame_host_)
+              ->local_frame_host_receiver_for_testing()
+              .SwapImplForTesting(this);
 }
 
-void UpdateUserActivationStateMsgWaiter::Wait() {
-  if (!received_)
-    run_loop_.Run();
+void UpdateUserActivationStateInterceptor::set_quit_handler(
+    base::OnceClosure handler) {
+  quit_handler_ = std::move(handler);
 }
 
-void UpdateUserActivationStateMsgWaiter::OnUpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType) {
-  received_ = true;
-  run_loop_.Quit();
+blink::mojom::LocalFrameHost*
+UpdateUserActivationStateInterceptor::GetForwardingInterface() {
+  return impl_;
+}
+
+void UpdateUserActivationStateInterceptor::UpdateUserActivationState(
+    blink::mojom::UserActivationUpdateType update_type) {
+  update_user_activation_state_ = true;
+  if (quit_handler_)
+    std::move(quit_handler_).Run();
+  GetForwardingInterface()->UpdateUserActivationState(update_type);
 }
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest) {

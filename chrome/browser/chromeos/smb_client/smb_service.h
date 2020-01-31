@@ -40,12 +40,7 @@ class PrefRegistrySyncable;
 namespace chromeos {
 namespace smb_client {
 
-using file_system_provider::Capabilities;
 using file_system_provider::ProvidedFileSystemInfo;
-using file_system_provider::ProvidedFileSystemInterface;
-using file_system_provider::ProviderId;
-using file_system_provider::ProviderInterface;
-using file_system_provider::Service;
 
 class SmbKerberosCredentialsUpdater;
 
@@ -166,7 +161,7 @@ class SmbService : public KeyedService,
       const std::string& file_system_id,
       file_system_provider::Service::UnmountReason reason);
 
-  Service* GetProviderService() const;
+  file_system_provider::Service* GetProviderService() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
 
@@ -305,7 +300,7 @@ class SmbService : public KeyedService,
   static bool disable_share_discovery_for_testing_;
 
   base::TimeTicks previous_host_discovery_time_;
-  const ProviderId provider_id_;
+  const file_system_provider::ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<base::TickClock> tick_clock_;
   std::unique_ptr<TempFileManager> temp_file_manager_;

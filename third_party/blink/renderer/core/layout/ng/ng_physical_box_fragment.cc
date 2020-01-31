@@ -100,10 +100,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   has_padding_ = !padding.IsZero();
   if (has_padding_)
     *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
-  // consumed_block_size_ is only updated if we're in block
-  // fragmentation. Otherwise it will always be 0.
-  is_first_for_node_ =
-      builder->consumed_block_size_ <= builder->size_.block_size;
+  is_first_for_node_ = builder->IsFirstForNode();
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   is_painted_atomically_ =

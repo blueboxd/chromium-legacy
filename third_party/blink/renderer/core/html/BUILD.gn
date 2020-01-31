@@ -220,6 +220,8 @@ blink_core_sources("html") {
     "forms/labels_node_list.h",
     "forms/listed_element.cc",
     "forms/listed_element.h",
+    "forms/menu_list_inner_element.cc",
+    "forms/menu_list_inner_element.h",
     "forms/month_input_type.cc",
     "forms/month_input_type.h",
     "forms/multiple_fields_temporal_input_type_view.cc",

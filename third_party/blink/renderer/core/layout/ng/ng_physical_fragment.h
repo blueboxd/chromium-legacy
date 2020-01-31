@@ -21,6 +21,7 @@
 namespace blink {
 
 class ComputedStyle;
+class FragmentData;
 class Node;
 class NGFragmentBuilder;
 class NGInlineItem;
@@ -228,6 +229,13 @@ class CORE_EXPORT NGPhysicalFragment
     return IsCSSBox() && layout_object_->ShouldClipOverflow();
   }
 
+  // Return whether we can traverse this fragment and its children directly, for
+  // painting, hit-testing and other layout read operations. If false is
+  // returned, we need to traverse the layout object tree instead.
+  bool CanTraverse() const {
+    return layout_object_->CanTraversePhysicalFragments();
+  }
+
   // This fragment is hidden for paint purpose, but exists for querying layout
   // information. Used for `text-overflow: ellipsis`.
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
@@ -246,6 +254,8 @@ class CORE_EXPORT NGPhysicalFragment
   LayoutObject* GetMutableLayoutObject() const {
     return IsCSSBox() ? layout_object_ : nullptr;
   }
+
+  const FragmentData* GetFragmentData() const;
 
   // |NGPhysicalFragment| may live longer than the corresponding |LayoutObject|.
   // Though |NGPhysicalFragment| is immutable, |layout_object_| is cleared to

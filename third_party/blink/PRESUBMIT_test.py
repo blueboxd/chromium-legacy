@@ -117,7 +117,7 @@ class PresubmitTest(unittest.TestCase):
                                                        MockOutputApi())
         self.assertEquals(
             'Public blink headers using Blink variant mojoms found. ' +
-            'You must include .mojom-shared.h instead:',
+            'You must include .mojom-forward.h or .mojom-shared.h instead:',
             errors[0].message)
 
     def testCheckInternalHeaderWithBlinkMojo(self):

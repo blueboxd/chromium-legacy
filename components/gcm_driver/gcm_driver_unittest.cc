@@ -100,7 +100,7 @@ class GCMDriverBaseTest : public testing::Test {
 
   std::unique_ptr<GCMDriverDesktop> driver_;
 
-  base::Closure async_operation_completed_callback_;
+  base::OnceClosure async_operation_completed_callback_;
   std::string p256dh_;
   std::string auth_secret_;
 
@@ -217,7 +217,7 @@ void GCMDriverBaseTest::GetEncryptionInfoCompleted(std::string p256dh,
   p256dh_ = std::move(p256dh);
   auth_secret_ = std::move(auth_secret);
   if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void GCMDriverBaseTest::EncryptMessageCompleted(GCMEncryptionResult result,
@@ -225,7 +225,7 @@ void GCMDriverBaseTest::EncryptMessageCompleted(GCMEncryptionResult result,
   encryption_result_ = result;
   encrypted_message_ = std::move(message);
   if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void GCMDriverBaseTest::DecryptMessageCompleted(GCMDecryptionResult result,
@@ -233,7 +233,7 @@ void GCMDriverBaseTest::DecryptMessageCompleted(GCMDecryptionResult result,
   decryption_result_ = result;
   decrypted_message_ = std::move(message);
   if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+    std::move(async_operation_completed_callback_).Run();
 }
 
 TEST_F(GCMDriverBaseTest, EncryptionDecryptionRoundTrip) {

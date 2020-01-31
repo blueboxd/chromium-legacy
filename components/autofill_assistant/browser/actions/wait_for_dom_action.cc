@@ -34,14 +34,14 @@ void WaitForDomAction::InternalProcessAction(ProcessActionCallback callback) {
 
   AddConditionsFromProto();
   if (conditions_.empty()) {
-    DVLOG(2) << "WaitForDomAction: no selectors specified";
+    VLOG(2) << "WaitForDomAction: no selectors specified";
     OnCheckDone(std::move(callback), ClientStatus(INVALID_ACTION));
     return;
   }
   for (size_t i = 0; i < conditions_.size(); i++) {
     if (conditions_[i].selector.empty()) {
-      DVLOG(2) << "WaitForDomAction: selector for condition " << i
-               << " is empty";
+      VLOG(2) << "WaitForDomAction: selector for condition " << i
+              << " is empty";
       OnCheckDone(std::move(callback), ClientStatus(INVALID_SELECTOR));
       return;
     }

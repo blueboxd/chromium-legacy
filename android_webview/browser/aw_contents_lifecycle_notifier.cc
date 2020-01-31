@@ -14,6 +14,23 @@ using content::BrowserThread;
 
 namespace android_webview {
 
+namespace {
+
+AwContentsLifecycleNotifier::AwContentsState CalcuateState(
+    bool is_atached_to_window,
+    bool is_window_visible) {
+  // Can't assume the sequence of Attached, Detached, Visible, Invisible event
+  // because the app could changed it; Calculate the state here.
+  if (is_atached_to_window) {
+    return is_window_visible
+               ? AwContentsLifecycleNotifier::AwContentsState::kForeground
+               : AwContentsLifecycleNotifier::AwContentsState::kBackground;
+  }
+  return AwContentsLifecycleNotifier::AwContentsState::kDetached;
+}
+
+}  // namespace
+
 // static
 AwContentsLifecycleNotifier& AwContentsLifecycleNotifier::GetInstance() {
   static base::NoDestructor<AwContentsLifecycleNotifier> instance;
@@ -26,10 +43,10 @@ void AwContentsLifecycleNotifier::OnWebViewCreated(
   has_aw_contents_ever_created_ = true;
   uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
   bool first_created = !HasAwContentsInstance();
-  DCHECK(aw_contents_id_to_state_.find(id) == aw_contents_id_to_state_.end());
+  DCHECK(aw_contents_id_to_data_.find(id) == aw_contents_id_to_data_.end());
 
-  aw_contents_id_to_state_.insert(
-      std::make_pair(id, AwContentsState::kDetached));
+  aw_contents_id_to_data_.insert(
+      std::make_pair(id, AwContentsLifecycleNotifier::AwContentsData()));
   state_count_[ToIndex(AwContentsState::kDetached)]++;
   UpdateAppState();
 
@@ -43,12 +60,12 @@ void AwContentsLifecycleNotifier::OnWebViewDestroyed(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
-  const auto it = aw_contents_id_to_state_.find(id);
-  DCHECK(it != aw_contents_id_to_state_.end());
+  const auto it = aw_contents_id_to_data_.find(id);
+  DCHECK(it != aw_contents_id_to_data_.end());
 
-  state_count_[ToIndex(it->second)]--;
-  DCHECK(state_count_[ToIndex(it->second)] >= 0);
-  aw_contents_id_to_state_.erase(it);
+  state_count_[ToIndex(it->second.aw_content_state)]--;
+  DCHECK(state_count_[ToIndex(it->second.aw_content_state)] >= 0);
+  aw_contents_id_to_data_.erase(it);
   UpdateAppState();
 
   if (!HasAwContentsInstance()) {
@@ -60,25 +77,34 @@ void AwContentsLifecycleNotifier::OnWebViewDestroyed(
 void AwContentsLifecycleNotifier::OnWebViewAttachedToWindow(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  OnAwContentsStateChanged(aw_contents, AwContentsState::kBackground);
+  auto* data = GetAwContentsData(aw_contents);
+  data->attached_to_window = true;
+  OnAwContentsStateChanged(data);
 }
 
 void AwContentsLifecycleNotifier::OnWebViewDetachedFromWindow(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  OnAwContentsStateChanged(aw_contents, AwContentsState::kDetached);
+  auto* data = GetAwContentsData(aw_contents);
+  data->attached_to_window = false;
+  DCHECK(data->aw_content_state != AwContentsState::kDetached);
+  OnAwContentsStateChanged(data);
 }
 
 void AwContentsLifecycleNotifier::OnWebViewWindowBeVisible(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  OnAwContentsStateChanged(aw_contents, AwContentsState::kForeground);
+  auto* data = GetAwContentsData(aw_contents);
+  data->window_visible = true;
+  OnAwContentsStateChanged(data);
 }
 
 void AwContentsLifecycleNotifier::OnWebViewWindowBeInvisible(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  OnAwContentsStateChanged(aw_contents, AwContentsState::kBackground);
+  auto* data = GetAwContentsData(aw_contents);
+  data->window_visible = false;
+  OnAwContentsStateChanged(data);
 }
 
 void AwContentsLifecycleNotifier::AddObserver(
@@ -105,16 +131,15 @@ size_t AwContentsLifecycleNotifier::ToIndex(AwContentsState state) const {
 }
 
 void AwContentsLifecycleNotifier::OnAwContentsStateChanged(
-    const AwContents* aw_contents,
-    AwContentsState state) {
-  uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
-  const auto it = aw_contents_id_to_state_.find(id);
-  DCHECK(it != aw_contents_id_to_state_.end());
-  DCHECK(it->second != state);
-  state_count_[ToIndex(it->second)]--;
-  DCHECK(state_count_[ToIndex(it->second)] >= 0);
+    AwContentsLifecycleNotifier::AwContentsData* data) {
+  AwContentsLifecycleNotifier::AwContentsState state =
+      CalcuateState(data->attached_to_window, data->window_visible);
+  if (data->aw_content_state == state)
+    return;
+  state_count_[ToIndex(data->aw_content_state)]--;
+  DCHECK(state_count_[ToIndex(data->aw_content_state)] >= 0);
   state_count_[ToIndex(state)]++;
-  aw_contents_id_to_state_[it->first] = state;
+  data->aw_content_state = state;
   UpdateAppState();
 }
 
@@ -142,6 +167,13 @@ bool AwContentsLifecycleNotifier::HasAwContentsInstance() const {
       return true;
   }
   return false;
+}
+
+AwContentsLifecycleNotifier::AwContentsData*
+AwContentsLifecycleNotifier::GetAwContentsData(const AwContents* aw_contents) {
+  uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
+  DCHECK(aw_contents_id_to_data_.find(id) != aw_contents_id_to_data_.end());
+  return &aw_contents_id_to_data_.at(id);
 }
 
 }  // namespace android_webview

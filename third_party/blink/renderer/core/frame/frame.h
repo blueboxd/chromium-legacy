@@ -101,13 +101,20 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // reach out to site-isolation-dev@chromium.org.
   bool IsMainFrame() const;
 
-  // Note that the result of this function should not be cached: a frame is
-  // not necessarily detached when it is navigated, so the return value can
-  // change.
-  // In addition, this function will always return true for a detached frame.
+  // Returns true if and only if:
+  // - this frame is a subframe
+  // - it is cross-origin to the main frame
+  //
+  // Important notes:
+  // - This function is not appropriate for determining if a subframe is
+  //   cross-origin to its parent.
+  // - The return value must NOT be cached. A frame can be reused across
+  //   navigations, so the return value can change over time.
+  // - The return value is inaccurate for a detached frame: it always
+  //   returns true when the frame is detached.
   // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
   // behavior for detached windows.
-  bool IsCrossOriginSubframe() const;
+  bool IsCrossOriginToMainFrame() const;
 
   FrameOwner* Owner() const;
   void SetOwner(FrameOwner*);

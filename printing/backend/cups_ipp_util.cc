@@ -27,7 +27,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "printing/backend/ipp_handler_map.h"
-#include "printing/printing_features_chromeos.h"
+#include "printing/printing_features.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace printing {
@@ -408,7 +408,7 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
 
 #if defined(OS_CHROMEOS)
   printer_info->pin_supported = PinSupported(printer);
-  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+  if (base::FeatureList::IsEnabled(printing::features::kAdvancedPpdAttributes))
     ExtractAdvancedCapabilities(printer, printer_info);
 #endif  // defined(OS_CHROMEOS)
 

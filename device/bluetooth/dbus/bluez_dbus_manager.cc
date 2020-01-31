@@ -178,7 +178,7 @@ BluetoothDeviceClient* BluezDBusManager::GetAlternateBluetoothDeviceClient() {
 }
 
 void BluezDBusManager::OnObjectManagerSupported(dbus::Response* response) {
-  VLOG(1) << "Bluetooth supported. Initializing clients.";
+  DVLOG(1) << "Bluetooth supported. Initializing clients.";
   object_manager_supported_ = true;
 
   client_bundle_.reset(new BluetoothDBusClientBundle(false /* use_fakes */));
@@ -193,7 +193,7 @@ void BluezDBusManager::OnObjectManagerSupported(dbus::Response* response) {
 
 void BluezDBusManager::OnObjectManagerNotSupported(
     dbus::ErrorResponse* response) {
-  VLOG(1) << "Bluetooth not supported.";
+  DVLOG(1) << "Bluetooth not supported.";
   object_manager_supported_ = false;
 
   // We don't initialize clients since the clients need ObjectManager.
@@ -323,7 +323,7 @@ void BluezDBusManager::Shutdown() {
 #endif
 
   g_using_bluez_dbus_manager_for_testing = false;
-  VLOG(1) << "BluezDBusManager Shutdown completed";
+  DVLOG(1) << "BluezDBusManager Shutdown completed";
 }
 
 // static

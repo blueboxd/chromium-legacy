@@ -44,7 +44,7 @@ void FakeGCMDriverForInstanceID::RemoveInstanceIDData(
 
 void FakeGCMDriverForInstanceID::GetInstanceIDData(
     const std::string& app_id,
-    const GetInstanceIDDataCallback& callback) {
+    GetInstanceIDDataCallback callback) {
   auto iter = instance_id_data_.find(app_id);
   std::string instance_id;
   std::string extra_data;
@@ -53,7 +53,7 @@ void FakeGCMDriverForInstanceID::GetInstanceIDData(
     extra_data = iter->second.second;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, instance_id, extra_data));
+      FROM_HERE, base::BindOnce(std::move(callback), instance_id, extra_data));
 }
 
 void FakeGCMDriverForInstanceID::GetToken(

@@ -354,8 +354,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       current_frame()->output_surface_plane =
           overlay_processor_->ProcessOutputSurfaceAsOverlay(
               device_viewport_size, output_surface_->GetOverlayBufferFormat(),
-              reshape_device_color_space_, reshape_has_alpha_,
-              output_surface_->GetOverlayMailbox());
+              reshape_device_color_space_, reshape_has_alpha_);
       primary_plane = &(current_frame()->output_surface_plane.value());
     }
 

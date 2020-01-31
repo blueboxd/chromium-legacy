@@ -100,9 +100,9 @@ class SyncTest : public InProcessBrowserTest {
         : instance_id::InstanceID("FakeAppId", /*gcm_driver = */ nullptr) {}
     ~FakeInstanceID() override = default;
 
-    void GetID(const GetIDCallback& callback) override {}
+    void GetID(GetIDCallback callback) override {}
 
-    void GetCreationTime(const GetCreationTimeCallback& callback) override {}
+    void GetCreationTime(GetCreationTimeCallback callback) override {}
 
     void GetToken(const std::string& authorized_entity,
                   const std::string& scope,

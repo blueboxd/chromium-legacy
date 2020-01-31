@@ -16,6 +16,9 @@
     },
     {
       "app": "ios_chrome_settings_egtests",
+      "test args": [
+        "--enable-features=ClearSyncedData"
+      ],
       "xcode parallelization": true,
       "shards": 1,
       "swarming tasks": 3

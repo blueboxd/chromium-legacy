@@ -1126,7 +1126,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
         if (frame->IsMainFrame()) {
           UseCounter::Count(&execution_context,
                             WebFeature::kXMLHttpRequestSynchronousInMainFrame);
-        } else if (frame->IsCrossOriginSubframe()) {
+        } else if (frame->IsCrossOriginToMainFrame()) {
           UseCounter::Count(
               &execution_context,
               WebFeature::kXMLHttpRequestSynchronousInCrossOriginSubframe);

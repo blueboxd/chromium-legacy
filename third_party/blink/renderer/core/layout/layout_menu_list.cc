@@ -45,7 +45,6 @@ LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element),
       button_text_(nullptr),
       inner_block_(nullptr),
-      inner_block_height_(LayoutUnit()),
       options_width_(0) {
   DCHECK(IsA<HTMLSelectElement>(element));
 }
@@ -168,6 +167,10 @@ HTMLSelectElement* LayoutMenuList::SelectElement() const {
   return To<HTMLSelectElement>(GetNode());
 }
 
+LayoutBlock* LayoutMenuList::InnerBlock() const {
+  return inner_block_;
+}
+
 void LayoutMenuList::AddChild(LayoutObject* new_child,
                               LayoutObject* before_child) {
   inner_block_->AddChild(new_child, before_child);
@@ -200,14 +203,6 @@ void LayoutMenuList::StyleDidChange(StyleDifference diff,
 
   button_text_->SetStyle(Style());
   UpdateInnerStyle();
-  UpdateInnerBlockHeight();
-}
-
-void LayoutMenuList::UpdateInnerBlockHeight() {
-  const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
-  DCHECK(font_data);
-  inner_block_height_ = (font_data ? font_data->GetFontMetrics().Height() : 0) +
-                        inner_block_->BorderAndPaddingHeight();
 }
 
 void LayoutMenuList::UpdateOptionsWidth() const {
@@ -259,10 +254,11 @@ PhysicalRect LayoutMenuList::ControlClipRect(
   PhysicalRect outer_box = PhysicalContentBoxRect();
   outer_box.offset += additional_offset;
 
-  PhysicalRect inner_box(additional_offset + inner_block_->PhysicalLocation() +
-                             PhysicalOffset(inner_block_->PaddingLeft(),
-                                            inner_block_->PaddingTop()),
-                         inner_block_->ContentSize());
+  LayoutBlock* block = InnerBlock();
+  PhysicalRect inner_box(
+      additional_offset + block->PhysicalLocation() +
+          PhysicalOffset(block->PaddingLeft(), block->PaddingTop()),
+      block->ContentSize());
 
   return Intersection(outer_box, inner_box);
 }
@@ -272,10 +268,11 @@ void LayoutMenuList::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   UpdateOptionsWidth();
 
+  LayoutBlock* block = InnerBlock();
   max_logical_width =
       std::max(options_width_,
                LayoutTheme::GetTheme().MinimumMenuListSize(StyleRef())) +
-      inner_block_->PaddingLeft() + inner_block_->PaddingRight();
+      block->PaddingLeft() + block->PaddingRight();
   if (!StyleRef().Width().IsPercentOrCalc())
     min_logical_width = max_logical_width;
   else
@@ -286,17 +283,23 @@ void LayoutMenuList::ComputeLogicalHeight(
     LayoutUnit logical_height,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
-  if (StyleRef().HasEffectiveAppearance())
-    logical_height = inner_block_height_ + BorderAndPaddingHeight();
+  if (StyleRef().HasEffectiveAppearance()) {
+    const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
+    DCHECK(font_data);
+    const LayoutUnit inner_block_height =
+        (font_data ? font_data->GetFontMetrics().Height() : 0) +
+        InnerBlock()->BorderAndPaddingHeight();
+    logical_height = inner_block_height + BorderAndPaddingHeight();
+  }
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
 LayoutUnit LayoutMenuList::ClientPaddingLeft() const {
-  return PaddingLeft() + inner_block_->PaddingLeft();
+  return PaddingLeft() + InnerBlock()->PaddingLeft();
 }
 
 LayoutUnit LayoutMenuList::ClientPaddingRight() const {
-  return PaddingRight() + inner_block_->PaddingRight();
+  return PaddingRight() + InnerBlock()->PaddingRight();
 }
 
 }  // namespace blink

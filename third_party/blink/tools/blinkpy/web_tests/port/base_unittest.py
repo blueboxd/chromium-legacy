@@ -861,6 +861,9 @@ class PortTest(LoggingTestCase):
                          [('==', port.web_tests_dir() +
                            '/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html')])
 
+    def test_operating_system(self):
+        self.assertEqual('mac', self.make_port().operating_system())
+
     def test_http_server_supports_ipv6(self):
         port = self.make_port()
         self.assertTrue(port.http_server_supports_ipv6())
@@ -1149,7 +1152,7 @@ class PortTest(LoggingTestCase):
         port.default_smoke_test_only = lambda: False
         port.host.filesystem.write_text_file(
             port.path_to_never_fix_tests_file(),
-            '# results: [ Skip ]\nfailures/expected/image.html [ Skip ]\n')
+            'Bug(test) failures/expected/image.html [ WontFix ]\n')
         self.assertTrue(port.skips_test('failures/expected/image.html'))
 
     def test_split_webdriver_test_name(self):

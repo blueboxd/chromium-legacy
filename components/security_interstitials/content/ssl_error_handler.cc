@@ -395,7 +395,8 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   // Calls the |blocking_page_ready_callback_| if it's not null, else calls
   // Show() on the given interstitial.
   void OnBlockingPageReady(
-      security_interstitials::SecurityInterstitialPage* interstitial_page);
+      std::unique_ptr<security_interstitials::SecurityInterstitialPage>
+          interstitial_page);
 
   content::WebContents* web_contents_;
   const net::SSLInfo ssl_info_;
@@ -537,7 +538,8 @@ bool SSLErrorHandlerDelegateImpl::HasLegacyTLS() const {
 }
 
 void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
-    security_interstitials::SecurityInterstitialPage* interstitial_page) {
+    std::unique_ptr<security_interstitials::SecurityInterstitialPage>
+        interstitial_page) {
   if (on_blocking_page_shown_callback_) {
     on_blocking_page_shown_callback_.Run(web_contents_, request_url_,
                                          "SSL_ERROR", cert_error_);
@@ -545,7 +547,7 @@ void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback_),
-                                base::WrapUnique(interstitial_page)));
+                                std::move(interstitial_page)));
 }
 
 }  // namespace

@@ -309,6 +309,19 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   return container->IsLayoutNGMixin();
 }
 
+const FragmentData* NGPhysicalFragment::GetFragmentData() const {
+  DCHECK(CanTraverse());
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object)
+    return nullptr;
+  // TODO(mstensho): Actually return the correct FragmentData. For now this
+  // method only behaves if there's just one FragmentData associated with the
+  // LayoutObject.
+  const FragmentData& first_fragment_data = layout_object->FirstFragment();
+  DCHECK(!first_fragment_data.NextFragment());
+  return &first_fragment_data;
+}
+
 const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
   if (IsBox() && !IsInlineBox()) {
     if (const auto* block = DynamicTo<LayoutBlockFlow>(GetLayoutObject())) {

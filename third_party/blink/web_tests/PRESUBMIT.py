@@ -9,8 +9,7 @@ for more details about the presubmit API built into gcl.
 """
 
 import filecmp
-import inspect
-import sys
+
 
 def _CheckTestharnessResults(input_api, output_api):
     """Checks for all-PASS generic baselines for testharness.js tests.
@@ -75,13 +74,19 @@ def _CheckFilesUsingEventSender(input_api, output_api):
 
 
 def _CheckTestExpectations(input_api, output_api):
-    results = []
-    os_path = input_api.os_path
-    sys.path.append(
-        os_path.join(os_path.dirname(os_path.abspath(inspect.getfile(_CheckTestExpectations))), '..', 'tools'))
-    from blinkpy.web_tests.lint_test_expectations import PresubmitCheckTestExpectations
-    results.extend(PresubmitCheckTestExpectations(input_api, output_api))
-    return results
+    lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+        '..', 'tools', 'lint_test_expectations.py')
+    _, errs = input_api.subprocess.Popen(
+        [input_api.python_executable, lint_path],
+        stdout=input_api.subprocess.PIPE,
+        stderr=input_api.subprocess.PIPE).communicate()
+    if not errs:
+        return [output_api.PresubmitError(
+            "lint_test_expectations.py failed "
+            "to produce output; check by hand. ")]
+    if errs.strip() != 'Lint succeeded.':
+        return [output_api.PresubmitError(errs)]
+    return []
 
 
 def _CheckForJSTest(input_api, output_api):

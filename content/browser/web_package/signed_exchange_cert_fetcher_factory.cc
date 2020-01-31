@@ -21,10 +21,12 @@ class SignedExchangeCertFetcherFactoryImpl
   SignedExchangeCertFetcherFactoryImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      const base::Optional<base::UnguessableToken>& throttling_profile_id)
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key)
       : url_loader_factory_(std::move(url_loader_factory)),
         url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
-        throttling_profile_id_(throttling_profile_id) {}
+        throttling_profile_id_(throttling_profile_id),
+        network_isolation_key_(std::move(network_isolation_key)) {}
 
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
@@ -37,6 +39,7 @@ class SignedExchangeCertFetcherFactoryImpl
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   const base::Optional<base::UnguessableToken> throttling_profile_id_;
+  const base::Optional<net::NetworkIsolationKey> network_isolation_key_;
 };
 
 std::unique_ptr<SignedExchangeCertFetcher>
@@ -53,7 +56,7 @@ SignedExchangeCertFetcherFactoryImpl::CreateFetcherAndStart(
   return SignedExchangeCertFetcher::CreateAndStart(
       std::move(url_loader_factory_), std::move(throttles), cert_url,
       force_fetch, std::move(callback), devtools_proxy, reporter,
-      throttling_profile_id_);
+      throttling_profile_id_, network_isolation_key_);
 }
 
 // static
@@ -61,10 +64,11 @@ std::unique_ptr<SignedExchangeCertFetcherFactory>
 SignedExchangeCertFetcherFactory::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    const base::Optional<base::UnguessableToken>& throttling_profile_id) {
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
+    base::Optional<net::NetworkIsolationKey> network_isolation_key) {
   return std::make_unique<SignedExchangeCertFetcherFactoryImpl>(
       std::move(url_loader_factory), std::move(url_loader_throttles_getter),
-      throttling_profile_id);
+      throttling_profile_id, std::move(network_isolation_key));
 }
 
 }  // namespace content

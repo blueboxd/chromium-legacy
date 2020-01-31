@@ -155,10 +155,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,
                                   bool visible);
 
-  // Calls SetVisible to make sure that the container is showing only when there
-  // are extensions available.
-  void UpdateContainerVisibility();
-
   // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,

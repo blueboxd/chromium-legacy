@@ -32,6 +32,7 @@ import logging
 import re
 
 from blinkpy.web_tests.port.driver import DeviceFailure, DriverInput, DriverOutput
+from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_results import TestResult, build_test_result
 from blinkpy.web_tests.models import testharness_results

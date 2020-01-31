@@ -28,11 +28,10 @@
 
 import cPickle
 
+from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.controllers import repaint_overlay
-from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.common.html_diff import html_diff
 from blinkpy.common.unified_diff import unified_diff
-
 
 # TODO(rmhasan) Create a unit test for each Failure type and make
 # sure each artifact is written to the correct path
@@ -113,7 +112,7 @@ class AbstractTestResultType(object):
     test_name = None
     filesystem = None
     result_directory = None
-    result = ResultType.Pass
+    result = test_expectations.PASS
 
     def __init__(self, actual_driver_output, expected_driver_output):
         self.actual_driver_output = actual_driver_output
@@ -193,11 +192,11 @@ class PassWithStderr(AbstractTestResultType):
 
 
 class TestFailure(AbstractTestResultType):
-    result = ResultType.Failure
+    result = test_expectations.FAIL
 
 
 class FailureTimeout(AbstractTestResultType):
-    result = ResultType.Timeout
+    result = test_expectations.TIMEOUT
 
     def __init__(self, actual_driver_output, is_reftest=False):
         super(FailureTimeout, self).__init__(
@@ -215,7 +214,7 @@ class FailureTimeout(AbstractTestResultType):
 
 
 class FailureCrash(AbstractTestResultType):
-    result = ResultType.Crash
+    result = test_expectations.CRASH
 
     def __init__(self, actual_driver_output, is_reftest=False,
                  process_name='content_shell', pid=None, has_log=False):
@@ -553,7 +552,7 @@ class FailureAudioNotGenerated(FailureAudio):
 
 
 class FailureEarlyExit(AbstractTestResultType):
-    result = ResultType.Skip
+    result = test_expectations.SKIP
 
     def __init__(self, actual_driver_output=None, expected_driver_output=None):
         super(FailureEarlyExit, self).__init__(

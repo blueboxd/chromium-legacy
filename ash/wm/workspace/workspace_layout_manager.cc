@@ -460,6 +460,11 @@ void WorkspaceLayoutManager::OnAutoHideStateChanged(
   NotifySystemUiAreaChanged();
 }
 
+void WorkspaceLayoutManager::OnHotseatStateChanged(HotseatState old_state,
+                                                   HotseatState new_state) {
+  NotifySystemUiAreaChanged();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, private:
 

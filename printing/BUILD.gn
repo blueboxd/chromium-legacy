@@ -86,6 +86,8 @@ component("printing") {
     "printed_document_win.cc",
     "printing_context.cc",
     "printing_context.h",
+    "printing_features.cc",
+    "printing_features.h",
     "printing_utils.cc",
     "printing_utils.h",
     "pwg_raster_settings.h",
@@ -244,8 +246,6 @@ component("printing") {
       "printer_query_result_chromeos.h",
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",
-      "printing_features_chromeos.cc",
-      "printing_features_chromeos.h",
     ]
   } else if (is_android) {
     sources += [

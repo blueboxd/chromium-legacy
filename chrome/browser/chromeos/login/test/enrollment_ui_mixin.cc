@@ -36,6 +36,7 @@ const char kLocation[] = "location";
 namespace {
 
 const char kEnrollmentUI[] = "enterprise-enrollment";
+const char kEnrollmentErrorMsg[] = "enrollment-error-msg";
 
 const char* const kAllSteps[] = {
     ui::kEnrollmentStepSignin,           ui::kEnrollmentStepWorking,
@@ -47,10 +48,14 @@ std::string StepElementID(const std::string& step) {
 }
 
 const std::initializer_list<base::StringPiece> kEnrollmentErrorButtonPath = {
-    kEnrollmentUI, "oauth-enroll-error-card", "submitButton"};
+    kEnrollmentUI, "error-retry-button"};
 
 const std::initializer_list<base::StringPiece> kEnrollmentSuccessButtonPath = {
     kEnrollmentUI, "success-done-button"};
+
+const std::initializer_list<base::StringPiece>
+    kEnrollmentAttributeErrorButtonPath = {kEnrollmentUI,
+                                           "attribute-error-button"};
 
 }  // namespace
 
@@ -83,7 +88,7 @@ void EnrollmentUIMixin::ExpectStepVisibility(bool visibility,
 void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
                                            bool can_retry) {
   const std::string element_path =
-      GetOobeElementPath({kEnrollmentUI, "oauth-enroll-error-card"});
+      GetOobeElementPath({kEnrollmentUI, kEnrollmentErrorMsg});
   const std::string message = OobeJS().GetString(element_path + ".textContent");
   ASSERT_TRUE(std::string::npos !=
               message.find(l10n_util::GetStringUTF8(error_message_id)));
@@ -100,7 +105,7 @@ void EnrollmentUIMixin::RetryAfterError() {
 }
 
 void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
-  OobeJS().ClickOnPath(kEnrollmentErrorButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentAttributeErrorButtonPath);
 }
 
 void EnrollmentUIMixin::LeaveSuccessScreen() {

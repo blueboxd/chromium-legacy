@@ -79,7 +79,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 
   if (!frame->HasStickyUserActivation()) {
     String message;
-    if (frame->IsCrossOriginSubframe()) {
+    if (frame->IsCrossOriginToMainFrame()) {
       message =
           "Blocked call to navigator.vibrate inside a cross-origin "
           "iframe because the frame has never been activated by the user: "
@@ -109,7 +109,7 @@ void NavigatorVibration::CollectHistogramMetrics(const Navigator& navigator) {
   if (!frame->IsMainFrame()) {
     UseCounter::Count(navigator.DomWindow()->document(),
                       WebFeature::kNavigatorVibrateSubFrame);
-    if (frame->IsCrossOriginSubframe()) {
+    if (frame->IsCrossOriginToMainFrame()) {
       if (user_gesture)
         type = NavigatorVibrationType::kCrossOriginSubFrameWithUserGesture;
       else

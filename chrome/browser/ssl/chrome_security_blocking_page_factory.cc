@@ -183,7 +183,8 @@ std::unique_ptr<ChromeMetricsHelper> CreateBlockedInterceptionMetricsHelper(
 
 }  // namespace
 
-SSLBlockingPage* ChromeSecurityBlockingPageFactory::CreateSSLPage(
+std::unique_ptr<SSLBlockingPage>
+ChromeSecurityBlockingPageFactory::CreateSSLPage(
     content::WebContents* web_contents,
     int cert_error,
     const net::SSLInfo& ssl_info,
@@ -242,10 +243,10 @@ SSLBlockingPage* ChromeSecurityBlockingPageFactory::CreateSSLPage(
   }
 
   DoChromeSpecificSetup(page.get());
-  return page.release();
+  return page;
 }
 
-CaptivePortalBlockingPage*
+std::unique_ptr<CaptivePortalBlockingPage>
 ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
     content::WebContents* web_contents,
     const GURL& request_url,
@@ -262,10 +263,10 @@ ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
       base::BindRepeating(&OpenLoginPage));
 
   DoChromeSpecificSetup(page.get());
-  return page.release();
+  return page;
 }
 
-BadClockBlockingPage*
+std::unique_ptr<BadClockBlockingPage>
 ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
     content::WebContents* web_contents,
     int cert_error,
@@ -282,10 +283,10 @@ ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
           CreateBadClockMetricsHelper(web_contents, request_url)));
 
   ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
-  return page.release();
+  return page;
 }
 
-LegacyTLSBlockingPage*
+std::unique_ptr<LegacyTLSBlockingPage>
 ChromeSecurityBlockingPageFactory::CreateLegacyTLSBlockingPage(
     content::WebContents* web_contents,
     int cert_error,
@@ -300,10 +301,10 @@ ChromeSecurityBlockingPageFactory::CreateLegacyTLSBlockingPage(
           CreateLegacyTLSMetricsHelper(web_contents, request_url)));
 
   DoChromeSpecificSetup(page.get());
-  return page.release();
+  return page;
 }
 
-MITMSoftwareBlockingPage*
+std::unique_ptr<MITMSoftwareBlockingPage>
 ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
     content::WebContents* web_contents,
     int cert_error,
@@ -319,10 +320,10 @@ ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
           CreateMitmSoftwareMetricsHelper(web_contents, request_url)));
 
   DoChromeSpecificSetup(page.get());
-  return page.release();
+  return page;
 }
 
-BlockedInterceptionBlockingPage*
+std::unique_ptr<BlockedInterceptionBlockingPage>
 ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
     content::WebContents* web_contents,
     int cert_error,
@@ -337,7 +338,7 @@ ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
           CreateBlockedInterceptionMetricsHelper(web_contents, request_url)));
 
   ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
-  return page.release();
+  return page;
 }
 
 // static

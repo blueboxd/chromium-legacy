@@ -667,6 +667,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
     platform_->RunUntilIdle();
     EXPECT_FALSE(record->TimerHasFired());
     EXPECT_FALSE(record->OwnerIsDestructed());
+    ThreadState::Current()->CompleteSweep();
   }
 }
 

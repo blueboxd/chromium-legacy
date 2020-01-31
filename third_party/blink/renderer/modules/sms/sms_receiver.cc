@@ -42,7 +42,7 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!frame->IsMainFrame() && frame->IsCrossOriginSubframe()) {
+  if (!frame->IsMainFrame() && frame->IsCrossOriginToMainFrame()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Must have the same origin as the top-level frame.");

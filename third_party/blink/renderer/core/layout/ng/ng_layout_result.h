@@ -173,6 +173,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return rare_data_->tallest_unbreakable_block_size;
   }
 
+  // Return whether this result is single-use only (true), or if it is allowed
+  // to be involved in cache hits in future layout passes (false).
+  bool IsSingleUse() const {
+    return HasRareData() && rare_data_->is_single_use;
+  }
+
   SerializedScriptValue* CustomLayoutData() const {
     return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
   }
@@ -365,6 +371,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 #if DCHECK_IS_ON()
     bool has_tallest_unbreakable_block_size = false;
 #endif
+    bool is_single_use = false;
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }

@@ -42,11 +42,11 @@ namespace {
 
 constexpr char kEnrollmentUI[] = "enterprise-enrollment";
 constexpr char kAdDialog[] = "oauth-enroll-ad-join-ui";
-constexpr char kAdErrorCard[] = "oauth-enroll-error-card";
 
 constexpr char kAdUnlockConfigurationStep[] = "unlockStep";
 constexpr char kAdUnlockPasswordInput[] = "unlockPasswordInput";
 constexpr char kAdUnlockButton[] = "unlockButton";
+constexpr char kAdErrorButton[] = "ad-join-error-retry-button";
 constexpr char kSkipButton[] = "skipButton";
 
 constexpr char kAdCredentialsStep[] = "credsStep";
@@ -56,7 +56,6 @@ constexpr char kAdMachineNameInput[] = "machineNameInput";
 constexpr char kAdUsernameInput[] = "userInput";
 constexpr char kAdPasswordInput[] = "passwordInput";
 constexpr char kAdConfigurationSelect[] = "joinConfigSelect";
-constexpr char kSubmitButton[] = "submitButton";
 constexpr char kNextButton[] = "nextButton";
 constexpr char kWebview[] = "oauth-enroll-auth-view";
 constexpr char kPartitionAttribute[] = ".partition";
@@ -652,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
+  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorButton});
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }
 

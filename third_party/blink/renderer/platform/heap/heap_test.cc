@@ -5603,7 +5603,8 @@ TEST_F(HeapTest, AccessDeletedBackingStore) {
   }
   BaseArena* map_arena = PageFromObject(map)->Arena();
   // Sweep normal arena, but don't call finalizers.
-  map_arena->ConcurrentSweepWithDeadline(base::TimeTicks::Max());
+  while (!map_arena->ConcurrentSweepOnePage()) {
+  }
   // Now complete sweeping with PerformIdleLazySweep and call finalizers.
   while (thread_state->IsSweepingInProgress()) {
     thread_state->PerformIdleLazySweep(base::TimeTicks::Max());

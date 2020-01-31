@@ -31,8 +31,8 @@ BluetoothGattServiceServiceProviderImpl::
       includes_(includes),
       bus_(bus),
       object_path_(object_path) {
-  VLOG(1) << "Creating Bluetooth GATT service: " << object_path_.value()
-          << " UUID: " << uuid;
+  DVLOG(1) << "Creating Bluetooth GATT service: " << object_path_.value()
+           << " UUID: " << uuid;
   if (!bus_)
     return;
 
@@ -65,7 +65,7 @@ BluetoothGattServiceServiceProviderImpl::
 
 BluetoothGattServiceServiceProviderImpl::
     ~BluetoothGattServiceServiceProviderImpl() {
-  VLOG(1) << "Cleaning up Bluetooth GATT service: " << object_path_.value();
+  DVLOG(1) << "Cleaning up Bluetooth GATT service: " << object_path_.value();
   if (bus_)
     bus_->UnregisterExportedObject(object_path_);
 }
@@ -77,8 +77,8 @@ bool BluetoothGattServiceServiceProviderImpl::OnOriginThread() {
 void BluetoothGattServiceServiceProviderImpl::Get(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattServiceServiceProvider::Get: "
-          << object_path_.value();
+  DVLOG(2) << "BluetoothGattServiceServiceProvider::Get: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
@@ -137,8 +137,8 @@ void BluetoothGattServiceServiceProviderImpl::Get(
 void BluetoothGattServiceServiceProviderImpl::Set(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattServiceServiceProviderImpl::Set: "
-          << object_path_.value();
+  DVLOG(2) << "BluetoothGattServiceServiceProviderImpl::Set: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
   // All of the properties on this interface are read-only, so just return
   // error.
@@ -151,8 +151,8 @@ void BluetoothGattServiceServiceProviderImpl::Set(
 void BluetoothGattServiceServiceProviderImpl::GetAll(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattServiceServiceProvider::GetAll: "
-          << object_path_.value();
+  DVLOG(2) << "BluetoothGattServiceServiceProvider::GetAll: "
+           << object_path_.value();
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
@@ -216,8 +216,8 @@ void BluetoothGattServiceServiceProviderImpl::OnExported(
     const std::string& interface_name,
     const std::string& method_name,
     bool success) {
-  LOG_IF(WARNING, !success) << "Failed to export " << interface_name << "."
-                            << method_name;
+  DVLOG_IF(1, !success) << "Failed to export " << interface_name << "."
+                        << method_name;
 }
 
 const dbus::ObjectPath& BluetoothGattServiceServiceProviderImpl::object_path()

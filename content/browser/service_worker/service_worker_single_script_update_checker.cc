@@ -190,16 +190,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-imported-script
     DCHECK_EQ(network::mojom::RequestMode::kNoCors, resource_request.mode);
 
-    // Explicitly set it to kOmit because the default value of
-    // ResourceRequest::credentials_mode (kInclude) is different from the
-    // default value in the spec "omit".
-    // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
-    //
-    // TODO(https://crbug.com/799935): Remove this once we use kOmit as the
-    // default value.
-    // TODO(https://crbug.com/972458): Need the test.
-    resource_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
-
     // |fetch_request_context_type| and |resource_type| roughly correspond to
     // the request's |destination| in the Fetch spec.
     // The destination is "script" for the imported script.

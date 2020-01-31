@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1401 tests; 1367 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1412 tests; 1378 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -1005,6 +1005,17 @@ PASS PromiseRejectionEvent interface: existence and properties of interface prot
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PromiseRejectionEvent interface: attribute promise
 PASS PromiseRejectionEvent interface: attribute reason
+PASS DOMParser interface: existence and properties of interface object
+PASS DOMParser interface object length
+PASS DOMParser interface object name
+PASS DOMParser interface: existence and properties of interface prototype object
+PASS DOMParser interface: existence and properties of interface prototype object's "constructor" property
+PASS DOMParser interface: existence and properties of interface prototype object's @@unscopables property
+PASS DOMParser interface: operation parseFromString(DOMString, DOMParserSupportedType)
+PASS DOMParser must be primary interface of new DOMParser()
+PASS Stringification of new DOMParser()
+PASS DOMParser interface: new DOMParser() must inherit property "parseFromString(DOMString, DOMParserSupportedType)" with the proper type
+PASS DOMParser interface: calling parseFromString(DOMString, DOMParserSupportedType) on new DOMParser() with too few arguments must throw TypeError
 PASS Navigator interface: existence and properties of interface object
 PASS Navigator interface object length
 PASS Navigator interface object name

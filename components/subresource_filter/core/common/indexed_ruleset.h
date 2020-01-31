@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/subresource_filter/core/common/flat/indexed_ruleset_generated.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
@@ -115,10 +116,10 @@ class IndexedRulesetMatcher {
       const url::Origin& parent_document_origin,
       url_pattern_index::proto::ActivationType activation_type) const;
 
-  // Returns whether the network request to |url| of |element_type| initiated by
-  // |document_origin| is not allowed to proceed. Always returns false if the
-  // |url| is not valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
-  bool ShouldDisallowResourceLoad(
+  // Returns the LoadPolicy for a network request to |url| of |element_type|
+  // initiated by |document_origin|. Always returns ALLOW if the  |url| is not
+  // valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
+  LoadPolicy GetLoadPolicyForResourceLoad(
       const GURL& url,
       const FirstPartyOrigin& first_party,
       url_pattern_index::proto::ElementType element_type,

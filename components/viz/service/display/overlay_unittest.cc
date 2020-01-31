@@ -1855,7 +1855,7 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
 
   auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
       kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace(),
-      false /* has_alpha */, gpu::Mailbox());
+      false /* has_alpha */);
   OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane =
       &output_surface_plane;
 
@@ -2202,7 +2202,7 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace(), gpu::Mailbox());
+      kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace());
 
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),

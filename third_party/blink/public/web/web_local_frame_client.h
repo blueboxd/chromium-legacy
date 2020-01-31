@@ -292,10 +292,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) {}
 
-  // Replicate user activation state updates for this frame to the embedder.
-  virtual void UpdateUserActivationState(
-      mojom::UserActivationUpdateType update_type) {}
-
   // Called when a frame is capturing mouse input, such as when a scrollbar
   // is being dragged.
   virtual void SetMouseCapture(bool capture) {}

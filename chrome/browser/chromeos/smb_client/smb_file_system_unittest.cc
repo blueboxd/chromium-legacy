@@ -26,7 +26,8 @@ namespace chromeos {
 namespace smb_client {
 namespace {
 
-const ProviderId kProviderId = ProviderId::CreateFromNativeId("smb");
+const file_system_provider::ProviderId kProviderId =
+    file_system_provider::ProviderId::CreateFromNativeId("smb");
 constexpr char kSharePath[] = "\\\\server\\foobar";
 constexpr int32_t kMountId = 4;
 constexpr char kDirectoryPath[] = "foo/bar";

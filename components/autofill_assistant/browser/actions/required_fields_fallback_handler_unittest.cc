@@ -18,6 +18,7 @@ namespace {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::Eq;
 using ::testing::Expectation;
 using ::testing::Invoke;
 
@@ -80,10 +81,9 @@ TEST_F(RequiredFieldsFallbackHandlerTest, AddsMissingFallbackFieldToError) {
   std::vector<RequiredFieldsFallbackHandler::RequiredField> fields;
   fields.emplace_back(CreateRequiredField(
       UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      std::vector<std::string>{"card_name"}));
-  fields.emplace_back(
-      CreateRequiredField(UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
-                          std::vector<std::string>{"card_number"}));
+      {"card_name"}));
+  fields.emplace_back(CreateRequiredField(
+      UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER, {"card_number"}));
 
   auto fallback_data =
       std::make_unique<RequiredFieldsFallbackHandler::FallbackData>();
@@ -133,10 +133,9 @@ TEST_F(RequiredFieldsFallbackHandlerTest, AddsFirstFieldFillingError) {
   std::vector<RequiredFieldsFallbackHandler::RequiredField> fields;
   fields.emplace_back(CreateRequiredField(
       UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      std::vector<std::string>{"card_name"}));
-  fields.emplace_back(
-      CreateRequiredField(UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
-                          std::vector<std::string>{"card_number"}));
+      {"card_name"}));
+  fields.emplace_back(CreateRequiredField(
+      UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER, {"card_number"}));
 
   auto fallback_data =
       std::make_unique<RequiredFieldsFallbackHandler::FallbackData>();
@@ -190,7 +189,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, DoesNotFallbackIfFieldsAreFilled) {
   std::vector<RequiredFieldsFallbackHandler::RequiredField> fields;
   fields.emplace_back(CreateRequiredField(
       UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      std::vector<std::string>{"card_name"}));
+      {"card_name"}));
 
   auto fallback_data =
       std::make_unique<RequiredFieldsFallbackHandler::FallbackData>();
@@ -214,7 +213,8 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FillsEmptyRequiredField) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   Expectation set_value =
-      EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _))
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Eq(Selector({"card_name"})), "John Doe", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .After(set_value)
@@ -223,7 +223,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FillsEmptyRequiredField) {
   std::vector<RequiredFieldsFallbackHandler::RequiredField> fields;
   fields.emplace_back(CreateRequiredField(
       UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      std::vector<std::string>{"card_name"}));
+      {"card_name"}));
 
   auto fallback_data =
       std::make_unique<RequiredFieldsFallbackHandler::FallbackData>();
@@ -250,13 +250,14 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FillsEmptyRequiredField) {
 TEST_F(RequiredFieldsFallbackHandlerTest, FallsBackForForcedFilledField) {
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "value"));
-  EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _))
+  EXPECT_CALL(mock_action_delegate_,
+              OnSetFieldValue(Eq(Selector({"card_name"})), "John Doe", _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   std::vector<RequiredFieldsFallbackHandler::RequiredField> fields;
   auto field = CreateRequiredField(
       UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      std::vector<std::string>{"card_name"});
+      {"card_name"});
   field.forced = true;
   fields.emplace_back(field);
 
@@ -290,7 +291,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FailsIfForcedFieldDidNotGetFilled) {
   std::vector<RequiredFieldsFallbackHandler::RequiredField> fields;
   auto field = CreateRequiredField(
       UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      std::vector<std::string>{"card_name"});
+      {"card_name"});
   field.forced = true;
   fields.emplace_back(field);
 

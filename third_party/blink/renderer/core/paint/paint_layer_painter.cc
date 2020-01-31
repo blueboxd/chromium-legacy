@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -740,7 +741,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
           DisplayLockLifecycleTarget::kChildren))) {
     paint_info.SetDescendantPaintingBlocked(true);
   }
-  paint_layer_.GetLayoutObject().Paint(paint_info);
+  if (fragment.physical_fragment)
+    NGBoxFragmentPainter(*fragment.physical_fragment).Paint(paint_info);
+  else
+    paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 
 void PaintLayerPainter::PaintBackgroundForFragments(

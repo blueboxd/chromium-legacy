@@ -4156,7 +4156,7 @@ bool LocalFrameView::CanThrottleRendering() const {
   // cross-origin frames must already communicate with asynchronous messages,
   // so they should be able to tolerate some delay in receiving replies from a
   // throttled peer.
-  return IsHiddenForThrottling() && frame_->IsCrossOriginSubframe();
+  return IsHiddenForThrottling() && frame_->IsCrossOriginToMainFrame();
 }
 
 void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,

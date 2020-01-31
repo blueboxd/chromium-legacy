@@ -948,11 +948,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
 
-  void SetCachedLayoutResult(const NGLayoutResult&, const NGBreakToken*);
-  void ClearCachedLayoutResult();
-  const NGLayoutResult* GetCachedLayoutResult() const {
-    return cached_layout_result_.get();
-  }
+  void SetCachedLayoutResult(scoped_refptr<const NGLayoutResult>);
+
+  // Store one layout result (with its physical fragment) at the specified
+  // index, and delete all entries following it.
+  void AddLayoutResult(scoped_refptr<const NGLayoutResult>, wtf_size_t index);
+
+  void ClearLayoutResults();
+
+  const NGLayoutResult* GetCachedLayoutResult() const;
+
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
@@ -969,6 +974,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const NGEarlyBreak*,
       base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
       NGLayoutCacheStatus* out_cache_status);
+
+  const NGPhysicalBoxFragment* GetPhysicalFragment(wtf_size_t i) const;
+  const FragmentData* FragmentDataFromPhysicalFragment(
+      const NGPhysicalBoxFragment&) const;
+  wtf_size_t PhysicalFragmentCount() const { return layout_results_.size(); }
 
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();
@@ -1895,7 +1905,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   };
 
   Persistent<LayoutBoxRareData> rare_data_;
-  scoped_refptr<const NGLayoutResult> cached_layout_result_;
+  Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBox, IsBox());

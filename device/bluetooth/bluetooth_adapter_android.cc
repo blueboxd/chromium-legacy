@@ -42,7 +42,7 @@ enum { kPassivePollInterval = 11000 };
 enum { kActivePollInterval = 1000 };
 // The delay in ms to wait before purging devices when a scan starts.
 enum { kPurgeDelay = 500 };
-}
+}  // namespace
 
 namespace device {
 
@@ -315,7 +315,7 @@ void BluetoothAdapterAndroid::UpdateFilter(
                             UMABluetoothDiscoverySessionOutcome::SUCCESS);
     return;
   } else {
-    VLOG(1) << "UpdateFilter: Fails: !isPowered";
+    DVLOG(1) << "UpdateFilter: Fails: !isPowered";
     std::move(callback).Run(/*is_error=*/true,
                             UMABluetoothDiscoverySessionOutcome::UNKNOWN);
   }
@@ -380,12 +380,12 @@ void BluetoothAdapterAndroid::StartScanWithFilter(
           base::TimeDelta::FromMilliseconds(kPurgeDelay));
     }
   } else {
-    VLOG(1) << "StartScanWithFilter: Fails: !isPowered";
+    DVLOG(1) << "StartScanWithFilter: Fails: !isPowered";
   }
 
   if (session_added) {
-    VLOG(1) << "StartScanWithFilter: Now " << unsigned(NumDiscoverySessions())
-            << " sessions.";
+    DVLOG(1) << "StartScanWithFilter: Now " << unsigned(NumDiscoverySessions())
+             << " sessions.";
     std::move(callback).Run(/*is_error=*/false,
                             UMABluetoothDiscoverySessionOutcome::SUCCESS);
   } else {
@@ -399,7 +399,7 @@ void BluetoothAdapterAndroid::StopScan(
     DiscoverySessionResultCallback callback) {
   DCHECK(NumDiscoverySessions() == 0);
 
-  VLOG(1) << "Stopping scan.";
+  DVLOG(1) << "Stopping scan.";
   if (Java_ChromeBluetoothAdapter_stopScan(AttachCurrentThread(), j_adapter_)) {
     std::move(callback).Run(/*is_error=*/false,
                             UMABluetoothDiscoverySessionOutcome::SUCCESS);
@@ -413,7 +413,6 @@ void BluetoothAdapterAndroid::StopScan(
 }
 
 void BluetoothAdapterAndroid::RemovePairingDelegateInternal(
-    device::BluetoothDevice::PairingDelegate* pairing_delegate) {
-}
+    device::BluetoothDevice::PairingDelegate* pairing_delegate) {}
 
 }  // namespace device

@@ -59,7 +59,7 @@ void FakeBluetoothMediaClient::RegisterEndpoint(
   if (!visible_)
     return;
 
-  VLOG(1) << "RegisterEndpoint: " << endpoint_path.value();
+  DVLOG(1) << "RegisterEndpoint: " << endpoint_path.value();
 
   // The media client and adapter client should have the same object path.
   if (object_path != object_path_ ||
@@ -78,7 +78,7 @@ void FakeBluetoothMediaClient::UnregisterEndpoint(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   // TODO(mcchou): Come up with some corresponding actions.
-  VLOG(1) << "UnregisterEndpoint: " << endpoint_path.value();
+  DVLOG(1) << "UnregisterEndpoint: " << endpoint_path.value();
 
   if (!base::Contains(endpoints_, endpoint_path)) {
     error_callback.Run(kFailedError, "Unknown media endpoint");

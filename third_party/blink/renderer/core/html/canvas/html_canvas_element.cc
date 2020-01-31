@@ -296,7 +296,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   // If this context is cross-origin, it should prefer to use the low-power GPU
   LocalFrame* frame = GetDocument().GetFrame();
   CanvasContextCreationAttributesCore recomputed_attributes = attributes;
-  if (frame && frame->IsCrossOriginSubframe())
+  if (frame && frame->IsCrossOriginToMainFrame())
     recomputed_attributes.power_preference = "low-power";
 
   context_ = factory->Create(this, recomputed_attributes);

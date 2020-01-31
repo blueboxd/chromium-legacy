@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
-class BrowserActionsContainer;
 class BrowserView;
 enum class ImeWarningBubblePermissionStatus;
 
@@ -69,7 +68,7 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
   bool IsToolbarAnimating();
 
   const extensions::Extension* extension_;
-  BrowserView* browser_view_;
+  BrowserView* const browser_view_;
 
   // Saves the Browser instance of the browser view, which will be used in
   // OnBrowserRemoved(), as browser_view_->browser() may be null when
@@ -86,10 +85,6 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
 
   // True if the warning bubble has been shown.
   bool bubble_has_shown_ = false;
-
-  BrowserActionsContainer* container_;
-
-  ToolbarActionsBar* toolbar_actions_bar_;
 
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
       toolbar_actions_bar_observer_{this};

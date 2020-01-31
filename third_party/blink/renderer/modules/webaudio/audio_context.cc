@@ -143,7 +143,7 @@ AudioContext::AudioContext(Document& document,
       // kUserGestureRequire policy only applies to cross-origin iframes for Web
       // Audio.
       if (document.GetFrame() &&
-          document.GetFrame()->IsCrossOriginSubframe()) {
+          document.GetFrame()->IsCrossOriginToMainFrame()) {
         autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
         user_gesture_required_ = true;
       }
@@ -495,7 +495,7 @@ bool AudioContext::IsAllowedToStart() const {
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
       DCHECK(document->GetFrame());
-      DCHECK(document->GetFrame()->IsCrossOriginSubframe());
+      DCHECK(document->GetFrame()->IsCrossOriginToMainFrame());
       document->AddConsoleMessage(ConsoleMessage::Create(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
@@ -539,7 +539,7 @@ void AudioContext::RecordAutoplayMetrics() {
   autoplay_histogram.Count(autoplay_status_.value());
 
   if (GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->IsCrossOriginSubframe()) {
+      GetDocument()->GetFrame()->IsCrossOriginToMainFrame()) {
     cross_origin_autoplay_histogram.Count(autoplay_status_.value());
   }
 

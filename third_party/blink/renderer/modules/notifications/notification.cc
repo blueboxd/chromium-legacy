@@ -421,7 +421,7 @@ String Notification::permission(ExecutionContext* context) {
   if (status == mojom::blink::PermissionStatus::ASK) {
     auto* document = DynamicTo<Document>(context);
     LocalFrame* frame = document ? document->GetFrame() : nullptr;
-    if (!frame || frame->IsCrossOriginSubframe())
+    if (!frame || frame->IsCrossOriginToMainFrame())
       status = mojom::blink::PermissionStatus::DENIED;
   }
 
@@ -453,7 +453,7 @@ ScriptPromise Notification::requestPermission(
   // but they can use notifications if permission had already been granted.
   if (auto* document = DynamicTo<Document>(context)) {
     LocalFrame* frame = document->GetFrame();
-    if (!frame || frame->IsCrossOriginSubframe()) {
+    if (!frame || frame->IsCrossOriginToMainFrame()) {
       Deprecation::CountDeprecation(
           context, WebFeature::kNotificationPermissionRequestedIframe);
     }

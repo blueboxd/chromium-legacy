@@ -358,8 +358,8 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void Compact();
 
-  enum class SweepingType : uint8_t { kMutator, kConcurrent };
-  bool AdvanceSweep(SweepingType sweeping_type, base::TimeTicks deadline);
+  bool AdvanceLazySweep(base::TimeTicks deadline);
+  bool AdvanceConcurrentSweep(base::experimental::JobDelegate*);
 
   void PrepareForSweep();
   void RemoveAllPages();

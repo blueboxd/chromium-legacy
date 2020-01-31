@@ -82,14 +82,14 @@ class BluetoothMediaTransportClientImpl
 
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    VLOG(1) << "Remote Media Transport added: " << object_path.value();
+    DVLOG(1) << "Remote Media Transport added: " << object_path.value();
     for (auto& observer : observers_)
       observer.MediaTransportAdded(object_path);
   }
 
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    VLOG(1) << "Remote Media Transport removed: " << object_path.value();
+    DVLOG(1) << "Remote Media Transport removed: " << object_path.value();
     for (auto& observer : observers_)
       observer.MediaTransportRemoved(object_path);
   }
@@ -117,7 +117,7 @@ class BluetoothMediaTransportClientImpl
   void Acquire(const dbus::ObjectPath& object_path,
                const AcquireCallback& callback,
                const ErrorCallback& error_callback) override {
-    VLOG(1) << "Acquire - transport: " << object_path.value();
+    DVLOG(1) << "Acquire - transport: " << object_path.value();
 
     DCHECK(object_manager_);
 
@@ -142,7 +142,7 @@ class BluetoothMediaTransportClientImpl
   void TryAcquire(const dbus::ObjectPath& object_path,
                   const AcquireCallback& callback,
                   const ErrorCallback& error_callback) override {
-    VLOG(1) << "TryAcquire - transport: " << object_path.value();
+    DVLOG(1) << "TryAcquire - transport: " << object_path.value();
 
     DCHECK(object_manager_);
 
@@ -167,7 +167,7 @@ class BluetoothMediaTransportClientImpl
   void Release(const dbus::ObjectPath& object_path,
                const base::Closure& callback,
                const ErrorCallback& error_callback) override {
-    VLOG(1) << "Release - transport: " << object_path.value();
+    DVLOG(1) << "Release - transport: " << object_path.value();
 
     DCHECK(object_manager_);
 
@@ -204,7 +204,7 @@ class BluetoothMediaTransportClientImpl
   // Called by dbus::PropertySet when a property value is changed.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
-    VLOG(1) << "Name of the changed property: " << property_name;
+    DVLOG(1) << "Name of the changed property: " << property_name;
 
     // Dispatches the change to the corresponding property-changed handler.
     for (auto& observer : observers_)
@@ -233,8 +233,8 @@ class BluetoothMediaTransportClientImpl
         reader.PopUint16(&write_mtu)) {
       DCHECK(fd.is_valid());
 
-      VLOG(1) << "OnAcquireSuccess - fd: " << fd.get()
-              << ", read MTU: " << read_mtu << ", write MTU: " << write_mtu;
+      DVLOG(1) << "OnAcquireSuccess - fd: " << fd.get()
+               << ", read MTU: " << read_mtu << ", write MTU: " << write_mtu;
 
       // The ownership of the file descriptor is transferred to the user
       // application.

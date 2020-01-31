@@ -26,9 +26,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
 #include "chrome/common/chrome_features.h"
-#include "printing/common/printing_features.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printed_page_win.h"
+#include "printing/printing_features.h"
 #endif
 
 using base::TimeDelta;

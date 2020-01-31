@@ -81,8 +81,8 @@ void RequiredFieldsFallbackHandler::CheckAndFallbackRequiredFields(
 
   if (required_fields_.empty()) {
     if (!initial_autofill_status.ok()) {
-      DVLOG(1) << __func__ << " Autofill failed and no fallback provided "
-               << initial_autofill_status.proto_status();
+      VLOG(1) << __func__ << " Autofill failed and no fallback provided "
+              << initial_autofill_status.proto_status();
     }
 
     std::move(status_update_callback_)
@@ -196,7 +196,7 @@ void RequiredFieldsFallbackHandler::SetFallbackFieldValuesSequentially(
 
   // Set the next field to its fallback value.
   const RequiredField& required_field = required_fields_[required_fields_index];
-  DVLOG(3) << "Getting element tag for " << required_field.selector;
+  VLOG(3) << "Getting element tag for " << required_field.selector;
   action_delegate_->GetElementTag(
       required_field.selector,
       base::BindOnce(&RequiredFieldsFallbackHandler::OnGetFallbackFieldTag,
@@ -213,19 +213,19 @@ void RequiredFieldsFallbackHandler::OnGetFallbackFieldTag(
   const RequiredField& required_field = required_fields_[required_fields_index];
   auto fallback_value = fallback_data->GetValue(required_field.fallback_key);
   if (!fallback_value.has_value()) {
-    DVLOG(3) << "No fallback for " << required_field.selector;
+    VLOG(3) << "No fallback for " << required_field.selector;
     // If there is no fallback value, we skip this failed field.
     return SetFallbackFieldValuesSequentially(++required_fields_index,
                                               std::move(fallback_data));
   }
 
   if (!element_tag_status.ok()) {
-    DVLOG(3) << "Status for element tag was "
-             << element_tag_status.proto_status();
+    VLOG(3) << "Status for element tag was "
+            << element_tag_status.proto_status();
   }
 
-  DVLOG(3) << "Setting fallback value for " << required_field.selector << " ("
-           << element_tag << ")";
+  VLOG(3) << "Setting fallback value for " << required_field.selector << " ("
+          << element_tag << ")";
   if (element_tag == "SELECT") {
     action_delegate_->SelectOption(
         required_field.selector, fallback_value.value(),

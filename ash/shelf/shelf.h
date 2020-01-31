@@ -34,10 +34,12 @@ class View;
 namespace ash {
 
 enum class AnimationChangeType;
+class HotseatWidget;
 class ShelfFocusCycler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
 class ShelfLockingManager;
+class ShelfNavigationWidget;
 class ShelfView;
 class ShelfWidget;
 class StatusAreaWidget;
@@ -85,6 +87,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // on the display identified by |display_id|.
   static void ActivateShelfItemOnDisplay(int item_index, int64_t display_id);
 
+  void CreateNavigationWidget(aura::Window* container);
+  void CreateHotseatWidget(aura::Window* container);
+  void CreateStatusAreaWidget(aura::Window* status_container);
   void CreateShelfWidget(aura::Window* root);
   void ShutdownShelfWidget();
   void DestroyShelfWidget();
@@ -194,7 +199,17 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfLayoutManager* shelf_layout_manager() const {
     return shelf_layout_manager_;
   }
+
+  // Getters for the various shelf components.
   ShelfWidget* shelf_widget() const { return shelf_widget_.get(); }
+  ShelfNavigationWidget* navigation_widget() const {
+    return navigation_widget_.get();
+  }
+  HotseatWidget* hotseat_widget() const { return hotseat_widget_.get(); }
+  StatusAreaWidget* status_area_widget() const {
+    return status_area_widget_.get();
+  }
+
   ShelfAlignment alignment() const { return alignment_; }
   ShelfAutoHideBehavior auto_hide_behavior() const {
     return auto_hide_behavior_;
@@ -219,6 +234,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            AnimationChangeType change_type) override;
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override;
   void OnWorkAreaInsetsChanged() override;
 
  private:
@@ -238,6 +255,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
 
+  // Pointers to shelf components.
+  std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
+  std::unique_ptr<HotseatWidget> hotseat_widget_;
+  std::unique_ptr<StatusAreaWidget> status_area_widget_;
   // Null during display teardown, see WindowTreeHostManager::DeleteHost() and
   // RootWindowController::CloseAllChildWindows().
   std::unique_ptr<ShelfWidget> shelf_widget_;

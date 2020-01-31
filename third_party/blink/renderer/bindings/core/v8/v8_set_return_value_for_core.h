@@ -15,56 +15,63 @@ namespace bindings {
 // ScriptWrappable (DOMWindow specialization)
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      DOMWindow* value,
+                      const DOMWindow* value,
                       V8ReturnValue::MainWorld) {
   DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
-  info.GetReturnValue().Set(ToV8(value, info.This(), info.GetIsolate()));
+  DOMWindow* wrappable = const_cast<DOMWindow*>(value);
+  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      DOMWindow& value,
+                      const DOMWindow& value,
                       V8ReturnValue::MainWorld) {
   DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
-  info.GetReturnValue().Set(ToV8(&value, info.This(), info.GetIsolate()));
+  DOMWindow* wrappable = const_cast<DOMWindow*>(&value);
+  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      DOMWindow* value,
+                      const DOMWindow* value,
                       const ScriptWrappable* receiver) {
-  info.GetReturnValue().Set(ToV8(value, info.This(), info.GetIsolate()));
+  DOMWindow* wrappable = const_cast<DOMWindow*>(value);
+  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      DOMWindow& value,
+                      const DOMWindow& value,
                       const ScriptWrappable* receiver) {
-  info.GetReturnValue().Set(ToV8(&value, info.This(), info.GetIsolate()));
+  DOMWindow* wrappable = const_cast<DOMWindow*>(&value);
+  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      DOMWindow* value,
+                      const DOMWindow* value,
                       v8::Local<v8::Context> creation_context) {
-  info.GetReturnValue().Set(ToV8(value, info.This(), info.GetIsolate()));
+  DOMWindow* wrappable = const_cast<DOMWindow*>(value);
+  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      DOMWindow& value,
+                      const DOMWindow& value,
                       v8::Local<v8::Context> creation_context) {
-  info.GetReturnValue().Set(ToV8(&value, info.This(), info.GetIsolate()));
+  DOMWindow* wrappable = const_cast<DOMWindow*>(&value);
+  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
 }
 
 // EventListener
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      EventListener* value,
+                      const EventListener* value,
                       v8::Isolate* isolate,
                       EventTarget* event_target) {
+  EventListener* event_listener = const_cast<EventListener*>(value);
   info.GetReturnValue().Set(
-      JSEventHandler::AsV8Value(isolate, event_target, value));
+      JSEventHandler::AsV8Value(isolate, event_target, event_listener));
 }
 
 }  // namespace bindings

@@ -48,6 +48,11 @@ class UserSettingsEventLogger
   // state.
   void LogQuietModeUkmEvent(bool enabled);
 
+  // Logs an event to UKM that the user has toggled an accessibility setting to
+  // the given state.
+  void LogAccessibilityUkmEvent(UserSettingsEvent::Event::AccessibilityId id,
+                                bool enabled);
+
   // Logs an event to UKM that the user has changed the volume from the tray.
   void LogVolumeUkmEvent(int previous_level, int current_level);
 

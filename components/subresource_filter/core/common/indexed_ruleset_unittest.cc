@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "components/url_pattern_index/url_pattern.h"
 #include "components/url_pattern_index/url_rule_test_support.h"
@@ -30,12 +31,12 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
   SubresourceFilterIndexedRulesetTest() { Reset(); }
 
  protected:
-  bool ShouldAllow(base::StringPiece url,
-                   base::StringPiece document_origin = nullptr,
-                   proto::ElementType element_type = testing::kOther,
-                   bool disable_generic_rules = false) const {
+  LoadPolicy GetLoadPolicy(base::StringPiece url,
+                           base::StringPiece document_origin = nullptr,
+                           proto::ElementType element_type = testing::kOther,
+                           bool disable_generic_rules = false) const {
     DCHECK(matcher_);
-    return !matcher_->ShouldDisallowResourceLoad(
+    return matcher_->GetLoadPolicyForResourceLoad(
         GURL(url), FirstPartyOrigin(testing::GetOrigin(document_origin)),
         element_type, disable_generic_rules);
   }
@@ -104,9 +105,10 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
 
 TEST_F(SubresourceFilterIndexedRulesetTest, EmptyRuleset) {
   Finish();
-  EXPECT_TRUE(ShouldAllow(nullptr));
-  EXPECT_TRUE(ShouldAllow("http://example.com"));
-  EXPECT_TRUE(ShouldAllow("http://another.example.com?param=val"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy(nullptr));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("http://example.com"));
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            GetLoadPolicy("http://another.example.com?param=val"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, NoRuleApplies) {
@@ -114,23 +116,38 @@ TEST_F(SubresourceFilterIndexedRulesetTest, NoRuleApplies) {
   ASSERT_TRUE(AddSimpleRule("&filter_out="));
   Finish();
 
-  EXPECT_TRUE(ShouldAllow("http://example.com"));
-  EXPECT_TRUE(ShouldAllow("http://example.com?filter_not"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("http://example.com"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("http://example.com?filter_not"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklist) {
   ASSERT_TRUE(AddSimpleRule("?param="));
   Finish();
 
-  EXPECT_TRUE(ShouldAllow("https://example.com"));
-  EXPECT_FALSE(ShouldAllow("http://example.org?param=image1"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("https://example.com"));
+  EXPECT_EQ(LoadPolicy::DISALLOW,
+            GetLoadPolicy("http://example.org?param=image1"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, SimpleWhitelist) {
   ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
   Finish();
 
-  EXPECT_TRUE(ShouldAllow("https://example.com?filter_out=true"));
+  // This should not return EXPLICITLY_ALLOW because there is no corresponding
+  // blacklist rule for the whitelist rule. To optimize speed, whitelist rules
+  // are only checked if a rule was matched with a blacklist rule.
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            GetLoadPolicy("https://example.com?filter_out=true"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest,
+       SimpleWhitelistWithMatchingBlacklist) {
+  ASSERT_TRUE(AddSimpleRule("example.com/?filter_out="));
+  ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
+  Finish();
+
+  EXPECT_EQ(LoadPolicy::EXPLICITLY_ALLOW,
+            GetLoadPolicy("https://example.com?filter_out=true"));
 }
 
 // Ensure patterns containing non-ascii characters are disallowed.
@@ -140,7 +157,8 @@ TEST_F(SubresourceFilterIndexedRulesetTest, NonAsciiPatterns) {
   ASSERT_FALSE(AddSimpleRule(non_ascii));
   Finish();
 
-  EXPECT_TRUE(ShouldAllow("https://example.com/q=" + non_ascii));
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            GetLoadPolicy("https://example.com/q=" + non_ascii));
 }
 
 // Ensure that specifying non-ascii characters in percent encoded form in
@@ -150,8 +168,8 @@ TEST_F(SubresourceFilterIndexedRulesetTest, PercentEncodedPatterns) {
   ASSERT_TRUE(AddSimpleRule("%C3%A9"));
   Finish();
 
-  EXPECT_FALSE(
-      ShouldAllow("https://example.com/q=" + base::WideToUTF8(L"\u00E9")));
+  EXPECT_EQ(LoadPolicy::DISALLOW, GetLoadPolicy("https://example.com/q=" +
+                                                base::WideToUTF8(L"\u00E9")));
 }
 
 // Ensures that specifying patterns in punycode works for matching IDN domains.
@@ -161,9 +179,10 @@ TEST_F(SubresourceFilterIndexedRulesetTest, IDNHosts) {
   ASSERT_TRUE(AddSimpleRule(punycode));
   Finish();
 
-  EXPECT_FALSE(ShouldAllow("https://" + punycode));
-  EXPECT_FALSE(ShouldAllow(
-      base::WideToUTF8(L"https://\x048f\x04ca\x051f\x04ad\x0432.com")));
+  EXPECT_EQ(LoadPolicy::DISALLOW, GetLoadPolicy("https://" + punycode));
+  EXPECT_EQ(LoadPolicy::DISALLOW,
+            GetLoadPolicy(base::WideToUTF8(
+                L"https://\x048f\x04ca\x051f\x04ad\x0432.com")));
 }
 
 // Ensure patterns containing non-ascii domains are disallowed.
@@ -191,8 +210,8 @@ TEST_F(SubresourceFilterIndexedRulesetTest, PercentEncodedHostPattern) {
   ASSERT_TRUE(AddSimpleRule(kPercentEncodedHost));
   Finish();
 
-  EXPECT_FALSE(ShouldAllow("http://,.com/"));
-  EXPECT_FALSE(ShouldAllow(kPercentEncodedHost));
+  EXPECT_EQ(LoadPolicy::DISALLOW, GetLoadPolicy("http://,.com/"));
+  EXPECT_EQ(LoadPolicy::DISALLOW, GetLoadPolicy(kPercentEncodedHost));
 }
 
 // Verifies the behavior for rules having percent encoded domains.
@@ -208,8 +227,9 @@ TEST_F(SubresourceFilterIndexedRulesetTest, PercentEncodedDomain) {
   // Note: This should actually fail. However url_pattern_index lower cases all
   // domains. Hence it doesn't correctly deal with domains having escape
   // characters which are percent-encoded in upper case by Chrome's url parser.
-  EXPECT_TRUE(ShouldAllow(kUrl, "http://" + percent_encoded_host));
-  EXPECT_TRUE(ShouldAllow(kUrl, "http://,.com"));
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            GetLoadPolicy(kUrl, "http://" + percent_encoded_host));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy(kUrl, "http://,.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklistAndWhitelist) {
@@ -217,9 +237,11 @@ TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklistAndWhitelist) {
   ASSERT_TRUE(AddSimpleWhitelistRule("whitelisted.com/?filter="));
   Finish();
 
-  EXPECT_FALSE(ShouldAllow("http://blacklisted.com?filter=on"));
-  EXPECT_TRUE(ShouldAllow("https://whitelisted.com/?filter=on"));
-  EXPECT_TRUE(ShouldAllow("https://notblacklisted.com"));
+  EXPECT_EQ(LoadPolicy::DISALLOW,
+            GetLoadPolicy("http://blacklisted.com?filter=on"));
+  EXPECT_EQ(LoadPolicy::EXPLICITLY_ALLOW,
+            GetLoadPolicy("https://whitelisted.com/?filter=on"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("https://notblacklisted.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest,
@@ -232,8 +254,8 @@ TEST_F(SubresourceFilterIndexedRulesetTest,
       ShouldDeactivate("https://example.com", nullptr, testing::kDocument));
   EXPECT_FALSE(
       ShouldDeactivate("https://xample.com", nullptr, testing::kDocument));
-  EXPECT_FALSE(ShouldAllow("https://example.com"));
-  EXPECT_TRUE(ShouldAllow("https://xample.com"));
+  EXPECT_EQ(LoadPolicy::DISALLOW, GetLoadPolicy("https://example.com"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("https://xample.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, MatchingEmptyRuleset) {

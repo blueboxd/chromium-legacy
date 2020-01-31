@@ -57,6 +57,13 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
   return true;
 }
 
+// Comapres two |ModelValue| instances and returns true if they exactly match.
+bool operator==(const ModelProto::ModelValue& value_a,
+                const ModelProto::ModelValue& value_b) {
+  return value_a.identifier() == value_b.identifier() &&
+         value_a.value() == value_b.value();
+}
+
 // Intended for debugging. Writes a string representation of |values| to |out|.
 template <typename T>
 std::ostream& WriteRepeatedField(std::ostream& out, const T& values) {

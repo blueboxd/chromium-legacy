@@ -46,7 +46,8 @@ class GenerationConfirmationBubbleControllerTest : public ::testing::Test {
 void GenerationConfirmationBubbleControllerTest::Init() {
   EXPECT_CALL(*delegate(), OnBubbleShown());
   controller_.reset(new GenerationConfirmationBubbleController(
-      mock_delegate_->AsWeakPtr(), ManagePasswordsBubbleModel::AUTOMATIC));
+      mock_delegate_->AsWeakPtr(),
+      PasswordBubbleControllerBase::DisplayReason::kAutomatic));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(delegate()));
 }
 

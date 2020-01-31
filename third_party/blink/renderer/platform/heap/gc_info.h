@@ -130,7 +130,7 @@ template <typename ValueArg, wtf_size_t inlineCapacity>
 class HeapListHashSetAllocator;
 template <typename T, wtf_size_t inlineCapacity>
 class HeapVector;
-template <typename T, wtf_size_t inlineCapacity>
+template <typename T>
 class HeapDeque;
 template <typename T, typename U, typename V>
 class HeapHashCountedSet;
@@ -154,9 +154,9 @@ struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U>>
 template <typename T, wtf_size_t inlineCapacity>
 struct GCInfoTrait<HeapVector<T, inlineCapacity>>
     : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> {};
-template <typename T, wtf_size_t inlineCapacity>
-struct GCInfoTrait<HeapDeque<T, inlineCapacity>>
-    : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> {};
+template <typename T>
+struct GCInfoTrait<HeapDeque<T>>
+    : public GCInfoTrait<Deque<T, 0, HeapAllocator>> {};
 template <typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashCountedSet<T, U, V>>
     : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> {};

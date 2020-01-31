@@ -36,10 +36,6 @@
 @property(nonatomic, strong, readwrite) UIView* locationBarContainer;
 // The height of the container for the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) NSLayoutConstraint* locationBarHeight;
-// The layout guide used to give extra padding at the bottom for the location
-// bar. This padding is considered as "extra" as it is added to the one defined
-// in |locationBarBottomConstraint|.
-@property(nonatomic, strong) UILayoutGuide* extraPaddingGuide;
 
 // StackView containing the leading buttons (relative to the location bar). It
 // should only contain ToolbarButtons. Redefined as readwrite.
@@ -99,9 +95,7 @@
 @synthesize locationBarView = _locationBarView;
 @synthesize fakeOmniboxTarget = _fakeOmniboxTarget;
 @synthesize locationBarBottomConstraint = _locationBarBottomConstraint;
-@synthesize locationBarExtraBottomPadding = _locationBarExtraBottomPadding;
 @synthesize locationBarHeight = _locationBarHeight;
-@synthesize extraPaddingGuide = _extraPaddingGuide;
 @synthesize buttonFactory = _buttonFactory;
 @synthesize allButtons = _allButtons;
 @synthesize progressBar = _progressBar;
@@ -218,14 +212,6 @@
 
   // The location bar shouldn't have vibrancy.
   [self addSubview:self.locationBarContainer];
-
-  // Add layout guide to add extra padding for the location bar if needed.
-  self.extraPaddingGuide = [[UILayoutGuide alloc] init];
-  [self addLayoutGuide:self.extraPaddingGuide];
-
-  if (self.locationBarView) {
-    [self.locationBarContainer addSubview:self.locationBarView];
-  }
 }
 
 // Sets the leading stack view.
@@ -334,16 +320,11 @@
   self.locationBarHeight =
       [self.locationBarContainer.heightAnchor constraintEqualToConstant:0];
   self.locationBarBottomConstraint = [self.locationBarContainer.bottomAnchor
-      constraintEqualToAnchor:self.extraPaddingGuide.topAnchor];
-  self.locationBarExtraBottomPadding =
-      [self.extraPaddingGuide.heightAnchor constraintEqualToConstant:0];
+      constraintEqualToAnchor:self.bottomAnchor];
 
   [NSLayoutConstraint activateConstraints:@[
     self.locationBarBottomConstraint,
     self.locationBarHeight,
-    self.locationBarExtraBottomPadding,
-    [self.extraPaddingGuide.bottomAnchor
-        constraintEqualToAnchor:self.bottomAnchor],
   ]];
   [self.contractedConstraints addObjectsFromArray:@[
     [self.locationBarContainer.trailingAnchor

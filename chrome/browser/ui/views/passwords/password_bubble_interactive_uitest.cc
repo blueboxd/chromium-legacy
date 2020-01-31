@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   // PasswordBubbleViewBase::PendingView:: ButtonPressed(), and
   // simulate the OS event queue by posting a task.
   auto press_button = [](PasswordBubbleViewBase* bubble, bool* ran) {
-    bubble->model()->OnNeverForThisSiteClicked();
+    bubble->Cancel();
     *ran = true;
   };
 

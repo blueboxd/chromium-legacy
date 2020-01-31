@@ -1905,7 +1905,7 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
             touch_resize_window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
+TEST_F(WorkspaceWindowResizerTest, DISABLED_ResizeHistogram) {
   base::HistogramTester histograms;
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
   std::unique_ptr<WindowResizer> resizer(

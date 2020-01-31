@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
 
+#include "chrome/browser/ui/passwords/bubble_controllers/pending_bubble_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
@@ -68,6 +69,8 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void ReplaceWithPromo();
   void UpdateDialogButtons();
   std::unique_ptr<views::View> CreateFooterView();
+
+  PendingBubbleController controller_;
 
   // True iff it is an update password bubble on creation. False iff it is a
   // save bubble.

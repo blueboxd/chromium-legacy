@@ -109,6 +109,29 @@ bool IsValidExternalType(const String& input) {
   return true;
 }
 
+// https://w3c.github.io/web-nfc/#dfn-validate-local-type
+// Validates |input| as an local type.
+bool IsValidLocalType(const String& input) {
+  // Ensure |input| is an ASCII string.
+  if (!input.ContainsOnlyASCIIOrEmpty())
+    return false;
+
+  // The prefix ':' will be omitted when we actually write the record type into
+  // the nfc tag. We're taking it into consideration for validating the length
+  // here.
+  if (input.length() < 2 || input.length() > 256)
+    return false;
+  if (input[0] != ':')
+    return false;
+  if (!IsASCIILower(input[1]) && !IsASCIIDigit(input[1]))
+    return false;
+
+  // TODO(https://crbug.com/520391): Validate |input| is not equal to the record
+  // type of any NDEF record defined in its containing NDEF message.
+
+  return true;
+}
+
 String getDocumentLanguage(const ExecutionContext* execution_context) {
   DCHECK(execution_context);
   String document_language;
@@ -200,8 +223,8 @@ static NDEFRecord* CreateUrlRecord(const String& record_type,
     return nullptr;
   }
   return MakeGarbageCollected<NDEFRecord>(
-      device::mojom::NDEFRecordTypeCategory::kStandardized, record_type, id,
-      GetUTF8DataFromString(url));
+      device::mojom::blink::NDEFRecordTypeCategory::kStandardized, record_type,
+      id, GetUTF8DataFromString(url));
 }
 
 static NDEFRecord* CreateMimeRecord(const String& id,
@@ -243,8 +266,8 @@ static NDEFRecord* CreateUnknownRecord(const String& id,
     return nullptr;
   }
   return MakeGarbageCollected<NDEFRecord>(
-      device::mojom::NDEFRecordTypeCategory::kStandardized, "unknown", id,
-      bytes);
+      device::mojom::blink::NDEFRecordTypeCategory::kStandardized, "unknown",
+      id, bytes);
 }
 
 static NDEFRecord* CreateExternalRecord(
@@ -260,21 +283,54 @@ static NDEFRecord* CreateExternalRecord(
       return nullptr;
     }
     return MakeGarbageCollected<NDEFRecord>(
-        device::mojom::NDEFRecordTypeCategory::kExternal, record_type, id,
-        bytes);
+        device::mojom::blink::NDEFRecordTypeCategory::kExternal, record_type,
+        id, bytes);
   } else if (data.IsNDEFMessageInit()) {
-    NDEFMessage* payload_message = NDEFMessage::Create(
-        execution_context, data.GetAsNDEFMessageInit(), exception_state);
+    NDEFMessage* payload_message =
+        NDEFMessage::Create(execution_context, data.GetAsNDEFMessageInit(),
+                            exception_state, /*is_embedded=*/true);
     if (exception_state.HadException())
       return nullptr;
     DCHECK(payload_message);
     return MakeGarbageCollected<NDEFRecord>(
-        device::mojom::NDEFRecordTypeCategory::kExternal, record_type, id,
-        payload_message);
+        device::mojom::blink::NDEFRecordTypeCategory::kExternal, record_type,
+        id, payload_message);
   }
 
   exception_state.ThrowTypeError(
       "The data for external type NDEFRecord must be a BufferSource or an "
+      "NDEFMessageInit.");
+  return nullptr;
+}
+
+static NDEFRecord* CreateLocalRecord(const ExecutionContext* execution_context,
+                                     const String& record_type,
+                                     const String& id,
+                                     const NDEFRecordDataSource& data,
+                                     ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#dfn-map-local-type-to-ndef
+  if (IsBufferSource(data)) {
+    WTF::Vector<uint8_t> bytes;
+    if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+      return nullptr;
+    }
+    return MakeGarbageCollected<NDEFRecord>(
+        device::mojom::blink::NDEFRecordTypeCategory::kLocal, record_type, id,
+        bytes);
+  } else if (data.IsNDEFMessageInit()) {
+    NDEFMessage* payload_message =
+        NDEFMessage::Create(execution_context, data.GetAsNDEFMessageInit(),
+                            exception_state, /*is_embedded=*/true);
+    if (exception_state.HadException())
+      return nullptr;
+    DCHECK(payload_message);
+    return MakeGarbageCollected<NDEFRecord>(
+        device::mojom::blink::NDEFRecordTypeCategory::kLocal, record_type, id,
+        payload_message);
+  }
+
+  exception_state.ThrowTypeError(
+      "The data for local type NDEFRecord must be a BufferSource or an "
       "NDEFMessageInit.");
   return nullptr;
 }
@@ -284,7 +340,8 @@ static NDEFRecord* CreateExternalRecord(
 // static
 NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
                                const NDEFRecordInit* init,
-                               ExceptionState& exception_state) {
+                               ExceptionState& exception_state,
+                               bool is_embedded) {
   // https://w3c.github.io/web-nfc/#creating-ndef-record
 
   // NDEFRecordInit#recordType is a required field.
@@ -308,8 +365,8 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
   if (record_type == "empty") {
     // https://w3c.github.io/web-nfc/#mapping-empty-record-to-ndef
     return MakeGarbageCollected<NDEFRecord>(
-        device::mojom::NDEFRecordTypeCategory::kStandardized, record_type,
-        init->id(), WTF::Vector<uint8_t>());
+        device::mojom::blink::NDEFRecordTypeCategory::kStandardized,
+        record_type, init->id(), WTF::Vector<uint8_t>());
   } else if (record_type == "text") {
     return CreateTextRecord(init->id(), execution_context, init->encoding(),
                             init->lang(), init->data(), exception_state);
@@ -328,15 +385,22 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
   } else if (IsValidExternalType(record_type)) {
     return CreateExternalRecord(execution_context, record_type, init->id(),
                                 init->data(), exception_state);
-  } else {
-    // TODO(https://crbug.com/520391): Support local type records.
+  } else if (IsValidLocalType(record_type)) {
+    if (!is_embedded) {
+      exception_state.ThrowTypeError(
+          "Local type records are only supposed to be embedded in the payload "
+          "of another record (smart-poster, external, or local).");
+      return nullptr;
+    }
+    return CreateLocalRecord(execution_context, record_type, init->id(),
+                             init->data(), exception_state);
   }
 
   exception_state.ThrowTypeError("Invalid NDEFRecord type.");
   return nullptr;
 }
 
-NDEFRecord::NDEFRecord(device::mojom::NDEFRecordTypeCategory category,
+NDEFRecord::NDEFRecord(device::mojom::blink::NDEFRecordTypeCategory category,
                        const String& record_type,
                        const String& id,
                        WTF::Vector<uint8_t> data)
@@ -344,11 +408,14 @@ NDEFRecord::NDEFRecord(device::mojom::NDEFRecordTypeCategory category,
       record_type_(record_type),
       id_(id),
       payload_data_(std::move(data)) {
-  DCHECK_EQ(category_ == device::mojom::NDEFRecordTypeCategory::kExternal,
-            IsValidExternalType(record_type_));
+  DCHECK_EQ(
+      category_ == device::mojom::blink::NDEFRecordTypeCategory::kExternal,
+      IsValidExternalType(record_type_));
+  DCHECK_EQ(category_ == device::mojom::blink::NDEFRecordTypeCategory::kLocal,
+            IsValidLocalType(record_type_));
 }
 
-NDEFRecord::NDEFRecord(device::mojom::NDEFRecordTypeCategory category,
+NDEFRecord::NDEFRecord(device::mojom::blink::NDEFRecordTypeCategory category,
                        const String& record_type,
                        const String& id,
                        NDEFMessage* payload_message)
@@ -356,17 +423,21 @@ NDEFRecord::NDEFRecord(device::mojom::NDEFRecordTypeCategory category,
       record_type_(record_type),
       id_(id),
       payload_message_(payload_message) {
-  DCHECK_EQ(category_ == device::mojom::NDEFRecordTypeCategory::kExternal,
-            IsValidExternalType(record_type_));
   DCHECK(record_type_ == "smart-poster" ||
-         category_ == device::mojom::NDEFRecordTypeCategory::kExternal);
+         category_ == device::mojom::blink::NDEFRecordTypeCategory::kExternal ||
+         category_ == device::mojom::blink::NDEFRecordTypeCategory::kLocal);
+  DCHECK_EQ(
+      category_ == device::mojom::blink::NDEFRecordTypeCategory::kExternal,
+      IsValidExternalType(record_type_));
+  DCHECK_EQ(category_ == device::mojom::blink::NDEFRecordTypeCategory::kLocal,
+            IsValidLocalType(record_type_));
 }
 
 NDEFRecord::NDEFRecord(const String& id,
                        const String& encoding,
                        const String& lang,
                        WTF::Vector<uint8_t> data)
-    : category_(device::mojom::NDEFRecordTypeCategory::kStandardized),
+    : category_(device::mojom::blink::NDEFRecordTypeCategory::kStandardized),
       record_type_("text"),
       id_(id),
       encoding_(encoding),
@@ -375,7 +446,7 @@ NDEFRecord::NDEFRecord(const String& id,
 
 NDEFRecord::NDEFRecord(const ExecutionContext* execution_context,
                        const String& text)
-    : category_(device::mojom::NDEFRecordTypeCategory::kStandardized),
+    : category_(device::mojom::blink::NDEFRecordTypeCategory::kStandardized),
       record_type_("text"),
       encoding_("utf-8"),
       lang_(getDocumentLanguage(execution_context)),
@@ -384,12 +455,14 @@ NDEFRecord::NDEFRecord(const ExecutionContext* execution_context,
 NDEFRecord::NDEFRecord(const String& id,
                        const String& media_type,
                        WTF::Vector<uint8_t> data)
-    : category_(device::mojom::NDEFRecordTypeCategory::kStandardized),
+    : category_(device::mojom::blink::NDEFRecordTypeCategory::kStandardized),
       record_type_("mime"),
       id_(id),
       media_type_(media_type),
       payload_data_(std::move(data)) {}
 
+// Even if |record| is for a local type record, here we do not validate if it's
+// in the context of a parent record but just expose to JS as is.
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : category_(record.category),
       record_type_(record.record_type),
@@ -403,8 +476,11 @@ NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
               ? MakeGarbageCollected<NDEFMessage>(*record.payload_message)
               : nullptr) {
   DCHECK_NE(record_type_ == "mime", media_type_.IsNull());
-  DCHECK_EQ(category_ == device::mojom::NDEFRecordTypeCategory::kExternal,
-            IsValidExternalType(record_type_));
+  DCHECK_EQ(
+      category_ == device::mojom::blink::NDEFRecordTypeCategory::kExternal,
+      IsValidExternalType(record_type_));
+  DCHECK_EQ(category_ == device::mojom::blink::NDEFRecordTypeCategory::kLocal,
+            IsValidLocalType(record_type_));
 }
 
 const String& NDEFRecord::mediaType() const {
@@ -427,10 +503,11 @@ DOMDataView* NDEFRecord::data() const {
 base::Optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
     ExceptionState& exception_state) const {
   if (record_type_ != "smart-poster" &&
-      category_ != device::mojom::NDEFRecordTypeCategory::kExternal) {
+      category_ != device::mojom::blink::NDEFRecordTypeCategory::kExternal &&
+      category_ != device::mojom::blink::NDEFRecordTypeCategory::kLocal) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "Only smart-poster records and external type records could have a ndef "
+        "Only {smart-poster, external, local} type records could have a ndef "
         "message as payload.");
     return base::nullopt;
   }

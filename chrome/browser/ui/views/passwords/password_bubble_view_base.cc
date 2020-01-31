@@ -62,9 +62,9 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
   password_manager::ui::State model_state =
       PasswordsModelDelegateFromWebContents(web_contents)->GetState();
   if (model_state == password_manager::ui::MANAGE_STATE) {
-    view = new PasswordItemsView(web_contents, anchor_view, reason);
+    view = new PasswordItemsView(web_contents, anchor_view);
   } else if (model_state == password_manager::ui::AUTO_SIGNIN_STATE) {
-    view = new PasswordAutoSignInView(web_contents, anchor_view, reason);
+    view = new PasswordAutoSignInView(web_contents, anchor_view);
   } else if (model_state == password_manager::ui::CONFIRMATION_STATE) {
     view = new PasswordGenerationConfirmationView(web_contents, anchor_view,
                                                   reason);
@@ -95,53 +95,30 @@ void PasswordBubbleViewBase::ActivateBubble() {
 
 const content::WebContents* PasswordBubbleViewBase::GetWebContents() const {
   const PasswordBubbleControllerBase* controller = GetController();
-  if (controller) {
-    return controller->GetWebContents();
-  }
-  DCHECK(model_);
-  return model_->GetWebContents();
+  DCHECK(controller);
+  return controller->GetWebContents();
 }
 
 base::string16 PasswordBubbleViewBase::GetWindowTitle() const {
   const PasswordBubbleControllerBase* controller = GetController();
-  if (controller) {
-    return controller->GetTitle();
-  }
-  DCHECK(model_);
-  return model_->title();
+  DCHECK(controller);
+  return controller->GetTitle();
 }
 
 bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
   const PasswordBubbleControllerBase* controller = GetController();
-  if (controller) {
-    return !controller->GetTitle().empty();
-  }
-  DCHECK(model_);
-  return !model_->title().empty();
+  DCHECK(controller);
+  return !controller->GetTitle().empty();
 }
 
 PasswordBubbleViewBase::PasswordBubbleViewBase(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    DisplayReason reason,
     bool easily_dismissable)
     : LocationBarBubbleDelegateView(anchor_view, web_contents) {
-  base::WeakPtr<PasswordsModelDelegate> delegate =
-      PasswordsModelDelegateFromWebContents(web_contents);
-  // Create the model only for the states that hasn't been migrated to using the
-  // bubble controllers.
-  if (delegate->GetState() != password_manager::ui::AUTO_SIGNIN_STATE &&
-      delegate->GetState() != password_manager::ui::CONFIRMATION_STATE &&
-      delegate->GetState() != password_manager::ui::MANAGE_STATE) {
-    model_ = std::make_unique<ManagePasswordsBubbleModel>(
-        delegate, reason == AUTOMATIC
-                      ? ManagePasswordsBubbleModel::AUTOMATIC
-                      : ManagePasswordsBubbleModel::USER_ACTION);
-  }
-
   // The |mouse_handler| closes the bubble if a keyboard or mouse
   // interactions happens outside of the bubble. By this the bubble becomes
-  // 'easily-dissmisable' and this behavior can be enforced by the
+  // 'easily-dismissable' and this behavior can be enforced by the
   // corresponding flag.
   if (easily_dismissable) {
     mouse_handler_ =
@@ -165,10 +142,6 @@ void PasswordBubbleViewBase::OnWidgetClosing(views::Widget* widget) {
   // Therefore, we reset the model early (before the bubble destructor) to get
   // the following sequence of events [open1, close1, open2, close2].
   PasswordBubbleControllerBase* controller = GetController();
-  if (controller) {
-    controller->OnBubbleClosing();
-    return;
-  }
-  DCHECK(model_);
-  model_->OnBubbleClosing();
+  DCHECK(controller);
+  controller->OnBubbleClosing();
 }

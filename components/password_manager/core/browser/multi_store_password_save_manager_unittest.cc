@@ -183,8 +183,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
   }
 
   void SetDefaultPasswordStore(const autofill::PasswordForm::Store& store) {
-    ON_CALL(*client()->GetMockPasswordFeatureManager(),
-            GetDefaultPasswordStore())
+    ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
         .WillByDefault(Return(store));
   }
 

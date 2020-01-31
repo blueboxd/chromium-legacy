@@ -116,12 +116,11 @@ target(tracing_lib_type, "cpp") {
     ]
 
     # Add the SystemProducer implementations.
-    if (is_android) {
+    if (is_posix) {
       sources += [
-        "perfetto/android_system_producer.cc",
-        "perfetto/android_system_producer.h",
+        "perfetto/posix_system_producer.cc",
+        "perfetto/posix_system_producer.h",
       ]
-      deps += [ "//third_party/perfetto/src/tracing/ipc/producer" ]
     }
 
     if (is_android && can_unwind_with_cfi_table && is_official_build) {

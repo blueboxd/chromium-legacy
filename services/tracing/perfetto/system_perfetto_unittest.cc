@@ -9,7 +9,6 @@
 #include <thread>
 #include <utility>
 
-#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -20,6 +19,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/perfetto/system_test_utils.h"
@@ -32,6 +32,10 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/ipc/default_socket.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace.pb.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"  // nogncheck
+#endif                                // defined(OS_ANDROID)
 
 namespace tracing {
 
@@ -114,22 +118,22 @@ class SystemPerfettoTest : public testing::Test {
     RunUntilIdle();
   }
 
-  std::unique_ptr<MockAndroidSystemProducer> CreateMockAndroidSystemProducer(
+  std::unique_ptr<MockPosixSystemProducer> CreateMockPosixSystemProducer(
       MockSystemService* service,
       int num_data_sources_expected = 0,
       base::RunLoop* system_data_source_enabled_runloop = nullptr,
       base::RunLoop* system_data_source_disabled_runloop = nullptr,
       bool check_sdk_level = false) {
-    std::unique_ptr<MockAndroidSystemProducer> result;
+    std::unique_ptr<MockPosixSystemProducer> result;
     base::RunLoop loop_finished;
-    // When we construct a MockAndroidSystemProducer it needs to be on the
+    // When we construct a MockPosixSystemProducer it needs to be on the
     // correct sequence. Construct it on the task runner and wait on the
     // |loop_finished| to ensure it is completely set up.
     PerfettoTracedProcess::GetTaskRunner()
         ->GetOrCreateTaskRunner()
         ->PostTaskAndReply(
             FROM_HERE, base::BindLambdaForTesting([&]() {
-              result.reset(new MockAndroidSystemProducer(
+              result.reset(new MockPosixSystemProducer(
                   service->producer(), check_sdk_level,
                   num_data_sources_expected,
                   system_data_source_enabled_runloop
@@ -235,7 +239,7 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   // Set up the producer to talk to the system.
   base::RunLoop system_data_source_enabled_runloop;
   base::RunLoop system_data_source_disabled_runloop;
-  auto system_producer = CreateMockAndroidSystemProducer(
+  auto system_producer = CreateMockPosixSystemProducer(
       system_service.get(),
       /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
       &system_data_source_disabled_runloop);
@@ -269,52 +273,6 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-// TODO(crbug/964324): We need to run this test in permissive mode, but
-// currently the bots don't do that. We should switch this to a telemetry
-// test to ensure our integration works on P+ Android devices.
-TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEndRealService) {
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_P) {
-    LOG(INFO)
-        << "Skipping SystemTraceEndToEndRealService test, this phone "
-        << "is pre P SDK, which means there is no 'real' service running.";
-    return;
-  }
-
-  perfetto::protos::TraceConfig trace_config;
-  trace_config.add_buffers()->set_size_kb(1024);
-  trace_config.add_data_sources()->mutable_config()->set_name(
-      data_sources_[0]->name());
-  trace_config.add_data_sources()->mutable_config()->set_name(
-      data_sources_[2]->name());
-  trace_config.set_duration_ms(100);
-
-  std::string path = "/data/misc/perfetto-traces/trace";
-  path += RandomASCII(16);
-  EXPECT_TRUE(
-      ExecPerfetto({"-o", path, "-c"}, trace_config.SerializeAsString()))
-      << "failed with stderr: \"" << stderr_ << "\"";
-
-  char* data = new char[1024 * 1024];
-  ASSERT_TRUE(data);
-  int num_bytes = base::ReadFile(base::FilePath(path), data, (1024 * 1024) - 1);
-  EXPECT_NE(num_bytes, -1);
-  std::string output(data, num_bytes);
-  delete[] data;
-
-  perfetto::protos::Trace trace;
-  EXPECT_TRUE(trace.ParseFromString(output));
-
-  int count = 0;
-  for (const auto& packet : trace.packet()) {
-    if (packet.has_for_testing()) {
-      ++count;
-    }
-  }
-  EXPECT_EQ(1 + 7, count);
-  EXPECT_EQ(0, remove(path.c_str()));
-}
-
 TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   auto system_service = CreateMockSystemService();
 
@@ -330,7 +288,7 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
 
   base::RunLoop system_data_source_enabled_runloop;
   base::RunLoop system_data_source_disabled_runloop;
-  auto system_producer = CreateMockAndroidSystemProducer(
+  auto system_producer = CreateMockPosixSystemProducer(
       system_service.get(),
       /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
       &system_data_source_disabled_runloop);
@@ -472,7 +430,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
 
   base::RunLoop system_data_source_enabled_runloop;
   base::RunLoop system_data_source_disabled_runloop;
-  auto system_producer = CreateMockAndroidSystemProducer(
+  auto system_producer = CreateMockPosixSystemProducer(
       system_service.get(),
       /* num_data_sources = */ 3, &system_data_source_enabled_runloop,
       &system_data_source_disabled_runloop);
@@ -544,7 +502,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
 
   base::RunLoop system_data_source_enabled_runloop;
   base::RunLoop system_data_source_disabled_runloop;
-  auto system_producer = CreateMockAndroidSystemProducer(
+  auto system_producer = CreateMockPosixSystemProducer(
       system_service.get(),
       /* num_data_sources = */ 3, &system_data_source_enabled_runloop,
       &system_data_source_disabled_runloop);
@@ -591,6 +549,16 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
       system_data_source_reenabled_runloop.QuitClosure());
   system_producer->SetDataSourceDisabledCallback(
       system_data_source_redisabled_runloop.QuitClosure());
+  // |system_data_source_enabled| is called by the MockPosixSystemProducer after
+  // calling PosixSystemProducer::StartDataSource, BUT
+  // PosixSystemProducer::StartDataSource could not actual start the DataSource
+  // if local tracing hasn't yet finished. So waiting for data to be written
+  // (and thus implying the data source has started) is a better option.
+  std::vector<base::RunLoop> data_sources_wrote_data{data_sources_.size()};
+  for (size_t i = 0; i < data_sources_.size(); ++i) {
+    data_sources_[i]->set_start_tracing_callback(
+        data_sources_wrote_data[i].QuitClosure());
+  }
 
   local_consumer.StopTracing();
   local_data_source_disabled_runloop.Run();
@@ -599,6 +567,9 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
 
   // Wait for system tracing to return before stopping.
   system_data_source_reenabled_runloop.Run();
+  for (auto& loop : data_sources_wrote_data) {
+    loop.Run();
+  }
   system_consumer.WaitForAllDataSourcesStarted();
 
   base::RunLoop stop_tracing;
@@ -629,7 +600,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   // trace starts.
   base::RunLoop system_data_source_enabled_runloop;
   base::RunLoop system_data_source_disabled_runloop;
-  auto system_producer = CreateMockAndroidSystemProducer(
+  auto system_producer = CreateMockPosixSystemProducer(
       system_service.get(),
       /* num_data_sources = */ 3, &system_data_source_enabled_runloop,
       &system_data_source_disabled_runloop);
@@ -727,6 +698,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
+#if defined(OS_ANDROID)
 TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
@@ -763,7 +735,7 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
 
     base::RunLoop system_data_source_enabled_runloop;
     base::RunLoop system_data_source_disabled_runloop;
-    auto system_producer = CreateMockAndroidSystemProducer(
+    auto system_producer = CreateMockPosixSystemProducer(
         system_service.get(),
         /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
         &system_data_source_disabled_runloop, check_sdk_level);
@@ -817,8 +789,10 @@ TEST_F(SystemPerfettoTest, EnabledOnDebugBuilds) {
                     ->IsDummySystemProducerForTesting());
   }
 }
+#endif  // defined(OS_ANDROID)
 
 TEST_F(SystemPerfettoTest, RespectsFeatureList) {
+#if defined(OS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
     // The feature list is ignored on debug android builds so we should have a
     // real system producer so just bail out of this test.
@@ -827,6 +801,7 @@ TEST_F(SystemPerfettoTest, RespectsFeatureList) {
                      ->IsDummySystemProducerForTesting());
     return;
   }
+#endif  // defined(OS_ANDROID)
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);

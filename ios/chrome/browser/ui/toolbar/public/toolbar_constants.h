@@ -66,13 +66,13 @@ extern const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen;
 // Additional margin, which should grow only when the preferred content size is
 // non-default.
 extern const CGFloat kLocationBarVerticalMarginDynamicType;
-// Extra margin for the location bar vertical margin.
-extern const CGFloat kAdaptiveLocationBarExtraVerticalMargin;
 
 // Top margin of the top toolbar when the adaptive toolbar is unsplit.
 extern const CGFloat kTopToolbarUnsplitMargin;
-// Height of the adaptive toolbars with default font size.
-extern const CGFloat kAdaptiveToolbarHeight;
+// Height of the primary toolbar with default font size.
+extern const CGFloat kPrimaryToolbarHeight;
+// Height of the secondary toolbar with default font size.
+extern const CGFloat kSecondaryToolbarHeight;
 // Height of the part of the toolbar not scaling up when the user changes the
 // preferred font size.
 extern const CGFloat kNonDynamicToolbarHeight;

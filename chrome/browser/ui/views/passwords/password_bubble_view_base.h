@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
 namespace content {
@@ -62,16 +61,11 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
 
-  // These model-accessor methods are public for testing.
-  ManagePasswordsBubbleModel* model() { return model_.get(); }
-  const ManagePasswordsBubbleModel* model() const { return model_.get(); }
-
  protected:
   // The |easily_dismissable| flag indicates if the bubble should close upon
   // a click in the content area of the browser.
   PasswordBubbleViewBase(content::WebContents* web_contents,
                          views::View* anchor_view,
-                         DisplayReason reason,
                          bool easily_dismissable);
 
   ~PasswordBubbleViewBase() override;
@@ -83,8 +77,6 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   // Singleton instance of the Password bubble.The instance is owned by the
   // Bubble and will be deleted when the bubble closes.
   static PasswordBubbleViewBase* g_manage_passwords_bubble_;
-
-  std::unique_ptr<ManagePasswordsBubbleModel> model_;
 
   // Listens for WebContentsView events and closes the bubble so the bubble gets
   // dismissed when users keep using the web page.

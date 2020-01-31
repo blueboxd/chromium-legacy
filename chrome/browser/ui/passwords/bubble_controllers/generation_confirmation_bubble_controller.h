@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_GENERATION_CONFIRMATION_BUBBLE_CONTROLLER_H_
 
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
-
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "ui/gfx/range/range.h"
 
@@ -18,7 +16,7 @@ class GenerationConfirmationBubbleController
  public:
   GenerationConfirmationBubbleController(
       base::WeakPtr<PasswordsModelDelegate> delegate,
-      ManagePasswordsBubbleModel::DisplayReason display_reason);
+      DisplayReason display_reason);
   ~GenerationConfirmationBubbleController() override;
 
   // Called by the view code when the navigate to passwords.google.com link is

@@ -56,7 +56,7 @@ void ItemsBubbleController::OnManageClicked(
 
 void ItemsBubbleController::OnPasswordAction(
     const autofill::PasswordForm& password_form,
-    ManagePasswordsBubbleModel::PasswordAction action) {
+    PasswordAction action) {
   Profile* profile = GetProfile();
   if (!profile)
     return;
@@ -64,7 +64,7 @@ void ItemsBubbleController::OnPasswordAction(
       GetPasswordStore(profile, password_form.IsUsingAccountStore()).get();
 
   DCHECK(password_store);
-  if (action == ManagePasswordsBubbleModel::REMOVE_PASSWORD)
+  if (action == PasswordAction::kRemovePassword)
     password_store->RemoveLogin(password_form);
   else
     password_store->AddLogin(password_form);

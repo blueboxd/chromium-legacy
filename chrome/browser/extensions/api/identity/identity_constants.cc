@@ -19,6 +19,7 @@ const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 const char kOffTheRecord[] = "Identity API is disabled in incognito windows.";
 const char kPageLoadFailure[] = "Authorization page could not be loaded.";
 const char kSetAccountsInCookieFailure[] = "Account cookies could not be set.";
+const char kInvalidConsentResult[] = "Returned an invalid consent result.";
 const char kCanceled[] = "canceled";
 
 const int kCachedIssueAdviceTTLSeconds = 1;

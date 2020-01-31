@@ -13,11 +13,10 @@ namespace metrics_util = password_manager::metrics_util;
 
 GenerationConfirmationBubbleController::GenerationConfirmationBubbleController(
     base::WeakPtr<PasswordsModelDelegate> delegate,
-    ManagePasswordsBubbleModel::DisplayReason display_reason)
+    DisplayReason display_reason)
     : PasswordBubbleControllerBase(
           std::move(delegate),
-          /*display_disposition=*/display_reason ==
-                  ManagePasswordsBubbleModel::AUTOMATIC
+          /*display_disposition=*/display_reason == DisplayReason::kAutomatic
               ? metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION
               : metrics_util::MANUAL_GENERATED_PASSWORD_CONFIRMATION),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION) {

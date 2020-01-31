@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
@@ -32,8 +31,7 @@ TabDialogsViews::TabDialogsViews(content::WebContents* contents)
   DCHECK(contents);
 }
 
-TabDialogsViews::~TabDialogsViews() {
-}
+TabDialogsViews::~TabDialogsViews() = default;
 
 gfx::NativeView TabDialogsViews::GetDialogParentView() const {
   return web_contents_->GetNativeView();

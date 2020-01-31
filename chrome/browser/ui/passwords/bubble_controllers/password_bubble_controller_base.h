@@ -24,6 +24,8 @@ class Profile;
 // password management actions for the coressponding view.
 class PasswordBubbleControllerBase {
  public:
+  enum class PasswordAction { kRemovePassword, kAddPassword };
+  enum class DisplayReason { kAutomatic, kUserAction };
   PasswordBubbleControllerBase(
       base::WeakPtr<PasswordsModelDelegate> delegate,
       password_manager::metrics_util::UIDisplayDisposition display_disposition);

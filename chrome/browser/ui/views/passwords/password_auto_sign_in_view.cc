@@ -28,11 +28,9 @@ PasswordAutoSignInView::~PasswordAutoSignInView() = default;
 
 PasswordAutoSignInView::PasswordAutoSignInView(
     content::WebContents* web_contents,
-    views::View* anchor_view,
-    DisplayReason reason)
+    views::View* anchor_view)
     : PasswordBubbleViewBase(web_contents,
                              anchor_view,
-                             reason,
                              /*easily_dismissable=*/false),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
   SetLayoutManager(std::make_unique<views::FillLayout>());

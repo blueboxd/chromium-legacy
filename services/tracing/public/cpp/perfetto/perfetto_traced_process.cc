@@ -15,7 +15,7 @@
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
 // As per 'gn help check':
 /*
   If you have conditional includes, make sure the build conditions and the
@@ -24,29 +24,29 @@
 */
 // We add the nogncheck to ensure this doesn't trigger incorrect errors on
 // non-android builds.
-#include "services/tracing/public/cpp/perfetto/android_system_producer.h"  // nogncheck
+#include "services/tracing/public/cpp/perfetto/posix_system_producer.h"  // nogncheck
 #include "third_party/perfetto/include/perfetto/ext/tracing/ipc/default_socket.h"  // nogncheck
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 namespace tracing {
 namespace {
 std::unique_ptr<SystemProducer> NewSystemProducer(PerfettoTaskRunner* runner,
                                                   const char* socket_name) {
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
   if (ShouldSetupSystemTracing()) {
     DCHECK(socket_name);
-    return std::make_unique<AndroidSystemProducer>(socket_name, runner);
+    return std::make_unique<PosixSystemProducer>(socket_name, runner);
   }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
   return std::make_unique<DummyProducer>(runner);
 }
 
 const char* MaybeSocket() {
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
   return perfetto::GetProducerSocket();
 #else
   return nullptr;
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 }
 }  // namespace
 
@@ -217,7 +217,7 @@ bool PerfettoTracedProcess::CanStartTracing(
     }
   } else {
     // In tests this is possible due to the periodic polling of CanStartTracing
-    // by the AndroidSystemProducer, when we swap it out for a
+    // by the PosixSystemProducer, when we swap it out for a
     // MockSystemProducer there can be three PerfettoProducers calling this
     // function. In production nothing ever calls the
     // |Set.*ProducerForTesting()| functions so this should never be reached.

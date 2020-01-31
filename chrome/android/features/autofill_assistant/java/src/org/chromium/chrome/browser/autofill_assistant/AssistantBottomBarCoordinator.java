@@ -220,6 +220,10 @@ class AssistantBottomBarCoordinator
                 });
     }
 
+    AssistantCarouselCoordinator getActionsCarouselCoordinator() {
+        return mActionsCoordinator;
+    }
+
     private void setupAnimations(AssistantModel model, ViewGroup rootView) {
         // Animate when the chip in the header changes.
         model.getHeaderModel().addObserver((source, propertyKey) -> {

@@ -31,9 +31,9 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider {
                              const std::string& access_token) override;
   void SetActiveAccountId(const CoreAccountId& account_id) override;
 
-  void OnRefreshTokenAvailable(const CoreAccountId& account_id);
-
  private:
+  void OnRefreshTokenAvailable();
+
   chromeos::DeviceOAuth2TokenService* token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceIdentityProvider);

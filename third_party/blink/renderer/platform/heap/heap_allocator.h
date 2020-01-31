@@ -657,15 +657,14 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   }
 };
 
-template <typename T, wtf_size_t inlineCapacity = 0>
-class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
+template <typename T>
+class HeapDeque : public Deque<T, 0, HeapAllocator> {
   IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(
-        std::is_trivially_destructible<HeapDeque>::value || inlineCapacity,
-        "HeapDeque must be trivially destructible.");
+    static_assert(std::is_trivially_destructible<HeapDeque>::value,
+                  "HeapDeque must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<T>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
@@ -677,35 +676,27 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
  public:
   template <typename>
   static void* AllocateObject(size_t size) {
-    // On-heap HeapDeques generally should not have inline capacity, but it is
-    // hard to avoid when using a type alias. Hence we only disallow the
-    // VectorTraits<T>::kNeedsDestruction case for now.
-    static_assert(inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-                  "on-heap HeapDeque<> should not have an inline capacity");
-    return ThreadHeap::Allocate<HeapDeque<T, inlineCapacity>>(size);
+    return ThreadHeap::Allocate<HeapDeque<T>>(size);
   }
 
   HeapDeque() { CheckType(); }
 
-  explicit HeapDeque(wtf_size_t size)
-      : Deque<T, inlineCapacity, HeapAllocator>(size) {
+  explicit HeapDeque(wtf_size_t size) : Deque<T, 0, HeapAllocator>(size) {
     CheckType();
   }
 
   HeapDeque(wtf_size_t size, const T& val)
-      : Deque<T, inlineCapacity, HeapAllocator>(size, val) {
+      : Deque<T, 0, HeapAllocator>(size, val) {
     CheckType();
   }
 
   HeapDeque& operator=(const HeapDeque& other) {
     HeapDeque<T> copy(other);
-    Deque<T, inlineCapacity, HeapAllocator>::Swap(copy);
+    Deque<T, 0, HeapAllocator>::Swap(copy);
     return *this;
   }
 
-  template <wtf_size_t otherCapacity>
-  HeapDeque(const HeapDeque<T, otherCapacity>& other)
-      : Deque<T, inlineCapacity, HeapAllocator>(other) {}
+  HeapDeque(const HeapDeque<T>& other) : Deque<T, 0, HeapAllocator>(other) {}
 };
 
 }  // namespace blink
@@ -753,8 +744,8 @@ struct VectorTraits<blink::HeapVector<T, 0>>
 };
 
 template <typename T>
-struct VectorTraits<blink::HeapDeque<T, 0>>
-    : VectorTraitsBase<blink::HeapDeque<T, 0>> {
+struct VectorTraits<blink::HeapDeque<T>>
+    : VectorTraitsBase<blink::HeapDeque<T>> {
   STATIC_ONLY(VectorTraits);
   static const bool kNeedsDestruction = false;
   static const bool kCanInitializeWithMemset = true;
@@ -765,18 +756,6 @@ struct VectorTraits<blink::HeapDeque<T, 0>>
 template <typename T, wtf_size_t inlineCapacity>
 struct VectorTraits<blink::HeapVector<T, inlineCapacity>>
     : VectorTraitsBase<blink::HeapVector<T, inlineCapacity>> {
-  STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = VectorTraits<T>::kNeedsDestruction;
-  static const bool kCanInitializeWithMemset =
-      VectorTraits<T>::kCanInitializeWithMemset;
-  static const bool kCanClearUnusedSlotsWithMemset =
-      VectorTraits<T>::kCanClearUnusedSlotsWithMemset;
-  static const bool kCanMoveWithMemcpy = VectorTraits<T>::kCanMoveWithMemcpy;
-};
-
-template <typename T, wtf_size_t inlineCapacity>
-struct VectorTraits<blink::HeapDeque<T, inlineCapacity>>
-    : VectorTraitsBase<blink::HeapDeque<T, inlineCapacity>> {
   STATIC_ONLY(VectorTraits);
   static const bool kNeedsDestruction = VectorTraits<T>::kNeedsDestruction;
   static const bool kCanInitializeWithMemset =

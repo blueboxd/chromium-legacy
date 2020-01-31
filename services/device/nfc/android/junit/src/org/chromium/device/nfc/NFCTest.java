@@ -367,6 +367,45 @@ public class NFCTest {
         assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, payloadMojoMessage.data[0].recordType);
         assertEquals(null, payloadMojoMessage.data[0].mediaType);
         assertEquals(TEST_TEXT, new String(payloadMojoMessage.data[0].data));
+
+        // Test local record conversion.
+        android.nfc.NdefMessage localNdefMessage = new android.nfc.NdefMessage(
+                NdefMessageUtils.createPlatformLocalRecord("xyz", DUMMY_RECORD_ID,
+                        ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT), null /* payloadMessage */));
+        NdefMessage localMojoNdefMessage = NdefMessageUtils.toNdefMessage(localNdefMessage);
+        assertEquals(1, localMojoNdefMessage.data.length);
+        assertEquals(NdefRecordTypeCategory.LOCAL, localMojoNdefMessage.data[0].category);
+        // Is already prefixed with ':'.
+        assertEquals(":xyz", localMojoNdefMessage.data[0].recordType);
+        assertEquals(null, localMojoNdefMessage.data[0].mediaType);
+        assertEquals(DUMMY_RECORD_ID, localMojoNdefMessage.data[0].id);
+        assertNull(localMojoNdefMessage.data[0].encoding);
+        assertNull(localMojoNdefMessage.data[0].lang);
+        assertEquals(TEST_TEXT, new String(localMojoNdefMessage.data[0].data));
+
+        // Test conversion for local records with the payload being a ndef message.
+        payloadMessage = new android.nfc.NdefMessage(
+                android.nfc.NdefRecord.createTextRecord(LANG_EN_US, TEST_TEXT));
+        payloadBytes = payloadMessage.toByteArray();
+        // Put |payloadBytes| as payload of a local record.
+        android.nfc.NdefMessage localNdefMessage1 =
+                new android.nfc.NdefMessage(NdefMessageUtils.createPlatformLocalRecord(
+                        "xyz", DUMMY_RECORD_ID, payloadBytes, null /* payloadMessage */));
+        NdefMessage localMojoNdefMessage1 = NdefMessageUtils.toNdefMessage(localNdefMessage1);
+        assertEquals(1, localMojoNdefMessage1.data.length);
+        assertEquals(NdefRecordTypeCategory.LOCAL, localMojoNdefMessage1.data[0].category);
+        // Is already prefixed with ':'.
+        assertEquals(":xyz", localMojoNdefMessage1.data[0].recordType);
+        assertEquals(null, localMojoNdefMessage1.data[0].mediaType);
+        assertEquals(DUMMY_RECORD_ID, localMojoNdefMessage1.data[0].id);
+        // The embedded ndef message should have content corresponding with the original
+        // |payloadMessage|.
+        payloadMojoMessage = localMojoNdefMessage1.data[0].payloadMessage;
+        assertEquals(1, payloadMojoMessage.data.length);
+        assertEquals(NdefRecordTypeCategory.STANDARDIZED, payloadMojoMessage.data[0].category);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, payloadMojoMessage.data[0].recordType);
+        assertEquals(null, payloadMojoMessage.data[0].mediaType);
+        assertEquals(TEST_TEXT, new String(payloadMojoMessage.data[0].data));
     }
 
     /**
@@ -561,6 +600,56 @@ public class NFCTest {
         assertEquals(DUMMY_RECORD_ID, new String(payloadMessage.getRecords()[0].getId()));
         assertEquals(TEST_URL, payloadMessage.getRecords()[0].toUri().toString());
 
+        // Test local record conversion.
+        NdefRecord localMojoNdefRecord = new NdefRecord();
+        localMojoNdefRecord.category = NdefRecordTypeCategory.LOCAL;
+        localMojoNdefRecord.recordType = ":xyz";
+        localMojoNdefRecord.id = DUMMY_RECORD_ID;
+        localMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
+        NdefMessage localMojoNdefMessage = createMojoNdefMessage(localMojoNdefRecord);
+        android.nfc.NdefMessage localNdefMessage =
+                NdefMessageUtils.toNdefMessage(localMojoNdefMessage);
+        assertEquals(1, localNdefMessage.getRecords().length);
+        assertEquals(
+                android.nfc.NdefRecord.TNF_WELL_KNOWN, localNdefMessage.getRecords()[0].getTnf());
+        // The ':' prefix is already omitted.
+        assertEquals("xyz", new String(localNdefMessage.getRecords()[0].getType()));
+        assertEquals(DUMMY_RECORD_ID, new String(localNdefMessage.getRecords()[0].getId()));
+        assertEquals(TEST_TEXT, new String(localNdefMessage.getRecords()[0].getPayload()));
+
+        // Test conversion for local records with the payload being a ndef message.
+        //
+        // Prepare a local record that embeds |payloadMojoRecord| in its payload.
+        NdefRecord localMojoNdefRecord1 = new NdefRecord();
+        localMojoNdefRecord1.category = NdefRecordTypeCategory.LOCAL;
+        localMojoNdefRecord1.recordType = ":xyz";
+        localMojoNdefRecord1.id = DUMMY_RECORD_ID;
+        // device.mojom.NDEFRecord.data is not allowed to be null, instead, empty byte array is just
+        // what's passed from Blink.
+        localMojoNdefRecord1.data = new byte[0];
+        localMojoNdefRecord1.payloadMessage = createMojoNdefMessage(payloadMojoRecord);
+        // Do the conversion.
+        android.nfc.NdefMessage localNdefMessage1 =
+                NdefMessageUtils.toNdefMessage(createMojoNdefMessage(localMojoNdefRecord1));
+        assertEquals(1, localNdefMessage1.getRecords().length);
+        assertEquals(
+                android.nfc.NdefRecord.TNF_WELL_KNOWN, localNdefMessage1.getRecords()[0].getTnf());
+        // The ':' prefix is already omitted.
+        assertEquals("xyz", new String(localNdefMessage1.getRecords()[0].getType()));
+        assertEquals(DUMMY_RECORD_ID, new String(localNdefMessage1.getRecords()[0].getId()));
+        // The payload raw bytes should be able to construct an ndef message containing an ndef
+        // record that has content corresponding with the original |payloadMojoRecord|.
+        payloadMessage =
+                new android.nfc.NdefMessage(localNdefMessage1.getRecords()[0].getPayload());
+        assertNotNull(payloadMessage);
+        assertEquals(1, payloadMessage.getRecords().length);
+        assertEquals(
+                android.nfc.NdefRecord.TNF_WELL_KNOWN, payloadMessage.getRecords()[0].getTnf());
+        assertEquals(new String(android.nfc.NdefRecord.RTD_URI),
+                new String(payloadMessage.getRecords()[0].getType()));
+        assertEquals(DUMMY_RECORD_ID, new String(payloadMessage.getRecords()[0].getId()));
+        assertEquals(TEST_URL, payloadMessage.getRecords()[0].toUri().toString());
+
         // Test EMPTY record conversion.
         NdefRecord emptyMojoNdefRecord = new NdefRecord();
         emptyMojoNdefRecord.category = NdefRecordTypeCategory.STANDARDIZED;
@@ -652,6 +741,49 @@ public class NFCTest {
             android.nfc.NdefMessage extNdefMessage =
                     NdefMessageUtils.toNdefMessage(extMojoNdefMessage);
             assertNull(extNdefMessage);
+        }
+    }
+
+    /**
+     * Test local type record conversion with invalid local type.
+     */
+    @Test(expected = InvalidNdefMessageException.class)
+    @Feature({"NFCTest"})
+    public void testInvalidLocalRecordType() throws InvalidNdefMessageException {
+        NdefRecord localMojoNdefRecord = new NdefRecord();
+        localMojoNdefRecord.category = NdefRecordTypeCategory.LOCAL;
+        localMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
+        {
+            // Must start with ':'.
+            localMojoNdefRecord.recordType = "dummyLocalTypeNotStartingwith:";
+            localMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
+            NdefMessage localMojoNdefMessage = createMojoNdefMessage(localMojoNdefRecord);
+            android.nfc.NdefMessage localNdefMessage =
+                    NdefMessageUtils.toNdefMessage(localMojoNdefMessage);
+            assertNull(localNdefMessage);
+        }
+        {
+            // |recordType| is a string mixed with ASCII/non-ASCII, FAIL.
+            localMojoNdefRecord.recordType = ":hellö";
+            android.nfc.NdefMessage localNdefMessage_nonASCII =
+                    NdefMessageUtils.toNdefMessage(createMojoNdefMessage(localMojoNdefRecord));
+            assertNull(localNdefMessage_nonASCII);
+
+            char[] chars = new char[255];
+            Arrays.fill(chars, 'a');
+            String chars_255 = new String(chars);
+
+            // The length of the real local type is 255, OK.
+            localMojoNdefRecord.recordType = ":" + chars_255;
+            android.nfc.NdefMessage localNdefMessage_255 =
+                    NdefMessageUtils.toNdefMessage(createMojoNdefMessage(localMojoNdefRecord));
+            assertNotNull(localNdefMessage_255);
+
+            // Exceeding the maximum length 255, FAIL.
+            localMojoNdefRecord.recordType = ":a" + chars_255;
+            android.nfc.NdefMessage localNdefMessage_256 =
+                    NdefMessageUtils.toNdefMessage(createMojoNdefMessage(localMojoNdefRecord));
+            assertNull(localNdefMessage_256);
         }
     }
 

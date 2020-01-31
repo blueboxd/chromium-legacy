@@ -67,6 +67,13 @@ bool ParseListAccountsData(const std::string& data,
                            std::vector<ListedAccount>* accounts,
                            std::vector<ListedAccount>* signed_out_accounts);
 
+// Parses base64url encoded protobuf message returned by the remote consent
+// flow, returning whether the consent was approved.
+// Returns false if the method failed to decode the protobuf.
+// |approved| must not be null.
+bool ParseOAuth2MintTokenConsentResult(const std::string& consent_result,
+                                       bool* approved);
+
 }  // namespace gaia
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_AUTH_UTIL_H_

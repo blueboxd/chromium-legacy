@@ -851,7 +851,7 @@ void UiControllerAndroid::Detach() {
   if (!ui_delegate_)
     return;
 
-  collect_user_data_generic_ui_controller_.reset();
+  ResetGenericUiControllers();
 
   // Capture the debug context, for including into a feedback possibly sent
   // later.
@@ -970,9 +970,7 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetCollectUserDataModel();
   if (!collect_user_data_options) {
-    collect_user_data_generic_ui_controller_.reset();
-    Java_AssistantCollectUserDataModel_setGenericUserInterface(env, jmodel,
-                                                               nullptr);
+    ResetGenericUiControllers();
     Java_AssistantCollectUserDataModel_setVisible(env, jmodel, false);
     return;
   }
@@ -1103,18 +1101,25 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       CreateJavaAdditionalSections(
           env, collect_user_data_options->additional_appended_sections));
-  if (collect_user_data_options->generic_user_interface.has_value()) {
-    auto jcontext =
-        Java_AutofillAssistantUiController_getContext(env, java_object_);
-    collect_user_data_generic_ui_controller_ =
-        GenericUiControllerAndroid::CreateFromProto(
-            *collect_user_data_options->generic_user_interface, jcontext,
-            generic_ui_delegate_.GetJavaObject(), ui_delegate_->GetUserModel(),
-            ui_delegate_->GetEventHandler());
-    Java_AssistantCollectUserDataModel_setGenericUserInterface(
+
+  if (collect_user_data_options->generic_user_interface_prepended.has_value()) {
+    collect_user_data_prepended_generic_ui_controller_ =
+        CreateGenericUiControllerForProto(
+            *collect_user_data_options->generic_user_interface_prepended);
+    Java_AssistantCollectUserDataModel_setGenericUserInterfacePrepended(
         env, jmodel,
-        collect_user_data_generic_ui_controller_ != nullptr
-            ? collect_user_data_generic_ui_controller_->GetRootView()
+        collect_user_data_prepended_generic_ui_controller_ != nullptr
+            ? collect_user_data_prepended_generic_ui_controller_->GetRootView()
+            : nullptr);
+  }
+  if (collect_user_data_options->generic_user_interface_appended.has_value()) {
+    collect_user_data_appended_generic_ui_controller_ =
+        CreateGenericUiControllerForProto(
+            *collect_user_data_options->generic_user_interface_appended);
+    Java_AssistantCollectUserDataModel_setGenericUserInterfaceAppended(
+        env, jmodel,
+        collect_user_data_appended_generic_ui_controller_ != nullptr
+            ? collect_user_data_appended_generic_ui_controller_->GetRootView()
             : nullptr);
   }
 
@@ -1562,4 +1567,27 @@ void UiControllerAndroid::OnFatalError(
       base::android::ConvertJavaStringToUTF8(env, jmessage),
       static_cast<Metrics::DropOutReason>(jreason));
 }
+
+void UiControllerAndroid::ResetGenericUiControllers() {
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetCollectUserDataModel();
+  collect_user_data_prepended_generic_ui_controller_.reset();
+  collect_user_data_appended_generic_ui_controller_.reset();
+  Java_AssistantCollectUserDataModel_setGenericUserInterfacePrepended(
+      env, jmodel, nullptr);
+  Java_AssistantCollectUserDataModel_setGenericUserInterfaceAppended(
+      env, jmodel, nullptr);
+}
+
+std::unique_ptr<GenericUiControllerAndroid>
+UiControllerAndroid::CreateGenericUiControllerForProto(
+    const GenericUserInterfaceProto& proto) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jcontext =
+      Java_AutofillAssistantUiController_getContext(env, java_object_);
+  return GenericUiControllerAndroid::CreateFromProto(
+      proto, jcontext, generic_ui_delegate_.GetJavaObject(),
+      ui_delegate_->GetUserModel(), ui_delegate_->GetEventHandler());
+}
+
 }  // namespace autofill_assistant

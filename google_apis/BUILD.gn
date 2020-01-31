@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 declare_args() {
   # You can set the variable 'use_official_google_api_keys' to true
@@ -133,6 +134,7 @@ template("google_apis_tmpl") {
     ]
 
     deps = [
+      ":oauth2_mint_token_consent_result_proto",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//build:branding_buildflags",
@@ -167,6 +169,10 @@ google_apis_tmpl("google_apis") {
     "//net",
     "//services/network/public/cpp",
   ]
+}
+
+proto_library("oauth2_mint_token_consent_result_proto") {
+  sources = [ "gaia/oauth2_mint_token_consent_result.proto" ]
 }
 
 static_library("test_support") {
@@ -225,6 +231,7 @@ test("google_apis_unittests") {
 
   deps = [
     ":google_apis",
+    ":oauth2_mint_token_consent_result_proto",
     ":run_all_unittests",
     ":test_support",
     "//base",

@@ -147,8 +147,8 @@ IOSChromePasswordManagerClient::GetPasswordManager() const {
   return delegate_.passwordManager;
 }
 
-const password_manager::PasswordFeatureManager*
-IOSChromePasswordManagerClient::GetPasswordFeatureManager() const {
+password_manager::PasswordFeatureManager*
+IOSChromePasswordManagerClient::GetPasswordFeatureManager() {
   return &password_feature_manager_;
 }
 

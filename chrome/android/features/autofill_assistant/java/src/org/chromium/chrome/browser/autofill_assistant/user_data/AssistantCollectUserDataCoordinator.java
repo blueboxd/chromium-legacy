@@ -76,9 +76,9 @@ public class AssistantCollectUserDataCoordinator {
         AssistantAdditionalSectionContainer prependedSections =
                 new AssistantAdditionalSectionContainer(mActivity, paymentRequestExpanderAccordion);
 
-        LinearLayout genericUserInterfaceContainer = new LinearLayout(activity);
-        genericUserInterfaceContainer.setOrientation(LinearLayout.VERTICAL);
-        paymentRequestExpanderAccordion.addView(genericUserInterfaceContainer,
+        LinearLayout genericUserInterfaceContainerPrepended = new LinearLayout(activity);
+        genericUserInterfaceContainerPrepended.setOrientation(LinearLayout.VERTICAL);
+        paymentRequestExpanderAccordion.addView(genericUserInterfaceContainerPrepended,
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -105,6 +105,12 @@ public class AssistantCollectUserDataCoordinator {
 
         AssistantAdditionalSectionContainer appendedSections =
                 new AssistantAdditionalSectionContainer(mActivity, paymentRequestExpanderAccordion);
+
+        LinearLayout genericUserInterfaceContainerAppended = new LinearLayout(activity);
+        genericUserInterfaceContainerAppended.setOrientation(LinearLayout.VERTICAL);
+        paymentRequestExpanderAccordion.addView(genericUserInterfaceContainerAppended,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         AssistantTermsSection termsSection = new AssistantTermsSection(
                 mActivity, paymentRequestExpanderAccordion, /* showAsSingleCheckbox= */ false);
@@ -139,7 +145,8 @@ public class AssistantCollectUserDataCoordinator {
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
                 contactDetailsSection, dateRangeStartSection, dateRangeEndSection,
                 paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
-                infoSection, prependedSections, appendedSections, genericUserInterfaceContainer,
+                infoSection, prependedSections, appendedSections,
+                genericUserInterfaceContainerPrepended, genericUserInterfaceContainerAppended,
                 DIVIDER_TAG, activity);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);

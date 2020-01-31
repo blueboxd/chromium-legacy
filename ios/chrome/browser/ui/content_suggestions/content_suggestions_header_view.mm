@@ -44,6 +44,9 @@ const CGFloat kFakeboxHighlightDuration = 0.4;
 // Fakebox highlight background alpha.
 const CGFloat kFakeboxHighlightAlpha = 0.06;
 
+// Height margin of the fake location bar.
+const CGFloat kFakeLocationBarHeightMargin = 2;
+
 // Returns the height of the toolbar based on the preferred content size of the
 // application.
 CGFloat ToolbarHeight() {
@@ -299,6 +302,8 @@ CGFloat ToolbarHeight() {
   CGFloat percent =
       [self searchFieldProgressForOffset:offset safeAreaInsets:safeAreaInsets];
 
+  CGFloat toolbarExpandedHeight = ToolbarHeight();
+
   if (!IsSplitToolbarMode(self)) {
     // When Voiceover is running, if the header's alpha is set to 0, voiceover
     // can't scroll back to it, and it will never come back into view. To
@@ -308,7 +313,8 @@ CGFloat ToolbarHeight() {
     self.alpha = std::max(1 - percent, 0.01);
 
     widthConstraint.constant = searchFieldNormalWidth;
-    self.fakeLocationBarHeightConstraint.constant = ToolbarHeight();
+    self.fakeLocationBarHeightConstraint.constant =
+        toolbarExpandedHeight - kFakeLocationBarHeightMargin;
     self.fakeLocationBar.layer.cornerRadius =
         self.fakeLocationBarHeightConstraint.constant / 2;
     [self scaleHintLabelForPercent:percent];
@@ -328,8 +334,6 @@ CGFloat ToolbarHeight() {
 
   // Grow the background to cover the safeArea top.
   self.fakeToolbarTopConstraint.constant = -safeAreaInsets.top * percent;
-
-  CGFloat toolbarExpandedHeight = ToolbarHeight();
 
   // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.
@@ -356,9 +360,11 @@ CGFloat ToolbarHeight() {
   // collection from times to times.
   CGFloat kLocationBarHeight = LocationBarHeight(
       [UIApplication sharedApplication].preferredContentSizeCategory);
-  CGFloat minHeightDiff = kLocationBarHeight - toolbarExpandedHeight;
-  self.fakeLocationBarHeightConstraint.constant =
-      toolbarExpandedHeight + minHeightDiff * percent;
+  CGFloat minHeightDiff =
+      kLocationBarHeight + kFakeLocationBarHeightMargin - toolbarExpandedHeight;
+  self.fakeLocationBarHeightConstraint.constant = toolbarExpandedHeight -
+                                                  kFakeLocationBarHeightMargin +
+                                                  minHeightDiff * percent;
   self.fakeLocationBar.layer.cornerRadius =
       self.fakeLocationBarHeightConstraint.constant / 2;
 

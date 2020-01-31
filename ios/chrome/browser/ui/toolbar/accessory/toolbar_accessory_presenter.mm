@@ -216,7 +216,7 @@ const CGFloat kAnimationDuration = 0.15;
                                               .widthAnchor
                                  constant:-2 * kRegularRegularHorizontalMargin],
     [self.backgroundView.heightAnchor
-        constraintEqualToConstant:kAdaptiveToolbarHeight],
+        constraintEqualToConstant:kPrimaryToolbarHeight],
   ]];
   // Layouts |shadow| around |self.backgroundView|.
   AddSameConstraintsToSidesWithInsets(
@@ -271,7 +271,7 @@ const CGFloat kAnimationDuration = 0.15;
     [self.presentedViewController.view.leadingAnchor
         constraintEqualToAnchor:backgroundView.leadingAnchor],
     [self.presentedViewController.view.heightAnchor
-        constraintEqualToConstant:kAdaptiveToolbarHeight],
+        constraintEqualToConstant:kPrimaryToolbarHeight],
     [self.presentedViewController.view.bottomAnchor
         constraintEqualToAnchor:backgroundView.bottomAnchor],
   ]];

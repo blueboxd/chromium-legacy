@@ -214,7 +214,7 @@ public class AutofillAssistantGenericUiTest {
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
-                                         .setGenericUserInterface(
+                                         .setGenericUserInterfacePrepended(
                                                  GenericUserInterfaceProto.newBuilder().setRootView(
                                                          rootView))
                                          .setPrivacyNoticeText(
@@ -266,19 +266,27 @@ public class AutofillAssistantGenericUiTest {
                                            .setIdentifier("clickableView2")
                                            .build();
 
-        ViewProto rootView =
+        ViewProto rootViewPrepended =
                 (ViewProto) ViewProto.newBuilder()
                         .setViewContainer(
                                 ViewContainerProto.newBuilder()
                                         .setLinearLayout(
                                                 LinearLayoutProto.newBuilder().setOrientation(
                                                         LinearLayoutProto.Orientation.VERTICAL))
-                                        .addViews(clickableView1)
+                                        .addViews(clickableView1))
+                        .build();
+        ViewProto rootViewAppended =
+                (ViewProto) ViewProto.newBuilder()
+                        .setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
                                         .addViews(clickableView2))
                         .build();
 
-        List<InteractionProto> interactions = new ArrayList<>();
-        interactions.add(
+        List<InteractionProto> interactionsPrepended = new ArrayList<>();
+        interactionsPrepended.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
                                 OnViewClickedEventProto.newBuilder()
@@ -289,7 +297,8 @@ public class AutofillAssistantGenericUiTest {
                                 SetModelValueCallbackProto.newBuilder().setModelIdentifier(
                                         "output_1")))
                         .build());
-        interactions.add(
+        List<InteractionProto> interactionsAppended = new ArrayList<>();
+        interactionsAppended.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
                                 OnViewClickedEventProto.newBuilder()
@@ -301,28 +310,39 @@ public class AutofillAssistantGenericUiTest {
                                         "output_2")))
                         .build());
 
-        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
-        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                                .setIdentifier("output_1")
-                                .build());
-        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                                .setIdentifier("output_2")
-                                .build());
+        List<ModelProto.ModelValue> modelValuesPrepended = new ArrayList<>();
+        modelValuesPrepended.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                         .setIdentifier("output_1")
+                                         .build());
+        List<ModelProto.ModelValue> modelValuesAppended = new ArrayList<>();
+        modelValuesAppended.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                        .setIdentifier("output_2")
+                                        .build());
+
+        GenericUserInterfaceProto genericUserInterfacePrepended =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(rootViewPrepended)
+                        .setInteractions(InteractionsProto.newBuilder().addAllInteractions(
+                                interactionsPrepended))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValuesPrepended))
+                        .build();
+
+        GenericUserInterfaceProto genericUserInterfaceAppended =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(rootViewAppended)
+                        .setInteractions(InteractionsProto.newBuilder().addAllInteractions(
+                                interactionsAppended))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValuesAppended))
+                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
-                                         .setGenericUserInterface(
-                                                 GenericUserInterfaceProto.newBuilder()
-                                                         .setRootView(rootView)
-                                                         .setInteractions(
-                                                                 InteractionsProto.newBuilder()
-                                                                         .addAllInteractions(
-                                                                                 interactions))
-                                                         .setModel(ModelProto.newBuilder()
-                                                                           .addAllValues(
-                                                                                   modelValues)))
+                                         .setGenericUserInterfacePrepended(
+                                                 genericUserInterfacePrepended)
+                                         .setGenericUserInterfaceAppended(
+                                                 genericUserInterfaceAppended)
                                          .setPrivacyNoticeText(
                                                  "Chrome will send selected data to example.com")
                                          .setRequestTermsAndConditions(false))
@@ -454,7 +474,7 @@ public class AutofillAssistantGenericUiTest {
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
-                                         .setGenericUserInterface(
+                                         .setGenericUserInterfacePrepended(
                                                  GenericUserInterfaceProto.newBuilder()
                                                          .setRootView(rootView)
                                                          .setInteractions(

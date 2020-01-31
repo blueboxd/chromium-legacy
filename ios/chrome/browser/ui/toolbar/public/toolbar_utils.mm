@@ -50,13 +50,13 @@ CGFloat ToolbarCollapsedHeight(UIContentSizeCategory category) {
 
 CGFloat ToolbarExpandedHeight(UIContentSizeCategory category) {
   category = NormalizedCategory(category);
-  return Interpolate(category, kAdaptiveToolbarHeight,
-                     kNonDynamicToolbarHeight);
+  return Interpolate(category, kPrimaryToolbarHeight, kNonDynamicToolbarHeight);
 }
 
 CGFloat LocationBarHeight(UIContentSizeCategory category) {
   category = NormalizedCategory(category);
-  CGFloat verticalMargin = 2 * kAdaptiveLocationBarVerticalMargin;
+  CGFloat verticalMargin =
+      2 * kAdaptiveLocationBarVerticalMargin - kTopToolbarUnsplitMargin;
   CGFloat dynamicTypeVerticalAdjustment =
       (ToolbarClampedFontSizeMultiplier(category) - 1) *
       (kLocationBarVerticalMarginDynamicType +

@@ -43,13 +43,13 @@ const CGFloat kContractedLocationBarHorizontalMargin = 19;
 
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.09;
 const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito = 0.12;
-const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
+const CGFloat kAdaptiveLocationBarVerticalMargin = 10.0f;
 const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen = 3.0f;
 const CGFloat kLocationBarVerticalMarginDynamicType = -1.0f;
-const CGFloat kAdaptiveLocationBarExtraVerticalMargin = 1.0f;
 
-const CGFloat kTopToolbarUnsplitMargin = 2;
-const CGFloat kAdaptiveToolbarHeight = 48;
+const CGFloat kTopToolbarUnsplitMargin = 6;
+const CGFloat kPrimaryToolbarHeight = 50;
+const CGFloat kSecondaryToolbarHeight = 44;
 const CGFloat kNonDynamicToolbarHeight = 14;
 const CGFloat kToolbarHeightFullscreen = 20;
 const CGFloat kNonDynamicToolbarHeightFullscreen = 3;

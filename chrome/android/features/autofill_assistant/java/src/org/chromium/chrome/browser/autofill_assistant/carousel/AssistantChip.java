@@ -56,7 +56,7 @@ public class AssistantChip {
     private final String mText;
 
     /** Whether this chip is enabled or not. */
-    private final boolean mDisabled;
+    private boolean mDisabled;
 
     /**
      * Whether this chip is sticky. A sticky chip will be a candidate to be displayed in the header
@@ -93,11 +93,34 @@ public class AssistantChip {
         return mDisabled;
     }
 
+    /**
+     * Set the disabled state of the {@link AssistantChip} object. Changing this flag will not
+     * affect the view this chip is bound to. Use this to keep the model and view in sync, if
+     * the view's state changes.
+     */
+    public void setDisabled(boolean disabled) {
+        mDisabled = disabled;
+    }
+
     public boolean isSticky() {
         return mSticky;
     }
 
     public Runnable getSelectedListener() {
         return mSelectedListener;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof AssistantChip)) {
+            return false;
+        }
+
+        AssistantChip that = (AssistantChip) other;
+        return this.getType() == that.getType() && this.getText().equals(that.getText())
+                && this.getIcon() == that.getIcon() && this.isSticky() == that.isSticky();
     }
 }

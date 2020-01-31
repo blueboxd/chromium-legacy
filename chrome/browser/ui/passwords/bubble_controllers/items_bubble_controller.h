@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 
 class PasswordsModelDelegate;
@@ -26,7 +25,7 @@ class ItemsBubbleController : public PasswordBubbleControllerBase {
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
   void OnPasswordAction(const autofill::PasswordForm& password_form,
-                        ManagePasswordsBubbleModel::PasswordAction action);
+                        PasswordAction action);
 
   // Returns the available credentials which match the current site.
   const std::vector<autofill::PasswordForm>& local_credentials() const {

@@ -86,8 +86,8 @@ class CustomPasswordManagerClient : public ChromePasswordManagerClient {
   }
 
   // PasswordManagerClient:
-  const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
-      const override {
+  password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
+      override {
     return &password_feature_manager_;
   }
 

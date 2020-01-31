@@ -1321,7 +1321,6 @@ test("content_browsertests") {
       "//content/shell:content_shell_lib",
       "//content/shell/android:content_shell_assets",
       "//content/shell/android:content_shell_jni_headers",
-      "//services/tracing:test_utils",
       "//testing/android/native_test:native_test_support",
       "//ui/android:android",
       "//ui/touch_selection:touch_selection",
@@ -1344,6 +1343,9 @@ test("content_browsertests") {
       "../browser/zoom_browsertest.cc",
     ]
     deps += [ "//content/browser/speech/proto" ]
+  }
+  if (is_posix) {
+    deps += [ "//services/tracing:test_utils" ]
   }
 
   # HID support is not available without udev.
@@ -2069,6 +2071,7 @@ test("content_unittests") {
 
   if (is_posix) {
     sources += [ "../browser/posix_file_descriptor_info_impl_unittest.cc" ]
+    deps += [ "//services/tracing:test_utils" ]
   }
 
   if (enable_plugins) {

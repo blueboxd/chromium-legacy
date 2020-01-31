@@ -2243,9 +2243,9 @@ class Container final : public GarbageCollected<Container> {
   HeapVector<Member<IntWrapper>, 2> vector;
   HeapVector<PairWrappedUnwrapped, 2> vector_wu;
   HeapVector<PairUnwrappedWrapped, 2> vector_uw;
-  HeapDeque<Member<IntWrapper>, 0> deque;
-  HeapDeque<PairWrappedUnwrapped, 0> deque_wu;
-  HeapDeque<PairUnwrappedWrapped, 0> deque_uw;
+  HeapDeque<Member<IntWrapper>> deque;
+  HeapDeque<PairWrappedUnwrapped> deque_wu;
+  HeapDeque<PairUnwrappedWrapped> deque_uw;
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(map);
     visitor->Trace(set);
@@ -2407,9 +2407,9 @@ TEST_F(HeapTest, HeapVectorOnStackLargeObjectPageSized) {
   ConservativelyCollectGarbage();
 }
 
-template <typename T, wtf_size_t inlineCapacity, typename U>
-bool DequeContains(HeapDeque<T, inlineCapacity>& deque, U u) {
-  typedef typename HeapDeque<T, inlineCapacity>::iterator iterator;
+template <typename T, typename U>
+bool DequeContains(HeapDeque<T>& deque, U u) {
+  typedef typename HeapDeque<T>::iterator iterator;
   for (iterator it = deque.begin(); it != deque.end(); ++it) {
     if (*it == u)
       return true;
@@ -2428,12 +2428,12 @@ TEST_F(HeapTest, HeapCollectionTypes) {
   typedef HeapHashCountedSet<Member<IntWrapper>> MemberCountedSet;
 
   typedef HeapVector<Member<IntWrapper>, 2> MemberVector;
-  typedef HeapDeque<Member<IntWrapper>, 0> MemberDeque;
+  typedef HeapDeque<Member<IntWrapper>> MemberDeque;
 
   typedef HeapVector<PairWrappedUnwrapped, 2> VectorWU;
   typedef HeapVector<PairUnwrappedWrapped, 2> VectorUW;
-  typedef HeapDeque<PairWrappedUnwrapped, 0> DequeWU;
-  typedef HeapDeque<PairUnwrappedWrapped, 0> DequeUW;
+  typedef HeapDeque<PairWrappedUnwrapped> DequeWU;
+  typedef HeapDeque<PairUnwrappedWrapped> DequeUW;
 
   Persistent<MemberMember> member_member = MakeGarbageCollected<MemberMember>();
   Persistent<MemberMember> member_member2 =
@@ -4085,8 +4085,8 @@ TEST_F(HeapTest, EmbeddedInDeque) {
   ClearOutOldGarbage();
   SimpleFinalizedObject::destructor_calls_ = 0;
   {
-    Persistent<HeapDeque<VectorObject, 2>> inline_deque =
-        MakeGarbageCollected<HeapDeque<VectorObject, 2>>();
+    Persistent<HeapDeque<VectorObject>> inline_deque =
+        MakeGarbageCollected<HeapDeque<VectorObject>>();
     Persistent<HeapDeque<VectorObject>> outline_deque =
         MakeGarbageCollected<HeapDeque<VectorObject>>();
     VectorObject i1, i2;

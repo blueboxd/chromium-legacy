@@ -31,16 +31,12 @@ namespace chromeos {
 // DeviceOAuth2TokenService retrieves OAuth2 access tokens for a given
 // set of scopes using the device-level OAuth2 any-api refresh token
 // obtained during enterprise device enrollment.
-// When using DeviceOAuth2TokenService, a value of |GetRobotAccountId| should
-// be used in places where API expects |account_id|.
 //
 // Note that requests must be made from the UI thread.
 class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
                                  public gaia::GaiaOAuthClient::Delegate {
  public:
-  typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
-      RefreshTokenAvailableCallback;
-
+  typedef base::RepeatingCallback<void()> RefreshTokenAvailableCallback;
   typedef base::Callback<void(bool)> StatusCallback;
 
   // Persist the given refresh token on the device. Overwrites any previous
@@ -54,15 +50,13 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // Pull the robot account ID from device policy.
   CoreAccountId GetRobotAccountId() const;
 
-  // Can be used to override the robot account ID for testing purposes. Most
-  // common use case is to easily inject a non-empty account ID to make the
-  // refresh token for the robot account visible via GetAccounts() and
-  // RefreshTokenIsAvailable().
-  void set_robot_account_id_for_testing(const CoreAccountId& account_id);
-
   // If set, this callback will be invoked when a new refresh token is
   // available.
   void SetRefreshTokenAvailableCallback(RefreshTokenAvailableCallback callback);
+
+  // Returns true if the refresh token is available and if the clients of this
+  // class may start fetching access tokens.
+  bool RefreshTokenIsAvailable() const;
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -72,7 +66,6 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // the object that will be called back with results if the returned request
   // is not deleted.
   std::unique_ptr<OAuth2AccessTokenManager::Request> StartAccessTokenRequest(
-      const CoreAccountId& account_id,
       const OAuth2AccessTokenManager::ScopeSet& scopes,
       OAuth2AccessTokenManager::Consumer* consumer);
 
@@ -81,21 +74,16 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // but was not accepted by the server (e.g., the server returned
   // 401 Unauthorized). The token will be removed from the cache for the given
   // scopes.
-  void InvalidateAccessToken(const CoreAccountId& account_id,
-                             const OAuth2AccessTokenManager::ScopeSet& scopes,
+  void InvalidateAccessToken(const OAuth2AccessTokenManager::ScopeSet& scopes,
                              const std::string& access_token);
-
-  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
 
   OAuth2AccessTokenManager* GetAccessTokenManager();
 
-  // gaia::GaiaOAuthClient::Delegate implementation.
-  void OnRefreshTokenResponse(const std::string& access_token,
-                              int expires_in_seconds) override;
-  void OnGetTokenInfoResponse(
-      std::unique_ptr<base::DictionaryValue> token_info) override;
-  void OnOAuthError() override;
-  void OnNetworkError(int response_code) override;
+  // Can be used to override the robot account ID for testing purposes. Most
+  // common use case is to easily inject a non-empty account ID to make the
+  // refresh token for the robot account visible via GetAccounts() and
+  // RefreshTokenIsAvailable().
+  void set_robot_account_id_for_testing(const CoreAccountId& account_id);
 
  private:
   friend class DeviceOAuth2TokenServiceFactory;
@@ -118,6 +106,14 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
     STATE_TOKEN_VALID,
   };
 
+  // gaia::GaiaOAuthClient::Delegate implementation.
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnGetTokenInfoResponse(
+      std::unique_ptr<base::DictionaryValue> token_info) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
+
   // OAuth2AccessTokenManager::Delegate:
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
@@ -134,8 +130,7 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
       const std::string& client_secret,
       const OAuth2AccessTokenManager::ScopeSet& scopes) override;
 
-  void FireRefreshTokenAvailable(const CoreAccountId& account_id);
-  void FireRefreshTokenRevoked(const CoreAccountId& account_id);
+  void FireRefreshTokenAvailable();
 
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
   explicit DeviceOAuth2TokenService(
@@ -150,9 +145,6 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // Signals failure on the specified request, passing |error| as the reason.
   void FailRequest(OAuth2AccessTokenManager::RequestImpl* request,
                    GoogleServiceAuthError::State error);
-
-  // Returns a list of accounts based on |state_|.
-  std::vector<CoreAccountId> GetAccounts() const;
 
   // Starts the token validation flow, i.e. token info fetch.
   void StartValidation();

@@ -18,7 +18,6 @@ class ActiveAccountAccessTokenFetcherImpl
       OAuth2AccessTokenManager::Consumer {
  public:
   ActiveAccountAccessTokenFetcherImpl(
-      const CoreAccountId& active_account_id,
       const std::string& oauth_consumer_name,
       DeviceOAuth2TokenService* token_service,
       const OAuth2AccessTokenManager::ScopeSet& scopes,
@@ -48,15 +47,13 @@ class ActiveAccountAccessTokenFetcherImpl
 }  // namespace
 
 ActiveAccountAccessTokenFetcherImpl::ActiveAccountAccessTokenFetcherImpl(
-    const CoreAccountId& active_account_id,
     const std::string& oauth_consumer_name,
     DeviceOAuth2TokenService* token_service,
     const OAuth2AccessTokenManager::ScopeSet& scopes,
     invalidation::ActiveAccountAccessTokenCallback callback)
     : OAuth2AccessTokenManager::Consumer(oauth_consumer_name),
       callback_(std::move(callback)) {
-  access_token_request_ =
-      token_service->StartAccessTokenRequest(active_account_id, scopes, this);
+  access_token_request_ = token_service->StartAccessTokenRequest(scopes, this);
 }
 
 ActiveAccountAccessTokenFetcherImpl::~ActiveAccountAccessTokenFetcherImpl() {}
@@ -126,7 +123,7 @@ void DeviceIdentityProvider::SetActiveAccountId(
 
 bool DeviceIdentityProvider::IsActiveAccountWithRefreshToken() {
   if (GetActiveAccountId().empty() || !token_service_ ||
-      !token_service_->RefreshTokenIsAvailable(GetActiveAccountId()))
+      !token_service_->RefreshTokenIsAvailable())
     return false;
 
   return true;
@@ -138,20 +135,17 @@ DeviceIdentityProvider::FetchAccessToken(
     const OAuth2AccessTokenManager::ScopeSet& scopes,
     invalidation::ActiveAccountAccessTokenCallback callback) {
   return std::make_unique<ActiveAccountAccessTokenFetcherImpl>(
-      GetActiveAccountId(), oauth_consumer_name, token_service_, scopes,
-      std::move(callback));
+      oauth_consumer_name, token_service_, scopes, std::move(callback));
 }
 
 void DeviceIdentityProvider::InvalidateAccessToken(
     const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
-  token_service_->InvalidateAccessToken(GetActiveAccountId(), scopes,
-                                        access_token);
+  token_service_->InvalidateAccessToken(scopes, access_token);
 }
 
-void DeviceIdentityProvider::OnRefreshTokenAvailable(
-    const CoreAccountId& account_id) {
-  ProcessRefreshTokenUpdateForAccount(account_id);
+void DeviceIdentityProvider::OnRefreshTokenAvailable() {
+  ProcessRefreshTokenUpdateForAccount(GetActiveAccountId());
 }
 
 }  // namespace chromeos

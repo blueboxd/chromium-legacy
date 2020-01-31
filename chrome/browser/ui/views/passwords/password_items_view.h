@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/items_bubble_controller.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/views/controls/button/button.h"
@@ -38,8 +37,7 @@ class PasswordItemsView : public PasswordBubbleViewBase,
                           public views::ButtonListener {
  public:
   PasswordItemsView(content::WebContents* web_contents,
-                    views::View* anchor_view,
-                    DisplayReason reason);
+                    views::View* anchor_view);
   ~PasswordItemsView() override;
 
  private:
@@ -51,7 +49,7 @@ class PasswordItemsView : public PasswordBubbleViewBase,
 
   void NotifyPasswordFormAction(
       const autofill::PasswordForm& password_form,
-      ManagePasswordsBubbleModel::PasswordAction action);
+      PasswordBubbleControllerBase::PasswordAction action);
   void RecreateLayout();
 
   // LocationBarBubbleDelegateView:

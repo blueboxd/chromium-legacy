@@ -115,6 +115,7 @@ source_set("unit_tests") {
     "certificate_error_report_unittest.cc",
     "security_interstitial_tab_helper_unittest.cc",
     "ssl_error_assistant_unittest.cc",
+    "ssl_error_handler_unittest.cc",
     "ssl_error_navigation_throttle_unittest.cc",
   ]
 
@@ -123,6 +124,10 @@ source_set("unit_tests") {
     ":security_interstitial_page",
     "//base",
     "//base/test:test_support",
+    "//components/captive_portal/content",
+    "//components/captive_portal/core:test_support",
+    "//components/embedder_support",
+    "//components/network_time",
     "//components/network_time:network_time_test_support",
     "//components/prefs:test_support",
     "//components/security_interstitials/core:core",

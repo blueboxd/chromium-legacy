@@ -1668,5 +1668,76 @@ TEST_F(CollectUserDataActionTest, ResetsCardAndAddressIfNoLongerInList) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, GenericUiModelWritesToProtoResult) {
+  ModelProto::ModelValue value_1;
+  value_1.set_identifier("value_1_key");
+  value_1.mutable_value()->mutable_strings()->add_values(
+      "value_1_initial_value");
+  ModelProto::ModelValue value_1_modified;
+  value_1_modified.set_identifier("value_1_key");
+  ModelProto::ModelValue value_2;
+  value_2.set_identifier("value_2_key");
+  value_2.mutable_value()->mutable_strings()->add_values(
+      "value_2_initial_value");
+  ModelProto::ModelValue value_2_modified;
+  value_2_modified.set_identifier("value_2_key");
+  value_2_modified.mutable_value()->mutable_strings()->add_values(
+      "value_2_modified");
+  ModelProto::ModelValue value_3;
+  value_3.set_identifier("value_3_key");
+  value_3.mutable_value()->mutable_strings()->add_values(
+      "value_3_initial_value");
+  ModelProto::ModelValue value_3_modified;
+  value_3_modified.set_identifier("value_3_key");
+  value_3_modified.mutable_value()->mutable_strings()->add_values(
+      "value_3_modified");
+  ModelProto::ModelValue value_4;
+  value_4.set_identifier("value_4_key");
+  value_4.mutable_value()->mutable_strings()->add_values(
+      "value_4_initial_value");
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.succeed_ = true;
+
+            user_model_.SetValue("value_1_key", value_1_modified.value());
+            user_model_.SetValue("value_2_key", value_2_modified.value());
+            user_model_.SetValue("value_3_key", value_3_modified.value());
+            // Leave value_4 at initial value.
+
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_request_terms_and_conditions(false);
+  auto* proto_model_prepended =
+      collect_user_data->mutable_generic_user_interface_prepended()
+          ->mutable_model();
+  *proto_model_prepended->add_values() = value_1;
+  *proto_model_prepended->add_values() = value_2;
+  auto* proto_model_appended =
+      collect_user_data->mutable_generic_user_interface_appended()
+          ->mutable_model();
+  *proto_model_appended->add_values() = value_3;
+  *proto_model_appended->add_values() = value_4;
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(&ProcessedActionProto::collect_user_data_result,
+                   Property(&CollectUserDataResultProto::model,
+                            Property(&ModelProto::values,
+                                     UnorderedElementsAre(
+                                         value_1_modified, value_2_modified,
+                                         value_3_modified, value_4))))))));
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

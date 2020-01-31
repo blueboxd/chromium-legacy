@@ -1440,7 +1440,7 @@ message UserFormSectionProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 25
+// Next: 26
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -1511,8 +1511,12 @@ message CollectUserDataProto {
   repeated UserFormSectionProto additional_prepended_sections = 18;
   // An optional list of additional sections, which is below all other sections.
   repeated UserFormSectionProto additional_appended_sections = 19;
-  // Backend-configured user interface to show.
-  optional GenericUserInterfaceProto generic_user_interface = 22;
+  // Backend-configured user interface to show below
+  // |additional_prepended_sections|.
+  optional GenericUserInterfaceProto generic_user_interface_prepended = 22;
+  // Backend-configured user interface to show below
+  // |additional_appended_sections|.
+  optional GenericUserInterfaceProto generic_user_interface_appended = 25;
   // Text to be shown in a separate info section.
   optional string info_section_text = 24;
 }

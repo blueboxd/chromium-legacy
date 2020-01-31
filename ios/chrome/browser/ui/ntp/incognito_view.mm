@@ -345,7 +345,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   }
 
   if (IsSplitToolbarMode(self)) {
-    _bottomToolbarMarginHeight.constant = kAdaptiveToolbarHeight;
+    _bottomToolbarMarginHeight.constant = kSecondaryToolbarHeight;
   } else {
     _bottomToolbarMarginHeight.constant = 0;
   }

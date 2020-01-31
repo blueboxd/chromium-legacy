@@ -8,6 +8,7 @@
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/extensions/api/tabs/tabs_util.h"
@@ -20,6 +21,7 @@
 #include "components/account_id/account_id.h"
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 namespace chromeos {
 
@@ -60,11 +62,27 @@ void WebKioskAppLauncher::ContinueWithNetworkReady() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+const WebKioskAppData* WebKioskAppLauncher::GetCurrentApp() const {
+  const WebKioskAppData* app =
+      WebKioskAppManager::Get()->GetAppByAccountId(account_id_);
+  DCHECK(app);
+  return app;
+}
+
 void WebKioskAppLauncher::OnAppDataObtained(
     std::unique_ptr<WebApplicationInfo> app_info) {
   if (!app_info) {
     // Notify about failed installation, let the controller decide what to do.
     delegate_->OnAppInstallFailed();
+    return;
+  }
+
+  // When received |app_info->app_url| origin does not match the origin of
+  // |install_url|, fail.
+  if (url::Origin::Create(GetCurrentApp()->install_url()) !=
+      url::Origin::Create(app_info->app_url)) {
+    VLOG(1) << "Origin of the app does not match the origin of install url";
+    delegate_->OnAppLaunchFailed();
     return;
   }
 
@@ -75,9 +93,7 @@ void WebKioskAppLauncher::OnAppDataObtained(
 
 void WebKioskAppLauncher::LaunchApp() {
   DCHECK(!browser_);
-  const WebKioskAppData* app =
-      WebKioskAppManager::Get()->GetAppByAccountId(account_id_);
-  DCHECK(app);
+  const WebKioskAppData* app = GetCurrentApp();
 
   GURL url = app->status() == WebKioskAppData::STATUS_INSTALLED
                  ? app->launch_url()

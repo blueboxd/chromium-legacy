@@ -167,7 +167,17 @@ public final class NdefMessageUtils {
         }
 
         if (record.category == NdefRecordTypeCategory.LOCAL) {
-            // TODO(https://crbug.com/520391): Support local type records.
+            // It's impossible for a local type record to have non-empty |data| and non-null
+            // |payloadMessage| at the same time.
+            // TODO(https://crbug.com/520391): Validate the containing ndef message is the payload
+            // of another ndef record.
+            if (isValidLocalType(record.recordType)
+                    && (record.data.length == 0 || record.payloadMessage == null)) {
+                // The prefix ':' in |record.recordType| is only used to differentiate local type
+                // from other type names, remove it before writing.
+                return createPlatformLocalRecord(record.recordType.substring(1), record.id,
+                        record.data, record.payloadMessage);
+            }
             throw new InvalidNdefMessageException();
         }
 
@@ -285,7 +295,19 @@ public final class NdefMessageUtils {
     }
 
     /**
-     * Constructs well known type (TEXT or URI) NdefRecord
+     * Constructs local type NdefRecord
+     */
+    private static NdefRecord createLocalRecord(String localType, byte[] payload) {
+        NdefRecord nfcRecord = new NdefRecord();
+        nfcRecord.category = NdefRecordTypeCategory.LOCAL;
+        nfcRecord.recordType = localType;
+        nfcRecord.data = payload;
+        nfcRecord.payloadMessage = getNdefMessageFromPayloadBytes(payload);
+        return nfcRecord;
+    }
+
+    /**
+     * Constructs well known type (TEXT, URI or local type) NdefRecord
      */
     private static NdefRecord createWellKnownRecord(android.nfc.NdefRecord record)
             throws UnsupportedEncodingException {
@@ -299,7 +321,15 @@ public final class NdefMessageUtils {
 
         // TODO(https://crbug.com/520391): Support RTD_SMART_POSTER type records.
 
-        // TODO(https://crbug.com/520391): Support local type records.
+        // Prefix the raw local type with ':' to differentiate from other type names in WebNFC APIs,
+        // e.g. |localType| being "text" will become ":text" to differentiate from the standardized
+        // "text" record.
+        String recordType = ':' + new String(record.getType(), "UTF-8");
+        // We do not validate if we're in the context of a parent record but just expose to JS as is
+        // what has been read from the nfc tag.
+        if (isValidLocalType(recordType)) {
+            return createLocalRecord(recordType, record.getPayload());
+        }
 
         return null;
     }
@@ -445,6 +475,26 @@ public final class NdefMessageUtils {
     }
 
     /**
+     * Creates a TNF_WELL_KNOWN + |recordType| android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformLocalRecord(
+            String recordType, String id, byte[] payload, NdefMessage payloadMessage) {
+        // Already guaranteed by the caller.
+        assert recordType != null && !recordType.isEmpty();
+
+        // |payloadMessage| being non-null means this record has an NDEF message as its payload.
+        if (payloadMessage != null) {
+            // Should be guaranteed by the caller that |payload| is an empty byte array.
+            assert payload.length == 0;
+            payload = getBytesFromPayloadNdefMessage(payloadMessage);
+        }
+
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                ApiCompatibilityUtils.getBytesUtf8(recordType),
+                id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id), payload);
+    }
+
+    /**
      * Validates external types.
      * https://w3c.github.io/web-nfc/#dfn-validate-external-type
      */
@@ -464,6 +514,29 @@ public final class NdefMessageUtils {
         String type = input.substring(colonIndex + 1).trim();
         if (type.isEmpty()) return false;
         if (!type.matches("[a-zA-Z0-9:!()+,\\-=@;$_*'.]+")) return false;
+
+        return true;
+    }
+
+    /**
+     * Validates local types.
+     * https://w3c.github.io/web-nfc/#dfn-validate-local-type
+     */
+    private static boolean isValidLocalType(String input) {
+        // Must be an ASCII string first.
+        if (!Charset.forName("US-ASCII").newEncoder().canEncode(input)) return false;
+
+        // The prefix ':' will be omitted when we actually write the record type into the nfc tag.
+        // We're taking it into consideration for validating the length here.
+        if (input.length() < 2 || input.length() > 256) return false;
+
+        if (input.charAt(0) != ':') return false;
+        if (!Character.isLowerCase(input.charAt(1)) && !Character.isDigit(input.charAt(1))) {
+            return false;
+        }
+
+        // TODO(https://crbug.com/520391): Validate |input| is not equal to the record type of any
+        // NDEF record defined in its containing NDEF message.
 
         return true;
     }

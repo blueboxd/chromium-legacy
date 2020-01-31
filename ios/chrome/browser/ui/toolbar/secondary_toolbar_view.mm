@@ -77,7 +77,7 @@ const CGFloat kToolsMenuOffset = -7;
 #pragma mark - UIView
 
 - (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kAdaptiveToolbarHeight);
+  return CGSizeMake(UIViewNoIntrinsicMetric, kSecondaryToolbarHeight);
 }
 
 - (void)willMoveToWindow:(UIWindow*)newWindow {

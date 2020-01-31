@@ -685,38 +685,13 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
            }}))
     return;
 
+  static_assert(inlineCapacity == 0,
+                "Heap allocated Deque should not use inline buffer");
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
-  if (buffer_.HasOutOfLineBuffer()) {
-    Allocator::TraceVectorBacking(visitor, buffer_.Buffer(),
-                                  buffer_.BufferSlot());
-  } else {
-    Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
-                                  buffer_.BufferSlot());
-    const T* buffer_begin = buffer_.Buffer();
-    const T* end = buffer_begin + end_;
-    if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
-      if (start_ <= end_) {
-        for (const T* buffer_entry = buffer_begin + start_; buffer_entry != end;
-             buffer_entry++) {
-          Allocator::template Trace<T, VectorTraits<T>>(
-              visitor, *const_cast<T*>(buffer_entry));
-        }
-      } else {
-        for (const T* buffer_entry = buffer_begin; buffer_entry != end;
-             buffer_entry++) {
-          Allocator::template Trace<T, VectorTraits<T>>(
-              visitor, *const_cast<T*>(buffer_entry));
-        }
-        const T* buffer_end = buffer_.Buffer() + buffer_.capacity();
-        for (const T* buffer_entry = buffer_begin + start_;
-             buffer_entry != buffer_end; buffer_entry++) {
-          Allocator::template Trace<T, VectorTraits<T>>(
-              visitor, *const_cast<T*>(buffer_entry));
-        }
-      }
-    }
-  }
+  DCHECK(buffer_.HasOutOfLineBuffer() || IsEmpty());
+  Allocator::TraceVectorBacking(visitor, buffer_.Buffer(),
+                                buffer_.BufferSlot());
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>

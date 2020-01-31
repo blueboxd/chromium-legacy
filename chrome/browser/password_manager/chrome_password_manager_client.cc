@@ -1269,8 +1269,8 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 #endif  // defined(OS_ANDROID)
 }
 
-const password_manager::PasswordFeatureManager*
-ChromePasswordManagerClient::GetPasswordFeatureManager() const {
+password_manager::PasswordFeatureManager*
+ChromePasswordManagerClient::GetPasswordFeatureManager() {
   return &password_feature_manager_;
 }
 

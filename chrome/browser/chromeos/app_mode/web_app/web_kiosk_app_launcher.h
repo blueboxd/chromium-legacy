@@ -27,6 +27,8 @@ class WebAppUrlLoader;
 
 namespace chromeos {
 
+class WebKioskAppData;
+
 // Object responsible for preparing and launching web kiosk app. Is destroyed
 // upon app launch.
 class WebKioskAppLauncher {
@@ -58,6 +60,8 @@ class WebKioskAppLauncher {
 
  private:
   void OnAppDataObtained(std::unique_ptr<WebApplicationInfo> app_info);
+
+  const WebKioskAppData* GetCurrentApp() const;
 
   bool is_installed_ = false;  // Whether the installation was completed.
   AccountId account_id_;

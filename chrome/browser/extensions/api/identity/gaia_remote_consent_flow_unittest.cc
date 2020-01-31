@@ -18,7 +18,7 @@
 namespace extensions {
 
 const char kWindowKey[] = "window_key";
-const char kConsentResult[] = "abcdef";
+const char kConsentResult[] = "CAESCUVOQ1JZUFRFRA";
 
 class FakeWebAuthFlowWithWindowKey : public WebAuthFlow {
  public:
@@ -58,9 +58,9 @@ class TestGaiaRemoteConsentFlow : public GaiaRemoteConsentFlow {
 class MockGaiaRemoteConsentFlowDelegate
     : public GaiaRemoteConsentFlow::Delegate {
  public:
-  MOCK_METHOD1(OnGaiaRemoteConsentFlowFailure,
+  MOCK_METHOD1(OnGaiaRemoteConsentFlowFailed,
                void(GaiaRemoteConsentFlow::Failure failure));
-  MOCK_METHOD1(OnGaiaRemoteConsentFlowCompleted,
+  MOCK_METHOD1(OnGaiaRemoteConsentFlowApproved,
                void(const std::string& consent_result));
 };
 
@@ -99,7 +99,7 @@ class IdentityGaiaRemoteConsentFlowTest : public testing::Test {
 
 TEST_F(IdentityGaiaRemoteConsentFlowTest, ConsentResult) {
   std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
-  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowCompleted(kConsentResult));
+  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowApproved(kConsentResult));
   flow->OnConsentResultSet(kConsentResult, kWindowKey);
 }
 
@@ -116,19 +116,36 @@ TEST_F(IdentityGaiaRemoteConsentFlowTest, ConsentResult_TwoWindows) {
   std::unique_ptr<TestGaiaRemoteConsentFlow> flow2 =
       CreateTestFlow(kWindowKey2, &delegate2);
 
-  const char kConsentResult2[] = "ghijkl";
-  EXPECT_CALL(delegate2, OnGaiaRemoteConsentFlowCompleted(kConsentResult2));
+  const char kConsentResult2[] = "CAESCkVOQ1JZUFRFRDI";
+  EXPECT_CALL(delegate2, OnGaiaRemoteConsentFlowApproved(kConsentResult2));
   flow2->OnConsentResultSet(kConsentResult2, kWindowKey2);
 
-  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowCompleted(kConsentResult));
+  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowApproved(kConsentResult));
   flow->OnConsentResultSet(kConsentResult, kWindowKey);
+}
+
+TEST_F(IdentityGaiaRemoteConsentFlowTest, InvalidConsentResult) {
+  const char kInvalidConsentResult[] = "abc";
+  std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
+  EXPECT_CALL(delegate_,
+              OnGaiaRemoteConsentFlowFailed(
+                  GaiaRemoteConsentFlow::Failure::INVALID_CONSENT_RESULT));
+  flow->OnConsentResultSet(kInvalidConsentResult, kWindowKey);
+}
+
+TEST_F(IdentityGaiaRemoteConsentFlowTest, NoGrant) {
+  const char kNoGrantConsentResult[] = "CAA";
+  std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
+  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowFailed(
+                             GaiaRemoteConsentFlow::Failure::NO_GRANT));
+  flow->OnConsentResultSet(kNoGrantConsentResult, kWindowKey);
 }
 
 TEST_F(IdentityGaiaRemoteConsentFlowTest, SetAccountsFailure) {
   std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
   EXPECT_CALL(
       delegate_,
-      OnGaiaRemoteConsentFlowFailure(
+      OnGaiaRemoteConsentFlowFailed(
           GaiaRemoteConsentFlow::Failure::SET_ACCOUNTS_IN_COOKIE_FAILED));
   flow->OnSetAccountsComplete(
       signin::SetAccountsInCookieResult::kPersistentError);
@@ -136,14 +153,14 @@ TEST_F(IdentityGaiaRemoteConsentFlowTest, SetAccountsFailure) {
 
 TEST_F(IdentityGaiaRemoteConsentFlowTest, WebAuthFlowFailure_WindowClosed) {
   std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
-  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowFailure(
+  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowFailed(
                              GaiaRemoteConsentFlow::Failure::WINDOW_CLOSED));
   flow->OnAuthFlowFailure(WebAuthFlow::Failure::WINDOW_CLOSED);
 }
 
 TEST_F(IdentityGaiaRemoteConsentFlowTest, WebAuthFlowFailure_LoadFailed) {
   std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
-  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowFailure(
+  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowFailed(
                              GaiaRemoteConsentFlow::Failure::LOAD_FAILED));
   flow->OnAuthFlowFailure(WebAuthFlow::Failure::LOAD_FAILED);
 }

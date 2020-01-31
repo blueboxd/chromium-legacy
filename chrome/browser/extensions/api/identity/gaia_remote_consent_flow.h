@@ -25,16 +25,18 @@ class GaiaRemoteConsentFlow
     WINDOW_CLOSED,
     LOAD_FAILED,
     SET_ACCOUNTS_IN_COOKIE_FAILED,
+    INVALID_CONSENT_RESULT,
+    NO_GRANT
   };
 
   class Delegate {
    public:
     virtual ~Delegate();
-    // Called when the flow fails prior to the ConsentResult returned from
-    // JavaScript.
-    virtual void OnGaiaRemoteConsentFlowFailure(Failure failure) = 0;
-    // Called when the OAuth2 flow completes.
-    virtual void OnGaiaRemoteConsentFlowCompleted(
+    // Called when the flow ends without getting the user consent.
+    virtual void OnGaiaRemoteConsentFlowFailed(Failure failure) = 0;
+    // Called when the user gives the approval via the OAuth2 remote consent
+    // screen.
+    virtual void OnGaiaRemoteConsentFlowApproved(
         const std::string& consent_result) = 0;
   };
 

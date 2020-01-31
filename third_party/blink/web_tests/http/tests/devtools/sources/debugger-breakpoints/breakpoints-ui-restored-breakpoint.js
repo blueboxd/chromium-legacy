@@ -9,22 +9,24 @@
 
   await TestRunner.addScriptTag('resources/a.js');
 
+  // Pairs of line number plus breakpoint decoration counts.
+  // We expect line 5, 9 and 10 to have decoration each.
+  const expectedDecorations = [[5, 1], [9, 1], [10, 1]];
+
   let originalSourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
   TestRunner.addResult('Set different breakpoints and dump them');
-  SourcesTestRunner.toggleBreakpoint(originalSourceFrame, 9, false);
-  await SourcesTestRunner.createNewBreakpoint(originalSourceFrame, 10, 'a === 3', true);
-  await SourcesTestRunner.createNewBreakpoint(originalSourceFrame, 5, '', false);
-  await SourcesTestRunner.waitDebuggerPluginBreakpoints(originalSourceFrame);
-  await SourcesTestRunner.waitUntilDebuggerPluginLoaded(originalSourceFrame);
-  SourcesTestRunner.dumpDebuggerPluginBreakpoints(originalSourceFrame);
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(originalSourceFrame, expectedDecorations, async () => {
+    await SourcesTestRunner.toggleBreakpoint(originalSourceFrame, 9, false);
+    await SourcesTestRunner.createNewBreakpoint(originalSourceFrame, 10, 'a === 3', true);
+    await SourcesTestRunner.createNewBreakpoint(originalSourceFrame, 5, '', false);
+  });
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
   await TestRunner.reloadPagePromise();
   await TestRunner.addScriptTag(TestRunner.url('resources/a.js'));
   let sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('a.js');
-  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrameAfterReload);
-  await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrameAfterReload);
-  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrameAfterReload);
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(
+      sourceFrameAfterReload, expectedDecorations, () => {}, true);
 
   // TODO(kozyatinskiy): as soon as we have script with the same url in different frames
   // everything looks compeltely broken, we should fix it.
@@ -32,19 +34,23 @@
   TestRunner.addIframe(TestRunner.url('resources/frame-with-script.html'));
   TestRunner.addIframe(TestRunner.url('resources/frame-with-script.html'));
   const uiSourceCodes = await waitForNScriptSources('a.js', 3);
+
+  // The disabled breakpoint at line 5 is currently not included in the iframes that are added.
+  const expectedDecorationsArray = [[[9, 1], [10, 1]], [[9, 1], [10, 1]], expectedDecorations];
+  let index = 0;
   for (const uiSourceCode of uiSourceCodes) {
     TestRunner.addResult('Show uiSourceCode and dump breakpoints');
     const sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
-    await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
-    SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
+    await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(
+        sourceFrame, expectedDecorationsArray[index++], () => {}, true);
   }
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
   await TestRunner.reloadPagePromise();
   await TestRunner.addScriptTag(TestRunner.url('resources/a.js'));
   sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('a.js');
-  await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrameAfterReload);
-  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrameAfterReload);
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(
+      sourceFrameAfterReload, expectedDecorations, () => {}, true);
 
   TestRunner.completeTest();
 

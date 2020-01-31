@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -251,20 +252,25 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
                                          DisplayReason reason)
     : PasswordBubbleViewBase(web_contents,
                              anchor_view,
-                             reason,
                              /*auto_dismissable=*/false),
-      is_update_bubble_(model()->state() ==
+      controller_(
+          PasswordsModelDelegateFromWebContents(web_contents),
+          reason == AUTOMATIC
+              ? PasswordBubbleControllerBase::DisplayReason::kAutomatic
+              : PasswordBubbleControllerBase::DisplayReason::kUserAction),
+      is_update_bubble_(controller_.state() ==
                         password_manager::ui::PENDING_PASSWORD_UPDATE_STATE),
       sign_in_promo_(nullptr),
+
       username_dropdown_(nullptr),
       password_view_button_(nullptr),
       password_dropdown_(nullptr),
       are_passwords_revealed_(
-          model()->are_passwords_revealed_when_bubble_is_opened()) {
-  DCHECK(model()->state() == password_manager::ui::PENDING_PASSWORD_STATE ||
-         model()->state() ==
+          controller_.are_passwords_revealed_when_bubble_is_opened()) {
+  DCHECK(controller_.state() == password_manager::ui::PENDING_PASSWORD_STATE ||
+         controller_.state() ==
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
-  const autofill::PasswordForm& password_form = model()->pending_password();
+  const autofill::PasswordForm& password_form = controller_.pending_password();
   if (password_form.IsFederatedCredential()) {
     // The credential to be saved doesn't contain password but just the identity
     // provider (e.g. "Sign in with Google"). Thus, the layout is different.
@@ -274,7 +280,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     CredentialsItemView* credential_view = new CredentialsItemView(
         this, titles.first, titles.second, &password_form,
         content::BrowserContext::GetDefaultStoragePartition(
-            model()->GetProfile())
+            controller_.GetProfile())
             ->GetURLLoaderFactoryForBrowserProcess()
             .get());
     credential_view->SetEnabled(false);
@@ -301,7 +307,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
                         std::move(password_view_button));
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
     account_store_checkbox_ = MaybeAppendAccountCheckboxRow(
-        layout, model()->IsUsingAccountStore(),
+        layout, controller_.IsUsingAccountStore(),
         password_dropdown_->GetPreferredSize().height(), this);
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   }
@@ -317,17 +323,17 @@ views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
 PasswordPendingView::~PasswordPendingView() = default;
 
 PasswordBubbleControllerBase* PasswordPendingView::GetController() {
-  return nullptr;
+  return &controller_;
 }
 
 const PasswordBubbleControllerBase* PasswordPendingView::GetController() const {
-  return nullptr;
+  return &controller_;
 }
 
 bool PasswordPendingView::Accept() {
   UpdateUsernameAndPasswordInModel();
-  model()->OnSaveClicked();
-  if (model()->ReplaceToShowPromotionIfNeeded()) {
+  controller_.OnSaveClicked();
+  if (controller_.ReplaceToShowPromotionIfNeeded()) {
     ReplaceWithPromo();
     return false;  // Keep open.
   }
@@ -337,10 +343,10 @@ bool PasswordPendingView::Accept() {
 bool PasswordPendingView::Cancel() {
   UpdateUsernameAndPasswordInModel();
   if (is_update_bubble_) {
-    model()->OnNopeUpdateClicked();
+    controller_.OnNopeUpdateClicked();
     return true;
   }
-  model()->OnNeverForThisSiteClicked();
+  controller_.OnNeverForThisSiteClicked();
   return true;
 }
 
@@ -353,7 +359,7 @@ void PasswordPendingView::ButtonPressed(views::Button* sender,
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
   DCHECK(sender);
   if (sender == account_store_checkbox_) {
-    model()->OnToggleAccountStore(account_store_checkbox_->GetChecked());
+    controller_.OnToggleAccountStore(account_store_checkbox_->GetChecked());
     return;
   }
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
@@ -363,12 +369,12 @@ void PasswordPendingView::ButtonPressed(views::Button* sender,
 
 void PasswordPendingView::OnContentChanged(
     views::EditableCombobox* editable_combobox) {
-  bool is_update_state_before = model()->IsCurrentStateUpdate();
+  bool is_update_state_before = controller_.IsCurrentStateUpdate();
   bool is_ok_button_enabled_before =
       IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
   UpdateUsernameAndPasswordInModel();
   // Maybe the buttons should be updated.
-  if (is_update_state_before != model()->IsCurrentStateUpdate() ||
+  if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
       is_ok_button_enabled_before !=
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     UpdateDialogButtons();
@@ -400,8 +406,8 @@ views::View* PasswordPendingView::GetInitiallyFocusedView() {
 
 bool PasswordPendingView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return button != ui::DIALOG_BUTTON_OK ||
-         model()->pending_password().IsFederatedCredential() ||
-         !model()->pending_password().password_value.empty();
+         controller_.pending_password().IsFederatedCredential() ||
+         !controller_.pending_password().password_value.empty();
 }
 
 gfx::ImageSkia PasswordPendingView::GetWindowIcon() {
@@ -422,14 +428,14 @@ void PasswordPendingView::AddedToWidget() {
 }
 
 void PasswordPendingView::OnThemeChanged() {
-  if (int id = model()->GetTopIllustration(
+  if (int id = controller_.GetTopIllustration(
           color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor()))) {
     GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
   }
 }
 
 void PasswordPendingView::TogglePasswordVisibility() {
-  if (!are_passwords_revealed_ && !model()->RevealPasswords())
+  if (!are_passwords_revealed_ && !controller_.RevealPasswords())
     return;
 
   are_passwords_revealed_ = !are_passwords_revealed_;
@@ -441,15 +447,16 @@ void PasswordPendingView::TogglePasswordVisibility() {
 void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
   if (!username_dropdown_ && !password_dropdown_)
     return;
-  base::string16 new_username = model()->pending_password().username_value;
-  base::string16 new_password = model()->pending_password().password_value;
+  base::string16 new_username = controller_.pending_password().username_value;
+  base::string16 new_password = controller_.pending_password().password_value;
   if (username_dropdown_) {
     new_username = username_dropdown_->GetText();
     base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
   }
   if (password_dropdown_)
     new_password = password_dropdown_->GetText();
-  model()->OnCredentialEdited(std::move(new_username), std::move(new_password));
+  controller_.OnCredentialEdited(std::move(new_username),
+                                 std::move(new_password));
 }
 
 void PasswordPendingView::ReplaceWithPromo() {
@@ -466,8 +473,8 @@ void PasswordPendingView::ReplaceWithPromo() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
-  if (model()->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    sign_in_promo_ = new PasswordSignInPromoView(model()->GetWebContents());
+  if (controller_.state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+    sign_in_promo_ = new PasswordSignInPromoView(controller_.GetWebContents());
     AddChildView(sign_in_promo_);
   } else {
     NOTREACHED();
@@ -490,7 +497,7 @@ void PasswordPendingView::UpdateDialogButtons() {
       (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(model()->IsCurrentStateUpdate()
+      l10n_util::GetStringUTF16(controller_.IsCurrentStateUpdate()
                                     ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
                                     : IDS_PASSWORD_MANAGER_SAVE_BUTTON));
   DialogDelegate::set_button_label(
@@ -501,7 +508,7 @@ void PasswordPendingView::UpdateDialogButtons() {
 }
 
 std::unique_ptr<views::View> PasswordPendingView::CreateFooterView() {
-  if (!model()->ShouldShowFooter())
+  if (!controller_.ShouldShowFooter())
     return nullptr;
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),

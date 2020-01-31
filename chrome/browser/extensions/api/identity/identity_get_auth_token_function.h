@@ -78,9 +78,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                            const std::string& expiration) override;
 
   // GaiaRemoteConsentFlow::Delegate implementation:
-  void OnGaiaRemoteConsentFlowFailure(
+  void OnGaiaRemoteConsentFlowFailed(
       GaiaRemoteConsentFlow::Failure failure) override;
-  void OnGaiaRemoteConsentFlowCompleted(
+  void OnGaiaRemoteConsentFlowApproved(
       const std::string& consent_result) override;
 
   // Starts a login access token request.

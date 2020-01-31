@@ -269,6 +269,21 @@ bool IsValidUserFormSection(
   return true;
 }
 
+// Merges |model_a| and |model_b| into a new model.
+// TODO(arbesser): deal with overlapping keys.
+autofill_assistant::ModelProto MergeModelProtos(
+    const autofill_assistant::ModelProto& model_a,
+    const autofill_assistant::ModelProto& model_b) {
+  autofill_assistant::ModelProto model_merged;
+  for (const auto& value : model_a.values()) {
+    *model_merged.add_values() = value;
+  }
+  for (const auto& value : model_b.values()) {
+    *model_merged.add_values() = value;
+  }
+  return model_merged;
+}
+
 }  // namespace
 
 namespace autofill_assistant {
@@ -573,10 +588,14 @@ void CollectUserDataAction::OnGetUserData(
             user_data->terms_and_conditions_ ==
             TermsAndConditionsState::ACCEPTED);
     if (user_model != nullptr &&
-        collect_user_data.has_generic_user_interface()) {
+        (collect_user_data.has_generic_user_interface_prepended() ||
+         collect_user_data.has_generic_user_interface_appended())) {
+      // Build the union of both models (this assumes that there are no
+      // overlapping model keys).
       *processed_action_proto_->mutable_collect_user_data_result()
-           ->mutable_model() =
-          collect_user_data.generic_user_interface().model();
+           ->mutable_model() = MergeModelProtos(
+          collect_user_data.generic_user_interface_prepended().model(),
+          collect_user_data.generic_user_interface_appended().model());
       user_model->UpdateProto(
           processed_action_proto_->mutable_collect_user_data_result()
               ->mutable_model());
@@ -803,9 +822,13 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
     return false;
   }
 
-  if (collect_user_data.has_generic_user_interface()) {
-    collect_user_data_options_->generic_user_interface =
-        collect_user_data.generic_user_interface();
+  if (collect_user_data.has_generic_user_interface_prepended()) {
+    collect_user_data_options_->generic_user_interface_prepended =
+        collect_user_data.generic_user_interface_prepended();
+  }
+  if (collect_user_data.has_generic_user_interface_appended()) {
+    collect_user_data_options_->generic_user_interface_appended =
+        collect_user_data.generic_user_interface_appended();
   }
 
   // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm

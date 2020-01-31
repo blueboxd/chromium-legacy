@@ -137,8 +137,8 @@ WebViewPasswordManagerClient::GetPasswordManager() const {
   return delegate_.passwordManager;
 }
 
-const password_manager::PasswordFeatureManager*
-WebViewPasswordManagerClient::GetPasswordFeatureManager() const {
+password_manager::PasswordFeatureManager*
+WebViewPasswordManagerClient::GetPasswordFeatureManager() {
   return &password_feature_manager_;
 }
 

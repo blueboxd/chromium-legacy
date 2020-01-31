@@ -60,7 +60,8 @@ class AssistantCollectUserDataBinder
         private final AssistantInfoSection mInfoSection;
         private final AssistantAdditionalSectionContainer mPrependedSections;
         private final AssistantAdditionalSectionContainer mAppendedSections;
-        private final ViewGroup mGenericUserInterfaceContainer;
+        private final ViewGroup mGenericUserInterfaceContainerPrepended;
+        private final ViewGroup mGenericUserInterfaceContainerAppended;
         private final Object mDividerTag;
         private final Activity mActivity;
 
@@ -75,7 +76,9 @@ class AssistantCollectUserDataBinder
                 AssistantInfoSection infoSection,
                 AssistantAdditionalSectionContainer prependedSections,
                 AssistantAdditionalSectionContainer appendedSections,
-                ViewGroup genericUserInterfaceContainer, Object dividerTag, Activity activity) {
+                ViewGroup genericUserInterfaceContainerPrepended,
+                ViewGroup genericUserInterfaceContainerAppended, Object dividerTag,
+                Activity activity) {
             mRootView = rootView;
             mPaymentRequestExpanderAccordion = accordion;
             mSectionToSectionPadding = sectionPadding;
@@ -90,7 +93,8 @@ class AssistantCollectUserDataBinder
             mInfoSection = infoSection;
             mPrependedSections = prependedSections;
             mAppendedSections = appendedSections;
-            mGenericUserInterfaceContainer = genericUserInterfaceContainer;
+            mGenericUserInterfaceContainerPrepended = genericUserInterfaceContainerPrepended;
+            mGenericUserInterfaceContainerAppended = genericUserInterfaceContainerAppended;
             mDividerTag = dividerTag;
             mActivity = activity;
         }
@@ -357,11 +361,18 @@ class AssistantCollectUserDataBinder
             view.mTermsAsCheckboxSection.setPrivacyNoticeText(
                     model.get(AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT));
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.GENERIC_USER_INTERFACE) {
-            view.mGenericUserInterfaceContainer.removeAllViews();
-            if (model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE) != null) {
-                view.mGenericUserInterfaceContainer.addView(
-                        model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE));
+        } else if (propertyKey == AssistantCollectUserDataModel.GENERIC_USER_INTERFACE_PREPENDED) {
+            view.mGenericUserInterfaceContainerPrepended.removeAllViews();
+            if (model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE_PREPENDED) != null) {
+                view.mGenericUserInterfaceContainerPrepended.addView(
+                        model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE_PREPENDED));
+            }
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.GENERIC_USER_INTERFACE_APPENDED) {
+            view.mGenericUserInterfaceContainerAppended.removeAllViews();
+            if (model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE_APPENDED) != null) {
+                view.mGenericUserInterfaceContainerAppended.addView(
+                        model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE_APPENDED));
             }
             return true;
         } else if (propertyKey

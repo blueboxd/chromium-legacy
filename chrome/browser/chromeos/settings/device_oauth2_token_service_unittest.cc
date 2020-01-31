@@ -73,9 +73,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   std::unique_ptr<OAuth2AccessTokenManager::Request> StartTokenRequest() {
-    return oauth2_service_->StartAccessTokenRequest(
-        oauth2_service_->GetRobotAccountId(), std::set<std::string>(),
-        &consumer_);
+    return oauth2_service_->StartAccessTokenRequest(std::set<std::string>(),
+                                                    &consumer_);
   }
 
   void SetUp() override {
@@ -126,8 +125,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   bool RefreshTokenIsAvailable() {
-    return oauth2_service_->RefreshTokenIsAvailable(
-        oauth2_service_->GetRobotAccountId());
+    return oauth2_service_->RefreshTokenIsAvailable();
   }
 
   std::string GetRefreshToken() {
@@ -441,10 +439,10 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
 TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
   CreateService();
 
-  auto callback_without_id = base::BindRepeating(
-      [](const CoreAccountId& account_id) { EXPECT_TRUE(false); });
+  auto callback_that_should_not_be_called =
+      base::BindRepeating([]() { FAIL(); });
   oauth2_service_->SetRefreshTokenAvailableCallback(
-      std::move(callback_without_id));
+      std::move(callback_that_should_not_be_called));
 
   // Make a token available during enrollment. Verify that the token is not
   // announced yet.
@@ -452,12 +450,10 @@ TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
       "test-token", DeviceOAuth2TokenService::StatusCallback());
 
   base::RunLoop run_loop;
-  auto callback_with_id =
-      base::BindRepeating([](base::RunLoop* loop,
-                             const CoreAccountId& account_id) { loop->Quit(); },
-                          &run_loop);
+  auto callback_that_should_be_called_once =
+      base::BindRepeating([](base::RunLoop* loop) { loop->Quit(); }, &run_loop);
   oauth2_service_->SetRefreshTokenAvailableCallback(
-      std::move(callback_with_id));
+      std::move(callback_that_should_be_called_once));
 
   // Also make the robot account ID available. Verify that the token is
   // announced now.

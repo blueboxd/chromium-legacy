@@ -13,25 +13,40 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
+import android.text.Spanned;
+import android.text.style.ClickableSpan;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matcher;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.io.IOException;
@@ -87,6 +102,31 @@ public class SigninFragmentTest {
     }
 
     @Test
+    @LargeTest
+    public void testClickingSettingsDoesNotSetFirstSetupComplete() throws Exception {
+        Account account = mSyncTestRule.setUpTestAccount();
+        SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+                mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS, account.name);
+        onView(withText(account.name)).check(matches(isDisplayed()));
+        onView(withId(R.id.signin_details_description)).perform(clickOnClickableSpan());
+        // Wait for sign in process to finish.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return IdentityServicesProvider.get()
+                        .getSigninManager()
+                        .getIdentityManager()
+                        .hasPrimaryAccount();
+            }
+        }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        // TODO(https://crbug.com/1041815): Usage of ChromeSigninController should be removed later
+        Assert.assertTrue(ChromeSigninController.get().isSignedIn());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(ProfileSyncService.get().isFirstSetupComplete()); });
+    }
+
+    @Test
     @MediumTest
     public void testSigninFragmentWithDefaultFlow() {
         SigninActivityLauncher.get().launchActivity(
@@ -116,5 +156,35 @@ public class SigninFragmentTest {
                 ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
                         SigninActivity.class, activityTrigger);
         return signinActivity.findViewById(R.id.fragment_container);
+    }
+
+    private ViewAction clickOnClickableSpan() {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return Matchers.instanceOf(TextView.class);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Clicks on the one and only clickable span in the view";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                TextView textView = (TextView) view;
+                Spanned spannedString = (Spanned) textView.getText();
+                ClickableSpan[] spans =
+                        spannedString.getSpans(0, spannedString.length(), ClickableSpan.class);
+                if (spans.length == 0) {
+                    throw new NoMatchingViewException.Builder()
+                            .includeViewHierarchy(true)
+                            .withRootView(textView)
+                            .build();
+                }
+                Assert.assertEquals("There should be only one clickable link", 1, spans.length);
+                spans[0].onClick(view);
+            }
+        };
     }
 }

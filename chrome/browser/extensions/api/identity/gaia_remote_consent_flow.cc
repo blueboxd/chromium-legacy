@@ -14,6 +14,7 @@
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -73,7 +74,7 @@ void GaiaRemoteConsentFlow::Start() {
 void GaiaRemoteConsentFlow::OnSetAccountsComplete(
     signin::SetAccountsInCookieResult result) {
   if (result != signin::SetAccountsInCookieResult::kSuccess) {
-    delegate_->OnGaiaRemoteConsentFlowFailure(
+    delegate_->OnGaiaRemoteConsentFlowFailed(
         GaiaRemoteConsentFlow::Failure::SET_ACCOUNTS_IN_COOKIE_FAILED);
     return;
   }
@@ -105,9 +106,21 @@ void GaiaRemoteConsentFlow::OnConsentResultSet(
     return;
 
   identity_api_set_consent_result_subscription_.reset();
-  // TODO(crbug.com/1026237): parse consent result to check whether the consent
-  // was approved.
-  delegate_->OnGaiaRemoteConsentFlowCompleted(consent_result);
+
+  bool consent_approved = false;
+  if (!gaia::ParseOAuth2MintTokenConsentResult(consent_result,
+                                               &consent_approved)) {
+    delegate_->OnGaiaRemoteConsentFlowFailed(
+        GaiaRemoteConsentFlow::INVALID_CONSENT_RESULT);
+    return;
+  }
+
+  if (!consent_approved) {
+    delegate_->OnGaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::NO_GRANT);
+    return;
+  }
+
+  delegate_->OnGaiaRemoteConsentFlowApproved(consent_result);
 }
 
 void GaiaRemoteConsentFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
@@ -126,7 +139,7 @@ void GaiaRemoteConsentFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
       break;
   }
 
-  delegate_->OnGaiaRemoteConsentFlowFailure(gaia_failure);
+  delegate_->OnGaiaRemoteConsentFlowFailed(gaia_failure);
 }
 
 std::unique_ptr<GaiaAuthFetcher>

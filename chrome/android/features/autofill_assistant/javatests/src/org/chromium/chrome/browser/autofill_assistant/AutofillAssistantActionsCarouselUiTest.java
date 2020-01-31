@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.allOf;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.widget.LinearLayout;
 
 import org.junit.Before;
@@ -76,11 +75,6 @@ public class AutofillAssistantActionsCarouselUiTest {
         AssistantCarouselModel model = new AssistantCarouselModel();
         AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertThat(((DefaultItemAnimator) coordinator.getView().getItemAnimator())
-                               .getSupportsChangeAnimations(),
-                    is(false));
-        });
         assertThat(model.getChipsModel().size(), is(0));
         assertThat(coordinator.getView().getAdapter().getItemCount(), is(0));
     }

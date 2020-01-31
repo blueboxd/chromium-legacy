@@ -49,7 +49,9 @@ id<GREYMatcher> NoBookmarksLabel() {
 @interface AccountCollectionsTestCase : ChromeTestCase
 @end
 
-@implementation AccountCollectionsTestCase
+@implementation AccountCollectionsTestCase {
+  base::test::ScopedFeatureList _featureList;
+}
 
 - (void)tearDown {
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
@@ -60,14 +62,9 @@ id<GREYMatcher> NoBookmarksLabel() {
   [super tearDown];
 }
 
-- (void)launchAppForTestMethod {
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kClearSyncedData}
-                                  disabled:{}
-                            relaunchPolicy:NoForceRelaunchAndResetState];
-}
-
 - (void)setUp {
+  _featureList.InitAndEnableFeature(kClearSyncedData);
+
   [super setUp];
 
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
@@ -208,7 +205,8 @@ id<GREYMatcher> NoBookmarksLabel() {
 
 // Tests that selecting sign-out and clear data from a non-managed user account
 // clears the user's synced data.
-- (void)testSignOutAndClearDataFromNonManagedAccountClearsData {
+// TODO(crbug.com/1045981): Fix and enable.
+- (void)DISABLED_testSignOutAndClearDataFromNonManagedAccountClearsData {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |fakeIdentity|.

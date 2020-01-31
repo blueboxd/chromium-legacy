@@ -184,13 +184,8 @@ def bind_callback_local_vars(code_node, cg_context):
                               "\"${class_like.identifier}\";")),
         S("current_context", ("v8::Local<v8::Context> ${current_context} = "
                               "${isolate}->GetCurrentContext();")),
-        S("current_execution_context",
-          ("ExecutionContext* ${current_execution_context} = "
-           "ExecutionContext::From(${current_script_state});")),
         S("current_script_state", ("ScriptState* ${current_script_state} = "
                                    "ScriptState::From(${current_context});")),
-        S("execution_context", ("ExecutionContext* ${execution_context} = "
-                                "ExecutionContext::From(${script_state});")),
         S("isolate", "v8::Isolate* ${isolate} = ${info}.GetIsolate();"),
         S("per_context_data", ("V8PerContextData* ${per_context_data} = "
                                "${script_state}->PerContextData();")),
@@ -225,6 +220,15 @@ def bind_callback_local_vars(code_node, cg_context):
     _1 = ("${receiver_script_state}"
           if is_receiver_context else "${current_script_state}")
     local_vars.append(S("script_state", _format(pattern, _1=_1)))
+
+    # execution_context
+    node = S("execution_context", ("ExecutionContext* ${execution_context} = "
+                                   "ExecutionContext::From(${script_state});"))
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/core/execution_context/execution_context.h"
+        ]))
+    local_vars.append(node)
 
     # exception_state_context_type
     pattern = (
@@ -672,8 +676,8 @@ def make_check_security_of_return_value(cg_context):
         "WebFeature::{}",
         name_style.constant("CrossOrigin", cg_context.class_like.identifier,
                             cg_context.member_like.identifier))
-    use_counter = _format(
-        "UseCounter::Count(${current_execution_context}, {});", web_feature)
+    use_counter = _format("UseCounter::Count(${execution_context}, {});",
+                          web_feature)
     cond = T("!BindingSecurity::ShouldAllowAccessTo("
              "ToLocalDOMWindow(${current_context}), ${return_value}, "
              "BindingSecurity::ErrorReportOption::kDoNotReport)")
@@ -1656,8 +1660,6 @@ def bind_installer_local_vars(code_node, cg_context):
     local_vars = []
 
     local_vars.extend([
-        S("execution_context", ("ExecutionContext* ${execution_context} = "
-                                "ExecutionContext::From(${script_state});")),
         S("instance_template",
           ("v8::Local<v8::ObjectTemplate> ${instance_template} = "
            "${interface_template}->InstanceTemplate();")),
@@ -1681,6 +1683,16 @@ def bind_installer_local_vars(code_node, cg_context):
            "${class_name}::GetWrapperTypeInfo();")),
     ])
 
+    # execution_context
+    node = S("execution_context", ("ExecutionContext* ${execution_context} = "
+                                   "ExecutionContext::From(${script_state});"))
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/core/execution_context/execution_context.h"
+        ]))
+    local_vars.append(node)
+
+    # parent_interface_template
     pattern = (
         "v8::Local<v8::FunctionTemplate> ${parent_interface_template}{_1};")
     _1 = (" = ${wrapper_type_info}->parent_class->dom_template_function"
@@ -2754,6 +2766,8 @@ def _collect_include_headers(interface):
         type_def_obj = idl_type.type_definition_object
         if type_def_obj is not None:
             headers.add(PathManager(type_def_obj).api_path(ext="h"))
+            if isinstance(type_def_obj, web_idl.Interface):
+                headers.add(PathManager(type_def_obj).blink_path(ext="h"))
             return
         union_def_obj = idl_type.union_definition_object
         if union_def_obj is not None:

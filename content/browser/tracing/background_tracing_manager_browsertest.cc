@@ -38,7 +38,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/zlib/zlib.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
 // Used by PerfettoSystemBackgroundScenario, nogncheck is required because this
 // is only included and used on Android.
 #include "services/tracing/perfetto/system_test_utils.h"  // nogncheck
@@ -65,7 +65,7 @@ perfetto::TraceConfig StopTracingTriggerConfig(
 }
 
 void SetSystemProducerSocketAndChecksAsync(const std::string& producer_socket) {
-  // We need to let the AndroidSystemProducer know the MockSystemService socket
+  // We need to let the PosixSystemProducer know the MockSystemService socket
   // address and that if we're running on Android devices older then Pie to
   // still connect.
   tracing::PerfettoTracedProcess::GetTaskRunner()
@@ -75,12 +75,12 @@ void SetSystemProducerSocketAndChecksAsync(const std::string& producer_socket) {
           base::BindOnce(
               [](const std::string& producer_socket) {
                 // The only other type of system producer is
-                // AndroidSystemProducer so this assert ensures that the
+                // PosixSystemProducer so this assert ensures that the
                 // static_cast below is safe.
                 ASSERT_FALSE(tracing::PerfettoTracedProcess::Get()
                                  ->SystemProducerForTesting()
                                  ->IsDummySystemProducerForTesting());
-                auto* producer = static_cast<tracing::AndroidSystemProducer*>(
+                auto* producer = static_cast<tracing::PosixSystemProducer*>(
                     tracing::PerfettoTracedProcess::Get()
                         ->SystemProducerForTesting());
                 producer->SetNewSocketForTesting(producer_socket.c_str());
@@ -104,7 +104,7 @@ std::unique_ptr<tracing::MockConsumer> CreateDefaultConsumer(
 }
 }  // namespace
 }  // namespace content
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 using base::trace_event::TraceLog;
 
@@ -1698,7 +1698,7 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
   EXPECT_TRUE(checker.stats().has_interned_source_locations);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        PerfettoSystemBackgroundScenarioDefaultName) {
   // This test will ensure that a BackgroundTracing scenario set to SYSTEM mode
@@ -1832,6 +1832,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   // received we won't see any packets and |received_packets()| will be 0.
   EXPECT_LT(0u, system_consumer->received_packets());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 }  // namespace content

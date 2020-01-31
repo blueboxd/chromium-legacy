@@ -82,14 +82,14 @@ perfetto::TracingService* MockSystemService::GetService() {
   return service_->service();
 }
 
-MockAndroidSystemProducer::MockAndroidSystemProducer(
+MockPosixSystemProducer::MockPosixSystemProducer(
     const std::string& socket,
     bool check_sdk_level,
     uint32_t num_data_sources,
     base::OnceClosure data_source_enabled_callback,
     base::OnceClosure data_source_disabled_callback)
-    : AndroidSystemProducer(socket.c_str(),
-                            PerfettoTracedProcess::Get()->GetTaskRunner()),
+    : PosixSystemProducer(socket.c_str(),
+                          PerfettoTracedProcess::Get()->GetTaskRunner()),
       num_data_sources_expected_(num_data_sources),
       data_source_enabled_callback_(std::move(data_source_enabled_callback)),
       data_source_disabled_callback_(std::move(data_source_disabled_callback)) {
@@ -97,7 +97,7 @@ MockAndroidSystemProducer::MockAndroidSystemProducer(
   // ownership of ourselves to PerfettoTracedProcess. Since someone else manages
   // our deletion we need to be careful in the deconstructor to not double free
   // ourselves (so we must call release once we get back our pointer.
-  std::unique_ptr<MockAndroidSystemProducer> client;
+  std::unique_ptr<MockPosixSystemProducer> client;
   client.reset(this);
   old_producer_ = PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
       std::move(client));
@@ -105,7 +105,7 @@ MockAndroidSystemProducer::MockAndroidSystemProducer(
   Connect();
 }
 
-MockAndroidSystemProducer::~MockAndroidSystemProducer() {
+MockPosixSystemProducer::~MockPosixSystemProducer() {
   // See comment in the constructor.
   auto client = PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
       std::move(old_producer_));
@@ -113,10 +113,10 @@ MockAndroidSystemProducer::~MockAndroidSystemProducer() {
   client.release();
 }
 
-void MockAndroidSystemProducer::StartDataSource(
+void MockPosixSystemProducer::StartDataSource(
     perfetto::DataSourceInstanceID id,
     const perfetto::DataSourceConfig& data_source_config) {
-  AndroidSystemProducer::StartDataSource(id, data_source_config);
+  PosixSystemProducer::StartDataSource(id, data_source_config);
   CHECK_LT(num_data_sources_active_, num_data_sources_expected_);
   if (++num_data_sources_active_ == num_data_sources_expected_ &&
       data_source_enabled_callback_) {
@@ -124,27 +124,27 @@ void MockAndroidSystemProducer::StartDataSource(
   }
 }
 
-void MockAndroidSystemProducer::StopDataSource(
+void MockPosixSystemProducer::StopDataSource(
     perfetto::DataSourceInstanceID id) {
-  AndroidSystemProducer::StopDataSource(id);
+  PosixSystemProducer::StopDataSource(id);
   CHECK_GT(num_data_sources_active_, 0u);
   if (--num_data_sources_active_ == 0 && data_source_disabled_callback_) {
     std::move(data_source_disabled_callback_).Run();
   }
 }
 
-void MockAndroidSystemProducer::CommitData(
+void MockPosixSystemProducer::CommitData(
     const perfetto::CommitDataRequest& commit,
     CommitDataCallback callback) {
-  AndroidSystemProducer::CommitData(commit, callback);
+  PosixSystemProducer::CommitData(commit, callback);
 }
 
-void MockAndroidSystemProducer::SetDataSourceEnabledCallback(
+void MockPosixSystemProducer::SetDataSourceEnabledCallback(
     base::OnceClosure data_source_enabled_callback) {
   data_source_enabled_callback_ = std::move(data_source_enabled_callback);
 }
 
-void MockAndroidSystemProducer::SetDataSourceDisabledCallback(
+void MockPosixSystemProducer::SetDataSourceDisabledCallback(
     base::OnceClosure data_source_disabled_callback) {
   data_source_disabled_callback_ = std::move(data_source_disabled_callback);
 }

@@ -4,6 +4,7 @@
   <shortcut
     android:shortcutId='shortcut_1'
     android:icon='@drawable/shortcut_1_icon'
+    iconHash='{{{icon_hash}}}'
     android:shortcutShortLabel='@string/shortcut_1_short_name'
     android:shortcutLongLabel='@string/shortcut_1_name'>
       <intent
@@ -18,6 +19,7 @@
   <shortcut
     android:shortcutId='shortcut_2'
     android:icon='@drawable/shortcut_2_icon'
+    iconHash='{{{icon_hash}}}'
     android:shortcutShortLabel='@string/shortcut_2_short_name'
     android:shortcutLongLabel='@string/shortcut_2_name'>
       <intent
@@ -32,6 +34,7 @@
   <shortcut
     android:shortcutId='shortcut_3'
     android:icon='@drawable/shortcut_3_icon'
+    iconHash='{{{icon_hash}}}'
     android:shortcutShortLabel='@string/shortcut_3_short_name'
     android:shortcutLongLabel='@string/shortcut_3_name'>
       <intent
@@ -46,6 +49,7 @@
   <shortcut
     android:shortcutId='shortcut_4'
     android:icon='@drawable/shortcut_4_icon'
+    iconHash='{{{icon_hash}}}'
     android:shortcutShortLabel='@string/shortcut_4_short_name'
     android:shortcutLongLabel='@string/shortcut_4_name'>
       <intent

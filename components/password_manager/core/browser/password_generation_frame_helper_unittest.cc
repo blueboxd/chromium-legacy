@@ -191,12 +191,12 @@ TEST_F(PasswordGenerationFrameHelperTest, IsGenerationEnabled) {
   // be enabled, unless the sync is with a custom passphrase.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_->GetMockPasswordFeatureManager(), IsGenerationEnabled())
+  EXPECT_CALL(*client_->GetPasswordFeatureManager(), IsGenerationEnabled())
       .WillRepeatedly(testing::Return(true));
   EXPECT_TRUE(IsGenerationEnabled());
 
   // Disabling password syncing should cause generation to be disabled.
-  EXPECT_CALL(*client_->GetMockPasswordFeatureManager(), IsGenerationEnabled())
+  EXPECT_CALL(*client_->GetPasswordFeatureManager(), IsGenerationEnabled())
       .WillRepeatedly(testing::Return(false));
   EXPECT_FALSE(IsGenerationEnabled());
 
@@ -204,7 +204,7 @@ TEST_F(PasswordGenerationFrameHelperTest, IsGenerationEnabled) {
   // if syncing is enabled.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(*client_->GetMockPasswordFeatureManager(), IsGenerationEnabled())
+  EXPECT_CALL(*client_->GetPasswordFeatureManager(), IsGenerationEnabled())
       .WillRepeatedly(testing::Return(true));
   EXPECT_FALSE(IsGenerationEnabled());
 }
@@ -215,7 +215,7 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
   // Setup so that IsGenerationEnabled() returns true.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_->GetMockPasswordFeatureManager(), IsGenerationEnabled())
+  EXPECT_CALL(*client_->GetPasswordFeatureManager(), IsGenerationEnabled())
       .WillRepeatedly(testing::Return(true));
   struct {
     const char* name;
@@ -341,7 +341,7 @@ TEST_F(PasswordGenerationFrameHelperTest, UpdatePasswordSyncStateIncognito) {
   EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
   PrefService* prefs = client_->GetPrefs();
   prefs->SetBoolean(prefs::kCredentialsEnableService, true);
-  EXPECT_CALL(*client_->GetMockPasswordFeatureManager(), IsGenerationEnabled())
+  EXPECT_CALL(*client_->GetPasswordFeatureManager(), IsGenerationEnabled())
       .WillRepeatedly(testing::Return(true));
 
   EXPECT_FALSE(IsGenerationEnabled());
@@ -350,7 +350,7 @@ TEST_F(PasswordGenerationFrameHelperTest, UpdatePasswordSyncStateIncognito) {
 TEST_F(PasswordGenerationFrameHelperTest, GenerationDisabledForGoogle) {
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_->GetMockPasswordFeatureManager(), IsGenerationEnabled())
+  EXPECT_CALL(*client_->GetPasswordFeatureManager(), IsGenerationEnabled())
       .WillRepeatedly(testing::Return(true));
 
   GURL accounts_url = GURL("https://accounts.google.com/path?q=1");

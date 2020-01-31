@@ -150,8 +150,8 @@ TEST_F(ItemsBubbleControllerTest, OnPasswordActionAddPassword) {
 
   EXPECT_CALL(*GetStore(), AddLogin(form));
 
-  controller()->OnPasswordAction(form,
-                                 ManagePasswordsBubbleModel::ADD_PASSWORD);
+  controller()->OnPasswordAction(
+      form, PasswordBubbleControllerBase::PasswordAction::kAddPassword);
 }
 
 TEST_F(ItemsBubbleControllerTest, OnPasswordActionRemovePassword) {
@@ -165,8 +165,8 @@ TEST_F(ItemsBubbleControllerTest, OnPasswordActionRemovePassword) {
 
   EXPECT_CALL(*GetStore(), RemoveLogin(form));
 
-  controller()->OnPasswordAction(form,
-                                 ManagePasswordsBubbleModel::REMOVE_PASSWORD);
+  controller()->OnPasswordAction(
+      form, PasswordBubbleControllerBase::PasswordAction::kRemovePassword);
 }
 
 TEST_F(ItemsBubbleControllerTest, ShouldReturnLocalCredentials) {

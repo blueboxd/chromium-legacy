@@ -210,6 +210,10 @@ class UiControllerAndroid : public ControllerObserver {
   void UpdateSuggestions(const std::vector<UserAction>& GetUserActions);
   void HideKeyboardIfFocusNotOnText();
 
+  void ResetGenericUiControllers();
+  std::unique_ptr<GenericUiControllerAndroid> CreateGenericUiControllerForProto(
+      const GenericUserInterfaceProto& proto);
+
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(base::TimeDelta delay,
@@ -235,9 +239,11 @@ class UiControllerAndroid : public ControllerObserver {
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  // Native controller for generic UI in collect user data action.
+  // Native controllers for generic UI in collect user data action.
   std::unique_ptr<GenericUiControllerAndroid>
-      collect_user_data_generic_ui_controller_;
+      collect_user_data_prepended_generic_ui_controller_;
+  std::unique_ptr<GenericUiControllerAndroid>
+      collect_user_data_appended_generic_ui_controller_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};

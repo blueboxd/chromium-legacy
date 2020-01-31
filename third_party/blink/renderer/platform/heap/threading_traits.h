@@ -154,7 +154,7 @@ template <typename T, typename U, typename V>
 class HeapHashSet;
 template <typename T, wtf_size_t inlineCapacity>
 class HeapVector;
-template <typename T, wtf_size_t inlineCapacity>
+template <typename T>
 class HeapDeque;
 template <typename T, typename U, typename V>
 class HeapHashCountedSet;
@@ -174,9 +174,9 @@ struct ThreadingTrait<HeapVector<T, inlineCapacity>>
     : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
 };
-template <typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapDeque<T, inlineCapacity>>
-    : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> {
+template <typename T>
+struct ThreadingTrait<HeapDeque<T>>
+    : public ThreadingTrait<Deque<T, 0, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
 };
 template <typename T, typename U, typename V>

@@ -189,7 +189,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '689295e340717a6eec19ce209f2bcd5566355700',
+  'angle_revision': '5de415c5e3f9616298f0d99d2f618e211870a8f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -248,7 +248,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '10a83fb9a9dae4cc8da397d0f01385f4ac878c79',
+  'devtools_frontend_revision': 'd1e28ea0ef92720c6332a7525d324d5032439cfe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1293,7 +1293,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '58ad98201e2ecd609060ad440cb8db08102defff',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd1b176ec137a9bb88f6f6a39c6d148b856885eba',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1494,7 +1494,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8ad9e74d62bfd641c653fa2ab9e63e035f230329',
+    Var('webrtc_git') + '/src.git' + '@' + 'bfe3ef8feb3b4e351403be38fe626df4e796648c',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

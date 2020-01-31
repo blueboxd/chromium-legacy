@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "base/supports_user_data.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/oauth2_mint_token_consent_result.pb.h"
 #include "url/gurl.h"
 
 namespace gaia {
@@ -174,6 +176,28 @@ bool ParseListAccountsData(const std::string& data,
     }
   }
 
+  return true;
+}
+
+bool ParseOAuth2MintTokenConsentResult(const std::string& consent_result,
+                                       bool* approved) {
+  DCHECK(approved);
+
+  std::string decoded_result;
+  if (!base::Base64UrlDecode(consent_result,
+                             base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+                             &decoded_result)) {
+    VLOG(1) << "Base64UrlDecode() failed to decode the consent result";
+    return false;
+  }
+
+  OAuth2MintTokenConsentResult parsed_result;
+  if (!parsed_result.ParseFromString(decoded_result)) {
+    VLOG(1) << "Failed to parse the consent result protobuf message";
+    return false;
+  }
+
+  *approved = parsed_result.approved();
   return true;
 }
 

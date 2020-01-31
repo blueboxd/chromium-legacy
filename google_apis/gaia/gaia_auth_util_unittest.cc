@@ -4,10 +4,33 @@
 
 #include "google_apis/gaia/gaia_auth_util.h"
 
+#include "base/base64url.h"
+#include "base/optional.h"
+#include "google_apis/gaia/oauth2_mint_token_consent_result.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace gaia {
+
+namespace {
+
+std::string GenerateOAuth2MintTokenConsentResult(
+    base::Optional<bool> approved,
+    const base::Optional<std::string>& encrypted_approval_data,
+    base::Base64UrlEncodePolicy encode_policy =
+        base::Base64UrlEncodePolicy::OMIT_PADDING) {
+  OAuth2MintTokenConsentResult consent_result;
+  if (approved.has_value())
+    consent_result.set_approved(approved.value());
+  if (encrypted_approval_data.has_value())
+    consent_result.set_encrypted_approval_data(encrypted_approval_data.value());
+  std::string serialized_consent = consent_result.SerializeAsString();
+  std::string encoded_consent;
+  base::Base64UrlEncode(serialized_consent, encode_policy, &encoded_consent);
+  return encoded_consent;
+}
+
+}  // namespace
 
 TEST(GaiaAuthUtilTest, EmailAddressNoOp) {
   const char lower_case[] = "user@what.com";
@@ -319,6 +342,67 @@ TEST(GaiaAuthUtilTest, ParseListAccountsAcceptsNull) {
   ASSERT_EQ(1u, signed_out_accounts.size());
   ASSERT_EQ("u.2@g.c", signed_out_accounts[0].email);
   ASSERT_TRUE(signed_out_accounts[0].signed_out);
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultApproved) {
+  const char kApprovedConsent[] = "CAESCUVOQ1JZUFRFRA";
+  EXPECT_EQ(kApprovedConsent,
+            GenerateOAuth2MintTokenConsentResult(true, "ENCRYPTED"));
+  bool approved = false;
+  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved));
+  EXPECT_TRUE(approved);
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultApprovedEmptyData) {
+  const char kApprovedConsent[] = "CAE";
+  EXPECT_EQ(kApprovedConsent,
+            GenerateOAuth2MintTokenConsentResult(true, base::nullopt));
+  bool approved = false;
+  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved));
+  EXPECT_TRUE(approved);
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultNotApproved) {
+  const char kNoGrantConsent[] = "CAA";
+  EXPECT_EQ(kNoGrantConsent,
+            GenerateOAuth2MintTokenConsentResult(false, base::nullopt));
+  bool approved = false;
+  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult(kNoGrantConsent, &approved));
+  EXPECT_FALSE(approved);
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultEmpty) {
+  EXPECT_EQ("",
+            GenerateOAuth2MintTokenConsentResult(base::nullopt, base::nullopt));
+  bool approved = false;
+  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult("", &approved));
+  // false is the default value for a bool in proto.
+  EXPECT_FALSE(approved);
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultBase64UrlDisallowedPadding) {
+  const char kApprovedConsentWithPadding[] = "CAE=";
+  EXPECT_EQ(
+      kApprovedConsentWithPadding,
+      GenerateOAuth2MintTokenConsentResult(
+          true, base::nullopt, base::Base64UrlEncodePolicy::INCLUDE_PADDING));
+  bool approved = false;
+  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kApprovedConsentWithPadding,
+                                                 &approved));
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultInvalidBase64Url) {
+  const char kMalformedConsent[] =
+      "+/";  // '+' and '/' are disallowed in base64url alphabet.
+  bool approved = false;
+  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kMalformedConsent, &approved));
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultInvalidProto) {
+  const char kMalformedConsent[] =
+      "ab";  // Valid base64url string but invalid proto.
+  bool approved = false;
+  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kMalformedConsent, &approved));
 }
 
 }  // namespace gaia

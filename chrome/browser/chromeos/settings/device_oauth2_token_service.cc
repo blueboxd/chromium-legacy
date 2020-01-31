@@ -94,7 +94,7 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
   // will be done from OnServiceAccountIdentityChanged() once the robot account
   // ID becomes available as well.
   if (!GetRobotAccountId().empty())
-    FireRefreshTokenAvailable(GetRobotAccountId());
+    FireRefreshTokenAvailable();
 
   token_save_callbacks_.push_back(result_callback);
   if (!waiting_for_salt) {
@@ -127,24 +127,37 @@ void DeviceOAuth2TokenService::SetRefreshTokenAvailableCallback(
 
 std::unique_ptr<OAuth2AccessTokenManager::Request>
 DeviceOAuth2TokenService::StartAccessTokenRequest(
-    const CoreAccountId& account_id,
     const OAuth2AccessTokenManager::ScopeSet& scopes,
     OAuth2AccessTokenManager::Consumer* consumer) {
-  return token_manager_->StartRequest(account_id, scopes, consumer);
+  // Note: It is fine to pass an empty account id to |token_manager_| as this
+  // will just return a request that will always fail.
+  return token_manager_->StartRequest(GetRobotAccountId(), scopes, consumer);
 }
 
 void DeviceOAuth2TokenService::InvalidateAccessToken(
-    const CoreAccountId& account_id,
     const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
-  token_manager_->InvalidateAccessToken(account_id, scopes, access_token);
+  if (GetRobotAccountId().empty())
+    return;
+
+  token_manager_->InvalidateAccessToken(GetRobotAccountId(), scopes,
+                                        access_token);
 }
 
-bool DeviceOAuth2TokenService::RefreshTokenIsAvailable(
-    const CoreAccountId& account_id) const {
-  auto accounts = GetAccounts();
-  return std::find(accounts.begin(), accounts.end(), account_id) !=
-         accounts.end();
+bool DeviceOAuth2TokenService::RefreshTokenIsAvailable() const {
+  switch (state_) {
+    case STATE_NO_TOKEN:
+    case STATE_TOKEN_INVALID:
+      return false;
+    case STATE_LOADING:
+    case STATE_VALIDATION_PENDING:
+    case STATE_VALIDATION_STARTED:
+    case STATE_TOKEN_VALID:
+      return !GetRobotAccountId().empty();
+  }
+
+  NOTREACHED() << "Unhandled state " << state_;
+  return false;
 }
 
 OAuth2AccessTokenManager* DeviceOAuth2TokenService::GetAccessTokenManager() {
@@ -196,7 +209,13 @@ DeviceOAuth2TokenService::CreateAccessTokenFetcher(
 
 bool DeviceOAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
-  return RefreshTokenIsAvailable(account_id);
+  if (account_id.empty())
+    return false;
+
+  if (GetRobotAccountId() != account_id)
+    return false;
+
+  return RefreshTokenIsAvailable();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -204,10 +223,12 @@ DeviceOAuth2TokenService::GetURLLoaderFactory() const {
   return url_loader_factory_;
 }
 
-void DeviceOAuth2TokenService::FireRefreshTokenAvailable(
-    const CoreAccountId& account_id) {
-  if (on_refresh_token_available_callback_)
-    on_refresh_token_available_callback_.Run(account_id);
+void DeviceOAuth2TokenService::FireRefreshTokenAvailable() {
+  if (!on_refresh_token_available_callback_)
+    return;
+
+  DCHECK(!GetRobotAccountId().empty());
+  on_refresh_token_available_callback_.Run();
 }
 
 bool DeviceOAuth2TokenService::HandleAccessTokenFetch(
@@ -284,28 +305,9 @@ void DeviceOAuth2TokenService::FailRequest(
                      OAuth2AccessTokenConsumer::TokenResponse()));
 }
 
-std::vector<CoreAccountId> DeviceOAuth2TokenService::GetAccounts() const {
-  std::vector<CoreAccountId> accounts;
-  switch (state_) {
-    case STATE_NO_TOKEN:
-    case STATE_TOKEN_INVALID:
-      return accounts;
-    case STATE_LOADING:
-    case STATE_VALIDATION_PENDING:
-    case STATE_VALIDATION_STARTED:
-    case STATE_TOKEN_VALID:
-      if (!GetRobotAccountId().empty())
-        accounts.push_back(GetRobotAccountId());
-      return accounts;
-  }
-
-  NOTREACHED() << "Unhandled state " << state_;
-  return accounts;
-}
-
 void DeviceOAuth2TokenService::OnServiceAccountIdentityChanged() {
   if (!GetRobotAccountId().empty() && !refresh_token_.empty())
-    FireRefreshTokenAvailable(GetRobotAccountId());
+    FireRefreshTokenAvailable();
 }
 
 void DeviceOAuth2TokenService::CheckRobotAccountId(
@@ -407,7 +409,7 @@ void DeviceOAuth2TokenService::DidGetSystemSalt(
 
   // Announce the token.
   if (!GetRobotAccountId().empty()) {
-    FireRefreshTokenAvailable(GetRobotAccountId());
+    FireRefreshTokenAvailable();
   }
 }
 

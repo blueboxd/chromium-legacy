@@ -69,6 +69,10 @@ class UserModel {
 // |MessageDifferencer| for protobuf lite and can't rely on serialization.
 bool operator==(const ValueProto& value_a, const ValueProto& value_b);
 
+// Custom comparison operator for |ModelValue|.
+bool operator==(const ModelProto::ModelValue& value_a,
+                const ModelProto::ModelValue& value_b);
+
 // Intended for debugging.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value);
 

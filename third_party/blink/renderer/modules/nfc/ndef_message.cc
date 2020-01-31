@@ -16,7 +16,8 @@ namespace blink {
 // static
 NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
                                  const NDEFMessageInit* init,
-                                 ExceptionState& exception_state) {
+                                 ExceptionState& exception_state,
+                                 bool is_embedded) {
   // https://w3c.github.io/web-nfc/#creating-ndef-message
 
   // NDEFMessageInit#records is a required field.
@@ -29,8 +30,8 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
 
   NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
     for (const NDEFRecordInit* record_init : init->records()) {
-      NDEFRecord* record =
-          NDEFRecord::Create(execution_context, record_init, exception_state);
+      NDEFRecord* record = NDEFRecord::Create(execution_context, record_init,
+                                              exception_state, is_embedded);
       if (exception_state.HadException())
         return nullptr;
       DCHECK(record);

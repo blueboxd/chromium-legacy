@@ -24,9 +24,12 @@ class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // |is_embedded| indicates if this message serves as payload for a parent
+  // record.
   static NDEFMessage* Create(const ExecutionContext*,
                              const NDEFMessageInit*,
-                             ExceptionState&);
+                             ExceptionState&,
+                             bool is_embedded = false);
   static NDEFMessage* Create(const ExecutionContext*,
                              const NDEFMessageSource&,
                              ExceptionState&);

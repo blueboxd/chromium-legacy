@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/items_bubble_controller.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -237,16 +236,15 @@ void PasswordItemsView::PasswordRow::ButtonPressed(views::Button* sender,
   DCHECK(sender->tag() == kDeleteButtonTag || sender->tag() == kUndoButtonTag);
   deleted_ = sender->tag() == kDeleteButtonTag;
   parent_->NotifyPasswordFormAction(
-      *password_form_, deleted_ ? ManagePasswordsBubbleModel::REMOVE_PASSWORD
-                                : ManagePasswordsBubbleModel::ADD_PASSWORD);
+      *password_form_,
+      deleted_ ? PasswordBubbleControllerBase::PasswordAction::kRemovePassword
+               : PasswordBubbleControllerBase::PasswordAction::kAddPassword);
 }
 
 PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
-                                     views::View* anchor_view,
-                                     DisplayReason reason)
+                                     views::View* anchor_view)
     : PasswordBubbleViewBase(web_contents,
                              anchor_view,
-                             reason,
                              /*easily_dismissable=*/true),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
@@ -305,7 +303,7 @@ void PasswordItemsView::RecreateLayout() {
 
 void PasswordItemsView::NotifyPasswordFormAction(
     const autofill::PasswordForm& password_form,
-    ManagePasswordsBubbleModel::PasswordAction action) {
+    PasswordBubbleControllerBase::PasswordAction action) {
   RecreateLayout();
   // After the view is consistent, notify the model that the password needs to
   // be updated (either removed or put back into the store, as appropriate.

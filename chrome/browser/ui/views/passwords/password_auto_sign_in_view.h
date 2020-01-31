@@ -19,8 +19,7 @@ class PasswordAutoSignInView : public PasswordBubbleViewBase,
                                public views::ButtonListener {
  public:
   PasswordAutoSignInView(content::WebContents* web_contents,
-                         views::View* anchor_view,
-                         DisplayReason reason);
+                         views::View* anchor_view);
 
 #if defined(UNIT_TEST)
   static void set_auto_signin_toast_timeout(int seconds) {

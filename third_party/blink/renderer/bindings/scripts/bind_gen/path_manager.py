@@ -115,13 +115,20 @@ class PathManager(object):
 
         self._api_dir = self._component_reldirs[self._api_component]
         self._impl_dir = self._component_reldirs[self._impl_component]
-        self._v8_bind_basename = name_style.file("v8",
-                                                 idl_definition.identifier)
+        self._api_basename = name_style.file("v8", idl_definition.identifier)
+        self._impl_basename = name_style.file("v8", idl_definition.identifier)
         # TODO(peria, yukishiino): Add "v8" prefix to union's files.  Trying to
         # produce the same filepaths with the old bindings generator for the
         # time being.
         if isinstance(idl_definition, web_idl.Union):
-            self._v8_bind_basename = name_style.file(idl_definition.identifier)
+            self._api_basename = name_style.file(idl_definition.identifier)
+            self._impl_basename = name_style.file(idl_definition.identifier)
+
+        if not isinstance(idl_definition, web_idl.Union):
+            idl_path = idl_definition.debug_info.location.filepath
+            self._blink_dir = posixpath.dirname(idl_path)
+            self._blink_basename = name_style.file(
+                blink_class_name(idl_definition))
 
     @property
     def is_cross_components(self):
@@ -138,7 +145,7 @@ class PathManager(object):
     def api_path(self, filename=None, ext=None):
         return self._join(
             dirpath=self.api_dir,
-            filename=(filename or self._v8_bind_basename),
+            filename=(filename or self._api_basename),
             ext=ext)
 
     @property
@@ -152,7 +159,17 @@ class PathManager(object):
     def impl_path(self, filename=None, ext=None):
         return self._join(
             dirpath=self.impl_dir,
-            filename=(filename or self._v8_bind_basename),
+            filename=(filename or self._impl_basename),
+            ext=ext)
+
+    @property
+    def blink_dir(self):
+        return self._blink_dir
+
+    def blink_path(self, filename=None, ext=None):
+        return self._join(
+            dirpath=self.blink_dir,
+            filename=(filename or self._blink_basename),
             ext=ext)
 
     @staticmethod

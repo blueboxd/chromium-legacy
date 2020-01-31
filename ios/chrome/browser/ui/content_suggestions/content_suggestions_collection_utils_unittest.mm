@@ -187,10 +187,10 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPad) {
   SetAsIPad();
 
   // Action, tests.
-  EXPECT_EQ(380, heightForLogoHeader(YES, YES, YES, 0));
-  EXPECT_EQ(404, heightForLogoHeader(YES, NO, YES, 0));
-  EXPECT_EQ(380, heightForLogoHeader(YES, YES, NO, 0));
-  EXPECT_EQ(404, heightForLogoHeader(YES, NO, NO, 0));
+  EXPECT_EQ(382, heightForLogoHeader(YES, YES, YES, 0));
+  EXPECT_EQ(406, heightForLogoHeader(YES, NO, YES, 0));
+  EXPECT_EQ(382, heightForLogoHeader(YES, YES, NO, 0));
+  EXPECT_EQ(406, heightForLogoHeader(YES, NO, NO, 0));
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
@@ -198,10 +198,10 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
   SetAsIPhonePortrait();
 
   // Action, tests.
-  EXPECT_EQ(276, heightForLogoHeader(YES, YES, YES, 0));
-  EXPECT_EQ(276, heightForLogoHeader(YES, NO, YES, 0));
-  EXPECT_EQ(276, heightForLogoHeader(YES, YES, NO, 0));
-  EXPECT_EQ(276, heightForLogoHeader(YES, NO, NO, 0));
+  EXPECT_EQ(278, heightForLogoHeader(YES, YES, YES, 0));
+  EXPECT_EQ(278, heightForLogoHeader(YES, NO, YES, 0));
+  EXPECT_EQ(278, heightForLogoHeader(YES, YES, NO, 0));
+  EXPECT_EQ(278, heightForLogoHeader(YES, NO, NO, 0));
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, NearestAncestor) {

@@ -119,7 +119,13 @@ bool ShouldUploadForMalwareScanByPolicy(download::DownloadItem* item) {
           SendFilesForMalwareCheckValues::SEND_UPLOADS_AND_DOWNLOADS)
     return false;
 
-  return true;
+  // If the item's URL does not match the do-not-check list it must be
+  // uploaded for scanning.
+  const base::ListValue* domains = g_browser_process->local_state()->GetList(
+      prefs::kURLsToNotCheckForMalwareOfDownloadedContent);
+  url_matcher::URLMatcher matcher;
+  policy::url_util::AddAllowFilters(&matcher, domains);
+  return matcher.MatchURL(item->GetURL()).empty();
 }
 
 }  // namespace
@@ -131,15 +137,33 @@ bool DeepScanningRequest::ShouldUploadItemByPolicy(
          ShouldUploadForMalwareScanByPolicy(item);
 }
 
+/* static */
+std::vector<DeepScanningRequest::DeepScanType> DeepScanningRequest::AllScans() {
+  return {DeepScanType::SCAN_DLP, DeepScanType::SCAN_MALWARE};
+}
+
 DeepScanningRequest::DeepScanningRequest(
     download::DownloadItem* item,
     DeepScanTrigger trigger,
     CheckDownloadRepeatingCallback callback,
     DownloadProtectionService* download_service)
+    : DeepScanningRequest(item,
+                          trigger,
+                          callback,
+                          download_service,
+                          DeepScanningRequest::AllScans()) {}
+
+DeepScanningRequest::DeepScanningRequest(
+    download::DownloadItem* item,
+    DeepScanTrigger trigger,
+    CheckDownloadRepeatingCallback callback,
+    DownloadProtectionService* download_service,
+    std::vector<DeepScanType> allowed_scans)
     : item_(item),
       trigger_(trigger),
       callback_(callback),
       download_service_(download_service),
+      allowed_scans_(allowed_scans),
       weak_ptr_factory_(this) {
   item_->AddObserver(this);
 }
@@ -171,7 +195,8 @@ void DeepScanningRequest::Start() {
     policy::DMToken dm_token = GetDMToken(profile);
     request->set_dm_token(dm_token.value());
 
-    if (ShouldUploadForDlpScanByPolicy(item_)) {
+    if (ShouldUploadForDlpScanByPolicy(item_) &&
+        ScanIsAllowed(DeepScanType::SCAN_DLP)) {
       DlpDeepScanningClientRequest dlp_request;
       dlp_request.set_content_source(
           DlpDeepScanningClientRequest::FILE_DOWNLOAD);
@@ -181,7 +206,8 @@ void DeepScanningRequest::Start() {
       request->set_request_dlp_scan(std::move(dlp_request));
     }
 
-    if (ShouldUploadForMalwareScanByPolicy(item_)) {
+    if (ShouldUploadForMalwareScanByPolicy(item_) &&
+        ScanIsAllowed(DeepScanType::SCAN_MALWARE)) {
       MalwareDeepScanningClientRequest malware_request;
       malware_request.set_population(
           MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
@@ -295,6 +321,10 @@ bool DeepScanningRequest::MaybeShowDeepScanFailureModalDialog(
 void DeepScanningRequest::OpenDownload() {
   item_->OpenDownload();
   FinishRequest(DownloadCheckResult::UNKNOWN);
+}
+
+bool DeepScanningRequest::ScanIsAllowed(DeepScanType scan) {
+  return base::Contains(allowed_scans_, scan);
 }
 
 }  // namespace safe_browsing

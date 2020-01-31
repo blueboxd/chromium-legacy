@@ -12,7 +12,7 @@
 
 namespace blink {
 
-using LifecycleUpdateReason = DocumentLifecycle::LifecycleUpdateReason;
+using LifecycleUpdateReason = DocumentUpdateReason;
 
 class SVGUseElementTest : public PageTestBase {};
 

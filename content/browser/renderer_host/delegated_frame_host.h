@@ -21,7 +21,8 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/common/content_export.h"
-#include "content/common/tab_switch_time_recorder.h"
+#include "content/common/content_to_visible_time_reporter.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -106,7 +107,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,
-                const base::Optional<RecordTabSwitchTimeRequest>&
+                const base::Optional<RecordContentToVisibleTimeRequest>&
                     record_tab_switch_time_request);
   void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
                     const gfx::Size& dip_size,
@@ -225,7 +226,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // compositor frame is submitted.
   std::unique_ptr<ui::Layer> stale_content_layer_;
 
-  TabSwitchTimeRecorder tab_switch_time_recorder_;
+  ContentToVisibleTimeReporter tab_switch_time_recorder_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

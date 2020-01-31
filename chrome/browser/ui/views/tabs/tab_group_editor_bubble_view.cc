@@ -30,7 +30,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/button.h"

@@ -125,6 +125,8 @@ const char kURLsToCheckComplianceOfDownloadedContent[] =
     "safebrowsing.urls_to_check_compliance_of_downloaded_content";
 const char kURLsToCheckForMalwareOfUploadedContent[] =
     "safebrowsing.urls_to_check_for_malware_of_uploaded_content";
+const char kURLsToNotCheckForMalwareOfDownloadedContent[] =
+    "safebrowsing.urls_to_not_check_for_malware_of_downloaded_content";
 const char kURLsToNotCheckComplianceOfUploadedContent[] =
     "policy.urls_to_not_check_compliance_of_uploaded_content";
 const char kAdvancedProtectionDeepScanningEnabled[] =
@@ -213,6 +215,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kURLsToCheckComplianceOfDownloadedContent);
   registry->RegisterListPref(prefs::kURLsToNotCheckComplianceOfUploadedContent);
   registry->RegisterListPref(prefs::kURLsToCheckForMalwareOfUploadedContent);
+  registry->RegisterListPref(
+      prefs::kURLsToNotCheckForMalwareOfDownloadedContent);
 }
 
 void SetExtendedReportingPrefAndMetric(

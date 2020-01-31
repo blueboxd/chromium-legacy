@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
@@ -69,6 +70,16 @@ TEST_F(IntentHandlingMetricsTest, TestRecordExternalProtocolMetrics) {
   histogram_tester.ExpectBucketCount(
       "ChromeOS.Apps.ExternalProtocolDialog.Accepted",
       arc::ProtocolAction::IRC_ACCEPTED_PERSISTED, 1);
+}
+
+TEST_F(IntentHandlingMetricsTest, TestRecordOpenBrowserMetrics) {
+  base::HistogramTester histogram_tester;
+
+  IntentHandlingMetrics test;
+  test.RecordOpenBrowserMetrics(IntentHandlingMetrics::AppType::kArc);
+
+  histogram_tester.ExpectBucketCount("ChromeOS.Apps.OpenBrowser",
+                                     IntentHandlingMetrics::AppType::kArc, 1);
 }
 
 }  // namespace apps

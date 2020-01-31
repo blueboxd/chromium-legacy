@@ -16,10 +16,10 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crypto.CipherFactory;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.util.ColorUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;

@@ -15,8 +15,9 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_util.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -331,8 +332,8 @@ void PermissionUmaUtil::PermissionPromptResolved(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PermissionDecisionAutoBlocker* autoblocker =
-      PermissionDecisionAutoBlocker::GetForProfile(profile);
+  permissions::PermissionDecisionAutoBlocker* autoblocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile);
 
   for (permissions::PermissionRequest* request : requests) {
     ContentSettingsType permission = request->GetContentSettingsType();
@@ -489,8 +490,8 @@ void PermissionUmaUtil::RecordPermissionAction(
     const GURL& requesting_origin,
     const content::WebContents* web_contents,
     Profile* profile) {
-  PermissionDecisionAutoBlocker* autoblocker =
-      PermissionDecisionAutoBlocker::GetForProfile(profile);
+  permissions::PermissionDecisionAutoBlocker* autoblocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile);
   int dismiss_count =
       autoblocker->GetDismissCount(requesting_origin, permission);
   int ignore_count = autoblocker->GetIgnoreCount(requesting_origin, permission);

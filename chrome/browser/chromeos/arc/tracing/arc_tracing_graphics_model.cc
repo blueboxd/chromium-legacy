@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event_matcher.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 #include "components/arc/arc_util.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 
 namespace arc {
 

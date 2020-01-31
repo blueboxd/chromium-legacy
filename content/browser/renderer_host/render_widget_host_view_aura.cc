@@ -506,7 +506,8 @@ void RenderWidgetHostViewAura::Show() {
 
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
-  WasOccluded();
+  visibility_ = Visibility::HIDDEN;
+  HideImpl();
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
@@ -635,10 +636,22 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 void RenderWidgetHostViewAura::WasUnOccluded() {
+  const Visibility old_visibility = visibility_;
+  visibility_ = Visibility::VISIBLE;
+
   if (!host_->is_hidden())
     return;
 
-  auto tab_switch_start_state = TakeRecordTabSwitchTimeRequest();
+  if (old_visibility == Visibility::OCCLUDED) {
+    SetRecordContentToVisibleTimeRequest(
+        base::TimeTicks::Now(),
+        base::Optional<bool>() /* destination_is_loaded */,
+        base::Optional<bool>() /* destination_is_frozen */,
+        false /* show_reason_tab_switching */,
+        true /* show_reason_unoccluded */);
+  }
+
+  auto tab_switch_start_state = TakeRecordContentToVisibleTimeRequest();
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
 
@@ -666,7 +679,10 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
 #endif
 }
 
-void RenderWidgetHostViewAura::WasOccluded() {
+void RenderWidgetHostViewAura::HideImpl() {
+  DCHECK(visibility_ == Visibility::HIDDEN ||
+         visibility_ == Visibility::OCCLUDED);
+
   if (!host()->is_hidden()) {
     host()->WasHidden();
     aura::WindowTreeHost* host = window_->GetHost();
@@ -702,6 +718,11 @@ void RenderWidgetHostViewAura::WasOccluded() {
   if (legacy_render_widget_host_HWND_)
     legacy_render_widget_host_HWND_->Hide();
 #endif
+}
+
+void RenderWidgetHostViewAura::WasOccluded() {
+  visibility_ = Visibility::OCCLUDED;
+  HideImpl();
 }
 
 bool RenderWidgetHostViewAura::ShouldShowStaleContentOnEviction() {
@@ -1754,7 +1775,6 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
     virtual_keyboard_requested_ = false;
     if (auto* controller = GetInputMethod()->GetInputMethodKeyboardController())
       controller->DismissVirtualKeyboard();
-    keyboard_observer_.reset(nullptr);
   }
 #elif defined(OS_FUCHSIA)
   if (!editable && window_) {
@@ -2407,8 +2427,6 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
         keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
         GetInputMethod()->ShowVirtualKeyboardIfEnabled();
         virtual_keyboard_requested_ = keyboard_observer_.get();
-      } else {
-        keyboard_observer_.reset(nullptr);
       }
     }
 #endif

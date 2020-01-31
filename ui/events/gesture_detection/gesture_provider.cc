@@ -18,6 +18,7 @@
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 #include "ui/events/gesture_detection/scale_gesture_listeners.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 

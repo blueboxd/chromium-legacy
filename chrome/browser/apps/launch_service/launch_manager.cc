@@ -3,9 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/launch_service/launch_manager.h"
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/webui_url_constants.h"
+#include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
 
 namespace apps {
 
@@ -31,6 +40,21 @@ std::vector<base::FilePath> LaunchManager::GetLaunchFilesFromCommandLine(
   }
 
   return launch_files;
+}
+
+Browser* LaunchManager::CreateNewTabBrowser() {
+  Browser::CreateParams create_params =
+      Browser::CreateParams(profile_, /*user_gesture=*/false);
+  Browser* browser = new Browser(create_params);
+
+  NavigateParams params(browser, GURL(chrome::kChromeUINewTabURL),
+                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
+  Navigate(&params);
+
+  browser->window()->Show();
+  return browser;
 }
 
 }  // namespace apps

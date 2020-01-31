@@ -32,7 +32,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -59,6 +61,45 @@ bool MinimizeAllWindows(const aura::Window::Windows& windows,
   window_util::MinimizeAndHideWithoutAnimation(windows_to_minimize);
   return !windows_to_minimize.empty();
 }
+
+// Layer animation observer that waits for layer animator to schedule, and
+// complete animations. When all animations complete, it fires |callback| and
+// deletes itself.
+class WindowAnimationsCallback : public ui::LayerAnimationObserver {
+ public:
+  WindowAnimationsCallback(base::OnceClosure callback,
+                           ui::LayerAnimator* animator)
+      : callback_(std::move(callback)), animator_(animator) {
+    animator_->AddObserver(this);
+  }
+  ~WindowAnimationsCallback() override { animator_->RemoveObserver(this); }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    FireCallbackIfDone();
+  }
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
+    FireCallbackIfDone();
+  }
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+  void OnDetachedFromSequence(ui::LayerAnimationSequence* sequence) override {
+    FireCallbackIfDone();
+  }
+
+ private:
+  // Fires the callback if all scheduled animations completed (either ended or
+  // got aborted).
+  void FireCallbackIfDone() {
+    if (!callback_ || animator_->is_animating())
+      return;
+    std::move(callback_).Run();
+    delete this;
+  }
+
+  base::OnceClosure callback_;
+  ui::LayerAnimator* animator_;
+};
 
 }  // namespace
 
@@ -140,13 +181,14 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   // The foreground window or windows (for split mode) - the windows that will
   // not be minimized without animations (instead they wil bee animated into the
   // home screen).
-  std::vector<aura::Window*> active_windows;
+  std::vector<aura::Window*> foreground_windows;
   if (split_view_active) {
-    active_windows = {split_view_controller->left_window(),
-                      split_view_controller->right_window()};
-    base::EraseIf(active_windows, [](aura::Window* window) { return !window; });
+    foreground_windows = {split_view_controller->left_window(),
+                          split_view_controller->right_window()};
+    base::EraseIf(foreground_windows,
+                  [](aura::Window* window) { return !window; });
   } else if (!windows.empty() && !WindowState::Get(windows[0])->IsMinimized()) {
-    active_windows.push_back(windows[0]);
+    foreground_windows.push_back(windows[0]);
   }
 
   if (split_view_active) {
@@ -173,51 +215,55 @@ bool HomeScreenController::GoHome(int64_t display_id) {
 
   // First minimize all inactive windows.
   const bool window_minimized =
-      MinimizeAllWindows(windows, active_windows /*windows_to_ignore*/);
+      MinimizeAllWindows(windows, foreground_windows /*windows_to_ignore*/);
 
-  // Animate currently active windows into the home screen - they will be
-  // minimized by WindowTransformToHomeScreenAnimation when the transition
-  // finishes.
-  if (!active_windows.empty()) {
-    {
-      // Disable window animations before updating home launcher target
-      // position. Calling OnHomeLauncherPositionChanged() can cause
-      // display work area update, and resulting cross-fade window bounds change
-      // animation can interfere with WindowTransformToHomeScreenAnimation
-      // visuals.
-      //
-      // TODO(https://crbug.com/1019531): This can be removed once transitions
-      // between in-app state and home do not cause work area updates.
-      std::vector<std::unique_ptr<ScopedAnimationDisabler>> animation_disablers;
-      for (auto* window : active_windows) {
-        animation_disablers.push_back(
-            std::make_unique<ScopedAnimationDisabler>(window));
-      }
+  if (foreground_windows.empty())
+    return window_minimized;
 
-      delegate_->OnHomeLauncherPositionChanged(100 /* percent_shown */,
-                                               display_id);
+  {
+    // Disable window animations before updating home launcher target
+    // position. Calling OnHomeLauncherPositionChanged() can cause
+    // display work area update, and resulting cross-fade window bounds change
+    // animation can interfere with WindowTransformToHomeScreenAnimation
+    // visuals.
+    //
+    // TODO(https://crbug.com/1019531): This can be removed once transitions
+    // between in-app state and home do not cause work area updates.
+    std::vector<std::unique_ptr<ScopedAnimationDisabler>> animation_disablers;
+    for (auto* window : foreground_windows) {
+      animation_disablers.push_back(
+          std::make_unique<ScopedAnimationDisabler>(window));
     }
 
-    StartTrackingAnimationSmoothness(display_id);
-    base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
-        active_windows.size(),
-        base::BindOnce(&HomeScreenController::NotifyHomeLauncherTransitionEnded,
-                       weak_ptr_factory_.GetWeakPtr(), true /*shown*/,
-                       display_id));
+    delegate_->OnHomeLauncherPositionChanged(100 /* percent_shown */,
+                                             display_id);
+  }
 
-    for (auto* active_window : active_windows) {
-      // Do the scale-down transform for the entire transient tree.
-      for (auto* window : GetTransientTreeIterator(active_window)) {
-        // Self-destructed when window transform animation is done.
-        new WindowScaleAnimation(
-            window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
-            window == active_window ? window_transforms_callback
-                                    : base::NullCallback());
-      }
+  StartTrackingAnimationSmoothness(display_id);
+
+  base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
+      foreground_windows.size(),
+      base::BindOnce(&HomeScreenController::NotifyHomeLauncherTransitionEnded,
+                     weak_ptr_factory_.GetWeakPtr(), true /*shown*/,
+                     display_id));
+
+  // Minimize currently active windows, but this time, using animation.
+  // Home screen will show when all the windows are done minimizing.
+  for (auto* foreground_window : foreground_windows) {
+    if (::wm::WindowAnimationsDisabled(foreground_window)) {
+      WindowState::Get(foreground_window)->Minimize();
+      window_transforms_callback.Run();
+    } else {
+      // Create animator observer that will fire |window_transforms_callback|
+      // once the window layer stops animating - it deletes itself when
+      // animations complete.
+      new WindowAnimationsCallback(window_transforms_callback,
+                                   foreground_window->layer()->GetAnimator());
+      WindowState::Get(foreground_window)->Minimize();
     }
   }
 
-  return window_minimized || !active_windows.empty();
+  return true;
 }
 
 void HomeScreenController::NotifyHomeLauncherTransitionEnded(

@@ -20,6 +20,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 

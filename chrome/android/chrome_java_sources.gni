@@ -1865,7 +1865,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webshare/SharedFileCollator.java",
   "java/src/org/chromium/chrome/browser/widget/DateDividedAdapter.java",
   "java/src/org/chromium/chrome/browser/widget/FeatureHighlightProvider.java",
-  "java/src/org/chromium/chrome/browser/widget/NumberRollView.java",
   "java/src/org/chromium/chrome/browser/widget/ScrimView.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheet.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetContent.java",
@@ -1874,10 +1873,4 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetector.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/EmptyBottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/TouchRestrictingFrameLayout.java",
-  "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemView.java",
-  "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemViewBase.java",
-  "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemViewHolder.java",
-  "java/src/org/chromium/chrome/browser/widget/selection/SelectableListLayout.java",
-  "java/src/org/chromium/chrome/browser/widget/selection/SelectableListToolbar.java",
-  "java/src/org/chromium/chrome/browser/widget/selection/SelectionDelegate.java",
 ]

@@ -9,5 +9,5 @@ android.webkit.WebView focusable focused scrollable
 ++++android.view.View role_description='link' clickable focusable link name='dest7'
 ++++android.view.View role_description='link' clickable focusable link name='dest.8'
 ++++android.view.View role_description='link' clickable focusable link name='greenbox'
-++++android.view.View name=' '
+++++android.widget.TextView name=' '
 ++++android.view.View role_description='link' clickable focusable link name='greenbox'

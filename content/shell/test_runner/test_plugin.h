@@ -76,8 +76,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   blink::WebPluginContainer* Container() const override;
   bool CanProcessDrag() const override;
   bool SupportsKeyboardFocus() const override;
-  void UpdateAllLifecyclePhases(
-      blink::WebWidget::LifecycleUpdateReason) override {}
+  void UpdateAllLifecyclePhases(blink::DocumentUpdateReason) override {}
   void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override {}
   void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,

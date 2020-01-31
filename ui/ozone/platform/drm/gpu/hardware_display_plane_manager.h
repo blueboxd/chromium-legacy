@@ -56,7 +56,7 @@ struct HardwareDisplayPlaneList {
 
 class HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManager(DrmDevice* drm);
+  explicit HardwareDisplayPlaneManager(DrmDevice* drm);
   virtual ~HardwareDisplayPlaneManager();
 
   // This parses information from the drm driver, adding any new planes

@@ -3,7 +3,17 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Card styles -->
+    <style name="Card">
+        <item name="android:background">@drawable/hairline_border_card_background</item>
+    </style>
+    <!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
+    <style name="CardTransparentForDark" tools:ignore="UnusedResources">
+        <item name="android:background">@drawable/hairline_border_card_dark_transparent_bg</item>
+    </style>
+
+
     <style name="ListActionButton" parent="@style/TextButton">
         <item name="android:minHeight">48dp</item>
     </style>
@@ -28,6 +38,29 @@
         <item name="android:windowExitAnimation">@anim/menu_exit_from_bottom</item>
     </style>
 
+    <!-- Modern List Item -->
+    <style name="ListItemContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/list_item_min_height</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
+    </style>
+    <style name="ListItemStartIcon">
+        <item name="android:layout_width">@dimen/list_item_start_icon_width</item>
+        <item name="android:layout_height">@dimen/list_item_start_icon_width</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_marginEnd">@dimen/list_item_start_icon_right_margin</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:contentDescription">@null</item>
+    </style>
+    <style name="ListItemEndIcon">
+        <item name="android:layout_width">@dimen/list_item_end_icon_width</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@null</item>
+        <item name="android:scaleType">center</item>
+    </style>
 
     <!-- Promo dialogs -->
     <style name="PromoDialog" >

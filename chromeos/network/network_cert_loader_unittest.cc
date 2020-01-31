@@ -751,6 +751,44 @@ TEST_F(NetworkCertLoaderTest, UpdateOnTwoPolicyCertificateProviders) {
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 
+// Tests that device-wide certificates have higher priority when combining two
+// policy provided certificates such that one of them is device-wide and the
+// other is not.
+TEST_F(NetworkCertLoaderTest, PreferDeviceWideCertsWhenCombining) {
+  // Load same CA cert for device and user policy.
+  scoped_refptr<net::X509Certificate> certificate =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "root_ca_cert.pem");
+
+  ASSERT_TRUE(certificate.get());
+
+  StartCertLoaderWithPrimaryDB();
+
+  FakePolicyCertificateProvider device_policy_certs_provider;
+  device_policy_certs_provider.SetAuthorityCertificates({certificate});
+
+  FakePolicyCertificateProvider user_policy_certs_provider;
+  user_policy_certs_provider.SetAuthorityCertificates({certificate});
+
+  cert_loader_->SetDevicePolicyCertificateProvider(
+      &device_policy_certs_provider);
+  ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+
+  cert_loader_->SetUserPolicyCertificateProvider(&user_policy_certs_provider);
+  ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+
+  EXPECT_FALSE(IsCertInCertificateList(certificate.get(),
+                                       false /* device_wide */,
+                                       cert_loader_->authority_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(certificate.get(), true /* device_wide */,
+                                      cert_loader_->authority_certs()));
+
+  cert_loader_->SetUserPolicyCertificateProvider(nullptr);
+  EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+
+  cert_loader_->SetDevicePolicyCertificateProvider(nullptr);
+  EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+}
+
 TEST_F(NetworkCertLoaderTest,
        NoUpdateDueToPolicyCertificateProviderBeforeCertDbLoaded) {
   // Load a CA cert for testing.

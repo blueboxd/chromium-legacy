@@ -76,7 +76,7 @@ class ContextMenuControllerTest : public testing::Test {
     WebLocalFrameImpl* local_main_frame = web_view_helper_.LocalMainFrame();
     local_main_frame->ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
     local_main_frame->ViewImpl()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   bool ShowContextMenu(const PhysicalOffset& location,

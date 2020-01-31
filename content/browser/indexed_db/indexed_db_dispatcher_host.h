@@ -17,8 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
+#include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -99,10 +99,11 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   // Removes all readers for this file path.
   void RemoveBoundReaders(const base::FilePath& path);
 
-  // Create blobs from |blob_infos| and store the uuid/receiver results in
+  // Create external objects from |blob_infos| and store the results in
   // |output_infos|.  |output_infos| must be the same length as |blob_infos|.
-  void CreateAllBlobs(const std::vector<IndexedDBBlobInfo>& blob_infos,
-                      std::vector<blink::mojom::IDBBlobInfoPtr>* output_infos);
+  void CreateAllExternalObjects(
+      const std::vector<IndexedDBExternalObject>& objects,
+      std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects);
 
  private:
   class IDBSequenceHelper;

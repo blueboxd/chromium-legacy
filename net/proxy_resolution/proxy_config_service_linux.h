@@ -132,8 +132,11 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // allow list rather than block list. (This is KDE-specific.)
     virtual bool BypassListIsReversed() = 0;
 
-    // Returns the format to use when parsing the bypass rules list.
-    virtual ProxyBypassRules::ParseFormat GetBypassListFormat() = 0;
+    // Returns true if bypass rules should evaluate using dumb string suffix
+    // matches on the host. For instance when true, "notgoogle.com" will be
+    // considered a match for "google.com", even though the bypass rule does not
+    // include a wildcard, and the matched host is not a subdomain.
+    virtual bool UseSuffixMatching() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SettingGetter);

@@ -8,7 +8,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  ".*_(unit|browser)test\.cc": [
+  ".*_(unit|browser)test\.(cc|mm)": [
     "+content/browser/web_contents",
     "+content/public/browser/web_contents.h",
     "+content/public/browser/web_contents_delegate.h",

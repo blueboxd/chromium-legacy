@@ -15,6 +15,10 @@ class CommandLine;
 class FilePath;
 }  // namespace base
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace apps {
 
 // TODO(crbug.com/966288): Move these methods into LaunchService.
@@ -26,9 +30,9 @@ bool OpenApplicationWithReenablePrompt(Profile* profile,
                                        const base::CommandLine& command_line,
                                        const base::FilePath& current_directory);
 
-// Returns true if |url| was successfully opened in a window, and false
-// otherwise.
-bool OpenAppShortcutWindow(Profile* profile, const GURL& url);
+// Returns web contents if |url| was successfully opened in a window, and
+// nullptr otherwise.
+content::WebContents* OpenAppShortcutWindow(Profile* profile, const GURL& url);
 
 }  // namespace apps
 

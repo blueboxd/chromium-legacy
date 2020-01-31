@@ -87,7 +87,6 @@
     <color name="contextual_search_divider_line_color">@color/modern_secondary_color</color>
 
     <!-- Toolbar colors -->
-    <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_text_box_background_incognito">@color/black_alpha_38</color>
 
     <!-- LocationBar colors -->
@@ -145,7 +144,6 @@
     <color name="image_viewer_bg">#0E0E0E</color>
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
-    <color name="search_box_hint">@color/default_text_color_secondary</color>
     <color name="thumbnail_placeholder_on_primary_bg" tools:ignore="UnusedResources">@color/modern_secondary_color</color>
     <color name="tab_layout_selected_tab_color">@color/default_text_color_blue</color>
     <color name="web_notification_text">#CCCCCC</color>

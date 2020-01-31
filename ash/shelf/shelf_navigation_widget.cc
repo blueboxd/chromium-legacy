@@ -409,6 +409,12 @@ void ShelfNavigationWidget::CalculateTargetBounds() {
   // manager.
 }
 
+gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
+  // TODO(manucornet): Store these locally and do not depend on the layout
+  // manager.
+  return shelf_->shelf_layout_manager()->GetNavigationBounds();
+}
+
 void ShelfNavigationWidget::UpdateLayout(bool animate) {
   const bool back_button_shown = IsBackButtonShown();
   const bool home_button_shown = IsHomeButtonShown();

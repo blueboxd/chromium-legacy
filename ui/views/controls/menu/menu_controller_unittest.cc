@@ -21,6 +21,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/ax_event_manager.h"

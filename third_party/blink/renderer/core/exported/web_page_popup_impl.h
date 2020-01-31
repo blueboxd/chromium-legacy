@@ -119,7 +119,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason) override;
+                       DocumentUpdateReason reason) override;
   void Resize(const WebSize&) override;
   void Close() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;

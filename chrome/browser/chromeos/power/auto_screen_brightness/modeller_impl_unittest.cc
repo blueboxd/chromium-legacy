@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 
 namespace chromeos {
 namespace power {

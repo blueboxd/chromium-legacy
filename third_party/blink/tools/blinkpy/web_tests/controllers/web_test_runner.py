@@ -37,9 +37,9 @@ from blinkpy.common import message_pool
 from blinkpy.tool import grammar
 from blinkpy.web_tests.controllers import single_test_runner
 from blinkpy.web_tests.models.test_run_results import TestRunResults
-from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models import test_results
+from blinkpy.web_tests.models.typ_types import ResultType
 
 _log = logging.getLogger(__name__)
 
@@ -91,13 +91,9 @@ class WebTestRunner(object):
         self._printer.num_tests = len(test_inputs)
         self._printer.num_completed = 0
 
-        if retry_attempt < 1:
-            if self._expectations:
-                self._printer.print_expected(test_run_results, self._expectations.get_tests_with_result_type)
-
         for test_name in set(tests_to_skip):
             result = test_results.TestResult(test_name)
-            result.type = test_expectations.SKIP
+            result.type = ResultType.Skip
             test_run_results.add(result, expected=True, test_is_slow=self._test_is_slow(test_name))
 
         self._printer.write_update('Sharding tests ...')
@@ -197,15 +193,14 @@ class WebTestRunner(object):
             return
 
         expected = self._expectations.matches_an_expected_result(result.test_name, result.type)
-        expectation_string = self._expectations.get_expectations_string(result.test_name)
-        actual_string = self._expectations.expectation_to_string(result.type)
+        expectation_string = ' '.join(self._expectations.get_expectations(result.test_name).results)
 
         if result.device_failed:
             self._printer.print_finished_test(self._port, result, False, expectation_string, 'Aborted')
             return
 
         test_run_results.add(result, expected, self._test_is_slow(result.test_name))
-        self._printer.print_finished_test(self._port, result, expected, expectation_string, actual_string)
+        self._printer.print_finished_test(self._port, result, expected, expectation_string, result.type)
         self._interrupt_if_at_failure_limits(test_run_results)
 
     def handle(self, name, source, *args):
@@ -349,7 +344,7 @@ class Worker(object):
             _log.debug('%s %s failed:', self._name, test_description)
             for f in result.failures:
                 _log.debug('%s  %s', self._name, f.message())
-        elif result.type == test_expectations.SKIP:
+        elif result.type == ResultType.Skip:
             _log.debug('%s %s skipped', self._name, test_description)
         else:
             _log.debug('%s %s passed', self._name, test_description)

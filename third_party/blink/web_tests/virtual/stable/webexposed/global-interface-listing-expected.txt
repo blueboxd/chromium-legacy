@@ -8984,8 +8984,18 @@ interface XRFrame
     attribute @@toStringTag
     getter session
     method constructor
+    method getHitTestResults
+    method getHitTestResultsForTransientInput
     method getPose
     method getViewerPose
+interface XRHitTestResult
+    attribute @@toStringTag
+    method constructor
+    method getPose
+interface XRHitTestSource
+    attribute @@toStringTag
+    method cancel
+    method constructor
 interface XRInputSource
     attribute @@toStringTag
     getter gamepad
@@ -9020,6 +9030,12 @@ interface XRPose
     getter emulatedPosition
     getter transform
     method constructor
+interface XRRay
+    attribute @@toStringTag
+    getter direction
+    getter matrix
+    getter origin
+    method constructor
 interface XRReferenceSpace : XRSpace
     attribute @@toStringTag
     getter onreset
@@ -9047,6 +9063,7 @@ interface XRRigidTransform
     method constructor
 interface XRSession : EventTarget
     attribute @@toStringTag
+    getter environmentBlendMode
     getter inputSources
     getter onend
     getter oninputsourceschange
@@ -9060,6 +9077,8 @@ interface XRSession : EventTarget
     method constructor
     method end
     method requestAnimationFrame
+    method requestHitTestSource
+    method requestHitTestSourceForTransientInput
     method requestReferenceSpace
     method updateRenderState
     setter onend
@@ -9074,6 +9093,15 @@ interface XRSessionEvent : Event
     method constructor
 interface XRSpace : EventTarget
     attribute @@toStringTag
+    method constructor
+interface XRTransientInputHitTestResult
+    attribute @@toStringTag
+    getter inputSource
+    getter results
+    method constructor
+interface XRTransientInputHitTestSource
+    attribute @@toStringTag
+    method cancel
     method constructor
 interface XRView
     attribute @@toStringTag

@@ -34,7 +34,7 @@
 #include "ui/display/screen.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"

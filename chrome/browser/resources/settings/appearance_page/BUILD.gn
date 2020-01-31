@@ -76,3 +76,93 @@ js_library("home_url_input") {
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
+
+# TODO(crbug.com/1026426): Fix and enable.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":appearance_browser_proxy.m",
+#    ":appearance_fonts_page.m",
+#    ":appearance_page.m",
+#    ":fonts_browser_proxy.m",
+#    ":home_url_input.m",
+#  ]
+#}
+
+js_library("appearance_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("appearance_fonts_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/appearance_fonts_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":appearance_fonts_page_module" ]
+}
+
+js_library("appearance_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/appearance_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":appearance_page_module" ]
+}
+
+js_library("fonts_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/fonts_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("home_url_input.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/home_url_input.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":home_url_input_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  deps = [
+    ":appearance_fonts_page_module",
+    ":appearance_page_module",
+    ":home_url_input_module",
+    ":modulize",
+  ]
+}
+
+polymer_modulizer("appearance_fonts_page") {
+  js_file = "appearance_fonts_page.js"
+  html_file = "appearance_fonts_page.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("appearance_page") {
+  js_file = "appearance_page.js"
+  html_file = "appearance_page.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("home_url_input") {
+  js_file = "home_url_input.js"
+  html_file = "home_url_input.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [
+    "appearance_browser_proxy.js",
+    "fonts_browser_proxy.js",
+  ]
+}

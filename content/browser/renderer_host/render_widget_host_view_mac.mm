@@ -443,7 +443,7 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
   bool has_saved_frame =
       browser_compositor_->has_saved_frame_before_state_transition();
 
-  auto tab_switch_start_state = TakeRecordTabSwitchTimeRequest();
+  auto tab_switch_start_state = TakeRecordContentToVisibleTimeRequest();
 
   const bool renderer_should_record_presentation_time = !has_saved_frame;
   host()->WasShown(renderer_should_record_presentation_time

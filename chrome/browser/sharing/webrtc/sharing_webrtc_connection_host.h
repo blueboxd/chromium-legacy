@@ -27,6 +27,12 @@
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
 
+namespace gcm {
+enum class GCMDecryptionResult;
+class GCMDriver;
+enum class GCMEncryptionResult;
+}  // namespace gcm
+
 class SharingHandlerRegistry;
 class WebRtcSignallingHostFCM;
 
@@ -38,11 +44,18 @@ class SharingWebRtcConnectionHost
     : public sharing::mojom::SharingWebRtcConnectionDelegate,
       public network::mojom::P2PTrustedSocketManagerClient {
  public:
+  struct EncryptionInfo {
+    std::string authorized_entity;
+    std::string p256dh;
+    std::string auth_secret;
+  };
+
   SharingWebRtcConnectionHost(
       std::unique_ptr<WebRtcSignallingHostFCM> signalling_host,
       SharingHandlerRegistry* handler_registry,
-      std::unique_ptr<syncer::DeviceInfo> device_info,
-      base::OnceCallback<void(const std::string&)> on_closed,
+      gcm::GCMDriver* gcm_driver,
+      EncryptionInfo encryption_info,
+      base::OnceClosure on_closed,
       mojo::PendingReceiver<sharing::mojom::SharingWebRtcConnectionDelegate>
           delegate,
       mojo::PendingRemote<sharing::mojom::SharingWebRtcConnection> connection,
@@ -67,6 +80,11 @@ class SharingWebRtcConnectionHost
       std::vector<sharing::mojom::IceCandidatePtr> ice_candidates);
 
  private:
+  void OnMessageDecrypted(gcm::GCMDecryptionResult result, std::string message);
+  void OnMessageEncrypted(
+      sharing::mojom::SharingWebRtcConnection::SendMessageCallback callback,
+      gcm::GCMEncryptionResult result,
+      std::string message);
   void OnMessageHandled(
       const std::string& original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
@@ -85,8 +103,9 @@ class SharingWebRtcConnectionHost
   std::unique_ptr<WebRtcSignallingHostFCM> signalling_host_;
   // Owned by the SharingService KeyedService and must outlive |this|.
   SharingHandlerRegistry* handler_registry_;
-  std::unique_ptr<syncer::DeviceInfo> device_info_;
-  base::OnceCallback<void(const std::string&)> on_closed_;
+  gcm::GCMDriver* gcm_driver_;
+  EncryptionInfo encryption_info_;
+  base::OnceClosure on_closed_;
 
   mojo::Receiver<sharing::mojom::SharingWebRtcConnectionDelegate> delegate_;
   mojo::Remote<sharing::mojom::SharingWebRtcConnection> connection_;

@@ -23,6 +23,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_rewriter.h"
+#include "ui/events/types/event_type.h"
 
 namespace ash {
 namespace {

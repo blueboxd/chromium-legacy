@@ -18,9 +18,14 @@ namespace {
 // show all the action buttons then this is used to determine which will be
 // shown.
 constexpr MediaSessionAction kPreferredActions[] = {
-    MediaSessionAction::kPlay,          MediaSessionAction::kPause,
-    MediaSessionAction::kPreviousTrack, MediaSessionAction::kNextTrack,
-    MediaSessionAction::kSeekBackward,  MediaSessionAction::kSeekForward,
+    MediaSessionAction::kPlay,
+    MediaSessionAction::kPause,
+    MediaSessionAction::kPreviousTrack,
+    MediaSessionAction::kNextTrack,
+    MediaSessionAction::kSeekBackward,
+    MediaSessionAction::kSeekForward,
+    MediaSessionAction::kEnterPictureInPicture,
+    MediaSessionAction::kExitPictureInPicture,
 };
 
 // The maximum number of media notifications to count when recording the
@@ -79,6 +84,13 @@ MediaSessionAction GetPlayPauseIgnoredAction(
   return current_action == MediaSessionAction::kPlay
              ? MediaSessionAction::kPause
              : MediaSessionAction::kPlay;
+}
+
+MediaSessionAction GetPictureInPictureIgnoredAction(
+    MediaSessionAction current_action) {
+  return current_action == MediaSessionAction::kEnterPictureInPicture
+             ? MediaSessionAction::kExitPictureInPicture
+             : MediaSessionAction::kEnterPictureInPicture;
 }
 
 void RecordConcurrentNotificationCount(size_t count) {

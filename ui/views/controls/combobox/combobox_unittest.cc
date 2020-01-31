@@ -23,6 +23,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/combobox_test_api.h"

@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/aura/window_tree_host.h"
@@ -37,6 +39,10 @@ void CreateShell() {
 AshShellInit::AshShellInit() {
   CreateShell();
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
+
+  // Push browser feature flags to ash.
+  ash::features::SetWebUITabStripEnabled(
+      base::FeatureList::IsEnabled(features::kWebUITabStrip));
 }
 
 AshShellInit::~AshShellInit() {

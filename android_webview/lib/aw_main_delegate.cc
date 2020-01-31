@@ -214,7 +214,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
 
+    // TODO(https://crbug.com/1012899): WebXR is not yet supported on WebView.
     features.DisableIfNotSet(::features::kWebXr);
+
+    features.DisableIfNotSet(::features::kWebXrArModule);
+
+    features.DisableIfNotSet(::features::kWebXrHitTest);
 
     // De-jelly is never supported on WebView.
     features.EnableIfNotSet(::features::kDisableDeJelly);

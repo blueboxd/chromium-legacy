@@ -13,10 +13,6 @@
 
 namespace dev_ui {
 
-std::string BuildInitialInstallRedirectPageHtml() {
-  return "<script>window.location.reload()</script>";
-}
-
 std::string BuildErrorPageHtml() {
   ui::TemplateReplacements replacements;
   replacements["h1"] =

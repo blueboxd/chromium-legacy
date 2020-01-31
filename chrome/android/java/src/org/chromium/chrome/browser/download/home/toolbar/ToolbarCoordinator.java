@@ -14,12 +14,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.vr.VrModeProviderImpl;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.download.R;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
 import org.chromium.components.feature_engagement.Tracker;
 
 import java.util.List;

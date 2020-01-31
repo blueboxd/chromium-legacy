@@ -253,3 +253,27 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, FeatureIneligible) {
   // Verify that no Quick Answer menu items shown.
   ASSERT_EQ(0u, menu()->GetMenuSize());
 }
+
+IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, NetworkError) {
+  MockQuickAnswerClient();
+  InitMenu();
+
+  observer_->OnNetworkError();
+
+  // Verify that quick answer menu items is showing.
+  ASSERT_EQ(3u, menu()->GetMenuSize());
+
+  // Verify the query menu item.
+  VerifyMenuItems(
+      /*index=*/0,
+      /*command_id=*/IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY,
+      /*expected_title=*/"sel",
+      /*enabled=*/true);
+
+  // Verify the answer menu item.
+  VerifyMenuItems(
+      /*index=*/1,
+      /*command_id=*/IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
+      /*expected_title=*/"Cannot connect to internet.",
+      /*enabled=*/false);
+}

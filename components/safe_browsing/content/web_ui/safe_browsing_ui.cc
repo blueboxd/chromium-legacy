@@ -1015,8 +1015,9 @@ base::Value SerializeRTThreatInfo(
       "cache_duration_sec",
       base::Value(static_cast<double>(threat_info.cache_duration_sec())));
 
-  threat_info_dict.SetKey("cache_expression",
-                          base::Value(threat_info.cache_expression()));
+  threat_info_dict.SetKey(
+      "cache_expression_covering_match",
+      base::Value(threat_info.cache_expression_covering_match()));
 
   std::string verdict_type;
   switch (threat_info.verdict_type()) {
@@ -1032,6 +1033,23 @@ base::Value SerializeRTThreatInfo(
   }
   threat_info_dict.SetKey("verdict_type", base::Value(verdict_type));
 
+  std::string cache_expression_match_type;
+  switch (threat_info.cache_expression_match_type()) {
+    case RTLookupResponse::ThreatInfo::MATCH_TYPE_UNSPECIFIED:
+      cache_expression_match_type = "MATCH_TYPE_UNSPECIFIED";
+      break;
+    case RTLookupResponse::ThreatInfo::COVERING_MATCH:
+      cache_expression_match_type = "COVERING_MATCH";
+      break;
+    case RTLookupResponse::ThreatInfo::EXACT_MATCH:
+      cache_expression_match_type = "EXACT_MATCH";
+      break;
+  }
+
+  threat_info_dict.SetKey("cache_expression_match_type",
+                          base::Value(cache_expression_match_type));
+  threat_info_dict.SetKey("cache_expression",
+                          base::Value(threat_info.cache_expression()));
   return std::move(threat_info_dict);
 }
 

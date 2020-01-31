@@ -90,6 +90,10 @@ void IOSPaymentInstrument::RecordUse() {
   // TODO(crbug.com/60266): Record the use of the native payment app.
 }
 
+bool IOSPaymentInstrument::NeedsInstallation() const {
+  return false;
+}
+
 base::string16 IOSPaymentInstrument::GetLabel() const {
   return base::ASCIIToUTF16(app_name_);
 }

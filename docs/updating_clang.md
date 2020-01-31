@@ -45,18 +45,12 @@ An archive of all packages built so far is at https://is.gd/chromeclang
 1.  Run the goma package update script to push these packages to goma. If you do
     not have the necessary credentials to do the upload, ask clang@chromium.org
     to find someone who does
-1.  Run an exhaustive set of try jobs to test the new compiler:
+1.  Run an exhaustive set of try jobs to test the new compiler. The CL
+    description created by upload_revision.py includes `CQ_INCLUDE_TRYBOTS`
+    lines for all needed bots, so it's sufficient to just run:
 
     ```shell
-    git cl try &&
-    git cl try -B chromium/try -b mac_chromium_asan_rel_ng \
-      -b linux_chromium_cfi_rel_ng \
-      -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
-      -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg \
-      -b win-asan -b chromeos-amd64-generic-cfi-thin-lto-rel \
-      -b linux_chromium_compile_dbg_32_ng -b win7-rel \
-      -b win-angle-deqp-rel-32 -b win-angle-deqp-rel-64 \
-      -b dawn-win10-x86-deps-rel &&
+    git cl try && \
     git cl try -B chrome/try -b iphone-device -b ipad-device \
       -b linux-chromeos-chrome
     ```

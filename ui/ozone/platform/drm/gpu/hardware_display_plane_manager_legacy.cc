@@ -42,8 +42,8 @@ HardwareDisplayPlaneManagerLegacy::HardwareDisplayPlaneManagerLegacy(
     DrmDevice* drm)
     : HardwareDisplayPlaneManager(drm) {}
 
-HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
-}
+HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() =
+    default;
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     HardwareDisplayPlaneList* plane_list,

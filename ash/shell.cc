@@ -583,8 +583,7 @@ Shell::~Shell() {
   for (auto& observer : shell_observers_)
     observer.OnShellDestroying();
 
-  if (features::IsVirtualDesksEnabled())
-    desks_controller_->Shutdown();
+  desks_controller_->Shutdown();
 
   // Wayland depends upon some ash specific objects. Destroy it early on.
   wayland_server_controller_.reset();
@@ -962,8 +961,7 @@ void Shell::Init(
   // the active desk, even at this early stage. For this the controller must be
   // present at all times. The desks controller also depends on the focus
   // controller.
-  if (features::IsVirtualDesksEnabled())
-    desks_controller_ = std::make_unique<DesksController>();
+  desks_controller_ = std::make_unique<DesksController>();
 
   shell_state_->SetRootWindowForNewWindows(GetPrimaryRootWindow());
 

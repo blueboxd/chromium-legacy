@@ -33,6 +33,7 @@
 #include "cc/trees/target_property.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -431,6 +432,8 @@ class CC_EXPORT LayerImpl {
   int CalculateJitter();
 
   std::string DebugName() const;
+
+  virtual gfx::ContentColorUsage GetContentColorUsage() const;
 
  protected:
   // When |will_always_push_properties| is true, the layer will not itself set

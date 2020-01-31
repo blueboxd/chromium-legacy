@@ -14,7 +14,7 @@
 // Feature to allow devices to receive the shared clipboard message.
 extern const base::Feature kSharedClipboardReceiver;
 
-// Feature to allow shared clipbpard gets processed.
+// Feature to allow shared clipboard gets processed.
 extern const base::Feature kSharedClipboardUI;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

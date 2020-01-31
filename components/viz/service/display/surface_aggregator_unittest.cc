@@ -492,6 +492,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
             .SetDeviceScaleFactor(device_scale_factor)
             .SetReferencedSurfaces(std::move(referenced_surfaces))
             .Build();
+    frame.metadata.content_color_usage = gfx::ContentColorUsage::kHDR;
     pass_list->clear();
 
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -4342,7 +4343,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   std::vector<Pass> passes = {Pass(quads[0], 2, SurfaceSize()),
                               Pass(quads[1], 1, SurfaceSize())};
   gfx::ColorSpace compositing_color_space =
-      display_color_spaces.GetCompositingColorSpace(false);
+      display_color_spaces.GetCompositingColorSpace(
+          false, gfx::ContentColorUsage::kHDR);
   passes[1].has_transparent_background = true;
 
   // HDR content with a transparent background will get an extra RenderPass
@@ -4353,8 +4355,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
                           device_scale_factor);
     SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
-    CompositorFrame aggregated_frame;
-    aggregated_frame = AggregateFrame(surface_id);
+    CompositorFrame aggregated_frame = AggregateFrame(surface_id);
+
     EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[0]->color_space);
@@ -4372,8 +4374,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
                           device_scale_factor);
     SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
-    CompositorFrame aggregated_frame;
-    aggregated_frame = AggregateFrame(surface_id);
+    CompositorFrame aggregated_frame = AggregateFrame(surface_id);
+
     EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[0]->color_space);
@@ -4398,8 +4400,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
                           device_scale_factor);
     SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
-    CompositorFrame aggregated_frame;
-    aggregated_frame = AggregateFrame(surface_id);
+    CompositorFrame aggregated_frame = AggregateFrame(surface_id);
+
     EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[0]->color_space);
@@ -4415,8 +4417,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
                           device_scale_factor);
     SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
-    CompositorFrame aggregated_frame;
-    aggregated_frame = AggregateFrame(surface_id);
+    CompositorFrame aggregated_frame = AggregateFrame(surface_id);
+
     EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[0]->color_space);
@@ -4425,6 +4427,65 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
     EXPECT_EQ(display_color_spaces.hdr_transparent,
               aggregated_frame.render_pass_list[2]->color_space);
   }
+}
+
+// Ensure that the render passes have correct color spaces.
+TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
+  auto test_content_color_usage_aggregation =
+      [this](gfx::ContentColorUsage content_color_usage, bool is_wide,
+             bool is_hdr) {
+        std::vector<Quad> child_quads = {
+            Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
+        std::vector<Pass> child_passes = {
+            Pass(child_quads, 1, gfx::Size(100, 100))};
+
+        CompositorFrame child_frame = MakeEmptyCompositorFrame();
+        // Set the child's color space
+        child_frame.metadata.content_color_usage = content_color_usage;
+        AddPasses(&child_frame.render_pass_list, child_passes,
+                  &child_frame.metadata.referenced_surfaces);
+
+        ParentLocalSurfaceIdAllocator child_allocator;
+        child_allocator.GenerateId();
+        LocalSurfaceId child_local_surface_id =
+            child_allocator.GetCurrentLocalSurfaceIdAllocation()
+                .local_surface_id();
+        SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                                   child_local_surface_id);
+        child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                           std::move(child_frame));
+
+        std::vector<Quad> root_quads = {Quad::SurfaceQuad(
+            SurfaceRange(base::nullopt, child_surface_id), SK_ColorWHITE,
+            gfx::Rect(5, 5), /*stretch_content_to_fill_bounds=*/false)};
+        std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+
+        CompositorFrame root_frame = MakeEmptyCompositorFrame();
+        AddPasses(&root_frame.render_pass_list, root_passes,
+                  &root_frame.metadata.referenced_surfaces);
+
+        root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                          std::move(root_frame));
+
+        SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                                  root_local_surface_id_);
+        CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+        const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
+
+        // Make sure the root render pass has a color space that matches
+        // expected generalization.
+        // TODO(cblume): Can we add an gfx::ColorSpace::IsWide()?
+        // ASSERT_EQ(is_wide, aggregated_pass_list[0]->color_space.IsWide());
+        ASSERT_EQ(is_hdr, aggregated_pass_list[0]->color_space.IsHDR());
+      };
+
+  test_content_color_usage_aggregation(gfx::ContentColorUsage::kSRGB, false,
+                                       false);
+  test_content_color_usage_aggregation(gfx::ContentColorUsage::kWideColorGamut,
+                                       true, false);
+  // TODO(cblume/ccameron): Once HDR is supported, enable this test
+  // test_content_color_usage_aggregation(
+  //    gfx::ContentColorUsage::kHDR, true, true);
 }
 
 // Tests that has_damage_from_contributing_content is aggregated correctly from

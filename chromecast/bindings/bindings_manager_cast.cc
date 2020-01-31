@@ -12,10 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/bindings/grit/resources.h"
 #include "mojo/public/cpp/bindings/connector.h"
-#include "third_party/blink/public/common/messaging/string_message_codec.h"
-#include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/common/messaging/transferable_message_mojom_traits.h"
-#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromecast {
@@ -69,7 +65,7 @@ void BindingsManagerCast::OnPageStateChanged(
       return;
     case CastWebContents::PageState::DESTROYED:
     case CastWebContents::PageState::ERROR:
-      connector_.reset();
+      blink_port_.Reset();
       CastWebContents::Observer::Observe(nullptr);
       cast_web_contents_ = nullptr;
       return;
@@ -84,58 +80,37 @@ void BindingsManagerCast::OnPageLoaded() {
       << "Received PageLoaded event while not observing a page";
 
   // Unbind platform-side MessagePort connector.
-  if (connector_) {
-    connector_->set_incoming_receiver(nullptr);
-    connector_.reset();
-  }
+  blink_port_.Reset();
 
-  // Create a pre-connected MessagePipe, this is the way chromium
-  // implements HTML5 MessagePort.
-  mojo::ScopedMessagePipeHandle platform_port;
-  mojo::ScopedMessagePipeHandle page_port;
-  mojo::CreateMessagePipe(nullptr, &platform_port, &page_port);
+  // Create a blink::WebMessagePort, this is the way Chromium implements HTML5
+  // MessagePorts.
+  auto port_pair = blink::WebMessagePort::CreatePair();
 
-  connector_ = std::make_unique<mojo::Connector>(
-      std::move(platform_port), mojo::Connector::SINGLE_THREADED_SEND,
-      base::ThreadTaskRunnerHandle::Get());
-  connector_->set_connection_error_handler(base::BindOnce(
-      &BindingsManagerCast::OnControlPortDisconnected, base::Unretained(this)));
-  connector_->set_incoming_receiver(this);
+  blink_port_ = std::move(port_pair.first);
+  blink_port_.SetReceiver(this, base::ThreadTaskRunnerHandle::Get());
 
-  // Post page_port to the page so that we could receive messages
-  // through another end of the pipe, which is platform_port.
-  // |named_message_port_connector.js| will receive this through
-  // onmessage event.
-  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
-  message_ports.push_back(std::move(page_port));
+  // Post the other end of the pipe to the page so that we can receive messages
+  // over |content_port|. |named_message_port_connector.js| will receive this
+  // through an onmessage event.
+  std::vector<blink::WebMessagePort> message_ports;
+  message_ports.push_back(std::move(port_pair.second));
   cast_web_contents_->PostMessageToMainFrame("*", kControlPortConnectMessage,
                                              std::move(message_ports));
 }
 
-bool BindingsManagerCast::Accept(mojo::Message* message) {
+bool BindingsManagerCast::OnMessage(blink::WebMessagePort::Message message) {
   // Receive MessagePort and forward ports to their corresponding
   // binding handlers.
-  blink::TransferableMessage transferable_message;
-  if (!blink::mojom::TransferableMessage::DeserializeFromMessage(
-          std::move(*message), &transferable_message)) {
-    return false;
-  }
 
   // One and only one MessagePort should be sent to here.
-  if (transferable_message.ports.empty()) {
-    LOG(ERROR) << "TransferableMessage contains no ports.";
-  }
-  DCHECK(transferable_message.ports.size() == 1)
+  if (message.ports.empty())
+    LOG(ERROR) << "blink::WebMessagePort::Message contains no ports.";
+  DCHECK_EQ(1u, message.ports.size())
       << "Only one control port should be provided";
-  blink::MessagePortChannel message_port_channel =
-      std::move(transferable_message.ports[0]);
+  blink::WebMessagePort message_port = std::move(message.ports[0]);
+  message.ports.clear();
 
-  base::string16 data_utf16;
-  if (!blink::DecodeStringMessage(transferable_message.encoded_message,
-                                  &data_utf16)) {
-    LOG(ERROR) << "This Message does not contain bindingId";
-    return false;
-  }
+  base::string16 data_utf16 = std::move(message.data);
 
   std::string binding_id;
   if (!base::UTF16ToUTF8(data_utf16.data(), data_utf16.size(), &binding_id)) {
@@ -143,13 +118,13 @@ bool BindingsManagerCast::Accept(mojo::Message* message) {
   }
 
   // Route the port to corresponding binding backend.
-  OnPortConnected(binding_id, message_port_channel.ReleaseHandle());
+  OnPortConnected(binding_id, std::move(message_port));
   return true;
 }
 
-void BindingsManagerCast::OnControlPortDisconnected() {
+void BindingsManagerCast::OnPipeError() {
   LOG(INFO) << "NamedMessagePortConnector control port disconnected";
-  connector_.reset();
+  blink_port_.Reset();
 }
 
 }  // namespace bindings

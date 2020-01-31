@@ -11,8 +11,8 @@ import android.util.AttributeSet;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.ui.vr.VrModeProvider;
 import org.chromium.ui.widget.ButtonCompat;
 

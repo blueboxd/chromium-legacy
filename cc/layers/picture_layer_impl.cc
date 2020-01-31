@@ -1702,6 +1702,22 @@ void PictureLayerImpl::InvalidatePaintWorklets(
   }
 }
 
+gfx::ContentColorUsage PictureLayerImpl::GetContentColorUsage() const {
+  auto display_item_list = raster_source_->GetDisplayItemList();
+  bool contains_non_srgb_images = false;
+  if (display_item_list) {
+    contains_non_srgb_images =
+        display_item_list->discardable_image_map().contains_non_srgb_images();
+  }
+
+  if (contains_non_srgb_images) {
+    // TODO(cblume) This assumes only wide color gamut and not HDR
+    return gfx::ContentColorUsage::kWideColorGamut;
+  }
+
+  return gfx::ContentColorUsage::kSRGB;
+}
+
 std::unique_ptr<base::DictionaryValue> PictureLayerImpl::LayerAsJson() const {
   auto result = LayerImpl::LayerAsJson();
   auto dictionary = std::make_unique<base::DictionaryValue>();

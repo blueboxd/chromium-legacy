@@ -31,8 +31,8 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * The Chrome settings activity.

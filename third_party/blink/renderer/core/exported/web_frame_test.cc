@@ -323,7 +323,7 @@ class WebFrameTest : public testing::Test {
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
     frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
     frame.GetDocument()->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   WebFrame* LastChild(WebFrame* frame) { return frame->last_child_; }
@@ -375,7 +375,7 @@ class WebFrameTest : public testing::Test {
 
   void UpdateAllLifecyclePhases(WebViewImpl* web_view) {
     web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   static void GetElementAndCaretBoundsForFocusedEditableElement(
@@ -837,7 +837,7 @@ class WebFrameCSSCallbackTest : public testing::Test {
   void ExecuteScript(const WebString& code) {
     frame_->ExecuteScript(WebScriptSource(code));
     frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     RunPendingTasks();
   }
 
@@ -861,7 +861,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
   selectors.push_back(WebString::FromUTF8("div.initial_on"));
   frame_->GetDocument().WatchCSSSelectors(WebVector<WebString>(selectors));
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
   EXPECT_EQ(1, UpdateCount());
   EXPECT_THAT(MatchedSelectors(), ElementsAre("div.initial_on"));
@@ -870,7 +870,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
   selectors.push_back(WebString::FromUTF8("div.initial_off"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
   EXPECT_EQ(2, UpdateCount());
   EXPECT_THAT(MatchedSelectors(),
@@ -879,7 +879,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
   // Check that we can turn off callbacks for certain selectors.
   Doc().WatchCSSSelectors(WebVector<WebString>());
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
   EXPECT_EQ(3, UpdateCount());
   EXPECT_THAT(MatchedSelectors(), ElementsAre());
@@ -997,7 +997,7 @@ TEST_F(WebFrameCSSCallbackTest, DisplayContents) {
   Vector<WebString> selectors(1u, WebString::FromUTF8("span"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount()) << "Match elements in display:contents trees.";
@@ -1033,7 +1033,7 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting) {
   selectors.push_back(WebString::FromUTF8("span"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount());
@@ -1058,7 +1058,7 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector) {
   selectors.push_back(WebString::FromUTF8("span,p"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount());
@@ -1075,7 +1075,7 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector) {
   selectors.push_back(WebString::FromUTF8("p span"));  // Not compound.
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
   frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount());
@@ -2081,8 +2081,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin) {
   LocalFrameView* frame_view = local_frame->GetFrameView();
   frame_view->Resize(800, 600);
   frame_view->SetNeedsLayout();
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   // Expect scrollbars to be enabled by default.
   EXPECT_NE(nullptr, frame_view->LayoutViewport()->HorizontalScrollbar());
   EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
@@ -3158,7 +3157,7 @@ void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
   web_view->SetPageScaleFactor(scale);
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(scroll.x(), scroll.y()));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 }
 
 void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
@@ -9165,8 +9164,7 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedSubDocumentSkipped) {
   event_registry.DidAddEventHandler(
       *child_document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   // Passes if this does not crash or DCHECK.
-  main_frame->View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  main_frame->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 }
 
 TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
@@ -9193,8 +9191,7 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
       *child_document->body(),
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   // Passes if this does not crash or DCHECK.
-  main_frame->View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  main_frame->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 }
 
 TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren) {
@@ -10689,7 +10686,7 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
     MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now(),
                                                        false);
     MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     MainFrame()->View()->MainFrameWidget()->DidBeginFrame();
     RunPendingTasks();
   }
@@ -10784,7 +10781,7 @@ class WebLocalFrameVisibilityChangeTest
     MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now(),
                                                        false);
     MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     MainFrame()->View()->MainFrameWidget()->DidBeginFrame();
     RunPendingTasks();
   }
@@ -12493,7 +12490,7 @@ bool TestSelectAll(const std::string& html) {
                                      ToKURL("about:blank"));
   web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
   web_view->SetInitialFocus(false);
   RunPendingTasks();
@@ -12996,7 +12993,7 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   // Confirm that exiting fullscreen restores back to default values.
   WebView().MainFrameWidget()->DidExitFullscreen();
   WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   EXPECT_EQ(0.5f, WebView().PageScaleFactor());
   EXPECT_EQ(94, WebView().MainFrameImpl()->GetScrollOffset().width);

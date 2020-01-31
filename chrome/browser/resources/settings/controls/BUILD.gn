@@ -273,8 +273,6 @@ js_library("settings_toggle_button.m") {
   extra_deps = [ ":settings_toggle_button_module" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
   public_deps = [
     ":controlled_button_module",

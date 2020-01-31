@@ -33,13 +33,13 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.util.ColorUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;

@@ -35,9 +35,11 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/mojom/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
@@ -74,8 +76,8 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   ~ShelfContextMenuTest() override = default;
 
   void SetUp() override {
-    arc_test_.SetUp(&profile_);
     app_service_test_.SetUp(&profile_);
+    arc_test_.SetUp(&profile_);
     session_manager_ = std::make_unique<session_manager::SessionManager>();
     ChromeAshTestBase::SetUp();
     model_ = std::make_unique<ash::ShelfModel>();
@@ -151,6 +153,22 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   ChromeLauncherController* controller() { return launcher_controller_.get(); }
 
   ash::ShelfModel* model() { return model_.get(); }
+
+  void SendRefreshAppList(const std::vector<arc::mojom::AppInfo>& apps) {
+    arc_test_.app_instance()->SendRefreshAppList(apps);
+    app_service_test_.FlushMojoCalls();
+  }
+
+  void LaunchApp(const std::string& app_id,
+                 const arc::mojom::AppInfo& info,
+                 int32_t task_id) {
+    arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
+                   arc::UserInteractionType::NOT_USER_INITIATED);
+
+    // AppService checks the task id to decide whether the app is running, so
+    // create the task id to simulate the running app.
+    arc_test_.app_instance()->SendTaskCreated(task_id, info, std::string());
+  }
 
  private:
   TestingProfile profile_;
@@ -363,7 +381,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
 TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
   arc::mojom::AppInfo app = arc_test().fake_apps()[0];
   app.suspended = true;
-  arc_test().app_instance()->SendRefreshAppList({app});
+  SendRefreshAppList({app});
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   controller()->PinAppWithID(app_id);
@@ -389,9 +407,8 @@ TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
 }
 
 TEST_F(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
-  arc_test().app_instance()->SendRefreshAppList(
-      std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
-                                       arc_test().fake_apps().begin() + 2));
+  SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
+      arc_test().fake_apps().begin(), arc_test().fake_apps().begin() + 2));
   const std::string app_id1 = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
   const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
 
@@ -405,10 +422,8 @@ TEST_F(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
   EXPECT_TRUE(controller()->GetItem(shelf_id1));
   EXPECT_FALSE(controller()->GetItem(shelf_id2));
 
-  arc::LaunchApp(profile(), app_id1, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
-  arc::LaunchApp(profile(), app_id2, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  LaunchApp(app_id1, arc_test().fake_apps()[0], 1);
+  LaunchApp(app_id2, arc_test().fake_apps()[1], 2);
 
   EXPECT_TRUE(controller()->GetItem(shelf_id1));
   EXPECT_TRUE(controller()->GetItem(shelf_id2));
@@ -458,9 +473,8 @@ TEST_F(ShelfContextMenuTest, ArcContextMenuOptions) {
   // you're adding a context menu option ensure that you have added the enum to
   // tools/metrics/histograms/enums.xml and that you haven't modified the order
   // of the existing enums.
-  arc_test().app_instance()->SendRefreshAppList(
-      std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
-                                       arc_test().fake_apps().begin() + 1));
+  SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
+      arc_test().fake_apps().begin(), arc_test().fake_apps().begin() + 1));
   const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
   const ash::ShelfID shelf_id(app_id);
 
@@ -538,6 +552,7 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
 // specifically that every menu item has an icon.
 TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
   crostini::CrostiniTestHelper crostini_helper(profile());
+  crostini_helper.ReInitializeAppServiceIntegration();
   const std::string app_id = crostini::kCrostiniTerminalId;
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
@@ -569,9 +584,11 @@ TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
 // Particularly, we ensure that the density changing option exists.
 TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
   crostini::CrostiniTestHelper crostini_helper(profile());
+  crostini_helper.ReInitializeAppServiceIntegration();
 
   const std::string app_name = "foo";
   crostini_helper.AddApp(crostini::CrostiniTestHelper::BasicApp(app_name));
+  app_service_test().FlushMojoCalls();
   const std::string app_id =
       crostini::CrostiniTestHelper::GenerateAppId(app_name);
   crostini::CrostiniRegistryServiceFactory::GetForProfile(profile())
@@ -613,6 +630,7 @@ TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
 // have an associated .desktop file, and therefore can only be closed).
 TEST_F(ShelfContextMenuTest, CrostiniUnregisteredApps) {
   crostini::CrostiniTestHelper crostini_helper(profile());
+  crostini_helper.ReInitializeAppServiceIntegration();
 
   const std::string fake_window_app_id = "foo";
   const std::string fake_window_startup_id = "bar";

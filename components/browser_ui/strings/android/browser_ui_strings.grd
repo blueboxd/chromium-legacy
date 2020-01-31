@@ -294,8 +294,38 @@
         Move to top
       </message>
 
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU" desc="Content description for the settings menu button.">
+        More options
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_FORWARD" desc="Content description for the forward navigation button.">
+        Go forward
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BACK" desc="Content description for the backard navigation button.">
+        Go back
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_DELETE_URL" desc="Content description for the clear text input button.">
+        Clear input
+      </message>
       <message name="IDS_ACCESSIBILITY_LIST_MENU_BUTTON" desc="Content description for the button that shows option menu for a list item.">
         <ph name="NAME_OF_LIST_ITEM">%1$s<ex>Movie Title</ex></ph> Options
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_SCREEN_POSITION" desc="Accessibility announcement to inform users about a toolbar's location.">
+        <ph name="ITEM_COUNT">%1$s<ex>3</ex></ph> selected.  Options available near top of the screen
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_MULTI_SELECT" desc="Accessibility announcement to inform users about more items selected.">
+        <ph name="ITEM_COUNT">%1$s<ex>3</ex></ph> selected
+      </message>
+      <message name="IDS_ACCESSIBILITY_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected items in a selectable list view.">
+        Cancel selection
+      </message>
+
+      <message name="IDS_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
+        {NUM_SELECTED, plural,
+          =1 {1 selected}
+          other {# selected}}
+      </message>
+      <message name="IDS_SELECT_ITEMS" desc="Label shown on toolbar asking user to select items from the list.">
+        Select items
       </message>
     </messages>
   </release>

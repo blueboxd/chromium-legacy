@@ -2513,6 +2513,10 @@ enum WebFeature {
   kClassicSharedWorker = 3148,
   kModuleSharedWorker = 3149,
   kV8Animation_CommitStyles_Method = 3150,
+  kSameOriginIframeWindowAlert = 3151,
+  kSameOriginIframeWindowConfirm = 3152,
+  kSameOriginIframeWindowPrompt = 3153,
+  kSameOriginIframeWindowPrint = 3154,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

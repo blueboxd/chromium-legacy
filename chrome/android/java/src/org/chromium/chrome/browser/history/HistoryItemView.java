@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 
 /**
  * The SelectableItemView for items displayed in the browsing history UI.

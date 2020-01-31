@@ -17,6 +17,15 @@ namespace apps {
 
 class IntentHandlingMetrics {
  public:
+  // The type of app the link came from, used for intent handling metrics.
+  // This enum is used for recording histograms, and must be treated as
+  // append-only.
+  enum class AppType {
+    kArc = 0,  // From an Android app
+    kWeb,      // From a web app
+    kMaxValue = kWeb,
+  };
+
   IntentHandlingMetrics();
   static void RecordIntentPickerMetrics(
       Source source,
@@ -35,6 +44,8 @@ class IntentHandlingMetrics {
                                             apps::PickerEntryType entry_type,
                                             bool accepted,
                                             bool persisted);
+
+  static void RecordOpenBrowserMetrics(AppType type);
 };
 
 }  // namespace apps

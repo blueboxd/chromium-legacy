@@ -676,10 +676,6 @@ void PrerenderContents::PrepareForUse() {
   NotifyPrerenderStop();
 }
 
-void PrerenderContents::CancelPrerenderForUnsupportedMethod() {
-  Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
-}
-
 void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
   Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
   ReportUnsupportedPrerenderScheme(url);

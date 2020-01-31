@@ -13,9 +13,13 @@ import argparse
 import os
 import re
 import sys
+import traceback
 
 from annotation_tools import NetworkTrafficAnnotationTools
-from annotation_tokenizer import Tokenizer
+from annotation_tokenizer import Tokenizer, CppParsingError
+
+# Exit code for parsing errors. Other runtime errors return 1.
+EX_PARSE_ERROR = 2
 
 ANNOTATION_TYPES = {
     'DefineNetworkTrafficAnnotation': 'Definition',
@@ -235,7 +239,11 @@ def main():
   for file_path in args.file_paths:
     if not args.no_filter and os.path.abspath(file_path) not in compdb_files:
       continue
-    annotation_definitions.extend(extract_annotations(file_path))
+    try:
+      annotation_definitions.extend(extract_annotations(file_path))
+    except CppParsingError:
+      traceback.print_exc()
+      return EX_PARSE_ERROR
 
   # Print output.
   for annotation in annotation_definitions:

@@ -20,8 +20,15 @@ gfx::ColorSpace DisplayColorSpaces::GetRasterColorSpace() const {
 }
 
 gfx::ColorSpace DisplayColorSpaces::GetCompositingColorSpace(
-    bool needs_alpha) const {
-  const gfx::ColorSpace result = needs_alpha ? hdr_transparent : hdr_opaque;
+    bool needs_alpha,
+    ContentColorUsage content_color_usage) const {
+  gfx::ColorSpace result = srgb;
+  if (content_color_usage == ContentColorUsage::kWideColorGamut) {
+    result = needs_alpha ? wcg_transparent : wcg_opaque;
+  } else if (content_color_usage == ContentColorUsage::kHDR) {
+    result = needs_alpha ? hdr_transparent : hdr_opaque;
+  }
+
   if (result.IsHDR()) {
     // PQ is not an acceptable space to do blending in -- blending 0 and 1
     // evenly will get a result of sRGB 0.259 (instead of 0.5).

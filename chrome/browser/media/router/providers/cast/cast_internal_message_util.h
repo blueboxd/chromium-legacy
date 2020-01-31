@@ -17,6 +17,28 @@ using cast::channel::CastMessage;
 
 class MediaSinkInternal;
 
+// Values in the "supportedMediaCommands" list in media status messages
+// sent to the Cast sender SDK.
+constexpr char kMediaCommandPause[] = "pause";
+constexpr char kMediaCommandSeek[] = "seek";
+constexpr char kMediaCommandStreamVolume[] = "stream_volume";
+constexpr char kMediaCommandStreamMute[] = "stream_mute";
+constexpr char kMediaCommandQueueNext[] = "queue_next";
+constexpr char kMediaCommandQueuePrev[] = "queue_prev";
+
+// Values in the "supportedMediaCommands" bit array in media status messages
+// received from Cast receivers. They are converted to string values by
+// SupportedMediaCommandsToListValue().
+enum class MediaCommand {
+  kPause = 1 << 0,
+  kSeek = 1 << 1,
+  kStreamVolume = 1 << 2,
+  kStreamMute = 1 << 3,
+  // 1 << 4 and 1 << 5 are not in use.
+  kQueueNext = 1 << 6,
+  kQueuePrev = 1 << 7,
+};
+
 // Represents a message sent or received by the Cast SDK via a
 // PresentationConnection.
 class CastInternalMessage {

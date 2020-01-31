@@ -184,11 +184,11 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
 }
 
 // static
-Vector<blink::mojom::blink::IDBBlobInfoPtr>
+Vector<blink::mojom::blink::IDBExternalObjectPtr>
 StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
-    blob_or_file_info(const std::unique_ptr<blink::IDBValue>& input) {
-  Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info;
-  blob_or_file_info.ReserveInitialCapacity(input->BlobInfo().size());
+    external_objects(const std::unique_ptr<blink::IDBValue>& input) {
+  Vector<blink::mojom::blink::IDBExternalObjectPtr> external_objects;
+  external_objects.ReserveInitialCapacity(input->BlobInfo().size());
   for (const blink::WebBlobInfo& info : input->BlobInfo()) {
     auto blob_info = blink::mojom::blink::IDBBlobInfo::New();
     if (info.IsFile()) {
@@ -209,9 +209,11 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
     blob_info->mime_type = mime_type;
     blob_info->blob = mojo::PendingRemote<blink::mojom::blink::Blob>(
         info.CloneBlobHandle(), blink::mojom::blink::Blob::Version_);
-    blob_or_file_info.push_back(std::move(blob_info));
+    external_objects.push_back(
+        blink::mojom::blink::IDBExternalObject::NewBlobOrFile(
+            std::move(blob_info)));
   }
-  return blob_or_file_info;
+  return external_objects;
 }
 
 // static
@@ -224,29 +226,35 @@ bool StructTraits<blink::mojom::IDBValueDataView,
     return false;
 
   if (value_bits.IsEmpty()) {
-    *out = std::make_unique<blink::IDBValue>(
-        scoped_refptr<SharedBuffer>(), Vector<blink::WebBlobInfo>());
+    *out = std::make_unique<blink::IDBValue>(scoped_refptr<SharedBuffer>(),
+                                             Vector<blink::WebBlobInfo>());
     return true;
   }
 
   scoped_refptr<SharedBuffer> value_buffer = SharedBuffer::Create(
       reinterpret_cast<const char*>(value_bits.data()), value_bits.size());
 
-  Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info;
-  if (!data.ReadBlobOrFileInfo(&blob_or_file_info))
+  Vector<blink::mojom::blink::IDBExternalObjectPtr> external_objects;
+  if (!data.ReadExternalObjects(&external_objects))
     return false;
 
   Vector<blink::WebBlobInfo> value_blob_info;
-  value_blob_info.ReserveInitialCapacity(blob_or_file_info.size());
-  for (const auto& info : blob_or_file_info) {
-    if (info->file) {
-      value_blob_info.emplace_back(
-          info->uuid, info->file->name, info->mime_type,
-          blink::NullableTimeToOptionalTime(info->file->last_modified),
-          info->size, info->blob.PassPipe());
-    } else {
-      value_blob_info.emplace_back(info->uuid, info->mime_type, info->size,
-                                   info->blob.PassPipe());
+  value_blob_info.ReserveInitialCapacity(external_objects.size());
+  for (const auto& object : external_objects) {
+    switch (object->which()) {
+      case blink::mojom::blink::IDBExternalObject::Tag::BLOB_OR_FILE: {
+        auto& info = object->get_blob_or_file();
+        if (info->file) {
+          value_blob_info.emplace_back(
+              info->uuid, info->file->name, info->mime_type,
+              blink::NullableTimeToOptionalTime(info->file->last_modified),
+              info->size, info->blob.PassPipe());
+        } else {
+          value_blob_info.emplace_back(info->uuid, info->mime_type, info->size,
+                                       info->blob.PassPipe());
+        }
+        break;
+      }
     }
   }
 

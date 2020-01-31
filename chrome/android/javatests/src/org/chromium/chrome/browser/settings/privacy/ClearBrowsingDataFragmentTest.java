@@ -281,8 +281,7 @@ public class ClearBrowsingDataFragmentTest {
     public void testDialogAboutOtherFormsOfBrowsingHistory() {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
-        OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting(
-                mActivityTestRule.getActivity());
+        OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting();
 
         // History is not selected. We still need to select some other datatype, otherwise the
         // "Clear" button won't be enabled.

@@ -41,7 +41,7 @@ mojom::ActivationState ComputeActivationState(
 //
 // Initially holds an empty filter in the synchronously created Core object, and
 // initializes the filter on the |task_runner| asynchronously. This lets ADSF be
-// created synchrously and be immediately used by clients on the UI thread,
+// created synchronously and be immediately used by clients on the UI thread,
 // while the DSF is retrieved on the |task_runner| in a deferred manner.
 class AsyncDocumentSubresourceFilter {
  public:

@@ -107,3 +107,37 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'IdenticalListsTest', function() {
     assertFalse(firstOrange.equals(secondOrange));
   });
 });
+
+// Tests that we can successfully stringify NodeIdentifiers.
+TEST_F('ChromeVoxNodeIdentifierTest', 'ToStringTest', function() {
+  this.runWithLoadedTree(this.basicButtonDoc, function(rootNode) {
+    var appleNode =
+        rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Apple'}});
+    var orangeNode =
+        rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Orange'}});
+    assertFalse(!appleNode);
+    assertFalse(!orangeNode);
+    var appleId = new NodeIdentifier(appleNode);
+    var orangeId = new NodeIdentifier(orangeNode);
+
+    var expectedAppleString = [
+      '{"attributes":{"id":"apple-button","name":"Apple","role":"button",',
+      '"description":"","restriction":"","childCount":0,"indexInParent":1,',
+      '"className":"","htmlTag":"button"},',
+      '"pageUrl":"data:text/html,<!doctype html>%3Cp%3EStart%20here%3C%2Fp%3E',
+      '%20%3Cbutton%20id%3D%22apple-button%22%3EApple%3C%2Fbutton%3E%20%3Cbut',
+      'ton%3EOrange%3C%2Fbutton%3E","ancestry":[]}'
+    ].join('');
+    var expectedOrangeString = [
+      '{"attributes":{"id":"","name":"Orange","role":"button",',
+      '"description":"","restriction":"","childCount":0,"indexInParent":2,',
+      '"className":"","htmlTag":"button"},"pageUrl":"data:text/html,<!doctype',
+      ' html>%3Cp%3EStart%20here%3C%2Fp%3E%20%3Cbutton%20id%3D%22apple-button',
+      '%22%3EApple%3C%2Fbutton%3E%20%3Cbutton%3EOrange%3C%2Fbutton%3E",',
+      '"ancestry":[]}'
+    ].join('');
+
+    assertEquals(appleId.toString(), expectedAppleString);
+    assertEquals(orangeId.toString(), expectedOrangeString);
+  });
+});

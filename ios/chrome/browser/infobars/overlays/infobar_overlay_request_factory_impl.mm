@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,7 +14,6 @@
 #endif
 
 using infobars::InfoBar;
-using infobars::InfoBarDelegate;
 
 InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
   // Create the factory helpers for the supported infobar types.
@@ -21,7 +21,8 @@ InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
   // types.
   SetUpFactories(InfobarType::kInfobarTypePasswordSave,
                  CreateFactory<SavePasswordInfobarBannerOverlayRequestConfig>(),
-                 /*detail_sheet_factory=*/nullptr, /*modal_factory=*/nullptr);
+                 /*detail_sheet_factory=*/nullptr,
+                 CreateFactory<PasswordInfobarModalOverlayRequestConfig>());
 }
 
 InfobarOverlayRequestFactoryImpl::~InfobarOverlayRequestFactoryImpl() = default;
@@ -35,7 +36,7 @@ InfobarOverlayRequestFactoryImpl::CreateInfobarRequest(
   // It is an error to call this for an InfobarType/InfobarOverlayType combo
   // that has not been added to the factory storages.
   return factory_storages_[infobar_ios->InfobarUIDelegate().infobarType][type]
-      ->CreateInfobarRequest(infobar);
+      ->CreateInfobarRequest(infobar_ios);
 }
 
 void InfobarOverlayRequestFactoryImpl::SetUpFactories(

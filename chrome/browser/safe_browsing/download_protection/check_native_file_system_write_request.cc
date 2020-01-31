@@ -156,7 +156,8 @@ bool CheckNativeFileSystemWriteRequest::ShouldUploadBinary(
   return false;
 }
 
-void CheckNativeFileSystemWriteRequest::UploadBinary() {}
+void CheckNativeFileSystemWriteRequest::UploadBinary(
+    DownloadCheckResultReason reason) {}
 
 bool CheckNativeFileSystemWriteRequest::ShouldPromptForDeepScanning(
     DownloadCheckResultReason reason) const {

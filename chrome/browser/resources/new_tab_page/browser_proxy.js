@@ -25,6 +25,25 @@ export class BrowserProxy {
         this.callbackRouter.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());
   }
+
+  /** @param {string} href */
+  navigate(href) {
+    window.location.href = href;
+  }
+
+  /**
+   * @param {function()} callback
+   * @param {number} duration
+   * @return {number}
+   */
+  setTimeout(callback, duration) {
+    return window.setTimeout(callback, duration);
+  }
+
+  /** @param {number} id */
+  clearTimeout(id) {
+    window.clearTimeout(id);
+  }
 }
 
 addSingletonGetter(BrowserProxy);

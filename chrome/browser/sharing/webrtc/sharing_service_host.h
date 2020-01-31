@@ -22,11 +22,16 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
+namespace gcm {
+class GCMDriver;
+}  // namespace gcm
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
 class SharingHandlerRegistry;
+class SharingSyncPreference;
 class SharingWebRtcConnectionHost;
 struct SharingWebRtcMojoPipes;
 
@@ -40,6 +45,8 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
 
   SharingServiceHost(
       SharingMessageSender* message_sender,
+      gcm::GCMDriver* gcm_driver,
+      SharingSyncPreference* sync_prefs,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   SharingServiceHost(const SharingServiceHost&) = delete;
   SharingServiceHost& operator=(const SharingServiceHost&) = delete;
@@ -51,14 +58,15 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
                              chrome_browser_sharing::SharingMessage message,
                              SendMessageCallback callback) override;
 
-  void OnOfferReceived(const std::string& device_guid,
-                       const syncer::DeviceInfo::SharingTargetInfo& target_info,
-                       const std::string& offer,
-                       base::OnceCallback<void(const std::string&)> callback);
+  void OnOfferReceived(
+      const std::string& device_guid,
+      const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
+      const std::string& offer,
+      base::OnceCallback<void(const std::string&)> callback);
 
   void OnIceCandidatesReceived(
       const std::string& device_guid,
-      const syncer::DeviceInfo::SharingTargetInfo& target_info,
+      const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
       std::vector<sharing::mojom::IceCandidatePtr> ice_candidates);
 
   void SetSharingHandlerRegistry(SharingHandlerRegistry* handler_registry);
@@ -68,7 +76,7 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
 
   SharingWebRtcConnectionHost* GetConnection(
       const std::string& device_guid,
-      const syncer::DeviceInfo::SharingTargetInfo& target_info);
+      const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration);
 
   void OnIceServersReceived(
       std::unique_ptr<SharingWebRtcMojoPipes> pipes,
@@ -78,6 +86,8 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
 
   // Owned by the SharingService KeyedService and owns |this|.
   SharingMessageSender* message_sender_;
+  gcm::GCMDriver* gcm_driver_;
+  SharingSyncPreference* sync_prefs_;
   IceConfigFetcher ice_config_fetcher_;
 
   mojo::Remote<sharing::mojom::Sharing> sharing_utility_service_;

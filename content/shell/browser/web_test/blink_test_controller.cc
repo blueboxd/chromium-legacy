@@ -430,7 +430,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
           ->GetRenderViewHost()
           ->GetWidget()
           ->FlushForTesting();
-      GetWebTestControlRemote(
+      GetBlinkTestControlRemote(
           main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
           .FlushForTesting();
 
@@ -480,7 +480,8 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
 
     // Flush various interfaces to ensure a test run begins from a known state.
     render_widget_host->FlushForTesting();
-    GetWebTestControlRemote(render_view_host->GetMainFrame()).FlushForTesting();
+    GetBlinkTestControlRemote(render_view_host->GetMainFrame())
+        .FlushForTesting();
 
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
@@ -578,7 +579,7 @@ void BlinkTestController::OpenURL(const GURL& url) {
 }
 
 void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
-  GetWebTestControlRemote(
+  GetBlinkTestControlRemote(
       main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
       ->TestFinishedInSecondaryRenderer();
 }
@@ -634,7 +635,7 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
 
   RenderFrameHost* rfh = main_window_->web_contents()->GetMainFrame();
   printer_->StartStateDump();
-  GetWebTestControlRemote(rfh)->CaptureDump(
+  GetBlinkTestControlRemote(rfh)->CaptureDump(
       base::BindOnce(&BlinkTestController::OnCaptureDumpCompleted,
                      weak_factory_.GetWeakPtr()));
 }
@@ -695,7 +696,7 @@ void BlinkTestController::CompositeNodeQueueThen(
       next_node_host = nullptr;  // This one is now gone
     }
   } while (!next_node_host || !next_node_host->IsRenderFrameLive());
-  GetWebTestControlRemote(next_node_host)
+  GetBlinkTestControlRemote(next_node_host)
       ->CompositeWithRaster(
           base::BindOnce(&BlinkTestController::CompositeNodeQueueThen,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -961,11 +962,11 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     params->protocol_mode = protocol_mode_;
 
     if (did_send_initial_test_configuration_) {
-      GetWebTestControlRemote(frame)->ReplicateTestConfiguration(
+      GetBlinkTestControlRemote(frame)->ReplicateTestConfiguration(
           std::move(params));
     } else {
       did_send_initial_test_configuration_ = true;
-      GetWebTestControlRemote(frame)->SetTestConfiguration(std::move(params));
+      GetBlinkTestControlRemote(frame)->SetTestConfiguration(std::move(params));
       // Tests should always start with the browser controls hidden.
       frame->UpdateBrowserControlsState(BROWSER_CONTROLS_STATE_BOTH,
                                         BROWSER_CONTROLS_STATE_HIDDEN, false);
@@ -978,7 +979,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     all_observed_render_process_hosts_.insert(process_host);
 
     if (!main_window) {
-      GetWebTestControlRemote(frame)->SetupSecondaryRenderer();
+      GetBlinkTestControlRemote(frame)->SetupSecondaryRenderer();
     }
 
     process_host->Send(new WebTestMsg_ReplicateWebTestRuntimeFlagsChanges(
@@ -1020,19 +1021,19 @@ void BlinkTestController::OnTestFinished() {
 void BlinkTestController::OnCleanupFinished() {
   if (main_window_) {
     main_window_->web_contents()->Stop();
-    GetWebTestControlRemote(
+    GetBlinkTestControlRemote(
         main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
         ->Reset();
   }
   if (secondary_window_) {
     secondary_window_->web_contents()->Stop();
-    GetWebTestControlRemote(
+    GetBlinkTestControlRemote(
         secondary_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
         ->Reset();
   }
 }
 
-void BlinkTestController::OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump) {
+void BlinkTestController::OnCaptureDumpCompleted(mojom::BlinkTestDumpPtr dump) {
   main_frame_dump_ = std::move(dump);
 
   waiting_for_main_frame_dump_ = false;
@@ -1142,7 +1143,7 @@ void BlinkTestController::OnInitiateLayoutDump() {
       continue;
 
     ++number_of_messages;
-    GetWebTestControlRemote(rfh)->DumpFrameLayout(
+    GetBlinkTestControlRemote(rfh)->DumpFrameLayout(
         base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
                        weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
   }
@@ -1203,7 +1204,7 @@ void BlinkTestController::OnDumpFrameLayoutResponse(int frame_tree_node_id,
   }
 
   // Continue finishing the test.
-  GetWebTestControlRemote(
+  GetBlinkTestControlRemote(
       main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
       ->LayoutDumpCompleted(stitched_layout_dump);
 }
@@ -1383,7 +1384,7 @@ void BlinkTestController::OnGetBluetoothManualChooserEvents() {
         "getBluetoothManualChooserEvents.");
     return;
   }
-  GetWebTestControlRemote(
+  GetBlinkTestControlRemote(
       main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
       ->ReplyBluetoothManualChooserEvents(
           bluetooth_chooser_factory_->GetAndResetEvents());
@@ -1422,22 +1423,22 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
       ->BlockThirdPartyCookies(block);
 }
 
-mojo::AssociatedRemote<mojom::WebTestControl>&
-BlinkTestController::GetWebTestControlRemote(RenderFrameHost* frame) {
+mojo::AssociatedRemote<mojom::BlinkTestControl>&
+BlinkTestController::GetBlinkTestControlRemote(RenderFrameHost* frame) {
   GlobalFrameRoutingId key(frame->GetProcess()->GetID(), frame->GetRoutingID());
   if (web_test_control_map_.find(key) == web_test_control_map_.end()) {
-    mojo::AssociatedRemote<mojom::WebTestControl>& new_ptr =
+    mojo::AssociatedRemote<mojom::BlinkTestControl>& new_ptr =
         web_test_control_map_[key];
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&new_ptr);
     new_ptr.set_disconnect_handler(
-        base::BindOnce(&BlinkTestController::HandleWebTestControlError,
+        base::BindOnce(&BlinkTestController::HandleBlinkTestControlError,
                        weak_factory_.GetWeakPtr(), key));
   }
   DCHECK(web_test_control_map_[key].get());
   return web_test_control_map_[key];
 }
 
-void BlinkTestController::HandleWebTestControlError(
+void BlinkTestController::HandleBlinkTestControlError(
     const GlobalFrameRoutingId& key) {
   web_test_control_map_.erase(key);
 }

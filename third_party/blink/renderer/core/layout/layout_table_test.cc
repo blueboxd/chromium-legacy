@@ -37,8 +37,7 @@ TEST_F(LayoutTableTest, OverflowViaOutline) {
   To<Element>(child->GetNode())
       ->setAttribute(html_names::kStyleAttr, "outline: 2px solid black");
 
-  target->GetFrameView()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  target->GetFrameView()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   EXPECT_EQ(LayoutRect(-2, -2, 104, 204), target->SelfVisualOverflowRect());
 
   EXPECT_EQ(LayoutRect(-2, -2, 104, 204), child->SelfVisualOverflowRect());
@@ -358,8 +357,7 @@ TEST_F(LayoutTableTest, VisualOverflowCleared) {
   EXPECT_EQ(LayoutRect(-3, -3, 66, 66), table->SelfVisualOverflowRect());
   To<Element>(table->GetNode())
       ->setAttribute(html_names::kStyleAttr, "box-shadow: initial");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   EXPECT_EQ(LayoutRect(0, 0, 50, 50), table->SelfVisualOverflowRect());
 }
 

@@ -372,13 +372,8 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo(
     std::string native_usage_support;
     for (size_t usage = 0;
          usage < static_cast<size_t>(gfx::BufferUsage::LAST) + 1; usage++) {
-#if defined(USE_X11)
       gfx::BufferUsageAndFormat element{static_cast<gfx::BufferUsage>(usage),
                                         static_cast<gfx::BufferFormat>(format)};
-#else
-      auto element = std::make_pair(static_cast<gfx::BufferFormat>(format),
-                                    static_cast<gfx::BufferUsage>(usage));
-#endif
       if (base::Contains(native_configurations, element)) {
         native_usage_support = base::StringPrintf(
             "%s%s %s", native_usage_support.c_str(),

@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -154,18 +155,6 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
   const ui::AcceleratorProvider* const accelerator_provider_;
   const int tab_index_;
 };
-
-base::Optional<tab_groups::TabGroupId> GetTabGroupIdFromString(
-    TabGroupModel* tab_group_model,
-    std::string group_id) {
-  for (tab_groups::TabGroupId candidate : tab_group_model->ListTabGroups()) {
-    if (candidate.ToString() == group_id) {
-      return base::Optional<tab_groups::TabGroupId>{candidate};
-    }
-  }
-
-  return base::nullopt;
-}
 
 }  // namespace
 
@@ -582,8 +571,9 @@ void TabStripUIHandler::HandleGroupTab(const base::ListValue* args) {
   DCHECK(got_tab);
 
   const std::string group_id_string = args->GetList()[1].GetString();
-  base::Optional<tab_groups::TabGroupId> group_id = GetTabGroupIdFromString(
-      browser_->tab_strip_model()->group_model(), group_id_string);
+  base::Optional<tab_groups::TabGroupId> group_id =
+      tab_strip_ui::GetTabGroupIdFromString(
+          browser_->tab_strip_model()->group_model(), group_id_string);
   if (group_id.has_value()) {
     browser_->tab_strip_model()->AddToExistingGroup({tab_index},
                                                     group_id.value());
@@ -611,31 +601,15 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
   }
 
   auto* target_browser = browser_;
-  Browser* source_browser = nullptr;
-  base::Optional<tab_groups::TabGroupId> group_id = base::nullopt;
-
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() != target_browser->profile()) {
-      // Source and target browsers are different profiles or one of them is
-      // incognito.
-      continue;
-    }
-
-    group_id = GetTabGroupIdFromString(
-        browser->tab_strip_model()->group_model(), group_id_string);
-    if (!group_id.has_value()) {
-      // No group with the ID found in this browser.
-      continue;
-    }
-
-    source_browser = browser;
-    break;
-  }
-
+  Browser* source_browser =
+      tab_strip_ui::GetBrowserWithGroupId(browser_->profile(), group_id_string);
   if (!source_browser) {
     return;
   }
 
+  base::Optional<tab_groups::TabGroupId> group_id =
+      tab_strip_ui::GetTabGroupIdFromString(
+          source_browser->tab_strip_model()->group_model(), group_id_string);
   TabGroup* group =
       source_browser->tab_strip_model()->group_model()->GetTabGroup(
           group_id.value());

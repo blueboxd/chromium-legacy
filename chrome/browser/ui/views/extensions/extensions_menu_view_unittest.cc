@@ -39,6 +39,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"

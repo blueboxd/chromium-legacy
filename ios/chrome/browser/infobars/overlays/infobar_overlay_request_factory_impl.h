@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 
+class InfoBarIOS;
+
 // Implementation of InfobarOverlayRequestFactory.
 class InfobarOverlayRequestFactoryImpl : public InfobarOverlayRequestFactory {
  public:
@@ -33,7 +35,7 @@ class InfobarOverlayRequestFactoryImpl : public InfobarOverlayRequestFactory {
     virtual ~FactoryHelper() = default;
 
     virtual std::unique_ptr<OverlayRequest> CreateInfobarRequest(
-        infobars::InfoBar* infobar) const = 0;
+        InfoBarIOS* infobar) const = 0;
   };
 
   // Template for a helper objects used to create OverlayRequests.
@@ -47,7 +49,7 @@ class InfobarOverlayRequestFactoryImpl : public InfobarOverlayRequestFactory {
 
     // CreationHelperBase:
     std::unique_ptr<OverlayRequest> CreateInfobarRequest(
-        infobars::InfoBar* infobar) const override {
+        InfoBarIOS* infobar) const override {
       return OverlayRequest::CreateWithConfig<RequestConfigType>(infobar);
     }
   };

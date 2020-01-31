@@ -1209,6 +1209,7 @@ void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
 
   // Show either oobe dialog or lock screen.
   SetVisible(!oobe_dialog_visible_);
+  GetWidget()->widget_delegate()->SetCanActivate(!oobe_dialog_visible_);
 
   UpdateBottomStatusIndicatorVisibility();
 

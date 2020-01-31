@@ -57,6 +57,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   using GetUserKeysAndDataCallback = base::OnceCallback<void(
       const base::flat_map<std::string, std::string>& data_map,
       blink::ServiceWorkerStatusCode status)>;
+  using GetUserDataForAllRegistrationsCallback = base::OnceCallback<void(
+      const std::vector<std::pair<int64_t, std::string>>& user_data,
+      blink::ServiceWorkerStatusCode status)>;
   using StatusCallback = ServiceWorkerStorage::StatusCallback;
 
   ServiceWorkerRegistry(
@@ -161,6 +164,10 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   // Wrapper functions of ServiceWorkerStorage. These wrappers provide error
   // recovering mechanism when database operations fail.
+  void UpdateToActiveState(int64_t registration_id,
+                           const GURL& origin,
+                           StatusCallback callback);
+  void StoreUncommittedResourceId(int64_t resource_id);
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    GetUserDataCallback callback);
@@ -170,6 +177,26 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void GetUserKeysAndDataByKeyPrefix(int64_t registration_id,
                                      const std::string& key_prefix,
                                      GetUserKeysAndDataCallback callback);
+  void StoreUserData(
+      int64_t registration_id,
+      const GURL& origin,
+      const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
+      StatusCallback callback);
+  void ClearUserData(int64_t registration_id,
+                     const std::vector<std::string>& keys,
+                     StatusCallback callback);
+  void ClearUserDataByKeyPrefixes(int64_t registration_id,
+                                  const std::vector<std::string>& key_prefixes,
+                                  StatusCallback callback);
+  void ClearUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      StatusCallback callback);
+  void GetUserDataForAllRegistrations(
+      const std::string& key,
+      GetUserDataForAllRegistrationsCallback callback);
+  void GetUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      GetUserDataForAllRegistrationsCallback callback);
 
   // TODO(crbug.com/1039200): Make this private once methods/fields related to
   // ServiceWorkerRegistration in ServiceWorkerStorage are moved into this
@@ -235,12 +262,23 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
 
+  void DidUpdateToActiveState(StatusCallback callback,
+                              ServiceWorkerDatabase::Status status);
+  void DidWriteUncommittedResourceIds(ServiceWorkerDatabase::Status status);
   void DidGetUserData(GetUserDataCallback callback,
                       const std::vector<std::string>& data,
                       ServiceWorkerDatabase::Status status);
   void DidGetUserKeysAndData(
       GetUserKeysAndDataCallback callback,
       const base::flat_map<std::string, std::string>& data_map,
+      ServiceWorkerDatabase::Status status);
+  void DidStoreUserData(StatusCallback callback,
+                        ServiceWorkerDatabase::Status status);
+  void DidClearUserData(StatusCallback callback,
+                        ServiceWorkerDatabase::Status status);
+  void DidGetUserDataForAllRegistrations(
+      GetUserDataForAllRegistrationsCallback callback,
+      const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerDatabase::Status status);
 
   void ScheduleDeleteAndStartOver();

@@ -226,5 +226,4 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webshare/ShareServiceImplTest.java",
   "junit/src/org/chromium/chrome/browser/webshare/SharedFileCollatorTest.java",
   "junit/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetectorTest.java",
-  "junit/src/org/chromium/chrome/browser/widget/selection/SelectionDelegateTest.java",
 ]

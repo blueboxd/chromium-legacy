@@ -72,8 +72,7 @@ class SpatialNavigationTest : public RenderingTest {
   }
 
   void UpdateAllLifecyclePhases(LocalFrameView* frame_view) {
-    frame_view->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 };
 

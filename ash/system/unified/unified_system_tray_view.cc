@@ -264,7 +264,7 @@ SkColor UnifiedSystemTrayView::GetBackgroundColor() {
       (background_type == ShelfBackgroundType::kMaximized ||
        background_type == ShelfBackgroundType::kInApp)
           ? AshColorProvider::BaseLayerType::kTransparent90
-          : AshColorProvider::BaseLayerType::kTransparent74;
+          : AshColorProvider::BaseLayerType::kTransparent80;
 
   SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
       layer_type, AshColorProvider::AshColorMode::kDark);

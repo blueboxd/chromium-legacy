@@ -70,6 +70,10 @@ class AssistantWebViewImpl : public ash::AssistantWebView2,
   void InitWebContents(Profile* profile);
   void InitLayout(Profile* profile);
 
+  void NotifyDidSuppressNavigation(const GURL& url,
+                                   WindowOpenDisposition disposition,
+                                   bool from_user_gesture);
+
   void UpdateCanGoBack();
 
   const InitParams params_;
@@ -81,6 +85,8 @@ class AssistantWebViewImpl : public ash::AssistantWebView2,
   bool can_go_back_ = false;
 
   base::ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<AssistantWebViewImpl> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_WEB_VIEW_IMPL_H_

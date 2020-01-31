@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/content/content_platform_specific_tab_data.h"
@@ -151,13 +153,16 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
 
   WebContents* web_contents = chrome::AddRestoredTab(
       browser_, navigations, tab_index, selected_navigation, extension_app_id,
-      group, select, pin, from_last_session, base::TimeTicks(),
-      storage_namespace, user_agent_override, false /* from_session_restore */);
+      base::FeatureList::IsEnabled(features::kTabGroups) ? group
+                                                         : base::nullopt,
+      select, pin, from_last_session, base::TimeTicks(), storage_namespace,
+      user_agent_override, false /* from_session_restore */);
 
   // Only update the metadata if the group doesn't already exist since the
   // existing group has the latest metadata, which may have changed from the
   // time the tab was closed.
-  if (first_tab_in_group) {
+  if (base::FeatureList::IsEnabled(features::kTabGroups) &&
+      first_tab_in_group) {
     group_model->GetTabGroup(group.value())
         ->SetVisualData(std::move(group_visual_data));
   }

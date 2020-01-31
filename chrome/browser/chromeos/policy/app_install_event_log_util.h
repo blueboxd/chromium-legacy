@@ -11,16 +11,9 @@ namespace base {
 class Value;
 }  // namespace base
 
-class Profile;
-
 namespace em = enterprise_management;
 
 namespace policy {
-
-// Returns true if GAIA ID can be fetched for a given |profile|, and it can be
-// converted to a number. If GAIA ID can be fetched, it gets written to
-// |gaia_id|, otherwise returns false.
-bool GetGaiaId(Profile* profile, int* gaia_id);
 
 // Return serial number of the device.
 std::string GetSerialNumber();
@@ -34,8 +27,7 @@ std::string GetSerialNumber();
 // locally.
 base::Value ConvertProtoToValue(
     const em::AppInstallReportRequest* app_install_report_request,
-    const base::Value& context,
-    Profile* profile);
+    const base::Value& context);
 
 // Converts AppInstallReportLogEvent proto defined in
 // components/policy/proto/device_management_backend.proto to a dictionary value
@@ -46,8 +38,7 @@ base::Value ConvertProtoToValue(
 base::Value ConvertEventToValue(
     const std::string& package,
     const em::AppInstallReportLogEvent& app_install_report_log_event,
-    const base::Value& context,
-    Profile* profile);
+    const base::Value& context);
 
 }  // namespace policy
 

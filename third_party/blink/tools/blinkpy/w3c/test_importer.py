@@ -31,8 +31,9 @@ from blinkpy.w3c.test_copier import TestCopier
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from blinkpy.w3c.wpt_github import WPTGitHub
 from blinkpy.w3c.wpt_manifest import WPTManifest, BASE_MANIFEST_NAME
-from blinkpy.web_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from blinkpy.web_tests.port.base import Port
+from blinkpy.web_tests.models.typ_types import TestExpectations, Expectation
+
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60
@@ -588,37 +589,49 @@ class TestImporter(object):
         """
         port = self.host.port_factory.get()
         for path, file_contents in port.all_expectations_dict().iteritems():
-            parser = TestExpectationParser(port, all_tests=None, is_lint_mode=False)
-            expectation_lines = parser.parse(path, file_contents)
-            self._update_single_test_expectations_file(port, path, expectation_lines, deleted_tests, renamed_tests)
+            self._update_single_test_expectations_file(port, path, file_contents, deleted_tests, renamed_tests)
 
-    def _update_single_test_expectations_file(self, port, path, expectation_lines, deleted_tests, renamed_tests):
+    def _update_single_test_expectations_file(self, port, path, file_contents, deleted_tests, renamed_tests):
         """Updates a single test expectations file."""
-        # FIXME: This won't work for removed or renamed directories with test
-        # expectations that are directories rather than individual tests.
+        test_expectations = TestExpectations()
+        ret, errors = test_expectations.parse_tagged_list(file_contents)
+        assert not ret, errors
+
+        if not test_expectations.individual_exps:
+            return
+
+        exps = reduce(lambda x, y: x + y, test_expectations.individual_exps.values())
+        if test_expectations.glob_exps:
+            exps.extend(reduce(lambda x, y: x + y, test_expectations.glob_exps.values()))
+
+        lineno_to_exps = {e.lineno: e for e in exps}
         new_lines = []
-        changed_lines = []
-        for expectation_line in expectation_lines:
-            expectation_test_name = expectation_line.name
-            if expectation_test_name and self.finder.is_webdriver_test_path(expectation_test_name):
-                expectation_test_name, subtest_suffix = port.split_webdriver_test_name(expectation_test_name)
-            if expectation_test_name in deleted_tests:
+        for lineno, line in enumerate(file_contents.splitlines(), 1):
+            if lineno not in lineno_to_exps:
+                new_lines.append(line)
                 continue
-            if expectation_test_name in renamed_tests:
-                if self.finder.is_webdriver_test_path(expectation_line.name):
-                    renamed_test = renamed_tests[expectation_test_name]
-                    expectation_line.name = port.add_webdriver_subtest_suffix(renamed_test, subtest_suffix)
+            exp = lineno_to_exps[lineno]
+            test_name = exp.test
+            # if a test is a glob type expectation then add it to the updated
+            # expectations file without modifications
+            if exp.is_glob:
+                new_lines.append(line)
+                continue
+            if self.finder.is_webdriver_test_path(test_name):
+                root_test_file, subtest_suffix = port.split_webdriver_test_name(test_name)
+            else:
+                root_test_file = test_name
+            if root_test_file in deleted_tests:
+                continue
+            if root_test_file in renamed_tests:
+                if self.finder.is_webdriver_test_path(root_test_file):
+                    renamed_test = renamed_tests[root_test_file]
+                    test_name = port.add_webdriver_subtest_suffix(renamed_test, subtest_suffix)
                 else:
-                    expectation_line.name = renamed_tests[expectation_test_name]
-                # Upon parsing the file, a "path does not exist" warning is expected
-                # to be there for tests that have been renamed, and if there are warnings,
-                # then the original string is used. If the warnings are reset, then the
-                # expectation line is re-serialized when output.
-                expectation_line.warnings = []
-                changed_lines.append(expectation_line)
-            new_lines.append(expectation_line)
-        new_file_contents = TestExpectations.list_to_string(new_lines, reconstitute_only_these=changed_lines)
-        self.host.filesystem.write_text_file(path, new_file_contents)
+                    test_name = renamed_tests[root_test_file]
+            exp.test = test_name
+            new_lines.append(exp.to_string())
+        self.host.filesystem.write_text_file(path, '\n'.join(new_lines) + '\n')
 
     def _list_deleted_tests(self):
         """List of web tests that have been deleted."""

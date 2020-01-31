@@ -414,21 +414,23 @@ void IndexedDBDispatcherHost::RemoveBoundReaders(const base::FilePath& path) {
   file_reader_map_.erase(path);
 }
 
-void IndexedDBDispatcherHost::CreateAllBlobs(
-    const std::vector<IndexedDBBlobInfo>& blob_infos,
-    std::vector<blink::mojom::IDBBlobInfoPtr>* output_infos) {
+void IndexedDBDispatcherHost::CreateAllExternalObjects(
+    const std::vector<IndexedDBExternalObject>& objects,
+    std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   IDB_TRACE("IndexedDBDispatcherHost::CreateAllBlobs");
 
-  DCHECK_EQ(blob_infos.size(), output_infos->size());
-  if (blob_infos.empty())
+  DCHECK_EQ(objects.size(), mojo_objects->size());
+  if (objects.empty())
     return;
 
-  // First, handle all the "file path" value blobs on this sequence.
-  for (size_t i = 0; i < blob_infos.size(); ++i) {
-    auto& blob_info = blob_infos[i];
-    auto& output_info = (*output_infos)[i];
+  for (size_t i = 0; i < objects.size(); ++i) {
+    auto& blob_info = objects[i];
+    auto& mojo_object = (*mojo_objects)[i];
+
+    DCHECK(mojo_object->is_blob_or_file());
+    auto& output_info = mojo_object->get_blob_or_file();
 
     auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
     if (blob_info.is_remote_valid()) {

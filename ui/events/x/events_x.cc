@@ -18,6 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"

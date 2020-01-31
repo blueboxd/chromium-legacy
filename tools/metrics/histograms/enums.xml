@@ -3260,7 +3260,7 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="kStylus"/>
   <int value="8" label="kBackInLauncher"/>
   <int value="9" label="kLauncherClose"/>
-  <int value="10" label="kLauncherOpen"/>
+  <int value="10" label="kLauncher"/>
 </enum>
 
 <enum name="AssistantGestureType">
@@ -19532,6 +19532,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="666" label="ScreenCaptureAllowed"/>
   <int value="667" label="AdvancedProtectionDeepScanningEnabled"/>
   <int value="668" label="BlockUnsupportedFiletypes"/>
+  <int value="669" label="URLsToNotCheckForMalwareOfDownloadedContent"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -22710,6 +22711,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="ExtensionPolicyReinstallReason">
   <int value="0" label="Tried to load a corrupted extension"/>
   <int value="1" label="Corrupted Chrome Web Store extension"/>
+  <int value="2" label="Corrupted non-webstore extension"/>
+  <int value="4" label="Non-webstore extension without hashes skipped"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -26366,6 +26369,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3148" label="ClassicSharedWorker"/>
   <int value="3149" label="ModuleSharedWorker"/>
   <int value="3150" label="V8Animation_CommitStyles_Method"/>
+  <int value="3151" label="SameOriginIframeWindowAlert"/>
+  <int value="3152" label="SameOriginIframeWindowConfirm"/>
+  <int value="3153" label="SameOriginIframeWindowPrompt"/>
+  <int value="3154" label="SameOriginIframeWindowPrint"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32019,6 +32026,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Training Mode"/>
 </enum>
 
+<enum name="HrefTranslateStatus">
+  <int value="0" label="Auto translated"/>
+  <int value="1" label="Auto translated using a different target language"/>
+  <int value="2" label="Not auto translated"/>
+</enum>
+
 <enum name="Hresult">
   <int value="-2147467263" label="E_NOTIMPL"/>
   <int value="-2147467262" label="E_NOINTERFACE"/>
@@ -35938,6 +35951,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
   <int value="21" label="LM_AS_WEBAPP_TAB">
     Launched as an installed web application in a browser tab
+  </int>
+  <int value="22" label="LM_UNKNOWN_WEBAPP">
+    The requested web application was not installed
   </int>
 </enum>
 
@@ -43749,6 +43765,7 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Granted"/>
   <int value="5" label="Denied by user"/>
   <int value="6" label="Dismissed by user"/>
+  <int value="7" label="Request was aborted"/>
 </enum>
 
 <enum name="NativeLibraryPreloaderResult">
@@ -47894,6 +47911,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Missing glyph path, but a fallback was found"/>
 </enum>
 
+<enum name="OpenBrowserType">
+  <summary>App categories for the app that opens the browser.</summary>
+  <int value="0" label="Arc"/>
+  <int value="1" label="Web"/>
+</enum>
+
 <enum name="OpenFileSystemResult">
   <int value="0" label="OK."/>
   <int value="1" label="In incognito mode."/>
@@ -51768,7 +51791,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="SOURCE_RENDER_VIEW_CLOSED (Obsolete)"/>
   <int value="21" label="RENDERER_CRASHED"/>
   <int value="22" label="UNSUPPORTED_SCHEME"/>
-  <int value="23" label="INVALID_HTTP_METHOD"/>
+  <int value="23" label="INVALID_HTTP_METHOD (Obsolete)"/>
   <int value="24" label="WINDOW_PRINT (Obsolete)"/>
   <int value="25" label="RECENTLY_VISITED"/>
   <int value="26" label="WINDOW_OPENER"/>

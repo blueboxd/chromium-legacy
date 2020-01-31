@@ -102,6 +102,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme_features.h"

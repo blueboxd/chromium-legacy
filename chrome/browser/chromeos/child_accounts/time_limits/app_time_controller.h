@@ -12,6 +12,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/settings/timezone_settings.h"
 
 class Profile;
 class PrefRegistrySimple;
@@ -31,13 +33,19 @@ class AppServiceWrapper;
 class WebTimeLimitEnforcer;
 
 // Coordinates per-app time limit for child user.
-class AppTimeController : public AppTimeNotificationDelegate {
+class AppTimeController : public SystemClockClient::Observer,
+                          public system::TimezoneSettings::Observer,
+                          public AppTimeNotificationDelegate {
  public:
   // Used for tests to get internal implementation details.
   class TestApi {
    public:
     explicit TestApi(AppTimeController* controller);
     ~TestApi();
+
+    void SetLastResetTime(base::Time time);
+    base::Time GetNextResetTime() const;
+    base::Time GetLastResetTime() const;
 
     AppActivityRegistry* app_registry();
 
@@ -58,13 +66,19 @@ class AppTimeController : public AppTimeNotificationDelegate {
 
   bool IsExtensionWhitelisted(const std::string& extension_id) const;
 
-  const WebTimeLimitEnforcer* web_time_enforcer() const {
-    return web_time_enforcer_.get();
-  }
+  // SystemClockClient::Observer:
+  void SystemClockUpdated() override;
+
+  // system::TimezoneSetting::Observer:
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   // AppTimeNotificationDelegate:
   void ShowAppTimeLimitNotification(const AppId& app_id,
                                     AppNotification notification) override;
+
+  const WebTimeLimitEnforcer* web_time_enforcer() const {
+    return web_time_enforcer_.get();
+  }
 
   WebTimeLimitEnforcer* web_time_enforcer() { return web_time_enforcer_.get(); }
 
@@ -85,8 +99,11 @@ class AppTimeController : public AppTimeNotificationDelegate {
   void OnResetTimeReached();
   void SetLastResetTime(base::Time timestamp);
 
+  // Called when the system time or timezone may have changed.
+  bool HasTimeCrossedResetBoundary() const;
+
   // The time of the day when app time limits should be reset.
-  // Defaults to 6am.
+  // Defaults to 6am local time.
   base::TimeDelta limits_reset_time_ = base::TimeDelta::FromHours(6);
 
   // The last time when |reset_timer_| fired.

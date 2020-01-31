@@ -33,10 +33,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/messaging/string_message_codec.h"
-#include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/common/messaging/transferable_message_mojom_traits.h"
-#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "url/gurl.h"
 
 using ::testing::_;
@@ -66,35 +62,10 @@ base::FilePath GetTestDataFilePath(const std::string& name) {
   return file_path.Append(GetTestDataPath()).AppendASCII(name);
 }
 
-// Mojo MessagePort Utils:
-mojo::Message MojoMessageFromUtf8(base::StringPiece message_utf8) {
-  blink::TransferableMessage transfer_message;
-  transfer_message.owned_encoded_message =
-      blink::EncodeStringMessage(base::UTF8ToUTF16(message_utf8));
-  transfer_message.encoded_message = transfer_message.owned_encoded_message;
-  return blink::mojom::TransferableMessage::SerializeAsMessage(
-      &transfer_message);
-}
-
-base::Optional<std::string> ReadMessagePayloadAsUtf8(mojo::Message message) {
-  blink::TransferableMessage transferable_message;
-  if (!blink::mojom::TransferableMessage::DeserializeFromMessage(
-          std::move(message), &transferable_message)) {
-    return base::nullopt;
-  }
-
-  if (!transferable_message.ports.empty()) {
-    LOG(ERROR) << "TransferableMessage has unexpected ports.";
-  }
-
-  base::string16 data_utf16;
-  if (!blink::DecodeStringMessage(transferable_message.encoded_message,
-                                  &data_utf16)) {
-    return base::nullopt;
-  }
-
+base::Optional<std::string> ReadMessagePayloadAsUtf8(
+    blink::WebMessagePort::Message message) {
   std::string output;
-  if (!base::UTF16ToUTF8(data_utf16.data(), data_utf16.size(), &output))
+  if (!base::UTF16ToUTF8(message.data.data(), message.data.size(), &output))
     return base::nullopt;
 
   return base::make_optional<std::string>(output);
@@ -139,7 +110,7 @@ class TitleChangeObserver : public CastWebContents::Observer {
 };
 
 // Test class for communicating with connector.html.
-class TestBindingBackend : public mojo::MessageReceiver {
+class TestBindingBackend : public blink::WebMessagePort::MessageReceiver {
  public:
   TestBindingBackend(bindings::BindingsManager* bindings_manager)
       : bindings_manager_(bindings_manager) {
@@ -150,14 +121,14 @@ class TestBindingBackend : public mojo::MessageReceiver {
   }
 
   ~TestBindingBackend() override {
-    connector_.reset();
+    port_.Reset();
     constexpr char kPortName[] = "hello";
     bindings_manager_->UnregisterPortHandler(kPortName);
   }
 
   // Start the RunLoop until OnPortConnected.
   void RunUntilPortConnected() {
-    if (connector_)
+    if (port_.IsValid())
       return;
 
     base::RunLoop run_loop;
@@ -182,13 +153,13 @@ class TestBindingBackend : public mojo::MessageReceiver {
   }
 
   void SendMessageToPage(base::StringPiece message) {
-    if (!connector_)
+    if (!port_.IsValid())
       return;
 
     DCHECK(!message.empty());
 
-    mojo::Message mojo_message = MojoMessageFromUtf8(message);
-    connector_->Accept(&mojo_message);
+    blink::WebMessagePort::Message blink_message(base::UTF8ToUTF16(message));
+    port_.PostMessage(std::move(blink_message));
   }
 
   void SetPortDisconnectedCallback(
@@ -199,31 +170,18 @@ class TestBindingBackend : public mojo::MessageReceiver {
 
  private:
   // Called when a port was received from the page.
-  void OnPortConnected(mojo::ScopedMessagePipeHandle port) {
+  void OnPortConnected(blink::WebMessagePort port) {
     if (!quit_closure_.is_null()) {
       std::move(quit_closure_).Run();
     }
-    connector_ = std::make_unique<mojo::Connector>(
-        std::move(port), mojo::Connector::SINGLE_THREADED_SEND,
-        base::ThreadTaskRunnerHandle::Get());
-    connector_->set_connection_error_handler(base::BindOnce(
-        &TestBindingBackend::OnPortDisconnected, base::Unretained(this)));
-    connector_->set_incoming_receiver(this);
+    port_ = std::move(port);
+    port_.SetReceiver(this, base::ThreadTaskRunnerHandle::Get());
   }
 
-  // Called when the peer disconnected the port.
-  void OnPortDisconnected() {
-    LOG(INFO) << "TestBindingBackend port disconnected.";
-    connector_.reset();
-    if (port_disconnected_callback_) {
-      std::move(port_disconnected_callback_).Run();
-    }
-  }
-
-  // mojo::MessageReceiver implementation:
-  bool Accept(mojo::Message* message) override {
+  // blink::WebMessagePort::MessageReceiver implementation:
+  bool OnMessage(blink::WebMessagePort::Message message) override {
     base::Optional<std::string> message_json =
-        ReadMessagePayloadAsUtf8(std::move(*message));
+        ReadMessagePayloadAsUtf8(std::move(message));
     if (!message_json)
       return false;
 
@@ -233,10 +191,21 @@ class TestBindingBackend : public mojo::MessageReceiver {
       std::move(message_received_callback_).Run(message_json.value());
       return true;
     }
+
     // Cache received message until external caller access it
     // via TestBindingBackend::ReceiveMessage
     message_queue_.emplace_back(message_json.value());
     return true;
+  }
+
+  // blink::WebMessagePort::MessageReceiver implementation:
+  // Called when the peer disconnected the port.
+  void OnPipeError() override {
+    LOG(INFO) << "TestBindingBackend port disconnected.";
+    port_.Reset();
+    if (port_disconnected_callback_) {
+      std::move(port_disconnected_callback_).Run();
+    }
   }
 
   base::OnceClosure quit_closure_;
@@ -244,7 +213,7 @@ class TestBindingBackend : public mojo::MessageReceiver {
   bindings::BindingsManager* const bindings_manager_;
 
   // Used for sending and receiving messages over the MessagePort.
-  std::unique_ptr<mojo::Connector> connector_;
+  blink::WebMessagePort port_;
 
   base::circular_deque<std::string> message_queue_;
   base::OnceCallback<void(std::string)> message_received_callback_;

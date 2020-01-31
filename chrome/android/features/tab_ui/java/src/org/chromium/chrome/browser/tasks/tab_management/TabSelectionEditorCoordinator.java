@@ -19,8 +19,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 

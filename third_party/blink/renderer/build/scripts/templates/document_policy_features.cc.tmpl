@@ -1,0 +1,42 @@
+{% from 'templates/macros.tmpl' import license, source_files_for_generated_file %}
+{{license()}}
+
+{{ source_files_for_generated_file(template_file, input_files) }}
+
+#include "base/no_destructor.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
+#include "third_party/blink/public/common/feature_policy/policy_value.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
+
+namespace blink {
+
+const DocumentPolicyFeatureInfoMap& GetDocumentPolicyFeatureInfoMap() {
+  static const base::NoDestructor<DocumentPolicyFeatureInfoMap> feature_info_map({
+    {%- for feature in features %}
+      {
+        mojom::FeaturePolicyFeature::k{{feature.name}},
+        {
+          "{{feature.document_policy_name}}",
+          "{{feature.value_name}}",
+          PolicyValue({{feature.default_value}})
+        }
+      },
+    {%- endfor %}
+  });
+  return *feature_info_map;
+}
+
+const DocumentPolicyNameFeatureMap& GetDocumentPolicyNameFeatureMap() {
+  static const base::NoDestructor<DocumentPolicyNameFeatureMap> name_feature_map([] {
+    DocumentPolicyNameFeatureMap map;
+    for (const auto& entry : GetDocumentPolicyFeatureInfoMap())
+      map.emplace(entry.second.feature_name, entry.first);
+    return map;
+  }());
+  return *name_feature_map;
+}
+
+} // namespace blink
+
+

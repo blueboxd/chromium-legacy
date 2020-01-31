@@ -352,16 +352,17 @@ void ServiceWorkerStorage::StoreRegistrationData(
                          registration_data)));
 }
 
-void ServiceWorkerStorage::UpdateToActiveState(int64_t registration_id,
-                                               const GURL& origin,
-                                               StatusCallback callback) {
+void ServiceWorkerStorage::UpdateToActiveState(
+    int64_t registration_id,
+    const GURL& origin,
+    DatabaseStatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
   if (IsDisabled()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
-                           blink::ServiceWorkerStatusCode::kErrorAbort));
+                           ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
     return;
   }
 
@@ -370,8 +371,7 @@ void ServiceWorkerStorage::UpdateToActiveState(int64_t registration_id,
       base::BindOnce(&ServiceWorkerDatabase::UpdateVersionToActive,
                      base::Unretained(database_.get()), registration_id,
                      origin),
-      base::BindOnce(&ServiceWorkerStorage::DidUpdateToActiveState,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
@@ -499,13 +499,19 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
       resource_id, disk_cache()->GetWeakPtr()));
 }
 
-void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {
+void ServiceWorkerStorage::StoreUncommittedResourceId(
+    int64_t resource_id,
+    DatabaseStatusCallback callback) {
   DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
       << state_;
-  if (IsDisabled())
+  if (IsDisabled()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
     return;
+  }
 
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
@@ -515,8 +521,7 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {
       base::BindOnce(&ServiceWorkerDatabase::WriteUncommittedResourceIds,
                      base::Unretained(database_.get()),
                      std::set<int64_t>(&resource_id, &resource_id + 1)),
-      base::BindOnce(&ServiceWorkerStorage::DidWriteUncommittedResourceIds,
-                     weak_factory_.GetWeakPtr()));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::DoomUncommittedResource(int64_t resource_id) {
@@ -549,12 +554,12 @@ void ServiceWorkerStorage::StoreUserData(
     int64_t registration_id,
     const GURL& origin,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
-    StatusCallback callback) {
+    DatabaseStatusCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorAbort));
+                             ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -566,29 +571,17 @@ void ServiceWorkerStorage::StoreUserData(
       break;
   }
 
-  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
-      key_value_pairs.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
-  for (const auto& kv : key_value_pairs) {
-    if (kv.first.empty()) {
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorFailed));
-      return;
-    }
-  }
+  // TODO(bashi): Consider replacing these DCHECKs with returning errors once
+  // this class is moved to the Storage Service.
+  DCHECK_NE(registration_id, blink::mojom::kInvalidServiceWorkerRegistrationId);
+  DCHECK(!key_value_pairs.empty());
 
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::WriteUserData,
                      base::Unretained(database_.get()), registration_id, origin,
                      key_value_pairs),
-      base::BindOnce(&ServiceWorkerStorage::DidStoreUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::GetUserData(int64_t registration_id,
@@ -691,12 +684,12 @@ void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefix(
 
 void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
                                          const std::vector<std::string>& keys,
-                                         StatusCallback callback) {
+                                         DatabaseStatusCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorAbort));
+                             ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -708,39 +701,27 @@ void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
       break;
   }
 
-  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
-      keys.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
-  for (const std::string& key : keys) {
-    if (key.empty()) {
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorFailed));
-      return;
-    }
-  }
+  // TODO(bashi): Consider replacing these DCHECKs with returning errors once
+  // this class is moved to the Storage Service.
+  DCHECK_NE(registration_id, blink::mojom::kInvalidServiceWorkerRegistrationId);
+  DCHECK(!keys.empty());
 
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::DeleteUserData,
                      base::Unretained(database_.get()), registration_id, keys),
-      base::BindOnce(&ServiceWorkerStorage::DidDeleteUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::ClearUserDataByKeyPrefixes(
     int64_t registration_id,
     const std::vector<std::string>& key_prefixes,
-    StatusCallback callback) {
+    DatabaseStatusCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorAbort));
+                             ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -753,40 +734,28 @@ void ServiceWorkerStorage::ClearUserDataByKeyPrefixes(
       break;
   }
 
-  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
-      key_prefixes.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
-  for (const std::string& key_prefix : key_prefixes) {
-    if (key_prefix.empty()) {
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorFailed));
-      return;
-    }
-  }
+  // TODO(bashi): Consider replacing these DCHECKs with returning errors once
+  // this class is moved to the Storage Service.
+  DCHECK_NE(registration_id, blink::mojom::kInvalidServiceWorkerRegistrationId);
+  DCHECK(!key_prefixes.empty());
 
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::DeleteUserDataByKeyPrefixes,
                      base::Unretained(database_.get()), registration_id,
                      key_prefixes),
-      base::BindOnce(&ServiceWorkerStorage::DidDeleteUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::GetUserDataForAllRegistrations(
     const std::string& key,
-    GetUserDataForAllRegistrationsCallback callback) {
+    GetUserDataForAllRegistrationsInDBCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
                              std::vector<std::pair<int64_t, std::string>>(),
-                             blink::ServiceWorkerStatusCode::kErrorAbort));
+                             ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -798,33 +767,26 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
       break;
   }
 
-  if (key.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           std::vector<std::pair<int64_t, std::string>>(),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
+  // TODO(bashi): Consider replacing this DCHECK with returning errors once
+  // this class is moved to the Storage Service.
+  DCHECK(!key.empty());
 
   database_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB,
-          database_.get(), base::ThreadTaskRunnerHandle::Get(), key,
-          base::BindOnce(
-              &ServiceWorkerStorage::DidGetUserDataForAllRegistrations,
-              weak_factory_.GetWeakPtr(), std::move(callback))));
+      base::BindOnce(&ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB,
+                     database_.get(), base::ThreadTaskRunnerHandle::Get(), key,
+                     std::move(callback)));
 }
 
 void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
-    GetUserDataForAllRegistrationsCallback callback) {
+    GetUserDataForAllRegistrationsInDBCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
                              std::vector<std::pair<int64_t, std::string>>(),
-                             blink::ServiceWorkerStatusCode::kErrorAbort));
+                             ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -836,32 +798,26 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix(
       break;
   }
 
-  if (key_prefix.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           std::vector<std::pair<int64_t, std::string>>(),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
+  // TODO(bashi): Consider replacing this DCHECK with returning errors once
+  // this class is moved to the Storage Service.
+  DCHECK(!key_prefix.empty());
 
   database_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefixInDB,
           database_.get(), base::ThreadTaskRunnerHandle::Get(), key_prefix,
-          base::BindOnce(
-              &ServiceWorkerStorage::DidGetUserDataForAllRegistrations,
-              weak_factory_.GetWeakPtr(), std::move(callback))));
+          std::move(callback)));
 }
 
 void ServiceWorkerStorage::ClearUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
-    StatusCallback callback) {
+    DatabaseStatusCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorAbort));
+                             ServiceWorkerDatabase::STATUS_ERROR_DISABLED));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -873,20 +829,16 @@ void ServiceWorkerStorage::ClearUserDataForAllRegistrationsByKeyPrefix(
       break;
   }
 
-  if (key_prefix.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
+  // TODO(bashi): Consider replacing this DCHECK with returning errors once
+  // this class is moved to the Storage Service.
+  DCHECK(!key_prefix.empty());
 
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(
           &ServiceWorkerDatabase::DeleteUserDataForAllRegistrationsByKeyPrefix,
           base::Unretained(database_.get()), key_prefix),
-      base::BindOnce(&ServiceWorkerStorage::DidDeleteUserData,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::DeleteAndStartOver(StatusCallback callback) {
@@ -1132,16 +1084,6 @@ void ServiceWorkerStorage::DidStoreRegistrationData(
                           newly_purgeable_resources);
 }
 
-void ServiceWorkerStorage::DidUpdateToActiveState(
-    StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK &&
-      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
-    ScheduleDeleteAndStartOver();
-  }
-  std::move(callback).Run(DatabaseStatusToStatusCode(status));
-}
-
 void ServiceWorkerStorage::DidDeleteRegistration(
     std::unique_ptr<DidDeleteRegistrationParams> params,
     OriginState origin_state,
@@ -1173,12 +1115,6 @@ void ServiceWorkerStorage::DidDeleteRegistration(
            newly_purgeable_resources);
 }
 
-void ServiceWorkerStorage::DidWriteUncommittedResourceIds(
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
-    ScheduleDeleteAndStartOver();
-}
-
 void ServiceWorkerStorage::DidPurgeUncommittedResourceIds(
     const std::set<int64_t>& resource_ids,
     ServiceWorkerDatabase::Status status) {
@@ -1187,36 +1123,6 @@ void ServiceWorkerStorage::DidPurgeUncommittedResourceIds(
     return;
   }
   StartPurgingResources(resource_ids);
-}
-
-void ServiceWorkerStorage::DidStoreUserData(
-    StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
-  // |status| can be NOT_FOUND when the associated registration did not exist in
-  // the database. In the case, we don't have to schedule the corruption
-  // recovery.
-  if (status != ServiceWorkerDatabase::STATUS_OK &&
-      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
-    ScheduleDeleteAndStartOver();
-  }
-  std::move(callback).Run(DatabaseStatusToStatusCode(status));
-}
-
-void ServiceWorkerStorage::DidDeleteUserData(
-    StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
-    ScheduleDeleteAndStartOver();
-  std::move(callback).Run(DatabaseStatusToStatusCode(status));
-}
-
-void ServiceWorkerStorage::DidGetUserDataForAllRegistrations(
-    GetUserDataForAllRegistrationsCallback callback,
-    const std::vector<std::pair<int64_t, std::string>>& user_data,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
-    ScheduleDeleteAndStartOver();
-  std::move(callback).Run(user_data, DatabaseStatusToStatusCode(status));
 }
 
 ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {

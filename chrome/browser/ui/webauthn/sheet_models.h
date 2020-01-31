@@ -354,6 +354,7 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
   bool IsActivityIndicatorVisible() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;

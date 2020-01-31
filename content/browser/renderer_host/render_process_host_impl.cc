@@ -2453,7 +2453,8 @@ void RenderProcessHostImpl::CreateBroadcastChannelProvider(
   }
 
   storage_partition_impl_->GetBroadcastChannelProvider()->Connect(
-      id_, std::move(receiver));
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(id_),
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateCodeCacheHost(

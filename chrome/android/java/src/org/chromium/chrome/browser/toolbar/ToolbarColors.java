@@ -19,8 +19,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * Helpers to determine colors in toolbars.

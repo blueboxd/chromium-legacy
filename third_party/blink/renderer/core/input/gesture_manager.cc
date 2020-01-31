@@ -258,8 +258,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
   if (current_hit_test.InnerNode()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (main_frame.View()) {
-      main_frame.View()->UpdateAllLifecyclePhases(
-          DocumentLifecycle::LifecycleUpdateReason::kOther);
+      main_frame.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kOther);
     }
     adjusted_point = frame_view->ConvertFromRootFrame(tapped_position);
     current_hit_test = event_handling_util::HitTestResultInFrame(

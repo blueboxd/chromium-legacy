@@ -10,7 +10,6 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
@@ -31,7 +30,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -697,24 +695,7 @@ TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
   }
 }
 
-class DesksWindowCyclingTest : public WindowCycleControllerTest {
- public:
-  DesksWindowCyclingTest() = default;
-  ~DesksWindowCyclingTest() override = default;
-
-  // WindowCycleControllerTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-    WindowCycleControllerTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesksWindowCyclingTest);
-};
-
-TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
+TEST_F(WindowCycleControllerTest, CycleShowsAllDesksWindows) {
   // Create two desks with two windows in each.
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));

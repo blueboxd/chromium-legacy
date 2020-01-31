@@ -148,7 +148,9 @@ crbug.com/931486 virtual/prefer_compositing_to_lcd_text/scrollbars/reconstruct-c
 # different results.
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 
-paint/pagination/composited-paginated-outlined-box.html [ Failure ]
+# Outline paints incorrectly with columns
+crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
+
 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 
 # Extra raster invalidation on start/end of animation. Caused by animation
@@ -181,6 +183,9 @@ paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 # Animation failure related to direct property update
 crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Failure ]
 crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]
+
+# Ad frame highlight size is incorrect
+crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 
 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
 virtual/threaded/fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]

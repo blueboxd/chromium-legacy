@@ -160,8 +160,7 @@ class TextPaintTimingDetectorTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 
   // This only triggers ReportSwapTime in main frame.
@@ -444,8 +443,7 @@ TEST_F(TextPaintTimingDetectorTest, PendingTextIsLargest) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
   AppendDivElementToBody("text");
-  GetFrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   // We do not call swap-time callback here in order to not set the paint time.
   EXPECT_FALSE(TextRecordOfLargestTextPaint());
 }
@@ -456,12 +454,10 @@ TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
   Element* text = AppendDivElementToBody("text");
-  GetFrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   // Change a property of the text to trigger repaint.
   text->setAttribute(html_names::kStyleAttr, AtomicString("color:red;"));
-  GetFrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   InvokeCallback();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             DOMNodeIds::ExistingIdForNode(text));

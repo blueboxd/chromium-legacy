@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
@@ -64,7 +65,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public ash::SessionActivationObserver,
       public ash::AssistantStateObserver,
       public AssistantManagerService::CommunicationErrorObserver,
-      public AssistantManagerService::StateObserver {
+      public AssistantManagerService::StateObserver,
+      public ash::AmbientModeStateObserver {
  public:
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
           std::unique_ptr<network::PendingSharedURLLoaderFactory>
@@ -131,13 +133,16 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // AssistantManagerService::StateObserver overrides:
   void OnStateChanged(AssistantManagerService::State new_state) override;
 
+  // ash::AmbientModeStateObserver overrides:
+  void OnAmbientModeEnabled(bool enabled) override;
+
   void UpdateAssistantManagerState();
 
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   void RequestAccessToken();
 
-  void GetPrimaryAccountInfoCallback(
+  void GetUnconsentedPrimaryAccountInfoCallback(
       const base::Optional<CoreAccountId>& account_id,
       const base::Optional<std::string>& gaia,
       const base::Optional<std::string>& email,
@@ -191,9 +196,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   bool locked_ = false;
   // Whether the power source is connected.
   bool power_source_connected_ = false;
-  // In the signed-out mode, we are going to run Assistant service without
-  // using user's signed in account information.
-  bool is_signed_out_mode_ = false;
 
   // The value passed into |SetAssistantManagerServiceForTesting|.
   // Will be moved into |assistant_manager_service_| when the service is

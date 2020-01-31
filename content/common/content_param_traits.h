@@ -30,7 +30,7 @@ struct TransferableMessage;
 
 namespace content {
 struct FrameMsg_ViewChanged_Params;
-struct RecordTabSwitchTimeRequest;
+struct RecordContentToVisibleTimeRequest;
 }
 
 namespace viz {
@@ -166,8 +166,8 @@ struct CONTENT_EXPORT ParamTraits<net::SHA256HashValue> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<content::RecordTabSwitchTimeRequest> {
-  using param_type = content::RecordTabSwitchTimeRequest;
+struct CONTENT_EXPORT ParamTraits<content::RecordContentToVisibleTimeRequest> {
+  using param_type = content::RecordContentToVisibleTimeRequest;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

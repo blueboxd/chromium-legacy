@@ -126,8 +126,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     ClearReportDict();
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, context, /*profile=*/nullptr),
-        std::move(context));
+        ConvertProtoToValue(&log_, context), std::move(context));
 
     EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
         .WillOnce(WithArgs<1>(
@@ -140,8 +139,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     ClearReportDict();
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, context, /*profile=*/nullptr),
-        std::move(context));
+        ConvertProtoToValue(&log_, context), std::move(context));
 
     CloudPolicyClient::StatusCallback status_callback;
     EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))

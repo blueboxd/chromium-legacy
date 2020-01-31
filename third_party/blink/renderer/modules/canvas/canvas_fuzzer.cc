@@ -50,8 +50,7 @@ class PageHelper {
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
     GetDocument().View()->RunPostLifecycleSteps();
   }
 

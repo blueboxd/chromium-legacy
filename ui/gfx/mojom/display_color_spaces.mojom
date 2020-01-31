@@ -6,6 +6,12 @@ module gfx.mojom;
 
 import "ui/gfx/mojom/color_space.mojom";
 
+enum ContentColorUsage{
+  kSRGB,
+  kWideColorGamut,
+  kHDR,
+};
+
 struct DisplayColorSpaces {
   ColorSpace srgb;
   ColorSpace wcg_opaque;

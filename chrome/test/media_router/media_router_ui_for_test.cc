@@ -17,6 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace media_router {

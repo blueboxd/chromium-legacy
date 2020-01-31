@@ -25,6 +25,27 @@ const char kRealTimeThreatInfoProto[] = "rt_threat_info_proto";
 const char kPasswordOnFocusCacheKey[] = "password_on_focus_cache_key";
 const char kRealTimeUrlCacheKey[] = "real_time_url_cache_key";
 
+// A helper class to include all match params. It is used as a centralized
+// place to determine if the current cache entry should be considered as a
+// match.
+struct MatchParams {
+  MatchParams()
+      : is_exact_host(false),
+        is_exact_path(false),
+        is_only_exact_match_allowed(true) {}
+
+  bool ShouldMatch() {
+    return !is_only_exact_match_allowed || (is_exact_host && is_exact_path);
+  }
+  // Indicates whether the current cache entry and the url have the same host.
+  bool is_exact_host;
+  // Indicates whether the current cache entry and the url have the same path.
+  bool is_exact_path;
+  // Indicates whether the current cache entry is only applicable for exact
+  // match.
+  bool is_only_exact_match_allowed;
+};
+
 // Given a URL of either http or https scheme, return its http://hostname.
 // e.g., "https://www.foo.com:80/bar/test.cgi" -> "http://www.foo.com".
 GURL GetHostNameWithHTTPScheme(const GURL& url) {
@@ -70,8 +91,9 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFromVerdict(
 void GeneratePathVariantsWithoutQuery(const GURL& url,
                                       std::vector<std::string>* paths) {
   std::string canonical_path;
-  V4ProtocolManagerUtil::CanonicalizeUrl(url, nullptr, &canonical_path,
-                                         nullptr);
+  V4ProtocolManagerUtil::CanonicalizeUrl(
+      url, /*canonicalized_hostname=*/nullptr, &canonical_path,
+      /*canonicalized_query=*/nullptr);
   V4ProtocolManagerUtil::GeneratePathVariantsToCheck(canonical_path,
                                                      std::string(), paths);
 }
@@ -181,6 +203,26 @@ std::string GetKeyOfTypeFromTriggerType(
                        password_type.account_type()));
 }
 
+// If the verdict doesn't have |cache_expression_match_type| field, always
+// interpret it as exact match only.
+template <typename T>
+bool IsOnlyExactMatchAllowed(T verdict) {
+  NOTREACHED();
+  return true;
+}
+template <>
+bool IsOnlyExactMatchAllowed<RTLookupResponse::ThreatInfo>(
+    RTLookupResponse::ThreatInfo verdict) {
+  return verdict.cache_expression_match_type() ==
+         RTLookupResponse::ThreatInfo::EXACT_MATCH;
+}
+// Always do fuzzy matching for password protection verdicts.
+template <>
+bool IsOnlyExactMatchAllowed<LoginReputationClientResponse>(
+    LoginReputationClientResponse verdict) {
+  return false;
+}
+
 template <class T>
 typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
     const GURL& url,
@@ -188,7 +230,8 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
     scoped_refptr<HostContentSettingsMap> content_settings,
     const ContentSettingsType contents_setting_type,
     const char* proto_name,
-    T* out_response) {
+    T* out_response,
+    MatchParams match_params) {
   DCHECK(proto_name == kVerdictProto || proto_name == kRealTimeThreatInfoProto);
 
   GURL hostname = GetHostNameWithHTTPScheme(url);
@@ -207,6 +250,12 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
 
   std::vector<std::string> paths;
   GeneratePathVariantsWithoutQuery(url, &paths);
+
+  std::string root_path;
+  V4ProtocolManagerUtil::CanonicalizeUrl(
+      url, /*canonicalized_hostname*/ nullptr, &root_path,
+      /*canonicalized_query*/ nullptr);
+
   int max_path_depth = -1;
   typename T::VerdictType most_matching_verdict_type =
       T::VERDICT_TYPE_UNSPECIFIED;
@@ -226,10 +275,13 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
     std::string cache_expression_path =
         GetCacheExpressionPath(verdict.cache_expression());
 
+    match_params.is_only_exact_match_allowed = IsOnlyExactMatchAllowed(verdict);
+    match_params.is_exact_path = (root_path == cache_expression_path);
     // Finds the most specific match.
     int path_depth = static_cast<int>(GetPathDepth(cache_expression_path));
     if (path_depth > max_path_depth &&
-        PathVariantsMatchCacheExpression(paths, cache_expression_path)) {
+        PathVariantsMatchCacheExpression(paths, cache_expression_path) &&
+        match_params.ShouldMatch()) {
       max_path_depth = path_depth;
       // If the most matching verdict is expired, set the result to
       // VERDICT_TYPE_UNSPECIFIED.
@@ -251,20 +303,23 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithHostAndPathMatching(
     const ContentSettingsType contents_setting_type,
     const char* proto_name,
     T* out_response) {
-  DCHECK(proto_name == kVerdictProto);
+  DCHECK(proto_name == kVerdictProto || proto_name == kRealTimeThreatInfoProto);
   auto most_matching_verdict_type = T::VERDICT_TYPE_UNSPECIFIED;
+  MatchParams match_params;
 
   std::string root_host, root_path;
-  V4ProtocolManagerUtil::CanonicalizeUrl(url, &root_host, &root_path, nullptr);
+  V4ProtocolManagerUtil::CanonicalizeUrl(url, &root_host, &root_path,
+                                         /*canonicalized_query*/ nullptr);
   std::vector<std::string> host_variants;
   V4ProtocolManagerUtil::GenerateHostVariantsToCheck(root_host, &host_variants);
   int max_path_depth = -1;
-  for (auto host : host_variants) {
+  for (const auto& host : host_variants) {
     int depth = static_cast<int>(GetHostDepth(host));
     GURL url_to_check = GetUrlWithHostAndPath(host, root_path);
+    match_params.is_exact_host = (root_host == host);
     auto verdict_type = GetMostMatchingCachedVerdictWithPathMatching<T>(
         url_to_check, type_key, content_settings, contents_setting_type,
-        proto_name, out_response);
+        proto_name, out_response, match_params);
     if (depth > max_path_depth && verdict_type != T::VERDICT_TYPE_UNSPECIFIED) {
       max_path_depth = depth;
       most_matching_verdict_type = verdict_type;
@@ -355,7 +410,6 @@ VerdictCacheManager::GetCachedPhishGuardVerdict(
 
   std::string type_key =
       GetKeyOfTypeFromTriggerType(trigger_type, password_type);
-
   return GetMostMatchingCachedVerdictWithHostAndPathMatching<
       LoginReputationClientResponse>(url, type_key, content_settings_,
                                      ContentSettingsType::PASSWORD_PROTECTION,
@@ -413,6 +467,11 @@ void VerdictCacheManager::CacheRealTimeUrlVerdict(
 
   std::vector<std::string> visited_cache_expressions;
   for (const auto& threat_info : verdict.threat_info()) {
+    // If |cache_expression_match_type| is unspecified, ignore this entry.
+    if (threat_info.cache_expression_match_type() ==
+        RTLookupResponse::ThreatInfo::MATCH_TYPE_UNSPECIFIED) {
+      continue;
+    }
     std::string cache_expression = threat_info.cache_expression();
     // TODO(crbug.com/1033692): For the same cache_expression, threat_info is in
     // decreasing order of severity. To avoid lower severity threat being
@@ -462,7 +521,7 @@ RTLookupResponse::ThreatInfo::VerdictType
 VerdictCacheManager::GetCachedRealTimeUrlVerdict(
     const GURL& url,
     RTLookupResponse::ThreatInfo* out_threat_info) {
-  return GetMostMatchingCachedVerdictWithPathMatching<
+  return GetMostMatchingCachedVerdictWithHostAndPathMatching<
       RTLookupResponse::ThreatInfo>(
       url, kRealTimeUrlCacheKey, content_settings_,
       ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,

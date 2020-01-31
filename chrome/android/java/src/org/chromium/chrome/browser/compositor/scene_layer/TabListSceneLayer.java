@@ -21,9 +21,9 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.resources.ResourceManager;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * A SceneLayer to render a tab stack.

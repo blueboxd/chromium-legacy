@@ -117,12 +117,16 @@ finding a member of the chrome team to help you drive it and own it).  However,
 it should be possible to get feedback from many of the required parties during
 that review process, which would expedite the additional approvals needed.
 
-Please email the proposal to extension-api-reviews@chromium.org for any
-additional feedback.
+Please email a link to the bug and proposal to
+extension-api-reviews@chromium.org for increased visibility and any additional
+feedback.
 
 ### Get Sign-Off
 
-All APIs, public or private, will need sign off from a few different parties:
+All APIs, public or private, will need sign off from a few different parties.
+The [API Overview document](https://docs.google.com/document/d/182XXEPwbh5dyMTO_Q3bZ9k4PYY19Woydu5b3XvPoSmc/edit#)
+has the a section for these sign offs. Please reach out to the relevant teams
+to get sign off.
 
 __API Review:__ The overall review of the API, including comments on exposed
 methods, events, or properties, and an overall review for whether the API fits
@@ -138,16 +142,22 @@ around leaking user data without permission.
 __UI Review:__ A review of any UI implemented as part of your API.  This review
 may not be necessary if there is no UI element to your API.
 
+__Legal Review:__ A review to ensure there are no legal issues with the new API.
+
+In general, we encourage you to get explicit sign off from all teams, even if
+you think the scope and overlap may be small.  If it is indeed easy and
+uncontroversial, the reviews should be simple and fast.
+
 ## Modifying an Existing API
 Modifications to an existing API should go through a similar process.  Since
 modifications to these APIs are frequently far-reaching, please do not skip the
 proposal process!  However, you may be able to expedite it.  In particular,
-small changes (like adding a new property to a method) do not need a design doc
-or API Overview doc.  Larger changes, like adding multiple new methods and
-events, should still include an API Overview (though it can be brief).
-Medium-sized changes, like adding a single new method, are up to the discretion
-of the API reviewers - we may ask for an API Overview, but it might not be
-necessary.
+small changes (like adding a new property to a method) may not require a full
+design doc or API Overview doc.  Larger changes, like adding multiple new
+methods and events, should still include an API Overview (though it may be
+condensed). Medium-sized changes, like adding a single new method, are up to the
+discretion of the API reviewers - we may ask for an API Overview, but it might
+not be necessary.
 
 ## FAQ
 __Do I need an API review for a private API?__  Yes! Private APIs are not
@@ -163,17 +173,13 @@ regards to what data we can collect.
 public API, a web API, implementing code directly in C++, and others. Private
 APIs are not always the appropriate choice.
 
-__Who signs off for the API review?__  The API review bit will be flipped by
-either an extensions or apps team member. If your API has been languishing,
-please ping rdevlin.cronin@ (Extensions APIs) or benwells@ (Apps APIs).
-
 ## Bug Templates
 __Note:__ All these templates default to public visibility.
 
-[New Extension API](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CLaunch-Security-NotReviewed%2CLaunch-API-NotReviewed%2CLaunch-Privacy-NotReviewed%2CLaunch-UI-NotReviewed&components=Platform%3EExtensions%3EAPI&summary=New+Extension+API%3A+%3CAPI+Name%3E&description=%3Cb%3ENew+Extension+API+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F1mspntphE_vxwce4VNx08VtjsvgE9--ro3mg3lP1toeE%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
+[New Extension API](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CNeeds-API-Review&components=Platform%3EExtensions%3EAPI&summary=New+Extension+API%3A+%3CAPI+Name%3E&description=%3Cb%3ENew+Extension+API+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F182XXEPwbh5dyMTO_Q3bZ9k4PYY19Woydu5b3XvPoSmc%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
 
-[New Platform App API](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CLaunch-Security-NotReviewed%2CLaunch-API-NotReviewed%2CLaunch-Privacy-NotReviewed%2CLaunch-UI-NotReviewed&components=Platform%3EApps%3EAPI&summary=New+Platform+App+API%3A+%3CAPI+Name%3E&description=%3Cb%3ENew+Platform+App+API+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F1mspntphE_vxwce4VNx08VtjsvgE9--ro3mg3lP1toeE%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
+[New Platform App API](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CNeeds-API-Review&components=Platform%3EApps%3EAPI&summary=New+Platform+App+API%3A+%3CAPI+Name%3E&description=%3Cb%3ENew+Platform+App+API+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F182XXEPwbh5dyMTO_Q3bZ9k4PYY19Woydu5b3XvPoSmc%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
 
-[Extension API Modification](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CLaunch-Security-NotReviewed%2CLaunch-API-NotReviewed%2CLaunch-Privacy-NotReviewed%2CLaunch-UI-NotReviewed&components=Platform%3EExtensions%3EAPI&summary=Extension+API+Modification%3A+%3CSummary%3E&description=%3Cb%3EExtension+API+Modification+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0AThe+following+documents+may+not+be+necessary+depending+on+the+scope+of+your+proposal%3A%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F1mspntphE_vxwce4VNx08VtjsvgE9--ro3mg3lP1toeE%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
+[Extension API Modification](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CNeeds-API-Review&components=Platform%3EExtensions%3EAPI&summary=Extension+API+Modification%3A+%3CSummary%3E&description=%3Cb%3EExtension+API+Modification+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0AThe+following+documents+may+not+be+necessary+depending+on+the+scope+of+your+proposal%3A%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F182XXEPwbh5dyMTO_Q3bZ9k4PYY19Woydu5b3XvPoSmc%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
 
-[Platform App API Modification](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CLaunch-Security-NotReviewed%2CLaunch-API-NotReviewed%2CLaunch-Privacy-NotReviewed%2CLaunch-UI-NotReviewed&components=Platform%3EApps%3EAPI&summary=Platform+App+API+Modification%3A+%3CSummary%3E&description=%3Cb%3EPlatform+App+API+Modification+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0AThe+following+documents+may+not+be+necessary+depending+on+the+scope+of+your+proposal%3A%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F1mspntphE_vxwce4VNx08VtjsvgE9--ro3mg3lP1toeE%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)
+[Platform App API Modification](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-2%2CType-Feature%2CNeeds-API-Review&components=Platform%3EApps%3EAPI&summary=Platform+App+API+Modification%3A+%3CSummary%3E&description=%3Cb%3EPlatform+App+API+Modification+Proposal%3C%2Fb%3E%0A%0A%3Cb%3EAPI+Namespace%3A%3C%2Fb%3E+%5BAPI+Namespace+Here%5D%0A%3Cb%3EAPI+Owners%3A%3C%2Fb%3E+%5BTeam+Members%2C+Team+Aliases%5D%0AThe+following+documents+may+not+be+necessary+depending+on+the+scope+of+your+proposal%3A%0A%3Cb%3EAPI+Overview+Doc%3A%3C%2Fb%3E+%5BLink+to+doc.+Template+is+at+https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F182XXEPwbh5dyMTO_Q3bZ9k4PYY19Woydu5b3XvPoSmc%2Fedit%23%5D%0A%3Cb%3EDesign+Doc%3A%3C%2Fb%3E+%5BLink+to+design+doc.+This+might+be+unnecessary+with+the+overview+doc+above%2C+in+which+case+this+can+be+N%2FA%5D%0A%3Cb%3ESupplementary+Resources%3A%3C%2Fb%3E+%5BAny+supplementary+resources+for+your+API+or+a+larger+feature+that+your+API+is+a+part+of%2C+such+as+PRDs%2C+docs%2C+mocks%2C+etc.%5D)

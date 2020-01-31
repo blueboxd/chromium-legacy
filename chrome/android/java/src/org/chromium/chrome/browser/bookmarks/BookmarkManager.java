@@ -31,11 +31,11 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.vr.VrModeProviderImpl;
-import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 
 import java.util.Stack;
 

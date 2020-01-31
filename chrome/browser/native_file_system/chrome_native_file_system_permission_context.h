@@ -74,7 +74,9 @@ class ChromeNativeFileSystemPermissionContext
     Grants(Grants&&);
     Grants& operator=(Grants&&);
 
+    std::vector<base::FilePath> file_read_grants;
     std::vector<base::FilePath> file_write_grants;
+    std::vector<base::FilePath> directory_read_grants;
     std::vector<base::FilePath> directory_write_grants;
   };
   virtual Grants GetPermissionGrants(const url::Origin& origin,
@@ -86,6 +88,9 @@ class ChromeNativeFileSystemPermissionContext
   virtual void RevokeGrants(const url::Origin& origin,
                             int process_id,
                             int frame_id) = 0;
+
+  virtual bool OriginHasReadAccess(const url::Origin& origin);
+  virtual bool OriginHasWriteAccess(const url::Origin& origin);
 
   HostContentSettingsMap* content_settings() { return content_settings_.get(); }
 

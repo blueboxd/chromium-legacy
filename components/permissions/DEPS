@@ -1,4 +1,7 @@
 include_rules = [
   "+components/content_settings/core",
+  "+components/keyed_service/content",
+  "+components/keyed_service/core",
+  "+components/sync_preferences",
   "+content/public/browser",
 ]

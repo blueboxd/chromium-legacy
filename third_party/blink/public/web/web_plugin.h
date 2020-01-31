@@ -107,7 +107,7 @@ class WebPlugin {
 
   virtual bool CanProcessDrag() const { return false; }
 
-  virtual void UpdateAllLifecyclePhases(WebWidget::LifecycleUpdateReason) = 0;
+  virtual void UpdateAllLifecyclePhases(blink::DocumentUpdateReason) = 0;
   virtual void Paint(cc::PaintCanvas*, const WebRect&) = 0;
 
   // Coordinates are relative to the containing window.

@@ -98,6 +98,8 @@ const char kUnsafelyAllowProtectedMediaIdentifierForDomain[] =
     "unsafely-allow-protected-media-identifier-for-domain";
 
 // Use fake device for Media Stream to replace actual camera and microphone.
+// For the list of allowed parameters, see
+// FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString().
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 
 // Use an .y4m file to play as the webcam. See the comments in
@@ -349,6 +351,10 @@ const base::Feature kGlobalMediaControlsForCast{
 // notifications. It is no-op if kGlobalMediaControls is not enabled.
 const base::Feature kGlobalMediaControlsOverlayControls{
     "GlobalMediaControlsOverlayControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Show picture-in-picture button in Global Media Controls.
+const base::Feature kGlobalMediaControlsPictureInPicture{
+    "GlobalMediaControlsPictureInPicture", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.

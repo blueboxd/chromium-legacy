@@ -27,16 +27,18 @@ using infobars::InfoBarManager;
 // Test fixture for InfobarOverlayRequestInserter.
 class InfobarOverlayRequestInserterTest : public PlatformTest {
  public:
-  InfobarOverlayRequestInserterTest()
-      : inserter_(&web_state_,
-                  std::make_unique<FakeInfobarOverlayRequestFactory>()) {
+  InfobarOverlayRequestInserterTest() {
     web_state_.SetNavigationManager(
         std::make_unique<web::TestNavigationManager>());
+    InfobarOverlayRequestInserter::CreateForWebState(
+        &web_state_, std::make_unique<FakeInfobarOverlayRequestFactory>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
   }
 
   // Accessors.
-  InfobarOverlayRequestInserter* inserter() { return &inserter_; }
+  InfobarOverlayRequestInserter* inserter() {
+    return InfobarOverlayRequestInserter::FromWebState(&web_state_);
+  }
   InfoBarManager* manager() {
     return InfoBarManagerImpl::FromWebState(&web_state_);
   }
@@ -58,7 +60,6 @@ class InfobarOverlayRequestInserterTest : public PlatformTest {
 
  private:
   web::TestWebState web_state_;
-  InfobarOverlayRequestInserter inserter_;
 };
 
 // Tests that the inserter adds banner OverlayRequests to the correct queue.

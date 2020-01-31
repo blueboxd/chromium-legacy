@@ -323,9 +323,9 @@ TEST_F(NativeRendererMessagingServiceTest, Connect) {
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessageChannel(script_context(), expected_port_id, target,
-                                     kChannel, false));
+                                     kChannel));
   gin::Handle<GinPort> new_port =
-      messaging_service()->Connect(script_context(), target, "channel", false);
+      messaging_service()->Connect(script_context(), target, "channel");
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   ASSERT_FALSE(new_port.IsEmpty());
 
@@ -351,15 +351,13 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessage) {
   // Send a message and expect a reply. A new port should be created, and should
   // remain open (waiting for the response).
   const Message message("\"hi\"", false);
-  bool include_tls_channel_id = false;
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendOpenMessageChannel(script_context(), port_id, target,
-                                     kChannel, include_tls_channel_id));
+  EXPECT_CALL(
+      *ipc_message_sender(),
+      SendOpenMessageChannel(script_context(), port_id, target, kChannel));
   EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
   messaging_service()->SendOneTimeMessage(script_context(), target, kChannel,
-                                          include_tls_channel_id, message,
-                                          response_callback);
+                                          message, response_callback);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(
       messaging_service()->HasPortForTesting(script_context(), port_id));

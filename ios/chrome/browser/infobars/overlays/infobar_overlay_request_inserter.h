@@ -8,7 +8,9 @@
 #include <map>
 #include <memory>
 
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory_impl.h"
 #include "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
+#include "ios/web/public/web_state_user_data.h"
 
 namespace infobars {
 class InfoBar;
@@ -21,15 +23,17 @@ class WebState;
 
 // Helper object that creates OverlayRequests for InfoBars and inserts them into
 // a WebState's OverlayRequestQueues.
-class InfobarOverlayRequestInserter {
+class InfobarOverlayRequestInserter
+    : public web::WebStateUserData<InfobarOverlayRequestInserter> {
  public:
-  // Constructor for an inserter that uses |factory| to construct
-  // OverlayRequests to insert into |web_state|'s OverlayRequestQueues.  Both
-  // |web_state| and |factory| must be non-null.
-  InfobarOverlayRequestInserter(
+  // Creates an inserter for |web_state| that uses |request_factory| to create
+  // inserted requests.
+  static void CreateForWebState(
       web::WebState* web_state,
-      std::unique_ptr<InfobarOverlayRequestFactory> factory);
-  ~InfobarOverlayRequestInserter();
+      std::unique_ptr<InfobarOverlayRequestFactory> request_factory =
+          std::make_unique<InfobarOverlayRequestFactoryImpl>());
+
+  ~InfobarOverlayRequestInserter() override;
 
   // Creates an OverlayRequest for |type| configured with |infobar| and adds it
   // to the back of the OverlayRequestQueue at |type|'s modality.
@@ -44,6 +48,16 @@ class InfobarOverlayRequestInserter {
                             size_t index) const;
 
  private:
+  friend class web::WebStateUserData<InfobarOverlayRequestInserter>;
+  WEB_STATE_USER_DATA_KEY_DECL();
+
+  // Constructor for an inserter that uses |factory| to construct
+  // OverlayRequests to insert into |web_state|'s OverlayRequestQueues.  Both
+  // |web_state| and |factory| must be non-null.
+  InfobarOverlayRequestInserter(
+      web::WebState* web_state,
+      std::unique_ptr<InfobarOverlayRequestFactory> factory);
+
   // The WebState whose queues are being inserted into.
   web::WebState* web_state_ = nullptr;
   // The factory used to create OverlayRequests.

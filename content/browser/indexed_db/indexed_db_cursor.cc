@@ -120,12 +120,13 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
   }
 
   blink::mojom::IDBValuePtr mojo_value;
-  std::vector<IndexedDBBlobInfo> blob_info;
+  std::vector<IndexedDBExternalObject> external_objects;
   IndexedDBValue* value = Value();
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
-    blob_info.swap(value->blob_info);
-    dispatcher_host->CreateAllBlobs(blob_info, &mojo_value->blob_or_file_info);
+    external_objects.swap(value->external_objects);
+    dispatcher_host->CreateAllExternalObjects(external_objects,
+                                              &mojo_value->external_objects);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -201,12 +202,13 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
   }
 
   blink::mojom::IDBValuePtr mojo_value;
-  std::vector<IndexedDBBlobInfo> blob_info;
+  std::vector<IndexedDBExternalObject> external_objects;
   IndexedDBValue* value = Value();
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
-    blob_info.swap(value->blob_info);
-    dispatcher_host->CreateAllBlobs(blob_info, &mojo_value->blob_or_file_info);
+    external_objects.swap(value->external_objects);
+    dispatcher_host->CreateAllExternalObjects(external_objects,
+                                              &mojo_value->external_objects);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -331,8 +333,8 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
   for (size_t i = 0; i < found_values.size(); ++i) {
     mojo_values.push_back(
         IndexedDBValue::ConvertAndEraseValue(&found_values[i]));
-    dispatcher_host->CreateAllBlobs(found_values[i].blob_info,
-                                    &mojo_values[i]->blob_or_file_info);
+    dispatcher_host->CreateAllExternalObjects(
+        found_values[i].external_objects, &mojo_values[i]->external_objects);
   }
 
   std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(

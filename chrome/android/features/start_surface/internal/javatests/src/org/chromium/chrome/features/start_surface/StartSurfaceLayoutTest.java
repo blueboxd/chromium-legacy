@@ -676,17 +676,30 @@ public class StartSurfaceLayoutTest {
         int currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
         assertEquals(2, currentFetchCount - oldFetchCount);
         oldFetchCount = currentFetchCount;
+        int oldHistogramRecord = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
 
         for (int i = 0; i < mRepeat; i++) {
             switchTabModel(false);
             currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
+            int currentHistogramRecord = RecordHistogram.getHistogramValueCountForTesting(
+                    TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                    TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
             assertEquals(1, currentFetchCount - oldFetchCount);
+            assertEquals(1, currentHistogramRecord - oldHistogramRecord);
             oldFetchCount = currentFetchCount;
+            oldHistogramRecord = currentHistogramRecord;
 
             switchTabModel(true);
             currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
+            currentHistogramRecord = RecordHistogram.getHistogramValueCountForTesting(
+                    TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                    TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
             assertEquals(2, currentFetchCount - oldFetchCount);
+            assertEquals(2, currentHistogramRecord - oldHistogramRecord);
             oldFetchCount = currentFetchCount;
+            oldHistogramRecord = currentHistogramRecord;
         }
         leaveGTSAndVerifyThumbnailsAreReleased();
     }
@@ -1409,7 +1422,7 @@ public class StartSurfaceLayoutTest {
         TabModel currentModel = mActivityTestRule.getActivity().getCurrentTabModel();
         for (int i = 0; i < currentModel.getCount(); i++) {
             Tab tab = currentModel.getTabAt(i);
-            Bitmap bitmap = TabContentManager.getJpegForTab(tab);
+            Bitmap bitmap = TabContentManager.getJpegForTab(tab.getId());
             bitmap = Bitmap.createScaledBitmap(
                     bitmap, bitmap.getWidth(), (int) (bitmap.getWidth() * 1.0 / 0.75), false);
             encodeJpeg(tab, bitmap);
@@ -1418,17 +1431,17 @@ public class StartSurfaceLayoutTest {
 
     private void encodeJpeg(Tab tab, Bitmap bitmap) throws IOException {
         FileOutputStream outputStream =
-                new FileOutputStream(TabContentManager.getTabThumbnailFileJpeg(tab));
+                new FileOutputStream(TabContentManager.getTabThumbnailFileJpeg(tab.getId()));
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
         outputStream.close();
-        Bitmap decodedBitmap = TabContentManager.getJpegForTab(tab);
+        Bitmap decodedBitmap = TabContentManager.getJpegForTab(tab.getId());
     }
 
     private void verifyAllThumbnailHasAspectRatio(double ratio) {
         TabModel currentModel = mActivityTestRule.getActivity().getCurrentTabModel();
         for (int i = 0; i < currentModel.getCount(); i++) {
             Tab tab = currentModel.getTabAt(i);
-            Bitmap bitmap = TabContentManager.getJpegForTab(tab);
+            Bitmap bitmap = TabContentManager.getJpegForTab(tab.getId());
             double bitmapRatio = bitmap.getWidth() * 1.0 / bitmap.getHeight();
             assertTrue("Actual ratio: " + bitmapRatio + "; Expected ratio: " + ratio,
                     Math.abs(bitmapRatio - ratio) <= TabContentManager.ASPECT_RATIO_PRECISION);

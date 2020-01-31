@@ -739,6 +739,9 @@ class TabStrip : public views::AccessiblePaneView,
   // Time of the last mouse move event.
   base::TimeTicks last_mouse_move_time_;
 
+  // Used for seek time metrics from the time the mouse enters the tabstrip.
+  base::Optional<base::TimeTicks> mouse_entered_tabstrip_time_;
+
   // Number of mouse moves.
   int mouse_move_count_ = 0;
 

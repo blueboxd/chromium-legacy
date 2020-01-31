@@ -126,7 +126,7 @@ class DefaultStyleErrorHandler(object):
     def turn_off_line_filtering(self):
         self._line_numbers = None
 
-    def __call__(self, line_number, category, confidence, message):
+    def __call__(self, line_number=0, category='error', confidence='1', message=''):
         """Handle the occurrence of a style error.
 
         See the docstring of this module for more information.

@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_processor_android.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/service/display/overlay_processor_on_gpu.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -22,15 +23,20 @@ OverlayProcessorAndroid::OverlayProcessorAndroid(
   if (!overlay_enabled_)
     return;
 
+  // In unittests, we don't have the gpu_task_scheduler_ set up, but still want
+  // to test ProcessForOverlays functionalities where we are making overlay
+  // candidates correctly.
   if (gpu_task_scheduler_) {
     gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
     // TODO(weiliangc): Eventually move the on gpu initialization to another
     // static function.
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     auto callback = base::BindOnce(
         &OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu,
-        base::Unretained(this), shared_image_manager);
+        base::Unretained(this), shared_image_manager, &event);
     gpu_task_scheduler_->ScheduleGpuTask(std::move(callback), {});
-    able_to_create_processor_on_gpu_ = true;
+    event.Wait();
   }
 
   // For Android, we do not have the ability to skip an overlay, since the
@@ -47,7 +53,7 @@ OverlayProcessorAndroid::OverlayProcessorAndroid(
 }
 
 OverlayProcessorAndroid::~OverlayProcessorAndroid() {
-  if (able_to_create_processor_on_gpu_) {
+  if (processor_on_gpu_) {
     gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
     // If we have a |gpu_task_scheduler_|, we must have started initializing
     // a |processor_on_gpu_| on the |gpu_task_scheduler_|.
@@ -62,10 +68,12 @@ OverlayProcessorAndroid::~OverlayProcessorAndroid() {
 }
 
 void OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu(
-    gpu::SharedImageManager* shared_image_manager) {
+    gpu::SharedImageManager* shared_image_manager,
+    base::WaitableEvent* event) {
   processor_on_gpu_ =
       std::make_unique<OverlayProcessorOnGpu>(shared_image_manager);
-  gpu_init_event_.Signal();
+  DCHECK(event);
+  event->Signal();
 }
 
 void OverlayProcessorAndroid::DestroyOverlayProcessorOnGpu(
@@ -85,20 +93,23 @@ bool OverlayProcessorAndroid::NeedsSurfaceOccludingDamageRect() const {
 
 void OverlayProcessorAndroid::ScheduleOverlays(
     DisplayResourceProvider* resource_provider) {
-  if (!gpu_task_scheduler_)
+  if (!processor_on_gpu_)
     return;
 
+  // Even if we don't have anything to overlay, still generate overlay locks for
+  // empty frame.
   pending_overlay_locks_.emplace_back();
+
+  // Early out if we don't have any overlay candidates.
+  if (overlay_candidates_.empty())
+    return;
+
   auto& locks = pending_overlay_locks_.back();
   std::vector<gpu::SyncToken> locks_sync_tokens;
   for (auto& candidate : overlay_candidates_) {
     locks.emplace_back(resource_provider, candidate.resource_id);
     locks_sync_tokens.push_back(locks.back().sync_token());
   }
-
-  // If we haven't finished creating processor_on_gpu_, wait for it.
-  if (!processor_on_gpu_ && able_to_create_processor_on_gpu_)
-    gpu_init_event_.Wait();
 
   auto task = base::BindOnce(&OverlayProcessorOnGpu::ScheduleOverlays,
                              base::Unretained(processor_on_gpu_.get()),
@@ -175,9 +186,16 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
   if (!resource_provider->DoAnyResourcesWantPromotionHints())
     return;
 
-  // |promotion_hint_requestor_set_| is calculated here, so it should be empty
-  // to begin with.
-  DCHECK(promotion_hint_requestor_set_.empty());
+  // If we don't have a processor_on_gpu_, there is nothing to send the overlay
+  // promotions to.
+  if (!processor_on_gpu_) {
+    promotion_hint_info_map_.clear();
+    return;
+  }
+
+  // Set of resources that have requested a promotion hint that also have quads
+  // that use them.
+  ResourceIdSet promotion_hint_requestor_set;
 
   for (auto* quad : quad_list) {
     if (quad->material != DrawQuad::Material::kStreamVideoContent)
@@ -185,7 +203,7 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
     ResourceId id = StreamVideoDrawQuad::MaterialCast(quad)->resource_id();
     if (!resource_provider->DoesResourceWantPromotionHint(id))
       continue;
-    promotion_hint_requestor_set_.insert(id);
+    promotion_hint_requestor_set.insert(id);
   }
 
   base::flat_set<gpu::Mailbox> promotion_denied;
@@ -196,7 +214,7 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
   std::vector<
       std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
       locks;
-  for (auto& request : promotion_hint_requestor_set_) {
+  for (auto& request : promotion_hint_requestor_set) {
     // If we successfully promote one candidate, then that promotion hint
     // should be sent later when we schedule the overlay.
     if (!candidates.empty() && candidates.front().resource_id == request)
@@ -220,10 +238,6 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
     locks_sync_tokens.push_back(read_lock->sync_token());
 
   if (gpu_task_scheduler_) {
-    // If we haven't finished creating processor_on_gpu_, wait for it.
-    if (!processor_on_gpu_ && able_to_create_processor_on_gpu_)
-      gpu_init_event_.Wait();
-
     auto task = base::BindOnce(&OverlayProcessorOnGpu::NotifyOverlayPromotions,
                                base::Unretained(processor_on_gpu_.get()),
                                std::move(promotion_denied),
@@ -231,7 +245,6 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
     gpu_task_scheduler_->ScheduleGpuTask(std::move(task), locks_sync_tokens);
   }
   promotion_hint_info_map_.clear();
-  promotion_hint_requestor_set_.clear();
 }
 
 }  // namespace viz

@@ -255,7 +255,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     mirror_container_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);
     SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent74,
+        AshColorProvider::BaseLayerType::kTransparent80,
         AshColorProvider::AshColorMode::kDark);
     mirror_container_->layer()->SetColor(background_color);
     mirror_container_->layer()->SetBackgroundBlur(kBackgroundBlurSigma);

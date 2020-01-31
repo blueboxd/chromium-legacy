@@ -4,7 +4,6 @@
 
 #include "ash/wm/overview/overview_highlight_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desk.h"
@@ -21,7 +20,6 @@
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -341,8 +339,6 @@ class DesksOverviewHighlightControllerTest
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-
     AshTestBase::SetUp();
 
     // All tests in this suite require the desks bar to be visible in overview,
@@ -375,7 +371,6 @@ class DesksOverviewHighlightControllerTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(DesksOverviewHighlightControllerTest);
 };
 

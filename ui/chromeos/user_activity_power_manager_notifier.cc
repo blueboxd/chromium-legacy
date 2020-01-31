@@ -8,8 +8,8 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 namespace {

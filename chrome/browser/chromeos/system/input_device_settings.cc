@@ -9,6 +9,8 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace system {
@@ -272,8 +274,21 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
 
 // static
 bool InputDeviceSettings::ForceKeyboardDrivenUINavigation() {
+  // tests do not have InstallAttributes or LocalState initialized, so getting
+  // browser_policy_connector crashes.
+  if (!InstallAttributes::IsInitialized() ||
+      !g_browser_process->local_state() ||
+      g_browser_process->local_state()
+              ->GetAllPrefStoresInitializationStatus() ==
+          PrefService::INITIALIZATION_STATUS_WAITING) {
+    return false;
+  }
+
   policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+      InstallAttributes::IsInitialized()
+          ? g_browser_process->platform_part()
+                ->browser_policy_connector_chromeos()
+          : nullptr;
   if (!connector)
     return false;
 

@@ -47,7 +47,7 @@ constexpr uint32_t kInFormatsPropId = 301;
 
 class DrmOverlayValidatorTest : public testing::Test {
  public:
-  DrmOverlayValidatorTest() {}
+  DrmOverlayValidatorTest() = default;
 
   void SetUp() override;
   void TearDown() override;

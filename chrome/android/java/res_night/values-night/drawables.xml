@@ -5,7 +5,6 @@
 <resources>
     <drawable name="badge_update">@drawable/badge_update_light</drawable>
     <drawable name="ic_error_24dp_filled">@drawable/ic_error_white_24dp_filled</drawable>
-    <drawable name="ic_more_vert_24dp">@drawable/ic_more_vert_24dp_on_dark_bg</drawable>
     <drawable name="ic_offline_pin_24dp">@drawable/ic_offline_pin_24dp_on_dark_bg</drawable>
     <drawable name="ic_play_circle_filled_24dp">
         @drawable/ic_play_circle_filled_24dp_on_dark_bg

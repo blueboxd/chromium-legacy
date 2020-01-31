@@ -217,7 +217,14 @@ void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged() {
 
 void MediaNotificationContainerImplView::OnVisibleActionsChanged(
     const base::flat_set<media_session::mojom::MediaSessionAction>& actions) {
-  has_many_actions_ = actions.size() >= kMinVisibleActionsForExpanding;
+  has_many_actions_ =
+      (actions.size() >= kMinVisibleActionsForExpanding ||
+       base::Contains(
+           actions,
+           media_session::mojom::MediaSessionAction::kEnterPictureInPicture) ||
+       base::Contains(
+           actions,
+           media_session::mojom::MediaSessionAction::kExitPictureInPicture));
   ForceExpandedState();
 }
 

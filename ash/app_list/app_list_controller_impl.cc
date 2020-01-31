@@ -732,6 +732,21 @@ void AppListControllerImpl::OnTabletModeStarted() {
     Shell::Get()->home_screen_controller()->Show();
   }
   UpdateLauncherContainer();
+
+  // If the app list is visible before the transition to tablet mode,
+  // AppListPresenter relies on the active window change to detect the app list
+  // view got hidden behind a window. Though, app list UI moving behind an app
+  // window does not always cause an active window change:
+  // *   If the app list is still being shown - given that app list takes focus
+  //     from the top window only when it's fully shown, the focus will remain
+  //     within the app window throughout the tablet mode transition.
+  // *   If the assistant UI is visible before the tablet mode transition - the
+  //     assistant will keep the focus during transition, even though the app
+  //     window will be shown over the app list view.
+  // Ensure the app list visibility is properly updated if the app list is
+  // hidden behind a window at this point.
+  if (last_target_visible_ && !ShouldHomeLauncherBeVisible())
+    OnVisibilityChanged(false, last_visible_display_id_);
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {

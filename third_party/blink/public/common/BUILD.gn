@@ -34,7 +34,9 @@ buildflag_header("buildflags") {
 source_set("headers") {
   visibility = [
     "//chrome/*",
+    "//chromecast/*",
     "//content/*",
+    "//fuchsia/*",
     "//third_party/blink/*",
     "//components/*",
     "//services/*",
@@ -61,6 +63,7 @@ source_set("headers") {
     "dom_storage/session_storage_namespace_id.h",
     "experiments/memory_ablation_experiment.h",
     "feature_policy/document_policy.h",
+    "feature_policy/document_policy_features.h",
     "feature_policy/feature_policy.h",
     "feature_policy/policy_value.h",
     "features.h",
@@ -117,6 +120,7 @@ source_set("headers") {
     "messaging/transferable_message.h",
     "messaging/transferable_message_mojom_traits.h",
     "messaging/web_message_port.h",
+    "metrics/document_update_reason.h",
     "mime_util/mime_util.h",
     "navigation/triggering_event_info.h",
     "notifications/notification_constants.h",
@@ -158,6 +162,7 @@ source_set("headers") {
     "//skia/public/mojom:shared_typemap_traits",
     "//third_party/blink/public/mojom:mojom_modules_headers",
     "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_headers",
+    "//ui/events/types:headers",
   ]
 
   deps = [

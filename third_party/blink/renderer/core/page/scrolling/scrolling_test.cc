@@ -76,7 +76,7 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   ~ScrollingTest() override {
@@ -94,7 +94,7 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
 
   void ForceFullCompositingUpdate() {
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {

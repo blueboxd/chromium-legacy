@@ -33,7 +33,7 @@ class WebRtcMessageHandler : public SharingMessageHandler {
  private:
   void HandleOfferMessage(
       const std::string& sender_guid,
-      const syncer::DeviceInfo::SharingTargetInfo& target_info,
+      const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
       const chrome_browser_sharing::PeerConnectionOfferMessage& message,
       SharingMessageHandler::DoneCallback done_callback);
 
@@ -42,7 +42,7 @@ class WebRtcMessageHandler : public SharingMessageHandler {
 
   void HandleIceCandidatesMessage(
       const std::string& sender_guid,
-      const syncer::DeviceInfo::SharingTargetInfo& target_info,
+      const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
       const chrome_browser_sharing::PeerConnectionIceCandidatesMessage& message,
       SharingMessageHandler::DoneCallback done_callback);
 

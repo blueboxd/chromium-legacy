@@ -34,7 +34,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,6 +56,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
 #include "components/safe_browsing/buildflags.h"
@@ -554,8 +555,8 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   // The permission may have been blocked due to being under embargo, so if it
   // was changed away from BLOCK, clear embargo status if it exists.
   if (setting != CONTENT_SETTING_BLOCK) {
-    PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveEmbargoByUrl(
-        site_url_, type);
+    PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
+        ->RemoveEmbargoByUrl(site_url_, type);
   }
   content_settings_->SetNarrowestContentSetting(site_url_, site_url_, type,
                                                 setting);

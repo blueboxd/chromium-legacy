@@ -48,8 +48,7 @@ bool IsInactiveDeskContainerId(int id) {
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, public:
 
-AshFocusRules::AshFocusRules()
-    : activatable_container_ids_(GetActivatableShellWindowIds()) {}
+AshFocusRules::AshFocusRules() = default;
 
 AshFocusRules::~AshFocusRules() = default;
 
@@ -64,11 +63,11 @@ bool AshFocusRules::IsToplevelWindow(const aura::Window* window) const {
 
   // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return base::Contains(activatable_container_ids_, window->parent()->id());
+  return IsActivatableShellWindowId(window->parent()->id());
 }
 
 bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
-  return base::Contains(activatable_container_ids_, window->id());
+  return IsActivatableShellWindowId(window->id());
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
@@ -158,10 +157,10 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   aura::Window* root = starting_window->GetRootWindow();
   if (!root)
     root = Shell::GetRootWindowForNewWindows();
-  int container_count = activatable_container_ids_.size();
+  const auto& container_ids = GetActivatableShellWindowIds();
+  const int container_count = container_ids.size();
   for (int i = 0; i < container_count; i++) {
-    aura::Window* container =
-        Shell::GetContainer(root, activatable_container_ids_[i]);
+    aura::Window* container = Shell::GetContainer(root, container_ids[i]);
     if (container && container->Contains(starting_window)) {
       starting_container_index = i;
       break;
@@ -184,7 +183,7 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
 aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     int index,
     aura::Window* ignore) const {
-  const int container_id = activatable_container_ids_[index];
+  const int container_id = GetActivatableShellWindowIds()[index];
   // Inactive desk containers should be ignored, since windows in them should
   // never be returned as a next activatable window.
   if (IsInactiveDeskContainerId(container_id))

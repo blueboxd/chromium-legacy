@@ -164,7 +164,6 @@ void OneTimeMessageHandler::SendMessage(
     const PortId& new_port_id,
     const MessageTarget& target,
     const std::string& method_name,
-    bool include_tls_channel_id,
     const Message& message,
     v8::Local<v8::Function> response_callback) {
   v8::Isolate* isolate = script_context->isolate();
@@ -191,7 +190,7 @@ void OneTimeMessageHandler::SendMessage(
 
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
   ipc_sender->SendOpenMessageChannel(script_context, new_port_id, target,
-                                     method_name, include_tls_channel_id);
+                                     method_name);
   ipc_sender->SendPostMessageToPort(new_port_id, message);
 
   // If the sender doesn't provide a response callback, we can immediately

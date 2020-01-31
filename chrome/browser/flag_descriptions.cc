@@ -2327,8 +2327,8 @@ const char kContextMenuCopyImageDescription[] =
 
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
-    "Enables tap-activated contextual definitions of words on a page to be "
-    "presented in the caption of the Tap to Search Bar.";
+    "Enables touch-activated contextual definitions of words on a page to be "
+    "presented in the caption of the Touch to Search Bar.";
 
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
@@ -3330,10 +3330,6 @@ const char kEnableVideoPlayerNativeControlsName[] =
     "Enable native controls in video player app";
 const char kEnableVideoPlayerNativeControlsDescription[] =
     "Enable native controls in video player app";
-
-const char kEnableVirtualDesksName[] = "Enable Virtual Desks";
-const char kEnableVirtualDesksDescription[] =
-    "A preview of the upcoming Virtual Desks features on Chrome OS devices.";
 
 const char kTrimOnFreezeName[] = "Trim Working Set on freeze";
 const char kTrimOnFreezeDescription[] = "Trim Working Set on all frames frozen";

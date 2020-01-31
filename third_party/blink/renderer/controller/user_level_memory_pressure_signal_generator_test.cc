@@ -98,6 +98,8 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
         mock_memory_usage_monitor.get());
     MockUserLevelMemoryPressureSignalGenerator generator;
     generator.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+    // Ensure we are not loading as no signals are sent during a loading phase.
+    generator.OnRAILModeChanged(RAILMode::kAnimation);
     {
       EXPECT_CALL(generator, Generate(_)).Times(0);
       MemoryUsage usage;
@@ -135,6 +137,8 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GenerationPauses) {
         mock_memory_usage_monitor.get());
     MockUserLevelMemoryPressureSignalGenerator generator;
     generator.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+    // Ensure we are not loading as no signals are sent during a loading phase.
+    generator.OnRAILModeChanged(RAILMode::kAnimation);
     {
       MemoryUsage usage;
       usage.v8_bytes = 0;

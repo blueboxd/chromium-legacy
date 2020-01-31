@@ -98,6 +98,7 @@ class CORE_EXPORT PendingAnimations final
  private:
   void TimerFired(TimerBase*) { Update(nullptr, false); }
   int NextCompositorGroup();
+  void FlushWaitingNonCompositedAnimations();
 
   HeapVector<Member<Animation>> pending_;
   HeapVector<Member<Animation>> waiting_for_compositor_animation_start_;

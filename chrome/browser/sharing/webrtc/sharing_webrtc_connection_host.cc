@@ -14,6 +14,9 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/crypto/gcm_encryption_result.h"
+#include "components/gcm_driver/gcm_driver.h"
 
 namespace {
 
@@ -31,8 +34,9 @@ bool IsValidSharingWebRtcPayloadCase(
 SharingWebRtcConnectionHost::SharingWebRtcConnectionHost(
     std::unique_ptr<WebRtcSignallingHostFCM> signalling_host,
     SharingHandlerRegistry* handler_registry,
-    std::unique_ptr<syncer::DeviceInfo> device_info,
-    base::OnceCallback<void(const std::string&)> on_closed,
+    gcm::GCMDriver* gcm_driver,
+    EncryptionInfo encryption_info,
+    base::OnceClosure on_closed,
     mojo::PendingReceiver<sharing::mojom::SharingWebRtcConnectionDelegate>
         delegate,
     mojo::PendingRemote<sharing::mojom::SharingWebRtcConnection> connection,
@@ -41,7 +45,8 @@ SharingWebRtcConnectionHost::SharingWebRtcConnectionHost(
     mojo::PendingRemote<network::mojom::P2PTrustedSocketManager> socket_manager)
     : signalling_host_(std::move(signalling_host)),
       handler_registry_(handler_registry),
-      device_info_(std::move(device_info)),
+      gcm_driver_(gcm_driver),
+      encryption_info_(std::move(encryption_info)),
       on_closed_(std::move(on_closed)),
       delegate_(this, std::move(delegate)),
       connection_(std::move(connection)),
@@ -73,9 +78,20 @@ SharingWebRtcConnectionHost::~SharingWebRtcConnectionHost() = default;
 void SharingWebRtcConnectionHost::OnMessageReceived(
     const std::vector<uint8_t>& message) {
   // TODO(crbug.com/1045408): hook this up to a fuzzer.
-  // TODO(crbug.com/1045406): decrypt |message|.
+  // TODO(crbug.com/1046333): consider a different mojo interface to avoid copy
+  std::string raw_data(message.data(), message.data() + message.size());
+  gcm_driver_->DecryptMessage(
+      kSharingFCMAppID, encryption_info_.authorized_entity, raw_data,
+      base::BindOnce(&SharingWebRtcConnectionHost::OnMessageDecrypted,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SharingWebRtcConnectionHost::OnMessageDecrypted(
+    gcm::GCMDecryptionResult result,
+    std::string message) {
   chrome_browser_sharing::WebRtcMessage sharing_message;
-  if (!sharing_message.ParseFromArray(message.data(), message.size())) {
+  if (result != gcm::GCMDecryptionResult::DECRYPTED_DRAFT_08 ||
+      !sharing_message.ParseFromString(message)) {
     // TODO(crbug.com/1021984): replace this with UMA metrics
     LOG(ERROR) << "Could not parse Sharing message received via WebRTC!";
     return;
@@ -100,7 +116,7 @@ void SharingWebRtcConnectionHost::OnMessageReceived(
 
   std::string original_message_id = sharing_message.message_guid();
   chrome_browser_sharing::MessageType original_message_type =
-      SharingPayloadCaseToMessageType(sharing_message.message().payload_case());
+      SharingPayloadCaseToMessageType(payload_case);
 
   handler->OnMessage(
       std::move(sharing_message.message()),
@@ -145,7 +161,7 @@ void SharingWebRtcConnectionHost::OnConnectionClosing() {
 
 void SharingWebRtcConnectionHost::OnConnectionClosed() {
   if (on_closed_)
-    std::move(on_closed_).Run(device_info_->guid());
+    std::move(on_closed_).Run();
 }
 
 void SharingWebRtcConnectionHost::OnConnectionTimeout() {
@@ -157,9 +173,24 @@ void SharingWebRtcConnectionHost::OnConnectionTimeout() {
 void SharingWebRtcConnectionHost::SendMessage(
     chrome_browser_sharing::WebRtcMessage message,
     sharing::mojom::SharingWebRtcConnection::SendMessageCallback callback) {
-  std::vector<uint8_t> serialized_message(message.ByteSize());
-  if (!message.SerializeToArray(serialized_message.data(),
-                                serialized_message.size())) {
+  std::string serialized_message;
+  if (!message.SerializeToString(&serialized_message)) {
+    std::move(callback).Run(sharing::mojom::SendMessageResult::kError);
+    return;
+  }
+
+  gcm_driver_->EncryptMessage(
+      kSharingFCMAppID, encryption_info_.authorized_entity,
+      encryption_info_.p256dh, encryption_info_.auth_secret, serialized_message,
+      base::BindOnce(&SharingWebRtcConnectionHost::OnMessageEncrypted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SharingWebRtcConnectionHost::OnMessageEncrypted(
+    sharing::mojom::SharingWebRtcConnection::SendMessageCallback callback,
+    gcm::GCMEncryptionResult result,
+    std::string message) {
+  if (result != gcm::GCMEncryptionResult::ENCRYPTED_DRAFT_08) {
     std::move(callback).Run(sharing::mojom::SendMessageResult::kError);
     return;
   }
@@ -168,6 +199,8 @@ void SharingWebRtcConnectionHost::SendMessage(
   timeout_timer_.Reset();
 
   // TODO(crbug.com/1045406): encrypt |serialized_message|.
+  // TODO(crbug.com/1046333): consider a different mojo interface to avoid copy
+  std::vector<uint8_t> serialized_message(message.begin(), message.end());
   connection_->SendMessage(serialized_message, std::move(callback));
 }
 

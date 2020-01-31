@@ -596,10 +596,11 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
 void DownloadProtectionService::UploadForDeepScanning(
     download::DownloadItem* item,
     CheckDownloadRepeatingCallback callback,
-    DeepScanningRequest::DeepScanTrigger trigger) {
+    DeepScanningRequest::DeepScanTrigger trigger,
+    std::vector<DeepScanningRequest::DeepScanType> allowed_scans) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto request =
-      std::make_unique<DeepScanningRequest>(item, trigger, callback, this);
+  auto request = std::make_unique<DeepScanningRequest>(item, trigger, callback,
+                                                       this, allowed_scans);
   DeepScanningRequest* request_raw = request.get();
   auto insertion_result = deep_scanning_requests_.insert(
       std::make_pair(request_raw, std::move(request)));

@@ -17,14 +17,14 @@ class SingleArrayBufferFileList {
 
 /**
  * Loads files associated with a message received from the host.
- * @param {!mediaApp.MessageEventData} data
+ * @param {!File} file
  */
-async function load(data) {
+async function loadFile(file) {
   const fileList = new SingleArrayBufferFileList({
-    blob: new Blob([data.buffer], {type: data.type}),
-    size: data.buffer.byteLength,
-    mimeType: data.type,
-    name: 'buffer',
+    blob: file,
+    size: file.size,
+    mimeType: file.type,
+    name: file.name,
   });
 
   const app = /** @type {?mediaApp.ClientApi} */ (
@@ -42,11 +42,17 @@ function receiveMessage(/** Event */ e) {
     return;
   }
 
-  // Tests messages won't have a buffer (and are not handled by this listener).
-  if ('buffer' in event.data) {
+  // First ensure the message is our MessageEventData type, then act on it
+  // appropriately. Note test messages won't have a file (and are not handled by
+  // this listener), so it's currently sufficient to just check for `file`.
+  if ('file' in event.data) {
     const message =
         /** @type{MessageEvent<mediaApp.MessageEventData>}*/ (event);
-    load(message.data);
+    if (message.data.file) {
+      loadFile(message.data.file);
+    } else {
+      console.error('Unknown message:', message);
+    }
   }
 }
 

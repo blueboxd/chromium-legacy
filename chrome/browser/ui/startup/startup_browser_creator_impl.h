@@ -127,14 +127,12 @@ class StartupBrowserCreatorImpl {
   // In this case |app_url| or |app_id| are populated if they're non-null.
   bool IsAppLaunch(std::string* app_url, std::string* app_id);
 
-  // If IsAppLaunch is true, tries to open an application window.
-  // If the app is specified to start in a tab, or IsAppLaunch is false,
-  // returns false to specify default processing.
-  bool OpenApplicationWindow(Profile* profile);
-
-  // If IsAppLaunch is true and the user set a pref indicating that the app
-  // should open in a tab, do so.
-  bool OpenApplicationTab(Profile* profile);
+  // Opens an application window or tab if the process was launched with the web
+  // application command line switches. Returns true if launch succeeded (or is
+  // proceeding asynchronously); otherwise, returns false to indicate that
+  // normal browser startup should resume. Desktop web applications launch
+  // asynchronously, and fall back to launching a browser window.
+  bool MaybeLaunchApplication(Profile* profile);
 
   // Determines the URLs to be shown at startup by way of various policies
   // (welcome, pinned tabs, etc.), determines whether a session restore

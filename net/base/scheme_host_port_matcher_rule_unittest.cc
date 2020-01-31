@@ -174,6 +174,61 @@ TEST(SchemeHostPortMatcherRuleTest,
             rule->Evaluate(GURL("http://www.谷歌.cn")));
 }
 
+TEST(SchemeHostPortMatcherRuleTest, SuffixMatchingTest) {
+  // foo1.com, suffix matching rule will match www.foo1.com but the original one
+  // doesn't.
+  SchemeHostPortMatcherHostnamePatternRule rule1("", "foo1.com", -1);
+  std::unique_ptr<SchemeHostPortMatcherHostnamePatternRule>
+      suffix_matching_rule = rule1.GenerateSuffixMatchingRule();
+  EXPECT_EQ("foo1.com", rule1.ToString());
+  EXPECT_EQ("*foo1.com", suffix_matching_rule->ToString());
+  EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
+            rule1.Evaluate(GURL("http://www.foo1.com")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            suffix_matching_rule->Evaluate(GURL("http://www.foo1.com")));
+
+  // .foo2.com, suffix matching rule will match www.foo2.com but the original
+  // one doesn't.
+  SchemeHostPortMatcherHostnamePatternRule rule2("", ".foo2.com", -1);
+  suffix_matching_rule = rule2.GenerateSuffixMatchingRule();
+  EXPECT_EQ(".foo2.com", rule2.ToString());
+  EXPECT_EQ("*.foo2.com", suffix_matching_rule->ToString());
+  EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
+            rule2.Evaluate(GURL("http://www.foo2.com")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            suffix_matching_rule->Evaluate(GURL("http://www.foo2.com")));
+
+  // *foobar.com:80, this is already a suffix matching rule.
+  SchemeHostPortMatcherHostnamePatternRule rule3("", "*foobar.com", 80);
+  suffix_matching_rule = rule3.GenerateSuffixMatchingRule();
+  EXPECT_EQ("*foobar.com:80", rule3.ToString());
+  EXPECT_EQ("*foobar.com:80", suffix_matching_rule->ToString());
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            rule3.Evaluate(GURL("http://www.foobar.com:80")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            suffix_matching_rule->Evaluate(GURL("http://www.foobar.com:80")));
+
+  // *.foo, this is already a suffix matching rule.
+  SchemeHostPortMatcherHostnamePatternRule rule4("", "*.foo", -1);
+  suffix_matching_rule = rule4.GenerateSuffixMatchingRule();
+  EXPECT_EQ("*.foo", rule4.ToString());
+  EXPECT_EQ("*.foo", suffix_matching_rule->ToString());
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            rule4.Evaluate(GURL("http://www.foo")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            suffix_matching_rule->Evaluate(GURL("http://www.foo")));
+
+  // http://baz, suffix matching works for host part only.
+  SchemeHostPortMatcherHostnamePatternRule rule5("http", "baz", -1);
+  suffix_matching_rule = rule5.GenerateSuffixMatchingRule();
+  EXPECT_EQ("http://baz", rule5.ToString());
+  EXPECT_EQ("http://*baz", suffix_matching_rule->ToString());
+  EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
+            rule5.Evaluate(GURL("http://foobaz")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            suffix_matching_rule->Evaluate(GURL("http://foobaz")));
+}
+
 TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPHostRule_IPv4) {
   IPAddress ip_address;
   ignore_result(ip_address.AssignFromIPLiteral("192.168.1.1"));

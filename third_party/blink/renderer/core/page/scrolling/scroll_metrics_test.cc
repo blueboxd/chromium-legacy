@@ -42,8 +42,7 @@ class ScrollMetricsTest : public SimTest {
   void SetUpHtml(const char*);
   void Scroll(Element*, const WebGestureDevice);
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 };
 

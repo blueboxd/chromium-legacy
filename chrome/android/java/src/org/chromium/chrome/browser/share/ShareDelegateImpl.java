@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -257,8 +258,10 @@ public class ShareDelegateImpl implements ShareDelegate {
             if (params.shareDirectly()) {
                 ShareHelper.shareDirectly(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
-                ShareSheetCoordinator coordinator = new ShareSheetCoordinator(controller,
-                        tabProvider, tabCreator, new ShareSheetPropertyModelBuilder(controller));
+                ShareSheetCoordinator coordinator =
+                        new ShareSheetCoordinator(controller, tabProvider, tabCreator,
+                                new ShareSheetPropertyModelBuilder(controller,
+                                        ContextUtils.getApplicationContext().getPackageManager()));
                 // TODO(crbug/1009124): open custom share sheet.
                 coordinator.showShareSheet(params);
             } else {

@@ -16,6 +16,11 @@
 
 namespace features {
 
+// When wide color gamut content from the web is encountered, promote our
+// display to wide color gamut if supported.
+const base::Feature kDynamicColorGamut{"DynamicColorGamut",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use Skia's readback API instead of GLRendererCopier.
 #if defined(OS_WIN)
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
@@ -56,6 +61,10 @@ const base::Feature kVizFrameSubmissionForWebView{
 // order to do a pageflip test rather than allocating test buffers.
 const base::Feature kUseRealBuffersForPageFlipTest{
     "UseRealBuffersForPageFlipTest", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsDynamicColorGamutEnabled() {
+  return base::FeatureList::IsEnabled(kDynamicColorGamut);
+}
 
 const base::Feature kUsePreferredIntervalForVideo{
     "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};

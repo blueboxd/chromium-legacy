@@ -23,6 +23,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -1275,6 +1276,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
 
 // Open with --app-id=<id>, and see that an application tab opens by default.
 IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
+  base::HistogramTester tester;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // There should be one tab to start with.
@@ -1293,11 +1295,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
 
   // The app should open as a tab.
-  EXPECT_FALSE(launch.OpenApplicationWindow(browser()->profile()));
-  EXPECT_TRUE(launch.OpenApplicationTab(browser()->profile()));
+  EXPECT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(),
+                            /*process_startup=*/false));
 
-  // Check that a the number of browsers and tabs is correct.
-  unsigned int expected_browsers = 1;
+  {
+    // From startup_browser_creator_impl.cc:
+    constexpr char kLaunchModesHistogram[] = "Launch.Modes";
+    const base::HistogramBase::Sample LM_AS_WEBAPP_IN_TAB = 21;
+
+    tester.ExpectUniqueSample(kLaunchModesHistogram, LM_AS_WEBAPP_IN_TAB, 1);
+  }
+
+  // Check that the number of browsers and tabs is correct.
+  const unsigned int expected_browsers = 1;
   int expected_tabs = 1;
   expected_tabs++;
 

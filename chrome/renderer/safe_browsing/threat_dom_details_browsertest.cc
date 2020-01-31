@@ -10,7 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/renderer/render_view.h"

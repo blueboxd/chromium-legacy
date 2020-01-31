@@ -333,13 +333,15 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
 
   // Check if we may close controller now, at this point we can safely remove
   // controllers without window.
-  auto it_controller =
-      app_shelf_group_to_controller_map_.find(it->second->app_shelf_id());
+  const auto& app_shelf_id = it->second->app_shelf_id();
+  auto it_controller = app_shelf_group_to_controller_map_.find(app_shelf_id);
   if (it_controller != app_shelf_group_to_controller_map_.end()) {
-    it_controller->second->RemoveTaskId(task_id);
-    if (!it_controller->second->HasAnyTasks()) {
-      owner()->CloseLauncherItem(it_controller->second->shelf_id());
+    ArcAppWindowLauncherItemController* const controller =
+        it_controller->second;
+    controller->RemoveTaskId(task_id);
+    if (!controller->HasAnyTasks()) {
       app_shelf_group_to_controller_map_.erase(it_controller);
+      owner()->CloseLauncherItem(controller->shelf_id());
     }
   }
 

@@ -370,7 +370,7 @@ TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeForUseZoomDSF) {
                                      "</body>",
                                      base_url);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   Document* document =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();

@@ -83,3 +83,8 @@ ChromeVoxE2ETest = class extends testing.Test {
     return this.callbackHelper_.wrap(opt_callback);
   }
 };
+
+/** @override */
+ChromeVoxE2ETest.prototype.isAsync = true;
+/** @override */
+ChromeVoxE2ETest.prototype.runAccessibilityChecks = false;

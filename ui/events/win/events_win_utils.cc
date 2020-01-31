@@ -4,16 +4,16 @@
 
 #include <stdint.h>
 
-#include "ui/events/event_constants.h"
-
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "base/win/windowsx_shim.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/keycodes/platform_key_map_win.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/win/events_win_utils.h"
 #include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/geometry/point.h"

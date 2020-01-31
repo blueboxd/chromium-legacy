@@ -27,14 +27,14 @@ void ExpectEqual(const ash::ConversationStarter& a,
 using ConversationStartersParserTest = ChromeAshTestBase;
 
 // Verifies handling of an empty response.
-TEST_F(ConversationStartersParserTest, Parse_EmptyResponse) {
+TEST_F(ConversationStartersParserTest, HandlesEmptyResponse) {
   const std::vector<ash::ConversationStarter> conversation_starters =
       ConversationStartersParser::Parse(std::string());
   EXPECT_TRUE(conversation_starters.empty());
 }
 
 // Verifies handling of a non-safe JSON response.
-TEST_F(ConversationStartersParserTest, Parse_JsonResponse) {
+TEST_F(ConversationStartersParserTest, HandlesJsonResponse) {
   const std::vector<ash::ConversationStarter> conversation_starters =
       ConversationStartersParser::Parse(R"(
         {
@@ -52,7 +52,7 @@ TEST_F(ConversationStartersParserTest, Parse_JsonResponse) {
 }
 
 // Verifies handling of a safe JSON response that is not recognized.
-TEST_F(ConversationStartersParserTest, Parse_SafeJsonResponse_Unrecognized) {
+TEST_F(ConversationStartersParserTest, HandlesUnrecognizedSafeJsonResponse) {
   const std::vector<ash::ConversationStarter> conversation_starters =
       ConversationStartersParser::Parse(R"()]}'
           {
@@ -83,7 +83,7 @@ TEST_F(ConversationStartersParserTest, Parse_SafeJsonResponse_Unrecognized) {
 // Verifies handling of a safe JSON response that is recognized.
 // Note that |label| is required, but |actionUrl|, |iconUrl|, and
 // |requiredPermissions| are optional.
-TEST_F(ConversationStartersParserTest, Parse_SafeJsonResponse_Recognized) {
+TEST_F(ConversationStartersParserTest, HandlesRecognizedSafeJsonResponse) {
   const std::vector<ash::ConversationStarter> conversation_starters =
       ConversationStartersParser::Parse(R"()]}'
           {
@@ -133,7 +133,7 @@ TEST_F(ConversationStartersParserTest, Parse_SafeJsonResponse_Recognized) {
 
 // Verifies that a conversation starter that does not specify a |label| is
 // omitted from the collection.
-TEST_F(ConversationStartersParserTest, Parse_MissingLabel) {
+TEST_F(ConversationStartersParserTest, HandlesMissingLabel) {
   const std::vector<ash::ConversationStarter> conversation_starters =
       ConversationStartersParser::Parse(R"()]}'
           {
@@ -151,7 +151,7 @@ TEST_F(ConversationStartersParserTest, Parse_MissingLabel) {
 
 // Verifies that a conversation starter that specifies a required permission
 // that is not recognized is marked as requiring an unknown permission.
-TEST_F(ConversationStartersParserTest, Parse_UnknownPermission) {
+TEST_F(ConversationStartersParserTest, HandlesUnknownPermission) {
   const std::vector<ash::ConversationStarter> conversation_starters =
       ConversationStartersParser::Parse(R"()]}'
           {

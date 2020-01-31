@@ -54,7 +54,7 @@ TEST(PasswordInputTypeTest, DidEditFieldEvent) {
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.DidEditFieldCalls());
   // Simulate a text field edit.
@@ -82,7 +82,7 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   // Simulate a text field edit.
   page_holder->GetDocument().MaybeQueueSendDidEditFieldInInsecureContext();
   // No message should have been sent from a secure context.

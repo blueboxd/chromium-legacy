@@ -15,6 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/message_center/message_center.h"
@@ -308,12 +309,14 @@ content::WebContents* NotificationsTest::GetActiveWebContents(
 NotificationsTestWithPermissionsEmbargo ::
     NotificationsTestWithPermissionsEmbargo() {
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
-                                  features::kBlockPromptsIfIgnoredOften},
-                                 {features::kNativeNotifications});
+  feature_list_.InitWithFeatures(
+      {permissions::features::kBlockPromptsIfDismissedOften,
+       permissions::features::kBlockPromptsIfIgnoredOften},
+      {features::kNativeNotifications});
 #else
-  feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
-                                  features::kBlockPromptsIfIgnoredOften},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {permissions::features::kBlockPromptsIfDismissedOften,
+       permissions::features::kBlockPromptsIfIgnoredOften},
+      {});
 #endif  //  BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 }

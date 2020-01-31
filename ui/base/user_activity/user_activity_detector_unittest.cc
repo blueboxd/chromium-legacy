@@ -16,6 +16,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {

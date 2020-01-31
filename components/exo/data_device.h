@@ -66,7 +66,7 @@ class DataDevice : public WMHelper::DragDropObserver,
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
-  // Overridden from ui::ClipbaordObserver:
+  // Overridden from ui::ClipboardObserver:
   void OnClipboardDataChanged() override;
 
   // Overridden from SeatObserver:

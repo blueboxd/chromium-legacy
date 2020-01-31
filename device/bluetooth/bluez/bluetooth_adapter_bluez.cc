@@ -448,6 +448,13 @@ bool BluetoothAdapterBlueZ::IsDiscovering() const {
   if (!IsPresent())
     return false;
 
+  return NumScanningDiscoverySessions() > 0;
+}
+
+bool BluetoothAdapterBlueZ::IsDiscoveringForTesting() const {
+  if (!IsPresent())
+    return false;
+
   bluez::BluetoothAdapterClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothAdapterClient()

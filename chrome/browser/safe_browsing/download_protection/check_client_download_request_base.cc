@@ -202,7 +202,7 @@ void CheckClientDownloadRequestBase::FinishRequest(
   }
 
   if (ShouldUploadBinary(reason)) {
-    UploadBinary();
+    UploadBinary(reason);
   } else {
     std::move(callback_).Run(result);
   }

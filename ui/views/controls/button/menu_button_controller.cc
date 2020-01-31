@@ -8,6 +8,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller_delegate.h"

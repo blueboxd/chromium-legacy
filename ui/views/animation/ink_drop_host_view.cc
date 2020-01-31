@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 
@@ -52,7 +53,9 @@ InkDropHostView::~InkDropHostView() {
 }
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  InstallInkDropMask(ink_drop_layer);
+  // If a clip is provided, use that as it is more performant than a mask.
+  if (!AddInkDropClip(ink_drop_layer))
+    InstallInkDropMask(ink_drop_layer);
   AddLayerBeneathView(ink_drop_layer);
 }
 
@@ -63,6 +66,11 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   if (destroying_)
     return;
   RemoveLayerBeneathView(ink_drop_layer);
+
+  // Remove clipping.
+  ink_drop_layer->SetClipRect(gfx::Rect());
+  ink_drop_layer->SetRoundedCornerRadius(gfx::RoundedCornersF(0.f));
+
   // Layers safely handle destroying a mask layer before the masked layer.
   ink_drop_mask_.reset();
 }
@@ -186,6 +194,18 @@ void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
 
 void InkDropHostView::ResetInkDropMask() {
   ink_drop_mask_.reset();
+}
+
+bool InkDropHostView::AddInkDropClip(ui::Layer* ink_drop_layer) {
+  base::Optional<HighlightPathGenerator::RoundRect> clipping_data =
+      HighlightPathGenerator::GetRoundRectForView(this);
+  if (!clipping_data)
+    return false;
+  ink_drop_layer->SetClipRect(gfx::ToNearestRect(clipping_data->bounds));
+  ink_drop_layer->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(clipping_data->corner_radius));
+  ink_drop_layer->SetIsFastRoundedCorner(true);
+  return true;
 }
 
 // static

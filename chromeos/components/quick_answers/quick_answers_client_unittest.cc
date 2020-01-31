@@ -34,6 +34,7 @@ class MockQuickAnswersDelegate
   MOCK_METHOD1(OnQuickAnswerReceived, void(std::unique_ptr<QuickAnswer>));
   MOCK_METHOD1(OnRequestPreprocessFinish, void(const QuickAnswersRequest&));
   MOCK_METHOD1(OnEligibilityChanged, void(bool));
+  MOCK_METHOD0(OnNetworkError, void());
 };
 
 }  // namespace
@@ -177,6 +178,14 @@ TEST_F(QuickAnswersClientTest, UnsupportedLocale) {
       /*context_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-GB");
+}
+
+TEST_F(QuickAnswersClientTest, NetworkError) {
+  // Verify that OnNetworkError is called.
+  EXPECT_CALL(*mock_delegate_, OnNetworkError());
+  EXPECT_CALL(*mock_delegate_, OnQuickAnswerReceived(::testing::_)).Times(0);
+
+  client_->OnNetworkError();
 }
 // TODO(b/144800297): Add more unit tests for sending request.
 

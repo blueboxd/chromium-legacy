@@ -42,7 +42,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
   for (auto format : kBufferFormats) {
     for (auto usage : kUsages) {
       if (support->IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
-        configurations.insert(std::make_pair(format, usage));
+        configurations.insert(gfx::BufferUsageAndFormat(usage, format));
     }
   }
 #endif  // defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) ||
@@ -60,9 +60,9 @@ bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
   GpuMemoryBufferSupport support;
   GpuMemoryBufferConfigurationSet native_configurations =
       GetNativeGpuMemoryBufferConfigurations(&support);
-  return native_configurations.find(std::make_pair(format, usage)) !=
-         native_configurations.end();
-#else  // defined(USE_OZONE) || defined(OS_MACOSX)
+  return base::Contains(native_configurations,
+                        gfx::BufferUsageAndFormat(usage, format));
+#else
   return false;
 #endif
 }

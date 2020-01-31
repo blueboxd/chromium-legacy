@@ -100,7 +100,7 @@ void AppInstallEventLogUploader::StartSerialization() {
 void AppInstallEventLogUploader::OnSerialized(
     const em::AppInstallReportRequest* report) {
   base::Value context = reporting::GetContext(profile_);
-  base::Value event_list = ConvertProtoToValue(report, context, profile_);
+  base::Value event_list = ConvertProtoToValue(report, context);
 
   base::Value value_report = RealtimeReportingJobConfiguration::BuildReport(
       std::move(event_list), std::move(context));

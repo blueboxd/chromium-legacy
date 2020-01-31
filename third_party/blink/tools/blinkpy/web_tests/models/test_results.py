@@ -29,13 +29,9 @@
 import cPickle
 
 from blinkpy.web_tests.models import test_failures, test_expectations
+from blinkpy.web_tests.models.typ_types import ResultType, Artifacts
 from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
 
-from blinkpy.common import path_finder
-
-path_finder.add_typ_dir_to_sys_path()
-
-from typ.artifacts import Artifacts
 
 def build_test_result(
     driver_output, test_name, retry_attempt=0,
@@ -77,15 +73,15 @@ class TestResult(object):
         self.crash_site = crash_site
         self.retry_attempt = retry_attempt
 
-        results = set([f.result for f in self.failures] or [test_expectations.PASS])
+        results = set([f.result for f in self.failures] or [ResultType.Pass])
         assert len(results) <= 2, (
             'single_test_runner.py incorrectly reported results %s for test %s' %
             (', '.join(results), test_name))
         if len(results) == 2:
-            assert test_expectations.TIMEOUT in results and test_expectations.FAIL in results, (
+            assert ResultType.Timeout in results and ResultType.Failure in results, (
                 'The only combination of 2 results allowable is TIMEOUT and FAIL. '
                 'Test %s reported the following results %s' % (test_name, ', '.join(results)))
-            self.type = test_expectations.TIMEOUT
+            self.type = ResultType.Timeout
         else:
             # FIXME: Setting this in the constructor makes this class hard to mutate.
             self.type = results.pop()

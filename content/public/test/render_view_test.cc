@@ -304,7 +304,7 @@ void RenderViewTest::LoadHTML(const char* html) {
   // the pending continuation.
   waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      blink::WebWidget::LifecycleUpdateReason::kTest);
+      blink::DocumentUpdateReason::kTest);
 }
 
 void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
@@ -317,7 +317,7 @@ void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
   // the pending continuation.
   waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      blink::WebWidget::LifecycleUpdateReason::kTest);
+      blink::DocumentUpdateReason::kTest);
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
@@ -682,7 +682,7 @@ void RenderViewTest::Reload(const GURL& url) {
   frame->Navigate(std::move(common_params), CreateCommitNavigationParams());
   waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      blink::WebWidget::LifecycleUpdateReason::kTest);
+      blink::DocumentUpdateReason::kTest);
 }
 
 void RenderViewTest::Resize(gfx::Size new_size,
@@ -838,7 +838,7 @@ void RenderViewTest::GoToOffset(int offset,
   // the pending continuation.
   waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      blink::WebWidget::LifecycleUpdateReason::kTest);
+      blink::DocumentUpdateReason::kTest);
 }
 
 void RenderViewTest::CreateFakeWebURLLoaderFactory() {

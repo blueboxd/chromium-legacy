@@ -1036,8 +1036,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   if (!gained_active || gained_active->GetRootWindow() != root_window_)
     return;
 
-  if (features::IsVirtualDesksEnabled() &&
-      DesksController::Get()->AreDesksBeingModified()) {
+  if (DesksController::Get()->AreDesksBeingModified()) {
     // Activating a desk from its mini view will activate its most-recently used
     // window, but this should not result in snapping and ending overview mode
     // now. Overview will be ended explicitly as part of the desk activation

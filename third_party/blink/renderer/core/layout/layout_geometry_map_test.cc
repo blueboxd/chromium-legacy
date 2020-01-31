@@ -144,7 +144,7 @@ class LayoutGeometryMapTest : public testing::Test {
 
   void UpdateAllLifecyclePhases(WebView* web_view) {
     web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   const std::string base_url_;

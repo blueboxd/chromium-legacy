@@ -142,12 +142,12 @@ TEST_F(GLOutputSurfaceBufferQueueTest, BindFramebufferAndSwap) {
     // swapped.
     EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
 
-    // Calling |surface_|->SwapBuffers() should result in unbinding the GL
-    // framebuffer and ending read/write access to the underlying buffer.
-    EXPECT_CALL(*buffer_queue_, SwapBuffers(_));
-    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Eq(0u)));
+    // Calling |surface_|->SwapBuffers() should result in ending read/write
+    // access to the underlying buffer and unbinding the GL framebuffer.
     EXPECT_CALL(*gles2_interface_,
                 EndSharedImageAccessDirectCHROMIUM(kFakeTexture));
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Eq(0u)));
+    EXPECT_CALL(*buffer_queue_, SwapBuffers(_));
 
     // Destroying |surface_| should result in the deletion of the texture
     // obtained from consuming the shared image.
@@ -157,6 +157,62 @@ TEST_F(GLOutputSurfaceBufferQueueTest, BindFramebufferAndSwap) {
 
   surface_->BindFramebuffer();
   surface_->BindFramebuffer();
+  surface_->SwapBuffers(OutputSurfaceFrame());
+}
+
+TEST_F(GLOutputSurfaceBufferQueueTest, EmptySwap) {
+  const gpu::SyncToken fake_sync_token(
+      gpu::CommandBufferNamespace::GPU_IO,
+      gpu::CommandBufferId::FromUnsafeValue(567u),
+      /*release_count=*/5u);
+  const gpu::Mailbox fake_shared_image = gpu::Mailbox::GenerateForSharedImage();
+  constexpr GLuint kFakeTexture = 123u;
+  {
+    InSequence dummy_sequence;
+
+    // The call to |surface_|->BindFramebuffer() should result in binding the GL
+    // framebuffer, requesting a new buffer, waiting on the corresponding sync
+    // token, and beginning read/write access to the shared image.
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
+    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull()))
+        .WillOnce(DoAll(SetArgPointee<0>(fake_sync_token),
+                        Return(fake_shared_image)));
+    EXPECT_CALL(*gles2_interface_,
+                WaitSyncTokenCHROMIUM(SyncTokenEqualTo(fake_sync_token)));
+    EXPECT_CALL(*gles2_interface_, CreateAndTexStorage2DSharedImageCHROMIUM(
+                                       SharedImageEqualTo(fake_shared_image)))
+        .WillOnce(Return(kFakeTexture));
+    EXPECT_CALL(
+        *gles2_interface_,
+        BeginSharedImageAccessDirectCHROMIUM(
+            kFakeTexture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM));
+
+    // The first call to |surface_|->SwapBuffers() should result in ending
+    // read/write access to the underlying buffer and unbinding the GL
+    // framebuffer.
+    EXPECT_CALL(*gles2_interface_,
+                EndSharedImageAccessDirectCHROMIUM(kFakeTexture));
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Eq(0u)));
+    EXPECT_CALL(*buffer_queue_, SwapBuffers(_));
+
+    // The two empty swaps should only result in telling the buffer queue to
+    // swap the buffers.
+    EXPECT_CALL(*buffer_queue_, SwapBuffers(_)).Times(2);
+
+    // Destroying |surface_| should result in the deletion of the texture
+    // obtained from consuming the shared image.
+    EXPECT_CALL(*gles2_interface_,
+                DeleteTextures(1u, Pointee(Eq(kFakeTexture))));
+  }
+  surface_->BindFramebuffer();
+  unsigned texture_for_first_buffer = surface_->GetOverlayTextureId();
+  EXPECT_GT(texture_for_first_buffer, 0u);
+  surface_->SwapBuffers(OutputSurfaceFrame());
+
+  // Now do two empty swaps (which don't call BindFramebuffer()).
+  EXPECT_EQ(texture_for_first_buffer, surface_->GetOverlayTextureId());
+  surface_->SwapBuffers(OutputSurfaceFrame());
+  EXPECT_EQ(texture_for_first_buffer, surface_->GetOverlayTextureId());
   surface_->SwapBuffers(OutputSurfaceFrame());
 }
 

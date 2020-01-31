@@ -152,8 +152,7 @@ class ImagePaintTimingDetectorTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {

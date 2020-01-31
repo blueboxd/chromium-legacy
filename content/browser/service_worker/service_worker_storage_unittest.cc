@@ -384,7 +384,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       const std::vector<std::pair<std::string, std::string>>& key_value_pairs) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->StoreUserData(
+    registry()->StoreUserData(
         registration_id, origin, key_value_pairs,
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result.has_value());  // always async
@@ -397,7 +397,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       const std::vector<std::string>& keys) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->ClearUserData(
+    registry()->ClearUserData(
         registration_id, keys,
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result);  // always async
@@ -410,7 +410,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       const std::vector<std::string>& key_prefixes) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->ClearUserDataByKeyPrefixes(
+    registry()->ClearUserDataByKeyPrefixes(
         registration_id, key_prefixes,
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result.has_value());  // always async
@@ -423,7 +423,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       std::vector<std::pair<int64_t, std::string>>* data) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->GetUserDataForAllRegistrations(
+    registry()->GetUserDataForAllRegistrations(
         key,
         base::BindLambdaForTesting(
             [&](const std::vector<std::pair<int64_t, std::string>>& user_data,
@@ -441,7 +441,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       const std::string& key_prefix) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->ClearUserDataForAllRegistrationsByKeyPrefix(
+    registry()->ClearUserDataForAllRegistrationsByKeyPrefix(
         key_prefix,
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result.has_value());  // always async
@@ -453,7 +453,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration> registration) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->UpdateToActiveState(
+    registry()->UpdateToActiveState(
         registration->id(), registration->scope().GetOrigin(),
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result.has_value());  // always async
@@ -1265,8 +1265,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     registration_->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
 
     // Add the resources ids to the uncommitted list.
-    storage()->StoreUncommittedResourceId(resource_id1_);
-    storage()->StoreUncommittedResourceId(resource_id2_);
+    registry()->StoreUncommittedResourceId(resource_id1_);
+    registry()->StoreUncommittedResourceId(resource_id2_);
 
     std::set<int64_t> verify_ids = GetUncommittedResourceIdsFromDB();
     EXPECT_EQ(2u, verify_ids.size());
@@ -1412,9 +1412,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  storage()->UpdateToActiveState(registration_->id(),
-                                 registration_->scope().GetOrigin(),
-                                 base::DoNothing());
+  registry()->UpdateToActiveState(registration_->id(),
+                                  registration_->scope().GetOrigin(),
+                                  base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(33 /* dummy render process id */,
@@ -1449,9 +1449,9 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetWaitingVersion(nullptr);
-  storage()->UpdateToActiveState(registration_->id(),
-                                 registration_->scope().GetOrigin(),
-                                 base::DoNothing());
+  registry()->UpdateToActiveState(registration_->id(),
+                                  registration_->scope().GetOrigin(),
+                                  base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(33 /* dummy render process id */,
@@ -1471,7 +1471,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
 
   // Also add an uncommitted resource.
   int64_t kStaleUncommittedResourceId = storage()->NewResourceId();
-  storage()->StoreUncommittedResourceId(kStaleUncommittedResourceId);
+  registry()->StoreUncommittedResourceId(kStaleUncommittedResourceId);
   verify_ids = GetUncommittedResourceIdsFromDB();
   EXPECT_EQ(1u, verify_ids.size());
   WriteBasicResponse(storage(), kStaleUncommittedResourceId);
@@ -1488,7 +1488,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   int64_t kNewResourceId = storage()->NewResourceId();
   WriteBasicResponse(storage(), kNewResourceId);
-  storage()->StoreUncommittedResourceId(kNewResourceId);
+  registry()->StoreUncommittedResourceId(kNewResourceId);
   loop.Run();
 
   // The stale resources should be purged, but the new resource should persist.
@@ -1585,9 +1585,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  storage()->UpdateToActiveState(registration_->id(),
-                                 registration_->scope().GetOrigin(),
-                                 base::DoNothing());
+  registry()->UpdateToActiveState(registration_->id(),
+                                  registration_->scope().GetOrigin(),
+                                  base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
@@ -1638,9 +1638,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  storage()->UpdateToActiveState(registration_->id(),
-                                 registration_->scope().GetOrigin(),
-                                 base::DoNothing());
+  registry()->UpdateToActiveState(registration_->id(),
+                                  registration_->scope().GetOrigin(),
+                                  base::DoNothing());
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(

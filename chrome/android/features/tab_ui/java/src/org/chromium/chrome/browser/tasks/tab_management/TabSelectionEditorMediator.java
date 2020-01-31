@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;

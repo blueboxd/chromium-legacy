@@ -125,29 +125,27 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
 
   StopObservingImplicitAnimations();
 
-  const bool animating_to_shown_hotseat = new_state == HotseatState::kShown;
+  const bool animating_to_shown_background = new_state != HotseatState::kShown;
 
   shelf_widget_->GetAnimatingBackground()->SetColor(
       ShelfConfig::Get()->GetMaximizedShelfColor());
 
   gfx::Rect target_bounds = shelf_widget_->GetOpaqueBackground()->bounds();
   target_bounds.set_height(ShelfConfig::Get()->in_app_shelf_size());
-  target_bounds.set_y(
-      animating_to_shown_hotseat ? ShelfConfig::Get()->system_shelf_size() : 0);
+  target_bounds.set_y(animating_to_shown_background
+                          ? 0
+                          : ShelfConfig::Get()->system_shelf_size());
   shelf_widget_->GetAnimatingBackground()->SetBounds(target_bounds);
   shelf_widget_->GetAnimatingDragHandle()->SetBounds(
       shelf_widget_->GetDragHandle()->bounds());
 
   int starting_y;
-  // This animation is triggered after bounds have been set in the shelf, or
-  // while the shelf is beginning to animate to new bounds. To prevent the
-  // background from jumping in either case, adjust the y position to account
-  // for the current size of the |shelf_widget_|.
-  if (animating_to_shown_hotseat) {
-    starting_y = shelf_widget_->GetWindowBoundsInScreen().height() -
-                 ShelfConfig::Get()->in_app_shelf_size();
+  if (animating_to_shown_background) {
+    // The background will begin the animation hidden below the shelf.
+    starting_y = ShelfConfig::Get()->system_shelf_size();
   } else {
-    starting_y = shelf_widget_->GetWindowBoundsInScreen().height();
+    // The background will begin the animation from the top of the shelf.
+    starting_y = 0;
   }
   gfx::Transform transform;
   const int y_offset = starting_y - target_bounds.y();

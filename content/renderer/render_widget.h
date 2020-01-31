@@ -32,10 +32,10 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
+#include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
-#include "content/common/tab_switch_time_recorder.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/renderer/compositor/layer_tree_view_delegate.h"
@@ -714,10 +714,11 @@ class CONTENT_EXPORT RenderWidget
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
   void OnWasHidden();
-  void OnWasShown(base::TimeTicks show_request_timestamp,
-                  bool was_evicted,
-                  const base::Optional<content::RecordTabSwitchTimeRequest>&
-                      record_tab_switch_time_request);
+  void OnWasShown(
+      base::TimeTicks show_request_timestamp,
+      bool was_evicted,
+      const base::Optional<content::RecordContentToVisibleTimeRequest>&
+          record_tab_switch_time_request);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();
@@ -1072,7 +1073,7 @@ class CONTENT_EXPORT RenderWidget
   base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
 
   // Object to record tab switch time into this RenderWidget
-  TabSwitchTimeRecorder tab_switch_time_recorder_;
+  ContentToVisibleTimeReporter tab_switch_time_recorder_;
 
   // Browser controls params such as top and bottom controls heights, whether
   // controls shrink blink size etc.

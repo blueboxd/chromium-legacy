@@ -158,7 +158,7 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
       : overlay_(overlay) {
     background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
         features::IsBackgroundBlurEnabled()
-            ? AshColorProvider::BaseLayerType::kTransparent74
+            ? AshColorProvider::BaseLayerType::kTransparent80
             : AshColorProvider::BaseLayerType::kTransparent90,
         kToastBackgroundColor);
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(

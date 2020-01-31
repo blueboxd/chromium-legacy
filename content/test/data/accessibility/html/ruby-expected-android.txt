@@ -2,4 +2,4 @@ android.webkit.WebView focusable focused scrollable
 ++android.view.View
 ++++android.view.View
 ++++++android.view.View name='ruby text'
-++++++android.view.View name='ruby base'
+++++++android.widget.TextView name='ruby base'

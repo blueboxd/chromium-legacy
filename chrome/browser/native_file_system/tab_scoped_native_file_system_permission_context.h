@@ -110,7 +110,8 @@ class TabScopedNativeFileSystemPermissionContext
                          const base::FilePath& path,
                          bool is_directory,
                          int process_id,
-                         int frame_id) override;
+                         int frame_id,
+                         UserAction user_action) override;
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,

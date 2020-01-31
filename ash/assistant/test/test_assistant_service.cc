@@ -315,6 +315,11 @@ void TestAssistantService ::SendAssistantFeedback(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void TestAssistantService::NotifyEntryIntoAssistantUi(
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void TestAssistantService::StopAlarmTimerRinging() {
   NOTIMPLEMENTED_LOG_ONCE();
 }

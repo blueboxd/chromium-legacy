@@ -133,7 +133,7 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
   // Layer rendering is needed for animation.
   SetPaintToLayer();
   SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent74,
+      AshColorProvider::BaseLayerType::kTransparent80,
       AshColorProvider::AshColorMode::kDark);
   layer()->SetBackgroundBlur(
       static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));

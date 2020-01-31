@@ -33,10 +33,11 @@ void PredictionMetricsHandler::AddPredictedEvent(
     const base::TimeTicks& time_stamp,
     const base::TimeTicks& frame_time,
     bool scrolling) {
-  // Be sure that the first real event is always anterior to the first
-  // predicted event and that each predicted events are ordered over time
   DCHECK(!events_queue_.empty());
-  DCHECK(time_stamp >= events_queue_.front().time_stamp);
+  // If the predicted event is prior to the first real event, ignore it as we
+  // don't have enough data for interpolation.
+  if (time_stamp < events_queue_.front().time_stamp)
+    return;
   // TODO(nzolghadr): The following DCHECK is commented out due to
   // crbug.com/1017661. More investigation needs to be done as why this happens.
   // DCHECK(predicted_events_queue_.empty() ||

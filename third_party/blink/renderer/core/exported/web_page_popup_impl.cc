@@ -386,13 +386,13 @@ void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time, bool) {
 }
 
 void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
-                                       LifecycleUpdateReason reason) {
+                                       DocumentUpdateReason reason) {
   if (!page_)
     return;
   // Popups always update their lifecycle in the context of the containing
   // document's lifecycle, so explicitly override the reason.
   PageWidgetDelegate::UpdateLifecycle(*page_, MainFrame(), requested_update,
-                                      WebWidget::LifecycleUpdateReason::kOther);
+                                      DocumentUpdateReason::kOther);
 }
 
 void WebPagePopupImpl::Resize(const WebSize& new_size_in_viewport) {

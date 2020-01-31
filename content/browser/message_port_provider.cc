@@ -81,6 +81,7 @@ void MessagePortProvider::PostMessageToFrame(
 #endif
 
 #if defined(OS_FUCHSIA) || BUILDFLAG(IS_CHROMECAST)
+// TODO(crbug.com/803242): Deprecated and will be shortly removed.
 // static
 void MessagePortProvider::PostMessageToFrame(
     WebContents* web_contents,
@@ -91,6 +92,22 @@ void MessagePortProvider::PostMessageToFrame(
   std::vector<MessagePortChannel> channels_wrapped;
   for (mojo::ScopedMessagePipeHandle& handle : channels) {
     channels_wrapped.emplace_back(std::move(handle));
+  }
+  PostMessageToFrameInternal(web_contents, source_origin,
+                             target_origin.value_or(base::EmptyString16()),
+                             data, channels_wrapped);
+}
+
+// static
+void MessagePortProvider::PostMessageToFrame(
+    WebContents* web_contents,
+    const base::string16& source_origin,
+    const base::Optional<base::string16>& target_origin,
+    const base::string16& data,
+    std::vector<blink::WebMessagePort> channels) {
+  std::vector<MessagePortChannel> channels_wrapped;
+  for (blink::WebMessagePort& port : channels) {
+    channels_wrapped.emplace_back(port.PassHandle());
   }
   PostMessageToFrameInternal(web_contents, source_origin,
                              target_origin.value_or(base::EmptyString16()),

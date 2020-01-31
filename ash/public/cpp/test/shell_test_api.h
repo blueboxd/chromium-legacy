@@ -99,6 +99,19 @@ class ASH_EXPORT ShellTestApi {
 
   void WaitForWindowFinishAnimating(aura::Window* window);
 
+  // Creates a closure that, when run, starts waiter for the window's current
+  // animator to finish animating.
+  // It can be used to wait for window animations when the window layer is
+  // recreated while the animation is set up (as is the case for window hide
+  // animations).
+  // Example usage:
+  //   base::OnceClosure waiter =
+  //   CreateWaiterForFinishingWindowAnimation(window);
+  //   aura::WindowState::Get(window)->Minimize();
+  //   std::move(waiter).Run();
+  base::OnceClosure CreateWaiterForFinishingWindowAnimation(
+      aura::Window* window);
+
   // Returns the pagination model of the currently visible app-list view.
   // It returns nullptr when app-list is not shown.
   PaginationModel* GetAppListPaginationModel();

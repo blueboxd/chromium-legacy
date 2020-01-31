@@ -102,14 +102,12 @@ class NativeRendererMessagingService : public GinPort::Delegate {
   // Creates and opens a new message port in the specified context.
   gin::Handle<GinPort> Connect(ScriptContext* script_context,
                                const MessageTarget& target,
-                               const std::string& name,
-                               bool include_tls_channel_id);
+                               const std::string& name);
 
   // Sends a one-time message, as is used by runtime.sendMessage.
   void SendOneTimeMessage(ScriptContext* script_context,
                           const MessageTarget& target,
                           const std::string& channel_name,
-                          bool include_tls_channel_id,
                           const Message& message,
                           v8::Local<v8::Function> response_callback);
 

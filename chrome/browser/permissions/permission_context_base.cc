@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_util.h"
@@ -106,7 +107,7 @@ PermissionContextBase::PermissionContextBase(
     : profile_(profile),
       content_settings_type_(content_settings_type),
       feature_policy_feature_(feature_policy_feature) {
-  PermissionDecisionAutoBlocker::UpdateFromVariations();
+  permissions::PermissionDecisionAutoBlocker::UpdateFromVariations();
 }
 
 PermissionContextBase::~PermissionContextBase() {
@@ -270,8 +271,8 @@ permissions::PermissionResult PermissionContextBase::GetPermissionStatus(
   }
 
   permissions::PermissionResult result =
-      PermissionDecisionAutoBlocker::GetForProfile(profile_)->GetEmbargoResult(
-          requesting_origin, content_settings_type_);
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
+          ->GetEmbargoResult(requesting_origin, content_settings_type_);
   DCHECK(result.content_setting == CONTENT_SETTING_ASK ||
          result.content_setting == CONTENT_SETTING_BLOCK);
   return result;

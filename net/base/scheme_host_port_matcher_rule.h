@@ -29,6 +29,9 @@ class NET_EXPORT SchemeHostPortMatcherRule {
   // Returns a string representation of this rule. The returned string will not
   // match any distinguishable rule of any type.
   virtual std::string ToString() const = 0;
+  // Returns true if |this| is an instance of
+  // SchemeHostPortMatcherHostnamePatternRule.
+  virtual bool IsHostnamePatternRule() const;
 };
 
 // Rule that matches URLs with wildcard hostname patterns, and
@@ -52,6 +55,14 @@ class NET_EXPORT SchemeHostPortMatcherHostnamePatternRule
   // SchemeHostPortMatcherRule implementation:
   SchemeHostPortMatcherResult Evaluate(const GURL& url) const override;
   std::string ToString() const override;
+  bool IsHostnamePatternRule() const override;
+
+  // Generates a new SchemeHostPortMatcherHostnamePatternRule based on the
+  // current rule. The new rule will do suffix matching if the current rule
+  // doesn't. For example, "google.com" would become "*google.com" and match
+  // "foogoogle.com".
+  std::unique_ptr<SchemeHostPortMatcherHostnamePatternRule>
+  GenerateSuffixMatchingRule() const;
 
  private:
   const std::string optional_scheme_;

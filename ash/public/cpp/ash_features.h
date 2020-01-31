@@ -104,9 +104,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
 // Enables views login.
 ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 
-// Enables the Virtual Desks feature.
-ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesks;
-
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
@@ -171,8 +168,6 @@ ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
 ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 
-ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
-
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
@@ -190,6 +185,11 @@ ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsHideShelfControlsInTabletModeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayChangeModalEnabled();
+
+// These two functions are supposed to be temporary functions to set or get
+// whether "WebUITabStrip" feature is enabled from Chrome.
+ASH_PUBLIC_EXPORT void SetWebUITabStripEnabled(bool enabled);
+ASH_PUBLIC_EXPORT bool IsWebUITabStripEnabled();
 
 }  // namespace features
 }  // namespace ash

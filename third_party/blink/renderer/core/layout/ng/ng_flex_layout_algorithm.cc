@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -614,6 +615,7 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
+  PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
   ConstructAndAppendFlexItems();
 
   LayoutUnit main_axis_start_offset;

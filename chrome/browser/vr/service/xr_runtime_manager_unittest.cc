@@ -125,12 +125,12 @@ TEST_F(XRRuntimeManagerTest, AddRemoveDevices) {
   auto service = BindService();
   EXPECT_EQ(1u, ServiceCount());
   EXPECT_TRUE(Provider()->Initialized());
-  device::FakeVRDevice* device =
-      new device::FakeVRDevice(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
+  device::FakeVRDevice* device = new device::FakeVRDevice(
+      device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID);
   Provider()->AddDevice(base::WrapUnique(device));
 
   device::mojom::XRSessionOptions options = {};
-  options.mode = device::mojom::XRSessionMode::kImmersiveAr;
+  options.mode = device::mojom::XRSessionMode::kInline;
   EXPECT_TRUE(GetRuntimeManager()->GetRuntimeForOptions(&options));
   Provider()->RemoveDevice(device->GetId());
   EXPECT_TRUE(!GetRuntimeManager()->GetRuntimeForOptions(&options));

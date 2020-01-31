@@ -25,6 +25,7 @@
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
@@ -160,6 +161,23 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
     const security_interstitials::UnsafeResource& resource,
     const AwWebResourceRequest& request) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
+
+  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
+    security_interstitials::SecurityInterstitialTabHelper*
+        security_interstitial_tab_helper = security_interstitials::
+            SecurityInterstitialTabHelper::FromWebContents(web_contents);
+    if (ui_manager->IsWhitelisted(resource) &&
+        security_interstitial_tab_helper &&
+        security_interstitial_tab_helper->IsDisplayingInterstitial()) {
+      // In this case we are about to leave an interstitial due to the user
+      // clicking proceed on it, we shouldn't call OnSafeBrowsingHit again.
+      resource.callback_thread->PostTask(
+          FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
+                                    false /* showed_interstitial */));
+      return;
+    }
+  }
+
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromWebContents(web_contents);
 

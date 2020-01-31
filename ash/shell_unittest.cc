@@ -14,7 +14,6 @@
 #include "ash/drag_drop/drag_drop_controller_test_api.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -37,7 +36,6 @@
 #include "base/containers/flat_set.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
@@ -610,38 +608,10 @@ TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
   EXPECT_TRUE(drag_drop_controller_test_api.enabled());
 }
 
-// Defines a parameterized test fixture to validate that there are no duplicate
-// containers IDs in both cases when the Virtual Desks feature is enabled or
-// disabled.
-class NoDuplicateShellContainerIdsTest
-    : public AshTestBase,
-      public ::testing::WithParamInterface<bool> {
- public:
-  NoDuplicateShellContainerIdsTest() = default;
-  ~NoDuplicateShellContainerIdsTest() override = default;
+using NoDuplicateShellContainerIdsTest = AshTestBase;
 
-  // AshTestBase:
-  void SetUp() override {
-    if (GetParam())
-      scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kVirtualDesks);
-
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoDuplicateShellContainerIdsTest);
-};
-
-TEST_P(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
+TEST_F(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
   ExpectAllContainers();
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         NoDuplicateShellContainerIdsTest,
-                         ::testing::Values(false, true));
 
 }  // namespace ash

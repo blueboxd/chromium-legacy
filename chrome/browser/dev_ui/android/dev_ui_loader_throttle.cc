@@ -133,14 +133,7 @@ DevUiLoaderThrottle::WillStartRequest() {
 void DevUiLoaderThrottle::OnDevUiDfmInstallWithStatus(bool success) {
   if (success) {
     dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
-
-    // Fix for http://crbug.com/1046159. Normally Resume() should be called.
-    // However, if refresh originates from the error page, then some stale state
-    // would persist in NavigationRequest::bindings() that prevents
-    // chrome.send() from working. So instead, we add a shim page to perform a
-    // reload by JavaScript.
-    std::string html = BuildInitialInstallRedirectPageHtml();
-    CancelDeferredNavigation({CANCEL, net::OK, html});
+    Resume();
   } else {
     std::string html = BuildErrorPageHtml();
     CancelDeferredNavigation({CANCEL, net::ERR_CONNECTION_FAILED, html});

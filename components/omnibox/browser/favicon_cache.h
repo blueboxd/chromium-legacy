@@ -63,7 +63,7 @@ class FaviconCache : public history::HistoryServiceObserver {
   // isn't in our database), we simply erase all the pending callbacks, and also
   // cache the result.
   //
-  // Therefore, |on_favicon_fetched| may or may not be called asynchrously
+  // Therefore, |on_favicon_fetched| may or may not be called asynchronously
   // later, but will never be called with an empty result. It will also never
   // be called synchronously.
   gfx::Image GetFaviconForPageUrl(const GURL& page_url,

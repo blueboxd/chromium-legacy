@@ -17,7 +17,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/wm/core/window_animations.h"
 

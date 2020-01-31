@@ -12,7 +12,11 @@
 Polymer({
   is: 'settings-captions',
 
-  behaviors: [I18nBehavior, WebUIListenerBehavior],
+  behaviors: [
+    I18nBehavior,
+    WebUIListenerBehavior,
+    PrefsBehavior,
+  ],
 
   properties: {
     prefs: {
@@ -213,14 +217,31 @@ Polymer({
   },
 
   /**
+   * Get the font family as a CSS property value.
+   * @return {string}
+   * @private
+   */
+  getFontFamily_() {
+    const fontFamily = this.getPref('accessibility.captions.text_font').value;
+
+    // Return the preference value or the default font family for
+    // video::-webkit-media-text-track-container defined in mediaControls.css.
+    return /** @type {string} */ (fontFamily || 'sans-serif');
+  },
+
+  /**
    * Get the background color as a RGBA string.
    * @return {string}
    * @private
    */
   computeBackgroundColor_() {
-    return this.formatRGAString_(
-        'prefs.accessibility.captions.background_color.value',
-        'prefs.accessibility.captions.background_opacity.value');
+    const backgroundColor = this.formatRGAString_(
+        'accessibility.captions.background_color',
+        'accessibility.captions.background_opacity');
+
+    // Return the preference value or the default background color for
+    // video::cue defined in mediaControls.css.
+    return backgroundColor || 'rgba(0, 0, 0, 0.8)';
   },
 
   /**
@@ -229,9 +250,13 @@ Polymer({
    * @private
    */
   computeTextColor_() {
-    return this.formatRGAString_(
-        'prefs.accessibility.captions.text_color.value',
-        'prefs.accessibility.captions.text_opacity.value');
+    const textColor = this.formatRGAString_(
+      'accessibility.captions.text_color',
+      'accessibility.captions.text_opacity');
+
+    // Return the preference value or the default text color for
+    // video::-webkit-media-text-track-container defined in mediaControls.css.
+    return textColor || 'rgba(255, 255, 255, 1)';
   },
 
   /**
@@ -244,8 +269,14 @@ Polymer({
    * @private
    */
   formatRGAString_(colorPreference, opacityPreference) {
-    return 'rgba(' + this.get(colorPreference) + ',' +
-        parseInt(this.get(opacityPreference), 10) / 100.0 + ')';
+    const color = this.getPref(colorPreference).value;
+
+    if (!color) {
+      return '';
+    }
+
+    return 'rgba(' + color + ',' +
+        parseInt(this.getPref(opacityPreference).value, 10) / 100.0 + ')';
   },
 
   /**

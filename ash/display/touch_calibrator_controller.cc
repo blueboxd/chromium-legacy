@@ -19,7 +19,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace ash {

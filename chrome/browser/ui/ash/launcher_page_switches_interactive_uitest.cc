@@ -17,6 +17,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/wm_core_switches.h"
 
 namespace {
 
@@ -59,6 +60,13 @@ class LauncherPageSwitchesTest : public UIPerformanceTest,
                             base::TimeDelta::FromSeconds(5));
       run_loop.Run();
     }
+
+    // In tablet mode, the test will wait for the browser window to finish
+    // animating (and for the home screen to become visible) to know when to
+    // continue, so make sure the window has animations.
+    auto* cmd = base::CommandLine::ForCurrentProcess();
+    if (cmd->HasSwitch(wm::switches::kWindowAnimationsDisabled))
+      cmd->RemoveSwitch(wm::switches::kWindowAnimationsDisabled);
 
     ash::ShellTestApi shell_test_api;
 

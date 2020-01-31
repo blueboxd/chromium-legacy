@@ -67,7 +67,6 @@ class OneTimeMessageHandler {
                    const PortId& new_port_id,
                    const MessageTarget& target_id,
                    const std::string& method_name,
-                   bool include_tls_channel_id,
                    const Message& message,
                    v8::Local<v8::Function> response_callback);
 

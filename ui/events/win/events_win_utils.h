@@ -6,6 +6,7 @@
 #define UI_EVENTS_WIN_EVENTS_WIN_UTILS_H_
 
 #include <stdint.h>
+#include <windows.h>
 
 #include <memory>
 
@@ -17,9 +18,8 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/native_widget_types.h"
-
-#include <windows.h>
 
 namespace gfx {
 class Point;

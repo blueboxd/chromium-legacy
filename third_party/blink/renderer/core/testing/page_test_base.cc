@@ -216,8 +216,7 @@ void PageTestBase::NavigateTo(const KURL& url,
 }
 
 void PageTestBase::UpdateAllLifecyclePhasesForTest() {
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   GetDocument().View()->RunPostLifecycleSteps();
 }
 

@@ -36,8 +36,7 @@ TEST_F(LayoutTextControlSingleLineTest, VisualOverflowCleared) {
   }
   To<Element>(input->GetNode())
       ->setAttribute(html_names::kStyleAttr, "box-shadow: initial");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   if (::features::IsFormControlsRefreshEnabled()) {
     EXPECT_EQ(LayoutRect(0, 0, 58, 56), input->SelfVisualOverflowRect());
   } else {

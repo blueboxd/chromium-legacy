@@ -51,7 +51,6 @@ struct FeatureInfo {
 
 using FeatureInfoMap = std::map<mojom::FeaturePolicyFeature, FeatureInfo>;
 
-// TODO(iclelland): Generate this block
 const FeatureInfoMap& GetDefaultFeatureInfoMap() {
   static base::NoDestructor<FeatureInfoMap> feature_info_map(
       {{mojom::FeaturePolicyFeature::kFontDisplay,

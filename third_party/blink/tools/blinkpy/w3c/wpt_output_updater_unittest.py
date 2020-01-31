@@ -20,10 +20,11 @@ _EXPECTATIONS_TEST_LIST = [
 ]
 
 _EXPECTATIONS_FILE_STRING = """
-Bug(test) some/test.html [ Failure ]
-Bug(test) external/wpt/expected_crash.html [ Crash ]
-Bug(test) external/wpt/flake.html [ Timeout Failure ]
-Bug(test) external/wpt/subdir/unexpected_failure.html [ Timeout ]
+# results: [ Failure Crash Timeout ]
+some/test.html [ Failure ]
+external/wpt/expected_crash.html [ Crash ]
+external/wpt/flake.html [ Timeout Failure ]
+external/wpt/subdir/unexpected_failure.html [ Timeout ]
 """
 
 
@@ -35,7 +36,7 @@ class WPTOutputUpdaterTest(unittest.TestCase):
         self.port = self.host.port_factory.get()
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = _EXPECTATIONS_FILE_STRING
-        self.exp = TestExpectations(self.port, tests=_EXPECTATIONS_TEST_LIST, expectations_dict=expectations_dict)
+        self.exp = TestExpectations(self.port, expectations_dict=expectations_dict)
 
     def test_update_output_json(self):
         """Tests that output JSON is properly updated with expectations."""
@@ -97,7 +98,7 @@ class WPTOutputUpdaterTest(unittest.TestCase):
         # The flake.html test ran as expected because its status was one of the
         # ones from the expectation file.
         cur_test = new_output_json["tests"]["flake.html"]
-        self.assertEqual("TIMEOUT FAIL", cur_test["expected"])
+        self.assertEqual("FAIL TIMEOUT", cur_test["expected"])
         self.assertFalse(cur_test["is_regression"])
         self.assertFalse(cur_test["is_unexpected"])
 

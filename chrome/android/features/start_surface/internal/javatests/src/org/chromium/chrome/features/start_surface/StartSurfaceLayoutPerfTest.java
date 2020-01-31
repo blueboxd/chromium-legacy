@@ -404,7 +404,7 @@ public class StartSurfaceLayoutPerfTest {
                 "The thumbnail " + etc1File.getName() + " is not found",
                 DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
 
-        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab);
+        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab.getId());
         CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
                 "The thumbnail " + jpegFile.getName() + " is not found",
                 DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);

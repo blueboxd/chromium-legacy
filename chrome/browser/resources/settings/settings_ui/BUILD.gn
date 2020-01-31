@@ -24,3 +24,29 @@ js_library("settings_ui") {
     "//ui/webui/resources/js:find_shortcut_behavior",
   ]
 }
+
+# TODO(crbug.com/1026426): Fix and enable.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [ ":settings_ui.m" ]
+#}
+
+js_library("settings_ui.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/settings_ui/settings_ui.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":settings_ui_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  deps = [ ":settings_ui_module" ]
+}
+
+polymer_modulizer("settings_ui") {
+  js_file = "settings_ui.js"
+  html_file = "settings_ui.html"
+  html_type = "dom-module"
+}

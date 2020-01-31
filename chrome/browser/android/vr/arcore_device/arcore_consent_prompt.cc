@@ -18,7 +18,11 @@ namespace vr {
 ArCoreConsentPrompt::ArCoreConsentPrompt()
     : XrConsentHelper(), weak_ptr_factory_(this) {}
 
-ArCoreConsentPrompt::~ArCoreConsentPrompt() = default;
+ArCoreConsentPrompt::~ArCoreConsentPrompt() {
+  if (!jdelegate_.is_null()) {
+    Java_ArConsentDialog_onNativeDestroy(AttachCurrentThread(), jdelegate_);
+  }
+}
 
 void ArCoreConsentPrompt::ShowConsentPrompt(
     int render_process_id,

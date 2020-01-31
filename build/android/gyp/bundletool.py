@@ -29,7 +29,6 @@ def RunBundleTool(args):
   logging.debug(' '.join(args))
   return build_utils.CheckOutput(
       args,
-      print_stdout=True,
       print_stderr=True,
       stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 

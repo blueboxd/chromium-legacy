@@ -66,4 +66,8 @@ void IntentHandlingMetrics::RecordExternalProtocolMetrics(
   }
 }
 
+void IntentHandlingMetrics::RecordOpenBrowserMetrics(AppType type) {
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.OpenBrowser", type);
+}
+
 }  // namespace apps

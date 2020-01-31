@@ -91,10 +91,14 @@ void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
 
 void PlayerCompositorDelegate::OnCompositorClientCreated(const GURL& url) {
   paint_preview_compositor_client_->SetRootFrameUrl(url);
+  paint_preview_service_->GetCapturedPaintPreviewProto(
+      url, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
+                          weak_factory_.GetWeakPtr()));
+}
 
-  base::Optional<PaintPreviewProto> proto =
-      paint_preview_service_->GetCapturedPaintPreviewProto(url);
-  if (!proto || !proto.value().IsInitialized()) {
+void PlayerCompositorDelegate::OnProtoAvailable(
+    std::unique_ptr<PaintPreviewProto> proto) {
+  if (!proto || !proto->IsInitialized()) {
     // TODO(crbug.com/1021590): Handle initialization errors.
     return;
   }
@@ -102,9 +106,9 @@ void PlayerCompositorDelegate::OnCompositorClientCreated(const GURL& url) {
   // TODO(crbug.com/1034111): Investigate executing this in the background.
   mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  begin_composite_request->file_map = CreateFileMapFromProto(proto.value());
+  begin_composite_request->file_map = CreateFileMapFromProto(*proto);
   // TODO(crbug.com/1034111): Don't perform this on UI thread.
-  auto read_only_proto = ToReadOnlySharedMemory(proto.value());
+  auto read_only_proto = ToReadOnlySharedMemory(*proto);
   if (!read_only_proto) {
     // TODO(crbug.com/1021590): Handle initialization errors.
     return;

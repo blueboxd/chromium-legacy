@@ -15,9 +15,10 @@
   "file_handlers": [
     {
       "action": ".",
-      "name": "Image File",
+      "name": "Media File",
       "accept": {
-        "image/*": [ ]
+        "image/*": [ ],
+        "video/*": [ ]
       }
     }
   ]

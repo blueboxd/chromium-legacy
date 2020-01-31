@@ -37,6 +37,7 @@ if (closure_compile) {
         "print_preview:closure_compile",
         "quota_internals:closure_compile",
         "settings:closure_compile",
+        "settings:closure_compile_module",
         "signin:closure_compile",
         "usb_internals:closure_compile",
         "user_manager:closure_compile",

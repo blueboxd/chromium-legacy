@@ -148,6 +148,8 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_android.cc",
     "browser/shell_web_contents_view_delegate_creator.h",
     "browser/shell_web_contents_view_delegate_mac.mm",
+    "browser/web_test/blink_test_client_impl.cc",
+    "browser/web_test/blink_test_client_impl.h",
     "browser/web_test/blink_test_controller.cc",
     "browser/web_test/blink_test_controller.h",
     "browser/web_test/devtools_protocol_test_bindings.cc",
@@ -170,8 +172,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/test_info_extractor.h",
     "browser/web_test/web_test_background_fetch_delegate.cc",
     "browser/web_test/web_test_background_fetch_delegate.h",
-    "browser/web_test/web_test_blink_test_client.cc",
-    "browser/web_test/web_test_blink_test_client.h",
     "browser/web_test/web_test_bluetooth_adapter_provider.cc",
     "browser/web_test/web_test_bluetooth_adapter_provider.h",
     "browser/web_test/web_test_bluetooth_chooser_factory.cc",
@@ -887,8 +887,8 @@ if (is_mac) {
 
 mojom("mojo_bindings") {
   sources = [
+    "common/blink_test.mojom",
     "common/power_monitor_test.mojom",
-    "common/web_test.mojom",
     "common/web_test/fake_bluetooth_chooser.mojom",
     "common/web_test/web_test_bluetooth_fake_adapter_setter.mojom",
   ]

@@ -128,7 +128,7 @@ template <>
 struct MODULES_EXPORT StructTraits<blink::mojom::IDBValueDataView,
                                    std::unique_ptr<blink::IDBValue>> {
   static Vector<uint8_t> bits(const std::unique_ptr<blink::IDBValue>& input);
-  static Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info(
+  static Vector<blink::mojom::blink::IDBExternalObjectPtr> external_objects(
       const std::unique_ptr<blink::IDBValue>& input);
   static bool Read(blink::mojom::IDBValueDataView data,
                    std::unique_ptr<blink::IDBValue>* out);

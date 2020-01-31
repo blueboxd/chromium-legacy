@@ -1421,7 +1421,7 @@ void BackgroundSyncManager::StoreDataInBackend(
 
 void BackgroundSyncManager::GetDataFromBackend(
     const std::string& backend_key,
-    ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback) {
+    ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context_->GetUserDataForAllRegistrations(backend_key,

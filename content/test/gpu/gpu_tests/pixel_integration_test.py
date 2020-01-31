@@ -134,9 +134,9 @@ class PixelIntegrationTest(
         tab, page,
         build_id_args=build_id_args)
     finally:
-      if do_page_action:
-        # Assume that page actions might have killed the GPU process.
-        self._RestartBrowser('Must restart after page actions')
+      if do_page_action or page.restart_browser_after_test:
+        self._RestartBrowser(
+          'Must restart after page actions or if required by test')
 
   def _DoPageAction(self, tab, page):
     getattr(self, '_' + page.optional_action)(tab, page)

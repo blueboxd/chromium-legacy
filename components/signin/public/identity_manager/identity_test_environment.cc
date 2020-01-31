@@ -269,15 +269,29 @@ AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
   return signin::MakePrimaryAccountAvailable(identity_manager(), email);
 }
 
-#if defined(OS_CHROMEOS)
 AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
     const std::string& email) {
+  DCHECK(!identity_manager()->HasUnconsentedPrimaryAccount());
+#if defined(OS_CHROMEOS)
+  // Chrome OS sets the unconsented primary account during login and does not
+  // allow signout.
   AccountInfo account_info = MakeAccountAvailable(email);
   identity_manager()->GetPrimaryAccountMutator()->SetUnconsentedPrimaryAccount(
       account_info.account_id);
+#elif defined(OS_IOS) || defined(OS_ANDROID)
+  // iOS and Android only support the primary account.
+  AccountInfo account_info = MakePrimaryAccountAvailable(email);
+#else
+  // Desktop platforms.
+  AccountInfo account_info =
+      MakeAccountAvailableWithCookies(email, GetTestGaiaIdForEmail(email));
+  base::RunLoop().RunUntilIdle();
+#endif
+  DCHECK(identity_manager()->HasUnconsentedPrimaryAccount());
+  DCHECK_EQ(email,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo().email);
   return account_info;
 }
-#endif  // defined(OS_CHROMEOS)
 
 void IdentityTestEnvironment::ClearPrimaryAccount(
     ClearPrimaryAccountPolicy policy) {

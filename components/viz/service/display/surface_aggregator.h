@@ -305,6 +305,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // blending color space (e.g. for HDR), then a final render pass to convert
   // between the two will be added. This space must always be valid.
   gfx::DisplayColorSpaces display_color_spaces_;
+  gfx::ContentColorUsage display_content_color_usage_;
   // Maximum texture size which if positive, will limit the size of render
   // passes.
   int max_texture_size_ = 0;

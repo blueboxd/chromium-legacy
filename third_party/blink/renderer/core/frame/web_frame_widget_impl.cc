@@ -365,7 +365,7 @@ WebFrameWidgetImpl::GetBeginMainFrameMetrics() {
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
-                                         LifecycleUpdateReason reason) {
+                                         DocumentUpdateReason reason) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
   if (!LocalRootImpl())
     return;

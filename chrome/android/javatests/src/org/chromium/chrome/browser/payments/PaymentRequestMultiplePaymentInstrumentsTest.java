@@ -100,7 +100,9 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
 
         // Set up the autofill payment instruments use stats.
         for (int i = 0; i < guids.size(); i++) {
-            helper.setCreditCardUseStatsForTesting(guids.get(i), mCountsToSet[i], mDatesToSet[i]);
+            PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(
+                    guids.get(i), mCountsToSet[i]);
+            PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(guids.get(i), mDatesToSet[i]);
         }
     }
 

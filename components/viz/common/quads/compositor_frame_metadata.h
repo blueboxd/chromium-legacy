@@ -17,6 +17,7 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/overlay_transform.h"
@@ -71,6 +72,8 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   float page_scale_factor = 0.f;
 
   gfx::SizeF scrollable_viewport_size;
+
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
 
   bool may_contain_video = false;
 

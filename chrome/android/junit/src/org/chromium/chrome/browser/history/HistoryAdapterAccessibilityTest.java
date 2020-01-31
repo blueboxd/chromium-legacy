@@ -16,9 +16,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.MoreProgressButton;
 import org.chromium.components.browser_ui.widget.MoreProgressButton.State;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;

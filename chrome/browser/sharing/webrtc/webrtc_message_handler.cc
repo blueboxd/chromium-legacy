@@ -42,23 +42,16 @@ void WebRtcMessageHandler::OnMessage(
     return;
   }
 
-  const chrome_browser_sharing::FCMChannelConfiguration&
-      fcm_channel_configuration = message.fcm_channel_configuration();
-
-  syncer::DeviceInfo::SharingTargetInfo target_info{
-      fcm_channel_configuration.vapid_fcm_token(),
-      fcm_channel_configuration.vapid_p256dh(),
-      fcm_channel_configuration.vapid_auth_secret()};
-
   if (message.has_peer_connection_offer_message()) {
-    HandleOfferMessage(message.sender_guid(), target_info,
-                       message.peer_connection_offer_message(),
-                       std::move(done_callback));
+    HandleOfferMessage(
+        message.sender_guid(), message.fcm_channel_configuration(),
+        message.peer_connection_offer_message(), std::move(done_callback));
     return;
   }
 
   if (message.has_peer_connection_ice_candidates_message()) {
-    HandleIceCandidatesMessage(message.sender_guid(), target_info,
+    HandleIceCandidatesMessage(message.sender_guid(),
+                               message.fcm_channel_configuration(),
                                message.peer_connection_ice_candidates_message(),
                                std::move(done_callback));
     return;
@@ -69,11 +62,11 @@ void WebRtcMessageHandler::OnMessage(
 
 void WebRtcMessageHandler::HandleOfferMessage(
     const std::string& sender_guid,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info,
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
     const chrome_browser_sharing::PeerConnectionOfferMessage& message,
     SharingMessageHandler::DoneCallback done_callback) {
   sharing_service_host_->OnOfferReceived(
-      sender_guid, target_info, message.sdp(),
+      sender_guid, fcm_configuration, message.sdp(),
       base::BindOnce(&ReplyWithAnswer, std::move(done_callback)));
 }
 
@@ -88,10 +81,10 @@ void WebRtcMessageHandler::ReplyWithAnswer(
 
 void WebRtcMessageHandler::HandleIceCandidatesMessage(
     const std::string& sender_guid,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info,
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
     const chrome_browser_sharing::PeerConnectionIceCandidatesMessage& message,
     SharingMessageHandler::DoneCallback done_callback) {
-  sharing_service_host_->OnIceCandidatesReceived(sender_guid, target_info,
+  sharing_service_host_->OnIceCandidatesReceived(sender_guid, fcm_configuration,
                                                  GetIceCandidates(message));
   std::move(done_callback).Run(/*response=*/nullptr);
 }

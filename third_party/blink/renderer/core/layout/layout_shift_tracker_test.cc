@@ -36,8 +36,7 @@ class LayoutShiftTrackerTest : public RenderingTest {
   }
 
   void UpdateAllLifecyclePhases() {
-    GetFrameView().UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 };
 

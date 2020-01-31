@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_target.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {

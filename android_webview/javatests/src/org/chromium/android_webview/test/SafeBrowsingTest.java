@@ -286,6 +286,7 @@ public class SafeBrowsingTest {
         private AwWebResourceRequest mLastRequest;
         private int mLastThreatType;
         private int mAction = SafeBrowsingAction.SHOW_INTERSTITIAL;
+        private int mOnSafeBrowsingHitCount;
         private boolean mReporting = true;
 
         @Override
@@ -293,6 +294,7 @@ public class SafeBrowsingTest {
                 Callback<AwSafeBrowsingResponse> callback) {
             mLastRequest = request;
             mLastThreatType = threatType;
+            mOnSafeBrowsingHitCount++;
             callback.onResult(new AwSafeBrowsingResponse(mAction, mReporting));
         }
 
@@ -302,6 +304,10 @@ public class SafeBrowsingTest {
 
         public int getLastThreatType() {
             return mLastThreatType;
+        }
+
+        public int getOnSafeBrowsingHitCount() {
+            return mOnSafeBrowsingHitCount;
         }
 
         public void setSafeBrowsingAction(int action) {
@@ -697,9 +703,13 @@ public class SafeBrowsingTest {
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         waitForInterstitialDomToLoad();
+        int onSafeBrowsingCountBeforeClick = mContentsClient.getOnSafeBrowsingHitCount();
         clickVisitUnsafePage();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
+        // Check there is not an extra onSafeBrowsingHit call after proceeding.
+        Assert.assertEquals(
+                onSafeBrowsingCountBeforeClick, mContentsClient.getOnSafeBrowsingHitCount());
     }
 
     @Test

@@ -11,11 +11,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -474,8 +475,8 @@ TEST_F(SearchPermissionsServiceTest, Embargo) {
 
   // Place another origin under embargo.
   GURL google_aus_url(kGoogleAusURL);
-  PermissionDecisionAutoBlocker* auto_blocker =
-      PermissionDecisionAutoBlocker::GetForProfile(profile());
+  permissions::PermissionDecisionAutoBlocker* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
   auto_blocker->RecordDismissAndEmbargo(
       google_aus_url, ContentSettingsType::GEOLOCATION, false);
   auto_blocker->RecordDismissAndEmbargo(

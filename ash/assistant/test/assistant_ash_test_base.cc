@@ -260,6 +260,10 @@ AssistantInteractionController* AssistantAshTestBase::interaction_controller() {
   return controller_->interaction_controller();
 }
 
+const AssistantInteractionModel* AssistantAshTestBase::interaction_model() {
+  return interaction_controller()->model();
+}
+
 TestAssistantService* AssistantAshTestBase::assistant_service() {
   return ash_test_helper()->test_assistant_service();
 }

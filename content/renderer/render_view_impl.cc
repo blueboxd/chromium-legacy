@@ -1775,7 +1775,7 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
   if (webview()->MainFrameWidget()) {
     webview()->MainFrameWidget()->UpdateLifecycle(
         WebWidget::LifecycleUpdate::kLayout,
-        WebWidget::LifecycleUpdateReason::kOther);
+        blink::DocumentUpdateReason::kOther);
   }
 
   // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.

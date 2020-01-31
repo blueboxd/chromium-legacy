@@ -70,14 +70,14 @@ class TrafficAnnotationAuditor {
   // received from repository and heuristically filtered to only process the
   // relevant files. If |use_compile_commands| flag is set, the list of files is
   // extracted from compile_commands.json instead of git and will not be
-  // filtered.  If clang tool returns error, and |rerun_on_errors| is true, the
-  // tool is run again to record errors.  Errors are written to |errors_file| if
-  // it is not empty, otherwise LOG(ERROR).
+  // filtered.  If clang tool returns errors, the tool is run again to record
+  // errors.  Errors are written to |errors_file| if it is not empty, otherwise
+  // LOG(ERROR).
   bool RunExtractor(ExtractorBackend backend,
                     bool filter_files_based_on_heuristics,
                     bool use_compile_commands,
-                    bool rerun_on_errors,
-                    const base::FilePath& errors_file);
+                    const base::FilePath& errors_file,
+                    int* exit_code);
 
   // Parses the output of clang tool (|extractor_raw_output_|) and populates
   // |extracted_annotations_|, |extracted_calls_|, and |errors_|.

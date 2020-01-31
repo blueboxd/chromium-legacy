@@ -27,7 +27,9 @@ declare_args() {
   enable_additional_blink_object_names = enable_blink_heap_verification
 }
 
-# Unhandled Tap enable means Contextual Search aka Tap to Search.
+# Unhandled Tap enable means Contextual Search aka Touch to Search.
+# TODO(donnd): remove all unhandled-tap handling after the Long-press experiment
+#              is fully launched.
 enable_unhandled_tap = is_android
 
 # Use Minikin hyphenation engine.

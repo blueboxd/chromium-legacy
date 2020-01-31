@@ -241,6 +241,12 @@ void ShellTestApi::WaitForWindowFinishAnimating(aura::Window* window) {
   waiter.Wait();
 }
 
+base::OnceClosure ShellTestApi::CreateWaiterForFinishingWindowAnimation(
+    aura::Window* window) {
+  auto waiter = std::make_unique<WindowAnimationWaiter>(window);
+  return base::BindOnce(&WindowAnimationWaiter::Wait, std::move(waiter));
+}
+
 PaginationModel* ShellTestApi::GetAppListPaginationModel() {
   AppListView* view =
       Shell::Get()->app_list_controller()->presenter()->GetView();

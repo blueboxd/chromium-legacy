@@ -18,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
@@ -741,6 +742,14 @@ AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
 
 AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
+
+bool AuthenticatorPaaskSheetModel::IsBackButtonVisible() const {
+#if defined(OS_WIN)
+  return !base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi);
+#else
+  return true;
+#endif
+}
 
 bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
   return true;

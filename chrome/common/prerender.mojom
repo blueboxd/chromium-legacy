@@ -7,9 +7,6 @@ module chrome.mojom;
 import "url/mojom/url.mojom";
 
 interface PrerenderCanceler {
-  // Cancels prerendering because of an unsupported method.
-  CancelPrerenderForUnsupportedMethod();
-
   // Cancels prerendering because of an unsupported scheme.
   CancelPrerenderForUnsupportedScheme(url.mojom.Url url);
 };

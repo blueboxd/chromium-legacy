@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -26,6 +27,7 @@
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/constants.h"
@@ -143,6 +145,15 @@ CommunicationErrorType CommunicationErrorTypeFromLibassistantErrorCode(
   return CommunicationErrorType::Other;
 }
 
+std::vector<std::pair<std::string, std::string>> ReturnAuthTokensOrEmpty(
+    const base::Optional<std::string>& access_token) {
+  if (!access_token.has_value())
+    return {};
+
+  DCHECK(!access_token.value().empty());
+  return {std::pair<std::string, std::string>(kUserID, access_token.value())};
+}
+
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
@@ -151,8 +162,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     std::unique_ptr<AssistantManagerServiceDelegate> delegate,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
-    base::Optional<std::string> s3_server_uri_override,
-    bool is_signed_out_mode)
+    base::Optional<std::string> s3_server_uri_override)
     : client_(client),
       media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
       action_module_(std::make_unique<action::CrosActionModule>(
@@ -165,7 +175,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       context_(context),
       delegate_(std::move(delegate)),
       background_thread_("background thread"),
-      is_signed_out_mode_(is_signed_out_mode),
       libassistant_config_(CreateLibAssistantConfig(s3_server_uri_override)),
       weak_factory_(this) {
   background_thread_.Start();
@@ -182,10 +191,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
-  auto* ambient_state = ash::AmbientModeState::Get();
-  if (ambient_state)
-    ambient_state->RemoveObserver(this);
-
   background_thread_.Stop();
 }
 
@@ -202,15 +207,12 @@ void AssistantManagerServiceImpl::Start(
 
   EnableHotword(enable_hotword);
 
+  // Check the AmbientModeState to keep us synced on |ambient_state|.
   if (chromeos::features::IsAmbientModeEnabled()) {
     auto* ambient_state = ash::AmbientModeState::Get();
     DCHECK(ambient_state);
 
-    // Update the support action list in action module when system enters/exits
-    // the Ambient Mode. Some actions such as open URL in the browser will be
-    // disabled in this mode.
-    action_module_->SetAmbientModeEnabled(ambient_state->enabled());
-    ambient_state->AddObserver(this);
+    EnableAmbientMode(ambient_state->enabled());
   }
 
   // LibAssistant creation will make file IO and sync wait. Post the creation to
@@ -229,12 +231,6 @@ void AssistantManagerServiceImpl::Stop() {
 
   SetStateAndInformObservers(State::STOPPED);
 
-  if (chromeos::features::IsAmbientModeEnabled()) {
-    auto* ambient_state = ash::AmbientModeState::Get();
-    DCHECK(ambient_state);
-    ambient_state->RemoveObserver(this);
-  }
-
   // When user disables the feature, we also deletes all data.
   if (!assistant_state()->settings_enabled().value() && assistant_manager_)
     assistant_manager_->ResetAllDataAndShutdown();
@@ -251,20 +247,28 @@ AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
 }
 
 void AssistantManagerServiceImpl::SetAccessToken(
-    const std::string& access_token) {
+    const base::Optional<std::string>& access_token) {
   if (!assistant_manager_)
     return;
-
-  DCHECK(!access_token.empty());
 
   VLOG(1) << "Set access token.";
   // Push the |access_token| we got as an argument into AssistantManager before
   // starting to ensure that all server requests will be authenticated once
   // it is started. |user_id| is used to pair a user to their |access_token|,
   // since we do not support multi-user in this example we can set it to a
-  // dummy value like "0".
-  assistant_manager_->SetAuthTokens(
-      {std::pair<std::string, std::string>(kUserID, access_token)});
+  // dummy value like "0". When |access_token| does not contain a value, we
+  // need to switch Libassistant to signed-out mode so that it can work with
+  // 0 auth token.
+  assistant_manager_->SetAuthTokens(ReturnAuthTokensOrEmpty(access_token));
+}
+
+void AssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {
+  if (!assistant_manager_)
+    return;
+
+  // Update |action_module_| accordingly, as some actions, e.g. open URL
+  // in the browser, are not supported in ambient mode.
+  action_module_->SetAmbientModeEnabled(enabled);
 }
 
 void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
@@ -1178,10 +1182,9 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
         server_experiment_ids);
   }
 
-  if (!is_signed_out_mode_) {
-    new_assistant_manager_->SetAuthTokens(
-        {std::pair<std::string, std::string>(kUserID, access_token.value())});
-  }
+  // When |access_token| does not contain a value, we will start Libassistant
+  // in signed-out mode by calling SetAuthTokens() with an empty vector.
+  new_assistant_manager_->SetAuthTokens(ReturnAuthTokensOrEmpty(access_token));
   new_assistant_manager_->Start();
 }
 
@@ -1316,10 +1319,6 @@ void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
   display_connection_->OnAndroidAppListRefreshed(android_apps_info);
 }
 
-void AssistantManagerServiceImpl::OnAmbientModeEnabled(bool enabled) {
-  action_module_->SetAmbientModeEnabled(enabled);
-}
-
 void AssistantManagerServiceImpl::UpdateInternalOptions(
     assistant_client::AssistantManagerInternal* assistant_manager_internal) {
   // Build internal options
@@ -1331,7 +1330,11 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
   internal_options->SetClientControlEnabled(
       assistant::features::IsRoutinesEnabled());
 
-  if (is_signed_out_mode_) {
+  // TODO(meilinw): remove this logic and instead use the new config flag
+  // once we uprev.
+  if (chromeos::features::IsAmbientModeEnabled() ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
     internal_options->SetUserCredentialMode(
         assistant_client::InternalOptions::UserCredentialMode::SIGNED_OUT);
   }
@@ -1529,11 +1532,21 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
   assistant_manager_internal_->SendScreenContextRequest(context_protos);
 }
 
+void AssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(
+    mojom::AssistantEntryPoint entry_point) {
+  base::AutoLock lock(last_trigger_source_lock_);
+  last_trigger_source_ = ToTriggerSource(entry_point);
+}
+
+std::string AssistantManagerServiceImpl::ConsumeLastTriggerSource() {
+  base::AutoLock lock(last_trigger_source_lock_);
+  auto trigger_source = last_trigger_source_;
+  last_trigger_source_ = std::string();
+  return trigger_source;
+}
+
 std::string AssistantManagerServiceImpl::GetLastSearchSource() {
-  base::AutoLock lock(last_search_source_lock_);
-  auto search_source = last_search_source_;
-  last_search_source_ = std::string();
-  return search_source;
+  return ConsumeLastTriggerSource();
 }
 
 void AssistantManagerServiceImpl::FillServerExperimentIds(

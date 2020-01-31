@@ -12,6 +12,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

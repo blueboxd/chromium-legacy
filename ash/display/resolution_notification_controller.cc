@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/display/display_change_dialog.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -179,8 +181,57 @@ void ResolutionNotificationController::Click(
     RevertResolutionChange(false /* display_was_removed */);
 }
 
+void ResolutionNotificationController::CreateOrReplaceModalDialog() {
+  DCHECK(features::IsDisplayChangeModalEnabled());
+
+  if (confirmation_dialog_)
+    confirmation_dialog_->GetWidget()->CloseNow();
+
+  if (!change_info_)
+    return;
+
+  const base::string16 display_name =
+      base::UTF8ToUTF16(Shell::Get()->display_manager()->GetDisplayNameForId(
+          change_info_->display_id));
+  const base::string16 actual_display_size =
+      base::UTF8ToUTF16(change_info_->current_resolution.size().ToString());
+  const base::string16 requested_display_size =
+      base::UTF8ToUTF16(change_info_->new_resolution.size().ToString());
+
+  base::string16 dialog_title =
+      l10n_util::GetStringUTF16(IDS_ASH_RESOLUTION_CHANGE_DIALOG_TITLE);
+
+  // Construct the timeout message, leaving a placeholder for the countdown
+  // timer so that the string does not need to be completely rebuilt every
+  // timer tick.
+  constexpr char kTimeoutPlaceHolder[] = "$1";
+
+  base::string16 timeout_message_with_placeholder =
+      actual_display_size == requested_display_size
+          ? l10n_util::GetStringFUTF16(IDS_ASH_RESOLUTION_CHANGE_DIALOG_CHANGED,
+                                       display_name, actual_display_size,
+                                       base::UTF8ToUTF16(kTimeoutPlaceHolder))
+          : l10n_util::GetStringFUTF16(
+                IDS_ASH_RESOLUTION_CHANGE_DIALOG_FALLBACK, display_name,
+                requested_display_size, actual_display_size,
+                base::UTF8ToUTF16(kTimeoutPlaceHolder));
+
+  DisplayChangeDialog* dialog = new DisplayChangeDialog(
+      std::move(dialog_title), std::move(timeout_message_with_placeholder),
+      base::BindOnce(&ResolutionNotificationController::AcceptResolutionChange,
+                     weak_factory_.GetWeakPtr(), /*close_notification=*/false),
+      base::BindOnce(&ResolutionNotificationController::RevertResolutionChange,
+                     weak_factory_.GetWeakPtr()));
+  confirmation_dialog_ = dialog->GetWeakPtr();
+}
+
 void ResolutionNotificationController::CreateOrUpdateNotification(
     bool enable_spoken_feedback) {
+  if (features::IsDisplayChangeModalEnabled()) {
+    CreateOrReplaceModalDialog();
+    return;
+  }
+
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
   if (!change_info_) {
@@ -287,8 +338,11 @@ void ResolutionNotificationController::OnTimerTick() {
 
 void ResolutionNotificationController::OnDisplayRemoved(
     const display::Display& old_display) {
-  if (change_info_ && change_info_->display_id == old_display.id())
+  if (change_info_ && change_info_->display_id == old_display.id()) {
+    if (confirmation_dialog_)
+      confirmation_dialog_->GetWidget()->CloseNow();
     RevertResolutionChange(true /* display_was_removed */);
+  }
 }
 
 void ResolutionNotificationController::OnDisplayConfigurationChanged() {

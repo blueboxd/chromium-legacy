@@ -12,6 +12,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"

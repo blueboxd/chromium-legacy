@@ -65,7 +65,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason) override;
+                       DocumentUpdateReason reason) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

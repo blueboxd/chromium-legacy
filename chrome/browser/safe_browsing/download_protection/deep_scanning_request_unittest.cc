@@ -138,6 +138,15 @@ class DeepScanningRequestTest : public testing::Test {
         prefs::kSafeBrowsingSendFilesForMalwareCheck, state);
   }
 
+  void AddUrlToList(const char* pref_name, const GURL& url) {
+    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(), pref_name)
+        ->Append(url.host());
+  }
+
+  void AddUrlToProfilePrefList(const char* pref_name, const GURL& url) {
+    ListPrefUpdate(profile_->GetPrefs(), pref_name)->Append(url.host());
+  }
+
   void EnableFeatures(const std::vector<base::Feature>& features) {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(features, {});
@@ -421,6 +430,28 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
 
     EXPECT_EQ(DownloadCheckResult::SENSITIVE_CONTENT_BLOCK, last_result_);
   }
+}
+
+TEST_F(DeepScanningRequestTest, ShouldUploadItemByPolicy_MalwareListPolicy) {
+  EnableFeatures({kMalwareScanEnabled});
+  SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+
+  content::DownloadItemUtils::AttachInfo(&item_, profile_, nullptr);
+  EXPECT_CALL(item_, GetURL()).WillRepeatedly(ReturnRef(download_url_));
+
+  // Without the malware policy list set, the item should be uploaded.
+  EXPECT_TRUE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
+
+  // With the old malware policy list set, the item should be uploaded since
+  // DeepScanningRequest ignores that policy.
+  AddUrlToProfilePrefList(prefs::kSafeBrowsingWhitelistDomains, download_url_);
+  EXPECT_TRUE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
+
+  // With the new malware policy list set, the item should not be uploaded since
+  // DeepScanningRequest honours that policy.
+  AddUrlToList(prefs::kURLsToNotCheckForMalwareOfDownloadedContent,
+               download_url_);
+  EXPECT_FALSE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
 }
 
 }  // namespace safe_browsing

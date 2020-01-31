@@ -138,8 +138,7 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
   if (!web_plugin_)
     return;
 
-  web_plugin_->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kOther);
+  web_plugin_->UpdateAllLifecyclePhases(DocumentUpdateReason::kOther);
 }
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,

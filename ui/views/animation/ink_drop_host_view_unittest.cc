@@ -11,6 +11,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/color_palette.h"

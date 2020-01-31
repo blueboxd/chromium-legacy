@@ -52,7 +52,7 @@ void DrawCursor(DrmDumbBuffer* cursor, const SkBitmap& image) {
   // Clear to transparent in case |image| is smaller than the canvas.
   SkCanvas* canvas = cursor->GetCanvas();
   canvas->clear(SK_ColorTRANSPARENT);
-  canvas->drawBitmapRect(image, damage, NULL);
+  canvas->drawBitmapRect(image, damage, nullptr);
 }
 
 }  // namespace
@@ -65,11 +65,10 @@ HardwareDisplayController::HardwareDisplayController(
   AllocateCursorBuffers();
 }
 
-HardwareDisplayController::~HardwareDisplayController() {
-}
+HardwareDisplayController::~HardwareDisplayController() = default;
 
 bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
-                                        drmModeModeInfo mode) {
+                                        const drmModeModeInfo& mode) {
   TRACE_EVENT0("drm", "HDC::Modeset");
   DCHECK(primary.buffer.get());
   bool status = true;

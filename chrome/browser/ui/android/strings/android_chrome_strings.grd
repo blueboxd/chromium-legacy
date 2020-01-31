@@ -661,15 +661,20 @@ CHAR-LIMIT guidelines:
         Sends URLs of some pages you visit to Google, when your security is at risk
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
-        Tap to Search
+        Touch to Search
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_TAP_DESCRIPTION" desc="Description for Contextual Search preference">
+        Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
+
+Tap any word to create a search for it. To adjust your search term, long press to select. To refine your search slide the panel open, tap the expand icon to make a new tab, and then tap the search box.
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for Contextual Search preference">
-        Learn about topics on websites without leaving the page. Tap to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
+        Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
 
-To adjust your search term, long press to select. To refine your search, slide the panel all the way up and tap the search box.
+Long-press any word to create a search for it. To refine your search adjust the selection. You can also slide the panel open, tap the expand icon to make a new tab, and then tap the search box.
       </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_SHORT_DESCRIPTION" desc="A promo message shown to users who have Tap to Search enabled to explain the new behavior and provide an option to opt out">
-        Tap to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      <message name="IDS_CONTEXTUAL_SEARCH_SHORT_DESCRIPTION" desc="A promo message shown to users with Touch to Search to explain the new behavior and provide an option to opt in or out">
+        Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_ALLOW_BUTTON" desc="A button to confirm and dismiss opt out promo">
         Allow
@@ -3038,15 +3043,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Accessibility -->
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_FORWARD" desc="Content description for the forward navigation button.">
-        Go forward
-      </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BACK" desc="Content description for the backard navigation button.">
-        Go back
-      </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU" desc="Content description for the settings menu button.">
-        More options
-      </message>
+
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU_UPDATE" desc="Content description for the menu button when it is covered by the update icon that is displayed when a newer version of Chrome is available.">
         Update available. More options
       </message>
@@ -3070,9 +3067,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MIC" desc="Content description for the voice search button.">
         Start voice search
-      </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_DELETE_URL" desc="Content description for the clear text input button.">
-        Clear input
       </message>
       <message name="IDS_ACCESSIBILITY_NEW_TAB_PAGE" desc="Accessibility text to read aloud when the user focuses the new tab view.">
         New tab
@@ -3146,15 +3140,8 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
       </message>
-      <message name="IDS_ACCESSIBILITY_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected items in a selectable list view.">
-        Cancel selection
-      </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_SCREEN_POSITION" desc="Accessibility announcement to inform users about a toolbar's location.">
-        <ph name="ITEM_COUNT">%1$s<ex>3</ex></ph> selected.  Options available near top of the screen
-      </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_MULTI_SELECT" desc="Accessibility announcement to inform users about more items selected.">
-        <ph name="ITEM_COUNT">%1$s<ex>3</ex></ph> selected
-      </message>
+
+
       <message name="IDS_ACCESSIBILITY_SHARE_SELECTED_ITEMS" desc="Content description for the button to share selected items. [ICU Syntax]">
         {NUM_SELECTED, plural,
           =1 {Share 1 selected item}
@@ -3180,14 +3167,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Tabs
       </message>
 
-      <message name="IDS_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
-        {NUM_SELECTED, plural,
-          =1 {1 selected}
-          other {# selected}}
-      </message>
-      <message name="IDS_SELECT_ITEMS" desc="Label shown on toolbar asking user to select items from the list.">
-        Select items
-      </message>
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>

@@ -702,7 +702,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
 
-  IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
+  IndexedDBValue value("value1", {});
   std::unique_ptr<IndexedDBKey> key(std::make_unique<IndexedDBKey>("key"));
   std::vector<IndexedDBIndexKeys> index_keys;
   base::MockCallback<blink::mojom::IDBTransaction::PutCallback> callback;

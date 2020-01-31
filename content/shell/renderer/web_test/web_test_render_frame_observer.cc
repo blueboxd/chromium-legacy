@@ -41,7 +41,7 @@ WebTestRenderFrameObserver::WebTestRenderFrameObserver(
 WebTestRenderFrameObserver::~WebTestRenderFrameObserver() = default;
 
 void WebTestRenderFrameObserver::BindReceiver(
-    mojo::PendingAssociatedReceiver<mojom::WebTestControl> receiver) {
+    mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver) {
   receiver_.Bind(std::move(receiver),
                  blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }

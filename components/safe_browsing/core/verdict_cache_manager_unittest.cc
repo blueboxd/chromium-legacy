@@ -57,12 +57,16 @@ class VerdictCacheManagerTest : public ::testing::Test {
       RTLookupResponse::ThreatInfo::VerdictType verdict_type,
       RTLookupResponse::ThreatInfo::ThreatType threat_type,
       int cache_duration_sec,
-      const std::string& cache_expression) {
+      const std::string& cache_expression,
+      RTLookupResponse::ThreatInfo::CacheExpressionMatchType
+          cache_expression_match_type) {
     RTLookupResponse::ThreatInfo* new_threat_info = response.add_threat_info();
     new_threat_info->set_verdict_type(verdict_type);
     new_threat_info->set_threat_type(threat_type);
     new_threat_info->set_cache_duration_sec(cache_duration_sec);
     new_threat_info->set_cache_expression(cache_expression);
+    new_threat_info->set_cache_expression_match_type(
+        cache_expression_match_type);
   }
 
  protected:
@@ -324,10 +328,12 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdict) {
   RTLookupResponse response;
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 0,
-                          "www.example.com/");
+                          "www.example.com/",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE, 60,
-                          "www.example.com/path");
+                          "www.example.com/path",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   cache_manager_->CacheRealTimeUrlVerdict(GURL("https://www.example.com/"),
                                           response, base::Time::Now());
   ASSERT_EQ(2, cache_manager_->GetStoredRealTimeUrlCheckVerdictCount());
@@ -440,10 +446,12 @@ TEST_F(VerdictCacheManagerTest, TestCanRetrieveCachedRealTimeUrlCheckVerdict) {
   RTLookupResponse response;
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::SAFE,
                           RTLookupResponse::ThreatInfo::THREAT_TYPE_UNSPECIFIED,
-                          60, "www.example.com/");
+                          60, "www.example.com/",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
-                          "www.example.com/path");
+                          "www.example.com/path",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
 
   RTLookupResponse::ThreatInfo out_verdict;
@@ -463,16 +471,20 @@ TEST_F(VerdictCacheManagerTest,
   RTLookupResponse response;
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
-                          "www.example.com/");
+                          "www.example.com/",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE, 60,
-                          "www.example.com/");
+                          "www.example.com/",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE, 60,
-                          "www.example.com/path");
+                          "www.example.com/path",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::UNCLEAR_BILLING, 60,
-                          "www.example.com/path");
+                          "www.example.com/path",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   cache_manager_->CacheRealTimeUrlVerdict(url2, response, base::Time::Now());
 
   RTLookupResponse::ThreatInfo out_verdict;
@@ -496,7 +508,8 @@ TEST_F(VerdictCacheManagerTest,
   RTLookupResponse response;
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 0,
-                          "www.example.com/path");
+                          "www.example.com/path",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
 
   RTLookupResponse::ThreatInfo out_verdict;
@@ -511,7 +524,8 @@ TEST_F(VerdictCacheManagerTest,
   RTLookupResponse response;
   AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
                           RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
-                          "www.example.com/path");
+                          "www.example.com/path",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
   cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
   RTLookupResponse::ThreatInfo out_verdict;
   EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
@@ -543,6 +557,18 @@ TEST_F(VerdictCacheManagerTest, TestHostSuffixMatching) {
                 GURL("https://b.example.test/path/path2"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                 password_type, &cached_verdict));
+
+  // Real time url check verdict.
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
+                          "example.test/path/",
+                          RTLookupResponse::ThreatInfo::COVERING_MATCH);
+  cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
+  RTLookupResponse::ThreatInfo out_verdict;
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(
+                GURL("https://b.example.test/path/path2"), &out_verdict));
 }
 
 TEST_F(VerdictCacheManagerTest, TestHostSuffixMatchingMostExactMatching) {
@@ -569,6 +595,52 @@ TEST_F(VerdictCacheManagerTest, TestHostSuffixMatchingMostExactMatching) {
                 GURL("https://b1.b.example.test/"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                 password_type, &cached_verdict));
+}
+
+TEST_F(VerdictCacheManagerTest, TestExactMatching) {
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
+                          "a.example.test/path1/",
+                          RTLookupResponse::ThreatInfo::EXACT_MATCH);
+  cache_manager_->CacheRealTimeUrlVerdict(
+      GURL("https://a.example.test/path1/path2"), response, base::Time::Now());
+
+  RTLookupResponse::ThreatInfo out_verdict;
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(
+                GURL("https://a.example.test/path1/"), &out_verdict));
+  // Since |cache_expression_exact_matching| is set to EXACT_MATCH, cache is not
+  // found.
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED,
+            cache_manager_->GetCachedRealTimeUrlVerdict(
+                GURL("https://a.example.test/path1/path2"), &out_verdict));
+}
+
+TEST_F(VerdictCacheManagerTest, TestMatchingTypeNotSet) {
+  std::string cache_expression = "a.example.test/path1";
+  GURL url("https://a.example.test/path1");
+
+  RTLookupResponse response;
+  RTLookupResponse::ThreatInfo* new_threat_info = response.add_threat_info();
+  new_threat_info->set_verdict_type(RTLookupResponse::ThreatInfo::DANGEROUS);
+  new_threat_info->set_threat_type(
+      RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING);
+  new_threat_info->set_cache_duration_sec(60);
+  new_threat_info->set_cache_expression(cache_expression);
+  cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
+
+  RTLookupResponse::ThreatInfo out_verdict;
+  // If |cache_expression_match_type| is not set, ignore this cache.
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url, &out_verdict));
+
+  new_threat_info->set_cache_expression_match_type(
+      RTLookupResponse::ThreatInfo::EXACT_MATCH);
+  cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
+  // Should be able to get the cache if |cache_expression_match_type| is set.
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url, &out_verdict));
 }
 
 }  // namespace safe_browsing

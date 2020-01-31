@@ -26,11 +26,11 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceInflater;
+import org.chromium.ui.util.ColorUtils;
 
 import java.net.URISyntaxException;
 import java.util.List;

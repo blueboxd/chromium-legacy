@@ -57,8 +57,8 @@ HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic(
     DrmDevice* drm)
     : HardwareDisplayPlaneManager(drm) {}
 
-HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() {
-}
+HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() =
+    default;
 
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,

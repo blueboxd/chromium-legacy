@@ -14,8 +14,8 @@ struct AccountState {
   AccountState(const AccountState& other);
   ~AccountState();
 
-  bool has_refresh_token;
-  bool is_primary_account;
+  bool has_refresh_token = false;
+  bool is_unconsented_primary_account = false;
 };
 
 }  // namespace identity

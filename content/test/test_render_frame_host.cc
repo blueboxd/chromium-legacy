@@ -232,6 +232,11 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
                            {} /* dp_header */);
 }
 
+void TestRenderFrameHost::SimulateUserActivation() {
+  frame_tree_node()->UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+}
+
 const std::vector<std::string>& TestRenderFrameHost::GetConsoleMessages() {
   return console_messages_;
 }

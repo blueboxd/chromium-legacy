@@ -10,7 +10,11 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -22,10 +26,16 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -36,6 +46,16 @@ ui::WindowShowState DetermineWindowShowState() {
     return ui::SHOW_STATE_FULLSCREEN;
 
   return ui::SHOW_STATE_DEFAULT;
+}
+
+void SetTabHelperAppId(content::WebContents* web_contents,
+                       const std::string& app_id) {
+  // TODO(https://crbug.com/1032443):
+  // Eventually move this to browser_navigator.cc: CreateTargetContents().
+  WebAppTabHelperBase* tab_helper =
+      WebAppTabHelperBase::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  tab_helper->SetAppId(app_id);
 }
 
 }  // namespace
@@ -63,13 +83,7 @@ content::WebContents* NavigateWebApplicationWindow(
   content::WebContents* web_contents =
       nav_params.navigated_or_inserted_contents;
 
-  // TODO(https://crbug.com/1032443):
-  // Eventually move this to browser_navigator.cc: CreateTargetContents().
-  WebAppTabHelperBase* tab_helper =
-      WebAppTabHelperBase::FromWebContents(web_contents);
-  DCHECK(tab_helper);
-  tab_helper->SetAppId(app_id);
-
+  SetTabHelperAppId(web_contents, app_id);
   return web_contents;
 }
 
@@ -105,10 +119,47 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 
-  Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
+  Browser* browser;
+  WindowOpenDisposition disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  if (params.container == apps::mojom::LaunchContainer::kLaunchContainerTab) {
+    browser = chrome::FindTabbedBrowser(
+        profile(), /*match_original_profiles=*/false, params.display_id);
+    if (browser) {
+      // For existing browser, ensure its window is activated.
+      browser->window()->Activate();
+      disposition = params.disposition;
+    } else {
+      browser =
+          new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile(),
+                                            /*user_gesture=*/true));
+    }
+  } else {
+    browser = CreateWebApplicationWindow(profile(), params.app_id);
+  }
 
-  content::WebContents* web_contents = NavigateWebApplicationWindow(
-      browser, params.app_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  content::WebContents* web_contents;
+  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
+    TabStripModel* const model = browser->tab_strip_model();
+    content::WebContents* existing_tab = model->GetActiveWebContents();
+    const int tab_index = model->GetIndexOfWebContents(existing_tab);
+
+    existing_tab->OpenURL(content::OpenURLParams(
+        url,
+        content::Referrer::SanitizeForRequest(
+            url, content::Referrer(existing_tab->GetURL(),
+                                   network::mojom::ReferrerPolicy::kDefault)),
+        disposition, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+        /*is_renderer_initiated=*/false));
+
+    // Reset existing_tab as OpenURL() may have clobbered it.
+    existing_tab = browser->tab_strip_model()->GetActiveWebContents();
+    model->ActivateTabAt(tab_index, {TabStripModel::GestureType::kOther});
+    web_contents = existing_tab;
+    SetTabHelperAppId(web_contents, params.app_id);
+  } else {
+    web_contents = NavigateWebApplicationWindow(
+        browser, params.app_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  }
 
   if (file_handler_manager.IsFileHandlingAPIAvailable(params.app_id)) {
     web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
@@ -143,12 +194,14 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   return web_contents;
 }
 
-bool WebAppLaunchManager::OpenApplicationWindow(
+void WebAppLaunchManager::LaunchApplication(
     const std::string& app_id,
     const base::CommandLine& command_line,
-    const base::FilePath& current_directory) {
+    const base::FilePath& current_directory,
+    base::OnceCallback<void(Browser* browser,
+                            apps::mojom::LaunchContainer container)> callback) {
   if (!provider_)
-    return false;
+    return;
 
   apps::AppLaunchParams params(
       app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
@@ -159,34 +212,36 @@ bool WebAppLaunchManager::OpenApplicationWindow(
   params.launch_files =
       apps::LaunchManager::GetLaunchFilesFromCommandLine(command_line);
 
-  provider_->on_registry_ready().Post(
-      FROM_HERE, base::BindOnce(&WebAppLaunchManager::OpenWebApplication,
-                                weak_ptr_factory_.GetWeakPtr(), params));
-
-  return true;
-}
-
-bool WebAppLaunchManager::OpenApplicationTab(const std::string& app_id) {
-  if (!provider_)
-    return false;
-
-  apps::AppLaunchParams params(
-      app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceCommandLine);
-
   // Wait for the web applications database to load.
   // If the profile and WebAppLaunchManager are destroyed,
   // on_registry_ready will not fire.
   provider_->on_registry_ready().Post(
-      FROM_HERE, base::BindOnce(&WebAppLaunchManager::OpenWebApplication,
-                                weak_ptr_factory_.GetWeakPtr(), params));
-  return true;
+      FROM_HERE, base::BindOnce(&WebAppLaunchManager::LaunchWebApplication,
+                                weak_ptr_factory_.GetWeakPtr(), params,
+                                std::move(callback)));
 }
 
-void WebAppLaunchManager::OpenWebApplication(
-    const apps::AppLaunchParams& params) {
-  OpenApplication(params);
+void WebAppLaunchManager::LaunchWebApplication(
+    apps::AppLaunchParams params,
+    base::OnceCallback<void(Browser* browser,
+                            apps::mojom::LaunchContainer container)> callback) {
+  Browser* browser;
+  if (provider_->registrar().IsInstalled(params.app_id)) {
+    if (provider_->registrar().GetAppEffectiveDisplayMode(params.app_id) ==
+        blink::mojom::DisplayMode::kBrowser) {
+      params.container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+      params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    }
+
+    const content::WebContents* web_contents = OpenApplication(params);
+    browser = chrome::FindBrowserWithWebContents(web_contents);
+    DCHECK(browser);
+  } else {
+    // Open an empty browser window as the app_id is invalid.
+    browser = CreateNewTabBrowser();
+    params.container = apps::mojom::LaunchContainer::kLaunchContainerNone;
+  }
+  std::move(callback).Run(browser, params.container);
 }
 
 void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {

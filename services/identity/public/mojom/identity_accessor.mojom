@@ -16,22 +16,27 @@ interface IdentityAccessor {
   // user's primary account. |account_id|, |gaia|, and |email| will be null if
   // the user has no primary account (e.g., if they are not signed in).
   // |account_state| gives the current state of the account (relevant only if
-  // |account_id| is non-null).
-  GetPrimaryAccountInfo() => (CoreAccountId? account_id,
-                              string? gaia,
-                              string? email,
-                              AccountState account_state);
+  // |account_id| is non-null). "Unconsented" means that the account is returned
+  // whether or not the user has consented to the browser sync feature.
+  // See //components/signin/README.md.
+  GetUnconsentedPrimaryAccountInfo() => (CoreAccountId? account_id,
+                                         string? gaia,
+                                         string? email,
+                                         AccountState account_state);
 
   // Returns the information for the Google account that serves as the
   // user's primary account once this account is available (i.e., the user is
   // signed in, a refresh token is available, and the refresh token is in a
   // non-error state). |account_state| gives the current state of the account.
   // Overlapping requests are permitted; all pending requests will be called
-  // back when the primary account is available.
-  GetPrimaryAccountWhenAvailable() => (CoreAccountId account_id,
-                                       string gaia,
-                                       string email,
-                                       AccountState account_state);
+  // back when the primary account is available. "Unconsented" means that the
+  // account is returned whether or not the user has consented to the browser
+  // sync feature. See //components/signin/README.md.
+  GetUnconsentedPrimaryAccountWhenAvailable()
+      => (CoreAccountId account_id,
+          string gaia,
+          string email,
+          AccountState account_state);
 
   // Returns an access token with the requested scopes for the given
   // |account_id|, or null if it is not possible to obtain such a token (e.g.,

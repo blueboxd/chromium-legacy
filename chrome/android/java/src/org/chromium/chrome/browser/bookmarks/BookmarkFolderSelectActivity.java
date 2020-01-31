@@ -27,8 +27,8 @@ import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 
 import java.util.ArrayList;
 import java.util.List;

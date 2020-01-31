@@ -330,7 +330,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(const base::Optional<RecordTabSwitchTimeRequest>&
+  void WasShown(const base::Optional<RecordContentToVisibleTimeRequest>&
                     record_tab_switch_time_request);
 
 #if defined(OS_ANDROID)

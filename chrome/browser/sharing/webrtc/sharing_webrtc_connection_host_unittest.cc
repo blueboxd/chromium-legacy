@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sharing/webrtc/sharing_webrtc_connection_host.h"
 
+#include <algorithm>
+
 #include "base/bind_helpers.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -15,6 +17,9 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/crypto/gcm_encryption_result.h"
+#include "components/gcm_driver/fake_gcm_driver.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,6 +65,51 @@ class MockSignallingHost : public WebRtcSignallingHostFCM {
   MOCK_METHOD2(OnOfferReceived, void(const std::string&, SendOfferCallback));
   MOCK_METHOD1(OnIceCandidatesReceived,
                void(std::vector<sharing::mojom::IceCandidatePtr>));
+};
+
+// Implementation of GCMDriver that does not encrypt / decrypt messages.
+class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
+ public:
+  CustomFakeGCMDriver() = default;
+  ~CustomFakeGCMDriver() override = default;
+
+  void EncryptMessage(const std::string& app_id,
+                      const std::string& authorized_entity,
+                      const std::string& p256dh,
+                      const std::string& auth_secret,
+                      const std::string& message,
+                      EncryptMessageCallback callback) override {
+    std::string result = message;
+    if (reverse_data_)
+      std::reverse(result.begin(), result.end());
+
+    std::move(callback).Run(fail_
+                                ? gcm::GCMEncryptionResult::ENCRYPTION_FAILED
+                                : gcm::GCMEncryptionResult::ENCRYPTED_DRAFT_08,
+                            std::move(result));
+  }
+
+  void DecryptMessage(const std::string& app_id,
+                      const std::string& authorized_entity,
+                      const std::string& message,
+                      DecryptMessageCallback callback) override {
+    std::string result = message;
+    if (reverse_data_)
+      std::reverse(result.begin(), result.end());
+
+    std::move(callback).Run(
+        fail_ ? gcm::GCMDecryptionResult::INVALID_ENCRYPTION_HEADER
+              : gcm::GCMDecryptionResult::DECRYPTED_DRAFT_08,
+        std::move(result));
+  }
+
+  void set_reverse_data(bool reverse_data) { reverse_data_ = reverse_data; }
+
+  void set_fail(bool fail) { fail_ = fail; }
+
+ private:
+  bool reverse_data_ = false;
+  bool fail_ = false;
 };
 
 chrome_browser_sharing::WebRtcMessage CreateMessage() {
@@ -109,9 +159,12 @@ class SharingWebRtcConnectionHostTest : public testing::Test {
     auto signalling_host = std::make_unique<MockSignallingHost>();
     signalling_host_ = signalling_host.get();
 
+    SharingWebRtcConnectionHost::EncryptionInfo encryption_info{
+        "authorized_entity", "p256dh", "auth_secret"};
+
     host_ = std::make_unique<SharingWebRtcConnectionHost>(
-        std::move(signalling_host), &handler_registry_,
-        CreateFakeDeviceInfo("id", "name"),
+        std::move(signalling_host), &handler_registry_, &fake_gcm_driver_,
+        std::move(encryption_info),
         base::BindOnce(&SharingWebRtcConnectionHostTest::ConnectionClosed,
                        base::Unretained(this)),
         mock_service_.delegate.BindNewPipeAndPassReceiver(),
@@ -120,7 +173,7 @@ class SharingWebRtcConnectionHostTest : public testing::Test {
         mock_service_.socket_manager.BindNewPipeAndPassRemote());
   }
 
-  MOCK_METHOD1(ConnectionClosed, void(const std::string&));
+  MOCK_METHOD0(ConnectionClosed, void());
 
   void ExpectOnMessage(MockSharingMessageHandler* handler) {
     EXPECT_CALL(*handler, OnMessage(testing::_, testing::_))
@@ -144,8 +197,9 @@ class SharingWebRtcConnectionHostTest : public testing::Test {
 
   void WaitForConnectionClosed() {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, ConnectionClosed(testing::_))
-        .WillOnce(testing::InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+    EXPECT_CALL(*this, ConnectionClosed()).WillOnce(testing::Invoke([&]() {
+      run_loop.Quit();
+    }));
     run_loop.Run();
   }
 
@@ -163,6 +217,7 @@ class SharingWebRtcConnectionHostTest : public testing::Test {
   MockSharingMessageHandler ack_message_handler_;
   MockSharingMojoService mock_service_;
   FakeSharingHandlerRegistry handler_registry_;
+  CustomFakeGCMDriver fake_gcm_driver_;
   MockSignallingHost* signalling_host_;
   std::unique_ptr<SharingWebRtcConnectionHost> host_;
   base::HistogramTester histograms_;
@@ -184,6 +239,50 @@ TEST_F(SharingWebRtcConnectionHostTest, OnMessageReceived) {
   run_loop.Run();
 
   EXPECT_FALSE(mock_service_.delegate.is_connected());
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, DecryptMessage_Success) {
+  fake_gcm_driver_.set_reverse_data(true);
+
+  ExpectOnMessage(&message_handler_);
+  ExpectSendMessage();
+
+  base::RunLoop run_loop;
+  mock_service_.delegate.set_disconnect_handler(run_loop.QuitClosure());
+
+  auto message = SerializeMessage(CreateMessage());
+  // Reverse data to simulate encrypted message being received.
+  std::reverse(message.begin(), message.end());
+  host_->OnMessageReceived(message);
+
+  run_loop.Run();
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, DecryptMessage_Fail) {
+  fake_gcm_driver_.set_fail(true);
+
+  // Expect not to handle the message as decryption failed.
+  EXPECT_CALL(message_handler_, OnMessage(testing::_, testing::_)).Times(0);
+
+  auto message = SerializeMessage(CreateMessage());
+  // Reverse data to simulate encrypted message being received.
+  std::reverse(message.begin(), message.end());
+  host_->OnMessageReceived(message);
+
+  WaitForConnectionClosed();
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, DecryptMessage_FailNotEncrypted) {
+  fake_gcm_driver_.set_reverse_data(true);
+
+  // Expect not to handle the message as decryption failed.
+  EXPECT_CALL(message_handler_, OnMessage(testing::_, testing::_)).Times(0);
+
+  auto message = SerializeMessage(CreateMessage());
+  // Do not reverse data to check if we actually try to decrypt.
+  host_->OnMessageReceived(message);
+
+  WaitForConnectionClosed();
 }
 
 TEST_F(SharingWebRtcConnectionHostTest, OnAckMessageReceived) {
@@ -214,6 +313,47 @@ TEST_F(SharingWebRtcConnectionHostTest, SendMessage) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, EncryptMessage_Success) {
+  fake_gcm_driver_.set_reverse_data(true);
+
+  auto message = CreateMessage();
+  auto serialized_message = SerializeMessage(message);
+  std::reverse(serialized_message.begin(), serialized_message.end());
+
+  EXPECT_CALL(mock_service_, SendMessage(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              sharing::mojom::SharingWebRtcConnection::SendMessageCallback
+                  callback) {
+            EXPECT_EQ(serialized_message, data);
+            std::move(callback).Run(
+                sharing::mojom::SendMessageResult::kSuccess);
+          }));
+
+  base::RunLoop run_loop;
+  host_->SendMessage(
+      std::move(message),
+      base::BindLambdaForTesting([&](sharing::mojom::SendMessageResult result) {
+        EXPECT_EQ(sharing::mojom::SendMessageResult::kSuccess, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, EncryptMessage_Fail) {
+  fake_gcm_driver_.set_fail(true);
+
+  EXPECT_CALL(mock_service_, SendMessage(testing::_, testing::_)).Times(0);
+
+  host_->SendMessage(
+      CreateMessage(),
+      base::BindLambdaForTesting([&](sharing::mojom::SendMessageResult result) {
+        EXPECT_EQ(sharing::mojom::SendMessageResult::kError, result);
+      }));
+
+  WaitForConnectionClosed();
 }
 
 TEST_F(SharingWebRtcConnectionHostTest, OnOfferReceived) {
@@ -251,9 +391,9 @@ TEST_F(SharingWebRtcConnectionHostTest, OnIceCandidatesReceived) {
 
 TEST_F(SharingWebRtcConnectionHostTest, ConnectionClosed) {
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, ConnectionClosed(testing::_))
-      .WillOnce(testing::Invoke(
-          [&](const std::string& device_guid) { run_loop.Quit(); }));
+  EXPECT_CALL(*this, ConnectionClosed()).WillOnce(testing::Invoke([&]() {
+    run_loop.Quit();
+  }));
 
   // Expect the connection to force close if the network service connection is
   // lost. This also happens if the Sharing service closes the connection.

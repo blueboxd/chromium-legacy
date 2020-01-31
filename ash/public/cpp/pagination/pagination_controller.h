@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 
 namespace gfx {
 class Vector2dF;

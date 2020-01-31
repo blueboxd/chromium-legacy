@@ -28,7 +28,8 @@ def _make_expectation(port, test_path, test_statuses, test_names=[]):
         An expectation object with the given test and statuses.
     """
     expectation_dict = OrderedDict()
-    expectation_dict["expectations"] = "Bug(test) %s [ %s ]" % (test_path, test_statuses)
+    expectation_dict["expectations"] = ("# results: [ %s ]\n%s [ %s ]" % (
+        test_statuses, test_path, test_statuses))
 
     # When test_path is a dir, we expect test_names to be provided.
     is_dir = test_path.endswith('/')
@@ -36,7 +37,7 @@ def _make_expectation(port, test_path, test_statuses, test_names=[]):
     if not is_dir:
         test_names = [test_path]
 
-    return TestExpectations(port, tests=test_names, expectations_dict=expectation_dict)
+    return TestExpectations(port, expectations_dict=expectation_dict)
 
 
 class WPTMetadataBuilderTest(unittest.TestCase):

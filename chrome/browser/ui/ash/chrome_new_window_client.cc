@@ -15,6 +15,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
@@ -346,6 +347,9 @@ void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
   // Add a flag to remember this tab originated in the ARC context.
   tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
                    std::make_unique<arc::ArcWebContentsData>());
+
+  apps::IntentHandlingMetrics::RecordOpenBrowserMetrics(
+      apps::IntentHandlingMetrics::AppType::kArc);
 }
 
 void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {

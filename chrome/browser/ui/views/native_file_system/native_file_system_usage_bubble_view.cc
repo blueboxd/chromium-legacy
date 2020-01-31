@@ -297,7 +297,8 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
       origin_(origin),
       usage_(std::move(usage)),
       writable_paths_model_(usage_.writable_files, usage_.writable_directories),
-      readable_paths_model_({}, usage_.readable_directories) {
+      readable_paths_model_(usage_.readable_files,
+                            usage_.readable_directories) {
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
   DialogDelegate::set_button_label(

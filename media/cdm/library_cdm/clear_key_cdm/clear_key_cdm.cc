@@ -70,9 +70,8 @@ const char kExternalClearKeyDifferentGuidTestKeySystem[] =
 const char kExternalClearKeyCdmProxyKeySystem[] =
     "org.chromium.externalclearkey.cdmproxy";
 
-const int64_t kSecondsPerMinute = 60;
 const int64_t kMsPerSecond = 1000;
-const int64_t kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
+const int64_t kMaxTimerDelayMs = 5 * kMsPerSecond;
 
 // CDM unit test result header. Must be in sync with UNIT_TEST_RESULT_HEADER in
 // media/test/data/eme_player_js/globals.js.
@@ -856,30 +855,37 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
     return;
   }
 
-  // If the query fails or it succeeds and link mask contains kLinkTypeNetwork,
-  // send a 'keystatuschange' event with a key marked as output-restricted.
-  // As the JavaScript test doesn't check key IDs, use a dummy key ID.
+  // A session ID is needed, so use |last_session_id_|. However, if this is
+  // called before a session has been created, we have no session to send this
+  // to, so no event is generated. Note that this only works with a single
+  // session, the same as renewal messages.
+  if (last_session_id_.empty())
+    return;
+
+  // If the query succeeds and link mask contains kLinkTypeNetwork, send a
+  // 'keystatuschange' event with a key marked as output-restricted. If the
+  // query succeeds and link mask does not contain kLinkTypeNetwork, send a
+  // 'keystatuschange' event with a key marked as usable. If the query failed,
+  // send a 'keystatuschange' event with a key marked as internal-error. As
+  // the JavaScript test doesn't check key IDs, use a dummy key ID.
   //
   // Note that QueryOutputProtectionStatus() is known to fail on Linux Chrome
-  // OS builds.
+  // OS builds, so the key status returned will be 'internal-error'.
   //
   // Note that this does not modify any keys, so if the caller does not check
   // the 'keystatuschange' event, nothing will happen as decoding will continue
   // to work.
-  if (result != cdm::kQuerySucceeded || (link_mask & cdm::kLinkTypeNetwork)) {
-    // A session ID is needed, so use |last_session_id_|. However, if this is
-    // called before a session has been created, we have no session to send
-    // this to. Note that this only works with a single session, the same as
-    // renewal messages.
-    if (!last_session_id_.empty()) {
-      const uint8_t kDummyKeyId[] = {'d', 'u', 'm', 'm', 'y'};
-      std::vector<cdm::KeyInformation> keys_vector = {
-          {kDummyKeyId, base::size(kDummyKeyId), cdm::kOutputRestricted, 0}};
-      cdm_host_proxy_->OnSessionKeysChange(
-          last_session_id_.data(), last_session_id_.length(), false,
-          keys_vector.data(), keys_vector.size());
-    }
+  cdm::KeyStatus key_status = cdm::kInternalError;
+  if (result == cdm::kQuerySucceeded) {
+    key_status = (link_mask & cdm::kLinkTypeNetwork) ? cdm::kOutputRestricted
+                                                     : cdm::kUsable;
   }
+  const uint8_t kDummyKeyId[] = {'d', 'u', 'm', 'm', 'y'};
+  std::vector<cdm::KeyInformation> keys_vector = {
+      {kDummyKeyId, base::size(kDummyKeyId), key_status, 0}};
+  cdm_host_proxy_->OnSessionKeysChange(last_session_id_.data(),
+                                       last_session_id_.length(), false,
+                                       keys_vector.data(), keys_vector.size());
 }
 
 void ClearKeyCdm::OnStorageId(uint32_t version,

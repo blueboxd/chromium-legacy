@@ -15,6 +15,9 @@ class Browser;
 class TabStripUIEmbedder;
 class TabStripUIHandler;
 
+extern const char kWebUITabIdDataType[];
+extern const char kWebUITabGroupIdDataType[];
+
 // The WebUI version of the tab strip in the browser. It is currently only
 // supported on ChromeOS in tablet mode.
 class TabStripUI : public content::WebUIController {

@@ -15,6 +15,7 @@
 #include "components/payments/content/service_worker_payment_app_finder.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -22,6 +23,8 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -65,6 +68,12 @@ class JourneyLoggerTest : public PlatformBrowserTest,
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
+  void PreRunTestOnMainThread() override {
+    PlatformBrowserTest::PreRunTestOnMainThread();
+
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+  }
+
   void SetUpOnMainThread() override {
     // Map all out-going DNS lookups to the local server. This must be used in
     // conjunction with switches::kIgnoreCertificateErrors to work.
@@ -90,9 +99,9 @@ class JourneyLoggerTest : public PlatformBrowserTest,
         "components/test/data/payments");
     ASSERT_TRUE(https_server_.Start());
 
-    ASSERT_TRUE(content::NavigateToURL(
-        GetActiveWebContents(),
-        https_server_.GetURL("/journey_logger_test.html")));
+    main_frame_url_ = https_server_.GetURL("/journey_logger_test.html");
+    ASSERT_TRUE(
+        content::NavigateToURL(GetActiveWebContents(), main_frame_url_));
 
     test_controller_.SetUpOnMainThread();
     PlatformBrowserTest::SetUpOnMainThread();
@@ -115,6 +124,12 @@ class JourneyLoggerTest : public PlatformBrowserTest,
 
   void WaitForObservedEvent() { event_waiter_->Wait(); }
 
+  const GURL& main_frame_url() const { return main_frame_url_; }
+
+  ukm::TestAutoSetUkmRecorder* test_ukm_recorder() {
+    return test_ukm_recorder_.get();
+  }
+
  protected:
   net::EmbeddedTestServer https_server_;
 
@@ -122,6 +137,8 @@ class JourneyLoggerTest : public PlatformBrowserTest,
   PaymentRequestTestController test_controller_;
   net::EmbeddedTestServer gpay_server_;
   std::unique_ptr<autofill::EventWaiter<TestEvent>> event_waiter_;
+  GURL main_frame_url_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(JourneyLoggerTest);
 };
@@ -181,6 +198,30 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, GooglePaymentApp) {
                JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD);
   EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_GOOGLE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER);
+}
+
+// Make sure the UKM was logged correctly.
+IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, UKMTransactionAmountRecorded) {
+  EXPECT_EQ("{\"apiVersion\":1}",
+            content::EvalJs(GetActiveWebContents(), "testGPay()"));
+
+  auto entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentRequest_TransactionAmount::kEntryName);
+  size_t num_entries = entries.size();
+  EXPECT_EQ(2u, num_entries);
+  for (size_t i = 0; i < num_entries; i++) {
+    test_ukm_recorder()->ExpectEntrySourceHasUrl(entries[i], main_frame_url());
+    EXPECT_EQ(2U, entries[i]->metrics.size());
+    test_ukm_recorder()->ExpectEntryMetric(
+        entries[i],
+        ukm::builders::PaymentRequest_TransactionAmount::kCompletionStatusName,
+        i != 0 /* completed */);
+    test_ukm_recorder()->ExpectEntryMetric(
+        entries[i],
+        ukm::builders::PaymentRequest_TransactionAmount::kCategoryName,
+        static_cast<int64_t>(
+            JourneyLogger::TransactionSize::kRegularTransaction));
+  }
 }
 
 }  // namespace payments

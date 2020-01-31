@@ -675,8 +675,7 @@ void OverviewSession::OnWindowActivating(
   if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
     return;
 
-  if (features::IsVirtualDesksEnabled() &&
-      DesksController::Get()->AreDesksBeingModified()) {
+  if (DesksController::Get()->AreDesksBeingModified()) {
     // Activating a desk from its mini view will activate its most-recently used
     // window, but this should not result in ending overview mode now.
     // Overview will be ended explicitly as part of the desk activation
@@ -780,11 +779,9 @@ void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
 
-  if (features::IsVirtualDesksEnabled()) {
-    // Do not restore focus to a window that exists on an inactive desk.
-    focus &= base::Contains(DesksController::Get()->active_desk()->windows(),
-                            restore_focus_window_);
-  }
+  // Do not restore focus to a window that exists on an inactive desk.
+  focus &= base::Contains(DesksController::Get()->active_desk()->windows(),
+                          restore_focus_window_);
 
   // Ensure the window is still in the window hierarchy and not in the middle
   // of teardown.
@@ -868,10 +865,8 @@ void OverviewSession::OnWindowHierarchyChanged(
   // Removing a desk while in overview mode results in reparenting the windows
   // of that desk to the associated container of another desk. This is a window
   // hierarchy change that shouldn't result in exiting overview mode.
-  if (features::IsVirtualDesksEnabled() &&
-      DesksController::Get()->AreDesksBeingModified()) {
+  if (DesksController::Get()->AreDesksBeingModified())
     return;
-  }
 
   aura::Window* new_window = params.target;
   WindowState* state = WindowState::Get(new_window);

@@ -117,7 +117,7 @@ class ExternalPopupMenuTest : public testing::Test {
     frame_test_helpers::LoadFrame(MainFrame(), base_url_ + file_name);
     WebView()->MainFrameWidget()->Resize(WebSize(800, 600));
     WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   WebViewImpl* WebView() const { return helper_.GetWebView(); }
@@ -138,7 +138,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportTransform) {
 
   WebView()->MainFrameWidget()->Resize(WebSize(100, 100));
   WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   auto* select = To<HTMLSelectElement>(
       MainFrame()->GetFrame()->GetDocument()->getElementById("select"));

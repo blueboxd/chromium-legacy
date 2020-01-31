@@ -28,6 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/favicon_url.h"
 #include "media/base/media_content_type.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -1363,7 +1364,9 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
     actions.insert(media_session::mojom::MediaSessionAction::kStop);
   }
 
-  if (IsPictureInPictureAvailable()) {
+  if (base::FeatureList::IsEnabled(
+          media::kGlobalMediaControlsPictureInPicture) &&
+      IsPictureInPictureAvailable()) {
     actions.insert(
         media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
     actions.insert(

@@ -139,6 +139,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/audio",
+    "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/power",
     "//chromeos/services/assistant/public/cpp:prefs",

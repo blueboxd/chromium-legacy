@@ -4,6 +4,10 @@
 
 source_set("permissions") {
   sources = [
+    "features.cc",
+    "features.h",
+    "permission_decision_auto_blocker.cc",
+    "permission_decision_auto_blocker.h",
     "permission_request.cc",
     "permission_request.h",
     "permission_request_id.cc",
@@ -15,6 +19,23 @@ source_set("permissions") {
   ]
   deps = [
     "//base",
+    "//components/content_settings/core/browser",
+    "//components/keyed_service/content",
+    "//components/variations",
     "//content/public/browser",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "permission_decision_auto_blocker_unittest.cc" ]
+  deps = [
+    ":permissions",
+    "//base",
+    "//base/test:test_support",
+    "//components/keyed_service/content",
+    "//components/sync_preferences:test_support",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }

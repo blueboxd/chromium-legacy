@@ -21,7 +21,7 @@ namespace bindings {
 // Implements the CastOS BindingsManager.
 class BindingsManagerCast : public BindingsManager,
                             public CastWebContents::Observer,
-                            public mojo::MessageReceiver {
+                            public blink::WebMessagePort::MessageReceiver {
  public:
   BindingsManagerCast();
   ~BindingsManagerCast() override;
@@ -45,17 +45,15 @@ class BindingsManagerCast : public BindingsManager,
   void OnPageStateChanged(CastWebContents* cast_web_contents) override;
 
  private:
-  // |connector_| has been disconnected.
-  void OnControlPortDisconnected();
-
-  // mojo::MessageReceiver implementation:
-  bool Accept(mojo::Message* message) override;
+  // blink::WebMessagePort::MessageReceiver implementation:
+  bool OnMessage(blink::WebMessagePort::Message message) override;
+  void OnPipeError() override;
 
   // Stores all bindings, keyed on the string-based IDs.
   std::map<std::string, std::string> bindings_by_id_;
   chromecast::CastWebContents* cast_web_contents_;
-  // Binded with the MessagePort used to receive messages from the page JS.
-  std::unique_ptr<mojo::Connector> connector_;
+  // Receives messages from JS.
+  blink::WebMessagePort blink_port_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingsManagerCast);
 };

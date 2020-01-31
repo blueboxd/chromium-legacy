@@ -169,8 +169,8 @@ bool HostGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration(
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     native_configurations_initialized_.Wait();
   }
-  return native_configurations_.find(std::make_pair(format, usage)) !=
-         native_configurations_.end();
+  return native_configurations_.find(gfx::BufferUsageAndFormat(
+             usage, format)) != native_configurations_.end();
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>

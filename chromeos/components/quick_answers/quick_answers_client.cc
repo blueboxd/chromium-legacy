@@ -93,10 +93,8 @@ void QuickAnswersClient::SendRequest(
   delegate_->OnRequestPreprocessFinish(processed_request);
 
   // Load and parse search result.
-  search_results_loader_ = std::make_unique<SearchResultLoader>(
-      url_loader_factory_,
-      base::BindOnce(&QuickAnswersClient::OnQuickAnswerReceived,
-                     base::Unretained(this)));
+  search_results_loader_ =
+      std::make_unique<SearchResultLoader>(url_loader_factory_, this);
   search_results_loader_->Fetch(processed_request.selected_text);
 }
 
@@ -111,6 +109,11 @@ void QuickAnswersClient::NotifyEligibilityChanged() {
     is_eligible_ = is_eligible;
     delegate_->OnEligibilityChanged(is_eligible);
   }
+}
+
+void QuickAnswersClient::OnNetworkError() {
+  DCHECK(delegate_);
+  delegate_->OnNetworkError();
 }
 
 void QuickAnswersClient::OnQuickAnswerReceived(

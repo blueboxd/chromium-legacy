@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
@@ -20,9 +21,9 @@ class CONTENT_EXPORT BroadcastChannelProvider
   BroadcastChannelProvider();
   ~BroadcastChannelProvider() override;
 
-  using RenderProcessHostId = int;
+  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
   mojo::ReceiverId Connect(
-      RenderProcessHostId render_process_host_id,
+      SecurityPolicyHandle security_policy_handle,
       mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver);
 
   void ConnectToChannel(
@@ -42,7 +43,8 @@ class CONTENT_EXPORT BroadcastChannelProvider
   void ReceivedMessageOnConnection(Connection*,
                                    const blink::CloneableMessage& message);
 
-  mojo::ReceiverSet<blink::mojom::BroadcastChannelProvider, RenderProcessHostId>
+  mojo::ReceiverSet<blink::mojom::BroadcastChannelProvider,
+                    std::unique_ptr<SecurityPolicyHandle>>
       receivers_;
   std::map<url::Origin, std::multimap<std::string, std::unique_ptr<Connection>>>
       connections_;

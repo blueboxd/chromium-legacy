@@ -1251,8 +1251,17 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
         <ph name="DISPLAY_NAME">$1<ex>Internal Display</ex></ph>: <ph name="RESOLUTION">$2<ex>2560x1600</ex></ph>
       </message>
+      <message name="IDS_ASH_RESOLUTION_CHANGE_DIALOG_TITLE" desc="The title used in the dialog to notify that the display resolution settings has changed and asks the user to confirm the new resolution.">
+        Confirm Resolution
+      </message>
+      <message name="IDS_ASH_RESOLUTION_CHANGE_DIALOG_CHANGED" desc="The label used in the dialog to notify that the display resolution settings has changed.">
+        <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> resolution changed to <ph name="RESOLUTION">$2<ex>2560x1600</ex></ph>. Click confirm to keep changes. The previous settings will be restored in <ph name="TIMEOUT_SECONDS">$3</ph>.
+      </message>
+      <message name="IDS_ASH_RESOLUTION_CHANGE_DIALOG_FALLBACK" desc="The label used in the dialog to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
+        <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>1920x1080</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>. Click confirm to keep changes. The previous settings will be restored in <ph name="TIMEOUT_SECONDS">$4</ph>.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED" desc="The label used in the tray to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
-        <ph name="DISPLAY_NAME">$1</ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>2560x1600</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>
+        <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>2560x1600</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
         <ph name="DISPLAY_NAME">$1</ph> was rotated to <ph name="ROTATION">$2</ph>
@@ -1586,6 +1595,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SHUTDOWN_CONFIRMATION_CANCEL_BUTTON" desc="The text for the Cancel button in the shutdown confirmation dialog.">
         Do it later
+      </message>
+      <message name="IDS_ASH_CONFIRM_BUTTON" desc="The text for confirm button on display change confirmation dialogs.">
+        Confirm
       </message>
 
       <message name="IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_TITLE" desc="The title of the notification shown when Night Light turns on automatically when the auto-night-light feature is enabled.">

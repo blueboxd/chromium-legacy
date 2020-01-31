@@ -20,8 +20,7 @@ namespace {
 
 // Constant string values to indicate UMA names. All entries should have
 // a corresponding index in MetricsNameIndex and an entry in |kMetricsEntries|.
-const char kTranslateInitiationStatus[] =
-    "Translate.InitiationStatus.v2";
+const char kTranslateInitiationStatus[] = "Translate.InitiationStatus.v2";
 const char kTranslateReportLanguageDetectionError[] =
     "Translate.ReportLanguageDetectionError";
 const char kTranslateLocalesOnDisabledByPrefs[] =
@@ -30,32 +29,34 @@ const char kTranslateUndisplayableLanguage[] =
     "Translate.UndisplayableLanguage";
 const char kTranslateUnsupportedLanguageAtInitiation[] =
     "Translate.UnsupportedLanguageAtInitiation";
-const char kTranslateSourceLanguage[] =
-    "Translate.SourceLanguage";
-const char kTranslateTargetLanguage[] =
-    "Translate.TargetLanguage";
+const char kTranslateSourceLanguage[] = "Translate.SourceLanguage";
+const char kTranslateTargetLanguage[] = "Translate.TargetLanguage";
+const char kTranslateHrefHintStatus[] = "Translate.HrefHint.Status";
 
 struct MetricsEntry {
   TranslateBrowserMetrics::MetricsNameIndex index;
   const char* const name;
 };
 
-// This entry table should be updated when new UMA items are added.
+// This entry table should be updated when new UMA items are added. This is only
+// used by GetMetricsName for testing.
 const MetricsEntry kMetricsEntries[] = {
-  { TranslateBrowserMetrics::UMA_INITIATION_STATUS,
-    kTranslateInitiationStatus },
-  { TranslateBrowserMetrics::UMA_LANGUAGE_DETECTION_ERROR,
-    kTranslateReportLanguageDetectionError },
-  { TranslateBrowserMetrics::UMA_LOCALES_ON_DISABLED_BY_PREFS,
-    kTranslateLocalesOnDisabledByPrefs },
-  { TranslateBrowserMetrics::UMA_UNDISPLAYABLE_LANGUAGE,
-    kTranslateUndisplayableLanguage },
-  { TranslateBrowserMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
-    kTranslateUnsupportedLanguageAtInitiation },
-  { TranslateBrowserMetrics::UMA_TRANSLATE_SOURCE_LANGUAGE,
-    kTranslateSourceLanguage },
-  { TranslateBrowserMetrics::UMA_TRANSLATE_TARGET_LANGUAGE,
-    kTranslateTargetLanguage },
+    {TranslateBrowserMetrics::UMA_INITIATION_STATUS,
+     kTranslateInitiationStatus},
+    {TranslateBrowserMetrics::UMA_LANGUAGE_DETECTION_ERROR,
+     kTranslateReportLanguageDetectionError},
+    {TranslateBrowserMetrics::UMA_LOCALES_ON_DISABLED_BY_PREFS,
+     kTranslateLocalesOnDisabledByPrefs},
+    {TranslateBrowserMetrics::UMA_UNDISPLAYABLE_LANGUAGE,
+     kTranslateUndisplayableLanguage},
+    {TranslateBrowserMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
+     kTranslateUnsupportedLanguageAtInitiation},
+    {TranslateBrowserMetrics::UMA_TRANSLATE_SOURCE_LANGUAGE,
+     kTranslateSourceLanguage},
+    {TranslateBrowserMetrics::UMA_TRANSLATE_TARGET_LANGUAGE,
+     kTranslateTargetLanguage},
+    {TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS,
+     kTranslateHrefHintStatus},
 };
 
 static_assert(base::size(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
@@ -66,8 +67,7 @@ static_assert(base::size(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
 namespace TranslateBrowserMetrics {
 
 void ReportInitiationStatus(InitiationStatusType type) {
-  UMA_HISTOGRAM_ENUMERATION(kTranslateInitiationStatus,
-                            type,
+  UMA_HISTOGRAM_ENUMERATION(kTranslateInitiationStatus, type,
                             INITIATION_STATUS_MAX);
 }
 
@@ -102,6 +102,10 @@ void ReportTranslateSourceLanguage(const std::string& language) {
 void ReportTranslateTargetLanguage(const std::string& language) {
   base::UmaHistogramSparse(kTranslateTargetLanguage,
                            base::HashMetricName(language));
+}
+
+void ReportTranslateHrefHintStatus(HrefTranslateStatus status) {
+  base::UmaHistogramEnumeration(kTranslateHrefHintStatus, status);
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {

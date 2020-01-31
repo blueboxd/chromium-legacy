@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function newAcceletator(keyCode, shift, control, alt, search) {
+function newAccelerator(keyCode, shift, control, alt, search) {
   var accelerator = new Object();
   accelerator.keyCode = keyCode;
   accelerator.shift = shift ? true : false;
@@ -270,8 +270,8 @@ var defaultTests = [
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.
-  function arcNotProvisioned() {chrome.autotestPrivate.getArcState(
-    function(state) {
+  function arcNotProvisioned() {
+    chrome.autotestPrivate.getArcState(function(state) {
       chrome.test.assertFalse(state.provisioned);
       chrome.test.assertNoLastError();
       chrome.test.succeed();
@@ -329,7 +329,7 @@ var defaultTests = [
   // This test verifies that api to wait for launcher state transition
   // works as expected
   function waitForLauncherStatePeeking() {
-    var togglePeeking = newAcceletator('search', /*shift=*/false);
+    var togglePeeking = newAccelerator('search', false /* shift */);
 
     function closeLauncher() {
       togglePeeking.pressed = true;
@@ -370,7 +370,7 @@ var defaultTests = [
   // This test verifies that api to wait for launcher state transition
   // works as expected
   function waitForLauncherStateFullscreen() {
-    var toggleFullscreen = newAcceletator('search', /*shift=*/true);
+    var toggleFullscreen = newAccelerator('search', true /* shift */);
     function closeLauncher() {
       toggleFullscreen.pressed = true;
       chrome.autotestPrivate.activateAccelerator(
@@ -678,8 +678,16 @@ var defaultTests = [
                       window.captionButtonVisibleStatus,
                       kMinimizeMask | kMaximizeRestoreMask | kCloseMask |
                         kLeftSnappedMask | kRightSnappedMask);
-                  chrome.test.assertNoLastError();
-                  chrome.test.succeed();
+
+                  // Revert window state back to normal for the next test.
+                  var revert_change = new Object();
+                  revert_change.eventType = 'WMEventNormal';
+                  chrome.autotestPrivate.setAppWindowState(
+                      window.id, revert_change, function(state) {
+                        chrome.test.assertEq(state, 'Normal');
+                        chrome.test.assertNoLastError();
+                        chrome.test.succeed();
+                      });
                 });
               });
             });
@@ -688,17 +696,55 @@ var defaultTests = [
     });
   },
 
+  // Tests that setting the window state in tablet mode works.
+  function setWindowStateInTabletMode() {
+    chrome.autotestPrivate.setTabletModeEnabled(true, function(isEnabled) {
+      chrome.test.assertTrue(isEnabled);
+
+      chrome.autotestPrivate.getAppWindowList(function(list) {
+        chrome.test.assertEq(1, list.length);
+        var window = list[0];
+        chrome.test.assertEq(window.stateType, 'Maximized');
+        chrome.test.assertTrue(window.isVisible);
+        chrome.test.assertTrue(window.isActive);
+
+        var change = new Object();
+        change.eventType = 'WMEventFullscreen';
+        chrome.autotestPrivate.setAppWindowState(
+            window.id, change, function(state) {
+              chrome.test.assertEq(state, 'Fullscreen');
+
+              chrome.autotestPrivate.setTabletModeEnabled(
+                  false, function(isEnabled) {
+                    chrome.test.assertFalse(isEnabled);
+
+                    // Revert window state back to normal and exit tablet mode
+                    // for the next test.
+                    var revert_change = new Object();
+                    revert_change.eventType = 'WMEventNormal';
+                    chrome.autotestPrivate.setAppWindowState(
+                        window.id, revert_change, function(state) {
+                          chrome.test.assertEq(state, 'Normal');
+                          chrome.test.assertNoLastError();
+                          chrome.test.succeed();
+                        });
+                  });
+            });
+      });
+    });
+  },
+
   // This test verifies that api to activate accelrator works as expected.
   function acceleratorTest() {
     // Ash level accelerator.
-    var newBrowser = newAcceletator('n', /*shift=*/false, /*control=*/true);
+    var newBrowser = newAccelerator('n', false /* shift */, true /* control */);
     chrome.autotestPrivate.activateAccelerator(
         newBrowser,
         function() {
           chrome.autotestPrivate.getAppWindowList(function(list) {
             chrome.test.assertEq(2, list.length);
-            var closeWindow = newAcceletator(
-                'w', /*shift=*/false, /*control=*/true);
+            var closeWindow =
+                newAccelerator('w', false /* shift */, true /* control */);
             chrome.autotestPrivate.activateAccelerator(
                 closeWindow,
                 function(success) {

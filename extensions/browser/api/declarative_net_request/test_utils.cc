@@ -126,6 +126,13 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
   return output;
 }
 
+std::ostream& operator<<(std::ostream& output,
+                         const base::Optional<RequestAction>& action) {
+  if (!action)
+    return output << "empty Optional<RequestAction>";
+  return output << *action;
+}
+
 std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
   switch (result) {
     case ParseResult::SUCCESS:

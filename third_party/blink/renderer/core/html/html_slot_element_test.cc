@@ -161,8 +161,7 @@ TEST_F(HTMLSlotElementInDocumentTest, RecalcAssignedNodeStyleForReattach) {
       R"HTML(<span><slot /></span>)HTML");
 
   auto* shadow_span = To<Element>(shadow_root.firstChild());
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   shadow_span->setAttribute(html_names::kStyleAttr, "display:block");
 

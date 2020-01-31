@@ -53,14 +53,6 @@ void BreadcrumbManagerTabHelper::DidFinishNavigation(
   LogEvent("DidFinishNavigation");
 }
 
-void BreadcrumbManagerTabHelper::DidStartLoading(web::WebState* web_state) {
-  LogEvent("DidStartLoading");
-}
-
-void BreadcrumbManagerTabHelper::DidStopLoading(web::WebState* web_state) {
-  LogEvent("DidStopLoading");
-}
-
 void BreadcrumbManagerTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {

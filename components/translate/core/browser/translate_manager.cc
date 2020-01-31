@@ -929,6 +929,27 @@ void TranslateManager::RecordDecisionMetrics(
     const TranslateTriggerDecision& decision,
     const std::string& page_language_code,
     bool ui_shown) {
+  // For Google navigations, the hrefTranslate hint may trigger a translation
+  // automatically. Record metrics if there is navigation from Google and a
+  // |decision.href_translate_target|.
+  if (language_state_.navigation_from_google() &&
+      !decision.href_translate_target.empty()) {
+    if (decision.can_auto_translate() || decision.can_auto_href_translate()) {
+      if (decision.can_auto_translate() &&
+          decision.auto_translate_target != decision.href_translate_target) {
+        TranslateBrowserMetrics::ReportTranslateHrefHintStatus(
+            TranslateBrowserMetrics::HrefTranslateStatus::
+                kAutoTranslatedDifferentTargetLanguage);
+      } else {
+        TranslateBrowserMetrics::ReportTranslateHrefHintStatus(
+            TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated);
+      }
+    } else {
+      TranslateBrowserMetrics::ReportTranslateHrefHintStatus(
+          TranslateBrowserMetrics::HrefTranslateStatus::kNotAutoTranslated);
+    }
+  }
+
   if (!decision.can_auto_translate() &&
       decision.can_show_predefined_language_translate_ui()) {
     TranslateBrowserMetrics::ReportInitiationStatus(

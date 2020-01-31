@@ -20,7 +20,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.webapk.lib.common.WebApkCommonUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 

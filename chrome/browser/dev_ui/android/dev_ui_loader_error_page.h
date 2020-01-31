@@ -9,8 +9,6 @@
 
 namespace dev_ui {
 
-std::string BuildInitialInstallRedirectPageHtml();
-
 std::string BuildErrorPageHtml();
 
 }  // namespace dev_ui

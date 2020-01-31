@@ -80,13 +80,6 @@ void RecordTimeToCheckoutUmaHistograms(const std::string name,
       base::TimeDelta::FromMinutes(5) /* max */, 100 /*bucket count*/);
 }
 
-enum class TransactionSize {
-  kZeroTransaction = 0,
-  kMicroTransaction = 1,
-  kRegularTransaction = 2,
-  kMaxValue = kRegularTransaction,
-};
-
 }  // namespace
 
 JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
@@ -259,6 +252,15 @@ void JourneyLogger::RecordTransactionAmount(std::string currency,
     transaction_size = TransactionSize::kMicroTransaction;
   base::UmaHistogramEnumeration(
       "PaymentRequest.TransactionAmount" + completion_suffix, transaction_size);
+
+  if (source_id_ == ukm::kInvalidSourceId)
+    return;
+
+  // Record the transaction amount in UKM.
+  ukm::builders::PaymentRequest_TransactionAmount(source_id_)
+      .SetCompletionStatus(completed)
+      .SetCategory(static_cast<int64_t>(transaction_size))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void JourneyLogger::RecordJourneyStatsHistograms(

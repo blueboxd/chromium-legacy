@@ -16,7 +16,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/vector_icons.h"
 #include "ui/wm/core/window_animations.h"
 

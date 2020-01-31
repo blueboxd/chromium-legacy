@@ -148,6 +148,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -3302,11 +3303,12 @@ AutotestPrivateSetAppWindowStateFunction::Run() {
     if (expected_state == ash::WindowStateType::kLeftSnapped) {
       ash::SplitViewTestApi().SnapWindow(
           window, ash::SplitViewTestApi::SnapPosition::LEFT);
+      return RespondLater();
     } else if (expected_state == ash::WindowStateType::kRightSnapped) {
       ash::SplitViewTestApi().SnapWindow(
           window, ash::SplitViewTestApi::SnapPosition::RIGHT);
+      return RespondLater();
     }
-    return RespondLater();
   }
 
   const ash::WMEvent event(ToWMEventType(params->change.event_type));

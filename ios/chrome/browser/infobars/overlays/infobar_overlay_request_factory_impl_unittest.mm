@@ -12,7 +12,9 @@
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
+#import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,19 +45,24 @@ class InfobarOverlayRequestFactoryImplTest : public PlatformTest {
 TEST_F(InfobarOverlayRequestFactoryImplTest, SavePasswords) {
   FakeInfobarUIDelegate* ui_delegate = [[FakeInfobarUIDelegate alloc] init];
   ui_delegate.infobarType = InfobarType::kInfobarTypePasswordSave;
-  std::unique_ptr<password_manager::MockPasswordFormManagerForUI> form_manager =
-      std::make_unique<password_manager::MockPasswordFormManagerForUI>();
-  autofill::PasswordForm form;
-  EXPECT_CALL(*form_manager, GetPendingCredentials())
-      .WillRepeatedly(testing::ReturnRef(form));
+  GURL url("https://chromium.test");
   std::unique_ptr<InfoBarDelegate> delegate =
-      std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-          false, false, std::move(form_manager));
+      MockIOSChromeSavePasswordInfoBarDelegate::Create(@"username", @"password",
+                                                       url);
   InfoBarIOS infobar(ui_delegate, std::move(delegate));
-  std::unique_ptr<OverlayRequest> request =
+
+  // Test banner request creation.
+  std::unique_ptr<OverlayRequest> banner_request =
       factory()->CreateInfobarRequest(&infobar, InfobarOverlayType::kBanner);
+  EXPECT_TRUE(banner_request
+                  ->GetConfig<SavePasswordInfobarBannerOverlayRequestConfig>());
+
+  // Test modal request creation.
+  std::unique_ptr<OverlayRequest> modal_request =
+      factory()->CreateInfobarRequest(&infobar, InfobarOverlayType::kModal);
   EXPECT_TRUE(
-      request->GetConfig<SavePasswordInfobarBannerOverlayRequestConfig>());
+      modal_request->GetConfig<PasswordInfobarModalOverlayRequestConfig>());
+
   // TODO(crbug.com/1033154): Add additional tests for other
   // InfobarOverlayTypes.
 }

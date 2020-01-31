@@ -10,9 +10,9 @@ import org.junit.Assert;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;

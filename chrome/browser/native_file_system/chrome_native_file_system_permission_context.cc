@@ -410,3 +410,15 @@ void ChromeNativeFileSystemPermissionContext::
                      process_id, frame_id, origin, paths[0], is_directory,
                      std::move(result_callback)));
 }
+
+bool ChromeNativeFileSystemPermissionContext::OriginHasReadAccess(
+    const url::Origin& origin) {
+  NOTREACHED();
+  return false;
+}
+
+bool ChromeNativeFileSystemPermissionContext::OriginHasWriteAccess(
+    const url::Origin& origin) {
+  NOTREACHED();
+  return false;
+}

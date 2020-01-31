@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
@@ -1374,6 +1375,57 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(::features::kPrintServerUi));
 }
 
+void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
+      {"searchNoResults", IDS_SEARCH_NO_RESULTS},
+      {"searchResults", IDS_SEARCH_RESULTS},
+      // TODO(dpapad): IDS_DOWNLOAD_CLEAR_SEARCH and IDS_HISTORY_CLEAR_SEARCH
+      // are identical, merge them to one and re-use here.
+      {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString(
+      "searchNoOsResultsHelp",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SEARCH_NO_RESULTS_HELP,
+          base::ASCIIToUTF16(chrome::kOsSettingsSearchHelpURL)));
+}
+
+void AddDateTimeStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"dateTimePageTitle", IDS_SETTINGS_DATE_TIME},
+      {"timeZone", IDS_SETTINGS_TIME_ZONE},
+      {"selectTimeZoneResolveMethod",
+       IDS_SETTINGS_SELECT_TIME_ZONE_RESOLVE_METHOD},
+      {"timeZoneGeolocation", IDS_SETTINGS_TIME_ZONE_GEOLOCATION},
+      {"timeZoneButton", IDS_SETTINGS_TIME_ZONE_BUTTON},
+      {"timeZoneSubpageTitle", IDS_SETTINGS_TIME_ZONE_SUBPAGE_TITLE},
+      {"setTimeZoneAutomaticallyDisabled",
+       IDS_SETTINGS_TIME_ZONE_DETECTION_MODE_DISABLED},
+      {"setTimeZoneAutomaticallyOn",
+       IDS_SETTINGS_TIME_ZONE_DETECTION_SET_AUTOMATICALLY},
+      {"setTimeZoneAutomaticallyOff",
+       IDS_SETTINGS_TIME_ZONE_DETECTION_CHOOSE_FROM_LIST},
+      {"setTimeZoneAutomaticallyIpOnlyDefault",
+       IDS_SETTINGS_TIME_ZONE_DETECTION_MODE_IP_ONLY_DEFAULT},
+      {"setTimeZoneAutomaticallyWithWiFiAccessPointsData",
+       IDS_SETTINGS_TIME_ZONE_DETECTION_MODE_SEND_WIFI_AP},
+      {"setTimeZoneAutomaticallyWithAllLocationInfo",
+       IDS_SETTINGS_TIME_ZONE_DETECTION_MODE_SEND_ALL_INFO},
+      {"use24HourClock", IDS_SETTINGS_USE_24_HOUR_CLOCK},
+      {"setDateTime", IDS_SETTINGS_SET_DATE_TIME},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString(
+      "timeZoneSettingsLearnMoreURL",
+      base::ASCIIToUTF16(base::StringPrintf(
+          chrome::kTimeZoneSettingsLearnMoreURL,
+          g_browser_process->GetApplicationLocale().c_str())));
+}
+
 }  // namespace
 
 void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
@@ -1387,6 +1439,7 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
   AddChromeOSUserStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
   AddCrostiniStrings(html_source, profile);
+  AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
   AddFilesStrings(html_source);
   AddGoogleAssistantStrings(html_source, profile);
@@ -1398,6 +1451,7 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
   AddPersonalizationStrings(html_source);
   AddPluginVmStrings(html_source, profile);
   AddPrintingStrings(html_source);
+  AddSearchInSettingsStrings(html_source);
   AddUsersStrings(html_source);
 }
 

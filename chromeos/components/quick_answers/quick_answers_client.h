@@ -25,7 +25,9 @@ struct QuickAnswer;
 struct QuickAnswersRequest;
 
 // Quick answers client to load and parse quick answer results.
-class QuickAnswersClient : public ash::AssistantStateObserver {
+class QuickAnswersClient
+    : public ash::AssistantStateObserver,
+      public SearchResultLoader::SearchResultLoaderDelegate {
  public:
   // A delegate interface for the QuickAnswersClient.
   class QuickAnswersDelegate {
@@ -44,6 +46,9 @@ class QuickAnswersClient : public ash::AssistantStateObserver {
 
     // Invoked when feature eligibility changed.
     virtual void OnEligibilityChanged(bool eligible) {}
+
+    // Invoked when there is a network error.
+    virtual void OnNetworkError() {}
 
    protected:
     QuickAnswersDelegate() = default;
@@ -66,11 +71,15 @@ class QuickAnswersClient : public ash::AssistantStateObserver {
   void OnLocaleChanged(const std::string& locale) override;
   void OnAssistantStateDestroyed() override;
 
+  // SearchResultLoaderDelegate:
+  void OnNetworkError() override;
+  void OnQuickAnswerReceived(
+      std::unique_ptr<QuickAnswer> quick_answer) override;
+
   // Send a quick answer request. Virtual for testing.
   virtual void SendRequest(const QuickAnswersRequest& quick_answers_request);
 
  private:
-  void OnQuickAnswerReceived(std::unique_ptr<QuickAnswer> quick_answer);
   void NotifyEligibilityChanged();
 
   network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;

@@ -14,6 +14,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/mojom/event.mojom.h"
 #include "ui/events/mojom/event_constants.mojom.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 class Event;

@@ -41,3 +41,81 @@ js_library("installed_app_checkbox") {
     "../controls:settings_boolean_control_behavior",
   ]
 }
+
+# TODO(crbug.com/1026426): Fix and enable.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":clear_browsing_data_browser_proxy.m",
+#    ":clear_browsing_data_dialog.m",
+#    ":history_deletion_dialog.m",
+#    ":installed_app_checkbox.m",
+#  ]
+#}
+
+js_library("clear_browsing_data_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("clear_browsing_data_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":clear_browsing_data_dialog_module" ]
+}
+
+js_library("history_deletion_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/clear_browsing_data_dialog/history_deletion_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":history_deletion_dialog_module" ]
+}
+
+js_library("installed_app_checkbox.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/clear_browsing_data_dialog/installed_app_checkbox.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":installed_app_checkbox_module" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  deps = [
+    ":clear_browsing_data_dialog_module",
+    ":history_deletion_dialog_module",
+    ":installed_app_checkbox_module",
+    ":modulize",
+  ]
+}
+
+polymer_modulizer("clear_browsing_data_dialog") {
+  js_file = "clear_browsing_data_dialog.js"
+  html_file = "clear_browsing_data_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("history_deletion_dialog") {
+  js_file = "history_deletion_dialog.js"
+  html_file = "history_deletion_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("installed_app_checkbox") {
+  js_file = "installed_app_checkbox.js"
+  html_file = "installed_app_checkbox.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [ "clear_browsing_data_browser_proxy.js" ]
+}

@@ -227,8 +227,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
     CreateFactoryAndBackingStore();
 
     // useful keys and values during tests
-    value1_ = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
-    value2_ = IndexedDBValue("value2", std::vector<IndexedDBBlobInfo>());
+    value1_ = IndexedDBValue("value1", {});
+    value2_ = IndexedDBValue("value2", {});
 
     key1_ = IndexedDBKey(99, blink::mojom::IDBKeyType::Number);
     key2_ = IndexedDBKey(ASCIIToUTF16("key2"));
@@ -371,25 +371,26 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     const int64_t kTime1 = 13255919133000000ll;
     const int64_t kTime2 = 13287455133000000ll;
     // useful keys and values during tests
-    blob_info_.push_back(CreateBlobInfo(base::UTF8ToUTF16("blob type"), 1));
-    blob_info_.push_back(CreateBlobInfo(
+    external_objects_.push_back(
+        CreateBlobInfo(base::UTF8ToUTF16("blob type"), 1));
+    external_objects_.push_back(CreateBlobInfo(
         base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type"),
         base::Time::FromDeltaSinceWindowsEpoch(
             base::TimeDelta::FromMicroseconds(kTime1)),
         kBlobFileData1.size()));
-    blob_info_.push_back(CreateBlobInfo(
+    external_objects_.push_back(CreateBlobInfo(
         base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type"),
         base::Time::FromDeltaSinceWindowsEpoch(
             base::TimeDelta::FromMicroseconds(kTime2)),
         kBlobFileData2.size()));
-    value3_ = IndexedDBValue("value3", blob_info_);
+    value3_ = IndexedDBValue("value3", external_objects_);
     key3_ = IndexedDBKey(ASCIIToUTF16("key3"));
   }
 
-  IndexedDBBlobInfo CreateBlobInfo(const base::string16& file_name,
-                                   const base::string16& type,
-                                   base::Time last_modified,
-                                   int64_t size) {
+  IndexedDBExternalObject CreateBlobInfo(const base::string16& file_name,
+                                         const base::string16& type,
+                                         base::Time last_modified,
+                                         int64_t size) {
     auto uuid = base::GenerateGUID();
     mojo::PendingRemote<blink::mojom::Blob> remote;
     base::CreateSequencedTaskRunner({base::ThreadPool()})
@@ -403,12 +404,13 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
                       std::move(pending_receiver));
                 },
                 uuid, remote.InitWithNewPipeAndPassReceiver()));
-    IndexedDBBlobInfo info(std::move(remote), uuid, file_name, type,
-                           last_modified, size);
+    IndexedDBExternalObject info(std::move(remote), uuid, file_name, type,
+                                 last_modified, size);
     return info;
   }
 
-  IndexedDBBlobInfo CreateBlobInfo(const base::string16& type, int64_t size) {
+  IndexedDBExternalObject CreateBlobInfo(const base::string16& type,
+                                         int64_t size) {
     auto uuid = base::GenerateGUID();
     mojo::PendingRemote<blink::mojom::Blob> remote;
     base::CreateSequencedTaskRunner({base::ThreadPool()})
@@ -422,22 +424,23 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
                       std::move(pending_receiver));
                 },
                 uuid, remote.InitWithNewPipeAndPassReceiver()));
-    IndexedDBBlobInfo info(std::move(remote), uuid, type, size);
+    IndexedDBExternalObject info(std::move(remote), uuid, type, size);
     return info;
   }
 
   // This just checks the data that survive getting stored and recalled, e.g.
   // the file path and UUID will change and thus aren't verified.
-  bool CheckBlobInfoMatches(const std::vector<IndexedDBBlobInfo>& reads) const {
+  bool CheckBlobInfoMatches(
+      const std::vector<IndexedDBExternalObject>& reads) const {
     DCHECK(idb_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-    if (blob_info_.size() != reads.size()) {
-      EXPECT_EQ(blob_info_.size(), reads.size());
+    if (external_objects_.size() != reads.size()) {
+      EXPECT_EQ(external_objects_.size(), reads.size());
       return false;
     }
-    for (size_t i = 0; i < blob_info_.size(); ++i) {
-      const IndexedDBBlobInfo& a = blob_info_[i];
-      const IndexedDBBlobInfo& b = reads[i];
+    for (size_t i = 0; i < external_objects_.size(); ++i) {
+      const IndexedDBExternalObject& a = external_objects_[i];
+      const IndexedDBExternalObject& b = reads[i];
       if (a.is_file() != b.is_file()) {
         EXPECT_EQ(a.is_file(), b.is_file());
         return false;
@@ -465,7 +468,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   }
 
   bool CheckBlobReadsMatchWrites(
-      const std::vector<IndexedDBBlobInfo>& reads) const {
+      const std::vector<IndexedDBExternalObject>& reads) const {
     DCHECK(idb_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
     if (blob_context_->writes().size() != reads.size())
@@ -485,11 +488,11 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   bool CheckBlobWrites() {
     DCHECK(idb_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-    if (blob_context_->writes().size() != blob_info_.size())
+    if (blob_context_->writes().size() != external_objects_.size())
       return false;
     for (size_t i = 0; i < blob_context_->writes().size(); ++i) {
       const BlobWrite& desc = blob_context_->writes()[i];
-      const IndexedDBBlobInfo& info = blob_info_[i];
+      const IndexedDBExternalObject& info = external_objects_[i];
       base::RunLoop uuid_loop;
       std::string uuid_out;
       DCHECK(desc.blob.is_bound());
@@ -519,7 +522,9 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     return true;
   }
 
-  std::vector<IndexedDBBlobInfo>& blob_info() { return blob_info_; }
+  std::vector<IndexedDBExternalObject>& external_objects() {
+    return external_objects_;
+  }
 
   // Sample keys and values that are consistent. Public so that posted lambdas
   // passed |this| can access them.
@@ -529,7 +534,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
  private:
   // Blob details referenced by |value3_|. The various CheckBlob*() methods
   // can be used to verify the state as a test progresses.
-  std::vector<IndexedDBBlobInfo> blob_info_;
+  std::vector<IndexedDBExternalObject> external_objects_;
 
   std::vector<std::string> blob_remote_uuids_;
 
@@ -656,8 +661,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
   EXPECT_EQ(value3_.bits, result_value.bits);
 
   RunAllTasksUntilIdle();
-  EXPECT_TRUE(CheckBlobInfoMatches(result_value.blob_info));
-  EXPECT_TRUE(CheckBlobReadsMatchWrites(result_value.blob_info));
+  EXPECT_TRUE(CheckBlobInfoMatches(result_value.external_objects));
+  EXPECT_TRUE(CheckBlobReadsMatchWrites(result_value.external_objects));
 
   // Initiate transaction3, deleting blobs.
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3 =
@@ -704,10 +709,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
     const int64_t object_store_id = i + 1;
     const IndexedDBKeyRange& range = ranges[i];
 
-    std::vector<IndexedDBBlobInfo> blob_infos;
+    std::vector<IndexedDBExternalObject> external_objects;
     for (size_t j = 0; j < 4; ++j) {
       std::string type = "type " + base::NumberToString(j);
-      blob_infos.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
+      external_objects.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
     }
 
     // Reset from previous iteration.
@@ -715,10 +720,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
     backing_store()->ClearRemovals();
 
     std::vector<IndexedDBValue> values = {
-        IndexedDBValue("value0", {blob_infos[0]}),
-        IndexedDBValue("value1", {blob_infos[1]}),
-        IndexedDBValue("value2", {blob_infos[2]}),
-        IndexedDBValue("value3", {blob_infos[3]}),
+        IndexedDBValue("value0", {external_objects[0]}),
+        IndexedDBValue("value1", {external_objects[1]}),
+        IndexedDBValue("value2", {external_objects[2]}),
+        IndexedDBValue("value3", {external_objects[3]}),
     };
     ASSERT_GE(keys.size(), values.size());
 
@@ -799,10 +804,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
     const int64_t object_store_id = i + 1;
     const IndexedDBKeyRange& range = ranges[i];
 
-    std::vector<IndexedDBBlobInfo> blob_infos;
+    std::vector<IndexedDBExternalObject> external_objects;
     for (size_t j = 0; j < 4; ++j) {
       std::string type = "type " + base::NumberToString(j);
-      blob_infos.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
+      external_objects.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
     }
 
     // Reset from previous iteration.
@@ -810,10 +815,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
     backing_store()->ClearRemovals();
 
     std::vector<IndexedDBValue> values = {
-        IndexedDBValue("value0", {blob_infos[0]}),
-        IndexedDBValue("value1", {blob_infos[1]}),
-        IndexedDBValue("value2", {blob_infos[2]}),
-        IndexedDBValue("value3", {blob_infos[3]}),
+        IndexedDBValue("value0", {external_objects[0]}),
+        IndexedDBValue("value1", {external_objects[1]}),
+        IndexedDBValue("value2", {external_objects[2]}),
+        IndexedDBValue("value3", {external_objects[3]}),
     };
     ASSERT_GE(keys.size(), values.size());
 
@@ -973,10 +978,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
   EXPECT_TRUE(succeeded);
   EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
   EXPECT_EQ(value3_.bits, read_result_value.bits);
-  EXPECT_TRUE(CheckBlobInfoMatches(read_result_value.blob_info));
-  EXPECT_TRUE(CheckBlobReadsMatchWrites(read_result_value.blob_info));
-  for (size_t i = 0; i < read_result_value.blob_info.size(); ++i) {
-    read_result_value.blob_info[i].mark_used_callback().Run();
+  EXPECT_TRUE(CheckBlobInfoMatches(read_result_value.external_objects));
+  EXPECT_TRUE(CheckBlobReadsMatchWrites(read_result_value.external_objects));
+  for (size_t i = 0; i < read_result_value.external_objects.size(); ++i) {
+    read_result_value.external_objects[i].mark_used_callback().Run();
   }
 
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3 =
@@ -997,8 +1002,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
   EXPECT_TRUE(succeeded);
   EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
   EXPECT_EQ(0U, backing_store()->removals().size());
-  for (size_t i = 0; i < read_result_value.blob_info.size(); ++i) {
-    read_result_value.blob_info[i].release_callback().Run();
+  for (size_t i = 0; i < read_result_value.external_objects.size(); ++i) {
+    read_result_value.external_objects[i].release_callback().Run();
   }
   RunAllTasksUntilIdle();
 
@@ -1588,7 +1593,8 @@ namespace {
 //     (for Files only) fileName [string-with-length]
 //   }
 // There is no length field; just read until you run out of data.
-std::string EncodeV3BlobInfos(const std::vector<IndexedDBBlobInfo>& blob_info) {
+std::string EncodeV3BlobInfos(
+    const std::vector<IndexedDBExternalObject>& blob_info) {
   std::string ret;
   for (const auto& info : blob_info) {
     EncodeBool(info.is_file(), &ret);
@@ -1690,10 +1696,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
                                                    &blob_entry_key));
   ASSERT_EQ(blob_context_->writes().size(), 3u);
   auto& writes = blob_context_->writes();
-  blob_info()[0].set_blob_number(writes[0].GetBlobNumber());
-  blob_info()[1].set_blob_number(writes[1].GetBlobNumber());
-  blob_info()[2].set_blob_number(writes[2].GetBlobNumber());
-  std::string v3_blob_data = EncodeV3BlobInfos(blob_info());
+  external_objects()[0].set_blob_number(writes[0].GetBlobNumber());
+  external_objects()[1].set_blob_number(writes[1].GetBlobNumber());
+  external_objects()[2].set_blob_number(writes[2].GetBlobNumber());
+  std::string v3_blob_data = EncodeV3BlobInfos(external_objects());
   write_batch->Put(base::StringPiece(blob_entry_key.Encode()),
                    base::StringPiece(v3_blob_data));
   ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
@@ -1709,8 +1715,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   ASSERT_TRUE(file1.IsValid());
   ASSERT_TRUE(file1.WriteAtCurrentPosAndCheck(
       base::as_bytes(base::make_span(kBlobFileData1))));
-  ASSERT_TRUE(file1.SetTimes(blob_info()[1].last_modified(),
-                             blob_info()[1].last_modified()));
+  ASSERT_TRUE(file1.SetTimes(external_objects()[1].last_modified(),
+                             external_objects()[1].last_modified()));
   file1.Close();
 
   base::File file2(file2_path,
@@ -1718,8 +1724,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   ASSERT_TRUE(file2.IsValid());
   ASSERT_TRUE(file2.WriteAtCurrentPosAndCheck(
       base::as_bytes(base::make_span(kBlobFileData2))));
-  ASSERT_TRUE(file2.SetTimes(blob_info()[2].last_modified(),
-                             blob_info()[2].last_modified()));
+  ASSERT_TRUE(file2.SetTimes(external_objects()[2].last_modified(),
+                             external_objects()[2].last_modified()));
   file2.Close();
 
   DestroyFactoryAndBackingStore();
@@ -1747,7 +1753,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   EXPECT_TRUE(succeeded);
   EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
   EXPECT_EQ(value3_.bits, result_value.bits);
-  EXPECT_TRUE(CheckBlobInfoMatches(result_value.blob_info));
+  EXPECT_TRUE(CheckBlobInfoMatches(result_value.external_objects));
 }
 
 }  // namespace indexed_db_backing_store_unittest

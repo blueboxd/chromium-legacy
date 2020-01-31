@@ -1142,22 +1142,49 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
 
 void DrawingBuffer::ClearFramebuffers(GLbitfield clear_mask) {
   ScopedStateRestorer scoped_state_restorer(this);
-  ClearFramebuffersInternal(clear_mask);
+  ClearFramebuffersInternal(clear_mask, ClearAllFBOs);
 }
 
-void DrawingBuffer::ClearFramebuffersInternal(GLbitfield clear_mask) {
+void DrawingBuffer::ClearFramebuffersInternal(GLbitfield clear_mask,
+                                              ClearOption clear_option) {
   DCHECK(state_restorer_);
   state_restorer_->SetFramebufferBindingDirty();
-  // We will clear the multisample FBO, but we also need to clear the
-  // non-multisampled buffer.
-  if (multisample_fbo_) {
+  // Clear the multisample FBO, but also clear the non-multisampled buffer if
+  // requested.
+  if (multisample_fbo_ && clear_option == ClearAllFBOs) {
     gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
     gl_->Clear(GL_COLOR_BUFFER_BIT);
   }
 
-  gl_->BindFramebuffer(GL_FRAMEBUFFER,
-                       multisample_fbo_ ? multisample_fbo_ : fbo_);
-  gl_->Clear(clear_mask);
+  if (multisample_fbo_ || clear_option == ClearAllFBOs) {
+    gl_->BindFramebuffer(GL_FRAMEBUFFER,
+                         multisample_fbo_ ? multisample_fbo_ : fbo_);
+    gl_->Clear(clear_mask);
+  }
+}
+
+void DrawingBuffer::ClearNewlyAllocatedFramebuffers(ClearOption clear_option) {
+  DCHECK(state_restorer_);
+
+  state_restorer_->SetClearStateDirty();
+  gl_->Disable(GL_SCISSOR_TEST);
+  gl_->ClearColor(0, 0, 0,
+                  DefaultBufferRequiresAlphaChannelToBePreserved() ? 1 : 0);
+  gl_->ColorMask(true, true, true, true);
+
+  GLbitfield clear_mask = GL_COLOR_BUFFER_BIT;
+  if (!!depth_stencil_buffer_) {
+    gl_->ClearDepthf(1.0f);
+    clear_mask |= GL_DEPTH_BUFFER_BIT;
+    gl_->DepthMask(true);
+  }
+  if (!!depth_stencil_buffer_) {
+    gl_->ClearStencil(0);
+    clear_mask |= GL_STENCIL_BUFFER_BIT;
+    gl_->StencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
+  }
+
+  ClearFramebuffersInternal(clear_mask, clear_option);
 }
 
 IntSize DrawingBuffer::AdjustSize(const IntSize& desired_size,
@@ -1207,25 +1234,7 @@ bool DrawingBuffer::ResizeFramebufferInternal(const IntSize& new_size) {
       return false;
   }
 
-  state_restorer_->SetClearStateDirty();
-  gl_->Disable(GL_SCISSOR_TEST);
-  gl_->ClearColor(0, 0, 0,
-                  DefaultBufferRequiresAlphaChannelToBePreserved() ? 1 : 0);
-  gl_->ColorMask(true, true, true, true);
-
-  GLbitfield clear_mask = GL_COLOR_BUFFER_BIT;
-  if (!!depth_stencil_buffer_) {
-    gl_->ClearDepthf(1.0f);
-    clear_mask |= GL_DEPTH_BUFFER_BIT;
-    gl_->DepthMask(true);
-  }
-  if (!!depth_stencil_buffer_) {
-    gl_->ClearStencil(0);
-    clear_mask |= GL_STENCIL_BUFFER_BIT;
-    gl_->StencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
-  }
-
-  ClearFramebuffersInternal(clear_mask);
+  ClearNewlyAllocatedFramebuffers(ClearAllFBOs);
   return true;
 }
 
@@ -1312,6 +1321,18 @@ void DrawingBuffer::ResolveIfNeeded() {
         client_->DrawingBufferClientForceLostContextWithAutoRecovery();
       } else if (WantExplicitResolve()) {
         ReallocateMultisampleRenderbuffer(size_);
+
+        // This does a bit more work than desired - clearing any depth and
+        // stencil renderbuffers is unnecessary, since they weren't reallocated
+        // - but reusing this code reduces complexity. Note that we do not clear
+        // the non-multisampled framebuffer, as doing so can cause users'
+        // content to disappear unexpectedly.
+        //
+        // TODO(crbug.com/1046146): perform this clear at the beginning rather
+        // than at the end of a frame in order to eliminate rendering glitches.
+        // This should also simplify the code, allowing removal of the
+        // ClearOption.
+        ClearNewlyAllocatedFramebuffers(ClearOnlyMultisampledFBO);
       }
     }
     current_active_gpu_ = active_gpu;

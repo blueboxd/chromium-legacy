@@ -16,6 +16,39 @@ proto_library("proto") {
   ]
 }
 
+proto_library("proto_v2") {
+  proto_in_dir = "../../../../"
+  sources = [
+    "ui/action/feed_action_payload.proto",
+    "ui/action/ui_feed_action.proto",
+    "ui/piet/accessibility.proto",
+    "ui/piet/actions.proto",
+    "ui/piet/binding_refs.proto",
+    "ui/piet/elements.proto",
+    "ui/piet/errors.proto",
+    "ui/piet/form_fields.proto",
+    "ui/piet/gradients.proto",
+    "ui/piet/images.proto",
+    "ui/piet/log_data.proto",
+    "ui/piet/media_queries.proto",
+    "ui/piet/piet.proto",
+    "ui/piet/piet_android_support.proto",
+    "ui/piet/rounded_corners.proto",
+    "ui/piet/shadows.proto",
+    "ui/piet/styles.proto",
+    "ui/piet/text.proto",
+    "ui/stream/stream_structure.proto",
+    "v2/store.proto",
+    "wire/action_payload.proto",
+    "wire/content_id.proto",
+    "wire/data_operation.proto",
+    "wire/feature.proto",
+    "wire/payload_metadata.proto",
+    "wire/piet_shared_state_item.proto",
+    "wire/semantic_properties.proto",
+  ]
+}
+
 if (is_android) {
   proto_java_library("proto_java") {
     proto_path = "../../../../"

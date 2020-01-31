@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "media/base/media_export.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 
 namespace media {
 

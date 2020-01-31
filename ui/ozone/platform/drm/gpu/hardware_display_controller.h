@@ -95,7 +95,7 @@ class HardwareDisplayController {
 
   // Performs the initial CRTC configuration. If successful, it will display the
   // framebuffer for |primary| with |mode|.
-  bool Modeset(const DrmOverlayPlane& primary, drmModeModeInfo mode);
+  bool Modeset(const DrmOverlayPlane& primary, const drmModeModeInfo& mode);
 
   // Performs a CRTC configuration re-using the modes from the CRTCs.
   bool Enable(const DrmOverlayPlane& primary);

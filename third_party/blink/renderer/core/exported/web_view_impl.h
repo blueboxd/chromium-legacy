@@ -454,7 +454,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
   void UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
-                       WebWidget::LifecycleUpdateReason reason);
+                       DocumentUpdateReason reason);
   void ThemeChanged();
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&);
   WebInputEventResult DispatchBufferedTouchEvents();

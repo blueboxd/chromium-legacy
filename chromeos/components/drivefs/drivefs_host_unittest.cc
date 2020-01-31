@@ -218,8 +218,8 @@ class FakeIdentityService
   }
 
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
-  void GetPrimaryAccountWhenAvailable(
-      GetPrimaryAccountWhenAvailableCallback callback) override {
+  void GetUnconsentedPrimaryAccountWhenAvailable(
+      GetUnconsentedPrimaryAccountWhenAvailableCallback callback) override {
     auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
     std::move(callback).Run(CoreAccountId(account_id.GetUserEmail()),
                             account_id.GetGaiaId(), account_id.GetUserEmail(),

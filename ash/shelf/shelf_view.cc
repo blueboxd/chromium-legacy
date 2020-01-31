@@ -317,7 +317,6 @@ ShelfView::ShelfView(ShelfModel* model,
   DCHECK(model_);
   DCHECK(shelf_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  ShelfConfig::Get()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
@@ -331,7 +330,6 @@ ShelfView::~ShelfView() {
   // Shell destroys the TabletModeController before destroying all root windows.
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
@@ -606,8 +604,12 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // time would produce a time lag since the animation of the BoundsAnimator has
   // itself a delay before it arrives at the required location. As such we tell
   // the animator to go there immediately. We still want to use an animation
-  // when the bounds change is caused by entering or exiting tablet mode.
-  if (shelf_->is_tablet_mode_animation_running()) {
+  // when the bounds change is caused by entering or exiting tablet mode, with
+  // an exception of usage within the scrollable shelf. With scrollable shelf
+  // (and hotseat), tablet mode transition causes hotseat bounds changes, so
+  // animating shelf items as well would introduce a lag.
+  if (shelf_->is_tablet_mode_animation_running() &&
+      !chromeos::switches::ShouldShowScrollableShelf()) {
     AnimateToIdealBounds();
     if (IsShowingOverflowBubble()) {
       overflow_bubble_->bubble_view()->shelf_view()->OnBoundsChanged(
@@ -886,7 +888,6 @@ void ShelfView::OnShelfConfigUpdated() {
   for (int i = 0; i < view_model_->view_size(); i++) {
     ShelfAppButton* button =
         static_cast<ShelfAppButton*>(view_model_->view_at(i));
-
     if (!button->IsIconSizeCurrent())
       ShelfItemChanged(i, model_->items()[i]);
   }
@@ -1511,7 +1512,10 @@ bool ShelfView::IsItemPinned(const ShelfItem& item) const {
 }
 
 void ShelfView::OnTabletModeChanged() {
-  OnBoundsChanged(GetBoundsInScreen());
+  // For scrollable shelf, the layout change will happen as part of shelf config
+  // update.
+  if (!chromeos::switches::ShouldShowScrollableShelf())
+    OnBoundsChanged(GetBoundsInScreen());
 }
 
 void ShelfView::LayoutOverflowButton() const {

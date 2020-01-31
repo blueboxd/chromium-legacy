@@ -79,10 +79,37 @@ mediaApp.ClientApi = function() {};
 mediaApp.ClientApi.prototype.loadFiles = function(files) {};
 
 /**
- * The message structure sent to the guest over postMessage.
- * @typedef{{buffer: ArrayBuffer, type: string, handle: (Object|undefined)}}
+ * The message structure sent to the guest over postMessage. The presence of
+ * a particular field determines the instruction being given to the guest.
+ *
+ * @record
+ * @struct
  */
-mediaApp.MessageEventData;
+mediaApp.MessageEventData = function() {};
+/**
+ * File data to load. TODO(b/144865801): Remove this (obsolete).
+ *
+ * @type {!ArrayBuffer|undefined}
+ */
+mediaApp.MessageEventData.prototype.buffer;
+/**
+ * MIME type of the data in `buffer`.
+ *
+ * @type {string|undefined}
+ */
+mediaApp.MessageEventData.prototype.type;
+/**
+ * An object that uniquely identifies a FileSystemFileHandle in the host.
+ *
+ * @type {!Object|undefined}
+ */
+mediaApp.MessageEventData.prototype.handle;
+/**
+ * A File to load.
+ *
+ * @type {!File|undefined}
+ */
+mediaApp.MessageEventData.prototype.file;
 
 /**
  * Launch data that can be read by the app when it first loads.

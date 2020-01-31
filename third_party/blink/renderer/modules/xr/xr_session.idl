@@ -48,7 +48,8 @@ enum XRVisibilityState {
   long requestAnimationFrame(XRFrameRequestCallback callback);
   void cancelAnimationFrame(long handle);
 
-  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, RaisesException] Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
+  [RuntimeEnabled=WebXRIncubations, CallWith=ScriptState, RaisesException]
+  Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
 
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldTrackingState worldTrackingState;

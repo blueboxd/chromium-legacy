@@ -110,6 +110,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
 
   // ShelfComponent:
   void CalculateTargetBounds() override;
+  gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
 
   // ShelfLayoutManagerObserver:

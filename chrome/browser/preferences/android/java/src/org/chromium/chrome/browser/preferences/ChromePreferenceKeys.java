@@ -505,6 +505,24 @@ public final class ChromePreferenceKeys {
     public static final String SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP =
             "search_engine_choice_requested_timestamp";
 
+    public static final String SETTINGS_DEVELOPER_ENABLED = "developer";
+    public static final String SETTINGS_DEVELOPER_TRACING_CATEGORIES = "tracing_categories";
+    public static final String SETTINGS_DEVELOPER_TRACING_MODE = "tracing_mode";
+
+    /**
+     * SharedPreference name for the preference that disables signing out of Chrome.
+     * Signing out is forever disabled once Chrome signs the user in automatically
+     * if the device has a child account or if the device is an Android EDU device.
+     */
+    public static final String SETTINGS_SYNC_SIGN_OUT_ALLOWED = "auto_signed_in_school_account";
+
+    public static final String SETTINGS_PRIVACY_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN =
+            "org.chromium.chrome.browser.settings.privacy."
+            + "PREF_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN";
+
+    public static final String SETTINGS_WEBSITE_FAILED_BUILD_VERSION =
+            "ManagedSpace.FailedBuildVersion";
+
     public static final String SHARING_LAST_SHARED_CLASS_NAME = "last_shared_class_name";
     public static final String SHARING_LAST_SHARED_PACKAGE_NAME = "last_shared_package_name";
 
@@ -839,6 +857,12 @@ public final class ChromePreferenceKeys {
                 SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE,
                 SEARCH_ENGINE_CHOICE_PRESENTED_VERSION,
                 SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP,
+                SETTINGS_DEVELOPER_ENABLED,
+                SETTINGS_DEVELOPER_TRACING_CATEGORIES,
+                SETTINGS_DEVELOPER_TRACING_MODE,
+                SETTINGS_PRIVACY_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN,
+                SETTINGS_SYNC_SIGN_OUT_ALLOWED,
+                SETTINGS_WEBSITE_FAILED_BUILD_VERSION,
                 SHARING_LAST_SHARED_CLASS_NAME,
                 SHARING_LAST_SHARED_PACKAGE_NAME,
                 SIGNIN_ACCOUNTS_CHANGED,

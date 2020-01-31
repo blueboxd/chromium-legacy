@@ -19,7 +19,11 @@ function main() {
 
 function allocateHighPowerContext() {
   c2.getContext("webgl", { powerPreference: "high-performance" });
-  setTimeout(() => { drawSomeFrames(waitForFinish) }, 1000);
+  // On macOS there is an approximately two second delay between activating the
+  // discrete GPU and applications receiving a notification of its activation.
+  // Avoid a race condition, and test flakiness, by waiting for twice as long as
+  // this delay.
+  setTimeout(() => { drawSomeFrames(waitForFinish) }, 4000);
 }
 
 function waitForFinish()

@@ -50,7 +50,7 @@ class CheckNativeFileSystemWriteRequest
                                   const std::string& request_data,
                                   const std::string& response_body) override;
   bool ShouldUploadBinary(DownloadCheckResultReason reason) override;
-  void UploadBinary() override;
+  void UploadBinary(DownloadCheckResultReason reason) override;
   bool ShouldPromptForDeepScanning(
       DownloadCheckResultReason reason) const override;
   void NotifyRequestFinished(DownloadCheckResult result,

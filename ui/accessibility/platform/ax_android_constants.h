@@ -34,6 +34,7 @@ AX_EXPORT extern const char kAXSeekBarClassname[];
 AX_EXPORT extern const char kAXSwitchClassname[];
 AX_EXPORT extern const char kAXSpinnerClassname[];
 AX_EXPORT extern const char kAXTabWidgetClassname[];
+AX_EXPORT extern const char kAXTextViewClassname[];
 AX_EXPORT extern const char kAXToggleButtonClassname[];
 AX_EXPORT extern const char kAXViewClassname[];
 AX_EXPORT extern const char kAXViewGroupClassname[];

@@ -25,7 +25,6 @@
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -223,6 +222,10 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
   constexpr int kContainerIdsToMove[] = {
+      kShellWindowId_DefaultContainerDeprecated,
+      kShellWindowId_DeskContainerB,
+      kShellWindowId_DeskContainerC,
+      kShellWindowId_DeskContainerD,
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_PipContainer,
       kShellWindowId_SystemModalContainer,
@@ -235,11 +238,8 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_LockScreenContainer,
   };
 
-  // The list of desks containers depends on whether the Virtual Desks feature
-  // is enabled or not.
-  std::vector<int> container_ids = desks_util::GetDesksContainersIds();
-  for (const int id : kContainerIdsToMove)
-    container_ids.emplace_back(id);
+  std::vector<int> container_ids{std::begin(kContainerIdsToMove),
+                                 std::end(kContainerIdsToMove)};
 
   // Check the display mode as this is also necessary when trasitioning between
   // mirror and unified mode.
@@ -648,8 +648,7 @@ void RootWindowController::CloseChildWindows() {
 
   aura::Window* root = GetRootWindow();
 
-  if (features::IsVirtualDesksEnabled())
-    Shell::Get()->desks_controller()->OnRootWindowClosing(root);
+  Shell::Get()->desks_controller()->OnRootWindowClosing(root);
 
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
@@ -859,8 +858,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   // Explicitly update the desks controller before notifying the ShellObservers.
   // This is to make sure the desks' states are correct before clients are
   // updated.
-  if (features::IsVirtualDesksEnabled())
-    Shell::Get()->desks_controller()->OnRootWindowAdded(root_window);
+  Shell::Get()->desks_controller()->OnRootWindowAdded(root_window);
 
   if (root_window_type == RootWindowType::PRIMARY) {
     shell->keyboard_controller()->RebuildKeyboardIfEnabled();

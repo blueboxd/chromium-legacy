@@ -284,7 +284,8 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   if (permission_context_) {
     read_grant = permission_context_->GetReadPermissionGrant(
         binding_context.origin, directory_path, /*is_directory=*/true,
-        binding_context.process_id, binding_context.frame_id);
+        binding_context.process_id, binding_context.frame_id,
+        NativeFileSystemPermissionContext::UserAction::kOpen);
     write_grant = permission_context_->GetWritePermissionGrant(
         binding_context.origin, directory_path, /*is_directory=*/true,
         binding_context.process_id, binding_context.frame_id,
@@ -714,7 +715,7 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   if (permission_context_) {
     read_grant = permission_context_->GetReadPermissionGrant(
         binding_context.origin, file_path, /*is_directory=*/false,
-        binding_context.process_id, binding_context.frame_id);
+        binding_context.process_id, binding_context.frame_id, user_action);
     write_grant = permission_context_->GetWritePermissionGrant(
         binding_context.origin, file_path, /*is_directory=*/false,
         binding_context.process_id, binding_context.frame_id, user_action);

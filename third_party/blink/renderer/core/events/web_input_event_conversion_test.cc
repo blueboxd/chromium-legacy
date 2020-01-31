@@ -126,7 +126,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
   int page_height = 480;
   web_view->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(3);
 
@@ -347,7 +347,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   int page_height = 480;
   web_view->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(2);
 
@@ -610,7 +610,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
   int page_height = 480;
   web_view->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   LocalFrameView* view =
       To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
@@ -649,7 +649,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   int page_height = 480;
   web_view->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(2);
 
@@ -749,7 +749,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   int page_height = 480;
   web_view->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   LocalFrameView* view =
       To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
@@ -826,7 +826,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   int page_height = 480;
   web_view->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   gfx::Vector2dF elastic_overscroll(10, -20);
   web_view->MainFrameWidget()->ApplyViewportChanges(

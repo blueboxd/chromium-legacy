@@ -6,8 +6,8 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <map>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -81,11 +81,22 @@ NetworkCertLoader::NetworkCertList CombineNetworkCertLists(
     total_size += list->size();
   NetworkCertLoader::NetworkCertList result;
   result.reserve(total_size);
-  std::set<const CERTCertificate*> already_added_certs;
+
+  std::map<const CERTCertificate*, size_t> added_cert_to_position;
   for (const NetworkCertLoader::NetworkCertList* list : network_cert_lists) {
     for (const NetworkCertLoader::NetworkCert& network_cert : *list) {
-      if (already_added_certs.insert(network_cert.cert()).second)
+      auto it = added_cert_to_position.find(network_cert.cert());
+      if (it == added_cert_to_position.end()) {
+        // This certificate wasn't added before.
+        // Add it and save its position in the result list.
+        added_cert_to_position.insert({network_cert.cert(), result.size()});
         result.push_back(network_cert.Clone());
+      } else if (network_cert.is_device_wide()) {
+        // Replace the already added certificate with the device-wide one so
+        // that it can be used for shared configurations.
+        size_t position = it->second;
+        result[position] = network_cert.Clone();
+      }
     }
   }
   return result;

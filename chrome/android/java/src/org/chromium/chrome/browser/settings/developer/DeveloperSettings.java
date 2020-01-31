@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.settings.developer;
 import android.os.Bundle;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
@@ -19,7 +20,6 @@ import org.chromium.components.version_info.VersionConstants;
  */
 public class DeveloperSettings extends PreferenceFragmentCompat {
     private static final String UI_PREF_BETA_STABLE_HINT = "beta_stable_hint";
-    private static final String PREF_DEVELOPER_ENABLED = "developer";
 
     // Non-translated strings:
     private static final String MSG_DEVELOPER_OPTIONS_TITLE = "Developer options";
@@ -28,14 +28,13 @@ public class DeveloperSettings extends PreferenceFragmentCompat {
         // Always enabled on canary, dev and local builds, otherwise can be enabled by tapping the
         // Chrome version in Settings>About multiple times.
         if (VersionConstants.CHANNEL <= Channel.DEV) return true;
-        return ContextUtils.getAppSharedPreferences().getBoolean(PREF_DEVELOPER_ENABLED, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.SETTINGS_DEVELOPER_ENABLED, false);
     }
 
     public static void setDeveloperSettingsEnabled() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(PREF_DEVELOPER_ENABLED, true)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.SETTINGS_DEVELOPER_ENABLED, true);
     }
 
     @Override

@@ -292,23 +292,22 @@ TEST(ProxyBypassRulesTest, HTTPOnlyWithWildcard) {
   EXPECT_FALSE(rules.Matches(GURL("https://www.google.com")));
 }
 
-TEST(ProxyBypassRulesTest, UseSuffixMatching) {
+TEST(ProxyBypassRulesTest, DoesNotUseSuffixMatching) {
   ProxyBypassRules rules;
   rules.ParseFromString(
       "foo1.com, .foo2.com, 192.168.1.1, "
-      "*foobar.com:80, *.foo, http://baz, <local>",
-      ProxyBypassRules::ParseFormat::kHostnameSuffixMatching);
+      "*foobar.com:80, *.foo, http://baz, <local>");
   ASSERT_EQ(7u, rules.rules().size());
-  EXPECT_EQ("*foo1.com", rules.rules()[0]->ToString());
+  EXPECT_EQ("foo1.com", rules.rules()[0]->ToString());
   EXPECT_EQ("*.foo2.com", rules.rules()[1]->ToString());
   EXPECT_EQ("192.168.1.1", rules.rules()[2]->ToString());
   EXPECT_EQ("*foobar.com:80", rules.rules()[3]->ToString());
   EXPECT_EQ("*.foo", rules.rules()[4]->ToString());
-  EXPECT_EQ("http://*baz", rules.rules()[5]->ToString());
+  EXPECT_EQ("http://baz", rules.rules()[5]->ToString());
   EXPECT_EQ("<local>", rules.rules()[6]->ToString());
 
   EXPECT_TRUE(rules.Matches(GURL("http://foo1.com")));
-  EXPECT_TRUE(rules.Matches(GURL("http://aaafoo1.com")));
+  EXPECT_FALSE(rules.Matches(GURL("http://aaafoo1.com")));
   EXPECT_FALSE(rules.Matches(GURL("http://aaafoo1.com.net")));
 }
 

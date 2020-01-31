@@ -4,6 +4,7 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
+#include "ash/display/display_change_dialog.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -16,11 +17,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 
@@ -34,6 +37,15 @@ class ResolutionNotificationControllerTest
 
   base::string16 ExpectedNotificationMessage(int64_t display_id,
                                              const gfx::Size& new_resolution) {
+    if (features::IsDisplayChangeModalEnabled()) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_RESOLUTION_CHANGE_DIALOG_CHANGED,
+          base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id)),
+          base::UTF8ToUTF16(new_resolution.ToString()),
+          ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                                 ui::TimeFormat::LENGTH_LONG,
+                                 base::TimeDelta::FromSeconds(10)));
+    }
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
         base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id)),
@@ -44,6 +56,16 @@ class ResolutionNotificationControllerTest
       int64_t display_id,
       const gfx::Size& specified_resolution,
       const gfx::Size& fallback_resolution) {
+    if (features::IsDisplayChangeModalEnabled()) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_RESOLUTION_CHANGE_DIALOG_FALLBACK,
+          base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id)),
+          base::UTF8ToUTF16(specified_resolution.ToString()),
+          base::UTF8ToUTF16(fallback_resolution.ToString()),
+          ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                                 ui::TimeFormat::LENGTH_LONG,
+                                 base::TimeDelta::FromSeconds(10)));
+    }
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED,
         base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id)),
@@ -107,6 +129,9 @@ class ResolutionNotificationControllerTest
   }
 
   static base::string16 GetNotificationMessage() {
+    if (features::IsDisplayChangeModalEnabled())
+      return controller()->dialog_for_testing()->label_->GetText();
+
     const message_center::NotificationList::Notifications& notifications =
         message_center::MessageCenter::Get()->GetVisibleNotifications();
     for (message_center::NotificationList::Notifications::const_iterator iter =
@@ -120,6 +145,10 @@ class ResolutionNotificationControllerTest
   }
 
   static void ClickOnNotification() {
+    if (features::IsDisplayChangeModalEnabled()) {
+      controller()->dialog_for_testing()->AcceptDialog();
+      return;
+    }
     message_center::MessageCenter::Get()->ClickOnNotification(
         ResolutionNotificationController::kNotificationId);
   }
@@ -130,11 +159,18 @@ class ResolutionNotificationControllerTest
   }
 
   static void CloseNotification() {
+    if (features::IsDisplayChangeModalEnabled()) {
+      controller()->dialog_for_testing()->AcceptDialog();
+      return;
+    }
     message_center::MessageCenter::Get()->RemoveNotification(
         ResolutionNotificationController::kNotificationId, true /* by_user */);
   }
 
   static bool IsNotificationVisible() {
+    if (features::IsDisplayChangeModalEnabled())
+      return controller()->dialog_for_testing() != nullptr;
+
     return message_center::MessageCenter::Get()->FindVisibleNotificationById(
         ResolutionNotificationController::kNotificationId);
   }
@@ -144,10 +180,23 @@ class ResolutionNotificationControllerTest
         ScreenLayoutObserver::kNotificationId);
   }
 
-  static void TickTimer() { controller()->OnTimerTick(); }
+  static void TickTimer() {
+    if (features::IsDisplayChangeModalEnabled()) {
+      controller()->dialog_for_testing()->OnTimerTick();
+      return;
+    }
+    controller()->OnTimerTick();
+  }
 
   static ResolutionNotificationController* controller() {
     return Shell::Get()->resolution_notification_controller();
+  }
+
+  static void CancelNotification() {
+    if (features::IsDisplayChangeModalEnabled())
+      controller()->dialog_for_testing()->CancelDialog();
+    else
+      ClickOnNotificationButton(0);
   }
 
   int accept_count() const { return accept_count_; }
@@ -186,7 +235,7 @@ TEST_P(ResolutionNotificationControllerTest, Basic) {
   EXPECT_EQ(60.0, mode.refresh_rate());
 
   // Click the revert button, which reverts to the best resolution.
-  ClickOnNotificationButton(0);
+  CancelNotification();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -232,7 +281,6 @@ TEST_P(ResolutionNotificationControllerTest, ClickMeansAccept) {
   EXPECT_EQ("200x200", mode.size().ToString());
   EXPECT_EQ(60.0, mode.refresh_rate());
 
-  // Click the revert button, which reverts the resolution.
   ClickOnNotification();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
@@ -251,10 +299,15 @@ TEST_P(ResolutionNotificationControllerTest, AcceptButton) {
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
 
-  // If there's a single display only, it will have timeout and the first button
-  // becomes accept.
-  EXPECT_TRUE(controller()->DoesNotificationTimeout());
-  ClickOnNotificationButton(0);
+  if (features::IsDisplayChangeModalEnabled()) {
+    controller()->dialog_for_testing()->AcceptDialog();
+    base::RunLoop().RunUntilIdle();
+  } else {
+    // If there's a single display only, it will have timeout and the first
+    // button becomes accept.
+    EXPECT_TRUE(controller()->DoesNotificationTimeout());
+    ClickOnNotificationButton(0);
+  }
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_EQ(1, accept_count());
 
@@ -271,8 +324,13 @@ TEST_P(ResolutionNotificationControllerTest, AcceptButton) {
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
 
-  EXPECT_TRUE(controller()->DoesNotificationTimeout());
-  ClickOnNotificationButton(1);
+  if (features::IsDisplayChangeModalEnabled()) {
+    controller()->dialog_for_testing()->CancelDialog();
+    base::RunLoop().RunUntilIdle();
+  } else {
+    EXPECT_TRUE(controller()->DoesNotificationTimeout());
+    ClickOnNotificationButton(1);
+  }
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_EQ(1, accept_count());
@@ -315,7 +373,11 @@ TEST_P(ResolutionNotificationControllerTest, Timeout) {
       display::Screen::GetScreen()->GetPrimaryDisplay();
   SetDisplayResolutionAndNotify(display, gfx::Size(200, 200));
 
-  for (int i = 0; i < ResolutionNotificationController::kTimeoutInSec; ++i) {
+  const int timeout_in_seconds =
+      features::IsDisplayChangeModalEnabled()
+          ? DisplayChangeDialog::kDefaultTimeoutInSeconds
+          : ResolutionNotificationController::kTimeoutInSec;
+  for (int i = 0; i < timeout_in_seconds; ++i) {
     EXPECT_TRUE(IsNotificationVisible()) << "notification is closed after " << i
                                          << "-th timer tick";
     TickTimer();
@@ -381,7 +443,7 @@ TEST_P(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   // Then, click the revert button. Although |old_resolution| for the second
   // SetDisplayResolutionAndNotify is 200x200, it should revert to the original
   // size 250x250.
-  ClickOnNotificationButton(0);
+  CancelNotification();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -415,7 +477,7 @@ TEST_P(ResolutionNotificationControllerTest, Fallback) {
   EXPECT_EQ(60.0f, mode.refresh_rate());
 
   // Click the revert button, which reverts to the best resolution.
-  ClickOnNotificationButton(0);
+  CancelNotification();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());

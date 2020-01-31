@@ -441,6 +441,8 @@ try_.chromium_dawn_builder(
             '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
             '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
             '.+/[+]/third_party/dawn/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
+            '.+/[+]/ui/gl/features.gni',
         ],
     ),
 )
@@ -457,6 +459,8 @@ try_.chromium_dawn_builder(
             '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
             '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
             '.+/[+]/third_party/dawn/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
+            '.+/[+]/ui/gl/features.gni',
         ],
     ),
 )
@@ -473,6 +477,8 @@ try_.chromium_dawn_builder(
             '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
             '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
             '.+/[+]/third_party/dawn/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
+            '.+/[+]/ui/gl/features.gni',
         ],
     ),
 )
@@ -489,6 +495,8 @@ try_.chromium_dawn_builder(
             '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
             '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
             '.+/[+]/third_party/dawn/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
+            '.+/[+]/ui/gl/features.gni',
         ],
     ),
 )
@@ -1101,6 +1109,7 @@ try_.gpu_chromium_android_builder(
             '.+/[+]/testing/trigger_scripts/.+',
             '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
             '.+/[+]/ui/gl/.+',
         ],
     ),
@@ -1121,6 +1130,7 @@ try_.gpu_chromium_linux_builder(
             '.+/[+]/testing/trigger_scripts/.+',
             '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
             '.+/[+]/ui/gl/.+',
         ],
     ),
@@ -1142,6 +1152,7 @@ try_.gpu_chromium_mac_builder(
             '.+/[+]/testing/trigger_scripts/.+',
             '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
             '.+/[+]/ui/gl/.+',
         ],
     ),
@@ -1167,6 +1178,7 @@ try_.gpu_chromium_win_builder(
             '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
             '.+/[+]/third_party/blink/renderer/modules/xr/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/tools/clang/scripts/update.py',
             '.+/[+]/ui/gl/.+',
         ],
     ),
@@ -1183,6 +1195,7 @@ def chrome_internal_verifier(
       builder = 'chrome:try/' + builder,
       cq_group = 'cq',
       includable_only = True,
+      owner_whitelist = ["googlers"],
   )
 
 chrome_internal_verifier(
@@ -1199,6 +1212,14 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = 'chromeos-kevin-compile-chrome',
+)
+
+chrome_internal_verifier(
+    builder = 'ipad-device',
+)
+
+chrome_internal_verifier(
+    builder = 'iphone-device',
 )
 
 chrome_internal_verifier(

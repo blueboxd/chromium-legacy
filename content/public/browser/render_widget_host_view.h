@@ -252,10 +252,27 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void TakeFallbackContentFrom(RenderWidgetHostView* view) = 0;
 
   // Set the last time a tab change starts to be processed for this
-  // RenderWidgetHostView. Will overwrite any previously stored value.
-  virtual void SetRecordTabSwitchTimeRequest(base::TimeTicks start_time,
-                                             bool destination_is_loaded,
-                                             bool destination_is_frozen) = 0;
+  // RenderWidgetHostView. Will merge with the previous value if exists (which
+  // means that several events may happen at the same time and must be
+  // induvidually reported).  |start_time| marks event start time to calculate
+  // the duration later.
+  //
+  // |destination_is_loaded| is true when
+  //   ResourceCoordinatorTabHelper::IsLoaded() is true for the new tab
+  //   contents.
+  // |destination_is_frozen| is true when
+  //   ResourceCoordinatorTabHelper::IsFrozen() is true for the new tab
+  //   contents.
+  // |show_reason_tab_switching| is true when tab switch event should be
+  //   reported.
+  // |show_reason_unoccluded| is true when "unoccluded" event should be
+  //   reported.
+  virtual void SetRecordContentToVisibleTimeRequest(
+      base::TimeTicks start_time,
+      base::Optional<bool> destination_is_loaded,
+      base::Optional<bool> destination_is_frozen,
+      bool show_reason_tab_switching,
+      bool show_reason_unoccluded) = 0;
 };
 
 }  // namespace content

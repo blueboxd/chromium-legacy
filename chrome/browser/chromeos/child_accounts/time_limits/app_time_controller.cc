@@ -25,10 +25,28 @@
 namespace chromeos {
 namespace app_time {
 
+namespace {
+
+constexpr base::TimeDelta kDay = base::TimeDelta::FromHours(24);
+
+}  // namespace
+
 AppTimeController::TestApi::TestApi(AppTimeController* controller)
     : controller_(controller) {}
 
 AppTimeController::TestApi::~TestApi() = default;
+
+void AppTimeController::TestApi::SetLastResetTime(base::Time time) {
+  controller_->SetLastResetTime(time);
+}
+
+base::Time AppTimeController::TestApi::GetNextResetTime() const {
+  return controller_->GetNextResetTime();
+}
+
+base::Time AppTimeController::TestApi::GetLastResetTime() const {
+  return controller_->last_limits_reset_time_.value();
+}
 
 AppActivityRegistry* AppTimeController::TestApi::app_registry() {
   return controller_->app_registry_.get();
@@ -67,16 +85,49 @@ AppTimeController::AppTimeController(Profile* profile)
 
   // TODO: Update the following from user pref.instead of setting it to Now().
   SetLastResetTime(base::Time::Now());
-  ScheduleForTimeLimitReset();
+
+  if (HasTimeCrossedResetBoundary()) {
+    OnResetTimeReached();
+  } else {
+    ScheduleForTimeLimitReset();
+  }
+
+  auto* system_clock_client = SystemClockClient::Get();
+  // SystemClockClient may not be initialized in some tests.
+  if (system_clock_client)
+    system_clock_client->AddObserver(this);
+
+  auto* time_zone_settings = system::TimezoneSettings::GetInstance();
+  if (time_zone_settings)
+    time_zone_settings->AddObserver(this);
 }
 
-AppTimeController::~AppTimeController() = default;
+AppTimeController::~AppTimeController() {
+  auto* time_zone_settings = system::TimezoneSettings::GetInstance();
+  if (time_zone_settings)
+    time_zone_settings->RemoveObserver(this);
+
+  auto* system_clock_client = SystemClockClient::Get();
+  if (system_clock_client)
+    system_clock_client->RemoveObserver(this);
+}
 
 bool AppTimeController::IsExtensionWhitelisted(
     const std::string& extension_id) const {
   NOTIMPLEMENTED();
 
   return true;
+}
+
+void AppTimeController::SystemClockUpdated() {
+  if (HasTimeCrossedResetBoundary())
+    OnResetTimeReached();
+}
+
+void AppTimeController::TimezoneChanged(const icu::TimeZone& timezone) {
+  // Timezone changes may not require us to reset information,
+  // however, they may require updating the scheduled reset time.
+  ScheduleForTimeLimitReset();
 }
 
 void AppTimeController::RegisterProfilePrefObservers(
@@ -181,6 +232,19 @@ void AppTimeController::SetLastResetTime(base::Time timestamp) {
   last_limits_reset_time_ = timestamp;
   // TODO(crbug.com/1015658) : |last_limits_reset_time_| should be persisted
   // across sessions.
+}
+
+bool AppTimeController::HasTimeCrossedResetBoundary() const {
+  // last_limits_reset_time_ doesn't have a value yet. This may be because
+  // it has not yet been populated yet (it has not been restored yet).
+  if (!last_limits_reset_time_.has_value())
+    return false;
+
+  // Time after system time or timezone changed.
+  base::Time now = base::Time::Now();
+  base::Time last_reset = last_limits_reset_time_.value();
+
+  return now < last_reset || now >= kDay + last_reset;
 }
 
 }  // namespace app_time

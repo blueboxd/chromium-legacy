@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":grid",
     ":theme_icon",
     ":utils",
+    ":voice_search_overlay",
   ]
 }
 
@@ -92,6 +93,12 @@ js_library("grid") {
   ]
 }
 
+js_library("voice_search_overlay") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("utils") {
 }
 
@@ -143,6 +150,12 @@ polymer_modulizer("grid") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("voice_search_overlay") {
+  js_file = "voice_search_overlay.js"
+  html_file = "voice_search_overlay.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
   deps = [
     ":app_module",
@@ -153,5 +166,6 @@ group("polymer3_elements") {
     ":mini_page_module",
     ":most_visited_module",
     ":theme_icon_module",
+    ":voice_search_overlay_module",
   ]
 }

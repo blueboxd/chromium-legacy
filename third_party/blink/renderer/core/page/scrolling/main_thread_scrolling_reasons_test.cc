@@ -32,7 +32,7 @@ class MainThreadScrollingReasonsTest : public testing::Test {
     helper_.InitializeWithSettings(&ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   ~MainThreadScrollingReasonsTest() override {
@@ -51,7 +51,7 @@ class MainThreadScrollingReasonsTest : public testing::Test {
 
   void ForceFullCompositingUpdate() {
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   void RegisterMockedHttpURLLoad(const String& file_name) {

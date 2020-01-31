@@ -99,7 +99,7 @@ RequestResult TabsHooksDelegate::HandleSendRequest(
 
   messaging_service_->SendOneTimeMessage(
       script_context, MessageTarget::ForTab(tab_id, messaging_util::kNoFrameId),
-      messaging_util::kSendRequestChannel, false, *message, response_callback);
+      messaging_util::kSendRequestChannel, *message, response_callback);
 
   return RequestResult(RequestResult::HANDLED);
 }
@@ -134,7 +134,7 @@ RequestResult TabsHooksDelegate::HandleSendMessage(
 
   messaging_service_->SendOneTimeMessage(
       script_context, MessageTarget::ForTab(tab_id, options.frame_id),
-      messaging_util::kSendMessageChannel, false, *message, response_callback);
+      messaging_util::kSendMessageChannel, *message, response_callback);
 
   return RequestResult(RequestResult::HANDLED);
 }
@@ -155,7 +155,7 @@ RequestResult TabsHooksDelegate::HandleConnect(
 
   gin::Handle<GinPort> port = messaging_service_->Connect(
       script_context, MessageTarget::ForTab(tab_id, options.frame_id),
-      options.channel_name, false);
+      options.channel_name);
   DCHECK(!port.IsEmpty());
 
   RequestResult result(RequestResult::HANDLED);

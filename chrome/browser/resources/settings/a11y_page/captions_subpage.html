@@ -4,12 +4,14 @@
 <link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-captions">
   <template>
     <style include="settings-shared">
       .preview-box {
+        all: initial;
         align-items: center;
         background-image:
           url(chrome://theme/IDR_ACCESSIBILITY_CAPTIONS_PREVIEW_BACKGROUND);
@@ -28,7 +30,8 @@
     <div class="preview-box">
       <span style="
           font-size:[[prefs.accessibility.captions.text_size.value]];
-          font-family:[[prefs.accessibility.captions.text_font.value]];
+          font-family:[[getFontFamily_(
+              prefs.accessibility.captions.text_font.value)]];
           background-color: [[computeBackgroundColor_(
               prefs.accessibility.captions.background_opacity.value,
               prefs.accessibility.captions.background_color.value)]];

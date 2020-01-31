@@ -28,8 +28,8 @@
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 using input_method::InputMethodEngineBase;

@@ -951,7 +951,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 }
 
 // Make sure Find box moves out of the way if it is obscuring the active match.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
+// crbug.com/1047427: disabled due to flakiness
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       DISABLED_FindMovesWhenObscuring) {
   GURL url = GetURL(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -1390,8 +1392,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
             popup->window()->GetBounds().width());
 }
 
+// crbug.com/1047427: disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       FindMovesOnTabClose_Issue1343052) {
+                       DISABLED_FindMovesOnTabClose_Issue1343052) {
   EnsureFindBoxOpen();
   content::RunAllPendingInMessageLoop();  // Needed on Linux.
 

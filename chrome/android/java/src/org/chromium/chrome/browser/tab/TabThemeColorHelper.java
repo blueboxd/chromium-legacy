@@ -12,12 +12,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.UserData;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * Manages theme color used for {@link Tab}. Destroyed together with the tab.

@@ -93,6 +93,7 @@ class ASH_EXPORT ShelfNavigationWidget : public TabletModeObserver,
 
   // ShelfComponent:
   void CalculateTargetBounds() override;
+  gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
 
  private:

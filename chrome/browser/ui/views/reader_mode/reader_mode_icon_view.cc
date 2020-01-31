@@ -69,7 +69,7 @@ void ReaderModeIconView::UpdateImpl() {
 }
 
 const gfx::VectorIcon& ReaderModeIconView::GetVectorIcon() const {
-  return kReaderModeIcon;
+  return active() ? kReaderModeIcon : kReaderModeDisabledIcon;
 }
 
 base::string16 ReaderModeIconView::GetTextForTooltipAndAccessibleName() const {

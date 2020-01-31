@@ -21,6 +21,7 @@
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/test/motion_event_test_utils.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_f.h"
 
 using base::TimeDelta;

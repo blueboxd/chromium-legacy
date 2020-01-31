@@ -11,6 +11,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom_us_layout_data.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 

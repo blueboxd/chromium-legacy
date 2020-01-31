@@ -154,8 +154,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
     GetDocument().View()->RunPostLifecycleSteps();
   }
 

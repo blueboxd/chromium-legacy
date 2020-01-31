@@ -2000,17 +2000,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "enable-virtual-desks",
-    "owners": [ "afakhry" ],
-    // This is a flag to enable or disable the Virtual Desks feature.
-    "expiry_milestone": 81
-  },
-  {
-    "name": "enable-virtual-desks-gestures",
-    "owners": [ "afakhry" ],
-    "expiry_milestone": 81
-  },
-  {
     "name": "enable-virtual-keyboard",
     "owners": [ "//ash/keyboard/OWNERS" ],
     // Useful for debugging the virtual keyboard on non-tablet devices.
@@ -3405,7 +3394,7 @@
   {
     "name": "storage-access-api",
     "owners": [ "brandm@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "strict-origin-isolation",

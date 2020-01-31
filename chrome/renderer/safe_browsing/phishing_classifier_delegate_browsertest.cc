@@ -13,7 +13,7 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom-shared.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"

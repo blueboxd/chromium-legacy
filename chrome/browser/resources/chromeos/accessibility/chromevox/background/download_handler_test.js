@@ -12,12 +12,7 @@ GEN_INCLUDE(['../testing/mock_feedback.js']);
  * Test fixture for Download_Handler.
  */
 ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
-  constructor() {
-    super();
-    this.timeRemainingUnits = '';
-  }
-
-  addFakeApi() {
+  addFakeApi(timeRemainingUnits) {
     // Fake out Chrome Downloads API namespace.
     chrome.downloads = {};
     chrome.downloads.search = function(query, callback) {
@@ -26,7 +21,7 @@ ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
         fileName: 'test.pdf',
         bytesReceived: 9,
         totalBytes: 10,
-        estimatedEndTime: this.getTimeRemaining(this.timeRemainingUnits),
+        estimatedEndTime: this.getTimeRemaining(timeRemainingUnits),
       }]);
     }.bind(this);
     chrome.downloads.onChanged = new FakeChromeEvent();
@@ -213,35 +208,11 @@ TEST_F('ChromeVoxDownloadTest', 'DownloadResumedTest', function() {
       .replay();
 });
 
-TEST_F('ChromeVoxDownloadTest', 'DownloadOneSecondRemainingTest', function() {
-  localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
-  const mockFeedback = this.createMockFeedback();
-  DownloadHandler.init();
-  DownloadHandler.intervalTimeMilliseconds = 1000;
-  // Simulate download started.
-  mockFeedback.call(
-      simulateEvent({id: 1, filename: {current: 'test.pdf', previous: ''}}));
-
-  this.timeRemainingUnits = 'second';
-  setTimeout(function() {
-    mockFeedback.expectSpeech('Download started test.pdf')
-        .expectSpeech(
-            'Download 90% complete test.pdf. About 1 second remaining.')
-        .expectBraille(
-            'Download started test.pdf', {startIndex: -1, endIndex: -1})
-        .expectBraille(
-            'Download 90% complete test.pdf. About 1 second remaining.',
-            {startIndex: -1, endIndex: -1})
-        .replay();
-  }, 2000);
-});
-
 TEST_F(
-    'ChromeVoxDownloadTest', 'DownloadMultipleSecondsRemainingTest',
+    'ChromeVoxDownloadTest', 'DISABLED_DownloadOneSecondRemainingTest',
     function() {
       localStorage['announceDownloadNotifications'] = 'true';
-      this.addFakeApi();
+      this.addFakeApi('second');
       const mockFeedback = this.createMockFeedback();
       DownloadHandler.init();
       DownloadHandler.intervalTimeMilliseconds = 1000;
@@ -249,7 +220,31 @@ TEST_F(
       mockFeedback.call(simulateEvent(
           {id: 1, filename: {current: 'test.pdf', previous: ''}}));
 
-      this.timeRemainingUnits = 'seconds';
+      setTimeout(function() {
+        mockFeedback.expectSpeech('Download started test.pdf')
+            .expectSpeech(
+                'Download 90% complete test.pdf. About 1 second remaining.')
+            .expectBraille(
+                'Download started test.pdf', {startIndex: -1, endIndex: -1})
+            .expectBraille(
+                'Download 90% complete test.pdf. About 1 second remaining.',
+                {startIndex: -1, endIndex: -1})
+            .replay();
+      }, 2000);
+    });
+
+TEST_F(
+    'ChromeVoxDownloadTest', 'DISABLED_DownloadMultipleSecondsRemainingTest',
+    function() {
+      localStorage['announceDownloadNotifications'] = 'true';
+      this.addFakeApi('seconds');
+      const mockFeedback = this.createMockFeedback();
+      DownloadHandler.init();
+      DownloadHandler.intervalTimeMilliseconds = 1000;
+      // Simulate download started.
+      mockFeedback.call(simulateEvent(
+          {id: 1, filename: {current: 'test.pdf', previous: ''}}));
+
       setTimeout(function() {
         mockFeedback.expectSpeech('Download started test.pdf')
             .expectSpeech(
@@ -263,35 +258,11 @@ TEST_F(
       }, 2000);
     });
 
-TEST_F('ChromeVoxDownloadTest', 'DownloadOneMinuteRemainingTest', function() {
-  localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
-  const mockFeedback = this.createMockFeedback();
-  DownloadHandler.init();
-  DownloadHandler.intervalTimeMilliseconds = 1000;
-  // Simulate download started.
-  mockFeedback.call(
-      simulateEvent({id: 1, filename: {current: 'test.pdf', previous: ''}}));
-
-  this.timeRemainingUnits = 'minute';
-  setTimeout(function() {
-    mockFeedback.expectSpeech('Download started test.pdf')
-        .expectSpeech(
-            'Download 90% complete test.pdf. About 1 minute remaining.')
-        .expectBraille(
-            'Download started test.pdf', {startIndex: -1, endIndex: -1})
-        .expectBraille(
-            'Download 90% complete test.pdf. About 1 minute remaining.',
-            {startIndex: -1, endIndex: -1})
-        .replay();
-  }, 2000);
-});
-
 TEST_F(
-    'ChromeVoxDownloadTest', 'DownloadMultipleMinutesRemainingTest',
+    'ChromeVoxDownloadTest', 'DISABLED_DownloadOneMinuteRemainingTest',
     function() {
       localStorage['announceDownloadNotifications'] = 'true';
-      this.addFakeApi();
+      this.addFakeApi('minute');
       const mockFeedback = this.createMockFeedback();
       DownloadHandler.init();
       DownloadHandler.intervalTimeMilliseconds = 1000;
@@ -299,7 +270,31 @@ TEST_F(
       mockFeedback.call(simulateEvent(
           {id: 1, filename: {current: 'test.pdf', previous: ''}}));
 
-      this.timeRemainingUnits = 'minutes';
+      setTimeout(function() {
+        mockFeedback.expectSpeech('Download started test.pdf')
+            .expectSpeech(
+                'Download 90% complete test.pdf. About 1 minute remaining.')
+            .expectBraille(
+                'Download started test.pdf', {startIndex: -1, endIndex: -1})
+            .expectBraille(
+                'Download 90% complete test.pdf. About 1 minute remaining.',
+                {startIndex: -1, endIndex: -1})
+            .replay();
+      }, 2000);
+    });
+
+TEST_F(
+    'ChromeVoxDownloadTest', 'DISABLED_DownloadMultipleMinutesRemainingTest',
+    function() {
+      localStorage['announceDownloadNotifications'] = 'true';
+      this.addFakeApi('minutes');
+      const mockFeedback = this.createMockFeedback();
+      DownloadHandler.init();
+      DownloadHandler.intervalTimeMilliseconds = 1000;
+      // Simulate download started.
+      mockFeedback.call(simulateEvent(
+          {id: 1, filename: {current: 'test.pdf', previous: ''}}));
+
       setTimeout(function() {
         mockFeedback.expectSpeech('Download started test.pdf')
             .expectSpeech(
@@ -313,33 +308,11 @@ TEST_F(
       }, 2000);
     });
 
-TEST_F('ChromeVoxDownloadTest', 'DownloadOneHourRemainingTest', function() {
-  localStorage['announceDownloadNotifications'] = 'true';
-  this.addFakeApi();
-  const mockFeedback = this.createMockFeedback();
-  DownloadHandler.init();
-  DownloadHandler.intervalTimeMilliseconds = 1000;
-  // Simulate download started.
-  mockFeedback.call(
-      simulateEvent({id: 1, filename: {current: 'test.pdf', previous: ''}}));
-
-  this.timeRemainingUnits = 'hour';
-  setTimeout(function() {
-    mockFeedback.expectSpeech('Download started test.pdf')
-        .expectSpeech('Download 90% complete test.pdf. About 1 hour remaining.')
-        .expectBraille(
-            'Download started test.pdf', {startIndex: -1, endIndex: -1})
-        .expectBraille(
-            'Download 90% complete test.pdf. About 1 hour remaining.',
-            {startIndex: -1, endIndex: -1})
-        .replay();
-  }, 2000);
-});
-
 TEST_F(
-    'ChromeVoxDownloadTest', 'DownloadMultipleHoursRemainingTest', function() {
+    'ChromeVoxDownloadTest', 'DISABLED_DownloadOneHourRemainingTest',
+    function() {
       localStorage['announceDownloadNotifications'] = 'true';
-      this.addFakeApi();
+      this.addFakeApi('hour');
       const mockFeedback = this.createMockFeedback();
       DownloadHandler.init();
       DownloadHandler.intervalTimeMilliseconds = 1000;
@@ -347,7 +320,31 @@ TEST_F(
       mockFeedback.call(simulateEvent(
           {id: 1, filename: {current: 'test.pdf', previous: ''}}));
 
-      this.timeRemainingUnits = 'hours';
+      setTimeout(function() {
+        mockFeedback.expectSpeech('Download started test.pdf')
+            .expectSpeech(
+                'Download 90% complete test.pdf. About 1 hour remaining.')
+            .expectBraille(
+                'Download started test.pdf', {startIndex: -1, endIndex: -1})
+            .expectBraille(
+                'Download 90% complete test.pdf. About 1 hour remaining.',
+                {startIndex: -1, endIndex: -1})
+            .replay();
+      }, 2000);
+    });
+
+TEST_F(
+    'ChromeVoxDownloadTest', 'DISABLED_DownloadMultipleHoursRemainingTest',
+    function() {
+      localStorage['announceDownloadNotifications'] = 'true';
+      this.addFakeApi('hours');
+      const mockFeedback = this.createMockFeedback();
+      DownloadHandler.init();
+      DownloadHandler.intervalTimeMilliseconds = 1000;
+      // Simulate download started.
+      mockFeedback.call(simulateEvent(
+          {id: 1, filename: {current: 'test.pdf', previous: ''}}));
+
       setTimeout(function() {
         mockFeedback.expectSpeech('Download started test.pdf')
             .expectSpeech(

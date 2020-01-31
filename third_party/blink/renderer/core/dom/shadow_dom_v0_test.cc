@@ -157,8 +157,7 @@ TEST_F(ShadowDOMV0Test, ReattachNonDistributedElements) {
   host->appendChild(inner_host);
   inner_host->appendChild(span);
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   host->CreateV0ShadowRootForTesting();
   inner_host->CreateV0ShadowRootForTesting();
@@ -166,8 +165,7 @@ TEST_F(ShadowDOMV0Test, ReattachNonDistributedElements) {
                                      CSSValueID::kInlineBlock);
   span->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kBlock);
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(span->NeedsReattachLayoutTree());
 }
@@ -180,8 +178,7 @@ TEST_F(ShadowDOMV0Test, DetachLayoutTreeOnShadowRootCreation) {
   auto* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   host->appendChild(span);
   GetDocument().body()->appendChild(host);
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   EXPECT_TRUE(span->GetLayoutObject());
 

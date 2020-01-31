@@ -42,7 +42,7 @@ class CrtcController {
 
   // Perform the initial modesetting operation using |plane| as the buffer for
   // the primary plane. The CRTC configuration is specified by |mode|.
-  bool Modeset(const DrmOverlayPlane& plane, drmModeModeInfo mode);
+  bool Modeset(const DrmOverlayPlane& plane, const drmModeModeInfo& mode);
 
   // Disables the controller.
   bool Disable();

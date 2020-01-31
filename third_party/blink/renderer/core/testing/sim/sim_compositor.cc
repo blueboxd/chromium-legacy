@@ -65,7 +65,7 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
   auto* frame = web_view_->MainFrameImpl()->GetFrame();
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       frame->GetDocument()->Lifecycle());
-  frame->View()->UpdateAllLifecyclePhases(DocumentLifecycle::kTest);
+  frame->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   PaintRecordBuilder builder;
   frame->View()->PaintOutsideOfLifecycle(builder.Context(),
                                          kGlobalPaintFlattenCompositingLayers);
@@ -92,7 +92,7 @@ void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
   // WebViewImpl.
   web_view_->MainFrameWidget()->BeginFrame(last_frame_time_, false);
   web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   *paint_commands_ = PaintFrame();
 }
 

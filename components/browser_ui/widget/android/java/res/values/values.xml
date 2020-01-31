@@ -10,4 +10,9 @@
     <!-- Drag-Reorderable List Item -->
     <!-- Used for 90% = 230/255 alpha -->
     <integer name="list_item_dragged_alpha">230</integer>
+
+    <!-- Modern List Item -->
+    <integer name="list_item_level_default">0</integer>
+    <integer name="list_item_level_selected">1</integer>
+    <integer name="list_item_level_incognito">2</integer>
 </resources>

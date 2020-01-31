@@ -132,7 +132,8 @@ bool OpenExtensionApplicationWithReenablePrompt(
   return true;
 }
 
-bool OpenExtensionAppShortcutWindow(Profile* profile, const GURL& url) {
+content::WebContents* OpenExtensionAppShortcutWindow(Profile* profile,
+                                                     const GURL& url) {
   const extensions::Extension* app = extensions::ExtensionRegistry::Get(profile)
                                          ->enabled_extensions()
                                          .GetAppByURL(url);
@@ -144,8 +145,7 @@ bool OpenExtensionAppShortcutWindow(Profile* profile, const GURL& url) {
         extensions::Manifest::TYPE_HOSTED_APP);
   }
 
-  content::WebContents* app_tab = ::OpenAppShortcutWindow(profile, url);
-  return app_tab != nullptr;
+  return ::OpenAppShortcutWindow(profile, url);
 }
 
 void RecordExtensionAppLaunchOnTabRestored(Profile* profile, const GURL& url) {

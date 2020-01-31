@@ -2028,8 +2028,7 @@ void LocalFrameView::UpdateGeometriesIfNeeded() {
   views.clear();
 }
 
-bool LocalFrameView::UpdateAllLifecyclePhases(
-    DocumentLifecycle::LifecycleUpdateReason reason) {
+bool LocalFrameView::UpdateAllLifecyclePhases(DocumentUpdateReason reason) {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kPaintClean, reason);
 }
@@ -2040,29 +2039,25 @@ bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return UpdateAllLifecyclePhasesExceptPaint();
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kCompositingClean,
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+      DocumentLifecycle::kCompositingClean, DocumentUpdateReason::kOther);
 }
 
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kCompositingInputsClean,
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+      DocumentLifecycle::kCompositingInputsClean, DocumentUpdateReason::kOther);
 }
 
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateAllLifecyclePhasesExceptPaint() {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kPrePaintClean,
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+      DocumentLifecycle::kPrePaintClean, DocumentUpdateReason::kOther);
 }
 
 void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
   auto* local_frame_view_root = GetFrame().LocalFrameRoot().View();
   local_frame_view_root->UpdateLifecyclePhases(
-      DocumentLifecycle::kPrePaintClean,
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+      DocumentLifecycle::kPrePaintClean, DocumentUpdateReason::kOther);
 
   auto* detached_frame_view = this;
   while (detached_frame_view->IsAttached() &&
@@ -2079,16 +2074,14 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
   // was not reached in some phases during during |local_frame_view_root->
   // UpdateLifecyclePhasesnormal()|. We need the subtree to be ready for
   // painting.
-  detached_frame_view->UpdateLifecyclePhases(
-      DocumentLifecycle::kPrePaintClean,
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+  detached_frame_view->UpdateLifecyclePhases(DocumentLifecycle::kPrePaintClean,
+                                             DocumentUpdateReason::kOther);
 }
 
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToLayoutClean() {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kLayoutClean,
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+      DocumentLifecycle::kLayoutClean, DocumentUpdateReason::kOther);
 }
 
 void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
@@ -2184,7 +2177,7 @@ void LocalFrameView::ClearPrintContext() {
 // WebPluginContainerImpls.
 bool LocalFrameView::UpdateLifecyclePhases(
     DocumentLifecycle::LifecycleState target_state,
-    DocumentLifecycle::LifecycleUpdateReason reason) {
+    DocumentUpdateReason reason) {
   // If the lifecycle is postponed, which can happen if the inspector requests
   // it, then we shouldn't update any lifecycle phases.
   if (UNLIKELY(frame_->GetDocument() &&
@@ -3353,7 +3346,7 @@ void LocalFrameView::SetTracksRasterInvalidations(
     return;
 
   // Ensure the document is up-to-date before tracking invalidations.
-  UpdateAllLifecyclePhases(DocumentLifecycle::LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   for (Frame* frame = &frame_->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {

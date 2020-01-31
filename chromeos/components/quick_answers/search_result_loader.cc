@@ -101,11 +101,8 @@ GURL BuildRequestUrl(const std::string& selected_text) {
 }  // namespace
 
 SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
-                                       CompleteCallback complete_callback) {
-  complete_callback_ = std::move(complete_callback);
-
-  network_loader_factory_ = url_loader_factory;
-}
+                                       SearchResultLoaderDelegate* delegate)
+    : network_loader_factory_(url_loader_factory), delegate_(delegate) {}
 
 SearchResultLoader::~SearchResultLoader() = default;
 
@@ -133,7 +130,7 @@ void SearchResultLoader::OnSimpleURLLoaderComplete(
   if (!response_body || loader_->NetError() != net::OK ||
       !loader_->ResponseInfo() || !loader_->ResponseInfo()->headers) {
     RecordLoadingStatus(LoadStatus::kNetworkError, duration);
-    std::move(complete_callback_).Run(/*quick_answer=*/nullptr);
+    delegate_->OnNetworkError();
     return;
   }
 
@@ -153,7 +150,7 @@ void SearchResultLoader::OnResultParserComplete(
     RecordLoadingStatus(LoadStatus::kSuccess, duration);
     RecordResult(quick_answer->result_type, duration);
   }
-  std::move(complete_callback_).Run(std::move(quick_answer));
+  delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 
 }  // namespace quick_answers

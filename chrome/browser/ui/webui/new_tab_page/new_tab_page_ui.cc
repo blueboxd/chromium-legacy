@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -30,7 +31,7 @@ namespace {
 constexpr char kGeneratedPath[] =
     "@out_folder@/gen/chrome/browser/resources/new_tab_page/";
 
-content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
+content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINewTabPageHost);
 
@@ -38,6 +39,11 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
                                            IDS_UNDO_DESCRIPTION,
                                            undo_accelerator.GetShortcutText()));
+  source->AddString("googleBaseUrl",
+                    GURL(TemplateURLServiceFactory::GetForProfile(profile)
+                             ->search_terms_data()
+                             .GoogleBaseURLValue())
+                        .spec());
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"title", IDS_NEW_TAB_TITLE},
@@ -79,6 +85,22 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
       {"shortcutsCurated", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC},
       {"shortcutsOption", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
       {"shortcutsSuggested", IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC},
+
+      // Voice search.
+      {"audioError", IDS_NEW_TAB_VOICE_AUDIO_ERROR},
+      {"close", IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP},
+      {"details", IDS_NEW_TAB_VOICE_DETAILS},
+      {"languageError", IDS_NEW_TAB_VOICE_LANGUAGE_ERROR},
+      {"learnMore", IDS_LEARN_MORE},
+      {"networkError", IDS_NEW_TAB_VOICE_NETWORK_ERROR},
+      {"noTranslation", IDS_NEW_TAB_VOICE_NO_TRANSLATION},
+      {"noVoice", IDS_NEW_TAB_VOICE_NO_VOICE},
+      {"otherError", IDS_NEW_TAB_VOICE_OTHER_ERROR},
+      {"permissionError", IDS_NEW_TAB_VOICE_PERMISSION_ERROR},
+      {"speak", IDS_NEW_TAB_VOICE_READY},
+      {"tryAgain", IDS_NEW_TAB_VOICE_TRY_AGAIN},
+      {"voiceSearchButtonLabel", IDS_TOOLTIP_MIC_SEARCH},
+      {"waiting", IDS_NEW_TAB_VOICE_WAITING},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
@@ -100,7 +122,8 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       page_factory_receiver_(this),
       profile_(Profile::FromWebUI(web_ui)),
       instant_service_(InstantServiceFactory::GetForProfile(profile_)) {
-  content::WebUIDataSource::Add(profile_, CreateNewTabPageUiHtmlSource());
+  content::WebUIDataSource::Add(profile_,
+                                CreateNewTabPageUiHtmlSource(profile_));
 
   content::URLDataSource::Add(
       profile_, std::make_unique<FaviconSource>(

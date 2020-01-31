@@ -1391,18 +1391,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 
-// Checks that xhr PUT cancels prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPut) {
-  PrerenderTestURL("/prerender/prerender_xhr_put.html",
-                   FINAL_STATUS_INVALID_HTTP_METHOD, 1);
-}
-
-// Checks that xhr DELETE cancels prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
-  PrerenderTestURL("/prerender/prerender_xhr_delete.html",
-                   FINAL_STATUS_INVALID_HTTP_METHOD, 1);
-}
-
 // Sets up HTTPS server for prerendered page, and checks that an SSL error will
 // cancel the prerender. The prerenderer loader will be served through HTTP.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {

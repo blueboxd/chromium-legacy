@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 
 #include "base/auto_reset.h"
@@ -74,6 +75,26 @@ bool CalculateQuadSpaceDamageRect(
   *quad_space_damage_rect = cc::MathUtil::ProjectEnclosingClippedRect(
       inverse_transform, root_damage_rect);
   return true;
+}
+
+gfx::ContentColorUsage FindWidestContentColorUsage(
+    Surface* root_surface,
+    base::flat_set<SurfaceId> referenced_surfaces,
+    const SurfaceManager& manager) {
+  gfx::ContentColorUsage result = gfx::ContentColorUsage::kSRGB;
+
+  result = std::max(
+      result, root_surface->GetActiveFrame().metadata.content_color_usage);
+
+  for (auto& referenced_surface_id : referenced_surfaces) {
+    Surface* referenced_surface =
+        manager.GetSurfaceForId(referenced_surface_id);
+    result = std::max(
+        result,
+        referenced_surface->GetActiveFrame().metadata.content_color_usage);
+  }
+
+  return result;
 }
 
 }  // namespace
@@ -578,7 +599,7 @@ void SurfaceAggregator::EmitSurfaceContent(
         source.transform_to_root_target, source.filters,
         source.backdrop_filters, source.backdrop_filter_bounds,
         display_color_spaces_.GetCompositingColorSpace(
-            source.has_transparent_background),
+            source.has_transparent_background, display_content_color_usage_),
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -1163,7 +1184,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
         remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
         display_color_spaces_.GetCompositingColorSpace(
-            source.has_transparent_background),
+            source.has_transparent_background, display_content_color_usage_),
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -1668,6 +1689,10 @@ CompositorFrame SurfaceAggregator::Aggregate(
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
+
+  display_content_color_usage_ =
+      FindWidestContentColorUsage(surface, referenced_surfaces_, *manager_);
+  frame.metadata.content_color_usage = display_content_color_usage_;
 
   CopyUndrawnSurfaces(&prewalk_result);
   referenced_surfaces_.insert(surface_id);

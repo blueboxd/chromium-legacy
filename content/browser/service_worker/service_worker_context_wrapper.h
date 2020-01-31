@@ -75,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   using GetUserKeysAndDataCallback =
       ServiceWorkerRegistry::GetUserKeysAndDataCallback;
   using GetUserDataForAllRegistrationsCallback =
-      ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback;
+      ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback;
 
   explicit ServiceWorkerContextWrapper(BrowserContext* browser_context);
 

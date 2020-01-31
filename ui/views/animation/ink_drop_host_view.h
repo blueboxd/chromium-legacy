@@ -187,10 +187,16 @@ class VIEWS_EXPORT InkDropHostView : public View {
   gfx::Point GetInkDropCenterBasedOnLastEvent() const;
 
   // Initializes and sets a mask on |ink_drop_layer|. No-op if
-  // CreateInkDropMask() returns null.
+  // CreateInkDropMask() returns null. This will not run if |AddInkDropClip()|
+  // succeeds in the default implementation of |AddInkDropLayer()|.
   void InstallInkDropMask(ui::Layer* ink_drop_layer);
 
   void ResetInkDropMask();
+
+  // Adds a clip rect on the root layer of the ink drop impl. This is a more
+  // performant alternative to using circles or rectangle mask layers. Returns
+  // true if a clip was added.
+  bool AddInkDropClip(ui::Layer* ink_drop_layer);
 
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.

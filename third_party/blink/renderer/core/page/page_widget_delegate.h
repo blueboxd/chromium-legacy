@@ -84,7 +84,7 @@ class CORE_EXPORT PageWidgetDelegate {
   static void UpdateLifecycle(Page&,
                               LocalFrame& root,
                               WebWidget::LifecycleUpdate requested_update,
-                              WebWidget::LifecycleUpdateReason reason);
+                              DocumentUpdateReason reason);
 
   // See comment of WebWidget::DidBeginFrame.
   static void DidBeginFrame(LocalFrame& root);

@@ -207,9 +207,14 @@ struct IDBBlobInfo {
   IDBFileInfo? file;
 };
 
+union IDBExternalObject {
+  IDBBlobInfo blob_or_file;
+  // TODO(https://crbug.com/955193): Add NativeFileSystemTransferToken.
+};
+
 struct IDBValue {
   array<uint8> bits;
-  array<IDBBlobInfo> blob_or_file_info;
+  array<IDBExternalObject> external_objects;
 };
 
 struct IDBReturnValue {

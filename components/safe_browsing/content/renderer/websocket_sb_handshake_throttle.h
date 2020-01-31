@@ -13,7 +13,8 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"

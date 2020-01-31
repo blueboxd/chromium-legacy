@@ -139,6 +139,9 @@ interface Assistant {
   // Send Assistant feedback to Assistant server.
   SendAssistantFeedback(AssistantFeedback feedback);
 
+  // Invoked on entry to Assistant UI.
+  NotifyEntryIntoAssistantUi(AssistantEntryPoint entry_point);
+
   // ===== Alarm/Timer management methods =====
   // Stops timer or alarm ringing.
   StopAlarmTimerRinging();

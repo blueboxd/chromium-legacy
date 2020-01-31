@@ -209,5 +209,23 @@ TEST_F(PredictionMetricsHandlerTest, PredictionMetricTest) {
               ElementsAre(Bucket(1, 2), Bucket(2, 2)));
 }
 
+// Test that it doesn't crash when predicted event is prior to first real event.
+TEST_F(PredictionMetricsHandlerTest, PredictedTimePriorToReal) {
+  metrics_handler_->AddRealEvent(gfx::PointF(1, 1),
+                                 MillisecondsToTestTimeTicks(8),
+                                 MillisecondsToTestTimeTicks(12));
+  metrics_handler_->AddRealEvent(gfx::PointF(2, 2),
+                                 MillisecondsToTestTimeTicks(10),
+                                 MillisecondsToTestTimeTicks(12));
+
+  metrics_handler_->AddPredictedEvent(gfx::PointF(0, 0),
+                                      MillisecondsToTestTimeTicks(7),
+                                      MillisecondsToTestTimeTicks(12));
+  metrics_handler_->EvaluatePrediction();
+  // No prediction metrics result.
+  EXPECT_TRUE(
+      HistogramSizeEq("Event.InputEventPrediction.Scroll.PredictionJitter", 0));
+}
+
 }  // namespace test
 }  // namespace ui

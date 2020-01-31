@@ -53,6 +53,10 @@ class AppServiceShelfContextMenu : public ShelfContextMenu {
   void BuildArcAppShortcutsMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                                 GetMenuModelCallback callback);
 
+  // Build the menu items based on the app running status for the Crostini shelf
+  // id with the prefix "crostini:".
+  void BuildCrostiniAppMenu(ui::SimpleMenuModel* menu_model);
+
   void ShowAppInfo();
 
   // Helpers to set the launch type.

@@ -60,6 +60,7 @@ GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() {
     gl->DeleteTextures(1u, &buffer_texture.second);
   buffer_queue_textures_.clear();
   current_texture_ = 0u;
+  last_bound_texture_ = 0u;
 
   // Freeing the BufferQueue here ensures that *this is fully alive in case the
   // BufferQueue needs the SyncTokenProvider functionality.
@@ -94,6 +95,7 @@ void GLOutputSurfaceBufferQueue::BindFramebuffer() {
       current_texture_, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                            texture_target_, current_texture_, 0);
+  last_bound_texture_ = current_texture_;
 
 #if DCHECK_IS_ON() && defined(OS_CHROMEOS)
   const GLenum result = gl->CheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -149,6 +151,7 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
         gl->DeleteTextures(1u, &buffer_texture.second);
       buffer_queue_textures_.clear();
       current_texture_ = 0u;
+      last_bound_texture_ = 0u;
     }
   }
 }
@@ -163,14 +166,19 @@ void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
 
   gfx::Rect damage_rect =
       frame.sub_buffer_rect ? *frame.sub_buffer_rect : gfx::Rect(swap_size_);
-  buffer_queue_->SwapBuffers(damage_rect);
-  GLOutputSurface::SwapBuffers(std::move(frame));
+
+  // If the client is currently drawing, we first end access to the
+  // corresponding shared image. Then, we can swap the buffers. That way, we
+  // know that whatever GL commands GLOutputSurface::SwapBuffers() emits can
+  // access the shared image.
   auto* gl = context_provider_->ContextGL();
-  gl->BindFramebuffer(GL_FRAMEBUFFER, 0u);
   if (current_texture_) {
     gl->EndSharedImageAccessDirectCHROMIUM(current_texture_);
+    gl->BindFramebuffer(GL_FRAMEBUFFER, 0u);
     current_texture_ = 0u;
   }
+  buffer_queue_->SwapBuffers(damage_rect);
+  GLOutputSurface::SwapBuffers(std::move(frame));
 }
 
 gfx::Rect GLOutputSurfaceBufferQueue::GetCurrentFramebufferDamage() const {
@@ -187,8 +195,8 @@ bool GLOutputSurfaceBufferQueue::IsDisplayedAsOverlayPlane() const {
 }
 
 unsigned GLOutputSurfaceBufferQueue::GetOverlayTextureId() const {
-  DCHECK(current_texture_);
-  return current_texture_;
+  DCHECK(last_bound_texture_);
+  return last_bound_texture_;
 }
 
 gpu::Mailbox GLOutputSurfaceBufferQueue::GetOverlayMailbox() const {

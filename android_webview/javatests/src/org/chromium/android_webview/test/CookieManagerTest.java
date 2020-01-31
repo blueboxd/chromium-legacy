@@ -1163,7 +1163,7 @@ public class CookieManagerTest {
                 + "  await window.cookieStore.set("
                 + "      " + name + ", " + value + ", "
                 + "      { expires: Date.now() + 3600*1000,"
-                + "        sameSite: 'unrestricted' });"
+                + "        sameSite: 'none' });"
                 + "} finally {"
                 + "  " + finallyAction + "}\n";
     }

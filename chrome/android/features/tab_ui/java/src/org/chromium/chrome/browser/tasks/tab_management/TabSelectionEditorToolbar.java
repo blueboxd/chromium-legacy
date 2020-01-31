@@ -11,10 +11,10 @@ import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.Button;
 
-import org.chromium.chrome.browser.widget.NumberRollView;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.NumberRollView;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
 
 import java.util.Collections;
 import java.util.List;

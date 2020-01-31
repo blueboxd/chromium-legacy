@@ -5,9 +5,11 @@
 #ifndef ASH_WM_DESKS_DESKS_UTIL_H_
 #define ASH_WM_DESKS_DESKS_UTIL_H_
 
+#include <array>
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shell_window_ids.h"
 
 namespace aura {
 class Window;
@@ -19,7 +21,7 @@ namespace desks_util {
 
 constexpr size_t kMaxNumberOfDesks = 4;
 
-ASH_EXPORT std::vector<int> GetDesksContainersIds();
+ASH_EXPORT const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds();
 
 ASH_EXPORT std::vector<aura::Window*> GetDesksContainers(aura::Window* root);
 

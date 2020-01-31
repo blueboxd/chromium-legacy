@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import android.app.Activity;
 import android.content.ComponentCallbacks;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -28,7 +27,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
-import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -129,7 +127,6 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.util.TokenHolder;
-import org.chromium.ui.widget.Toast;
 
 import java.util.List;
 
@@ -150,9 +147,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
          */
         void updateReloadButtonState(boolean isLoading);
     }
-
-    private static final ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
-            new ActionEvent("MobileToolbarOmniboxAcceleratorTap");
 
     /**
      * The number of ms to wait before reporting to UMA omnibox interaction metrics.
@@ -193,9 +187,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private LayoutManager mLayoutManager;
     private IdentityDiscController mIdentityDiscController;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
-    private final Callback<ShareDelegate> mShareDelegateSupplierCallback;
-    private ObservableSupplierImpl<OnClickListener> mShareButtonListenerSupplier =
-            new ObservableSupplierImpl<>();
     private ObservableSupplierImpl<View> mTabGroupPopUiParentSupplier;
     private @Nullable TabGroupPopupUi mTabGroupPopupUi;
 
@@ -265,8 +256,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
-        mShareDelegateSupplierCallback = this::onShareDelegateAvailable;
-        mShareDelegateSupplier.addObserver(mShareDelegateSupplierCallback);
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -796,23 +785,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * Enable the bottom toolbar.
      */
     public void enableBottomToolbar() {
-        // TODO(crbug.com/1026020): Move creation of these listeners to bottom toolbar component.
-        final OnClickListener homeButtonListener = v -> {
-            recordBottomToolbarUseForIPH();
-            openHomepage();
-        };
-
-        final OnClickListener searchAcceleratorListener = v -> {
-            recordBottomToolbarUseForIPH();
-            ACCELERATOR_BUTTON_TAP_ACTION.record();
-
-            // Only switch to HomePage when overview is showing.
-            if (mOverviewModeBehavior.overviewVisible()) {
-                mShowStartSurfaceSupplier.get();
-            }
-            setUrlBarFocus(true, LocationBar.OmniboxFocusReason.ACCELERATOR_TAP);
-        };
-
         if (FeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
                 && FeatureUtilities.isBottomToolbarEnabled()) {
             mTabGroupPopUiParentSupplier = new ObservableSupplierImpl<>();
@@ -822,13 +794,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
                 mActivity.findViewById(R.id.bottom_controls_stub),
-                mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
-                mShareButtonListenerSupplier,
+                mActivity.getActivityTabProvider(),
                 mTabGroupPopupUi != null
                         ? mTabGroupPopupUi.getLongClickListenerForTriggering()
                         : BottomTabSwitcherActionMenuCoordinator.createOnLongClickListener(
                                 id -> mActivity.onOptionsItemSelected(id, null)),
-                mAppThemeColorProvider);
+                mAppThemeColorProvider, mShareDelegateSupplier, mShowStartSurfaceSupplier,
+                this::openHomepage, (reason) -> setUrlBarFocus(true, reason));
 
         mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
                 && (!FeatureUtilities.isAdaptiveToolbarEnabled()
@@ -836,32 +808,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                                 != Configuration.ORIENTATION_LANDSCAPE);
         mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
         mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
-
-        Toast.setGlobalExtraYOffset(mActivity.getResources().getDimensionPixelSize(
-                FeatureUtilities.isLabeledBottomToolbarEnabled()
-                        ? R.dimen.labeled_bottom_toolbar_height
-                        : R.dimen.bottom_toolbar_height));
-    }
-
-    // TODO(crbug.com/1026020): Move this logic to BottomToolbar class.
-    private void onShareDelegateAvailable(ShareDelegate shareDelegate) {
-        final OnClickListener shareButtonListener = v -> {
-            if (BottomToolbarVariationManager.isShareButtonOnBottom()) {
-                recordBottomToolbarUseForIPH();
-                RecordUserAction.record("MobileBottomToolbarShareButton");
-            }
-
-            Tab tab = null;
-            Activity activity = null;
-            boolean isIncognito = false;
-            if (mTabModelSelector != null) {
-                tab = mTabModelSelector.getCurrentTab();
-                activity = ((TabImpl) tab).getActivity();
-                isIncognito = tab.isIncognito();
-            }
-            shareDelegate.share(tab, /*shareDirectly=*/false);
-        };
-        mShareButtonListenerSupplier.set(shareButtonListener);
     }
 
     /** Record that homepage button was used for IPH reasons */
@@ -871,22 +817,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
             tracker.notifyEvent(toolbarIPHEvent);
         }
-    }
-
-    /** Record that the bottom toolbar was used for IPH reasons. */
-    private void recordBottomToolbarUseForIPH() {
-        recordToolbarUseForIPH(EventConstants.CHROME_DUET_USED_BOTTOM_TOOLBAR);
-    }
-
-    /**
-     * Add bottom toolbar IPH tracking to an existing click listener.
-     * @param listener The listener to add bottom toolbar tracking to.
-     */
-    private OnClickListener wrapBottomToolbarClickListenerForIPH(OnClickListener listener) {
-        return (v) -> {
-            recordBottomToolbarUseForIPH();
-            listener.onClick(v);
-        };
     }
 
     /**
@@ -983,28 +913,16 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         }
 
         if (mBottomControlsCoordinator != null) {
-            final OnClickListener closeTabsClickListener = v -> {
-                recordBottomToolbarUseForIPH();
-                final boolean isIncognito = mTabModelSelector.isIncognitoSelected();
-                if (isIncognito) {
-                    RecordUserAction.record("MobileToolbarCloseAllIncognitoTabsButtonTap");
-                } else {
-                    RecordUserAction.record("MobileToolbarCloseAllRegularTabsButtonTap");
-                }
-
-                mTabModelSelector.getModel(isIncognito).closeAllTabs();
+            Runnable closeAllTabsAction = () -> {
+                mTabModelSelector.getModel(mIncognitoStateProvider.isIncognitoSelected())
+                        .closeAllTabs();
             };
-            if (mAppMenuButtonHelper != null) {
-                mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
-            }
             mBottomControlsCoordinator.initializeWithNative(mActivity,
                     mActivity.getCompositorViewHolder().getResourceManager(),
-                    mActivity.getCompositorViewHolder().getLayoutManager(),
-                    wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
-                    wrapBottomToolbarClickListenerForIPH(newTabClickHandler),
-                    closeTabsClickListener, mAppMenuButtonHelper, mOverviewModeBehavior,
+                    mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
+                    newTabClickHandler, mAppMenuButtonHelper, mOverviewModeBehavior,
                     mActivity.getWindowAndroid(), mTabCountProvider, mIncognitoStateProvider,
-                    mActivity.findViewById(R.id.control_container));
+                    mActivity.findViewById(R.id.control_container), closeAllTabsAction);
 
             // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
             ApiCompatibilityUtils.setAccessibilityTraversalBefore(
@@ -1281,8 +1199,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
         mActivity.unregisterComponentCallbacks(mComponentCallbacks);
         mComponentCallbacks = null;
-
-        mShareDelegateSupplier.removeObserver(mShareDelegateSupplierCallback);
     }
 
     /**

@@ -24,7 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"

@@ -93,15 +93,9 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
     CompositorPriorityExperiments* experiment_;
     std::unique_ptr<CPUTimeBudgetPool> compositor_budget_pool_;
     bool is_exhausted_ = false;
-
-    const base::TickClock* tick_clock_;  // Not owned.
   };
 
   static Experiment GetExperimentFromFeatureList();
-
-  void DoPrioritizeCompositingAfterDelay();
-
-  void PostPrioritizeCompositingAfterDelayTask();
 
   enum class StopSignalType { kAnyCompositorTask, kBeginMainFrameTask };
 
@@ -113,7 +107,7 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
       QueuePriority::kVeryHighPriority;
 
   QueuePriority delay_compositor_priority_ = QueuePriority::kNormalPriority;
-  CancelableClosureHolder do_prioritize_compositing_after_delay_callback_;
+  base::TimeTicks last_compositor_task_time_;
   base::TimeDelta prioritize_compositing_after_delay_length_;
 
   QueuePriority budget_compositor_priority_ = QueuePriority::kVeryHighPriority;

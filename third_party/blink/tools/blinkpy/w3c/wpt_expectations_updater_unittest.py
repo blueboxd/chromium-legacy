@@ -441,7 +441,9 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = '/test.checkout/wtests/NeverFixTests'
         host.filesystem.write_text_file(
             expectations_path,
-            'crbug.com/111 [ Linux ] external/wpt/test.html [ Skip ]\n')
+            ('# tags: [ Linux ]\n'
+             '# results: [ Skip ]\n'
+             'crbug.com/111 [ Linux ] external/wpt/test.html [ Skip ]\n'))
         host.filesystem.write_text_file('/test.checkout/wtests/external/wpt/test.html', '')
         updater = WPTExpectationsUpdater(host)
         self.assertEqual(updater.skipped_specifiers('external/wpt/test.html'), ['Precise', 'Trusty'])
@@ -451,7 +453,9 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = '/test.checkout/wtests/NeverFixTests'
         host.filesystem.write_text_file(
             expectations_path,
-            'crbug.com/111 [ Linux ] external/wpt/test.html [ Skip ]\n')
+            ('# tags: [ Linux ]\n'
+             '# results: [ Skip ]\n'
+             'crbug.com/111 [ Linux ] external/wpt/test.html [ Skip ]\n'))
         host.filesystem.write_text_file('/test.checkout/wtests/external/wpt/test.html', '')
         updater = WPTExpectationsUpdater(host)
         self.assertTrue(updater.specifiers_can_extend_to_all_platforms(
@@ -501,7 +505,10 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = '/test.checkout/wtests/NeverFixTests'
         host.filesystem.write_text_file(
             expectations_path,
-            'crbug.com/111 [ Linux Mac10.11 ] external/wpt/test.html [ WontFix ]\n')
+            ('# tags: [ Linux Mac10.11 ]\n'
+             '# results: [ Skip ]\n'
+             'crbug.com/111 [ Linux ] external/wpt/test.html [ Skip ]\n'
+             'crbug.com/111 [ Mac10.11 ] external/wpt/test.html [ Skip ]\n'))
         host.filesystem.write_text_file('/test.checkout/wtests/external/wpt/test.html', '')
         updater = WPTExpectationsUpdater(host)
         self.assertEqual(

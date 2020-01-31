@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * An abstract class that provides the current theme color.

@@ -29,6 +29,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -217,7 +219,17 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
   // Waits until the request is completed. Automatically called by
   // StartSimpleLoaderAndWait, but exposed so some tests can start the
   // SimpleURLLoader directly.
-  void Wait() { run_loop_.Run(); }
+  void Wait() {
+    base::RunLoop::ScopedRunTimeoutForTest run_timeout(
+        // Some of the bots run tests quite slowly, and the default timeout is
+        // too short for them for some of the heavier weight tests.
+        // See https://crbug.com/1046745 and https://crbug.com/1035127.
+        TestTimeouts::action_max_timeout(), base::BindLambdaForTesting([&]() {
+          ADD_FAILURE() << "Run loop timed out";
+          run_loop_.Quit();
+        }));
+    run_loop_.Run();
+  }
 
   // Sets whether a file should still exists on download-to-file errors.
   // Defaults to false.
@@ -3154,13 +3166,7 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryTriggered) {
   EXPECT_EQ(net::ERR_TIMED_OUT, test_helper->simple_url_loader()->NetError());
 }
 
-// The test crashes on Windows. crbug.com/1035127.
-#if defined(OS_WIN)
-#define MAYBE_OnUploadProgressCallback DISABLED_OnUploadProgressCallback
-#else
-#define MAYBE_OnUploadProgressCallback OnUploadProgressCallback
-#endif
-TEST_P(SimpleURLLoaderTest, MAYBE_OnUploadProgressCallback) {
+TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
   // The size of the payload cannot be bigger than
   // net::test_server::<anonymous>::kRequestSizeLimit which is
   // 64Mb. We set a pretty large value in order to ensure multiple

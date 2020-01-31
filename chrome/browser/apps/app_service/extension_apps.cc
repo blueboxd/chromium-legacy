@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
@@ -510,10 +511,10 @@ void ExtensionApps::Uninstall(const std::string& app_id,
   // TODO(crbug.com/1009248): We need to add the error code, which could be used
   // by ExtensionFunction, ManagementUninstallFunctionBase on the callback
   // OnExtensionUninstallDialogClosed
-  const extensions::Extension* extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
           app_id);
-  if (!extension) {
+  if (!extension.get()) {
     return;
   }
 
@@ -549,7 +550,7 @@ void ExtensionApps::Uninstall(const std::string& app_id,
             },
             base::Unretained(profile_)),
         url::Origin::Create(
-            extensions::AppLaunchInfo::GetFullLaunchURL(extension)),
+            extensions::AppLaunchInfo::GetFullLaunchURL(extension.get())),
         kClearCookies, kClearStorage, kClearCache, kAvoidClosingConnections,
         base::DoNothing());
   } else {

@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/fake_infobar_overlay_request_factory.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #include "ios/chrome/browser/infobars/test/fake_infobar_delegate.h"
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
@@ -35,8 +36,9 @@ class InfobarOverlayTabHelperTest : public PlatformTest {
     web_state_.SetNavigationManager(
         std::make_unique<web::TestNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
-    InfobarOverlayTabHelper::CreateForWebState(
+    InfobarOverlayRequestInserter::CreateForWebState(
         &web_state_, std::make_unique<FakeInfobarOverlayRequestFactory>());
+    InfobarOverlayTabHelper::CreateForWebState(&web_state_);
   }
 
   // Returns the front request of |web_state_|'s OverlayRequestQueue.

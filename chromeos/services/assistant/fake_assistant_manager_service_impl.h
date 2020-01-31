@@ -31,9 +31,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void Start(const base::Optional<std::string>& access_token,
              bool enable_hotword) override;
   void Stop() override;
-  void SetAccessToken(const std::string& access_token) override;
+  void SetAccessToken(const base::Optional<std::string>& access_token) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
+  void EnableAmbientMode(bool enabled) override;
   void SetArcPlayStoreEnabled(bool enabled) override;
   State GetState() const override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
@@ -67,6 +68,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void ClearScreenContextCache() override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(mojom::AssistantFeedbackPtr feedback) override;
+  void NotifyEntryIntoAssistantUi(
+      mojom::AssistantEntryPoint entry_point) override;
   void StopAlarmTimerRinging() override;
   void CreateTimer(base::TimeDelta duration) override;
 
@@ -74,12 +77,16 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   // |AssistantStateObserver| of the change.
   void SetStateAndInformObservers(State new_state);
 
+  // Return the |access_token| that was passed to |SetAccessToken|.
+  base::Optional<std::string> access_token() { return access_token_; }
+
  private:
   // Send out a |AssistantStateObserver::OnStateChange(state)| event if we are
   // transitioning from a prior state to a later state.
   void MaybeSendStateChange(State state, State old_state, State target_state);
 
   State state_ = State::STOPPED;
+  base::Optional<std::string> access_token_;
   FakeAssistantSettingsManagerImpl assistant_settings_manager_;
   base::ObserverList<StateObserver> state_observers_;
 

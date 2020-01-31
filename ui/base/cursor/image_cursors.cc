@@ -94,12 +94,12 @@ bool ImageCursors::SetDisplay(const display::Display& display,
                               float scale_factor) {
   if (!cursor_loader_) {
     cursor_loader_.reset(CursorLoader::Create());
-  } else if (cursor_loader_->rotation() == display.rotation() &&
+  } else if (cursor_loader_->rotation() == display.panel_rotation() &&
              cursor_loader_->scale() == scale_factor) {
     return false;
   }
 
-  cursor_loader_->set_rotation(display.rotation());
+  cursor_loader_->set_rotation(display.panel_rotation());
   cursor_loader_->set_scale(scale_factor);
   ReloadCursors();
   return true;

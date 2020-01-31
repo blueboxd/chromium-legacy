@@ -12,8 +12,9 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
@@ -42,9 +43,6 @@ public class TracingSettings
     static final String UI_PREF_START_RECORDING = "start_recording";
     @VisibleForTesting
     static final String UI_PREF_TRACING_STATUS = "tracing_status";
-
-    private static final String PREF_TRACING_CATEGORIES = "tracing_categories";
-    private static final String PREF_TRACING_MODE = "tracing_mode";
 
     // Non-translated strings:
     private static final String MSG_TRACING_TITLE = "Tracing";
@@ -97,8 +95,8 @@ public class TracingSettings
      * @return the current set of all enabled categories, irrespective of their type.
      */
     public static Set<String> getEnabledCategories() {
-        Set<String> enabled =
-                ContextUtils.getAppSharedPreferences().getStringSet(PREF_TRACING_CATEGORIES, null);
+        Set<String> enabled = SharedPreferencesManager.getInstance().readStringSet(
+                ChromePreferenceKeys.SETTINGS_DEVELOPER_TRACING_CATEGORIES, null);
         if (enabled == null) {
             enabled = new HashSet<>();
             // By default, enable all default categories.
@@ -139,10 +137,8 @@ public class TracingSettings
                 enabled.add(category);
             }
         }
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putStringSet(PREF_TRACING_CATEGORIES, enabled)
-                .apply();
+        SharedPreferencesManager.getInstance().writeStringSet(
+                ChromePreferenceKeys.SETTINGS_DEVELOPER_TRACING_CATEGORIES, enabled);
     }
 
     /**
@@ -160,8 +156,9 @@ public class TracingSettings
      *     "record-as-much-as-possible", or "record-continuously".
      */
     public static String getSelectedTracingMode() {
-        return ContextUtils.getAppSharedPreferences().getString(
-                PREF_TRACING_MODE, TRACING_MODES.keySet().iterator().next());
+        return SharedPreferencesManager.getInstance().readString(
+                ChromePreferenceKeys.SETTINGS_DEVELOPER_TRACING_MODE,
+                TRACING_MODES.keySet().iterator().next());
     }
 
     /**
@@ -172,10 +169,8 @@ public class TracingSettings
      */
     public static void setSelectedTracingMode(String tracingMode) {
         assert TRACING_MODES.containsKey(tracingMode);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putString(PREF_TRACING_MODE, tracingMode)
-                .apply();
+        SharedPreferencesManager.getInstance().writeString(
+                ChromePreferenceKeys.SETTINGS_DEVELOPER_TRACING_MODE, tracingMode);
     }
 
     @Override

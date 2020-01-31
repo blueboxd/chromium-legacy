@@ -16,6 +16,7 @@ import re
 
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models import test_expectations
+from blinkpy.web_tests.models.typ_types import ResultType
 
 _log = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ HARNESS_ERROR = 1
 # The test has at least one failing subtest in its baseline file.
 SUBTEST_FAIL = 1 << 1
 # Next status: 1 << 2
+
 
 class WPTMetadataBuilder(object):
     def __init__(self, expectations, port):
@@ -101,8 +103,7 @@ class WPTMetadataBuilder(object):
         Returns:
             A list of test names that need metadata.
         """
-        return self.expectations.get_tests_with_result_type(
-            test_expectations.SKIP)
+        return self.expectations.get_tests_with_expected_result(ResultType.Skip)
 
     def get_tests_with_baselines(self):
         """Determines which tests have baselines that need metadata.
@@ -116,9 +117,8 @@ class WPTMetadataBuilder(object):
             a an integer indicating the status. The status is a bitmap of
             constants |HARNESS_ERROR| and/or |SUBTEST_FAILURE|.
         """
-        all_tests = self.port.tests(paths=['external/wpt'])
         failing_baseline_tests = []
-        for test in all_tests:
+        for test in self.port.tests(paths=['external/wpt']):
             test_baseline = self.port.expected_text(test)
             if not test_baseline:
                 continue

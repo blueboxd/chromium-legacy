@@ -19,7 +19,11 @@ namespace vr {
 
 GvrConsentHelper::GvrConsentHelper() : XrConsentHelper() {}
 
-GvrConsentHelper::~GvrConsentHelper() = default;
+GvrConsentHelper::~GvrConsentHelper() {
+  if (!jdelegate_.is_null()) {
+    Java_VrConsentDialog_onNativeDestroy(AttachCurrentThread(), jdelegate_);
+  }
+}
 
 void GvrConsentHelper::ShowConsentPrompt(
     int render_process_id,

@@ -59,8 +59,7 @@ class DocumentAnimationsTest : public RenderingTest {
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    document->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    document->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
     document->View()->RunPostLifecycleSteps();
   }
 

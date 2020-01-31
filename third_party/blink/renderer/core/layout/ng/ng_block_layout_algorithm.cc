@@ -54,7 +54,8 @@ inline scoped_refptr<const NGLayoutResult> LayoutBlockChild(
     // child.
     DCHECK(early_break_in_child);
   }
-  return node->Layout(space, break_token, early_break_in_child);
+  return node->Layout(space, To<NGBlockBreakToken>(break_token),
+                      early_break_in_child);
 }
 
 inline scoped_refptr<const NGLayoutResult> LayoutInflow(

@@ -55,6 +55,8 @@ class PlayerCompositorDelegate {
   void OnCompositorClientCreated(const GURL& url);
   void OnCompositorClientDisconnected();
 
+  void OnProtoAvailable(std::unique_ptr<PaintPreviewProto> proto);
+
   PaintPreviewBaseService* paint_preview_service_;
   std::unique_ptr<PaintPreviewCompositorService>
       paint_preview_compositor_service_;

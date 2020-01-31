@@ -110,3 +110,15 @@ var NewTabPageCustomizeShortcutsTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageCustomizeShortcutsTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageVoiceSearchOverlayTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/voice_search_overlay_test.js';
+  }
+};
+
+TEST_F('NewTabPageVoiceSearchOverlayTest', 'All', function() {
+  mocha.run();
+});

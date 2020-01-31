@@ -61,13 +61,11 @@ enum ParseOptionsFlags {
   NO_FLAGS = 0,
   PARSE_CHANNEL_NAME = 1,
   PARSE_FRAME_ID = 1 << 1,
-  PARSE_INCLUDE_TLS_CHANNEL_ID = 1 << 2,
 };
 
 struct MessageOptions {
   std::string channel_name;
   int frame_id = kNoFrameId;
-  bool include_tls_channel_id = false;
 };
 
 // Parses and returns the options parameter for sendMessage or connect.

@@ -124,18 +124,19 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                     // Fetching the favicon after getting the live thumbnail would lead to
                     // visible flicker.
                     final AtomicReference<Drawable> lastFavicon = new AtomicReference<>();
-                    mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), thumbnail -> {
-                        drawThumbnailBitmapOnCanvasWithFrame(thumbnail, index);
-                        if (lastFavicon.get() != null) {
-                            drawFaviconThenMaybeSendBack(lastFavicon.get(), index);
-                        } else {
-                            mTabListFaviconProvider.getFaviconForUrlAsync(
-                                    url, isIncognito, (Drawable favicon) -> {
-                                        lastFavicon.set(favicon);
-                                        drawFaviconThenMaybeSendBack(favicon, index);
-                                    });
-                        }
-                    }, mForceUpdate && i == 0, mWriteToCache && i == 0);
+                    mTabContentManager.getTabThumbnailWithCallback(
+                            mTabs.get(i).getId(), thumbnail -> {
+                                drawThumbnailBitmapOnCanvasWithFrame(thumbnail, index);
+                                if (lastFavicon.get() != null) {
+                                    drawFaviconThenMaybeSendBack(lastFavicon.get(), index);
+                                } else {
+                                    mTabListFaviconProvider.getFaviconForUrlAsync(
+                                            url, isIncognito, (Drawable favicon) -> {
+                                                lastFavicon.set(favicon);
+                                                drawFaviconThenMaybeSendBack(favicon, index);
+                                            });
+                                }
+                            }, mForceUpdate && i == 0, mWriteToCache && i == 0);
                 } else {
                     drawThumbnailBitmapOnCanvasWithFrame(null, i);
                     if (mText != null && i == 3) {
@@ -298,16 +299,19 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
     @Override
     public void getTabThumbnailWithCallback(
-            Tab tab, Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache) {
+            int tabId, Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache) {
         if (mTabModelSelector.getTabModelFilterProvider()
                         .getCurrentTabModelFilter()
-                        .getRelatedTabList(tab.getId())
+                        .getRelatedTabList(tabId)
                         .size()
                 == 1) {
             mTabContentManager.getTabThumbnailWithCallback(
-                    tab, finalCallback, forceUpdate, writeToCache);
+                    tabId, finalCallback, forceUpdate, writeToCache);
             return;
         }
+
+        Tab tab = mTabModelSelector.getTabById(tabId);
+        if (tab == null) return;
 
         new MultiThumbnailFetcher(tab, finalCallback, forceUpdate, writeToCache).fetch();
     }

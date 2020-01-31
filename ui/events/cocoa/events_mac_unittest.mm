@@ -17,6 +17,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {

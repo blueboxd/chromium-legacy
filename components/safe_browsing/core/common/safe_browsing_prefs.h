@@ -121,6 +121,10 @@ extern const char kURLsToCheckComplianceOfDownloadedContent[];
 // List of url patterns where Chrome should check for malware of uploaded files.
 extern const char kURLsToCheckForMalwareOfUploadedContent[];
 
+// List of url patterns where Chrome should not check for malware downloaded
+// files.
+extern const char kURLsToNotCheckForMalwareOfDownloadedContent[];
+
 // List of url patterns where Chrome should not check compliance of uploaded
 // files.
 extern const char kURLsToNotCheckComplianceOfUploadedContent[];

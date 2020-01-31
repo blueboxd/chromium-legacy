@@ -21,6 +21,7 @@ enum MetricsNameIndex {
   UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
   UMA_TRANSLATE_SOURCE_LANGUAGE,
   UMA_TRANSLATE_TARGET_LANGUAGE,
+  UMA_TRANSLATE_HREF_HINT_STATUS,
   UMA_MAX,
 };
 
@@ -58,6 +59,15 @@ enum InitiationStatusType {
   INITIATION_STATUS_MAX,
 };
 
+enum class HrefTranslateStatus {
+  kAutoTranslated,
+  kAutoTranslatedDifferentTargetLanguage,
+  kNotAutoTranslated,
+  // Insert new items here. Keep in sync with HrefTranslateStatus in enums.xml
+  // when adding values.
+  kMaxValue = kNotAutoTranslated
+};
+
 // Called when Chrome Translate is initiated to report a reason of the next
 // browser action.
 void ReportInitiationStatus(InitiationStatusType type);
@@ -82,6 +92,10 @@ void ReportTranslateSourceLanguage(const std::string& language);
 // language for the translated page. Buckets are labelled with CLD3LanguageCode
 // values.
 void ReportTranslateTargetLanguage(const std::string& language);
+
+// Called when Chrome Translate is initiated, the navigation is from Google, and
+// a href translate target is present.
+void ReportTranslateHrefHintStatus(HrefTranslateStatus status);
 
 // Provides UMA entry names for unit tests.
 const char* GetMetricsName(MetricsNameIndex index);

@@ -519,14 +519,18 @@ blink::mojom::PresentationConnectionMessagePtr CreateErrorMessage(
 
 base::Value SupportedMediaCommandsToListValue(int media_commands) {
   base::Value value(base::Value::Type::LIST);
-  if (media_commands & 1)
-    value.Append("pause");
-  if (media_commands & 2)
-    value.Append("seek");
-  if (media_commands & 4)
-    value.Append("stream_volume");
-  if (media_commands & 8)
-    value.Append("stream_mute");
+  if (media_commands & static_cast<int>(MediaCommand::kPause))
+    value.Append(kMediaCommandPause);
+  if (media_commands & static_cast<int>(MediaCommand::kSeek))
+    value.Append(kMediaCommandSeek);
+  if (media_commands & static_cast<int>(MediaCommand::kStreamVolume))
+    value.Append(kMediaCommandStreamVolume);
+  if (media_commands & static_cast<int>(MediaCommand::kStreamMute))
+    value.Append(kMediaCommandStreamMute);
+  if (media_commands & static_cast<int>(MediaCommand::kQueueNext))
+    value.Append(kMediaCommandQueueNext);
+  if (media_commands & static_cast<int>(MediaCommand::kQueuePrev))
+    value.Append(kMediaCommandQueuePrev);
   return value;
 }
 

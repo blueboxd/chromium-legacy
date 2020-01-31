@@ -60,7 +60,7 @@ class FrameOverlayTest : public testing::Test, public PaintTestConfigurations {
     GetWebView()->MainFrameWidget()->Resize(
         WebSize(kViewportWidth, kViewportHeight));
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
@@ -118,7 +118,7 @@ TEST_P(FrameOverlayTest, DeviceEmulationScale) {
   params.scale = 1.5;
   GetWebView()->EnableDeviceEmulation(params);
   GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   std::unique_ptr<FrameOverlay> frame_overlay = CreateSolidYellowOverlay();
   frame_overlay->UpdatePrePaint();
@@ -166,7 +166,7 @@ TEST_P(FrameOverlayTest, VisualRect) {
   std::unique_ptr<FrameOverlay> frame_overlay = CreateSolidYellowOverlay();
   frame_overlay->UpdatePrePaint();
   GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(IntRect(0, 0, kViewportWidth, kViewportHeight),
             frame_overlay->VisualRect());
 }

@@ -1,8 +1,25 @@
 <style include="cr-shared-style">
   #background {
-    display: inline-block;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     width: 100%;
+  }
+
+  #voiceSearchButton {
+    background: url(icons/googlemic_clr_24px.svg) no-repeat center;
+    background-size: 21px 21px;
+    border: none;
+    cursor: pointer;
+    height: 21px;
+    outline: none;
+    padding: 0;
+    width: 21px;
+  }
+
+  :host-context(.focus-outline-visible) #voiceSearchButton:focus {
+    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
   }
 
   #customizeButton {
@@ -44,6 +61,9 @@
 </style>
 <div id="background"
     style="background-color: [[rgbOrInherit_(theme_.backgroundColor)]];">
+  <button id="voiceSearchButton" on-click="onVoiceSearchClick_"
+      title="$i18n{voiceSearchButtonLabel}">
+  </button>
   <ntp-most-visited dark$="[[theme_.isDark]]"
       style="--icon-background-color:
             [[rgbOrInherit_(theme_.shortcutBackgroundColor)]];
@@ -55,6 +75,12 @@
       <ntp-customize-dialog on-close="onCustomizeDialogClose_"
           theme="[[theme_]]">
       </ntp-customize-dialog>
+    </template>
+  </dom-if>
+  <dom-if if="[[showVoiceSearchOverlay_]]" restamp>
+    <template>
+      <ntp-voice-search-overlay on-close="onVoiceSearchOverlayClose_">
+      </ntp-voice-search-overlay>
     </template>
   </dom-if>
   <cr-button id="customizeButton" on-click="onCustomizeClick_">

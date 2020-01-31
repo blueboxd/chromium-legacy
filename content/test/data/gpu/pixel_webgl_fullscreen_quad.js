@@ -29,10 +29,12 @@ function sendResult(status, detail) {
   }
 }
 
-function initGL(canvas)
+function initGL(canvas, opt_attribs)
 {
   try {
-    gl = canvas.getContext("webgl", { powerPreference: "low-power" });
+    let attribs = Object.assign({ powerPreference: "low-power" },
+                                opt_attribs || {});
+    gl = canvas.getContext("webgl", attribs);
   } catch (e) {}
   return gl;
 }
@@ -100,10 +102,10 @@ function drawQuad() {
   gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
-function setup()
+function setup(opt_attribs)
 {
   let canvas = document.getElementById("c");
-  initGL(canvas);
+  initGL(canvas, opt_attribs);
   if (gl && setupGL(gl))
     return true;
   domAutomationController.send("FAILURE");
@@ -112,7 +114,7 @@ function setup()
 
 function drawSomeFrames(callback)
 {
-  let swapsBeforeCallback = 15;
+  let swapsBeforeCallback = 60;
 
   function drawSomeFramesHelper() {
     if (--swapsBeforeCallback == 0) {

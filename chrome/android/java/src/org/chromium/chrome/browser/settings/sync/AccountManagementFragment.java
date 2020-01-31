@@ -30,8 +30,10 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
@@ -75,13 +77,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
      * TODO(https://crbug.com/1038924): Set the TAG variables of this class to private
      */
     public static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
-
-    /**
-     * SharedPreference name for the preference that disables signing out of Chrome.
-     * Signing out is forever disabled once Chrome signs the user in automatically
-     * if the device has a child account or if the device is an Android EDU device.
-     */
-    private static final String SIGN_OUT_ALLOWED = "auto_signed_in_school_account";
 
     public static final String PREF_ACCOUNTS_CATEGORY = "accounts_category";
     public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
@@ -420,7 +415,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
      * @return Whether the sign out is not disabled due to a child/EDU account.
      */
     private static boolean getSignOutAllowedPreferenceValue() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(SIGN_OUT_ALLOWED, true);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.SETTINGS_SYNC_SIGN_OUT_ALLOWED, true);
     }
 
     /**
@@ -429,9 +425,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
      * @param isAllowed True if the sign out is not disabled due to a child/EDU account
      */
     public static void setSignOutAllowedPreferenceValue(boolean isAllowed) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(SIGN_OUT_ALLOWED, isAllowed)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.SETTINGS_SYNC_SIGN_OUT_ALLOWED, isAllowed);
     }
 }

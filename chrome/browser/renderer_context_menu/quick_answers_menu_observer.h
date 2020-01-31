@@ -39,6 +39,7 @@ class QuickAnswersMenuObserver
   void OnQuickAnswerReceived(
       std::unique_ptr<chromeos::quick_answers::QuickAnswer> answer) override;
   void OnEligibilityChanged(bool eligible) override;
+  void OnNetworkError() override;
 
   void SetQuickAnswerClientForTesting(
       std::unique_ptr<chromeos::quick_answers::QuickAnswersClient>

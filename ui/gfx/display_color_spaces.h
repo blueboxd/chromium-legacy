@@ -10,6 +10,14 @@
 
 namespace gfx {
 
+// The values are set so std::max() can be used to find the widest.
+enum class ContentColorUsage : uint8_t {
+  kSRGB = 0,
+  kWideColorGamut = 1,
+  kHDR = 2,
+  kMaxValue = kHDR,
+};
+
 // This structure is used by a display::Display to specify the color space that
 // should be used to display content of various types. This lives in here, as
 // opposed to in ui/display because it is used directly by components/viz.
@@ -26,9 +34,9 @@ struct COLOR_SPACE_EXPORT DisplayColorSpaces {
   // Return the color space in which compositing (and, in particular, blending,
   // should be performed). This space may not (on Windows) be suitable for
   // output.
-  // TODO: This will take arguments regarding the presence of WCG and HDR
-  // content. For now it assumes all inputs could have HDR content.
-  gfx::ColorSpace GetCompositingColorSpace(bool needs_alpha) const;
+  gfx::ColorSpace GetCompositingColorSpace(
+      bool needs_alpha,
+      ContentColorUsage content_color_usage) const;
 
   // Return the color space to use for output.
   // TODO: This will take arguments regarding the presence of WCG and HDR

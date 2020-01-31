@@ -7,7 +7,9 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -19,6 +21,11 @@ class View;
 // effects.
 class VIEWS_EXPORT HighlightPathGenerator {
  public:
+  struct RoundRect {
+    gfx::RectF bounds;
+    float corner_radius;
+  };
+
   HighlightPathGenerator() = default;
   virtual ~HighlightPathGenerator();
 
@@ -27,8 +34,17 @@ class VIEWS_EXPORT HighlightPathGenerator {
 
   static void Install(View* host,
                       std::unique_ptr<HighlightPathGenerator> generator);
+  static base::Optional<RoundRect> GetRoundRectForView(const View* view);
 
-  virtual SkPath GetHighlightPath(const View* view) = 0;
+  // TODO(sammiequon): Deprecate |GetHighlightPath()| in favor of
+  // |GetRoundRect()|.
+  virtual SkPath GetHighlightPath(const View* view);
+
+  // Optionally returns a RoundRect struct which contains data for drawing a
+  // highlight.
+  // TODO(sammiequon): Once |GetHighlightPath()| is deprecated, make this a pure
+  // virtual function and make the return not optional.
+  virtual base::Optional<RoundRect> GetRoundRect(const View* view);
 };
 
 // Sets a rectangular highlight path.
@@ -76,6 +92,28 @@ class VIEWS_EXPORT PillHighlightPathGenerator : public HighlightPathGenerator {
 };
 
 void VIEWS_EXPORT InstallPillHighlightPathGenerator(View* view);
+
+// Sets a centered fixed-size circular highlight path.
+class VIEWS_EXPORT FixedSizeCircleHighlightPathGenerator
+    : public HighlightPathGenerator {
+ public:
+  explicit FixedSizeCircleHighlightPathGenerator(int radius);
+
+  FixedSizeCircleHighlightPathGenerator(
+      const FixedSizeCircleHighlightPathGenerator&) = delete;
+  FixedSizeCircleHighlightPathGenerator& operator=(
+      const FixedSizeCircleHighlightPathGenerator&) = delete;
+
+  // HighlightPathGenerator:
+  base::Optional<HighlightPathGenerator::RoundRect> GetRoundRect(
+      const View* view) override;
+
+ private:
+  const int corner_radius_;
+};
+
+void VIEWS_EXPORT InstallFixedSizeCircleHighlightPathGenerator(View* view,
+                                                               int radius);
 
 }  // namespace views
 

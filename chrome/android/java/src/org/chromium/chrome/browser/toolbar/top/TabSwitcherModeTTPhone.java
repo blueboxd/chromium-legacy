@@ -33,10 +33,10 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
 /** The tab switcher mode top toolbar shown on phones. */

@@ -16,7 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
 
 import java.util.List;
 

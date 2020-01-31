@@ -423,7 +423,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Reads/writes bookmarks to disk.
   std::unique_ptr<BookmarkStorage> store_;
 
-  std::unique_ptr<TitledUrlIndex> index_;
+  std::unique_ptr<TitledUrlIndex> titled_url_index_;
 
   // Owned by |model_loader_|.
   // WARNING: in some tests this does *not* refer to

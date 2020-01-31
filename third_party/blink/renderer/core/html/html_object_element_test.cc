@@ -35,8 +35,7 @@ TEST_F(HTMLObjectElementTest, FallbackRecalcForReattach) {
   Node* slot = object->GetShadowRoot()->firstChild();
   ASSERT_TRUE(slot);
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   object->RenderFallbackContent(nullptr);
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);

@@ -47,8 +47,7 @@ void ViewPainterFixedBackgroundTest::RunFixedBackgroundTest(
   ScrollOffset scroll_offset(200, 150);
   layout_viewport->SetScrollOffset(
       scroll_offset, mojom::blink::ScrollIntoViewParams::Type::kUser);
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   const DisplayItem* background_display_item = nullptr;
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {

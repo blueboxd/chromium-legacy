@@ -65,7 +65,7 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   // Uploads the binary for deep scanning if the reason and policies indicate
   // it should be.
   bool ShouldUploadBinary(DownloadCheckResultReason reason) override;
-  void UploadBinary() override;
+  void UploadBinary(DownloadCheckResultReason reason) override;
 
   // Called when this request is completed.
   void NotifyRequestFinished(DownloadCheckResult result,

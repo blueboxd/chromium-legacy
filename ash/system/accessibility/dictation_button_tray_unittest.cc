@@ -31,8 +31,8 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/wm/core/window_util.h"
 

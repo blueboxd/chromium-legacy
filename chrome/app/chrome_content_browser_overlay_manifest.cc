@@ -15,7 +15,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 

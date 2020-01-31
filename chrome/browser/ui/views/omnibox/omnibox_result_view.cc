@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/omnibox/remove_suggestion_bubble.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -36,11 +37,38 @@
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #if defined(OS_WIN)
 #include "base/win/atl.h"
 #endif
+
+namespace {
+
+views::MdTextButton* CreatePillButton(views::View* button_row,
+                                      OmniboxResultView* parent_view,
+                                      const char* message) {
+  views::MdTextButton* button = button_row->AddChildView(
+      views::MdTextButton::Create(parent_view, base::ASCIIToUTF16(message)));
+  button->SetCornerRadius(16);
+  button->SetVisible(false);
+  return button;
+}
+
+size_t LayoutPillButton(views::MdTextButton* button,
+                        size_t button_indent,
+                        size_t suggestion_height) {
+  gfx::Size button_size = button->GetPreferredSize();
+  button->SetBounds(button_indent,
+                    (suggestion_height - button_size.height()) / 2,
+                    button_size.width(), button_size.height());
+  button->SetVisible(true);
+  // TODO(orinj): Determine and use the right gap between buttons.
+  return button_indent + button_size.width() + 10;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
@@ -80,7 +108,18 @@ OmniboxResultView::OmniboxResultView(
            popup_contents_view_->IsButtonSelected();
   });
 
+  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    button_row_ = AddChildView(std::make_unique<views::View>());
+    button_row_->SetVisible(false);
+    keyword_button_ = CreatePillButton(button_row_, this, "Keyword search");
+    pedal_button_ = CreatePillButton(button_row_, this, "Pedal");
+    // TODO(orinj): Use the real translated string table values here instead.
+    tab_switch_button_ =
+        CreatePillButton(button_row_, this, "Switch to this tab");
+  }
+
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
+  keyword_view_->SetVisible(false);
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
   keyword_view_->icon()->SizeToPreferredSize();
 }
@@ -113,13 +152,16 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
         match_.description, match_.description_class, deemphasize);
   }
 
-  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
-  keyword_view_->SetVisible(keyword_match);
-  if (keyword_match) {
-    keyword_view_->content()->SetText(keyword_match->contents,
-                                      keyword_match->contents_class);
-    keyword_view_->description()->SetText(keyword_match->description,
-                                          keyword_match->description_class);
+  // When button row feature is enabled, |keyword_button_| is used instead.
+  if (!OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    AutocompleteMatch* keyword_match = match_.associated_keyword.get();
+    keyword_view_->SetVisible(keyword_match != nullptr);
+    if (keyword_match) {
+      keyword_view_->content()->SetText(keyword_match->contents,
+                                        keyword_match->contents_class);
+      keyword_view_->description()->SetText(keyword_match->description,
+                                            keyword_match->description_class);
+    }
   }
 
   Invalidate();
@@ -287,7 +329,7 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  if (button == suggestion_tab_switch_button_) {
+  if (button == suggestion_tab_switch_button_ || button == tab_switch_button_) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
   } else if (button == remove_suggestion_button_) {
     if (!base::FeatureList::IsEnabled(
@@ -315,6 +357,13 @@ void OmniboxResultView::ButtonPressed(views::Button* button,
                                         weak_factory_.GetWeakPtr()));
 
     popup_contents_view_->model()->set_popup_closes_on_blur(true);
+  } else if (button == keyword_button_) {
+    // TODO(orinj): Implement.
+  } else if (button == pedal_button_) {
+    DCHECK(match_.pedal);
+    // TODO(orinj): Open the match in a way that does not conflict with search
+    // or tab switch. Various dispositions are now possible from a single match.
+    OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
   } else {
     NOTREACHED();
   }
@@ -377,8 +426,49 @@ void OmniboxResultView::Layout() {
        match_.IsSubMatch())
           ? 70
           : 0;
+  const int suggestion_height = suggestion_view_->GetPreferredSize().height();
   suggestion_view_->SetBounds(suggestion_indent, 0,
-                              suggestion_width - suggestion_indent, height());
+                              suggestion_width - suggestion_indent,
+                              suggestion_height);
+
+  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    int start_indent = OmniboxMatchCellView::GetTextIndent();
+    // This button_indent strictly increases with each button added.
+    int button_indent = start_indent;
+    if (match_.associated_keyword) {
+      button_indent =
+          LayoutPillButton(keyword_button_, button_indent, suggestion_height);
+    } else if (keyword_button_->GetVisible()) {
+      // Setting visibility does lots of work, even if not changing.
+      keyword_button_->SetVisible(false);
+    }
+    if (match_.pedal) {
+      pedal_button_->SetText(match_.pedal->GetLabelStrings().hint);
+      button_indent =
+          LayoutPillButton(pedal_button_, button_indent, suggestion_height);
+    } else if (pedal_button_->GetVisible()) {
+      pedal_button_->SetVisible(false);
+    }
+    if (match_.has_tab_match) {
+      button_indent = LayoutPillButton(tab_switch_button_, button_indent,
+                                       suggestion_height);
+    } else if (tab_switch_button_->GetVisible()) {
+      tab_switch_button_->SetVisible(false);
+    }
+
+    if (button_indent != start_indent) {
+      // TODO(orinj): Determine and use the best way to set bounds; probably
+      // GetPreferredSize() with a layout manager.
+      button_row_->Layout();
+      // Put it below the suggestion view.
+      button_row_->SetBounds(0, button_row_->height(),
+                             suggestion_width - suggestion_indent,
+                             suggestion_height);
+      button_row_->SetVisible(true);
+    } else if (button_row_->GetVisible()) {
+      button_row_->SetVisible(false);
+    }
+  }
 }
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
@@ -465,6 +555,11 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
   gfx::Size size = suggestion_view_->GetPreferredSize();
   if (keyword_view_->GetVisible())
     size.SetToMax(keyword_view_->GetPreferredSize());
+  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled() &&
+      button_row_->GetVisible()) {
+    // Double our height for buttons.
+    size.set_height(size.height() * 2);
+  }
   return size;
 }
 

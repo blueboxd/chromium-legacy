@@ -13,46 +13,48 @@ class FeaturePolicyFeatureWriter(json5_generator.Writer):
 
     def __init__(self, json5_file_path, output_dir):
         super(FeaturePolicyFeatureWriter, self).__init__(json5_file_path, output_dir)
-        self._outputs = {
-            (self.file_basename + '.cc'): self.generate_implementation,
-        }
+        runtime_features = []
+        feature_policy_features = []
+        # Note: there can be feature with same 'name' attribute in document_policy_features
+        # and in feature_policy_features. They are supposed to have the same 'depends_on' attribute.
+        # However, their feature_policy_name and document_policy_name might be different.
+        document_policy_features = []
 
-        self._features = self.json5_file.name_dictionaries
-        # Set runtime and feature policy features
-        self._runtime_features = []
-        self._feature_policy_features = []
-        for feature in self._features:
+        for feature in self.json5_file.name_dictionaries:
             if feature['feature_policy_name']:
-                self._feature_policy_features.append(feature)
+                feature_policy_features.append(feature)
+            elif feature['document_policy_name']:
+                document_policy_features.append(feature)
             else:
-                self._runtime_features.append(feature)
+                runtime_features.append(feature)
 
-        origin_trials_set = origin_trials(self._runtime_features)
-
-        self._origin_trial_dependency_map = defaultdict(list)
-        self._runtime_to_feature_policy_map = defaultdict(list)
-        for feature in self._feature_policy_features:
+        origin_trials_set = origin_trials(runtime_features)
+        origin_trial_dependency_map = defaultdict(list)
+        runtime_to_feature_policy_map = defaultdict(list)
+        runtime_to_document_policy_map = defaultdict(list)
+        for feature in feature_policy_features + document_policy_features:
             for dependency in feature['depends_on']:
                 if str(dependency) in origin_trials_set:
-                    self._origin_trial_dependency_map[feature['name']].append(dependency)
+                    deps = origin_trial_dependency_map[feature['name']]
+                    if dependency not in deps:
+                        deps.append(dependency)
                 else:
-                    self._runtime_to_feature_policy_map[dependency].append(feature['name'])
+                    if feature['feature_policy_name']:
+                        runtime_to_feature_policy_map[dependency].append(feature['name'])
+                    else:
+                        runtime_to_document_policy_map[dependency].append(feature['name'])
 
-        self._header_guard = self.make_header_guard(self._relative_output_dir + self.file_basename + '.h')
-
-    def _template_inputs(self):
-        return {
-            'feature_policy_features': self._feature_policy_features,
-            'header_guard': self._header_guard,
-            'input_files': self._input_files,
-            'runtime_features': self._runtime_features,
-            'runtime_to_feature_policy_map': self._runtime_to_feature_policy_map,
-            'origin_trial_dependency_map': self._origin_trial_dependency_map,
+        self._outputs = {
+            self.file_basename + '.cc': template_expander.use_jinja('templates/' + self.file_basename + '.cc.tmpl')(lambda: {
+                'header_guard': self.make_header_guard(self._relative_output_dir + self.file_basename + '.h'),
+                'input_files': self._input_files,
+                'feature_policy_features': feature_policy_features,
+                'document_policy_features': document_policy_features,
+                'origin_trial_dependency_map': origin_trial_dependency_map,
+                'runtime_to_feature_policy_map': runtime_to_feature_policy_map,
+                'runtime_to_document_policy_map': runtime_to_document_policy_map
+            }),
         }
-
-    @template_expander.use_jinja('templates/' + file_basename + '.cc.tmpl')
-    def generate_implementation(self):
-        return self._template_inputs()
 
 
 if __name__ == '__main__':

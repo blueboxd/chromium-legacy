@@ -107,6 +107,8 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(
       chromeos::assistant::mojom::AssistantFeedbackPtr feedback) override;
+  void NotifyEntryIntoAssistantUi(
+      chromeos::assistant::mojom::AssistantEntryPoint entry_point) override;
   void StopAlarmTimerRinging() override;
   void CreateTimer(base::TimeDelta duration) override;
 

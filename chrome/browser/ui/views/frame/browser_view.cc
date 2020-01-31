@@ -182,7 +182,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/accelerators.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/desks_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
@@ -789,9 +788,6 @@ bool BrowserView::IsOnCurrentWorkspace() const {
     return true;
 
 #if defined(OS_CHROMEOS)
-  if (!ash::features::IsVirtualDesksEnabled())
-    return true;
-
   return ash::DesksHelper::Get()->BelongsToActiveDesk(native_win);
 #elif defined(OS_WIN)
   if (base::win::GetVersion() < base::win::Version::WIN10)

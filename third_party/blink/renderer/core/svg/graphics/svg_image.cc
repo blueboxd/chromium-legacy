@@ -524,8 +524,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   FlushPendingTimelineRewind();
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    view->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kOther);
+    view->UpdateAllLifecyclePhases(DocumentUpdateReason::kOther);
     return view->GetPaintRecord();
   }
 

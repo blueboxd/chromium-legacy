@@ -30,7 +30,7 @@ class NotificationPermissionUiSelector {
   virtual ~NotificationPermissionUiSelector() {}
 
   // Determines the UI to use for the given |request|, and invokes |callback|
-  // when done, either synchronously or asynchrously. The |callback| is
+  // when done, either synchronously or asynchronously. The |callback| is
   // guaranteed never to be invoked after |this| goes out of scope. Only one
   // request is supported at a time.
   virtual void SelectUiToUse(permissions::PermissionRequest* request,

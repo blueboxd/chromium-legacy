@@ -6,10 +6,10 @@
 
 namespace identity {
 
-AccountState::AccountState()
-    : has_refresh_token(false), is_primary_account(false) {}
+AccountState::AccountState() = default;
 
 AccountState::AccountState(const AccountState& other) = default;
-AccountState::~AccountState() {}
+
+AccountState::~AccountState() = default;
 
 }  // namespace identity

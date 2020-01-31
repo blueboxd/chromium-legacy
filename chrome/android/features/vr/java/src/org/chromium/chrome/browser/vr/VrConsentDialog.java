@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -66,15 +65,17 @@ public class VrConsentDialog
         return dialog;
     }
 
-    @VisibleForTesting
-    protected void onUserGesture(boolean allowed) {
-        VrConsentDialogJni.get().onUserConsentResult(mNativeInstance, allowed);
+    @CalledByNative
+    private void onNativeDestroy() {
+        mNativeInstance = 0;
+        mModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
     }
 
-    @Override
-    public void didStartNavigation(NavigationHandle navigationHandle) {
-        mModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-        onUserGesture(false);
+    @VisibleForTesting
+    protected void onUserGesture(boolean allowed) {
+        if (mNativeInstance != 0) {
+            VrConsentDialogJni.get().onUserConsentResult(mNativeInstance, allowed);
+        }
     }
 
     private static String bulletedString(Resources resources, int id) {
@@ -134,7 +135,10 @@ public class VrConsentDialog
 
     @Override
     public void onDismiss(PropertyModel model, int dismissalCause) {
-        if (dismissalCause == DialogDismissalCause.UNKNOWN) return;
+        if (dismissalCause == DialogDismissalCause.UNKNOWN) {
+            mListener.onUserConsent(false);
+            return;
+        }
 
         if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
             mListener.onUserConsent(true);

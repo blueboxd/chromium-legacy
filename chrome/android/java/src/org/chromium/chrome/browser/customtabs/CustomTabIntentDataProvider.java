@@ -48,11 +48,11 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
+import org.chromium.ui.util.ColorUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -10,9 +10,9 @@
 
 namespace content {
 
-BluetoothAllowedDevicesMap::BluetoothAllowedDevicesMap() {}
+BluetoothAllowedDevicesMap::BluetoothAllowedDevicesMap() = default;
 
-BluetoothAllowedDevicesMap::~BluetoothAllowedDevicesMap() {}
+BluetoothAllowedDevicesMap::~BluetoothAllowedDevicesMap() = default;
 
 content::BluetoothAllowedDevices&
 BluetoothAllowedDevicesMap::GetOrCreateAllowedDevices(

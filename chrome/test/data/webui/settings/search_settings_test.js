@@ -7,16 +7,12 @@ cr.define('settings_test', function() {
   suite('SearchSettingsTest', function() {
     let searchManager;
 
-    // Don't import script if already imported (happens in Vulcanized mode).
     suiteSetup(function() {
-      if (!window.settings || !settings.getSearchManager) {
-        return Promise.all([
-          PolymerTest.loadScript('chrome://resources/js/load_time_data.js'),
-          PolymerTest.loadScript('chrome://settings/strings.js'),
-          PolymerTest.loadScript(
-              'chrome://resources/js/search_highlight_utils.js'),
-          PolymerTest.loadScript('chrome://settings/search_settings.js'),
-        ]);
+      // Import <settings-section> manually if not already imported
+      // (happens when |optimize_webui| is false).
+      if (customElements.get('settings-section') === undefined) {
+        return PolymerTest.importHtml(
+            'chrome://settings/settings_page/settings_section.html');
       }
     });
 

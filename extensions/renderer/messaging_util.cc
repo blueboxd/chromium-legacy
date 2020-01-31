@@ -171,19 +171,6 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
     }
   }
 
-  if ((flags & PARSE_INCLUDE_TLS_CHANNEL_ID) != 0) {
-    v8::Local<v8::Value> v8_include_tls_channel_id;
-    bool success =
-        options_dict.Get("includeTlsChannelId", &v8_include_tls_channel_id);
-    DCHECK(success);
-
-    if (!v8_include_tls_channel_id->IsUndefined()) {
-      DCHECK(v8_include_tls_channel_id->IsBoolean());
-      options.include_tls_channel_id =
-          v8_include_tls_channel_id.As<v8::Boolean>()->Value();
-    }
-  }
-
   if ((flags & PARSE_FRAME_ID) != 0) {
     v8::Local<v8::Value> v8_frame_id;
     bool success = options_dict.Get("frameId", &v8_frame_id);
@@ -198,6 +185,8 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
     }
   }
 
+  // Note: the options object may also include an includeTlsChannelId property.
+  // That property has been a no-op since M72. See crbug.com/1045232.
   return options;
 }
 

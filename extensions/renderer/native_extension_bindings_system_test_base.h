@@ -77,12 +77,11 @@ class TestIPCMessageSender : public IPCMessageSender {
                     const base::DictionaryValue& filter,
                     bool remove_lazy_listener));
 
-  MOCK_METHOD5(SendOpenMessageChannel,
+  MOCK_METHOD4(SendOpenMessageChannel,
                void(ScriptContext* script_context,
                     const PortId& port_id,
                     const MessageTarget& target,
-                    const std::string& channel_name,
-                    bool include_tls_channel_id));
+                    const std::string& channel_name));
   MOCK_METHOD2(SendOpenMessagePort,
                void(int routing_id, const PortId& port_id));
   MOCK_METHOD3(SendCloseMessagePort,

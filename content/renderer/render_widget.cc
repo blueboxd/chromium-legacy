@@ -1033,7 +1033,7 @@ void RenderWidget::OnWasHidden() {
 void RenderWidget::OnWasShown(
     base::TimeTicks show_request_timestamp,
     bool was_evicted,
-    const base::Optional<content::RecordTabSwitchTimeRequest>&
+    const base::Optional<content::RecordContentToVisibleTimeRequest>&
         record_tab_switch_time_request) {
   // The frame must be attached to the frame tree (which makes it no longer
   // provisional) before changing visibility.
@@ -1392,10 +1392,9 @@ void RenderWidget::UpdateVisualState() {
   // kBeginMainFrame, because this is the calller of UpdateLifecycle
   // for the main frame. Otherwise, set the reason to kTests, which is
   // the only other reason this method is called.
-  WebWidget::LifecycleUpdateReason lifecycle_reason =
-      record_main_frame_metrics
-          ? WebWidget::LifecycleUpdateReason::kBeginMainFrame
-          : WebWidget::LifecycleUpdateReason::kTest;
+  blink::DocumentUpdateReason lifecycle_reason =
+      record_main_frame_metrics ? blink::DocumentUpdateReason::kBeginMainFrame
+                                : blink::DocumentUpdateReason::kTest;
   GetWebWidget()->UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
                                   lifecycle_reason);
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(false);

@@ -25,7 +25,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
@@ -46,6 +46,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/crx_file/id_util.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -703,7 +704,8 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 
   // Retrieve a list of embargoed settings to check separately. This ensures
   // that only settings included in |content_types| will be listed in all sites.
-  auto* autoblocker = PermissionDecisionAutoBlocker::GetForProfile(profile_);
+  auto* autoblocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile_);
   for (auto& url : autoblocker->GetEmbargoedOrigins(content_types)) {
     // Add |url| to the set if there are any embargo settings.
     CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
@@ -940,7 +942,7 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
 
     // Clear any existing embargo status if the new setting isn't block.
     if (setting != CONTENT_SETTING_BLOCK) {
-      PermissionDecisionAutoBlocker::GetForProfile(profile_)
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
           ->RemoveEmbargoByUrl(origin, content_type);
     }
     map->SetContentSettingDefaultScope(origin, origin, content_type,

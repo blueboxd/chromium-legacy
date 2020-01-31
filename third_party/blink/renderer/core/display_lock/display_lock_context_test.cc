@@ -112,8 +112,7 @@ class DisplayLockContextTest : public testing::Test,
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 
   void SetHtmlInnerHTML(const char* content) {

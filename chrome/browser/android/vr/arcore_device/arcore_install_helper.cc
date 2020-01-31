@@ -36,8 +36,20 @@ ArCoreDeviceProviderFactoryImpl::CreateDeviceProvider() {
 
 }  // namespace
 
-ArCoreInstallHelper::ArCoreInstallHelper()
-    : XrInstallHelper(), weak_ptr_factory_(this) {}
+ArCoreInstallHelper::ArCoreInstallHelper() : XrInstallHelper() {
+  // As per documentation, it's recommended to issue a call to
+  // ArCoreApk.checkAvailability() early in application lifecycle & ignore the
+  // result so that subsequent calls can return cached result:
+  // https://developers.google.com/ar/develop/java/enable-arcore
+  // In the event that a remote call is required, it will not block on that
+  // remote call per:
+  // https://developers.google.com/ar/reference/java/arcore/reference/com/google/ar/core/ArCoreApk#checkAvailability
+  Java_ArCoreInstallUtils_shouldRequestInstallSupportedArCore(
+      AttachCurrentThread());
+
+  java_install_utils_ = Java_ArCoreInstallUtils_create(
+      AttachCurrentThread(), reinterpret_cast<jlong>(this));
+}
 
 ArCoreInstallHelper::~ArCoreInstallHelper() {
   if (!java_install_utils_.is_null()) {
@@ -54,120 +66,33 @@ void ArCoreInstallHelper::EnsureInstalled(
     OnInstallFinishedCallback install_callback) {
   DCHECK(!install_finished_callback_);
   install_finished_callback_ = std::move(install_callback);
-  render_process_id_ = render_process_id;
-  render_frame_id_ = render_frame_id;
-
-  java_install_utils_ = Java_ArCoreInstallUtils_create(
-      AttachCurrentThread(), reinterpret_cast<jlong>(this));
 
   if (java_install_utils_.is_null()) {
     RunInstallFinishedCallback(false);
     return;
   }
 
-  RequestArModule();
-}
-
-bool ArCoreInstallHelper::CanRequestInstallArModule() {
-  return Java_ArCoreInstallUtils_canRequestInstallArModule(
-      AttachCurrentThread(), java_install_utils_);
-}
-
-bool ArCoreInstallHelper::ShouldRequestInstallArModule() {
-  return Java_ArCoreInstallUtils_shouldRequestInstallArModule(
-      AttachCurrentThread(), java_install_utils_);
-}
-
-void ArCoreInstallHelper::RequestInstallArModule() {
-  Java_ArCoreInstallUtils_requestInstallArModule(
-      AttachCurrentThread(), java_install_utils_,
-      GetTabFromRenderer(render_process_id_, render_frame_id_));
-}
-
-bool ArCoreInstallHelper::ShouldRequestInstallSupportedArCore() {
   JNIEnv* env = AttachCurrentThread();
-  return Java_ArCoreInstallUtils_shouldRequestInstallSupportedArCore(
-      env, java_install_utils_);
-}
 
-void ArCoreInstallHelper::RequestInstallSupportedArCore() {
-  DCHECK(ShouldRequestInstallSupportedArCore());
-
-  JNIEnv* env = AttachCurrentThread();
-  Java_ArCoreInstallUtils_requestInstallSupportedArCore(
-      env, java_install_utils_,
-      GetTabFromRenderer(render_process_id_, render_frame_id_));
-}
-
-void ArCoreInstallHelper::OnRequestInstallArModuleResult(JNIEnv* env,
-                                                         bool success) {
-  DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (on_request_ar_module_result_callback_) {
-    std::move(on_request_ar_module_result_callback_).Run(success);
+  if (Java_ArCoreInstallUtils_shouldRequestInstallSupportedArCore(env)) {
+    // ARCore is not installed or requires an update.
+    // When completed, java will call: OnRequestInstallSupportedArCoreResult
+    Java_ArCoreInstallUtils_requestInstallSupportedArCore(
+        env, java_install_utils_,
+        GetTabFromRenderer(render_process_id, render_frame_id));
+    return;
   }
+
+  // ARCore did not need to be installed/updated so mock out that its
+  // installation succeeded.
+  OnRequestInstallSupportedArCoreResult(nullptr, true);
 }
 
 void ArCoreInstallHelper::OnRequestInstallSupportedArCoreResult(JNIEnv* env,
                                                                 bool success) {
   DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(on_request_arcore_install_or_update_result_callback_);
 
-  std::move(on_request_arcore_install_or_update_result_callback_).Run(success);
-}
-
-void ArCoreInstallHelper::RequestArModule() {
-  DVLOG(1) << __func__;
-
-  if (ShouldRequestInstallArModule()) {
-    // AR DFM is disabled - if we think we should install AR module, then it
-    // means that we are using a build that does not support AR capabilities.
-    // Treat this as if the AR module installation failed.
-    LOG(WARNING) << "AR is not supported on this build";
-
-    OnRequestArModuleResult(false);
-    return;
-  }
-
-  OnRequestArModuleResult(true);
-}
-
-void ArCoreInstallHelper::OnRequestArModuleResult(bool success) {
-  DVLOG(3) << __func__ << ": success=" << success;
-
-  if (!success) {
-    RunInstallFinishedCallback(false);
-    return;
-  }
-
-  RequestArCoreInstallOrUpdate();
-}
-
-void ArCoreInstallHelper::RequestArCoreInstallOrUpdate() {
-  DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!on_request_arcore_install_or_update_result_callback_);
-
-  if (ShouldRequestInstallSupportedArCore()) {
-    // ARCore is not installed or requires an update. Store the callback to be
-    // processed later once installation/update is complete or got cancelled.
-    on_request_arcore_install_or_update_result_callback_ = base::BindOnce(
-        &ArCoreInstallHelper::OnRequestArCoreInstallOrUpdateResult,
-        GetWeakPtr());
-
-    RequestInstallSupportedArCore();
-    return;
-  }
-
-  OnRequestArCoreInstallOrUpdateResult(true);
-}
-
-void ArCoreInstallHelper::OnRequestArCoreInstallOrUpdateResult(bool success) {
-  DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
+  // Nothing else to do, simply call the deferred callback.
   RunInstallFinishedCallback(success);
 }
 

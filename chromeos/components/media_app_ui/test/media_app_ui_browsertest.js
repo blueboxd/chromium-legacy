@@ -75,11 +75,12 @@ var MediaAppUIBrowserTest = class extends testing.Test {
 const TEST_IMAGE_WIDTH = 123;
 const TEST_IMAGE_HEIGHT = 456;
 
-/** @return {Blob} A 123x456 transparent encoded image/png. */
-function createTestImageBlob() {
+/** @return {Promise<File>} A 123x456 transparent encoded image/png. */
+async function createTestImageFile() {
   const canvas = new OffscreenCanvas(TEST_IMAGE_WIDTH, TEST_IMAGE_HEIGHT);
   canvas.getContext('2d');  // convertToBlob fails without a rendering context.
-  return canvas.convertToBlob();
+  const blob = await canvas.convertToBlob();
+  return new File([blob], 'test_file.png', {type: 'image/png'});
 }
 
 // Tests that chrome://media-app is allowed to frame chrome://media-app-guest.
@@ -100,8 +101,8 @@ TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
   testDone();
 });
 
-TEST_F('MediaAppUIBrowserTest', 'LoadBlob', async () => {
-  loadBlob(await createTestImageBlob());
+TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
+  loadFile(await createTestImageFile());
   const result =
       await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
 

@@ -1143,6 +1143,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumHashFunctions,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
+  // Append the switch for processing hints to force the filter to not get
+  // loaded.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kHintsProtoOverride);
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(

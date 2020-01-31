@@ -131,9 +131,10 @@ class IdentityAccessorImplTest : public testing::Test {
 // Check that the primary account info is null if not signed in.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoNotSignedIn) {
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop.QuitClosure()));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountInfo(
+      base::BindRepeating(
+          &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
+          base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_FALSE(primary_account_info_);
 }
@@ -145,9 +146,10 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
       identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
 
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop.QuitClosure()));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountInfo(
+      base::BindRepeating(
+          &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
+          base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_TRUE(primary_account_info_);
@@ -155,7 +157,7 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
   EXPECT_FALSE(primary_account_state_.has_refresh_token);
-  EXPECT_TRUE(primary_account_state_.is_primary_account);
+  EXPECT_TRUE(primary_account_state_.is_unconsented_primary_account);
 }
 
 // Check that the primary account info has expected values if signed in with a
@@ -163,13 +165,14 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInRefreshToken) {
   CoreAccountId primary_account_id =
       identity_test_environment()
-          ->MakePrimaryAccountAvailable(kTestEmail)
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
           .account_id;
 
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop.QuitClosure()));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountInfo(
+      base::BindRepeating(
+          &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
+          base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_TRUE(primary_account_info_);
@@ -177,53 +180,58 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInRefreshToken) {
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
   EXPECT_TRUE(primary_account_state_.has_refresh_token);
-  EXPECT_TRUE(primary_account_state_.is_primary_account);
+  EXPECT_TRUE(primary_account_state_.is_unconsented_primary_account);
 }
 
-// Check that GetPrimaryAccountWhenAvailable() returns immediately in the
-// case where the primary account is available when the call is received.
-TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignedIn) {
+// Check that GetUnconsentedPrimaryAccountWhenAvailable() returns immediately in
+// the case where the primary account is available when the call is received.
+TEST_F(IdentityAccessorImplTest,
+       GetUnconsentedPrimaryAccountWhenAvailableSignedIn) {
   CoreAccountId primary_account_id =
       identity_test_environment()
-          ->MakePrimaryAccountAvailable(kTestEmail)
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
           .account_id;
 
   AccountInfo account_info;
   AccountState account_state;
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop.QuitClosure(),
-      base::Unretained(&account_info), base::Unretained(&account_state)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop.QuitClosure(),
+                          base::Unretained(&account_info),
+                          base::Unretained(&account_state)));
   run_loop.Run();
 
   EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
-  EXPECT_TRUE(account_state.is_primary_account);
+  EXPECT_TRUE(account_state.is_unconsented_primary_account);
 }
 
-// Check that GetPrimaryAccountWhenAvailable() returns the expected account
-// info in the case where the primary account is made available *after* the
-// call is received.
-TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignInLater) {
+// Check that GetUnconsentedPrimaryAccountWhenAvailable() returns the expected
+// account info in the case where the primary account is made available *after*
+// the call is received.
+TEST_F(IdentityAccessorImplTest,
+       GetUnconsentedPrimaryAccountWhenAvailableSignInLater) {
   AccountInfo account_info;
   AccountState account_state;
 
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop.QuitClosure(),
-      base::Unretained(&account_info), base::Unretained(&account_state)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop.QuitClosure(),
+                          base::Unretained(&account_info),
+                          base::Unretained(&account_state)));
 
   // Verify that the primary account info is not currently available (this also
   // serves to ensure that the preceding call has been received by the
   // IdentityAccessor before proceeding).
   base::RunLoop run_loop2;
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop2.QuitClosure()));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountInfo(
+      base::BindRepeating(
+          &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
+          base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
   EXPECT_FALSE(primary_account_info_);
 
@@ -231,7 +239,7 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignInLater) {
   // as expected.
   CoreAccountId primary_account_id =
       identity_test_environment()
-          ->MakePrimaryAccountAvailable(kTestEmail)
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
           .account_id;
   run_loop.Run();
 
@@ -239,14 +247,14 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignInLater) {
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
-  EXPECT_TRUE(account_state.is_primary_account);
+  EXPECT_TRUE(account_state.is_unconsented_primary_account);
 }
 
-// Check that GetPrimaryAccountWhenAvailable() returns the expected account
-// info in the case where signin is done before the call is received but the
-// refresh token is made available only *after* the call is received.
+// Check that GetUnconsentedPrimaryAccountWhenAvailable() returns the expected
+// account info in the case where signin is done before the call is received but
+// the refresh token is made available only *after* the call is received.
 TEST_F(IdentityAccessorImplTest,
-       GetPrimaryAccountWhenAvailableTokenAvailableLater) {
+       GetUnconsentedPrimaryAccountWhenAvailableTokenAvailableLater) {
   AccountInfo account_info;
   AccountState account_state;
 
@@ -254,19 +262,21 @@ TEST_F(IdentityAccessorImplTest,
   CoreAccountId primary_account_id =
       identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop.QuitClosure(),
-      base::Unretained(&account_info), base::Unretained(&account_state)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop.QuitClosure(),
+                          base::Unretained(&account_info),
+                          base::Unretained(&account_state)));
 
   // Verify that the primary account info is present, but that the primary
   // account is not yet considered available (this also
   // serves to ensure that the preceding call has been received by the
   // IdentityAccessor before proceeding).
   base::RunLoop run_loop2;
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop2.QuitClosure()));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountInfo(
+      base::BindRepeating(
+          &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
+          base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
 
   EXPECT_TRUE(primary_account_info_);
@@ -282,17 +292,17 @@ TEST_F(IdentityAccessorImplTest,
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
-  EXPECT_TRUE(account_state.is_primary_account);
+  EXPECT_TRUE(account_state.is_unconsented_primary_account);
 }
 
-// Check that GetPrimaryAccountWhenAvailable() returns the expected account info
-// in the case where the token is available before the call is received but the
-// account is made authenticated only *after* the call is received. This test is
-// relevant only on non-ChromeOS platforms, as the flow being tested here is not
-// possible on ChromeOS.
+// Check that GetUnconsentedPrimaryAccountWhenAvailable() returns the expected
+// account info in the case where the token is available before the call is
+// received but the account is made authenticated only *after* the call is
+// received. This test is relevant only on non-ChromeOS platforms, as the flow
+// being tested here is not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST_F(IdentityAccessorImplTest,
-       GetPrimaryAccountWhenAvailableAuthenticationAvailableLater) {
+       GetUnconsentedPrimaryAccountWhenAvailableAuthenticationAvailableLater) {
   AccountInfo account_info;
   AccountState account_state;
 
@@ -302,10 +312,11 @@ TEST_F(IdentityAccessorImplTest,
   identity_test_environment()->SetRefreshTokenForAccount(account_id_to_use);
 
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop.QuitClosure(),
-      base::Unretained(&account_info), base::Unretained(&account_state)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop.QuitClosure(),
+                          base::Unretained(&account_info),
+                          base::Unretained(&account_state)));
 
   // Sign the user in and check that the callback is invoked as expected (i.e.,
   // the primary account is now considered available).
@@ -318,38 +329,41 @@ TEST_F(IdentityAccessorImplTest,
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
-  EXPECT_TRUE(account_state.is_primary_account);
+  EXPECT_TRUE(account_state.is_unconsented_primary_account);
 }
 #endif
 
-// Check that GetPrimaryAccountWhenAvailable() returns the expected account
-// info to all callers in the case where the primary account is made available
-// after multiple overlapping calls have been received.
+// Check that GetUnconsentedPrimaryAccountWhenAvailable() returns the expected
+// account info to all callers in the case where the primary account is made
+// available after multiple overlapping calls have been received.
 TEST_F(IdentityAccessorImplTest,
-       GetPrimaryAccountWhenAvailableOverlappingCalls) {
+       GetUnconsentedPrimaryAccountWhenAvailableOverlappingCalls) {
   AccountInfo account_info1;
   AccountState account_state1;
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop.QuitClosure(),
-      base::Unretained(&account_info1), base::Unretained(&account_state1)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop.QuitClosure(),
+                          base::Unretained(&account_info1),
+                          base::Unretained(&account_state1)));
 
   AccountInfo account_info2;
   AccountState account_state2;
   base::RunLoop run_loop2;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop2.QuitClosure(),
-      base::Unretained(&account_info2), base::Unretained(&account_state2)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop2.QuitClosure(),
+                          base::Unretained(&account_info2),
+                          base::Unretained(&account_state2)));
 
   // Verify that the primary account info is not currently available (this also
   // serves to ensure that the preceding call has been received by the
   // IdentityAccessor before proceeding).
   base::RunLoop run_loop3;
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop3.QuitClosure()));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountInfo(
+      base::BindRepeating(
+          &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
+          base::Unretained(this), run_loop3.QuitClosure()));
   run_loop3.Run();
   EXPECT_FALSE(primary_account_info_);
 
@@ -357,7 +371,7 @@ TEST_F(IdentityAccessorImplTest,
   // as expected.
   CoreAccountId primary_account_id =
       identity_test_environment()
-          ->MakePrimaryAccountAvailable(kTestEmail)
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
           .account_id;
 
   run_loop.Run();
@@ -367,22 +381,22 @@ TEST_F(IdentityAccessorImplTest,
   EXPECT_EQ(kTestGaiaId, account_info1.gaia);
   EXPECT_EQ(kTestEmail, account_info1.email);
   EXPECT_TRUE(account_state1.has_refresh_token);
-  EXPECT_TRUE(account_state1.is_primary_account);
+  EXPECT_TRUE(account_state1.is_unconsented_primary_account);
 
   EXPECT_EQ(primary_account_id, account_info2.account_id);
   EXPECT_EQ(kTestGaiaId, account_info2.gaia);
   EXPECT_EQ(kTestEmail, account_info2.email);
   EXPECT_TRUE(account_state2.has_refresh_token);
-  EXPECT_TRUE(account_state2.is_primary_account);
+  EXPECT_TRUE(account_state2.is_unconsented_primary_account);
 }
 
-// Check that GetPrimaryAccountWhenAvailable() doesn't return the account as
-// available if the refresh token has an auth error.
+// Check that GetUnconsentedPrimaryAccountWhenAvailable() doesn't return the
+// account as available if the refresh token has an auth error.
 TEST_F(IdentityAccessorImplTest,
-       GetPrimaryAccountWhenAvailableRefreshTokenHasAuthError) {
+       GetUnconsentedPrimaryAccountWhenAvailableRefreshTokenHasAuthError) {
   CoreAccountId primary_account_id =
       identity_test_environment()
-          ->MakePrimaryAccountAvailable(kTestEmail)
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
           .account_id;
   identity_test_environment()->UpdatePersistentErrorOfRefreshTokenForAccount(
       primary_account_id,
@@ -391,10 +405,11 @@ TEST_F(IdentityAccessorImplTest,
   AccountInfo account_info;
   AccountState account_state;
   base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), run_loop.QuitClosure(),
-      base::Unretained(&account_info), base::Unretained(&account_state)));
+  GetIdentityAccessorImpl()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindRepeating(&IdentityAccessorImplTest::OnPrimaryAccountAvailable,
+                          base::Unretained(this), run_loop.QuitClosure(),
+                          base::Unretained(&account_info),
+                          base::Unretained(&account_state)));
 
   // Flush the IdentityAccessor and check that the callback didn't fire.
   FlushIdentityAccessorImplForTesting();
@@ -404,14 +419,14 @@ TEST_F(IdentityAccessorImplTest,
   // fires.
   identity_test_environment()->UpdatePersistentErrorOfRefreshTokenForAccount(
       primary_account_id, GoogleServiceAuthError());
-  identity_test_environment()->SetRefreshTokenForPrimaryAccount();
+  identity_test_environment()->SetRefreshTokenForAccount(primary_account_id);
   run_loop.Run();
 
   EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
-  EXPECT_TRUE(account_state.is_primary_account);
+  EXPECT_TRUE(account_state.is_unconsented_primary_account);
 }
 
 // Check that the expected error is received if requesting an access token when
@@ -433,7 +448,7 @@ TEST_F(IdentityAccessorImplTest, GetAccessTokenNotSignedIn) {
 TEST_F(IdentityAccessorImplTest, GetAccessTokenSignedIn) {
   CoreAccountId primary_account_id =
       identity_test_environment()
-          ->MakePrimaryAccountAvailable(kTestEmail)
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
           .account_id;
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetAccessToken(

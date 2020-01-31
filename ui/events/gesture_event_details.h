@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"

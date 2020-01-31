@@ -16,7 +16,6 @@ namespace blink {
 class LayoutBox;
 class NGBlockBreakToken;
 class NGBoxFragmentBuilder;
-class NGBreakToken;
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGLayoutResult;
@@ -36,7 +35,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
-      const NGBreakToken* break_token = nullptr,
+      const NGBlockBreakToken* break_token = nullptr,
       const NGEarlyBreak* = nullptr);
 
   // This method is just for use within the |NGSimplifiedLayoutAlgorithm|.
@@ -157,7 +156,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // this node cast to a LayoutBlockFlow as the first argument.
   void FinishLayout(LayoutBlockFlow*,
                     const NGConstraintSpace&,
-                    const NGBreakToken*,
+                    const NGBlockBreakToken*,
                     scoped_refptr<const NGLayoutResult>);
 
   // After we run the layout algorithm, this function copies back the geometry

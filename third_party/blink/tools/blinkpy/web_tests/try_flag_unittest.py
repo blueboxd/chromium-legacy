@@ -127,7 +127,7 @@ class TryFlagTest(unittest.TestCase):
             'FlagExpectations', 'foo')
         filesystem.write_text_file(
             flag_expectations_file,
-            'something/pass-unexpectedly-mac.html [ Fail ]')
+            '# results: [ Failure ]\nsomething/pass-unexpectedly-mac.html [ Failure ]')
 
         self._setup_mock_results(host.results_fetcher)
         cmd = ['update', '--flag=--foo']
@@ -148,13 +148,15 @@ class TryFlagTest(unittest.TestCase):
             '',
             '### 1 unexpected passes:',
             '',
-            'Bug(none) [ Mac ] something/pass-unexpectedly-mac.html [ Pass ]',
+            '[ Mac ] something/pass-unexpectedly-mac.html [ Pass ]',
             '',
-            '### 2 unexpected failures:',
+            '### 5 unexpected failures:',
             '',
-            'Bug(none) something/fail-everywhere.html [ Failure ]',
-            'Bug(none) [ Win ] something/fail-win-and-linux.html [ Failure ]',
-            'Bug(none) [ Linux ] something/fail-win-and-linux.html [ Failure ]',
+            '[ Linux ] something/fail-everywhere.html [ Failure ]',
+            '[ Mac ] something/fail-everywhere.html [ Failure ]',
+            '[ Win ] something/fail-everywhere.html [ Failure ]',
+            '[ Linux ] something/fail-win-and-linux.html [ Failure ]',
+            '[ Win ] something/fail-win-and-linux.html [ Failure ]',
             ''
         ]))
 

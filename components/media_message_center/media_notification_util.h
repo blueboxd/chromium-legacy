@@ -49,6 +49,12 @@ COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
 media_session::mojom::MediaSessionAction GetPlayPauseIgnoredAction(
     media_session::mojom::MediaSessionAction current_action);
 
+// Returns the action on the enter/exit pip toggle button that should be
+// ignored when calculating the visible actions.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
+media_session::mojom::MediaSessionAction GetPictureInPictureIgnoredAction(
+    media_session::mojom::MediaSessionAction current_action);
+
 // Records the concurrent number of media notifications displayed.
 COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
 void RecordConcurrentNotificationCount(size_t count);

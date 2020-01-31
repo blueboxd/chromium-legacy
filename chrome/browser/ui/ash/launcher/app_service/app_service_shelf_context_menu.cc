@@ -82,7 +82,12 @@ AppServiceShelfContextMenu::AppServiceShelfContextMenu(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(controller->profile());
   DCHECK(proxy);
-  app_type_ = proxy->AppRegistryCache().GetAppType(item->id.app_id);
+
+  // Remove the ARC shelf group Prefix.
+  const arc::ArcAppShelfId arc_shelf_id =
+      arc::ArcAppShelfId::FromString(item->id.app_id);
+  DCHECK(arc_shelf_id.valid());
+  app_type_ = proxy->AppRegistryCache().GetAppType(arc_shelf_id.app_id());
 }
 
 AppServiceShelfContextMenu::~AppServiceShelfContextMenu() = default;
@@ -260,6 +265,14 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
   if (app_type_ == apps::mojom::AppType::kExtension)
     BuildExtensionAppShortcutsMenu(menu_model.get());
 
+  // When Crostini generates shelf id with the prefix "crostini:", AppService
+  // can't generate the menu items, because the app_id doesn't match, so add the
+  // menu items at UI side, based on the app running status.
+  if (base::StartsWith(item().id.app_id, crostini::kCrostiniAppIdPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    BuildCrostiniAppMenu(menu_model.get());
+  }
+
   std::move(callback).Run(std::move(menu_model));
 }
 
@@ -284,12 +297,30 @@ void AppServiceShelfContextMenu::BuildArcAppShortcutsMenu(
   const ArcAppListPrefs* arc_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_prefs);
+
+  const arc::ArcAppShelfId& arc_shelf_id =
+      arc::ArcAppShelfId::FromString(item().id.app_id);
+  DCHECK(arc_shelf_id.valid());
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(item().id.app_id);
-  if (!app_info) {
+      arc_prefs->GetApp(arc_shelf_id.app_id());
+  if (!app_info && !arc_shelf_id.has_shelf_group_id()) {
     LOG(ERROR) << "App " << item().id.app_id << " is not available.";
     std::move(callback).Run(std::move(menu_model));
     return;
+  }
+
+  if (arc_shelf_id.has_shelf_group_id()) {
+    const bool app_is_open = controller()->IsOpen(item().id);
+    if (!app_is_open && !app_info->suspended) {
+      DCHECK(app_info->launchable);
+      AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
+                           IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    }
+
+    if (app_is_open) {
+      AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
+                           IDS_SHELF_CONTEXT_MENU_CLOSE);
+    }
   }
 
   arc_shortcuts_menu_builder_ =
@@ -298,6 +329,17 @@ void AppServiceShelfContextMenu::BuildArcAppShortcutsMenu(
           ash::LAUNCH_APP_SHORTCUT_FIRST, ash::LAUNCH_APP_SHORTCUT_LAST);
   arc_shortcuts_menu_builder_->BuildMenu(
       app_info->package_name, std::move(menu_model), std::move(callback));
+}
+
+void AppServiceShelfContextMenu::BuildCrostiniAppMenu(
+    ui::SimpleMenuModel* menu_model) {
+  if (controller()->IsOpen(item().id)) {
+    AddContextMenuOption(menu_model, ash::MENU_CLOSE,
+                         IDS_SHELF_CONTEXT_MENU_CLOSE);
+  } else {
+    AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
+                         IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+  }
 }
 
 void AppServiceShelfContextMenu::ShowAppInfo() {
@@ -391,14 +433,15 @@ extensions::LaunchType AppServiceShelfContextMenu::GetExtensionLaunchType()
 bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
   switch (app_type_) {
     case apps::mojom::AppType::kArc: {
-      const arc::ArcAppShelfId& app_id =
+      const arc::ArcAppShelfId& arc_shelf_id =
           arc::ArcAppShelfId::FromString(item().id.app_id);
+      DCHECK(arc_shelf_id.valid());
       const ArcAppListPrefs* arc_list_prefs =
           ArcAppListPrefs::Get(controller()->profile());
       DCHECK(arc_list_prefs);
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-          arc_list_prefs->GetApp(app_id.app_id());
-      if (!app_id.has_shelf_group_id() && app_info->launchable)
+          arc_list_prefs->GetApp(arc_shelf_id.app_id());
+      if (!arc_shelf_id.has_shelf_group_id() && app_info->launchable)
         return true;
       return false;
     }
@@ -421,7 +464,6 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
     case apps::mojom::AppType::kWeb:
       return true;
     default:
-      NOTREACHED();
       return false;
   }
 }

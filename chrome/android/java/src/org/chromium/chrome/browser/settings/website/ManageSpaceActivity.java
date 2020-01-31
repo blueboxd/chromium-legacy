@@ -26,7 +26,6 @@ import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -36,6 +35,8 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.about.AboutChromeSettings;
@@ -60,8 +61,6 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
     private static final int OPTION_MANAGE_STORAGE = 1;
     private static final int OPTION_CLEAR_APP_DATA = 2;
     private static final int OPTION_MAX = 3;
-
-    private static final String PREF_FAILED_BUILD_VERSION = "ManagedSpace.FailedBuildVersion";
 
     private TextView mUnimportantSiteDataSizeText;
     private TextView mSiteDataSizeText;
@@ -126,8 +125,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         try {
             String productVersion = AboutChromeSettings.getApplicationVersion(
                     this, ChromeVersionInfo.getProductVersion());
-            String failedVersion = ContextUtils.getAppSharedPreferences().getString(
-                    PREF_FAILED_BUILD_VERSION, null);
+            String failedVersion = SharedPreferencesManager.getInstance().readString(
+                    ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, null);
             if (TextUtils.equals(failedVersion, productVersion)) {
                 parts.onStartupFailure();
                 return;
@@ -137,9 +136,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             // java-side the pref will be written before the process dies. We want to make sure we
             // don't attempt to start the browser process and have it kill chrome. This activity is
             // used to clear data for the chrome app, so it must be particularly error resistant.
-            ContextUtils.getAppSharedPreferences().edit()
-                    .putString(PREF_FAILED_BUILD_VERSION, productVersion)
-                    .commit();
+            SharedPreferencesManager.getInstance().writeStringSync(
+                    ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, productVersion);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -174,9 +172,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
     protected void onStop() {
         super.onStop();
 
-        ContextUtils.getAppSharedPreferences().edit()
-                .putString(PREF_FAILED_BUILD_VERSION, null)
-                .apply();
+        SharedPreferencesManager.getInstance().writeString(
+                ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, null);
     }
 
     @VisibleForTesting

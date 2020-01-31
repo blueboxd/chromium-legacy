@@ -19,7 +19,7 @@
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -478,8 +479,8 @@ void PermissionRequestManager::FinalizeBubble(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  PermissionDecisionAutoBlocker* autoblocker =
-      PermissionDecisionAutoBlocker::GetForProfile(profile);
+  permissions::PermissionDecisionAutoBlocker* autoblocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile);
 
   auto* adaptive_notification_permission_ui_enabler =
       AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile);

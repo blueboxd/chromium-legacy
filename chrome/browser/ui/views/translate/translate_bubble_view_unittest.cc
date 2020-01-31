@@ -20,6 +20,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"

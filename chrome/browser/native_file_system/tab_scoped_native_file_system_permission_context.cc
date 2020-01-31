@@ -313,7 +313,8 @@ TabScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
     const base::FilePath& path,
     bool is_directory,
     int process_id,
-    int frame_id) {
+    int frame_id,
+    UserAction user_action) {
   if (!is_directory) {
     // No need to keep track of file read permissions, so just return a new
     // grant.

@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.download.home.metrics.FilterChangeLogger;
 import org.chromium.chrome.browser.download.home.rename.RenameDialogManager;
 import org.chromium.chrome.browser.download.home.storage.StorageCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.ui.modaldialog.ModalDialogManager;

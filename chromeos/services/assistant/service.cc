@@ -20,6 +20,7 @@
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -89,6 +90,22 @@ base::Optional<std::string> GetS3ServerUriOverride() {
   return base::nullopt;
 }
 #endif
+
+// In the signed-out mode, we are going to run Assistant service without
+// using user's signed in account information.
+bool IsSignedOutMode() {
+  // We will switch the Libassitsant mode to signed-out/signed-in when user
+  // enters/exits the ambient mode.
+  const bool entered_ambient_mode =
+      chromeos::features::IsAmbientModeEnabled() &&
+      ash::AmbientModeState::Get()->enabled();
+
+  // Note that we shouldn't toggle the flag to true when exiting ambient
+  // mode if we have been using fake gaia login, e.g. in the Tast test.
+  return entered_ambient_mode ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kDisableGaiaServices);
+}
 
 }  // namespace
 
@@ -164,6 +181,11 @@ Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
 
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Add null check for |AmbientModeState| in case that |Service| is released
+  // after ash has gone.
+  if (chromeos::features::IsAmbientModeEnabled() &&
+      ash::AmbientModeState::Get())
+    ash::AmbientModeState::Get()->RemoveObserver(this);
   assistant_state_.RemoveObserver(this);
   auto* const session_controller = ash::SessionController::Get();
   if (observing_ash_session_ && session_controller) {
@@ -213,12 +235,8 @@ void Service::Init(mojo::PendingRemote<mojom::Client> client,
 
   DCHECK(!assistant_manager_service_);
 
-  // Don't fetch token for test.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableGaiaServices)) {
-    is_signed_out_mode_ = true;
-    return;
-  }
+  if (chromeos::features::IsAmbientModeEnabled())
+    ash::AmbientModeState::Get()->AddObserver(this);
 
   RequestAccessToken();
 }
@@ -338,16 +356,32 @@ void Service::OnStateChanged(AssistantManagerService::State new_state) {
   UpdateListeningState();
 }
 
+void Service::OnAmbientModeEnabled(bool enabled) {
+  if (IsSignedOutMode()) {
+    UpdateAssistantManagerState();
+  } else {
+    // Refresh the access_token before we switch back to signed-in mode in case
+    // that we don't have any auth_token cached before.
+    RequestAccessToken();
+  }
+}
+
 void Service::UpdateAssistantManagerState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
       !assistant_state_.locale().has_value() ||
-      (!access_token_.has_value() && !is_signed_out_mode_) ||
+      (!access_token_.has_value() && !IsSignedOutMode()) ||
       !assistant_state_.arc_play_store_enabled().has_value()) {
     // Assistant state has not finished initialization, let's wait.
     return;
+  }
+
+  if (IsSignedOutMode()) {
+    // Clear |access_token_| in signed-out mode to keep it synced with what we
+    // will pass to the |assistant_manager_service_|.
+    access_token_ = base::nullopt;
   }
 
   if (!assistant_manager_service_)
@@ -357,9 +391,7 @@ void Service::UpdateAssistantManagerState() {
   switch (state) {
     case AssistantManagerService::State::STOPPED:
       if (assistant_state_.settings_enabled().value()) {
-        assistant_manager_service_->Start(
-            is_signed_out_mode_ ? base::nullopt : access_token_,
-            ShouldEnableHotword());
+        assistant_manager_service_->Start(access_token_, ShouldEnableHotword());
         DVLOG(1) << "Request Assistant start";
       }
       break;
@@ -384,8 +416,11 @@ void Service::UpdateAssistantManagerState() {
       break;
     case AssistantManagerService::State::RUNNING:
       if (assistant_state_.settings_enabled().value()) {
-        if (!is_signed_out_mode_)
-          assistant_manager_service_->SetAccessToken(access_token_.value());
+        assistant_manager_service_->SetAccessToken(access_token_);
+        if (chromeos::features::IsAmbientModeEnabled()) {
+          assistant_manager_service_->EnableAmbientMode(
+              ash::AmbientModeState::Get()->enabled());
+        }
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
         assistant_manager_service_->SetArcPlayStoreEnabled(
             assistant_state_.arc_play_store_enabled().value());
@@ -407,16 +442,17 @@ identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
 void Service::RequestAccessToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Bypass access token fetching under signed out mode.
-  if (is_signed_out_mode_)
+  // Bypass access token fetching when service is running in signed-out mode.
+  if (IsSignedOutMode())
     return;
 
   VLOG(1) << "Start requesting access token.";
-  GetIdentityAccessor()->GetPrimaryAccountInfo(base::BindOnce(
-      &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
+  GetIdentityAccessor()->GetUnconsentedPrimaryAccountInfo(
+      base::BindOnce(&Service::GetUnconsentedPrimaryAccountInfoCallback,
+                     base::Unretained(this)));
 }
 
-void Service::GetPrimaryAccountInfoCallback(
+void Service::GetUnconsentedPrimaryAccountInfoCallback(
     const base::Optional<CoreAccountId>& account_id,
     const base::Optional<std::string>& gaia,
     const base::Optional<std::string>& email,
@@ -424,7 +460,7 @@ void Service::GetPrimaryAccountInfoCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Validate the remotely-supplied parameters before using them below: if
   // |account_id| is non-null, the other two should be non-null as well per
-  // the stated contract of IdentityAccessor::GetPrimaryAccountInfo().
+  // the contract of IdentityAccessor::GetUnconsentedPrimaryAccountInfo().
   CHECK((!account_id.has_value() || (gaia.has_value() && email.has_value())));
 
   if (!account_id.has_value() || !account_state.has_refresh_token ||
@@ -504,8 +540,7 @@ Service::CreateAndReturnAssistantManagerService() {
   DCHECK(pending_url_loader_factory_);
   return std::make_unique<AssistantManagerServiceImpl>(
       client_.get(), context(), std::move(delegate),
-      std::move(pending_url_loader_factory_), GetS3ServerUriOverride(),
-      is_signed_out_mode_);
+      std::move(pending_url_loader_factory_), GetS3ServerUriOverride());
 #else
   return std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif

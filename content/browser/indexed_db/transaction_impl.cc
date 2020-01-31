@@ -99,9 +99,9 @@ void TransactionImpl::Put(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(dispatcher_host_);
 
-  std::vector<IndexedDBBlobInfo> blob_infos;
-  if (!input_value->blob_or_file_info.empty())
-    CreateBlobInfos(input_value, &blob_infos);
+  std::vector<IndexedDBExternalObject> external_objects;
+  if (!input_value->external_objects.empty())
+    CreateExternalObjects(input_value, &external_objects);
 
   if (!transaction_) {
     IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
@@ -133,7 +133,7 @@ void TransactionImpl::Put(
       std::string(input_value->bits.begin(), input_value->bits.end());
   // Release value->bits std::vector.
   input_value->bits.clear();
-  swap(output_value.blob_info, blob_infos);
+  swap(output_value.external_objects, external_objects);
 
   blink::mojom::IDBTransaction::PutCallback aborting_callback =
       CreateCallbackAbortOnDestruct<blink::mojom::IDBTransaction::PutCallback,
@@ -157,28 +157,30 @@ void TransactionImpl::Put(
   transaction_->set_size(transaction_->size() + commit_size);
 }
 
-void TransactionImpl::CreateBlobInfos(
+void TransactionImpl::CreateExternalObjects(
     blink::mojom::IDBValuePtr& value,
-    std::vector<IndexedDBBlobInfo>* blob_infos) {
+    std::vector<IndexedDBExternalObject>* external_objects) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Should only be called if there are blobs to process.
-  CHECK(!value->blob_or_file_info.empty());
+  // Should only be called if there are external objects to process.
+  CHECK(!value->external_objects.empty());
 
   base::CheckedNumeric<uint64_t> total_blob_size = 0;
-  blob_infos->resize(value->blob_or_file_info.size());
-  for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
-    blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
+  external_objects->resize(value->external_objects.size());
+  for (size_t i = 0; i < value->external_objects.size(); ++i) {
+    auto& object = value->external_objects[i];
+    DCHECK(object->is_blob_or_file());
+    blink::mojom::IDBBlobInfoPtr& info = object->get_blob_or_file();
     uint64_t size = info->size;
     total_blob_size += size;
 
     if (info->file) {
-      (*blob_infos)[i] = IndexedDBBlobInfo(
+      (*external_objects)[i] = IndexedDBExternalObject(
           std::move(info->blob), info->uuid, info->file->name, info->mime_type,
           info->file->last_modified, info->size);
     } else {
-      (*blob_infos)[i] = IndexedDBBlobInfo(std::move(info->blob), info->uuid,
-                                           info->mime_type, info->size);
+      (*external_objects)[i] = IndexedDBExternalObject(
+          std::move(info->blob), info->uuid, info->mime_type, info->size);
     }
   }
 }

@@ -318,7 +318,7 @@ html:not([class*='col-resize']) #directory-tree
 }
 
 #directory-tree .tree-row[active] > .file-row {
-  background-color: var(--google-blue-100);
+  background-color: var(--google-blue-50);
   color: var(--google-blue-600);
 }
 

@@ -1,0 +1,139 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package feedstore;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/ui/piet/piet.proto";
+import "components/feed/core/proto/ui/action/ui_feed_action.proto";
+import "components/feed/core/proto/ui/stream/stream_structure.proto";
+import "components/feed/core/proto/wire/action_payload.proto";
+import "components/feed/core/proto/wire/content_id.proto";
+import "components/feed/core/proto/wire/piet_shared_state_item.proto";
+import "components/feed/core/proto/wire/semantic_properties.proto";
+
+// Actual data stored by the client.
+// This data is sourced from the wire protocol, which is converted upon receipt.
+// This would replace both Journal and Content stores.
+//
+// This is the 'value' in the key/value store.
+// Keys are defined as:
+// 'root'    -> stream_data
+// 'c:<id>'  -> cluster
+// 'la:<id>' -> local_action
+// 'ua:<id>' -> uploadable_action
+// 'ss:<id>' -> shared_state
+message Record {
+  oneof data {
+    Cluster cluster = 1;
+    StreamData stream_data = 2;
+    StreamLocalAction local_action = 3;
+    StreamUploadableAction uploadable_action = 4;
+    StreamSharedState shared_state = 5;
+  }
+}
+
+// Data about the Feed stream. There is at most one instance of StreamData.
+message StreamData {
+  // Root ContentId, as provided by the server.
+  components.feed.core.proto.wire.ContentId content_id = 1;
+  // Token used to request a 'more' request to the server.
+  bytes next_page_token = 2;
+  // Token used to read or write to the same storage.
+  bytes consistency_token = 3;
+  // The unix timestamp in milliseconds that the most recent content was added.
+  int64 last_added_time_millis = 4;
+  // List of all clusters, in order they would be shown in the stream.
+  repeated components.feed.core.proto.wire.ContentId cluster_ids = 5;
+  // List of all stale clusters. Stale clusters can be removed when no session
+  // references them.
+  repeated components.feed.core.proto.wire.ContentId stale_cluster_ids = 6;
+}
+
+message Cluster {
+  components.feed.core.proto.wire.ContentId content_id = 1;
+  components.feed.core.proto.wire.SemanticProperties semantic_properties = 2;
+  repeated Card cards = 3;
+}
+
+message Card {
+  components.feed.core.proto.wire.ContentId card_id = 1;
+  components.feed.core.proto.wire.SemanticProperties semantic_properties = 2;
+  // This may not be present if Card is part of a DataOperation.
+  Content content = 3;
+  // All actions bound to this card or content.
+  repeated components.feed.core.proto.ui.action.FeedActionMetadata actions = 4;
+}
+
+message RepresentationData {
+  // URI (usually a URL) of what the content links to
+  string uri = 1;
+  // Unix timestamp (seconds) when content was published
+  int64 published_time_seconds = 2;
+}
+
+message Content {
+  // The parent Card's ContentId.
+  components.feed.core.proto.wire.ContentId content_id = 1;
+  components.feed.core.proto.wire.SemanticProperties semantic_properties = 2;
+
+  enum ContentType {
+    UNKNOWN_CONTENT = 0;
+    PIET = 1;
+  }
+
+  ContentType content_type = 3;
+  PietContent piet_content = 4;
+  // Score given by server.
+  float score = 5;
+  // Unix timestamp (seconds) that content was received by Chrome.
+  int64 availability_time_seconds = 6;
+  RepresentationData representation_data = 7;
+  components.feed.core.proto.ui.stream.OfflineMetadata offline_metadata = 8;
+  components.feed.core.proto.ui.action.FeedActionMetadata swipe_action = 9;
+}
+
+// Content which is able to show a Piet frame. This includes any data which may
+// be needed to show a Piet frame.
+message PietContent {
+  // Content Ids of Piet Shared States which should be provided to Piet in order
+  // to show its content.
+  repeated components.feed.core.proto.wire.ContentId piet_shared_states = 1;
+
+  // The Piet frame to render. This is the same frame as sent over the wire,
+  // except the action extensions have been replaced by ui.Action.
+  components.feed.core.proto.ui.piet.Frame frame = 2;
+}
+
+// This represents a shared state item.
+message StreamSharedState {
+  components.feed.core.proto.wire.ContentId content_id = 1;
+  components.feed.core.proto.wire.PietSharedStateItem piet_shared_state_item =
+      2;
+}
+
+// An action that should be eventually uploaded, unless it is undone.
+message StreamLocalAction {
+  enum Type {
+    UNKNOWN = 0;
+    DISMISS = 1;
+  }
+  Type action = 1;
+  components.feed.core.proto.wire.ContentId feature_content_id = 2;
+  // When the action was recorded
+  int64 timestamp_seconds = 3;
+}
+
+// An action ready to be uploaded.
+message StreamUploadableAction {
+  components.feed.core.proto.wire.ContentId feature_content_id = 1;
+  // The number of time this action was attempted to be recorded
+  int32 upload_attempts = 2;
+  // Unix timestamp (seconds) when the action was recorded
+  int64 timestamp_seconds = 3;
+  components.feed.core.proto.wire.ActionPayload payload = 4;
+}

@@ -183,6 +183,8 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
     actions_.insert(MediaSessionAction::kSeekBackward);
     actions_.insert(MediaSessionAction::kSeekForward);
     actions_.insert(MediaSessionAction::kStop);
+    actions_.insert(MediaSessionAction::kEnterPictureInPicture);
+    actions_.insert(MediaSessionAction::kExitPictureInPicture);
 
     NotifyUpdatedActions();
   }
@@ -232,7 +234,9 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
     const auto& children = button_row()->children();
     const auto i = std::find_if(
         children.begin(), children.end(), [action](const views::View* v) {
-          return views::Button::AsButton(v)->tag() == static_cast<int>(action);
+          return (IsMediaButtonType(v->GetClassName()) &&
+                  views::Button::AsButton(v)->tag() ==
+                      static_cast<int>(action));
         });
     return (i == children.end()) ? nullptr : views::Button::AsButton(*i);
   }
@@ -361,10 +365,11 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, ButtonsSanityCheck) {
   EXPECT_GT(button_row()->width(), 0);
   EXPECT_GT(button_row()->height(), 0);
 
-  EXPECT_EQ(5u, button_row()->children().size());
+  EXPECT_EQ(7u, button_row()->children().size());
 
   for (auto* child : button_row()->children()) {
-    ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
+    if (!IsMediaButtonType(child->GetClassName()))
+      continue;
 
     EXPECT_TRUE(child->GetVisible());
     EXPECT_LT(kMediaButtonIconSize, child->width());
@@ -377,9 +382,11 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, ButtonsSanityCheck) {
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kNextTrack));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekBackward));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekForward));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kEnterPictureInPicture));
 
   // |kPause| cannot be present if |kPlay| is.
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kExitPictureInPicture));
 }
 
 #if defined(OS_WIN)
@@ -679,7 +686,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
-           MediaSessionAction::kSeekForward})));
+           MediaSessionAction::kSeekForward,
+           MediaSessionAction::kEnterPictureInPicture})));
   EnableAllActions();
   view()->SetExpanded(false);
   testing::Mock::VerifyAndClearExpectations(&container());
@@ -696,7 +704,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
       container(),
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kSeekBackward,
-           MediaSessionAction::kNextTrack, MediaSessionAction::kSeekForward})));
+           MediaSessionAction::kNextTrack, MediaSessionAction::kSeekForward,
+           MediaSessionAction::kEnterPictureInPicture})));
   DisableAction(MediaSessionAction::kPreviousTrack);
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
@@ -706,7 +715,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
-           MediaSessionAction::kSeekForward})));
+           MediaSessionAction::kSeekForward,
+           MediaSessionAction::kEnterPictureInPicture})));
   EnableAction(MediaSessionAction::kPreviousTrack);
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
@@ -715,8 +725,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
       container(),
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
-           MediaSessionAction::kNextTrack,
-           MediaSessionAction::kSeekBackward})));
+           MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
+           MediaSessionAction::kEnterPictureInPicture})));
   DisableAction(MediaSessionAction::kSeekForward);
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekForward));
@@ -726,7 +736,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
-           MediaSessionAction::kSeekForward})));
+           MediaSessionAction::kSeekForward,
+           MediaSessionAction::kEnterPictureInPicture})));
   EnableAction(MediaSessionAction::kSeekForward);
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekForward));
@@ -738,7 +749,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenExpanded) {
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
-           MediaSessionAction::kSeekForward})));
+           MediaSessionAction::kSeekForward,
+           MediaSessionAction::kEnterPictureInPicture})));
   EnableAllActions();
   testing::Mock::VerifyAndClearExpectations(&container());
 
@@ -747,7 +759,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenExpanded) {
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
-           MediaSessionAction::kSeekForward})));
+           MediaSessionAction::kSeekForward,
+           MediaSessionAction::kEnterPictureInPicture})));
   view()->SetExpanded(true);
   testing::Mock::VerifyAndClearExpectations(&container());
 

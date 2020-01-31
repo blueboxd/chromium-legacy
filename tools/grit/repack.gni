@@ -54,7 +54,10 @@ template("repack") {
     script = "//tools/grit/pak_util.py"
 
     inputs = invoker.sources
-    outputs = [ invoker.output ]
+    outputs = [
+      invoker.output,
+      "${invoker.output}.info",
+    ]
 
     args = [ "repack" ]
     if (defined(invoker.repack_whitelist)) {

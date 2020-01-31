@@ -310,5 +310,10 @@ bool TimeZoneResolverManager::IsTimeZoneResolutionPolicyControlled() {
   return GetServiceConfigurationFromPolicy() != UNSPECIFIED;
 }
 
+// static
+bool TimeZoneResolverManager::IfServiceShouldBeRunningForSigninScreen() {
+  return GetServiceConfigurationForSigninScreen() == SHOULD_START;
+}
+
 }  // namespace system
 }  // namespace chromeos

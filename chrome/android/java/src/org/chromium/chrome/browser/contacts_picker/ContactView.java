@@ -17,8 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;

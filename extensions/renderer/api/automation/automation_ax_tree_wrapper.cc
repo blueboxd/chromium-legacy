@@ -254,7 +254,7 @@ AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
   // Stop observing so we don't get a callback for every node being deleted.
   event_generator_.SetTree(nullptr);
   tree_.RemoveObserver(this);
-  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_id());
+  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_id_);
 }
 
 // static
@@ -623,15 +623,15 @@ ui::AXNode* AutomationAXTreeWrapper::GetNodeFromTree(
 }
 
 ui::AXTreeID AutomationAXTreeWrapper::GetTreeID() const {
-  return tree_id();
+  return tree_id_;
 }
 
 ui::AXTreeID AutomationAXTreeWrapper::GetParentTreeID() const {
-  AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(tree_id());
+  AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(tree_id_);
   if (!parent_tree)
     return ui::AXTreeID();  // Unknown AXTreeID.
 
-  return parent_tree->tree_id();
+  return parent_tree->GetTreeID();
 }
 
 ui::AXNode* AutomationAXTreeWrapper::GetRootAsAXNode() const {

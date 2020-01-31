@@ -189,7 +189,6 @@ void WebUsbDetector::Initialize() {
     return;
 #endif  // defined(OS_WIN)
 
-  SCOPED_UMA_HISTOGRAM_TIMER("WebUsb.DetectorInitialization");
   // Tests may set a fake manager.
   if (!device_manager_) {
     // Receive mojo::Remote<UsbDeviceManager> from DeviceService.

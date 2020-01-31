@@ -6,6 +6,9 @@
 #define ASH_SHELF_SHELF_COMPONENT_H_
 
 #include "ash/ash_export.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace ash {
 
 // An interface describing any shelf component such as the navigation widget,
 // the hotseat widget or the status area widget, to make it easier to
@@ -16,10 +19,15 @@ class ASH_EXPORT ShelfComponent {
   // calculated bounds.
   virtual void CalculateTargetBounds() = 0;
 
+  // Returns this component's current target bounds, in screen coordinates.
+  virtual gfx::Rect GetTargetBounds() const;
+
   // Updates the component's layout and bounds to match the most recently
   // calculated target bounds. The change should be animated if |animate| is
   // true.
   virtual void UpdateLayout(bool animate) = 0;
 };
+
+}  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_COMPONENT_H_

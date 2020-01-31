@@ -38,6 +38,7 @@
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -140,22 +141,20 @@ class WebWidget {
   // to render a frame of the web widget. This MUST be called before Paint,
   // and it may result in calls to WebViewClient::DidInvalidateRect (for
   // non-composited WebViews).
-  // |LifecycleUpdateReason| must be used to indicate the source of the
+  // |reason| must be used to indicate the source of the
   // update for the purposes of metrics gathering.
   enum class LifecycleUpdate { kLayout, kPrePaint, kAll };
-  // This must be kept coordinated with DocumentLifecycle::LifecycleUpdateReason
-  enum class LifecycleUpdateReason { kBeginMainFrame, kTest, kOther };
-  virtual void UpdateAllLifecyclePhases(LifecycleUpdateReason reason) {
+  virtual void UpdateAllLifecyclePhases(DocumentUpdateReason reason) {
     UpdateLifecycle(LifecycleUpdate::kAll, reason);
   }
 
   // UpdateLifecycle is used to update to a specific lifestyle phase, as given
   // by |LifecycleUpdate|. To update all lifecycle phases, use
   // UpdateAllLifecyclePhases.
-  // |LifecycleUpdateReason| must be used to indicate the source of the
+  // |reason| must be used to indicate the source of the
   // update for the purposes of metrics gathering.
   virtual void UpdateLifecycle(LifecycleUpdate requested_update,
-                               LifecycleUpdateReason reason) {}
+                               DocumentUpdateReason reason) {}
 
   // Called to inform the WebWidget of a change in theme.
   // Implementors that cache rendered copies of widgets need to re-render

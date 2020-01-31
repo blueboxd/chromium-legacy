@@ -76,6 +76,67 @@ class ExtensionResourceRequestPolicyTest : public ExtensionApiTest {
     OpenUrlInSubFrameAndVerifyNavigationBlocked(target_url, "local-frame",
                                                 url_blocked_by_renderer);
   }
+
+  // Used to test that javascript history.back() navigations to a target
+  // non-web accessible resource are blocked, using remote and local iframes.
+  void OpenUrlInSubFrameAndVerifyBackNavigationBlocked(
+      const GURL& target_url,
+      const std::string& target_frame_id,
+      const GURL& expected_navigation_url) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Load up an iframe we can navigate.
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL(
+            "/frame_tree/page_with_two_frames_remote_and_local.html"));
+    const char kNavigateScriptTemplate[] = R"(
+      var iframe = document.getElementById($1);
+      iframe.src = $2;
+    )";
+
+    {
+      // Navigate the iframe to an inaccessible resource and expect an error.
+      content::TestNavigationObserver nav_observer(web_contents);
+      ASSERT_TRUE(content::ExecJs(
+          web_contents, content::JsReplace(kNavigateScriptTemplate,
+                                           target_frame_id, target_url)));
+      nav_observer.Wait();
+
+      EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+      EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+      EXPECT_EQ(expected_navigation_url, nav_observer.last_navigation_url());
+    }
+
+    {
+      // Navigate the iframe to an accessible page (about:blank).
+      content::TestNavigationObserver nav_observer(web_contents);
+      ASSERT_TRUE(content::ExecJs(
+          web_contents,
+          content::JsReplace(kNavigateScriptTemplate, target_frame_id,
+                             GURL("about:blank"))));
+      nav_observer.Wait();
+      EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    }
+
+    {
+      // Finally, trigger a back navigation which should lead to a blocked page.
+      const char kNavigateBackScriptTemplate[] = R"(
+        var iframe = document.getElementById($1);
+        iframe.contentWindow.history.back();
+      )";
+      content::TestNavigationObserver nav_observer(web_contents);
+      ASSERT_TRUE(content::ExecJs(
+          web_contents,
+          content::JsReplace(kNavigateBackScriptTemplate, target_frame_id)));
+      nav_observer.Wait();
+
+      EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+      EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+      EXPECT_EQ(expected_navigation_url, nav_observer.last_navigation_url());
+    }
+  }
 };
 
 // Note, this mostly tests the logic of chrome/renderer/extensions/
@@ -646,6 +707,95 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(nav_observer.last_initiator_origin().has_value());
   EXPECT_EQ(url::Origin::Create(web_page_url),
             nav_observer.last_initiator_origin().value());
+}
+
+// Tests that a page can't use history.back() on another page to navigate to a
+// non-web accessible resource of an extension.
+// Regression test for https://crbug.com/1043965.
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       WebNavigationToNonWebAccessibleResource_ViaHistoryBack) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("inaccessible"));
+  ASSERT_TRUE(extension);
+  const GURL non_web_accessible_url =
+      extension->GetResourceURL("inaccessible-iframe-contents.html");
+
+  GURL main_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Have a page open a new window with JS and retain a reference to it.
+  content::WebContentsAddedObserver new_window_observer;
+  content::WebContents* old_window =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecJs(
+      old_window,
+      content::JsReplace("var newWindow = open($1);", non_web_accessible_url)));
+  content::WebContents* new_window = new_window_observer.GetWebContents();
+  content::WaitForLoadStop(new_window);
+  // As this resource is non-web accessible, we expect an error page.
+  // NOTE: It would be nice to check for the actual ERR_BLOCKED_BY_CLIENT error,
+  // but the observer we are using to grab the new page doesn't keep track of
+  // the navigation handle or any of the specific error codes.
+  EXPECT_EQ(non_web_accessible_url, new_window->GetLastCommittedURL());
+  EXPECT_EQ(content::PAGE_TYPE_ERROR,
+            new_window->GetController().GetLastCommittedEntry()->GetPageType());
+
+  {
+    // Navigate the second window from the first to about:blank.
+    content::TestNavigationObserver nav_observer(new_window, 1);
+    ASSERT_TRUE(content::ExecJs(old_window,
+                                "newWindow.location.href = 'about:blank';"));
+    nav_observer.Wait();
+    EXPECT_EQ("about:blank", new_window->GetLastCommittedURL());
+  }
+
+  {
+    // Navigate the second window back using history, which should be blocked.
+    content::TestNavigationObserver nav_observer(new_window, 1);
+    ASSERT_TRUE(content::ExecJs(old_window, "newWindow.history.back();"));
+    nav_observer.Wait();
+    EXPECT_EQ(non_web_accessible_url, new_window->GetLastCommittedURL());
+
+    EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+    EXPECT_EQ(non_web_accessible_url, nav_observer.last_navigation_url());
+  }
+}
+
+// Tests that a page can't use history.back() on a remote iframe to navigate to
+// a non-web accessible resource of an extension.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionResourceRequestPolicyTest,
+    WebNavigationToNonWebAccessibleResource_ViaHistoryBackRemoteIframe) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("inaccessible"));
+  ASSERT_TRUE(extension);
+
+  GURL inaccessible_resource =
+      extension->GetResourceURL("inaccessible-iframe-contents.html");
+
+  OpenUrlInSubFrameAndVerifyBackNavigationBlocked(
+      inaccessible_resource, "remote-frame", inaccessible_resource);
+}
+
+// Tests that a page can't use history.back() on a local iframe to navigate to a
+// non-web accessible resource of an extension.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionResourceRequestPolicyTest,
+    WebNavigationToNonWebAccessibleResource_ViaHistoryBackLocalIframe) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("inaccessible"));
+  ASSERT_TRUE(extension);
+
+  GURL inaccessible_resource =
+      extension->GetResourceURL("inaccessible-iframe-contents.html");
+  GURL url_blocked_by_renderer("chrome-extension://invalid/");
+
+  OpenUrlInSubFrameAndVerifyBackNavigationBlocked(
+      inaccessible_resource, "local-frame", url_blocked_by_renderer);
 }
 
 }  // namespace extensions

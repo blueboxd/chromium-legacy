@@ -58,16 +58,14 @@ content::WebContents* LaunchService::OpenApplication(
   return GetLaunchManagerForApp(params.app_id).OpenApplication(params);
 }
 
-bool LaunchService::OpenApplicationWindow(
+void LaunchService::LaunchApplication(
     const std::string& app_id,
     const base::CommandLine& command_line,
-    const base::FilePath& current_directory) {
-  return GetLaunchManagerForApp(app_id).OpenApplicationWindow(
-      app_id, command_line, current_directory);
-}
-
-bool LaunchService::OpenApplicationTab(const std::string& app_id) {
-  return GetLaunchManagerForApp(app_id).OpenApplicationTab(app_id);
+    const base::FilePath& current_directory,
+    base::OnceCallback<void(Browser* browser,
+                            apps::mojom::LaunchContainer container)> callback) {
+  GetLaunchManagerForApp(app_id).LaunchApplication(
+      app_id, command_line, current_directory, std::move(callback));
 }
 
 }  // namespace apps

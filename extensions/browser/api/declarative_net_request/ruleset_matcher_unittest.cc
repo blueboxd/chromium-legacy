@@ -1080,6 +1080,67 @@ TEST_F(RulesetMatcherTest, RegexSubstitution) {
   }
 }
 
+// Test that rules with the same priority will override each other correctly
+// based on action.
+TEST_F(RulesetMatcherTest, BreakTiesByActionPriority) {
+  struct {
+    int rule_id;
+    std::string rule_action;
+
+    // The expected action, assuming this rule and all previous rules match and
+    // have the same priority.
+    RequestAction::Type expected_action;
+    // The ID of the rule expected to match.
+    int expected_rule_id = 0;
+  } test_cases[] = {
+      {1, "redirect", RequestAction::Type::REDIRECT, 1},
+      {2, "upgradeScheme", RequestAction::Type::UPGRADE, 2},
+      {3, "block", RequestAction::Type::BLOCK, 3},
+      {4, "allowAllRequests", RequestAction::Type::ALLOW_ALL_REQUESTS, 4},
+      {5, "allow", RequestAction::Type::ALLOW, 5},
+      {6, "block", RequestAction::Type::ALLOW, 5},
+  };
+
+  std::vector<TestRule> rules;
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.rule_action);
+
+    TestRule rule = CreateGenericRule();
+    rule.id = test_case.rule_id;
+    rule.priority = kMinValidPriority;
+    rule.condition->url_filter = "http://example.com";
+    rule.action->type = test_case.rule_action;
+    rule.condition->resource_types = std::vector<std::string>{"main_frame"};
+    if (test_case.rule_action == "redirect") {
+      rule.action->redirect.emplace();
+      rule.action->redirect->url = "http://google.com";
+    }
+    rules.push_back(rule);
+
+    std::unique_ptr<RulesetMatcher> matcher;
+    ASSERT_TRUE(
+        CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+    GURL url("http://example.com");
+    RequestParams params;
+    params.url = &url;
+    params.element_type = url_pattern_index::flat::ElementType_MAIN_FRAME;
+
+    int expected_rule_id = test_case.expected_rule_id;
+    if (expected_rule_id == 0)
+      expected_rule_id = *rule.id;
+    RequestAction expected_action = CreateRequestActionForTesting(
+        test_case.expected_action, expected_rule_id);
+    if (test_case.expected_action == RequestAction::Type::REDIRECT) {
+      expected_action.redirect_url = GURL("http://google.com");
+    } else if (test_case.expected_action == RequestAction::Type::UPGRADE) {
+      expected_action.redirect_url = GURL("https://example.com");
+    }
+
+    EXPECT_EQ(expected_action, matcher->GetBeforeRequestAction(params));
+  }
+}
+
 // Test fixture to test allowAllRequests rules. We inherit from ExtensionsTest
 // to ensure we can work with WebContentsTester and associated classes.
 class AllowAllRequestsTest : public ExtensionsTest {

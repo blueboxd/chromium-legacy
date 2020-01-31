@@ -15,7 +15,7 @@ namespace ui {
 
 class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManagerLegacy(DrmDevice* device);
+  explicit HardwareDisplayPlaneManagerLegacy(DrmDevice* device);
   ~HardwareDisplayPlaneManagerLegacy() override;
 
   // HardwareDisplayPlaneManager:

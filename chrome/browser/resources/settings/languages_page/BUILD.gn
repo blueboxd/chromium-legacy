@@ -91,3 +91,109 @@ js_library("add_languages_dialog") {
     "//ui/webui/resources/js:find_shortcut_behavior",
   ]
 }
+
+# TODO(crbug.com/1026426): Fix and enable.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [
+#    ":add_languages_dialog.m",
+#    ":edit_dictionary_page.m",
+#    ":languages.m",
+#    ":languages_browser_proxy.m",
+#    ":languages_page.m",
+#    ":languages_types.m",
+#  ]
+#}
+
+js_library("add_languages_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/languages_page/add_languages_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":add_languages_dialog_module" ]
+}
+
+js_library("edit_dictionary_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/languages_page/edit_dictionary_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":edit_dictionary_page_module" ]
+}
+
+js_library("languages.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/languages_page/languages.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":languages_module" ]
+}
+
+js_library("languages_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/languages_page/languages_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("languages_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/languages_page/languages_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":languages_page_module" ]
+}
+
+js_library("languages_types.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/languages_page/languages_types.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+import("//tools/polymer/polymer.gni")
+
+group("polymer3_elements") {
+  deps = [
+    ":add_languages_dialog_module",
+    ":edit_dictionary_page_module",
+    ":languages_module",
+    ":languages_page_module",
+    ":modulize",
+  ]
+}
+
+polymer_modulizer("add_languages_dialog") {
+  js_file = "add_languages_dialog.js"
+  html_file = "add_languages_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("edit_dictionary_page") {
+  js_file = "edit_dictionary_page.js"
+  html_file = "edit_dictionary_page.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("languages") {
+  js_file = "languages.js"
+  html_file = "languages.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("languages_page") {
+  js_file = "languages_page.js"
+  html_file = "languages_page.html"
+  html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [
+    "languages_browser_proxy.js",
+    "languages_types.js",
+  ]
+}

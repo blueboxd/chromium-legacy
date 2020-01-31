@@ -2959,5 +2959,95 @@ TEST_F(CALayerOverlayRPDQTest, TooManyRenderPassDrawQuads) {
 }
 #endif
 
+void AddQuad(gfx::Rect quad_rect,
+             const gfx::Transform& quad_to_target_transform,
+             RenderPass* render_pass) {
+  SharedQuadState* quad_state = render_pass->CreateAndAppendSharedQuadState();
+
+  quad_state->SetAll(
+      /*quad_layer_rect=*/quad_to_target_transform, quad_rect,
+      /*visible_quad_layer_rect=*/quad_rect,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/gfx::Rect(),
+      /*is_clipped=*/false,
+      /*are contents opaque=*/true,
+      /*opacity=*/1.f,
+      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+
+  SolidColorDrawQuad* solid_quad =
+      render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK,
+                     false /* force_anti_aliasing_off */);
+}
+
+OverlayCandidate CreateCandidate(float left,
+                                 float top,
+                                 float right,
+                                 float bottom) {
+  OverlayCandidate candidate;
+  candidate.display_rect.SetRect(left, top, right - left, bottom - top);
+  return candidate;
+}
+
+using OverlayCandidateTest = testing::Test;
+
+TEST_F(OverlayCandidateTest, IsOccluded) {
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  gfx::Transform identity;
+  identity.MakeIdentity();
+
+  // Create overlapping quads around 1,1 - 10,10.
+  AddQuad(gfx::Rect(0, 0, 1, 10), identity, render_pass.get());
+  AddQuad(gfx::Rect(0, 0, 10, 1), identity, render_pass.get());
+  AddQuad(gfx::Rect(10, 0, 1, 10), identity, render_pass.get());
+  AddQuad(gfx::Rect(0, 10, 10, 1), identity, render_pass.get());
+
+  EXPECT_FALSE(OverlayCandidate::IsOccluded(
+      CreateCandidate(0.5f, 0.5f, 10.49f, 10.49f),
+      render_pass->quad_list.begin(), render_pass->quad_list.end()));
+
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(0.49f, 0.5f, 10.49f, 10.49f),
+      render_pass->quad_list.begin(), render_pass->quad_list.end()));
+
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(0.5f, 0.49f, 10.50f, 10.5f),
+      render_pass->quad_list.begin(), render_pass->quad_list.end()));
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(0.5f, 0.5f, 10.5f, 10.49f),
+      render_pass->quad_list.begin(), render_pass->quad_list.end()));
+
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(0.5f, 0.5f, 10.49f, 10.5f),
+      render_pass->quad_list.begin(), render_pass->quad_list.end()));
+}
+
+TEST_F(OverlayCandidateTest, IsOccludedScaled) {
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  gfx::Transform quad_to_target_transform;
+  quad_to_target_transform.Scale(1.6, 1.6);
+
+  // Create overlapping quads around 1.6,2.4 - 14.4,17.6.
+  AddQuad(gfx::Rect(0, 0, 1, 10), quad_to_target_transform, render_pass.get());
+  AddQuad(gfx::Rect(0, 0, 10, 2), quad_to_target_transform, render_pass.get());
+  AddQuad(gfx::Rect(9, 0, 1, 10), quad_to_target_transform, render_pass.get());
+  AddQuad(gfx::Rect(0, 11, 10, 1), quad_to_target_transform, render_pass.get());
+
+  EXPECT_FALSE(OverlayCandidate::IsOccluded(
+      CreateCandidate(2.f, 3.f, 14.f, 17.f), render_pass->quad_list.begin(),
+      render_pass->quad_list.end()));
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(1.f, 3.f, 14.f, 17.f), render_pass->quad_list.begin(),
+      render_pass->quad_list.end()));
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(2.f, 2.f, 14.f, 17.f), render_pass->quad_list.begin(),
+      render_pass->quad_list.end()));
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(2.f, 3.f, 15.f, 17.f), render_pass->quad_list.begin(),
+      render_pass->quad_list.end()));
+  EXPECT_TRUE(OverlayCandidate::IsOccluded(
+      CreateCandidate(2.f, 3.f, 15.f, 18.f), render_pass->quad_list.begin(),
+      render_pass->quad_list.end()));
+}
+
 }  // namespace
 }  // namespace viz

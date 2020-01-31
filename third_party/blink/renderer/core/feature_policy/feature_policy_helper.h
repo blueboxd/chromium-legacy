@@ -9,11 +9,14 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 using FeatureNameMap = HashMap<String, mojom::blink::FeaturePolicyFeature>;
+using FeatureSet = HashSet<mojom::blink::FeaturePolicyFeature,
+                           IntHash<mojom::blink::FeaturePolicyFeature>>;
 
 class FeatureContext;
 
@@ -22,6 +25,12 @@ class FeatureContext;
 // well as the features which will be recognized by the document or iframe
 // policy object.
 const FeatureNameMap& GetDefaultFeatureNameMap();
+
+// This method defines the feature names which will be recognized by the parser
+// for the Document-Policy HTTP header and the <iframe> "policy" attribute, as
+// well as the features which will be recognized by the document or iframe
+// policy object.
+const FeatureSet& GetAvailableDocumentPolicyFeatures();
 
 // Returns true if this feature is currently disabled by an origin trial (it is
 // origin trial controlled, and the origin trial is not enabled).

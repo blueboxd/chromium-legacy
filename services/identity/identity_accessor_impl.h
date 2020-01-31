@@ -46,9 +46,10 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
       signin::AccessTokenInfo access_token_info);
 
   // mojom::IdentityAccessor:
-  void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override;
-  void GetPrimaryAccountWhenAvailable(
-      GetPrimaryAccountWhenAvailableCallback callback) override;
+  void GetUnconsentedPrimaryAccountInfo(
+      GetUnconsentedPrimaryAccountInfoCallback callback) override;
+  void GetUnconsentedPrimaryAccountWhenAvailable(
+      GetUnconsentedPrimaryAccountWhenAvailableCallback callback) override;
   void GetAccessToken(const CoreAccountId& account_id,
                       const ScopeSet& scopes,
                       const std::string& consumer_id,
@@ -57,7 +58,8 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   // signin::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& account_info) override;
 
   // Notified when there is a change in the state of the account
   // corresponding to |account_id|.
@@ -73,7 +75,7 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
 
   // List of callbacks that will be notified when the primary account is
   // available.
-  std::vector<GetPrimaryAccountWhenAvailableCallback>
+  std::vector<GetUnconsentedPrimaryAccountWhenAvailableCallback>
       primary_account_available_callbacks_;
 };
 

@@ -492,7 +492,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
   void ForceFullCompositingUpdate() {
     helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
  private:

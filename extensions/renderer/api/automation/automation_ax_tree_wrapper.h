@@ -32,7 +32,6 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
   static std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
   GetChildTreeIDReverseMap();
 
-  ui::AXTreeID tree_id() const { return tree_id_; }
   ui::AXTree* tree() { return &tree_; }
   AutomationInternalCustomBindings* owner() { return owner_; }
 
@@ -63,7 +62,7 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
   void EventListenerRemoved(ax::mojom::Event event_type, ui::AXNode* node);
   bool HasEventListener(ax::mojom::Event event_type, ui::AXNode* node);
 
-  // AXTreeManager methods.
+  // AXTreeManager overrides.
   ui::AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
                               const int32_t node_id) const override;
   ui::AXTreeID GetTreeID() const override;

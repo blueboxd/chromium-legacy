@@ -1,0 +1,163 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package feedui;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/ui/piet/piet.proto";
+
+// This is a simplified and complete set of protos that define UI.
+// It includes everything from search.now.ui needed in the UI, and excludes
+// other data to reduce complexity. These proto messages should be constructible
+// from the store protos.
+
+// A stream is a list of cards in order.
+// Each StreamUpdate contains the full list of cards,
+// but subsequent StreamUpdates after the first may refer to
+// cards previously received by card_id.
+message StreamUpdate {
+  // Either a reference to an existing card, or a new card.
+  message CardUpdate {
+    oneof update {
+      Card card = 1;
+      string card_id = 2;
+    }
+  }
+  // One entry for each card in the stream, in the order they should be
+  // presented. Existing cards not present in updated_cards should be dropped.
+  repeated CardUpdate updated_cards = 1;
+  repeated SharedState new_shared_states = 2;
+  // True if all cards are already shown. The 'more' button will be
+  // hidden if this is true.
+  bool no_more_cards = 3;
+}
+
+// A card rendered with Piet.
+message Card {
+  // An opaque unique ID.
+  string card_id = 1;
+  repeated string piet_shared_state_ids = 2;
+  // The piet frame. The frame contains Action messages through an
+  // extension of search.now.ui.piet.Action.
+  components.feed.core.proto.ui.piet.Frame frame = 3;
+  bool can_swipe = 4;
+  bool can_tap = 5;
+  // And other action availability...
+
+  // True if the card is stale. Stale cards shouldn't be shown unless the user
+  // has already seen it on the same surface.
+  bool is_stale = 6;
+}
+
+// Wraps a piet shared state with a unique ID.
+message SharedState {
+  string id = 1;
+  components.feed.core.proto.ui.piet.PietSharedState piet_shared_state = 2;
+}
+
+// Piet attaches actions to many things: entities, frames, text, etc...,
+// and uses one Action for each user-action: tap, swipe, long-press, etc...
+// We can swap out PietFeedActionPayload for the 'Action' message below
+// before sending the protos over to java.
+// See ui_extension.proto. This message extends ui.piet.Action.
+message Action {
+  // Always sent to C++ when action is triggered.
+  string action_id = 1;
+
+  // The following fields are only necessary for a subset of action types that
+  // have an effect on the feed UI.
+  oneof extra_data {
+    // Present if this is a context menu action.
+    ContextMenu context_menu = 2;
+    // Present if this is a tooltip action.
+    TooltipData tooltip = 3;
+  }
+  // Present if the action can be undone.
+  UndoAction undo = 4;
+  // If not empty, this is the card dismissed by this action.
+  // Used when undo is present, so that the UI can hide the dismissed card
+  // before the dismiss is committed.
+  string dismiss_card_id = 5;
+}
+
+message ContextMenuEntry {
+  string label = 1;
+  int32 id = 2;
+}
+
+message ContextMenu {
+  repeated ContextMenuEntry entries = 1;
+}
+
+// These messages didn't change from now.ui.action.
+
+message UndoAction {
+  // The string shown to the user that confirms the action was just taken.
+  string confirmation_label = 1;
+  // The string that labels that option to reverse the action. Defaults to
+  // "Undo" if not set.
+  string undo_label = 2;
+}
+
+message TooltipData {
+  message Insets {
+    int32 top = 1;
+    int32 bottom = 2;
+  }
+  enum FeatureName {
+    // No tooltip will render if the FeatureName is UNKNOWN.
+    UNKNOWN = 0;
+    CARD_MENU = 1;
+  }
+  string label = 1;
+  string accessibility_label = 2;
+  FeatureName feature_name = 3;
+  // The information for where to offset the arrow from the referenced view.
+  Insets insets = 4;
+}
+
+// An event on the UI.
+message UiEvent {
+  enum Type {
+    UNKNOWN = 0;
+    CARD_TAPPED = 1;
+    CARD_VIEWED = 2;
+    CARD_SWIPED = 3;
+    MORE_BUTTON_VIEWED = 4;
+    MORE_BUTTON_CLICKED = 5;
+    SPINNER_STARTED = 6;
+    SPINNER_FINISHED = 7;
+    SPINNER_DESTROYED_WITHOUT_COMPLETING = 8;
+    PIET_FRAME_RENDERING_EVENT = 9;
+    SCROLL_STREAM = 10;
+  }
+  enum SpinnerType {
+    UNKNOWN_SPINNER_TYPE = 0;
+    // Spinner shown on initial load of the Feed.
+    INITIAL_LOAD = 1;
+    // Spinner shown when Feed is refreshed.
+    ZERO_STATE_REFRESH = 2;
+    // Spinner shown when more button is clicked.
+    MORE_BUTTON = 3;
+    // Spinner shown when a synthetic token is consumed.
+    SYNTHETIC_TOKEN = 4;
+    // Spinner shown when a spinner is shown for loading the infinite feed.
+    INFINITE_FEED = 5;
+  }
+  // For CARD_* type events.
+  string card_id = 1;
+  // For MORE_BUTTON_* type events.
+  int32 more_button_position = 2;
+  // For SPINNER_* type events.
+  SpinnerType spinner_type = 3;
+  // For SPINNER_FINISHED and SPINNER_DESTROYED_WITHOUT_COMPLETING.
+  int32 spinner_time_shown = 4;
+  // For PIET_FRAME_RENDERING_EVENT.
+  repeated int32 piet_error_codes = 5;
+  // For SCROLL_STREAM.
+  int32 scroll_distance = 6;
+}

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
+#include "ash/display/display_change_dialog.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
@@ -74,6 +75,10 @@ class ASH_EXPORT ResolutionNotificationController
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override;
 
+  DisplayChangeDialog* dialog_for_testing() const {
+    return confirmation_dialog_.get();
+  }
+
  private:
   friend class ResolutionNotificationControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ResolutionNotificationControllerTest, Timeout);
@@ -90,6 +95,9 @@ class ASH_EXPORT ResolutionNotificationController
   // during the countdown so the update isn't necessarily read by the spoken
   // feedback.
   void CreateOrUpdateNotification(bool enable_spoken_feedback);
+
+  // Create a new modal dialog, or replace the dialog if it already exists.
+  void CreateOrReplaceModalDialog();
 
   // Called when the user accepts the display resolution change. Set
   // |close_notification| to true when the notification should be removed.
@@ -110,6 +118,8 @@ class ASH_EXPORT ResolutionNotificationController
   static void SuppressTimerForTest();
 
   std::unique_ptr<ResolutionChangeInfo> change_info_;
+
+  base::WeakPtr<DisplayChangeDialog> confirmation_dialog_;
 
   base::WeakPtrFactory<ResolutionNotificationController> weak_factory_{this};
 

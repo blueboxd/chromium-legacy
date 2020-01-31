@@ -8,9 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
+class Browser;
 class Profile;
 
 namespace base {
@@ -44,13 +47,18 @@ class LaunchService : public KeyedService {
   // Open the application in a way specified by |params|.
   content::WebContents* OpenApplication(const AppLaunchParams& params);
 
-  // Attempt to open |app_id| in a new window.
-  bool OpenApplicationWindow(const std::string& app_id,
-                             const base::CommandLine& command_line,
-                             const base::FilePath& current_directory);
-
-  // Attempt to open |app_id| in a new tab.
-  bool OpenApplicationTab(const std::string& app_id);
+  // Attempt to open |app_id| in a new window or tab. Open an empty browser
+  // window if unsuccessful. The user's preferred launch container for the app
+  // (standalone window or browser tab) is used. |callback| will be called with
+  // the container type used to open the app, kLaunchContainerNone if an empty
+  // browser window was opened.
+  void LaunchApplication(
+      const std::string& app_id,
+      const base::CommandLine& command_line,
+      const base::FilePath& current_directory,
+      base::OnceCallback<void(Browser* browser,
+                              apps::mojom::LaunchContainer container)>
+          callback);
 
  private:
   LaunchManager& GetLaunchManagerForApp(const std::string& app_id);

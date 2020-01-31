@@ -405,6 +405,10 @@ void ServiceWorkerPaymentApp::RecordUse() {
   NOTIMPLEMENTED();
 }
 
+bool ServiceWorkerPaymentApp::NeedsInstallation() const {
+  return needs_installation_;
+}
+
 base::string16 ServiceWorkerPaymentApp::GetLabel() const {
   return base::UTF8ToUTF16(needs_installation_
                                ? installable_web_app_info_->name

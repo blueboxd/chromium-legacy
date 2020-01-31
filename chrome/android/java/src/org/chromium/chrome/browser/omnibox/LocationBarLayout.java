@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -68,6 +67,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;

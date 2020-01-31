@@ -5,6 +5,28 @@
 import("//build/config/jumbo.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
+
+blink_python_runner("make_generated_document_policy_features") {
+  script = "../renderer/build/scripts/make_document_policy_features.py"
+
+  inputs =
+      scripts_for_json5_files + [
+        "../renderer/build/scripts/make_document_policy_features.py",
+        "../renderer/core/feature_policy/document_policy_features.json5",
+        "../renderer/build/scripts/templates/document_policy_features.cc.tmpl",
+      ]
+  outputs = [ "$root_gen_dir/third_party/blink/common/feature_policy/document_policy_features.cc" ]
+
+  args = [
+    rebase_path(
+        "../renderer/core/feature_policy/document_policy_features.json5",
+        root_build_dir),
+    "--output_dir",
+    rebase_path("$root_gen_dir/third_party/blink/common/feature_policy",
+                root_build_dir),
+  ]
+}
 
 jumbo_source_set("common") {
   # No target should directly depend on this target since this is just the
@@ -99,7 +121,12 @@ jumbo_source_set("common") {
     "web_package/signed_exchange_request_matcher.cc",
   ]
 
-  public_deps = [ "//third_party/blink/public/common:headers" ]
+  sources += get_target_outputs(":make_generated_document_policy_features")
+
+  public_deps = [
+    ":make_generated_document_policy_features",
+    "//third_party/blink/public/common:headers",
+  ]
 
   deps = [
     "//base",

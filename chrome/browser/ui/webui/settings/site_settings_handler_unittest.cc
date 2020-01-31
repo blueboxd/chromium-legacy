@@ -28,7 +28,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -46,6 +46,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/infobar.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
@@ -611,8 +612,8 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   }
 
   // Test embargoed settings also appear.
-  PermissionDecisionAutoBlocker* auto_blocker =
-      PermissionDecisionAutoBlocker::GetForProfile(profile());
+  permissions::PermissionDecisionAutoBlocker* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
   auto_blocker->SetClockForTesting(&clock);

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 
@@ -21,22 +22,8 @@ using infobars::InfoBarManager;
 
 WEB_STATE_USER_DATA_KEY_IMPL(InfobarOverlayTabHelper)
 
-// static
-void InfobarOverlayTabHelper::CreateForWebState(
-    web::WebState* web_state,
-    std::unique_ptr<InfobarOverlayRequestFactory> request_factory) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new InfobarOverlayTabHelper(
-                               web_state, std::move(request_factory))));
-  }
-}
-
-InfobarOverlayTabHelper::InfobarOverlayTabHelper(
-    web::WebState* web_state,
-    std::unique_ptr<InfobarOverlayRequestFactory> request_factory)
-    : request_inserter_(web_state, std::move(request_factory)),
+InfobarOverlayTabHelper::InfobarOverlayTabHelper(web::WebState* web_state)
+    : request_inserter_(InfobarOverlayRequestInserter::FromWebState(web_state)),
       request_scheduler_(web_state, this) {}
 
 InfobarOverlayTabHelper::~InfobarOverlayTabHelper() = default;

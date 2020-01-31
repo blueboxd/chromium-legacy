@@ -4,6 +4,12 @@
      found in the LICENSE file. -->
 
 <resources>
+    <!-- Miscellaneous -->
+    <dimen name="action_bar_shadow_height">10dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="clear_text_button_end_padding">10dp</dimen>
+    <dimen name="default_rounded_corner_radius">8dp</dimen>
+
     <!-- DualControlLayout -->
     <dimen name="dual_control_margin_between_items">8dp</dimen>
 
@@ -37,6 +43,29 @@
 
     <!-- Drag-Reorderable List dimensions -->
     <dimen name="list_item_dragged_elevation">6dp</dimen>
+
+    <!-- Modern List Item dimensions -->
+    <dimen name="list_item_min_height">64dp</dimen>
+    <dimen name="list_item_default_margin">16dp</dimen>
+    <dimen name="list_item_start_icon_right_margin">20dp</dimen>
+    <dimen name="list_item_start_icon_width">36dp</dimen>
+    <dimen name="list_item_end_icon_width">56dp</dimen>
+
+    <!-- SelectableListLayout dimensions -->
+    <dimen name="selectable_list_layout_row_padding">16dp</dimen>
+    <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
+    <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
+    <dimen name="search_toolbar_modern_bg_top_bottom_inset">8dp</dimen>
+    <dimen name="search_toolbar_modern_bg_lateral_inset">8dp</dimen>
+    <dimen name="selectable_list_toolbar_nav_button_start_offset">4dp</dimen>
+    <dimen name="selectable_list_search_icon_end_padding">4dp</dimen>
+    <dimen name="selectable_list_toolbar_height">56dp</dimen>
+
+    <!-- Modern toolbar dimensions -->
+    <dimen name="modern_toolbar_background_size">40dp</dimen>
+    <!-- Sometimes the modern toolbar is shown at 48dp so a corner radius of
+         24dp is needed to completely round the corners. -->
+    <dimen name="modern_toolbar_background_corner_radius">24dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>

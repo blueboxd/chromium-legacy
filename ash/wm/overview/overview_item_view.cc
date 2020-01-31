@@ -28,6 +28,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -51,7 +52,7 @@ constexpr base::TimeDelta kCloseButtonSlowFadeInDuration =
 constexpr base::TimeDelta kCloseButtonSlowFadeInDelay =
     base::TimeDelta::FromMilliseconds(750);
 
-constexpr int kCloseButtonInkDropInsetDp = 2;
+constexpr int kCloseButtonInkDropRadiusDp = 18;
 
 constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
 
@@ -102,9 +103,15 @@ class OverviewCloseButton : public views::ImageButton {
     SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
     SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
     SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+
+    views::InstallFixedSizeCircleHighlightPathGenerator(
+        this, kCloseButtonInkDropRadiusDp);
   }
 
   ~OverviewCloseButton() override = default;
+
+  OverviewCloseButton(const OverviewCloseButton&) = delete;
+  OverviewCloseButton& operator=(const OverviewCloseButton&) = delete;
 
   // Resets the listener so that the listener can go out of scope.
   void ResetListener() { listener_ = nullptr; }
@@ -115,7 +122,6 @@ class OverviewCloseButton : public views::ImageButton {
     auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
     ink_drop->SetAutoHighlightMode(
         views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-    ink_drop->SetShowHighlightOnHover(true);
     return ink_drop;
   }
 
@@ -130,21 +136,9 @@ class OverviewCloseButton : public views::ImageButton {
     return std::make_unique<views::InkDropHighlight>(
         gfx::PointF(GetLocalBounds().CenterPoint()),
         std::make_unique<views::CircleLayerDelegate>(
-            kCloseButtonInkDropRippleHighlightColor, GetInkDropRadius()));
+            kCloseButtonInkDropRippleHighlightColor,
+            kCloseButtonInkDropRadiusDp));
   }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
-  }
-
- private:
-  int GetInkDropRadius() const {
-    return std::min(size().width(), size().height()) / 2 -
-           kCloseButtonInkDropInsetDp;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
 };
 
 }  // namespace

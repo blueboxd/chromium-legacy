@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"

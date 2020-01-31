@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/common/content_export.h"
 
 namespace content {

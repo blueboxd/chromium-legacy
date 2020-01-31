@@ -156,8 +156,7 @@ void NativeRendererMessagingService::DispatchOnDisconnect(
 gin::Handle<GinPort> NativeRendererMessagingService::Connect(
     ScriptContext* script_context,
     const MessageTarget& target,
-    const std::string& channel_name,
-    bool include_tls_channel_id) {
+    const std::string& channel_name) {
   if (!ScriptContextIsValid(script_context))
     return gin::Handle<GinPort>();
 
@@ -172,8 +171,7 @@ gin::Handle<GinPort> NativeRendererMessagingService::Connect(
       PortId(script_context->context_id(), data->next_port_id++, is_opener));
 
   bindings_system_->GetIPCMessageSender()->SendOpenMessageChannel(
-      script_context, port->port_id(), target, channel_name,
-      include_tls_channel_id);
+      script_context, port->port_id(), target, channel_name);
   return port;
 }
 
@@ -181,7 +179,6 @@ void NativeRendererMessagingService::SendOneTimeMessage(
     ScriptContext* script_context,
     const MessageTarget& target,
     const std::string& method_name,
-    bool include_tls_channel_id,
     const Message& message,
     v8::Local<v8::Function> response_callback) {
   if (!ScriptContextIsValid(script_context))
@@ -193,9 +190,8 @@ void NativeRendererMessagingService::SendOneTimeMessage(
   bool is_opener = true;
   PortId port_id(script_context->context_id(), data->next_port_id++, is_opener);
 
-  one_time_message_handler_.SendMessage(script_context, port_id, target,
-                                        method_name, include_tls_channel_id,
-                                        message, response_callback);
+  one_time_message_handler_.SendMessage(
+      script_context, port_id, target, method_name, message, response_callback);
 }
 
 void NativeRendererMessagingService::PostMessageToPort(

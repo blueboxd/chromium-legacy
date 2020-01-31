@@ -55,6 +55,12 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
         return dialog;
     }
 
+    @CalledByNative
+    private void onNativeDestroy() {
+        mNativeArConsentDialog = 0;
+        mModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
+    }
+
     private ArConsentDialog(long arConsentDialog) {
         mNativeArConsentDialog = arConsentDialog;
     }
@@ -133,13 +139,18 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
 
     private void consentGranted() {
         if (DEBUG_LOGS) Log.i(TAG, "consentGranted");
-        // We have user consent to start the session.
-        ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, true);
+        if (mNativeArConsentDialog != 0) {
+            // We have user consent to start the session.
+            ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, true);
+        }
     }
 
     private void consentDenied() {
         if (DEBUG_LOGS) Log.i(TAG, "consentDenied");
-        ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, false);
+
+        if (mNativeArConsentDialog != 0) {
+            ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, false);
+        }
     }
 
     @NativeMethods

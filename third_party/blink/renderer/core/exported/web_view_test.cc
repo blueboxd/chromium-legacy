@@ -296,7 +296,7 @@ class WebViewTest : public testing::Test {
 
   void UpdateAllLifecyclePhases() {
     web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   InteractiveDetector* GetTestInteractiveDetector(Document& document) {
@@ -2414,7 +2414,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       base_url_ + "back_forward_restore_scroll.html");
   web_view_impl->MainFrameWidget()->Resize(WebSize(640, 480));
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   // Emulate a user scroll
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 900));
@@ -2442,7 +2442,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   // Click a different anchor
   FrameLoadRequest request_b(
@@ -2452,7 +2452,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   Persistent<HistoryItem> item3 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   // Go back, then forward. The scroll position should be properly set on the
   // forward navigation.
@@ -4470,7 +4470,7 @@ class ShowUnhandledTapTest : public WebViewTest {
     web_view_ = mojo_test_helper_->WebView();
     web_view_->MainFrameWidget()->Resize(WebSize(500, 300));
     web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     RunPendingTasks();
 
     WebLocalFrameImpl* web_local_frame = web_view_->MainFrameImpl();
@@ -5778,8 +5778,7 @@ TEST_F(WebViewTest, RootLayerAttachment) {
   // events are an example of a real case where this occurs
   // (see: WebViewTest::ClientTapHandling).
   web_view->MainFrameWidget()->UpdateLifecycle(
-      WebFrameWidget::LifecycleUpdate::kPrePaint,
-      WebWidget::LifecycleUpdateReason::kTest);
+      WebFrameWidget::LifecycleUpdate::kPrePaint, DocumentUpdateReason::kTest);
 
   // Layers (including the root layer) should not be attached until the paint
   // lifecycle phase.
@@ -5788,8 +5787,7 @@ TEST_F(WebViewTest, RootLayerAttachment) {
 
   // Do a full lifecycle update and ensure that the root layer has been added.
   web_view->MainFrameWidget()->UpdateLifecycle(
-      WebFrameWidget::LifecycleUpdate::kAll,
-      WebWidget::LifecycleUpdateReason::kTest);
+      WebFrameWidget::LifecycleUpdate::kAll, DocumentUpdateReason::kTest);
   EXPECT_TRUE(layer_tree_host->root_layer());
 }
 

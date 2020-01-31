@@ -89,7 +89,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
     frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().c_str());
     MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     MainFrameImpl()->GetFrame()->GetDocument()->UpdateStyleAndLayoutTree();
     test::RunPendingTasks();
   }
@@ -112,7 +112,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_content),
                                         ASSERT_NO_EXCEPTION);
     scope.GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     return shadow_root;
   }
 

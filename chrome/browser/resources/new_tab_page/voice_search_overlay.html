@@ -1,0 +1,111 @@
+<style>
+  #dialog {
+    align-items: center;
+    background-color: var(--ntp-background-override-color);
+    border: none;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  #closeButton {
+    background: none;
+    border: none;
+    color: var(--ntp-secondary-text-color);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 26px;
+    height: 15px;
+    line-height: 0;
+    outline: none;
+    padding: 0;
+    position: absolute;
+    top: 16px;
+    width: 15px;
+  }
+
+  #closeButton:hover {
+    color: var(--ntp-secondary-text-hover-color);
+  }
+
+  :host-context(.focus-outline-visible) #closeButton:focus {
+    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
+  }
+
+  :host-context([dir='ltr']) #closeButton {
+    right: 16px;
+  }
+
+  :host-context([dir='rtl']) #closeButton {
+    left: 16px;
+  }
+
+  #texts {
+    color: var(--ntp-secondary-text-color);
+    font-size: 32px;
+    max-width: 660px;
+    min-width: 622px;
+    text-align: start;
+  }
+
+  #finalResult {
+    color: var(--ntp-primary-text-color);
+  }
+
+  #errors,
+  #errorLinks {
+    display: inline;
+  }
+
+  #errorLinks a {
+    color: var(--cr-link-color);
+    font-size: 18px;
+    font-weight: 500;
+    margin-inline-start: 0.25em;
+    text-decoration: none;
+  }
+</style>
+<dialog id="dialog" on-close="onOverlayClose_" on-click="onOverlayClick_">
+  <button id="closeButton" tabindex="0" title="$i18n{close}">×</button>
+  <!-- TODO(crbug.com/1042534): Add microphone button. -->
+  <!-- TODO(crbug.com/1042534): Add animations. -->
+  <!-- TODO(crbug.com/1042534): Add Listening state. -->
+  <iron-pages id="texts" selected="[[getText_(state_)]]"
+      attr-for-selected="text" fallback-selection="none" aria-live="polite">
+    <div text="none"></div>
+    <div text="waiting">$i18n{waiting}</div>
+    <div text="speak">$i18n{speak}</div>
+    <div text="result">
+      <span id="finalResult">[[finalResult_]]</span>
+      <span>[[interimResult_]]</span>
+    </div>
+    <div text="error">
+      <iron-pages id="errors" selected="[[error_]]" attr-for-selected="error"
+          fallback-selection="7">
+        <span error="1">$i18n{noVoice}</span>
+        <span error="2">$i18n{audioError}</span>
+        <span error="3">$i18n{networkError}</span>
+        <span error="4">$i18n{permissionError}</span>
+        <span error="5">$i18n{languageError}</span>
+        <span error="6">$i18n{noTranslation}</span>
+        <span error="7">$i18n{otherError}</span>
+      </iron-pages>
+      <iron-pages id="errorLinks" selected="[[getErrorLink_(error_)]]"
+          attr-for-selected="link" fallback-selection="none">
+        <span link="none"></span>
+        <a link="learn-more" target="_blank" href="[[helpUrl_]]"><!--
+          -->$i18n{learnMore}
+        </a>
+        <a link="details" target="_blank" href="[[helpUrl_]]"><!--
+          -->$i18n{details}
+        </a>
+        <a link="try-again" href="#">$i18n{tryAgain}</a>
+      </iron-pages>
+    </div>
+  </iron-pages>
+</dialog>

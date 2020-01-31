@@ -6,7 +6,6 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ANDROID_H_
 
 #include "base/containers/circular_deque.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 
@@ -58,7 +57,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   // thread. These two methods are scheduled on the gpu thread to setup and
   // teardown the gpu side receiver.
   void InitializeOverlayProcessorOnGpu(
-      gpu::SharedImageManager* shared_image_manager);
+      gpu::SharedImageManager* shared_image_manager,
+      base::WaitableEvent* event);
   void DestroyOverlayProcessorOnGpu(base::WaitableEvent* event);
   void TakeOverlayCandidates(CandidateList* candidate_list) override;
   void NotifyOverlayPromotion(
@@ -73,18 +73,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   // overlay, if one backs them with a SurfaceView.
   PromotionHintInfoMap promotion_hint_info_map_;
 
-  // Set of resources that have requested a promotion hint that also have quads
-  // that use them.
-  ResourceIdSet promotion_hint_requestor_set_;
-
   scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_;
   const bool overlay_enabled_;
-  bool able_to_create_processor_on_gpu_ = false;
   // This class is created, accessed, and destroyed on the gpu thread.
   std::unique_ptr<OverlayProcessorOnGpu> processor_on_gpu_;
-  base::WaitableEvent gpu_init_event_{
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED};
 
   OverlayCandidateList overlay_candidates_;
 
@@ -93,7 +85,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
 
   // Keep locks on overlay resources to keep them alive. Since we don't have
   // an exact signal on when the overlays are done presenting, use
-  // OverlayPresentationComplete as a signal to clear locks from the older frames.
+  // OverlayPresentationComplete as a signal to clear locks from the older
+  // frames.
   base::circular_deque<std::vector<OverlayResourceLock>> pending_overlay_locks_;
   // Locks for overlays have been committed. |pending_overlay_locks_| will
   // be moved to |committed_overlay_locks_| after OverlayPresentationComplete.

@@ -231,7 +231,7 @@ RequestResult ExtensionHooksDelegate::HandleSendRequest(
 
   messaging_service_->SendOneTimeMessage(
       script_context, MessageTarget::ForExtension(target_id),
-      messaging_util::kSendRequestChannel, false, *message, response_callback);
+      messaging_util::kSendRequestChannel, *message, response_callback);
 
   return RequestResult(RequestResult::HANDLED);
 }

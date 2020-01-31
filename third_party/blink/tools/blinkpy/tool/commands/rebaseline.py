@@ -32,13 +32,16 @@ import logging
 import optparse
 import re
 
+from collections import defaultdict
+
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
 from blinkpy.common.net.results_fetcher import Build
 from blinkpy.tool.commands.command import Command
 from blinkpy.web_tests.models import test_failures
-from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.models.test_expectations import SystemConfigurationRemover, TestExpectations
 from blinkpy.web_tests.port import base, factory
+
 
 _log = logging.getLogger(__name__)
 
@@ -369,8 +372,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     def _update_expectations_files(self, lines_to_remove):
         tests = lines_to_remove.keys()
-        to_remove = []
-
+        to_remove = defaultdict(set)
+        all_versions = frozenset([config.version.lower() for config in
+                                  self._tool.port_factory.get().all_test_configurations()])
         # This is so we remove lines for builders that skip this test.
         # For example, Android skips most tests and we don't want to leave
         # stray [ Android ] lines in TestExpectations.
@@ -378,23 +382,23 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         for port_name in self._tool.port_factory.all_port_names():
             port = self._tool.port_factory.get(port_name)
             for test in tests:
-                if port.skips_test(test):
-                    for test_configuration in port.all_test_configurations():
-                        if test_configuration.version == port.test_configuration().version:
-                            to_remove.append((test, test_configuration))
+                if port.test_configuration().version.lower() in all_versions and port.skips_test(test):
+                    to_remove[test].add(port.test_configuration().version.lower())
 
-        for test in lines_to_remove:
-            for port_name in lines_to_remove[test]:
+        # Get configurations to remove based on builders for each test
+        for test, port_names in lines_to_remove.items():
+            for port_name in port_names:
                 port = self._tool.port_factory.get(port_name)
-                for test_configuration in port.all_test_configurations():
-                    if test_configuration.version == port.test_configuration().version:
-                        to_remove.append((test, test_configuration))
-
+                if port.test_configuration().version.lower() in all_versions:
+                    to_remove[test].add(port.test_configuration().version.lower())
         port = self._tool.port_factory.get()
-        expectations = TestExpectations(port, include_overrides=False)
-        expectations_string = expectations.remove_configurations(to_remove)
         path = port.path_to_generic_test_expectations_file()
-        self._tool.filesystem.write_text_file(path, expectations_string)
+        test_expectations = TestExpectations(
+            port, expectations_dict={path: self._tool.filesystem.read_text_file(path)})
+        system_remover = SystemConfigurationRemover(test_expectations)
+        for test, versions in to_remove.items():
+            system_remover.remove_os_versions(test, versions)
+        system_remover.update_expectations()
 
     def _run_in_parallel(self, commands):
         if not commands:

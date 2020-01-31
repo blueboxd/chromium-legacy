@@ -373,8 +373,8 @@ public class ContextualSearchTabHelper
                 && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
                 && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
                 // Svelte and Accessibility devices are incompatible with the first-run flow and
-                // Talkback has poor interaction with tap to search (see http://crbug.com/399708 and
-                // http://crbug.com/396934).
+                // Talkback has poor interaction with Contextual Search (see http://crbug.com/399708
+                // and http://crbug.com/396934).
                 && !manager.isRunningInCompatibilityMode()
                 && !(mTab.isShowingErrorPage() || ((TabImpl) mTab).isShowingInterstitialPage())
                 && isDeviceOnline(manager) && mUnhookedTab == null;

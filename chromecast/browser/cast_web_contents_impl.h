@@ -67,10 +67,15 @@ class CastWebContentsImpl : public CastWebContents,
                                const std::vector<std::string>& origins,
                                base::StringPiece script) override;
   void RemoveBeforeLoadJavaScript(base::StringPiece id) override;
+  // TODO(crbug.com/803242): Deprecated and will be shortly removed.
   void PostMessageToMainFrame(
       const std::string& target_origin,
       const std::string& data,
       std::vector<mojo::ScopedMessagePipeHandle> channels) override;
+  void PostMessageToMainFrame(
+      const std::string& target_origin,
+      const std::string& data,
+      std::vector<blink::WebMessagePort> ports) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool is_websql_enabled() override;

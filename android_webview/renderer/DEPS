@@ -11,6 +11,7 @@ include_rules = [
   "+components/grit",
   "+components/printing/common",
   "+components/printing/renderer",
+  "+components/safe_browsing/content/common",
   "+components/safe_browsing/core/common",
   "+components/safe_browsing/core/features.h",
   "+components/safe_browsing/content/renderer",

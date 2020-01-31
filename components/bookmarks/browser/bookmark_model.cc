@@ -387,10 +387,10 @@ void BookmarkModel::SetTitle(const BookmarkNode* node,
   // add it back. Only do this for URL nodes. A directory node can have its
   // title changed but should be excluded from the index.
   if (node->is_url())
-    index_->Remove(node);
+    titled_url_index_->Remove(node);
   AsMutable(node)->SetTitle(title);
   if (node->is_url())
-    index_->Add(node);
+    titled_url_index_->Add(node);
 
   if (store_)
     store_->ScheduleSave();
@@ -414,7 +414,7 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
   for (BookmarkModelObserver& observer : observers_)
     observer.OnWillChangeBookmarkNode(this, node);
 
-  index_->Remove(mutable_node);
+  titled_url_index_->Remove(mutable_node);
   url_index_->SetUrl(mutable_node, url);
   AddNodeToIndexRecursive(mutable_node);
 
@@ -761,7 +761,8 @@ void BookmarkModel::GetBookmarksMatching(
   if (!loaded_)
     return;
 
-  index_->GetResultsMatching(text, max_count, matching_algorithm, matches);
+  titled_url_index_->GetResultsMatching(text, max_count, matching_algorithm,
+                                        matches);
 }
 
 void BookmarkModel::ClearStore() {
@@ -823,7 +824,7 @@ void BookmarkModel::RemoveNodeFromIndexRecursive(BookmarkNode* node) {
   DCHECK(!is_permanent_node(node));
 
   if (node->is_url())
-    index_->Remove(node);
+    titled_url_index_->Remove(node);
 
   CancelPendingFaviconLoadRequests(node);
 
@@ -849,7 +850,7 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
       store_->ScheduleSave();
   }
 
-  index_ = details->owned_index();
+  titled_url_index_ = details->owned_index();
   url_index_ = details->url_index();
   root_ = details->root_node();
   // See declaration for details on why |owned_root_| is reset.
@@ -858,7 +859,8 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   other_node_ = details->other_folder_node();
   mobile_node_ = details->mobile_folder_node();
 
-  index_->SetNodeSorter(std::make_unique<TypedCountSorter>(client_.get()));
+  titled_url_index_->SetNodeSorter(
+      std::make_unique<TypedCountSorter>(client_.get()));
   // Sorting the permanent nodes has to happen on the main thread, so we do it
   // here, after loading completes.
   std::stable_sort(root_->children_.begin(), root_->children_.end(),
@@ -903,7 +905,7 @@ void BookmarkModel::AddNodeToIndexRecursive(BookmarkNode* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (node->is_url())
-    index_->Add(node);
+    titled_url_index_->Add(node);
   for (const auto& child : node->children())
     AddNodeToIndexRecursive(child.get());
 }

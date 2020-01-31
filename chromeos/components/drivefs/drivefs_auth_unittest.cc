@@ -92,8 +92,8 @@ class FakeIdentityService
   }
 
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
-  void GetPrimaryAccountWhenAvailable(
-      GetPrimaryAccountWhenAvailableCallback callback) override {
+  void GetUnconsentedPrimaryAccountWhenAvailable(
+      GetUnconsentedPrimaryAccountWhenAvailableCallback callback) override {
     if (!auth_enabled_) {
       return;
     }

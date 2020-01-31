@@ -357,10 +357,22 @@ void Preferences::RegisterProfilePrefs(
       prefs::kResolveTimezoneByGeolocationMigratedToMethod, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
+  bool allow_time_zone_resolve_by_default = true;
+  // CfM devices default to static timezone unless time zone resolving is
+  // explicitly enabled for the signin screen (usually by policy).
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation() &&
+      !system::TimeZoneResolverManager::
+          IfServiceShouldBeRunningForSigninScreen()) {
+    allow_time_zone_resolve_by_default = false;
+  }
+
   registry->RegisterIntegerPref(
       prefs::kResolveTimezoneByGeolocationMethod,
       static_cast<int>(
-          system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY),
+          allow_time_zone_resolve_by_default
+              ? system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY
+              : system::TimeZoneResolverManager::TimeZoneResolveMethod::
+                    DISABLED),
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterBooleanPref(prefs::kCaptivePortalAuthenticationIgnoresProxy,

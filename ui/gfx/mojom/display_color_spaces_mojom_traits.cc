@@ -7,6 +7,41 @@
 namespace mojo {
 
 // static
+gfx::mojom::ContentColorUsage
+EnumTraits<gfx::mojom::ContentColorUsage, gfx::ContentColorUsage>::ToMojom(
+    gfx::ContentColorUsage input) {
+  switch (input) {
+    case gfx::ContentColorUsage::kSRGB:
+      return gfx::mojom::ContentColorUsage::kSRGB;
+    case gfx::ContentColorUsage::kWideColorGamut:
+      return gfx::mojom::ContentColorUsage::kWideColorGamut;
+    case gfx::ContentColorUsage::kHDR:
+      return gfx::mojom::ContentColorUsage::kHDR;
+  }
+  NOTREACHED();
+  return gfx::mojom::ContentColorUsage::kSRGB;
+}
+
+// static
+bool EnumTraits<gfx::mojom::ContentColorUsage, gfx::ContentColorUsage>::
+    FromMojom(gfx::mojom::ContentColorUsage input,
+              gfx::ContentColorUsage* output) {
+  switch (input) {
+    case gfx::mojom::ContentColorUsage::kSRGB:
+      *output = gfx::ContentColorUsage::kSRGB;
+      return true;
+    case gfx::mojom::ContentColorUsage::kWideColorGamut:
+      *output = gfx::ContentColorUsage::kWideColorGamut;
+      return true;
+    case gfx::mojom::ContentColorUsage::kHDR:
+      *output = gfx::ContentColorUsage::kHDR;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<
     gfx::mojom::DisplayColorSpacesDataView,
     gfx::DisplayColorSpaces>::Read(gfx::mojom::DisplayColorSpacesDataView input,

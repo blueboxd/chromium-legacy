@@ -1375,7 +1375,8 @@ void StoragePartitionImpl::Initialize() {
 
   broadcast_channel_provider_ = std::make_unique<BroadcastChannelProvider>();
 
-  bluetooth_allowed_devices_map_ = new BluetoothAllowedDevicesMap();
+  bluetooth_allowed_devices_map_ =
+      std::make_unique<BluetoothAllowedDevicesMap>();
 
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(browser_context_);

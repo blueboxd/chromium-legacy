@@ -53,8 +53,7 @@ class BluetoothAllowedDevicesTest : public testing::Test {
 }  // namespace
 
 TEST_F(BluetoothAllowedDevicesTest, UniqueOriginNotSupported) {
-  scoped_refptr<BluetoothAllowedDevicesMap> allowed_devices_map =
-      new BluetoothAllowedDevicesMap();
+  auto allowed_devices_map = std::make_unique<BluetoothAllowedDevicesMap>();
   EXPECT_DEATH_IF_SUPPORTED(
       allowed_devices_map->GetOrCreateAllowedDevices(url::Origin()), "");
 }
@@ -102,8 +101,7 @@ TEST_F(BluetoothAllowedDevicesTest, AddTwoDevices) {
 }
 
 TEST_F(BluetoothAllowedDevicesTest, AddTwoDevicesFromTwoOriginsToMap) {
-  scoped_refptr<BluetoothAllowedDevicesMap> allowed_devices_map =
-      new BluetoothAllowedDevicesMap();
+  auto allowed_devices_map = std::make_unique<BluetoothAllowedDevicesMap>();
   content::BluetoothAllowedDevices& allowed_devices1 =
       allowed_devices_map->GetOrCreateAllowedDevices(TestOrigin1());
   content::BluetoothAllowedDevices& allowed_devices2 =
@@ -132,8 +130,7 @@ TEST_F(BluetoothAllowedDevicesTest, AddTwoDevicesFromTwoOriginsToMap) {
 }
 
 TEST_F(BluetoothAllowedDevicesTest, AddDeviceFromTwoOriginsToMap) {
-  scoped_refptr<BluetoothAllowedDevicesMap> allowed_devices_map =
-      new BluetoothAllowedDevicesMap();
+  auto allowed_devices_map = std::make_unique<BluetoothAllowedDevicesMap>();
   content::BluetoothAllowedDevices& allowed_devices1 =
       allowed_devices_map->GetOrCreateAllowedDevices(TestOrigin1());
   content::BluetoothAllowedDevices& allowed_devices2 =
@@ -346,8 +343,7 @@ TEST_F(BluetoothAllowedDevicesTest, AllowedServices_TwoDevices) {
 }
 
 TEST_F(BluetoothAllowedDevicesTest, AllowedServices_TwoOriginsOneDevice) {
-  scoped_refptr<BluetoothAllowedDevicesMap> allowed_devices_map =
-      new BluetoothAllowedDevicesMap();
+  auto allowed_devices_map = std::make_unique<BluetoothAllowedDevicesMap>();
   content::BluetoothAllowedDevices& allowed_devices1 =
       allowed_devices_map->GetOrCreateAllowedDevices(TestOrigin1());
   content::BluetoothAllowedDevices& allowed_devices2 =

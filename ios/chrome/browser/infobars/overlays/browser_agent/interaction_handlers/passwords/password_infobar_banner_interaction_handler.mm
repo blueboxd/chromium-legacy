@@ -6,7 +6,11 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_cancel_handler.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,8 +45,8 @@ void PasswordInfobarBannerInteractionHandler::MainButtonTapped(
 void PasswordInfobarBannerInteractionHandler::ShowModalButtonTapped(
     InfoBarIOS* infobar,
     web::WebState* web_state) {
-  // TODO(crbug.com/1033154): Add support for showing modal UI via
-  // OverlayPresenter.
+  InfobarOverlayRequestInserter::FromWebState(web_state)->AddOverlayRequest(
+      infobar, InfobarOverlayType::kModal);
 }
 
 void PasswordInfobarBannerInteractionHandler::BannerDismissedByUser(

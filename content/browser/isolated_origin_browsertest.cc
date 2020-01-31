@@ -2883,7 +2883,9 @@ class BroadcastChannelProviderInterceptor
     // Bind the real BroadcastChannelProvider implementation.
     mojo::ReceiverId receiver_id =
         storage_partition->GetBroadcastChannelProvider()->Connect(
-            rph->GetID(), std::move(receiver));
+            ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                rph->GetID()),
+            std::move(receiver));
 
     // Now replace it with this object and keep a pointer to the real
     // implementation.

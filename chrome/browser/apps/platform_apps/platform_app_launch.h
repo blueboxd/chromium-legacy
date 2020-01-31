@@ -15,6 +15,10 @@ class CommandLine;
 class FilePath;
 }  // namespace base
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace apps {
 
 // Tries to open an application window. If the app is specified to start in a
@@ -40,9 +44,10 @@ bool OpenExtensionApplicationWithReenablePrompt(
     const base::FilePath& current_directory);
 
 // Tries to open an application window by app's |url|.
-// Returns true if |url| was successfully opened in a window, and false
-// otherwise.
-bool OpenExtensionAppShortcutWindow(Profile* profile, const GURL& url);
+// Returns web contents if |url| was successfully opened in a window, and
+// nullptr otherwise.
+content::WebContents* OpenExtensionAppShortcutWindow(Profile* profile,
+                                                     const GURL& url);
 
 // Records the restored app launch for UMA.
 void RecordExtensionAppLaunchOnTabRestored(Profile* profile, const GURL& url);

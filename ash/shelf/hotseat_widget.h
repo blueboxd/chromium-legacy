@@ -69,6 +69,7 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   // ShelfComponent:
   void CalculateTargetBounds() override;
+  gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
 
   gfx::Size GetTranslucentBackgroundSize() const;
@@ -121,6 +122,8 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   base::Optional<LayoutInputs> layout_inputs_;
 
   HotseatState state_ = HotseatState::kShown;
+
+  Shelf* shelf_ = nullptr;
 
   // View containing the shelf items within an active user session. Owned by
   // the views hierarchy.

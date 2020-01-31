@@ -56,5 +56,8 @@ const base::Feature kPaymentRequestSkipToGPayIfNoCard{
 const base::Feature kWebPaymentsMinimalUI{"WebPaymentsMinimalUI",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDownRankJustInTimePaymentApp{
+    "DownRankJustInTimePaymentApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace payments

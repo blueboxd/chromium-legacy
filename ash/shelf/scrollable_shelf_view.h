@@ -9,6 +9,7 @@
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scroll_arrow_view.h"
 #include "ash/shelf/shelf.h"
@@ -30,6 +31,7 @@ class PresentationTimeRecorder;
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
+                                       public ShelfConfig::Observer,
                                        public ShelfButtonDelegate,
                                        public ShelfTooltipDelegate,
                                        public views::ContextMenuController,
@@ -214,6 +216,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window,
                                ShelfAlignment old_alignment) override;
+
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
 
   // ShelfTooltipDelegate:
   bool ShouldShowTooltipForView(const views::View* view) const override;

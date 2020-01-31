@@ -623,30 +623,6 @@
         <item name="android:textColorHint">@color/search_box_hint</item>
     </style>
 
-    <!-- Modern List Item -->
-    <style name="ListItemContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">@dimen/list_item_min_height</item>
-        <item name="android:orientation">horizontal</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
-    </style>
-    <style name="ListItemStartIcon">
-        <item name="android:layout_width">@dimen/list_item_start_icon_width</item>
-        <item name="android:layout_height">@dimen/list_item_start_icon_width</item>
-        <item name="android:layout_gravity">center_vertical</item>
-        <item name="android:layout_marginEnd">@dimen/list_item_start_icon_right_margin</item>
-        <item name="android:scaleType">center</item>
-        <item name="android:contentDescription">@null</item>
-    </style>
-    <style name="ListItemEndIcon">
-        <item name="android:layout_width">@dimen/list_item_end_icon_width</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:background">@null</item>
-        <item name="android:scaleType">center</item>
-    </style>
-
     <!-- Bookmarks -->
     <style name="TextAppearance.BookmarkEditFolderName"
         parent="@style/TextAppearance.AppCompat.Medium">
@@ -724,13 +700,6 @@
         <item name="iconHeight">16dp</item>
     </style>
 
-    <!-- Card for General Use -->
-    <style name="Card">
-        <item name="android:background">@drawable/hairline_border_card_background</item>
-    </style>
-    <style name="CardTransparentForDark">
-        <item name="android:background">@drawable/hairline_border_card_dark_transparent_bg</item>
-    </style>
     <!-- Content and Site Suggestions -->
     <style name="SuggestionCardModern" parent="Card">
         <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>

@@ -556,6 +556,8 @@ void RemoteFrame::UpdateHitTestOcclusionData() {
     if (LayoutEmbeddedContent* owner = OwnerLayoutObject()) {
       if (owner->GetFrame()->IsAttached() &&
           !owner->GetFrameView()->CanThrottleRendering()) {
+        // TODO(szager): remove this CHECK after diagnosing crash.
+        CHECK(owner->GetFrame()->GetPage());
         HitTestResult hit_test_result(owner->HitTestForOcclusion());
         const Node* hit_node = hit_test_result.InnerNode();
         unoccluded = (!hit_node || hit_node == owner->GetNode());

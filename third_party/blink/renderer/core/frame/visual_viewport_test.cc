@@ -122,13 +122,12 @@ class VisualViewportTest : public testing::Test,
 
   void UpdateAllLifecyclePhases() {
     WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   void UpdateAllLifecyclePhasesExceptPaint() {
     WebView()->MainFrameWidget()->UpdateLifecycle(
-        WebWidget::LifecycleUpdate::kPrePaint,
-        WebWidget::LifecycleUpdateReason::kTest);
+        WebWidget::LifecycleUpdate::kPrePaint, DocumentUpdateReason::kTest);
   }
 
   PaintArtifactCompositor* paint_artifact_compositor() {
@@ -1680,8 +1679,7 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
       WebScriptSource("var content = document.getElementById(\"content\");"
                       "content.style.width = \"1500px\";"
                       "content.style.height = \"2400px\";"));
-  frame_view.UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view.UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   const auto* scroll_node =
       frame_view.GetLayoutView()->FirstFragment().PaintProperties()->Scroll();

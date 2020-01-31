@@ -12,15 +12,11 @@ jumbo_source_set("browser") {
     "url_checker_delegate.h",
   ]
   deps = [
-    "//components/history/core/browser:browser",
-    "//components/safe_browsing/content",
     "//components/safe_browsing/content/web_ui:web_ui",
     "//components/safe_browsing/core:csd_proto",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core:realtimeapi_proto",
     "//components/safe_browsing/core:verdict_cache_manager",
-    "//components/safe_browsing/core/browser:network_context",
-    "//components/safe_browsing/core/browser:referrer_chain_provider",
     "//components/safe_browsing/core/common:common",
     "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:database_manager",

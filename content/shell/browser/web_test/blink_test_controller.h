@@ -33,7 +33,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/browser/web_test/leak_detector.h"
-#include "content/shell/common/web_test.mojom.h"
+#include "content/shell/common/blink_test.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -233,12 +233,12 @@ class BlinkTestController : public WebContentsObserver,
   void OnCaptureSessionHistory();
   void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);
   void OnBlockThirdPartyCookies(bool block);
-  mojo::AssociatedRemote<mojom::WebTestControl>& GetWebTestControlRemote(
+  mojo::AssociatedRemote<mojom::BlinkTestControl>& GetBlinkTestControlRemote(
       RenderFrameHost* frame);
-  void HandleWebTestControlError(const GlobalFrameRoutingId& key);
+  void HandleBlinkTestControlError(const GlobalFrameRoutingId& key);
 
   void OnCleanupFinished();
-  void OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump);
+  void OnCaptureDumpCompleted(mojom::BlinkTestDumpPtr dump);
   void OnPixelDumpCaptured(const SkBitmap& snapshot);
   void ReportResults();
   void EnqueueSurfaceCopyRequest();
@@ -308,7 +308,7 @@ class BlinkTestController : public WebContentsObserver,
 
   // Map from frame_tree_node_id into frame-specific dumps.
   std::map<int, std::string> frame_to_layout_dump_map_;
-  // Number of WebTestControl.DumpFrameLayout responses we are waiting for.
+  // Number of BlinkTestControl.DumpFrameLayout responses we are waiting for.
   int pending_layout_dumps_;
 
   // Renderer processes are observed to detect crashes.
@@ -325,7 +325,7 @@ class BlinkTestController : public WebContentsObserver,
   std::string navigation_history_dump_;
   base::Optional<SkBitmap> pixel_dump_;
   std::string actual_pixel_hash_;
-  mojom::WebTestDumpPtr main_frame_dump_;
+  mojom::BlinkTestDumpPtr main_frame_dump_;
   bool waiting_for_pixel_results_ = false;
   bool waiting_for_main_frame_dump_ = false;
 
@@ -333,7 +333,8 @@ class BlinkTestController : public WebContentsObserver,
   std::queue<Node*> composite_all_frames_node_queue_;
 
   // Map from one frame to one mojo pipe.
-  std::map<GlobalFrameRoutingId, mojo::AssociatedRemote<mojom::WebTestControl>>
+  std::map<GlobalFrameRoutingId,
+           mojo::AssociatedRemote<mojom::BlinkTestControl>>
       web_test_control_map_;
 
   base::ScopedTempDir writable_directory_for_tests_;

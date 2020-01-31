@@ -104,9 +104,6 @@ void GeolocationImpl::StartListeningForUpdates() {
 }
 
 void GeolocationImpl::SetHighAccuracy(bool high_accuracy) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy",
-      high_accuracy);
   high_accuracy_ = high_accuracy;
 
   if (ValidateGeoposition(position_override_)) {

@@ -103,7 +103,7 @@ class LinkHighlightImplTest : public testing::Test,
 
   void UpdateAllLifecyclePhases() {
     web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   LinkHighlight& GetLinkHighlight() {

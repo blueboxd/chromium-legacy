@@ -14,6 +14,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 class Event;

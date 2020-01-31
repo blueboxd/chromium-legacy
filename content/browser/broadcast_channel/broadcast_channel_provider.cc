@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
@@ -72,9 +71,11 @@ BroadcastChannelProvider::BroadcastChannelProvider() = default;
 BroadcastChannelProvider::~BroadcastChannelProvider() = default;
 
 mojo::ReceiverId BroadcastChannelProvider::Connect(
-    RenderProcessHostId render_process_host_id,
+    SecurityPolicyHandle security_policy_handle,
     mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver) {
-  return receivers_.Add(this, std::move(receiver), render_process_host_id);
+  return receivers_.Add(this, std::move(receiver),
+                        std::make_unique<SecurityPolicyHandle>(
+                            std::move(security_policy_handle)));
 }
 
 void BroadcastChannelProvider::ConnectToChannel(
@@ -83,17 +84,8 @@ void BroadcastChannelProvider::ConnectToChannel(
     mojo::PendingAssociatedRemote<blink::mojom::BroadcastChannelClient> client,
     mojo::PendingAssociatedReceiver<blink::mojom::BroadcastChannelClient>
         connection) {
-  RenderProcessHostId process_id = receivers_.current_context();
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-
-  // TODO(943887): Replace HasSecurityState() call with something that can
-  // preserve security state after process shutdown. The security state check
-  // is a temporary solution to avoid crashes when this method is run after the
-  // process associated with |process_id| has been destroyed. It temporarily
-  // restores the old behavior of always allowing access if the process is gone.
-  // See https://crbug.com/943027 for details.
-  if (!policy->CanAccessDataForOrigin(process_id, origin) &&
-      policy->HasSecurityState(process_id)) {
+  const auto& security_policy_handle = receivers_.current_context();
+  if (!security_policy_handle->CanAccessDataForOrigin(origin)) {
     mojo::ReportBadMessage("BROADCAST_CHANNEL_INVALID_ORIGIN");
     return;
   }

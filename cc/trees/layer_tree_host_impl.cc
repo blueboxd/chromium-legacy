@@ -112,6 +112,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -200,6 +201,16 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
   } else if (type == InputHandler::TOUCHSCREEN) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorTouchScrollUpdateThread",
                           scroll_on_main_thread);
+  }
+}
+
+void PopulateMetadataContentColorUsage(
+    const LayerTreeHostImpl::FrameData* frame,
+    viz::CompositorFrameMetadata* metadata) {
+  metadata->content_color_usage = gfx::ContentColorUsage::kSRGB;
+  for (const LayerImpl* layer : frame->will_draw_layers) {
+    metadata->content_color_usage =
+        std::max(metadata->content_color_usage, layer->GetContentColorUsage());
   }
 }
 
@@ -2404,6 +2415,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   }
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+  PopulateMetadataContentColorUsage(frame, &metadata);
   metadata.may_contain_video = frame->may_contain_video;
   metadata.deadline = viz::FrameDeadline(
       CurrentBeginFrameArgs().frame_time,

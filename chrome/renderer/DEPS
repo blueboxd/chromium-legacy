@@ -36,6 +36,7 @@ include_rules = [
   "+components/rappor/public/mojom",
   "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/content/renderer",
+  "+components/safe_browsing/content/common",
   "+components/safe_browsing/core/common",
   "+components/safe_browsing/core/features.h",
   "+components/spellcheck/renderer",

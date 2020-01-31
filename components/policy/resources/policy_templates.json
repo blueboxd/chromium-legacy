@@ -12421,13 +12421,13 @@
       },
       'example_value': True,
       'id': 281,
-      'caption': '''Enable Tap to Search''',
+      'caption': '''Enable Touch to Search''',
       'tags': [],
-      'desc': '''Enables the availability of Tap to Search in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s content view.
+      'desc': '''Enables the availability of Touch to Search in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s content view.
 
-      If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
+      If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
 
-      If you disable this setting, Tap to Search will be disabled completely.
+      If you disable this setting, Touch to Search will be disabled completely.
 
       If this policy is left not set, it is equivalent to being enabled, see description above.''',
     },
@@ -18895,6 +18895,32 @@
       '''
     },
     {
+      # TODO(rogerta): Use a custom policy handler to show in chrome://policy that this policy depends on the state of SendFilesForMalwareCheck.
+      'name': 'URLsToNotCheckForMalwareOfDownloadedContent',
+      'owners': ['rogerta@chromium.org', 'drubery@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value': ['my-awesome-domain.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 669,
+      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
+      'future': True,
+      'caption': '''URL patterns to not check downloaded  content for malware''',
+      'tags': [],
+      'desc': '''List of url patterns for which downloaded content does not need to be checked for malware.  This policy is used only if <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph> is set to a value allowing or enforcing malware checks for downloads.
+
+      If this policy is not set or set to an empty list of url patterns, all downloaded content is checked for malware.
+
+      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
+      '''
+    },
+    {
       'name': 'HSTSPolicyBypassList',
       'owners': ['nharper@chromium.org', 'rsleevi@chromium.org'],
       'type': 'list',
@@ -20520,6 +20546,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 668,
+  'highest_id_currently_used': 669,
   'highest_atomic_group_id_currently_used': 38
 }

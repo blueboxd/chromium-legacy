@@ -26,6 +26,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
 #include "ui/events/pointer_details.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"

@@ -12,10 +12,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform_event.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/event_monitor.h"
 
 namespace views {

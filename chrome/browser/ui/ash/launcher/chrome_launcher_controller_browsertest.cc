@@ -9,7 +9,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_menu_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_test_api.h"
@@ -99,6 +98,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 
 using ash::Shelf;
 using extensions::AppWindow;
@@ -2317,26 +2317,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 }
 
-namespace {
-
-class ShelfAppBrowserTestWithDesks : public ShelfAppBrowserTest {
- public:
-  ShelfAppBrowserTestWithDesks() = default;
-  ~ShelfAppBrowserTestWithDesks() override = default;
-
-  // ShelfAppBrowserTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(ash::features::kVirtualDesks);
-    ShelfAppBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTestWithDesks);
-};
-
-}  // namespace
+using ShelfAppBrowserTestWithDesks = ShelfAppBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithDesks, MultipleDesks) {
   auto* desks_controller = ash::DesksController::Get();

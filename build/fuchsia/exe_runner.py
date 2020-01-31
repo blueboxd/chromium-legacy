@@ -18,18 +18,23 @@ from run_package import RunPackage, RunPackageArgs
 def main():
   parser = argparse.ArgumentParser()
   AddCommonArgs(parser)
-  parser.add_argument('child_args', nargs='*',
-                      help='Arguments for the test process.')
+  parser.add_argument(
+      '--child-arg',
+      action='append',
+      help='Arguments for the executable.',
+      default=[])
+  parser.add_argument(
+      'child_args', nargs='*', help='Arguments for the executable.', default=[])
   args = parser.parse_args()
   ConfigureLogging(args)
 
   with GetDeploymentTargetForArgs(args) as target:
     target.Start()
 
+    child_args = args.child_arg + args.child_args
     run_package_args = RunPackageArgs.FromCommonArgs(args)
-    return RunPackage(
-        args.output_directory, target, args.package, args.package_name,
-        args.package_dep, args.child_args, run_package_args)
+    returncode = RunPackage(args.output_directory, target, args.package,
+                            args.package_name, child_args, run_package_args)
 
 
 if __name__ == '__main__':

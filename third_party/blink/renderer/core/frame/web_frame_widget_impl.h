@@ -94,7 +94,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason) override;
+                       DocumentUpdateReason reason) override;
   void ThemeChanged() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

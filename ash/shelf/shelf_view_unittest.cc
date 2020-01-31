@@ -84,6 +84,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -2301,7 +2302,8 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 
   // The shelf items should animate if we are entering or exiting tablet mode,
-  // and the shelf alignment is bottom aligned.
+  // and the shelf alignment is bottom aligned, and scrollable shelf is not
+  // enabled.
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   const int64_t id = GetPrimaryDisplay().id();
@@ -2310,12 +2312,14 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(100, observer.icon_positions_animation_duration().InMilliseconds());
+  EXPECT_EQ((chromeos::switches::ShouldShowScrollableShelf() ? 1 : 100),
+            observer.icon_positions_animation_duration().InMilliseconds());
 
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(100, observer.icon_positions_animation_duration().InMilliseconds());
+  EXPECT_EQ((chromeos::switches::ShouldShowScrollableShelf() ? 1 : 100),
+            observer.icon_positions_animation_duration().InMilliseconds());
 
   // The shelf items should not animate if we are entering or exiting tablet
   // mode, and the shelf alignment is not bottom aligned.

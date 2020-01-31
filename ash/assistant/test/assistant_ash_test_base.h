@@ -28,6 +28,7 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionController;
+class AssistantInteractionModel;
 class AssistantTestApi;
 class TestAssistantService;
 class TestAssistantWebViewFactory;
@@ -152,8 +153,10 @@ class AssistantAshTestBase : public AshTestBase {
   void EnableKeyboard() { SetVirtualKeyboardEnabled(true); }
   void DisableKeyboard() { SetVirtualKeyboardEnabled(false); }
 
- private:
   AssistantInteractionController* interaction_controller();
+  const AssistantInteractionModel* interaction_model();
+
+ private:
   TestAssistantService* assistant_service();
 
   std::unique_ptr<AssistantTestApi> test_api_;

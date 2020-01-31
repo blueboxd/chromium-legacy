@@ -34,7 +34,8 @@ constexpr int kTimesToShowSuggestionChip = 1;
 namespace chromeos {
 
 void ReleaseNotesStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kReleaseNotesLastShownMilestone, 0);
+  registry->RegisterIntegerPref(prefs::kReleaseNotesLastShownMilestone,
+                                GetMilestone());
   registry->RegisterIntegerPref(
       prefs::kReleaseNotesSuggestionChipTimesLeftToShow, 0);
 }

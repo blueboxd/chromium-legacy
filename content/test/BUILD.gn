@@ -726,7 +726,7 @@ static_library("web_test_support") {
     "//ui/gfx/geometry",
     "//v8",
 
-    # This is required to ensure content/shell/common/web_test.mojom.h is
+    # This is required to ensure content/shell/common/blink_test.mojom.h is
     # generated before attempting to build this target. The file is included
     # through content/shell/renderer/web_test/blink_test_runner.h. However
     # adding a dependency on //content/shell:content_shell_lib as that would
@@ -879,6 +879,7 @@ test("content_browsertests") {
     "../browser/frame_host/navigation_request_browsertest.cc",
     "../browser/frame_host/render_document_host_browsertest.cc",
     "../browser/frame_host/render_frame_host_impl_browsertest.cc",
+    "../browser/frame_host/render_frame_host_impl_mac_browsertest.mm",
     "../browser/frame_host/render_frame_host_manager_browsertest.cc",
     "../browser/frame_host/render_frame_message_filter_browsertest.cc",
     "../browser/frame_host/sec_fetch_browsertest.cc",

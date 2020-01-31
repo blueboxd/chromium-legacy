@@ -140,6 +140,18 @@ class JourneyLogger {
     NOT_SHOWN_REASON_MAX = 4,
   };
 
+  // Transactions fall in one of the following categories after converting to
+  // USD.
+  enum class TransactionSize {
+    // 0$ transactions.
+    kZeroTransaction = 0,
+    // Transaction value <= 1$.
+    kMicroTransaction = 1,
+    // Transaction value > 1$.
+    kRegularTransaction = 2,
+    kMaxValue = kRegularTransaction,
+  };
+
   JourneyLogger(bool is_incognito, ukm::SourceId source_id);
   ~JourneyLogger();
 

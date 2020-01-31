@@ -10,7 +10,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

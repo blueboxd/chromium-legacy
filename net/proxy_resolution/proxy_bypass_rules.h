@@ -32,22 +32,6 @@ namespace net {
 // MatchesImplicitRules() for details.
 class NET_EXPORT ProxyBypassRules {
  public:
-  // The input format to use when parsing proxy bypass rules. This format
-  // only applies when parsing, since once parsed any serialization will be in
-  // terms of ParseFormat::kDefault.
-  enum class ParseFormat {
-    kDefault,
-
-    // Variation of kDefault that interprets hostname patterns as being suffix
-    // tests rather than hostname tests. For example, "google.com" would be
-    // interpreted as "*google.com" when parsed with this format, and
-    // match "foogoogle.com".
-    //
-    // Only use this format if needed for compatibility when parsing Linux
-    // bypass strings.
-    kHostnameSuffixMatching,
-  };
-
   typedef std::vector<std::unique_ptr<SchemeHostPortMatcherRule>> RuleList;
 
   // Note: This class supports copy constructor and assignment.
@@ -62,6 +46,10 @@ class NET_EXPORT ProxyBypassRules {
   // which are owned by this class, callers should NOT keep references
   // or delete them.
   const RuleList& rules() const { return rules_; }
+
+  // Replace rule on |index| in the internal RuleList.
+  void ReplaceRule(size_t index,
+                   std::unique_ptr<SchemeHostPortMatcherRule> rule);
 
   // Returns true if the bypass rules indicate that |url| should bypass the
   // proxy. Matching is done using both the explicit rules, as well as a
@@ -78,8 +66,7 @@ class NET_EXPORT ProxyBypassRules {
   // Initializes the list of rules by parsing the string |raw|. |raw| is a
   // comma separated or semi-colon separated list of rules. See
   // AddRuleFromString() to see the specific rule grammar.
-  void ParseFromString(const std::string& raw,
-                       ParseFormat format = ParseFormat::kDefault);
+  void ParseFromString(const std::string& raw);
 
   // Adds a rule that matches a URL when all of the following are true:
   //  (a) The URL's scheme matches |optional_scheme|, if
@@ -107,8 +94,7 @@ class NET_EXPORT ProxyBypassRules {
   // Returns true if the rule was successfully added.
   //
   // For the supported format of bypass rules see //net/docs/proxy.md.
-  bool AddRuleFromString(const std::string& raw,
-                         ParseFormat format = ParseFormat::kDefault);
+  bool AddRuleFromString(const std::string& raw);
 
   // Appends rules that "cancels out" the implicit bypass rules. See
   // GetRulesToSubtractImplicit() for details.

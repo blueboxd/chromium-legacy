@@ -23,7 +23,7 @@ void GpuMemoryBufferManagerSingletonX11::OnGpuExtraInfoUpdate() {
   gpu::GpuMemoryBufferConfigurationSet configs;
   for (const auto& config : gpu_data_manager_impl_->GetGpuExtraInfo()
                                 .gpu_memory_buffer_support_x11) {
-    configs.insert(std::make_pair(config.format, config.usage));
+    configs.insert(config);
   }
   SetNativeConfigurations(std::move(configs));
 }

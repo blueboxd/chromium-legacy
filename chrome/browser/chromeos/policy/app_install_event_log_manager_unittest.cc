@@ -108,8 +108,8 @@ base::Value ConvertEventsToValue(const Events& events, Profile* profile) {
     for (const em::AppInstallReportLogEvent& app_install_report_log_event :
          (*it).second) {
       base::Value wrapper;
-      wrapper = ConvertEventToValue(package, app_install_report_log_event,
-                                    context, profile);
+      wrapper =
+          ConvertEventToValue(package, app_install_report_log_event, context);
       event_list.Append(std::move(wrapper));
     }
   }

@@ -38,6 +38,7 @@
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
 #include "ui/events/ozone/features.h"
+#include "ui/events/types/event_type.h"
 #include "ui/ozone/public/input_controller.h"
 
 namespace {

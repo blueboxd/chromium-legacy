@@ -1821,7 +1821,7 @@ CrSettingsSearchTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/settings_page/settings_section.html',
+  browsePreload: 'chrome://settings/search_settings.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

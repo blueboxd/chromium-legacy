@@ -44,6 +44,7 @@ import sys
 import time
 
 from blinkpy.common import exit_codes
+from blinkpy.common import path_finder
 from blinkpy.common.net.file_uploader import FileUploader
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.tool import grammar
@@ -53,6 +54,7 @@ from blinkpy.web_tests.layout_package import json_results_generator
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models import test_run_results
+from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.models.test_input import TestInput
 
 _log = logging.getLogger(__name__)
@@ -114,7 +116,7 @@ class Manager(object):
 
         if not self._options.no_expectations:
             self._printer.write_update('Parsing expectations ...')
-            self._expectations = test_expectations.TestExpectations(self._port, test_names)
+            self._expectations = test_expectations.TestExpectations(self._port)
 
         tests_to_run, tests_to_skip = self._prepare_lists(paths, test_names)
 
@@ -308,10 +310,8 @@ class Manager(object):
     def _test_is_slow(self, test_file):
         if not self._expectations:
             return False
-
-        expectations = self._expectations.model().get_expectations(test_file)
-        return (test_expectations.SLOW in expectations or
-                self._port.is_slow_wpt_test(test_file))
+        is_slow_test = self._expectations.get_expectations(test_file).is_slow_test
+        return is_slow_test or self._port.is_slow_wpt_test(test_file)
 
     def _needs_servers(self, test_names):
         return any(self._test_requires_lock(test_name) for test_name in test_names)
@@ -451,7 +451,7 @@ class Manager(object):
         test_failures.AbstractTestResultType.filesystem = self._filesystem
 
         for test, result in run_results.unexpected_results_by_name.iteritems():
-            if result.type != test_expectations.CRASH:
+            if result.type != ResultType.Crash:
                 continue
             for failure in result.failures:
                 if (not isinstance(failure, test_failures.FailureCrash) or
@@ -509,7 +509,7 @@ class Manager(object):
         # since retrying missing expectations is silly. But that's a bit tricky since we
         # only consider the last retry attempt for the count of unexpected regressions.
         return [result.test_name for result in run_results.unexpected_results_by_name.values(
-        ) if result.type != test_expectations.PASS]
+        ) if result.type != ResultType.Pass]
 
     def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results, running_all_tests):
         _log.debug("Writing JSON files in %s.", self._artifacts_directory)
@@ -603,7 +603,7 @@ class Manager(object):
 
         stats = {}
         for result in initial_results.results_by_name.values():
-            if result.type != test_expectations.SKIP:
+            if result.type != ResultType.Skip:
                 stats[result.test_name] = {'results': (_worker_number(result.worker_name), result.test_number, result.pid, int(
                     result.test_run_time * 1000), int(result.total_run_time * 1000))}
         stats_trie = {}

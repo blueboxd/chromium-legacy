@@ -13,10 +13,36 @@ namespace views {
 
 HighlightPathGenerator::~HighlightPathGenerator() = default;
 
+// static
 void HighlightPathGenerator::Install(
     View* host,
     std::unique_ptr<HighlightPathGenerator> generator) {
   host->SetProperty(kHighlightPathGeneratorKey, generator.release());
+}
+
+// static
+base::Optional<HighlightPathGenerator::RoundRect>
+HighlightPathGenerator::GetRoundRectForView(const View* view) {
+  HighlightPathGenerator* path_generator =
+      view->GetProperty(kHighlightPathGeneratorKey);
+  return path_generator ? path_generator->GetRoundRect(view) : base::nullopt;
+}
+
+SkPath HighlightPathGenerator::GetHighlightPath(const View* view) {
+  // A rounded rectangle must be supplied if using this default implementation.
+  base::Optional<HighlightPathGenerator::RoundRect> round_rect =
+      GetRoundRect(view);
+  DCHECK(round_rect);
+
+  const float corner_radius = round_rect->corner_radius;
+  return SkPath().addRoundRect(
+      gfx::RectToSkRect(gfx::ToNearestRect(round_rect->bounds)), corner_radius,
+      corner_radius);
+}
+
+base::Optional<HighlightPathGenerator::RoundRect>
+HighlightPathGenerator::GetRoundRect(const View* view) {
+  return base::nullopt;
 }
 
 SkPath RectHighlightPathGenerator::GetHighlightPath(const View* view) {
@@ -30,9 +56,10 @@ void InstallRectHighlightPathGenerator(View* view) {
 
 SkPath CircleHighlightPathGenerator::GetHighlightPath(const View* view) {
   const SkRect rect = gfx::RectToSkRect(view->GetLocalBounds());
-  const SkScalar radius = SkScalarHalf(std::min(rect.width(), rect.height()));
+  const SkScalar corner_radius =
+      SkScalarHalf(std::min(rect.width(), rect.height()));
 
-  return SkPath().addCircle(rect.centerX(), rect.centerY(), radius);
+  return SkPath().addCircle(rect.centerX(), rect.centerY(), corner_radius);
 }
 
 void InstallCircleHighlightPathGenerator(View* view) {
@@ -42,15 +69,38 @@ void InstallCircleHighlightPathGenerator(View* view) {
 
 SkPath PillHighlightPathGenerator::GetHighlightPath(const View* view) {
   const SkRect rect = gfx::RectToSkRect(view->GetLocalBounds());
-  const SkScalar radius = SkScalarHalf(std::min(rect.width(), rect.height()));
+  const SkScalar corner_radius =
+      SkScalarHalf(std::min(rect.width(), rect.height()));
 
   return SkPath().addRoundRect(gfx::RectToSkRect(view->GetLocalBounds()),
-                               radius, radius);
+                               corner_radius, corner_radius);
 }
 
 void InstallPillHighlightPathGenerator(View* view) {
   HighlightPathGenerator::Install(
       view, std::make_unique<PillHighlightPathGenerator>());
+}
+
+FixedSizeCircleHighlightPathGenerator::FixedSizeCircleHighlightPathGenerator(
+    int corner_radius)
+    : corner_radius_(corner_radius) {}
+
+base::Optional<HighlightPathGenerator::RoundRect>
+FixedSizeCircleHighlightPathGenerator::GetRoundRect(const View* view) {
+  gfx::RectF bounds(view->GetLocalBounds());
+  bounds.ClampToCenteredSize(
+      gfx::SizeF(corner_radius_ * 2, corner_radius_ * 2));
+  HighlightPathGenerator::RoundRect round_rect;
+  round_rect.bounds = bounds;
+  round_rect.corner_radius = corner_radius_;
+  return base::make_optional(round_rect);
+}
+
+void InstallFixedSizeCircleHighlightPathGenerator(View* view,
+                                                  int corner_radius) {
+  HighlightPathGenerator::Install(
+      view,
+      std::make_unique<FixedSizeCircleHighlightPathGenerator>(corner_radius));
 }
 
 }  // namespace views

@@ -6,7 +6,7 @@
 #define WEBLAYER_RENDERER_URL_LOADER_THROTTLE_PROVIDER_H_
 
 #include "base/threading/thread_checker.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"

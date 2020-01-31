@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
 
   ~AssistantManagerService() override = default;
 
-  // Start the assistant in the background with |access_token|, where the
+  // Start the Assistant in the background with |access_token|, where the
   // token can be nullopt when the service is being started under the signed
   // out mode.
   // If you want to know when the service is started, use
@@ -52,14 +52,20 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   virtual void Start(const base::Optional<std::string>& access_token,
                      bool enable_hotword) = 0;
 
-  // Stop the assistant.
+  // Stop the Assistant.
   virtual void Stop() = 0;
 
   // Return the current state.
   virtual State GetState() const = 0;
 
-  // Set access token for assistant.
-  virtual void SetAccessToken(const std::string& access_token) = 0;
+  // Set access token for Assistant. Passing a nullopt will reconfigure
+  // Libassistant to run in signed-out mode, and passing a valid non-empty value
+  // will switch the mode back to normal.
+  virtual void SetAccessToken(
+      const base::Optional<std::string>& access_token) = 0;
+
+  // Enable/disable ambient mode for Assistant.
+  virtual void EnableAmbientMode(bool enabled) = 0;
 
   // Turn on / off all listening, including hotword and voice query.
   virtual void EnableListening(bool enable) = 0;

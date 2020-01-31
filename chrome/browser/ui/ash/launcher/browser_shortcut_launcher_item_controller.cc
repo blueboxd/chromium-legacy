@@ -39,6 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/image/image.h"
 
 namespace {

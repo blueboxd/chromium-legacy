@@ -15,17 +15,14 @@ CompositorPriorityExperiments::CompositorPriorityExperiments(
     MainThreadSchedulerImpl* scheduler)
     : scheduler_(scheduler),
       experiment_(GetExperimentFromFeatureList()),
+      last_compositor_task_time_(scheduler_->GetTickClock()->NowTicks()),
       prioritize_compositing_after_delay_length_(
           base::TimeDelta::FromMilliseconds(kCompositingDelayLength.Get())),
       stop_signal_(base::FeatureList::IsEnabled(
                        kPrioritizeCompositingUntilBeginMainFrame)
                        ? StopSignalType::kBeginMainFrameTask
-                       : StopSignalType::kAnyCompositorTask) {
-  do_prioritize_compositing_after_delay_callback_.Reset(base::BindRepeating(
-      &CompositorPriorityExperiments::DoPrioritizeCompositingAfterDelay,
-      base::Unretained(this)));
-}
-CompositorPriorityExperiments::~CompositorPriorityExperiments() {}
+                       : StopSignalType::kAnyCompositorTask) {}
+CompositorPriorityExperiments::~CompositorPriorityExperiments() = default;
 
 CompositorPriorityExperiments::Experiment
 CompositorPriorityExperiments::GetExperimentFromFeatureList() {
@@ -38,11 +35,11 @@ CompositorPriorityExperiments::GetExperimentFromFeatureList() {
                  kVeryHighPriorityForCompositingAlternating)) {
     return Experiment::kVeryHighPriorityForCompositingAlternating;
   } else if (base::FeatureList::IsEnabled(
-                 kVeryHighPriorityForCompositingAfterDelay)) {
-    return Experiment::kVeryHighPriorityForCompositingAfterDelay;
-  } else if (base::FeatureList::IsEnabled(
                  kVeryHighPriorityForCompositingBudget)) {
     return Experiment::kVeryHighPriorityForCompositingBudget;
+  } else if (base::FeatureList::IsEnabled(
+                 kVeryHighPriorityForCompositingAfterDelay)) {
+    return Experiment::kVeryHighPriorityForCompositingAfterDelay;
   } else {
     return Experiment::kNone;
   }
@@ -75,15 +72,7 @@ QueuePriority CompositorPriorityExperiments::GetCompositorPriority() const {
   }
 }
 
-void CompositorPriorityExperiments::DoPrioritizeCompositingAfterDelay() {
-  delay_compositor_priority_ = QueuePriority::kVeryHighPriority;
-  scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
-}
-
 void CompositorPriorityExperiments::OnMainThreadSchedulerInitialized() {
-  if (experiment_ == Experiment::kVeryHighPriorityForCompositingAfterDelay) {
-    PostPrioritizeCompositingAfterDelayTask();
-  }
   if (experiment_ == Experiment::kVeryHighPriorityForCompositingBudget) {
     budget_pool_controller_.reset(new CompositorBudgetPoolController(
         this, scheduler_, scheduler_->CompositorTaskQueue().get(),
@@ -100,14 +89,6 @@ void CompositorPriorityExperiments::OnMainThreadSchedulerShutdown() {
 
 void CompositorPriorityExperiments::OnWillBeginMainFrame() {
   will_begin_main_frame_ = true;
-}
-
-void CompositorPriorityExperiments::PostPrioritizeCompositingAfterDelayTask() {
-  DCHECK_EQ(experiment_, Experiment::kVeryHighPriorityForCompositingAfterDelay);
-
-  scheduler_->ControlTaskRunner()->PostDelayedTask(
-      FROM_HERE, do_prioritize_compositing_after_delay_callback_.GetCallback(),
-      prioritize_compositing_after_delay_length_);
 }
 
 void CompositorPriorityExperiments::OnTaskCompleted(
@@ -150,12 +131,15 @@ void CompositorPriorityExperiments::OnTaskCompleted(
     case Experiment::kVeryHighPriorityForCompositingAfterDelay:
       if (have_seen_stop_signal) {
         delay_compositor_priority_ = QueuePriority::kNormalPriority;
-        do_prioritize_compositing_after_delay_callback_.Cancel();
-        PostPrioritizeCompositingAfterDelayTask();
-
-        if (current_compositor_priority != delay_compositor_priority_)
-          scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
+        last_compositor_task_time_ = task_timing->end_time();
+      } else {
+        if (task_timing->end_time() - last_compositor_task_time_ >=
+            prioritize_compositing_after_delay_length_) {
+          delay_compositor_priority_ = QueuePriority::kVeryHighPriority;
+        }
       }
+      if (current_compositor_priority != delay_compositor_priority_)
+        scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
       return;
     case Experiment::kVeryHighPriorityForCompositingBudget:
       budget_pool_controller_->OnTaskCompleted(queue, task_timing,
@@ -188,7 +172,7 @@ CompositorPriorityExperiments::CompositorBudgetPoolController::
         TraceableVariableController* tracing_controller,
         base::TimeDelta min_budget,
         double budget_recovery_rate)
-    : experiment_(experiment), tick_clock_(scheduler->GetTickClock()) {
+    : experiment_(experiment) {
   DCHECK_EQ(compositor_queue->queue_type(),
             MainThreadTaskQueue::QueueType::kCompositor);
   base::TimeTicks now = scheduler->GetTickClock()->NowTicks();

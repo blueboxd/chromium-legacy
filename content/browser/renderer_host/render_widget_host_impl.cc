@@ -641,7 +641,7 @@ void RenderWidgetHostImpl::WasHidden() {
 }
 
 void RenderWidgetHostImpl::WasShown(
-    const base::Optional<RecordTabSwitchTimeRequest>&
+    const base::Optional<RecordContentToVisibleTimeRequest>&
         record_tab_switch_time_request) {
   if (!is_hidden_)
     return;

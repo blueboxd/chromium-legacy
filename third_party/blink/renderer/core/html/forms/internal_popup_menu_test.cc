@@ -31,8 +31,7 @@ TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
         <option value="bar" style="display:none">Bar</option>
     </select>
   )HTML");
-  document.View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   auto* select = To<HTMLSelectElement>(document.getElementById("select"));
   ASSERT_TRUE(select);
   auto* menu = MakeGarbageCollected<InternalPopupMenu>(
@@ -58,8 +57,7 @@ TEST(InternalPopupMenuTest, ShowSelectDisplayNone) {
       </select>
     </div>
   )HTML");
-  document.View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   auto* div = document.getElementById("container");
   auto* select = To<HTMLSelectElement>(document.getElementById("select"));
   ASSERT_TRUE(select);

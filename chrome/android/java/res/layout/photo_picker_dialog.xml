@@ -10,7 +10,7 @@
     android:layout_height="match_parent"
     android:background="@color/default_bg_color_elev_0" >
 
-    <org.chromium.chrome.browser.widget.selection.SelectableListLayout
+    <org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout
         android:id="@+id/selectable_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -193,11 +193,15 @@ class DownloadProtectionService {
   // Uploads |item| to Safe Browsing for deep scanning, using the upload
   // service attached to the profile |item| was downloaded in. This is
   // non-blocking, and the result we be provided through |callback|. |source| is
-  // used to identify the reason for deep scanning. This must be called on the
-  // UI thread.
-  void UploadForDeepScanning(download::DownloadItem* item,
-                             CheckDownloadRepeatingCallback callback,
-                             DeepScanningRequest::DeepScanTrigger trigger);
+  // used to identify the reason for deep scanning. Only the scan types listed
+  // in |allowed_scans| will be performed. This must be called on the UI
+  // thread.
+  void UploadForDeepScanning(
+      download::DownloadItem* item,
+      CheckDownloadRepeatingCallback callback,
+      DeepScanningRequest::DeepScanTrigger trigger,
+      std::vector<DeepScanningRequest::DeepScanType> allowed_scans =
+          DeepScanningRequest::AllScans());
 
  private:
   friend class PPAPIDownloadRequest;

@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -65,28 +66,30 @@ TEST_F(BreadcrumbManagerTabHelperTest, EventsLogged) {
   BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);
 
   EXPECT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
-  first_web_state_.SetLoading(true);
+  web::FakeNavigationContext context;
+  first_web_state_.OnNavigationStarted(&context);
   std::list<std::string> events = breadcrumb_service_->GetEvents(0);
-  EXPECT_EQ(1ul, events.size());
-  EXPECT_NE(std::string::npos, events.back().find("DidStartLoading"));
-  first_web_state_.SetLoading(false);
+  ASSERT_EQ(1ul, events.size());
+  EXPECT_NE(std::string::npos, events.back().find("DidStartNavigation"));
+  first_web_state_.OnNavigationFinished(&context);
   events = breadcrumb_service_->GetEvents(0);
-  EXPECT_EQ(2ul, events.size());
-  EXPECT_NE(std::string::npos, events.back().find("DidStopLoading"));
+  ASSERT_EQ(2ul, events.size());
+  EXPECT_NE(std::string::npos, events.back().find("DidFinishNavigation"));
 }
 
 // Tests that BreadcrumbManagerTabHelper events logged from seperate WebStates
 // are unique.
 TEST_F(BreadcrumbManagerTabHelperTest, UniqueEvents) {
   BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);
-  first_web_state_.SetLoading(true);
+  web::FakeNavigationContext context;
+  first_web_state_.OnNavigationStarted(&context);
 
   BreadcrumbManagerTabHelper::CreateForWebState(&second_web_state_);
-  second_web_state_.SetLoading(true);
+  second_web_state_.OnNavigationStarted(&context);
 
   std::list<std::string> events = breadcrumb_service_->GetEvents(0);
-  EXPECT_EQ(2ul, events.size());
+  ASSERT_EQ(2ul, events.size());
   EXPECT_STRNE(events.front().c_str(), events.back().c_str());
-  EXPECT_NE(std::string::npos, events.front().find("DidStartLoading"));
-  EXPECT_NE(std::string::npos, events.back().find("DidStartLoading"));
+  EXPECT_NE(std::string::npos, events.front().find("DidStartNavigation"));
+  EXPECT_NE(std::string::npos, events.back().find("DidStartNavigation"));
 }

@@ -491,10 +491,12 @@ ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
       animation_metrics_reporter_(
           std::make_unique<ScrollableShelfAnimationMetricsReporter>()) {
   Shell::Get()->AddShellObserver(this);
+  ShelfConfig::Get()->AddObserver(this);
   set_allow_deactivate_on_esc(true);
 }
 
 ScrollableShelfView::~ScrollableShelfView() {
+  ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   GetShelf()->tooltip()->set_shelf_tooltip_delegate(nullptr);
 }
@@ -942,10 +944,15 @@ void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (gradient_layer_delegate_->layer()->bounds() != layer()->bounds())
     gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
 
+  const gfx::Insets old_padding_insets = padding_insets_;
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;
 
   // The changed view bounds may lead to update on the available space.
   UpdateAvailableSpaceAndScroll();
+
+  // Relayout shelf items if the preferred padding changed.
+  if (old_padding_insets != padding_insets_)
+    shelf_view_->OnBoundsChanged(shelf_view_->GetBoundsInScreen());
 
   // Avoids calling AdjustOffset() when the scrollable shelf view is
   // under scroll along the main axis. Otherwise, animation will conflict with
@@ -1112,6 +1119,11 @@ void ScrollableShelfView::OnShelfAlignmentChanged(
   scroll_offset_ = gfx::Vector2dF();
   ScrollToMainOffset(CalculateMainAxisScrollDistance(), /*animating=*/false);
   Layout();
+}
+
+void ScrollableShelfView::OnShelfConfigUpdated() {
+  UpdateAvailableSpaceAndScroll();
+  shelf_view_->OnShelfConfigUpdated();
 }
 
 bool ScrollableShelfView::ShouldShowTooltipForView(

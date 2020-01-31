@@ -654,48 +654,38 @@ bool OverviewItem::IsDragItem() {
 }
 
 void OverviewItem::Restack() {
-  // First stack this item's window below the snapped window if split view
-  // mode is active.
-  aura::Window* dragged_window = GetWindow();
-  aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
-  aura::Window* parent_window = dragged_widget_window->parent();
+  aura::Window* window = GetWindow();
+  aura::Window* parent_window = window->parent();
+  aura::Window* stacking_target = nullptr;
+  // Stack |window| below the split view window if split view is active.
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window_);
   if (split_view_controller->InSplitViewMode()) {
     aura::Window* snapped_window =
         split_view_controller->GetDefaultSnappedWindow();
-    if (snapped_window->parent() == parent_window &&
-        dragged_window->parent() == parent_window) {
-      parent_window->StackChildBelow(dragged_window, snapped_window);
-      parent_window->StackChildBelow(dragged_widget_window, dragged_window);
-    }
+    if (snapped_window->parent() == parent_window)
+      stacking_target = snapped_window;
   }
-
-  // Then find the window which was stacked right above this overview item's
-  // window before dragging and stack this overview item's window below it.
-  const std::vector<std::unique_ptr<OverviewItem>>& overview_items =
-      overview_grid_->window_list();
-  aura::Window* stacking_target = nullptr;
-  for (size_t index = 0; index < overview_items.size(); ++index) {
-    if (index > 0) {
-      aura::Window* window = overview_items[index - 1].get()->GetWindow();
-      if (window->parent() == parent_window &&
-          dragged_window->parent() == parent_window) {
-        stacking_target =
-            overview_items[index - 1].get()->item_widget()->GetNativeWindow();
-      }
-    }
-    if (overview_items[index].get() == this && stacking_target) {
-      parent_window->StackChildBelow(dragged_window, stacking_target);
-      parent_window->StackChildBelow(dragged_widget_window, dragged_window);
+  // Stack |window| below the last window in |overview_grid_| that comes before
+  // |window| and has the same parent.
+  for (const std::unique_ptr<OverviewItem>& overview_item :
+       overview_grid_->window_list()) {
+    if (overview_item.get() == this)
       break;
-    }
+    if (overview_item->GetWindow()->parent() == parent_window)
+      stacking_target = overview_item->item_widget()->GetNativeWindow();
   }
 
+  if (stacking_target) {
+    DCHECK_EQ(parent_window, stacking_target->parent());
+    parent_window->StackChildBelow(window, stacking_target);
+  }
+  DCHECK_EQ(parent_window, item_widget_->GetNativeWindow()->parent());
+  parent_window->StackChildBelow(item_widget_->GetNativeWindow(), window);
   if (cannot_snap_widget_) {
     DCHECK_EQ(parent_window, cannot_snap_widget_->GetNativeWindow()->parent());
     parent_window->StackChildAbove(cannot_snap_widget_->GetNativeWindow(),
-                                   dragged_window);
+                                   window);
   }
 }
 

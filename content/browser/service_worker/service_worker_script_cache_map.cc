@@ -45,7 +45,7 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
   resource_map_[url] = ServiceWorkerDatabase::ResourceRecord(
       resource_id, url,
       ServiceWorkerDatabase::ResourceRecord::ErrorState::kStartedCaching);
-  context_->storage()->StoreUncommittedResourceId(resource_id);
+  context_->registry()->StoreUncommittedResourceId(resource_id);
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(

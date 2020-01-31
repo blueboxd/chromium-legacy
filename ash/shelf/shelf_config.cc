@@ -358,12 +358,12 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
   if (!chromeos::switches::ShouldShowShelfHotseat()) {
     layer_type = IsTabletMode()
                      ? AshColorProvider::BaseLayerType::kTransparent60
-                     : AshColorProvider::BaseLayerType::kTransparent74;
+                     : AshColorProvider::BaseLayerType::kTransparent80;
   } else if (IsTabletMode()) {
     layer_type = is_in_app() ? AshColorProvider::BaseLayerType::kTransparent90
                              : AshColorProvider::BaseLayerType::kTransparent60;
   } else {
-    layer_type = AshColorProvider::BaseLayerType::kTransparent74;
+    layer_type = AshColorProvider::BaseLayerType::kTransparent80;
   }
 
   SkColor final_color = AshColorProvider::Get()->GetBaseLayerColor(

@@ -28,10 +28,10 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.ui.util.ColorUtils;
 
 import javax.inject.Inject;
 

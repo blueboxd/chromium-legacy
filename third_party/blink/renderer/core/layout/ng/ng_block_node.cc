@@ -292,7 +292,7 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token,
+    const NGBlockBreakToken* break_token,
     const NGEarlyBreak* early_break) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout())
@@ -349,8 +349,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   PrepareForLayout();
 
   NGLayoutAlgorithmParams params(*this, *fragment_geometry, constraint_space,
-                                 To<NGBlockBreakToken>(break_token),
-                                 early_break);
+                                 break_token, early_break);
 
   // Try to perform "simplified" layout.
   // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.
@@ -527,7 +526,7 @@ void NGBlockNode::PrepareForLayout() {
 void NGBlockNode::FinishLayout(
     LayoutBlockFlow* block_flow,
     const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token,
+    const NGBlockBreakToken* break_token,
     scoped_refptr<const NGLayoutResult> layout_result) {
   // If we abort layout and don't clear the cached layout-result, we can end
   // up in a state where the layout-object tree doesn't match fragment tree
@@ -570,8 +569,7 @@ void NGBlockNode::FinishLayout(
         CopyFragmentDataToLayoutBoxForInlineChildren(
             physical_fragment, physical_fragment.Size().width,
             Style().IsFlippedBlocksWritingMode());
-        block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
-                                     &physical_fragment);
+        block_flow->SetPaintFragment(break_token, &physical_fragment);
       } else {
         CopyFragmentDataToLayoutBoxForInlineChildren(physical_fragment);
 
@@ -587,12 +585,11 @@ void NGBlockNode::FinishLayout(
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
       block_flow->ClearNGInlineNodeData();
-      block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token), nullptr);
+      block_flow->SetPaintFragment(break_token, nullptr);
     }
   }
 
-  CopyFragmentDataToLayoutBox(constraint_space, *layout_result,
-                              To<NGBlockBreakToken>(break_token));
+  CopyFragmentDataToLayoutBox(constraint_space, *layout_result, break_token);
 }
 
 MinMaxSize NGBlockNode::ComputeMinMaxSize(

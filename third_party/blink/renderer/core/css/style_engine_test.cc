@@ -65,8 +65,7 @@ class StyleEngineTest : public testing::Test {
 
   // A wrapper to add a reason for UpdateAllLifecyclePhases
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 
   Node* GetStyleRecalcRoot() {
@@ -1231,7 +1230,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, nullptr, &client);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   Document* document =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -1245,7 +1244,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   desc = document->GetViewportData().GetViewportDescription();
   EXPECT_FLOAT_EQ(device_scale * min_width, desc.min_width.GetFloatValue());
@@ -1975,8 +1974,7 @@ TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
     <div></div>
     <div> <!-- --></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(GetDocument().IsUseCounted(
       WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail));
@@ -1988,7 +1986,7 @@ TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
   auto is_counted = [](Element* element) {
     element->setAttribute(blink::html_names::kClassAttr, "match");
     element->GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     return element->GetDocument().IsUseCounted(
         WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
   };

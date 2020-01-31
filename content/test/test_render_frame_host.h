@@ -84,6 +84,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& allowlist) override;
+  void SimulateUserActivation() override;
   const std::vector<std::string>& GetConsoleMessages() override;
 
   void SendNavigate(int nav_entry_id,

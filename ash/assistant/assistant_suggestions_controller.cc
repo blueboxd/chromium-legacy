@@ -203,8 +203,12 @@ void AssistantSuggestionsController::FetchConversationStarters() {
           return;
         }
 
-        // Otherwise we transform our conversation starters into the type that
-        // is understood by the suggestions model...
+        // The number of conversation starters should not exceed our maximum.
+        while (conversation_starters.size() > kMaxNumOfConversationStarters)
+          conversation_starters.pop_back();
+
+        // We need to transform our conversation starters into the type that is
+        // understood by the suggestions model...
         std::vector<AssistantSuggestionPtr> suggestions;
         std::transform(
             conversation_starters.begin(), conversation_starters.end(),

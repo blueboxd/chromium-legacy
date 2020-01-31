@@ -238,6 +238,9 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
     }
   }
 
+  if (request_result == blink::mojom::MediaStreamRequestResult::OK)
+    UpdateTarget(pending_request.request, media_id);
+
   std::move(pending_request.callback)
       .Run(devices, request_result, std::move(ui));
   queue.pop_front();

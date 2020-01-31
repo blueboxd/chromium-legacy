@@ -21,6 +21,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/accelerator_filter.h"

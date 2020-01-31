@@ -114,7 +114,6 @@ import org.chromium.chrome.browser.toolbar.top.CustomTabToolbar;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -136,6 +135,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;

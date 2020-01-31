@@ -92,14 +92,13 @@ TEST_F(ExtensionHooksDelegateTest, MessagingSanityChecks) {
   SendMessageTester tester(ipc_message_sender(), script_context(), 0,
                            "extension");
 
-  const bool kExpectIncludeTlsChannelId = false;
-  tester.TestConnect("", "", self_target, kExpectIncludeTlsChannelId);
+  tester.TestConnect("", "", self_target);
 
   constexpr char kStandardMessage[] = R"({"data":"hello"})";
   tester.TestSendMessage("{data: 'hello'}", kStandardMessage, self_target,
-                         false, SendMessageTester::CLOSED);
+                         SendMessageTester::CLOSED);
   tester.TestSendMessage("{data: 'hello'}, function() {}", kStandardMessage,
-                         self_target, false, SendMessageTester::OPEN);
+                         self_target, SendMessageTester::OPEN);
 
   tester.TestSendRequest("{data: 'hello'}", kStandardMessage, self_target,
                          SendMessageTester::CLOSED);

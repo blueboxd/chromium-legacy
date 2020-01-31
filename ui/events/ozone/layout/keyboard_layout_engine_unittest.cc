@@ -16,6 +16,7 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 

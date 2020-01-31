@@ -63,20 +63,26 @@ class PendingExtensionManager {
     // Corruption detected in an extension from Chrome Web Store.
     CORRUPTION_DETECTED_WEBSTORE = 1,
 
-    // Planned future options:
     // Corruption detected in an extension outside Chrome Web Store.
-    // CORRUPTION_DETECTED_NON_WEBSTORE
-    //
+    CORRUPTION_DETECTED_NON_WEBSTORE = 2,
+
+    // Planned future option:
     // Extension doesn't have hashes for corruption checks. This should not
     // happen for extension from Chrome Web Store (since we can fetch hashes
     // from server), but for extensions outside Chrome Web Store that means that
     // we need to reinstall the extension (and compute hashes during
     // installation).
-    // NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE
+    // Not used currently, see https://crbug.com/958794#c22 for details.
+    // NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE = 3,
+
+    // Extension doesn't have hashes for corruption checks. Ideally this
+    // extension should be reinstalled in this case, but currently we just skip
+    // them. See https://crbug.com/958794#c22 for details.
+    NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE_SKIP = 4,
 
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = CORRUPTION_DETECTED_WEBSTORE
+    kMaxValue = NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE_SKIP
   };
 
   explicit PendingExtensionManager(content::BrowserContext* context);
@@ -105,6 +111,13 @@ class PendingExtensionManager {
   // Whether there is a high-priority pending extension (one from either policy
   // or an external component extension).
   bool HasHighPriorityPendingExtension() const;
+
+  // Records UMA metrics about policy reinstall to UMA. Temporarily exposed
+  // publicly because we now skip reinstall for non-webstore policy
+  // force-installed extensions without hashes, but are interested in number
+  // of such cases.
+  // See https://crbug.com/958794#c22 for details.
+  void RecordPolicyReinstallReason(PolicyReinstallReason reason_for_uma);
 
   // Notifies the manager that we are reinstalling the policy force-installed
   // extension with |id| because we detected corruption in the current copy.

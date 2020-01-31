@@ -56,7 +56,7 @@ String ToCookieListItemSameSite(network::mojom::CookieSameSite same_site) {
     case network::mojom::CookieSameSite::LAX_MODE:
       return "lax";
     case network::mojom::CookieSameSite::NO_RESTRICTION:
-      return "unrestricted";
+      return "none";
     case network::mojom::CookieSameSite::UNSPECIFIED:
       return "unspecified";
   }

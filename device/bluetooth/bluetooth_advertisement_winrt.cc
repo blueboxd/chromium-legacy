@@ -18,12 +18,16 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/winrt_storage_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/event_utils_winrt.h"
 
 namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::BluetoothError;
+using ABI::Windows::Devices::Bluetooth::BluetoothError_NotSupported;
+using ABI::Windows::Devices::Bluetooth::BluetoothError_RadioNotAvailable;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEAdvertisementPublisherStatus;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
@@ -46,9 +50,6 @@ using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEManufacturerData;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEManufacturerDataFactory;
-using ABI::Windows::Devices::Bluetooth::BluetoothError;
-using ABI::Windows::Devices::Bluetooth::BluetoothError_NotSupported;
-using ABI::Windows::Devices::Bluetooth::BluetoothError_RadioNotAvailable;
 using ABI::Windows::Foundation::Collections::IVector;
 using ABI::Windows::Storage::Streams::IBuffer;
 using Microsoft::WRL::ComPtr;
@@ -57,8 +58,8 @@ void RemoveStatusChangedHandler(IBluetoothLEAdvertisementPublisher* publisher,
                                 EventRegistrationToken token) {
   HRESULT hr = publisher->remove_StatusChanged(token);
   if (FAILED(hr)) {
-    VLOG(2) << "Removing StatusChanged Handler failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "Removing StatusChanged Handler failed: "
+                         << logging::SystemErrorCodeToString(hr);
   }
 }
 
@@ -69,47 +70,50 @@ BluetoothAdvertisementWinrt::BluetoothAdvertisementWinrt() {}
 bool BluetoothAdvertisementWinrt::Initialize(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data) {
   if (advertisement_data->service_uuids()) {
-    VLOG(2) << "Windows does not support advertising Service UUIDs.";
+    BLUETOOTH_LOG(ERROR)
+        << "Windows does not support advertising Service UUIDs.";
     return false;
   }
 
   if (advertisement_data->solicit_uuids()) {
-    VLOG(2) << "Windows does not support advertising Solicit UUIDs.";
+    BLUETOOTH_LOG(ERROR)
+        << "Windows does not support advertising Solicit UUIDs.";
     return false;
   }
 
   if (advertisement_data->service_data()) {
-    VLOG(2) << "Windows does not support advertising Service Data.";
+    BLUETOOTH_LOG(ERROR)
+        << "Windows does not support advertising Service Data.";
     return false;
   }
 
   auto manufacturer_data = advertisement_data->manufacturer_data();
   if (!manufacturer_data) {
-    VLOG(2) << "No Manufacturer Data present.";
+    BLUETOOTH_LOG(ERROR) << "No Manufacturer Data present.";
     return false;
   }
 
   ComPtr<IBluetoothLEAdvertisement> advertisement;
   HRESULT hr = ActivateBluetoothLEAdvertisementInstance(&advertisement);
   if (FAILED(hr)) {
-    VLOG(2) << "ActivateBluetoothLEAdvertisementInstance failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "ActivateBluetoothLEAdvertisementInstance failed: "
+                         << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   ComPtr<IVector<BluetoothLEManufacturerData*>> manufacturer_data_list;
   hr = advertisement->get_ManufacturerData(&manufacturer_data_list);
   if (FAILED(hr)) {
-    VLOG(2) << "Getting ManufacturerData failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "Getting ManufacturerData failed: "
+                         << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   ComPtr<IBluetoothLEManufacturerDataFactory> manufacturer_data_factory;
   hr = GetBluetoothLEManufacturerDataFactory(&manufacturer_data_factory);
   if (FAILED(hr)) {
-    VLOG(2) << "GetBluetoothLEManufacturerDataFactory failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "GetBluetoothLEManufacturerDataFactory failed: "
+                         << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
@@ -120,8 +124,8 @@ bool BluetoothAdvertisementWinrt::Initialize(
     ComPtr<IBuffer> buffer;
     hr = base::win::CreateIBufferFromData(data.data(), data.size(), &buffer);
     if (FAILED(hr)) {
-      VLOG(2) << "CreateIBufferFromData() failed: "
-              << logging::SystemErrorCodeToString(hr);
+      BLUETOOTH_LOG(ERROR) << "CreateIBufferFromData() failed: "
+                           << logging::SystemErrorCodeToString(hr);
       return false;
     }
 
@@ -129,15 +133,15 @@ bool BluetoothAdvertisementWinrt::Initialize(
     hr = manufacturer_data_factory->Create(manufacturer, buffer.Get(),
                                            &manufacturer_data_entry);
     if (FAILED(hr)) {
-      VLOG(2) << "Creating BluetoothLEManufacturerData failed: "
-              << logging::SystemErrorCodeToString(hr);
+      BLUETOOTH_LOG(ERROR) << "Creating BluetoothLEManufacturerData failed: "
+                           << logging::SystemErrorCodeToString(hr);
       return false;
     }
 
     hr = manufacturer_data_list->Append(manufacturer_data_entry.Get());
     if (FAILED(hr)) {
-      VLOG(2) << "Appending BluetoothLEManufacturerData failed: "
-              << logging::SystemErrorCodeToString(hr);
+      BLUETOOTH_LOG(ERROR) << "Appending BluetoothLEManufacturerData failed: "
+                           << logging::SystemErrorCodeToString(hr);
       return false;
     }
   }
@@ -146,16 +150,18 @@ bool BluetoothAdvertisementWinrt::Initialize(
   hr =
       GetBluetoothLEAdvertisementPublisherActivationFactory(&publisher_factory);
   if (FAILED(hr)) {
-    VLOG(2) << "GetBluetoothLEAdvertisementPublisherActivationFactory "
-               "failed:"
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR)
+        << "GetBluetoothLEAdvertisementPublisherActivationFactory "
+           "failed:"
+        << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   hr = publisher_factory->Create(advertisement.Get(), &publisher_);
   if (FAILED(hr)) {
-    VLOG(2) << "Creating IBluetoothLEAdvertisementPublisher failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR)
+        << "Creating IBluetoothLEAdvertisementPublisher failed: "
+        << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
@@ -185,8 +191,9 @@ void BluetoothAdvertisementWinrt::Register(SuccessCallback callback,
 
   HRESULT hr = publisher_->Start();
   if (FAILED(hr)) {
-    VLOG(2) << "Starting IBluetoothLEAdvertisementPublisher failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR)
+        << "Starting IBluetoothLEAdvertisementPublisher failed: "
+        << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(error_callback),
                                   ERROR_STARTING_ADVERTISEMENT));
@@ -209,7 +216,7 @@ void BluetoothAdvertisementWinrt::Unregister(
   DCHECK(publisher_);
 
   if (pending_unregister_callbacks_) {
-    VLOG(2) << "An Unregister Operation is already in progress.";
+    BLUETOOTH_LOG(ERROR) << "An Unregister Operation is already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(error_callback, ERROR_RESET_ADVERTISING));
     return;
@@ -218,8 +225,8 @@ void BluetoothAdvertisementWinrt::Unregister(
   BluetoothLEAdvertisementPublisherStatus status;
   HRESULT hr = publisher_->get_Status(&status);
   if (FAILED(hr)) {
-    VLOG(2) << "Getting the Publisher Status failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "Getting the Publisher Status failed: "
+                         << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(error_callback, ERROR_RESET_ADVERTISING));
     return;
@@ -240,8 +247,9 @@ void BluetoothAdvertisementWinrt::Unregister(
 
   hr = publisher_->Stop();
   if (FAILED(hr)) {
-    VLOG(2) << "IBluetoothLEAdvertisementPublisher::Stop() failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR)
+        << "IBluetoothLEAdvertisementPublisher::Stop() failed: "
+        << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(error_callback, ERROR_RESET_ADVERTISING));
     return;
@@ -296,16 +304,16 @@ BluetoothAdvertisementWinrt::ActivateBluetoothLEAdvertisementInstance(
   HRESULT hr =
       base::win::RoActivateInstance(advertisement_hstring.get(), &inspectable);
   if (FAILED(hr)) {
-    VLOG(2) << "RoActivateInstance failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "RoActivateInstance failed: "
+                         << logging::SystemErrorCodeToString(hr);
     return hr;
   }
 
   ComPtr<IBluetoothLEAdvertisement> advertisement;
   hr = inspectable.As(&advertisement);
   if (FAILED(hr)) {
-    VLOG(2) << "As IBluetoothLEAdvertisementWatcher failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "As IBluetoothLEAdvertisementWatcher failed: "
+                         << logging::SystemErrorCodeToString(hr);
     return hr;
   }
 
@@ -335,12 +343,12 @@ void BluetoothAdvertisementWinrt::OnStatusChanged(
   BluetoothLEAdvertisementPublisherStatus status;
   HRESULT hr = changed->get_Status(&status);
   if (FAILED(hr)) {
-    VLOG(2) << "Getting the Publisher Status failed: "
-            << logging::SystemErrorCodeToString(hr);
+    BLUETOOTH_LOG(ERROR) << "Getting the Publisher Status failed: "
+                         << logging::SystemErrorCodeToString(hr);
     return;
   }
 
-  VLOG(2) << "Publisher Status: " << static_cast<int>(status);
+  BLUETOOTH_LOG(EVENT) << "Publisher Status: " << static_cast<int>(status);
   if (status == BluetoothLEAdvertisementPublisherStatus_Stopped) {
     // Notify Observers.
     for (auto& observer : observers_)
@@ -367,17 +375,17 @@ void BluetoothAdvertisementWinrt::OnStatusChanged(
   };
 
   if (status == BluetoothLEAdvertisementPublisherStatus_Aborted) {
-    VLOG(2) << "The Publisher aborted.";
     BluetoothError bluetooth_error;
     hr = changed->get_Error(&bluetooth_error);
     if (FAILED(hr)) {
-      VLOG(2) << "Getting the Publisher Error failed: "
-              << logging::SystemErrorCodeToString(hr);
+      BLUETOOTH_LOG(ERROR) << "Getting the Publisher Error failed: "
+                           << logging::SystemErrorCodeToString(hr);
       run_error_cb(error_code);
       return;
     }
 
-    VLOG(2) << "Publisher Error: " << static_cast<int>(bluetooth_error);
+    BLUETOOTH_LOG(EVENT) << "Publisher aborted: "
+                         << static_cast<int>(bluetooth_error);
     switch (bluetooth_error) {
       case BluetoothError_RadioNotAvailable:
         error_code = ERROR_ADAPTER_POWERED_OFF;
@@ -395,7 +403,7 @@ void BluetoothAdvertisementWinrt::OnStatusChanged(
 
   if (is_starting &&
       status == BluetoothLEAdvertisementPublisherStatus_Started) {
-    VLOG(2) << "Starting the Publisher was successful.";
+    BLUETOOTH_LOG(EVENT) << "Starting the Publisher was successful.";
     auto callbacks = std::move(pending_register_callbacks_);
     std::move(callbacks->callback).Run();
     return;
@@ -403,7 +411,7 @@ void BluetoothAdvertisementWinrt::OnStatusChanged(
 
   if (!is_starting &&
       status == BluetoothLEAdvertisementPublisherStatus_Stopped) {
-    VLOG(2) << "Stopping the Publisher was successful.";
+    BLUETOOTH_LOG(EVENT) << "Stopping the Publisher was successful.";
     auto callbacks = std::move(pending_unregister_callbacks_);
     std::move(callbacks->callback).Run();
     return;

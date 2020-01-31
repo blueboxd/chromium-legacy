@@ -21,12 +21,6 @@ namespace {
 const char kPurposeHeaderName[] = "Purpose";
 const char kPurposeHeaderValue[] = "prefetch";
 
-void CallCancelPrerenderForUnsupportedMethod(
-    mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler) {
-  mojo::Remote<chrome::mojom::PrerenderCanceler>(std::move(canceler))
-      ->CancelPrerenderForUnsupportedMethod();
-}
-
 void CallCancelPrerenderForUnsupportedScheme(
     mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler,
     const GURL& url) {
@@ -87,10 +81,6 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     // invalid requests.  For prefetches, cancel invalid requests but keep the
     // prefetch going.
     delegate_->CancelWithError(net::ERR_ABORTED);
-    if (mode_ == DEPRECATED_FULL_PRERENDER) {
-      CallCancelPrerenderForUnsupportedMethod(std::move(canceler_));
-      return;
-    }
   }
 
   if (request->resource_type !=

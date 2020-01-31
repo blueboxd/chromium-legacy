@@ -33,17 +33,23 @@ AppServiceAppIconLoader::~AppServiceAppIconLoader() = default;
 bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
   // Skip the ARC intent helper, the system Android app that proxies links to
   // Chrome, which should be hidden.
-  if (app_id == kArcIntentHelperAppId)
-    return false;
-
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (!proxy || proxy->AppRegistryCache().GetAppType(app_id) ==
-                    apps::mojom::AppType::kUnknown) {
+  if (app_id == kArcIntentHelperAppId) {
     return false;
   }
 
-  return true;
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+
+  // Support icon loading for apps registered in AppService or Crostini apps
+  // with the prefix "crostini:".
+  if (proxy && (proxy->AppRegistryCache().GetAppType(app_id) !=
+                    apps::mojom::AppType::kUnknown ||
+                base::StartsWith(app_id, crostini::kCrostiniAppIdPrefix,
+                                 base::CompareCase::SENSITIVE))) {
+    return true;
+  }
+
+  return false;
 }
 
 void AppServiceAppIconLoader::FetchImage(const std::string& app_id) {

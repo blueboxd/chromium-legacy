@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/pointer_details.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/x/events_x_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11_types.h"

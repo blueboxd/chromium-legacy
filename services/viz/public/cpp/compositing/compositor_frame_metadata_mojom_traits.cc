@@ -8,6 +8,7 @@
 #include "services/viz/public/cpp/compositing/begin_frame_args_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/selection_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_id_mojom_traits.h"
+#include "ui/gfx/mojom/display_color_spaces_mojom_traits.h"
 #include "ui/gfx/mojom/selection_bound_mojom_traits.h"
 #include "ui/latency/mojom/latency_info_mojom_traits.h"
 
@@ -32,6 +33,8 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return false;
   out->frame_token = data.frame_token();
 
+  if (!data.ReadContentColorUsage(&out->content_color_usage))
+    return false;
   out->may_contain_video = data.may_contain_video();
   out->is_resourceless_software_draw_with_scroll_or_animation =
       data.is_resourceless_software_draw_with_scroll_or_animation();

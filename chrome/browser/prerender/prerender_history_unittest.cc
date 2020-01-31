@@ -84,7 +84,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
 
   // Add a second entry and make sure both first and second appear.
   const char* const kSecondUrl = "http://www.beta.com/";
-  const FinalStatus kSecondFinalStatus = FINAL_STATUS_INVALID_HTTP_METHOD;
+  const FinalStatus kSecondFinalStatus = FINAL_STATUS_DUPLICATE;
   const Origin kSecondOrigin = ORIGIN_OMNIBOX;
   PrerenderHistory::Entry entry_second(
       GURL(kSecondUrl), kSecondFinalStatus, kSecondOrigin,

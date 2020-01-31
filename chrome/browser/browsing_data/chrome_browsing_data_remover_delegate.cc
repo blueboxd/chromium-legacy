@@ -54,7 +54,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -94,6 +94,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -797,8 +798,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         website_settings_filter);
 #endif
 
-    PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveCountsByUrl(
-        filter);
+    PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
+        ->RemoveCountsByUrl(filter);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(

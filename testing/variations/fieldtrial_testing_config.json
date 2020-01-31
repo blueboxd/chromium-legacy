@@ -1481,6 +1481,33 @@
             ]
         }
     ],
+    "ChromeOSKstaled": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledRatio4",
+                    "params": {
+                        "KstaledRatio": "4"
+                    },
+                    "enable_features": [
+                        "KstaledSwap"
+                    ]
+                },
+                {
+                    "name": "EnabledRatio6",
+                    "params": {
+                        "KstaledRatio": "6"
+                    },
+                    "enable_features": [
+                        "KstaledSwap"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeOSLauncherAssistantIntegration": [
         {
             "platforms": [
@@ -1491,6 +1518,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableEmbeddedAssistantUI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ChromeOSNeuralPalm": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableNeuralPalmDetectionFilter",
+                        "EnableNeuralStylusReportFilter"
                     ]
                 }
             ]

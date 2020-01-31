@@ -72,11 +72,9 @@ bool AssistantWebViewImpl::IsWebContentsCreationOverridden(
     const std::string& frame_name,
     const GURL& target_url) {
   if (params_.suppress_navigation) {
-    for (auto& observer : observers_) {
-      observer.DidSuppressNavigation(target_url,
-                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                     /*from_user_gesture=*/true);
-    }
+    NotifyDidSuppressNavigation(target_url,
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                /*from_user_gesture=*/true);
     return true;
   }
   return content::WebContentsDelegate::IsWebContentsCreationOverridden(
@@ -88,10 +86,8 @@ content::WebContents* AssistantWebViewImpl::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (params_.suppress_navigation) {
-    for (auto& observer : observers_) {
-      observer.DidSuppressNavigation(params.url, params.disposition,
-                                     /*from_user_gesture=*/true);
-    }
+    NotifyDidSuppressNavigation(params.url, params.disposition,
+                                params.user_gesture);
     return nullptr;
   }
   return content::WebContentsDelegate::OpenURLFromTab(source, params);
@@ -190,6 +186,33 @@ void AssistantWebViewImpl::InitLayout(Profile* profile) {
   web_view_->set_owned_by_client();
   web_view_->SetWebContents(web_contents_.get());
   AddChildView(web_view_.get());
+}
+
+void AssistantWebViewImpl::NotifyDidSuppressNavigation(
+    const GURL& url,
+    WindowOpenDisposition disposition,
+    bool from_user_gesture) {
+  // Note that we post notification to |observers_| as an observer may cause
+  // |this| to be deleted during handling of the event which is unsafe to do
+  // until the original navigation sequence has been completed.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const base::WeakPtr<AssistantWebViewImpl>& self, GURL url,
+             WindowOpenDisposition disposition, bool from_user_gesture) {
+            if (self) {
+              for (auto& observer : self->observers_) {
+                observer.DidSuppressNavigation(url, disposition,
+                                               from_user_gesture);
+
+                // We need to check |self| to confirm that |observer| did not
+                // delete |this|. If |this| is deleted, we quit.
+                if (!self)
+                  return;
+              }
+            }
+          },
+          weak_factory_.GetWeakPtr(), url, disposition, from_user_gesture));
 }
 
 void AssistantWebViewImpl::UpdateCanGoBack() {

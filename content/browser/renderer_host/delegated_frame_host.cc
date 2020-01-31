@@ -81,7 +81,7 @@ void DelegatedFrameHost::RemoveObserverForTesting(Observer* observer) {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
-    const base::Optional<RecordTabSwitchTimeRequest>&
+    const base::Optional<RecordContentToVisibleTimeRequest>&
         record_tab_switch_time_request) {
   // Cancel any pending frame eviction and unpause it if paused.
   SetFrameEvictionStateAndNotifyObservers(FrameEvictionState::kNotStarted);

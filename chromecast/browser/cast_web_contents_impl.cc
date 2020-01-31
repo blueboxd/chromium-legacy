@@ -339,6 +339,7 @@ void CastWebContentsImpl::RemoveBeforeLoadJavaScript(base::StringPiece id) {
   }
 }
 
+// TODO(crbug.com/803242): Deprecated and will be shortly removed.
 void CastWebContentsImpl::PostMessageToMainFrame(
     const std::string& target_origin,
     const std::string& data,
@@ -357,6 +358,26 @@ void CastWebContentsImpl::PostMessageToMainFrame(
   content::MessagePortProvider::PostMessageToFrame(
       web_contents(), base::string16(), target_origin_utf16, data_utf16,
       std::move(channels));
+}
+
+void CastWebContentsImpl::PostMessageToMainFrame(
+    const std::string& target_origin,
+    const std::string& data,
+    std::vector<blink::WebMessagePort> ports) {
+  DCHECK(!data.empty());
+
+  base::string16 data_utf16;
+  data_utf16 = base::UTF8ToUTF16(data);
+
+  // If origin is set as wildcard, no origin scoping would be applied.
+  constexpr char kWildcardOrigin[] = "*";
+  base::Optional<base::string16> target_origin_utf16;
+  if (target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents(), base::string16(), target_origin_utf16, data_utf16,
+      std::move(ports));
 }
 
 void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {

@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/metrics.h"
 #include "ui/views/selection_controller_delegate.h"

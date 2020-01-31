@@ -38,6 +38,9 @@ constexpr base::FilePath::CharType kTestFilesFolderInTestData[] =
 // An 800x600 image/png (all blue pixels).
 constexpr char kFilePng800x600[] = "image.png";
 
+// A 1-second long 648x486 VP9-encoded video with stereo Opus-encoded audio.
+constexpr char kFileVideoVP9[] = "world.webm";
+
 class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   MediaAppIntegrationTest() {
@@ -141,26 +144,32 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
 // file manager and eligible for opening appropriate files / mime types.
 IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppElibibleOpenTask) {
   constexpr bool kIsDirectory = false;
-  const extensions::EntryInfo test_entry(TestFile(kFilePng800x600), "image/png",
-                                         kIsDirectory);
+  const extensions::EntryInfo image_entry(TestFile(kFilePng800x600),
+                                          "image/png", kIsDirectory);
+  const extensions::EntryInfo video_entry(TestFile(kFileVideoVP9), "video/webm",
+                                          kIsDirectory);
 
   WaitForTestSystemAppInstall();
 
-  std::vector<file_manager::file_tasks::FullTaskDescriptor> result;
-  file_manager::file_tasks::FindWebTasks(profile(), {test_entry}, &result);
+  for (const auto& single_entry : {video_entry, image_entry}) {
+    SCOPED_TRACE(single_entry.mime_type);
+    std::vector<file_manager::file_tasks::FullTaskDescriptor> result;
+    file_manager::file_tasks::FindWebTasks(profile(), {single_entry}, &result);
 
-  ASSERT_LT(0u, result.size());
-  EXPECT_EQ(1u, result.size());
-  const auto& task = result[0];
-  const auto& descriptor = task.task_descriptor();
+    ASSERT_LT(0u, result.size());
+    EXPECT_EQ(1u, result.size());
+    const auto& task = result[0];
+    const auto& descriptor = task.task_descriptor();
 
-  EXPECT_EQ("Media App", task.task_title());
-  EXPECT_EQ(extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
-            task.task_verb());
-  EXPECT_EQ(descriptor.app_id,
-            *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::MEDIA));
-  EXPECT_EQ(chromeos::kChromeUIMediaAppURL, descriptor.action_id);
-  EXPECT_EQ(file_manager::file_tasks::TASK_TYPE_WEB_APP, descriptor.task_type);
+    EXPECT_EQ("Media App", task.task_title());
+    EXPECT_EQ(extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
+              task.task_verb());
+    EXPECT_EQ(descriptor.app_id, *GetManager().GetAppIdForSystemApp(
+                                     web_app::SystemAppType::MEDIA));
+    EXPECT_EQ(chromeos::kChromeUIMediaAppURL, descriptor.action_id);
+    EXPECT_EQ(file_manager::file_tasks::TASK_TYPE_WEB_APP,
+              descriptor.task_type);
+  }
 }
 
 // End-to-end test to ensure that the MediaApp successfully registers as a file

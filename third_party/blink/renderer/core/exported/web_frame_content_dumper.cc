@@ -103,7 +103,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
 
   DCHECK(web_view->MainFrameWidget());
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
 
   StringBuilder text;
   FrameContentAsPlainText(max_chars, To<WebLocalFrameImpl>(frame)->GetFrame(),

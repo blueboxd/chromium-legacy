@@ -8,8 +8,40 @@
 
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/payments/core/autofill_payment_app.h"
+#include "components/payments/core/features.h"
+#include "components/payments/core/payments_experimental_features.h"
 
 namespace payments {
+namespace {
+
+// Returns the sorting group of a payment app. This is used to order payment
+// apps in the order of:
+// 1. Installed 3rd-party payment handlers
+// 2. Complete autofill instruments
+// 3. Just-in-time installable payment handlers that is not yet installed.
+// 4. Incomplete autofill instruments
+int GetSortingGroup(const PaymentApp& app) {
+  switch (app.type()) {
+    case PaymentApp::Type::SERVICE_WORKER_APP:
+    case PaymentApp::Type::NATIVE_MOBILE_APP:
+      // If the experimental feature is enabled, sort 3rd-party payment handlers
+      // that needs installation below autofill instruments.
+      if (app.NeedsInstallation() &&
+          PaymentsExperimentalFeatures::IsEnabled(
+              features::kDownRankJustInTimePaymentApp)) {
+        return 3;
+      }
+      return 1;
+      break;
+    case PaymentApp::Type::AUTOFILL:
+      if (app.IsCompleteForPayment()) {
+        return 2;
+      } else {
+        return 4;
+      }
+  }
+}
+}  // namespace
 
 PaymentApp::PaymentApp(int icon_resource_id, Type type)
     : icon_resource_id_(icon_resource_id), type_(type) {}
@@ -47,12 +79,15 @@ void PaymentApp::SortApps(std::vector<PaymentApp*>* apps) {
 }
 
 bool PaymentApp::operator<(const PaymentApp& other) const {
-  // Non-autofill apps before autofill.
-  if (type_ == Type::AUTOFILL && other.type() != Type::AUTOFILL)
-    return false;
-  if (type_ != Type::AUTOFILL && other.type() == Type::AUTOFILL)
-    return true;
+  int sorting_group = GetSortingGroup(*this);
+  int other_sorting_group = GetSortingGroup(other);
 
+  // First sort payment apps by their sorting group.
+  if (sorting_group != other_sorting_group) {
+    return sorting_group < other_sorting_group;
+  }
+
+  // Within a group, compare by completeness.
   // Non-autofill apps have max completeness score. Autofill cards are sorted
   // based on completeness. (Each autofill card is considered an app.)
   int completeness = GetCompletenessScore() - other.GetCompletenessScore();

@@ -197,8 +197,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
 
     assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
         &assistant_client_, service_context_.get(), std::move(delegate),
-        shared_url_loader_factory_->Clone(), s3_server_uri_override,
-        /*is_signed_out_mode=*/false);
+        shared_url_loader_factory_->Clone(), s3_server_uri_override);
   }
 
   void TearDown() override {

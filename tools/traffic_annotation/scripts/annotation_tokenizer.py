@@ -30,8 +30,20 @@ TOKEN_REGEXEN = [
     ('right_paren', re.compile(r'(\))')),
 ]
 
+# Number of characters to include in the context (for error reporting).
+CONTEXT_LENGTH = 20
 
 Token = namedtuple('Token', ['type', 'value', 'pos'])
+
+
+class CppParsingError(Exception):
+  """An error during C++ parsing/tokenizing."""
+
+  def __init__(self, expected_type, body, pos, file_path, line_number):
+    context = body[pos:pos + CONTEXT_LENGTH]
+    msg = ("Expected {} in annotation definition at {}:{}.\n" +
+           "near '{}'").format(expected_type, file_path, line_number, context)
+    Exception.__init__(self, msg)
 
 
 class Tokenizer:
@@ -51,16 +63,20 @@ class Tokenizer:
     """Like assert(), but reports errors in a _somewhat_ useful way."""
     if token and token.type == expected_type:
       return
-    raise Exception(
-        "Expected %s in annotation definition at %s:%d.\nnear '%s'" %
-        (expected_type, self.file_path, self.line_number,
-         self.body[self.pos:self.pos+10]))
+    # Skip whitespace to make the error message more useful.
+    pos = self._skip_whitespace()
+    raise CppParsingError(expected_type, self.body, pos, self.file_path,
+                          self.line_number)
+
+  def _skip_whitespace(self):
+    """Return the position of the first non-whitespace character from here."""
+    whitespace_re = re.compile(r'\s*')
+    return whitespace_re.match(self.body, self.pos).end()
 
   def _get_token(self):
     """Return the token here, or None on failure."""
-    # Skip initial whitespace
-    whitespace_re = re.compile(r'\s*')
-    pos = whitespace_re.match(self.body, self.pos).end()
+    # Skip initial whitespace.
+    pos = self._skip_whitespace()
 
     # Find the token here, if there's one.
     token = None

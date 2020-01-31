@@ -261,7 +261,7 @@ void StorageHandler::UpdateMyFilesSize() {
       file_manager::util::GetMyFilesFolderForProfile(profile_);
 
   const base::FilePath android_files_path =
-      base::FilePath(file_manager::util::GetAndroidPlayFilesPath());
+      base::FilePath(file_manager::util::GetAndroidFilesPath());
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,

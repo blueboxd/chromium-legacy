@@ -17,8 +17,8 @@
     {
       "include": "common_tests.json",
       "device type": "iPhone X",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -28,8 +28,8 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone X",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -39,8 +39,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -50,8 +50,8 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -61,8 +61,8 @@
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -72,8 +72,8 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -83,8 +83,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [
@@ -94,8 +94,8 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "os": "13.3",
+      "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests",
       "test args": [

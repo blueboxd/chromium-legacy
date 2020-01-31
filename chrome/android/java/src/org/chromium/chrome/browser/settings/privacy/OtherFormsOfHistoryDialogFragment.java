@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
@@ -19,8 +18,9 @@ import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -32,10 +32,6 @@ import org.chromium.ui.text.SpanApplier;
  */
 public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
         DialogInterface.OnClickListener {
-
-    public static final String PREF_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN =
-            "org.chromium.chrome.browser.settings.privacy."
-            + "PREF_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN";
 
     private static final String TAG = "OtherFormsOfHistoryDialogFragment";
 
@@ -84,7 +80,7 @@ public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
 
         // Remember that the dialog about other forms of browsing history has been shown
         // to the user.
-        recordDialogWasShown(getActivity(), true);
+        recordDialogWasShown(true);
 
         // Finishes the ClearBrowsingDataPreferences activity that created this dialog.
         getActivity().finish();
@@ -92,32 +88,27 @@ public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
 
     /**
      * Sets the preference indicating whether this dialog was already shown.
-     * @param activity The Activity storing the preference.
      * @param shown Whether the dialog was shown.
      */
-    private static void recordDialogWasShown(Activity activity, boolean shown) {
-        SharedPreferences preferences =
-                ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(PREF_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN, shown);
-        editor.apply();
+    private static void recordDialogWasShown(boolean shown) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.SETTINGS_PRIVACY_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN, shown);
     }
 
     /**
      * @return Whether the dialog has already been shown to the user before.
      */
     static boolean wasDialogShown() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                PREF_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.SETTINGS_PRIVACY_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN, false);
     }
 
     /**
      * For testing purposes, resets the preference indicating that this dialog has been shown
      * to false.
-     * @param activity The Activity storing the preference.
      */
     @VisibleForTesting
-    static void clearShownPreferenceForTesting(Activity activity) {
-        recordDialogWasShown(activity, false);
+    static void clearShownPreferenceForTesting() {
+        recordDialogWasShown(false);
     }
 }

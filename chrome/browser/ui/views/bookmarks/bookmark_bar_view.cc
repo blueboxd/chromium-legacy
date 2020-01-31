@@ -79,6 +79,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"

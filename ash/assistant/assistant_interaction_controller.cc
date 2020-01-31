@@ -714,8 +714,10 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
 void AssistantInteractionController::OnOpenAppResponse(
     chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
     OnOpenAppResponseCallback callback) {
-  if (!HasActiveInteraction())
+  if (!HasActiveInteraction()) {
+    std::move(callback).Run(false);
     return;
+  }
 
   auto* android_helper = AndroidIntentHelper::GetInstance();
   if (!android_helper) {
@@ -793,10 +795,9 @@ void AssistantInteractionController::OnProcessPendingResponse() {
   }
 
   // Start processing.
-  model_.pending_response()->Process(
-      base::BindOnce(
-          &AssistantInteractionController::OnPendingResponseProcessed,
-          weak_factory_.GetWeakPtr()));
+  model_.pending_response()->Process(base::BindOnce(
+      &AssistantInteractionController::OnPendingResponseProcessed,
+      weak_factory_.GetWeakPtr()));
 }
 
 void AssistantInteractionController::OnPendingResponseProcessed(bool success) {

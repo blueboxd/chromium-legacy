@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
-#define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#ifndef STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_
+#define STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_
 
 #include <stdint.h>
 
@@ -147,4 +147,4 @@ class MockQuotaManager : public QuotaManager {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#endif  // STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_

@@ -113,8 +113,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public views::BoundsAnimatorObserver,
                              public ApplicationDragAndDropHost,
                              public ShelfTooltipDelegate,
-                             public TabletModeObserver,
-                             public ShelfConfig::Observer {
+                             public TabletModeObserver {
  public:
   ShelfView(ShelfModel* model,
             Shelf* shelf,
@@ -210,8 +209,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // ShelfConfig::Observer:
-  void OnShelfConfigUpdated() override;
+  // Called from ScrollableShelfView when shelf config is updated.
+  void OnShelfConfigUpdated();
 
   // Returns true if |event| on the shelf item is going to activate the
   // ShelfItem associated with |view|. Used to determine whether a pending ink

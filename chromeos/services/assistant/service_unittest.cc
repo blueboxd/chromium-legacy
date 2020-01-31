@@ -13,12 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
@@ -61,20 +63,21 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
 
  private:
   // identity::mojom::IdentityAccessor:
-  void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override {
+  void GetUnconsentedPrimaryAccountInfo(
+      GetUnconsentedPrimaryAccountInfoCallback callback) override {
     CoreAccountId account_id("account_id");
     std::string gaia = "fakegaiaid";
     std::string email = "fake@email";
 
     identity::AccountState account_state;
     account_state.has_refresh_token = true;
-    account_state.is_primary_account = true;
+    account_state.is_unconsented_primary_account = true;
 
     std::move(callback).Run(account_id, gaia, email, account_state);
   }
 
-  void GetPrimaryAccountWhenAvailable(
-      GetPrimaryAccountWhenAvailableCallback callback) override {}
+  void GetUnconsentedPrimaryAccountWhenAvailable(
+      GetUnconsentedPrimaryAccountWhenAvailableCallback callback) override {}
   void GetAccessToken(const CoreAccountId& account_id,
                       const ::identity::ScopeSet& scopes,
                       const std::string& consumer_id,
@@ -167,6 +170,9 @@ class AssistantServiceTest : public testing::Test {
   ~AssistantServiceTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kAmbientModeFeature);
+
     chromeos::CrasAudioHandler::InitializeForTesting();
 
     PowerManagerClient::InitializeFake();
@@ -229,8 +235,11 @@ class AssistantServiceTest : public testing::Test {
     return mock_task_runner_.get();
   }
 
+  ash::AmbientModeState* ambient_mode_state() { return &ambient_mode_state_; }
+
  private:
   base::test::TaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<Service> service_;
   mojo::Remote<mojom::AssistantService> remote_service_;
@@ -247,6 +256,8 @@ class AssistantServiceTest : public testing::Test {
 
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   std::unique_ptr<base::OneShotTimer> mock_timer_;
+
+  ash::AmbientModeState ambient_mode_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantServiceTest);
 };
@@ -366,6 +377,24 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStopped) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(client()->status(), ash::mojom::AssistantState::NOT_READY);
+}
+
+TEST_F(AssistantServiceTest,
+       ShouldResetAccessTokenWhenAmbientModeStateChanged) {
+  assistant_manager()->FinishStart();
+  EXPECT_EQ(assistant_manager()->GetState(),
+            AssistantManagerService::State::RUNNING);
+  ASSERT_TRUE(assistant_manager()->access_token().has_value());
+  ASSERT_EQ(assistant_manager()->access_token().value(), "fake access token");
+
+  ambient_mode_state()->SetAmbientModeEnabled(true);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(assistant_manager()->access_token().has_value());
+
+  ambient_mode_state()->SetAmbientModeEnabled(false);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(assistant_manager()->access_token().has_value());
+  ASSERT_EQ(assistant_manager()->access_token().value(), "fake access token");
 }
 
 }  // namespace assistant

@@ -21,6 +21,10 @@ std::string AddBracketsIfIPv6(const IPAddress& ip_address) {
 
 }  // namespace
 
+bool SchemeHostPortMatcherRule::IsHostnamePatternRule() const {
+  return false;
+}
+
 SchemeHostPortMatcherHostnamePatternRule::
     SchemeHostPortMatcherHostnamePatternRule(
         const std::string& optional_scheme,
@@ -60,6 +64,21 @@ std::string SchemeHostPortMatcherHostnamePatternRule::ToString() const {
   if (optional_port_ != -1)
     base::StringAppendF(&str, ":%d", optional_port_);
   return str;
+}
+
+bool SchemeHostPortMatcherHostnamePatternRule::IsHostnamePatternRule() const {
+  return true;
+}
+
+std::unique_ptr<SchemeHostPortMatcherHostnamePatternRule>
+SchemeHostPortMatcherHostnamePatternRule::GenerateSuffixMatchingRule() const {
+  if (!base::StartsWith(hostname_pattern_, "*", base::CompareCase::SENSITIVE)) {
+    return std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
+        optional_scheme_, "*" + hostname_pattern_, optional_port_);
+  }
+  // return a new SchemeHostPortMatcherHostNamePatternRule with the same data.
+  return std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
+      optional_scheme_, hostname_pattern_, optional_port_);
 }
 
 SchemeHostPortMatcherIPHostRule::SchemeHostPortMatcherIPHostRule(

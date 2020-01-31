@@ -66,6 +66,8 @@ class PaymentApp {
   virtual bool IsValidForCanMakePayment() const = 0;
   // Records the use of this payment app.
   virtual void RecordUse() = 0;
+  // Check whether this payment app needs installation before it can be used.
+  virtual bool NeedsInstallation() const = 0;
   // Return the sub/label of payment app, to be displayed to the user.
   virtual base::string16 GetLabel() const = 0;
   virtual base::string16 GetSublabel() const = 0;

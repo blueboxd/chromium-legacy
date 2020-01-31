@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sharing/webrtc/webrtc_flags.h"
 
-// TODO(crbug.com/1021131) - Enable by default for M80 experimentation.
 const base::Feature kSharingPeerConnectionReceiver{
     "SharingPeerConnectionReceiver", base::FEATURE_DISABLED_BY_DEFAULT};
 

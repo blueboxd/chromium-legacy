@@ -19,14 +19,10 @@ function postToGuestWindow(message) {
 /**
  * Loads a file in the guest.
  *
- * @param {Blob} blob
+ * @param {File} file
  */
-async function loadBlob(blob) {
-  // It would be better to pass a blob URL here, but that needs cross-origin
-  // access to Blob URLs, which should come with https://crbug.com/1012150.
-  // Until then, use go/mdn/API/Blob/arrayBuffer (working draft).
-  const buffer = await blob.arrayBuffer();
-  postToGuestWindow({'buffer': buffer, 'type': blob.type});
+async function loadFile(file) {
+  postToGuestWindow({'file': file});
 }
 
 /**
@@ -41,7 +37,7 @@ async function loadFileFromHandle(handle) {
 
   const fileHandle = /** @type{FileSystemFileHandle} */ (handle);
   const file = await fileHandle.getFile();
-  loadBlob(file);
+  loadFile(file);
 }
 
 // Wait for 'load' (and not DOMContentLoaded) to ensure the subframe has been

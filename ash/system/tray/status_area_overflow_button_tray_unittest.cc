@@ -12,8 +12,8 @@
 #include "ash/test/ash_test_helper.h"
 #include "base/run_loop.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/types/event_type.h"
 
 namespace ash {
 

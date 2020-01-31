@@ -9,7 +9,8 @@ Unit tests for annotation_tokenizer.py.
 
 import unittest
 
-from annotation_tokenizer import Tokenizer
+from annotation_tokenizer import Tokenizer, CppParsingError
+
 
 class AnnotationTokenizerTest(unittest.TestCase):
   def testRealAnnotationDefinition(self):
@@ -61,19 +62,19 @@ class AnnotationTokenizerTest(unittest.TestCase):
   def testAdvanceErrorPaths(self):
     tokenizer = Tokenizer('  hello , ', 'foo.txt', 33)
     tokenizer.advance('symbol')
-    with self.assertRaisesRegexp(Exception,
+    with self.assertRaisesRegexp(CppParsingError,
                                  'Expected symbol.+at foo.txt:33'):
       # There are no more tokens.
       tokenizer.advance('symbol')
 
     tokenizer = Tokenizer('"hello"', 'foo.txt', 33)
-    with self.assertRaisesRegexp(Exception,
+    with self.assertRaisesRegexp(CppParsingError,
                                  'Expected comma.+at foo.txt:33'):
       # The type doesn't match.
       tokenizer.advance('comma')
 
     tokenizer = Tokenizer('{', 'foo.txt', 33)
-    with self.assertRaisesRegexp(Exception,
+    with self.assertRaisesRegexp(CppParsingError,
                                  'Expected string_literal.+at foo.txt:33'):
       # Not a valid token at all.
       tokenizer.advance('string_literal')

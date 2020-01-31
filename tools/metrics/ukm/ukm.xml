@@ -7070,6 +7070,7 @@ be describing additional metrics about the same event.
       <history>
         <index fields="profile.country"/>
         <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.gender,profile.generation"/>
         <index fields="profile.is_dominant_version"/>
         <index fields="profile.is_latest_version"/>
         <index fields="profile.system_ram"/>
@@ -7609,6 +7610,22 @@ be describing additional metrics about the same event.
       Bitfield representing the events that occurred during the Payment Request.
       Values defined in the Event enum of
       components/payments/core/journey_logger.h.
+    </summary>
+  </metric>
+</event>
+
+<event name="PaymentRequest.TransactionAmount">
+  <owner>sahel@chromium.org</owner>
+  <owner>web-payments-team@google.com</owner>
+  <metric name="Category">
+    <summary>
+      Tranaction size can be zero, micro, or regular. Values defined in the
+      TransactionSize enum of components/payments/core/journey_logger.h.
+    </summary>
+  </metric>
+  <metric name="CompletionStatus" enum="Boolean">
+    <summary>
+      Whether the transaction has been triggered or completed.
     </summary>
   </metric>
 </event>

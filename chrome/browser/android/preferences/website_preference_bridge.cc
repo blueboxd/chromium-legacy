@@ -31,7 +31,7 @@
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
@@ -44,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -190,8 +191,8 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
   // Add any origins which have a default content setting value (thus skipped
   // above), but have been automatically blocked for this permission type.
   // We use an empty embedder since embargo doesn't care about it.
-  PermissionDecisionAutoBlocker* auto_blocker =
-      PermissionDecisionAutoBlocker::GetForProfile(
+  permissions::PermissionDecisionAutoBlocker* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(
           GetActiveUserProfile(false /* is_incognito */));
   ScopedJavaLocalRef<jstring> jembedder;
 
@@ -249,8 +250,8 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
   // The permission may have been blocked due to being under embargo, so if it
   // was changed away from BLOCK, clear embargo status if it exists.
   if (setting != CONTENT_SETTING_BLOCK) {
-    PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
-        origin_url, content_type);
+    PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
+        ->RemoveEmbargoByUrl(origin_url, content_type);
   }
 
   if (MaybeResetDSEPermission(content_type, origin_url, embedder_url,
@@ -512,8 +513,8 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
   ContentSetting setting = static_cast<ContentSetting>(value);
 
-  PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
-      url, ContentSettingsType::NOTIFICATIONS);
+  PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
+      ->RemoveEmbargoByUrl(url, ContentSettingsType::NOTIFICATIONS);
 
   if (MaybeResetDSEPermission(ContentSettingsType::NOTIFICATIONS, url, GURL(),
                               is_incognito, setting)) {

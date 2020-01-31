@@ -9,7 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 
 namespace ash {
 

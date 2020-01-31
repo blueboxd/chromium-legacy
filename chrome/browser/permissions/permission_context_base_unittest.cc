@@ -20,7 +20,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -32,6 +31,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_util.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -395,7 +396,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       // BlockPromptsIfDismissedOften feature is off.
       base::test::ScopedFeatureList feature_list;
       feature_list.InitAndDisableFeature(
-          features::kBlockPromptsIfDismissedOften);
+          permissions::features::kBlockPromptsIfDismissedOften);
 
       for (uint32_t i = 0; i < 4; ++i) {
         TestPermissionContext permission_context(
@@ -438,8 +439,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA);
     }
 
-    EXPECT_TRUE(
-        base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften));
+    EXPECT_TRUE(base::FeatureList::IsEnabled(
+        permissions::features::kBlockPromptsIfDismissedOften));
 
     // Sanity check independence per permission type by checking two of them.
     DismissMultipleTimesAndExpectBlock(url, ContentSettingsType::GEOLOCATION,
@@ -454,20 +455,22 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     base::HistogramTester histograms;
 
     std::map<std::string, std::string> params;
-    params[PermissionDecisionAutoBlocker::kPromptDismissCountKey] = "5";
+    params[permissions::PermissionDecisionAutoBlocker::
+               GetPromptDismissCountKeyForTesting()] = "5";
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kBlockPromptsIfDismissedOften, params);
+        permissions::features::kBlockPromptsIfDismissedOften, params);
 
     std::map<std::string, std::string> actual_params;
     EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-        features::kBlockPromptsIfDismissedOften, &actual_params));
+        permissions::features::kBlockPromptsIfDismissedOften, &actual_params));
     EXPECT_EQ(params, actual_params);
 
     {
       std::map<std::string, std::string> actual_params;
       EXPECT_TRUE(variations::GetVariationParamsByFeature(
-          features::kBlockPromptsIfDismissedOften, &actual_params));
+          permissions::features::kBlockPromptsIfDismissedOften,
+          &actual_params));
       EXPECT_EQ(params, actual_params);
     }
 

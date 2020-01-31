@@ -22,9 +22,9 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 namespace {

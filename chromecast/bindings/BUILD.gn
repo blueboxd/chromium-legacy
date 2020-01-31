@@ -26,7 +26,11 @@ source_set("bindings_manager") {
     "bindings_manager.cc",
     "bindings_manager.h",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//third_party/blink/public/common",
+    "//third_party/blink/public/common:headers",
+  ]
   public_deps = [ "//mojo/public/cpp/bindings" ]
 }
 

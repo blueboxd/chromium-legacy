@@ -107,8 +107,7 @@ class SubtractImplicitBypassesRule : public SchemeHostPortMatcherRule {
 };
 
 std::unique_ptr<SchemeHostPortMatcherRule> ParseRule(
-    const std::string& raw_untrimmed,
-    ProxyBypassRules::ParseFormat format) {
+    const std::string& raw_untrimmed) {
   std::string raw;
   base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
 
@@ -181,12 +180,6 @@ std::unique_ptr<SchemeHostPortMatcherRule> ParseRule(
   if (base::StartsWith(raw, ".", base::CompareCase::SENSITIVE))
     raw = "*" + raw;
 
-  // If suffix matching was asked for, make sure the pattern starts with a
-  // wildcard.
-  if (format == ProxyBypassRules::ParseFormat::kHostnameSuffixMatching &&
-      !base::StartsWith(raw, "*", base::CompareCase::SENSITIVE))
-    raw = "*" + raw;
-
   return std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(scheme, raw,
                                                                     port);
 }
@@ -215,6 +208,13 @@ ProxyBypassRules& ProxyBypassRules::operator=(const ProxyBypassRules& rhs) {
 ProxyBypassRules& ProxyBypassRules::operator=(ProxyBypassRules&& rhs) {
   rules_ = std::move(rhs.rules_);
   return *this;
+}
+
+void ProxyBypassRules::ReplaceRule(
+    size_t index,
+    std::unique_ptr<SchemeHostPortMatcherRule> rule) {
+  DCHECK_LT(index, rules_.size());
+  rules_[index] = std::move(rule);
 }
 
 bool ProxyBypassRules::Matches(const GURL& url, bool reverse) const {
@@ -269,13 +269,12 @@ bool ProxyBypassRules::operator==(const ProxyBypassRules& other) const {
   return true;
 }
 
-void ProxyBypassRules::ParseFromString(const std::string& raw,
-                                       ParseFormat format) {
+void ProxyBypassRules::ParseFromString(const std::string& raw) {
   Clear();
 
   base::StringTokenizer entries(raw, ",;");
   while (entries.GetNext()) {
-    AddRuleFromString(entries.token(), format);
+    AddRuleFromString(entries.token());
   }
 }
 
@@ -294,9 +293,8 @@ void ProxyBypassRules::PrependRuleToBypassSimpleHostnames() {
   rules_.insert(rules_.begin(), std::make_unique<BypassSimpleHostnamesRule>());
 }
 
-bool ProxyBypassRules::AddRuleFromString(const std::string& raw_untrimmed,
-                                         ParseFormat format) {
-  auto rule = ParseRule(raw_untrimmed, format);
+bool ProxyBypassRules::AddRuleFromString(const std::string& raw_untrimmed) {
+  auto rule = ParseRule(raw_untrimmed);
 
   if (rule) {
     rules_.push_back(std::move(rule));

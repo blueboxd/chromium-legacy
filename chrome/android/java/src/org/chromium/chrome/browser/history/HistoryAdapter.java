@@ -26,11 +26,11 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.components.browser_ui.widget.MoreProgressButton;
 import org.chromium.components.browser_ui.widget.MoreProgressButton.State;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 

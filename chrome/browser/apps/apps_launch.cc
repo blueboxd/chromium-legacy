@@ -17,7 +17,7 @@ bool OpenApplicationWithReenablePrompt(
       profile, app_id, command_line, current_directory);
 }
 
-bool OpenAppShortcutWindow(Profile* profile, const GURL& url) {
+content::WebContents* OpenAppShortcutWindow(Profile* profile, const GURL& url) {
   return OpenExtensionAppShortcutWindow(profile, url);
 }
 

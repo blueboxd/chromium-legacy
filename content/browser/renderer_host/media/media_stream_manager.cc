@@ -360,10 +360,16 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 // |kUseFakeDeviceForMediaStream| is set. Returns a video device with
 // default DesktopMediaID otherwise.
 // Returns an audio device with default device parameters.
-MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(bool request_audio) {
+// If |kUseFakeDeviceForMediaStream| specifies a browser window, use
+// |render_process_id| and |render_frame_id| as the browser window identifier.
+MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
+    bool request_audio,
+    int render_process_id,
+    int render_frame_id) {
   MediaStreamDevices devices;
   DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_SCREEN;
   DesktopMediaID::Id desktop_media_id_id = DesktopMediaID::kNullId;
+  WebContentsMediaCaptureId web_contents_id;
   media::mojom::DisplayCaptureSurfaceType display_surface =
       media::mojom::DisplayCaptureSurfaceType::MONITOR;
   const base::CommandLine* command_line =
@@ -392,11 +398,13 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(bool request_audio) {
         case media::FakeVideoCaptureDevice::DisplayMediaType::BROWSER:
           desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
           display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
+          web_contents_id = {render_process_id, render_frame_id};
           break;
       }
     }
   }
-  DesktopMediaID media_id(desktop_media_type, desktop_media_id_id);
+  DesktopMediaID media_id(desktop_media_type, desktop_media_id_id,
+                          web_contents_id);
   MediaStreamDevice device(MediaStreamType::DISPLAY_VIDEO_CAPTURE,
                            media_id.ToString(), media_id.ToString());
   device.display_media_info = media::mojom::DisplayMediaInformation::New(
@@ -1372,7 +1380,8 @@ void MediaStreamManager::PostRequestToUI(
     MediaStreamDevices devices;
     if (request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE) {
       devices = DisplayMediaDevicesFromFakeDeviceConfig(
-          request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE);
+          request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE,
+          request->requesting_process_id, request->requesting_frame_id);
     } else if (request->video_type() ==
                MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
       // Cache the |label| in the device name field, for unit test purpose only.

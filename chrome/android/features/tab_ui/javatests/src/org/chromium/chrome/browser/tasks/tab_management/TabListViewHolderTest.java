@@ -29,10 +29,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -70,7 +69,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
                 @Override
-                public void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback,
+                public void getTabThumbnailWithCallback(int tabId, Callback<Bitmap> callback,
                         boolean forceUpdate, boolean writeToCache) {
                     Bitmap bitmap = mShouldReturnBitmap
                             ? Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)

@@ -13,6 +13,13 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<gfx::mojom::ContentColorUsage, gfx::ContentColorUsage> {
+  static gfx::mojom::ContentColorUsage ToMojom(gfx::ContentColorUsage input);
+  static bool FromMojom(gfx::mojom::ContentColorUsage input,
+                        gfx::ContentColorUsage* output);
+};
+
+template <>
 struct StructTraits<gfx::mojom::DisplayColorSpacesDataView,
                     gfx::DisplayColorSpaces> {
   static gfx::ColorSpace srgb(const gfx::DisplayColorSpaces& input) {

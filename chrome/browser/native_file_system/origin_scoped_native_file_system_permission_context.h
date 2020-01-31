@@ -30,7 +30,8 @@ class OriginScopedNativeFileSystemPermissionContext
                          const base::FilePath& path,
                          bool is_directory,
                          int process_id,
-                         int frame_id) override;
+                         int frame_id,
+                         UserAction user_action) override;
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
@@ -38,6 +39,12 @@ class OriginScopedNativeFileSystemPermissionContext
                           int process_id,
                           int frame_id,
                           UserAction user_action) override;
+  void ConfirmDirectoryReadAccess(
+      const url::Origin& origin,
+      const base::FilePath& path,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(PermissionStatus)> callback) override;
 
   // ChromeNativeFileSystemPermissionContext:
   Grants GetPermissionGrants(const url::Origin& origin,
@@ -46,9 +53,33 @@ class OriginScopedNativeFileSystemPermissionContext
   void RevokeGrants(const url::Origin& origin,
                     int process_id,
                     int frame_id) override;
+  bool OriginHasReadAccess(const url::Origin& origin) override;
+  bool OriginHasWriteAccess(const url::Origin& origin) override;
+
+  content::BrowserContext* profile() const { return profile_; }
 
  private:
+  class PermissionGrantImpl;
+  void PermissionGrantDestroyed(PermissionGrantImpl* grant);
+
+  // Schedules triggering all open windows to update their native file system
+  // usage indicator icon. Multiple calls to this method can result in only a
+  // single actual update.
+  void ScheduleUsageIconUpdate();
+
+  // Updates the native file system usage indicator icon in all currently open
+  // windows.
+  void DoUsageIconUpdate();
+
   base::WeakPtr<ChromeNativeFileSystemPermissionContext> GetWeakPtr() override;
+
+  content::BrowserContext* const profile_;
+
+  // Permission state per origin.
+  struct OriginState;
+  std::map<url::Origin, OriginState> origins_;
+
+  bool usage_icon_update_scheduled_ = false;
 
   base::WeakPtrFactory<OriginScopedNativeFileSystemPermissionContext>
       weak_factory_{this};

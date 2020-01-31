@@ -105,7 +105,7 @@ class WebPluginContainerTest : public PageTestBase {
 
   void UpdateAllLifecyclePhases(WebViewImpl* web_view) {
     web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
  protected:
@@ -248,7 +248,7 @@ void EnablePlugins(WebView* web_view, const WebSize& size) {
   web_view->GetSettings()->SetPluginsEnabled(true);
   web_view->MainFrameWidget()->Resize(size);
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   RunPendingTasks();
 }
 

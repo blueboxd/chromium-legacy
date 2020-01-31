@@ -24,7 +24,7 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/common/tab_switch_time_recorder.h"
+#include "content/common/content_to_visible_time_reporter.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/input_event_ack_state.h"
@@ -119,9 +119,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   float GetDeviceScaleFactor() final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
-  void SetRecordTabSwitchTimeRequest(base::TimeTicks start_time,
-                                     bool destination_is_loaded,
-                                     bool destination_is_frozen) final;
+  void SetRecordContentToVisibleTimeRequest(
+      base::TimeTicks start_time,
+      base::Optional<bool> destination_is_loaded,
+      base::Optional<bool> destination_is_frozen,
+      bool show_reason_tab_switching,
+      bool show_reason_unoccluded) final;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -181,12 +184,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata);
 
-  // Returns the time set by SetLastRecordTabSwitchTimeRequest. If this was not
-  // preceded by a call to SetLastRecordTabSwitchTimeRequest the
-  // |tab_switch_start_time| field of the returned struct will have a null
-  // timestamp. Calling this will reset
-  // |last_tab_switch_start_state_.tab_switch_start_time| to null.
-  base::Optional<RecordTabSwitchTimeRequest> TakeRecordTabSwitchTimeRequest();
+  // Returns the time set by SetLastRecordContentToVisibleTimeRequest. If this
+  // was not preceded by a call to SetLastRecordContentToVisibleTimeRequest the
+  // |event_start_time| field of the returned struct will have a null
+  // timestamp. Calling this will reset |last_record_tab_switch_time_request_|
+  // to null.
+  base::Optional<RecordContentToVisibleTimeRequest>
+  TakeRecordContentToVisibleTimeRequest();
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
@@ -638,9 +642,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
 
   // The last tab switch processing start request. This should only be set and
-  // retrieved using SetRecordTabSwitchTimeRequest and
-  // TakeRecordTabSwitchTimeRequest.
-  base::Optional<RecordTabSwitchTimeRequest>
+  // retrieved using SetRecordContentToVisibleTimeRequest and
+  // TakeRecordContentToVisibleTimeRequest.
+  base::Optional<RecordContentToVisibleTimeRequest>
       last_record_tab_switch_time_request_;
 
   // True when StopFlingingIfNecessary() calls StopFling().

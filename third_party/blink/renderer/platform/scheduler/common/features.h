@@ -73,7 +73,7 @@ const base::Feature kVeryHighPriorityForCompositingAlternating{
 // to kNormalPriority.
 const base::Feature kVeryHighPriorityForCompositingAfterDelay{
     "BlinkSchedulerVeryHighPriorityForCompositingAfterDelay",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Param for kVeryHighPriorityForCompositingAfterDelay experiment. How long
 // in ms the compositor will wait to be prioritized if no compositor tasks run.

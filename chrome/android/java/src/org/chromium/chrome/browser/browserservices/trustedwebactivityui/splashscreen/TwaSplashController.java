@@ -28,13 +28,13 @@ import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.SplashController;
 import org.chromium.chrome.browser.webapps.SplashDelegate;
 import org.chromium.chrome.browser.webapps.SplashscreenObserver;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.util.ColorUtils;
 
 import javax.inject.Inject;
 

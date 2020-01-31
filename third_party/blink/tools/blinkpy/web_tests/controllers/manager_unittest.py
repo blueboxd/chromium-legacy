@@ -121,7 +121,7 @@ class ManagerTest(unittest.TestCase):
         host = MockHost()
         port = host.port_factory.get('test-mac-mac10.10')
         tests = ['failures/expected/crash.html']
-        expectations = test_expectations.TestExpectations(port, tests)
+        expectations = test_expectations.TestExpectations(port)
         run_results = TestRunResults(expectations, len(tests))
         manager = get_manager()
         manager._look_for_new_crash_logs(run_results, time.time())

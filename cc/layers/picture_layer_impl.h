@@ -157,6 +157,8 @@ class CC_EXPORT PictureLayerImpl
   // an animation, at which point the PaintWorklet must be re-painted.
   void InvalidatePaintWorklets(const PaintWorkletInput::PropertyKey& key);
 
+  gfx::ContentColorUsage GetContentColorUsage() const override;
+
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(const gfx::AxisTransform2d& contents_transform);

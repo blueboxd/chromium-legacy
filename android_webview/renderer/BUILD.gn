@@ -47,6 +47,7 @@ source_set("renderer") {
     "//components/printing/common",
     "//components/printing/renderer",
     "//components/resources",
+    "//components/safe_browsing/content/common:interfaces",
     "//components/safe_browsing/content/renderer:throttles",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/common",

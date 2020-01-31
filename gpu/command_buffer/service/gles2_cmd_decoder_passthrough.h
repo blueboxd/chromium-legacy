@@ -861,6 +861,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_{this};
 
+  class ScopedEnableTextureRectangleInShaderCompiler;
+
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough_doer_prototypes.h"

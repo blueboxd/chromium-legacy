@@ -35,7 +35,6 @@ class SendMessageTester {
   void TestSendMessage(const std::string& args,
                        const std::string& expected_message,
                        const MessageTarget& expected_target,
-                       bool expected_include_tls_channel_id,
                        PortStatus expected_port_status);
 
   // Tests the sendRequest API with the specified expectations.
@@ -47,8 +46,7 @@ class SendMessageTester {
   // Tests the connect API with the specified expectaions.
   void TestConnect(const std::string& args,
                    const std::string& expected_channel,
-                   const MessageTarget& expected_target,
-                   bool expected_include_tls_channel_id);
+                   const MessageTarget& expected_target);
 
  private:
   enum Method {
@@ -60,7 +58,6 @@ class SendMessageTester {
   void TestSendMessageOrRequest(const std::string& args,
                                 const std::string& expected_message,
                                 const MessageTarget& expected_target,
-                                bool expected_include_tls_channel_id,
                                 PortStatus expected_port_status,
                                 Method method);
 

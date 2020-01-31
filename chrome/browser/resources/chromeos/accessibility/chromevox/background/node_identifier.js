@@ -123,4 +123,22 @@ NodeIdentifier = class {
     }
     return true;
   }
+
+  /**
+   * @override
+   */
+  toJSON() {
+    return {
+      attributes: this.attributes,
+      pageUrl: this.pageUrl,
+      ancestry: this.ancestry
+    };
+  }
+
+  /**
+   * @override
+   */
+  toString() {
+    return JSON.stringify(this);
+  }
 };

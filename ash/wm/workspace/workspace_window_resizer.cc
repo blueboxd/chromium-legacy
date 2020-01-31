@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -59,6 +60,12 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
     const gfx::PointF& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source) {
+  // Window dragging from top and tab dragging are disabled if "WebUITabStrip"
+  // feature is enabled. "WebUITabStrip" will be enabled on 81 for Krane and on
+  // 82 for all other boards.
+  if (features::IsWebUITabStripEnabled())
+    return nullptr;
+
   WindowState* window_state = WindowState::Get(window);
   // Only maximized/fullscreen/snapped window can be dragged from the top of
   // the screen.

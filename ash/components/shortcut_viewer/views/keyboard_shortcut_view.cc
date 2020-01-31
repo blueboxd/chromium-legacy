@@ -17,7 +17,6 @@
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
@@ -38,6 +37,7 @@
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -139,17 +139,8 @@ void UpdateAXNodeDataPosition(
 // certain shortcuts can be associated with a disabled feature behind a flag,
 // or specific device property, e.g. keyboard layout.
 bool ShouldExcludeItem(const KeyboardShortcutItem& item) {
-  switch (item.description_message_id) {
-    case IDS_KSV_DESCRIPTION_DESKS_NEW_DESK:
-    case IDS_KSV_DESCRIPTION_DESKS_REMOVE_CURRENT_DESK:
-    case IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_LEFT_DESK:
-    case IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_RIGHT_DESK:
-    case IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_LEFT_DESK:
-    case IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_RIGHT_DESK:
-      return !ash::features::IsVirtualDesksEnabled();
-    case IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT:
-      return ui::DeviceKeyboardHasAssistantKey();
-  }
+  if (item.description_message_id == IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT)
+    return ui::DeviceKeyboardHasAssistantKey();
 
   return false;
 }

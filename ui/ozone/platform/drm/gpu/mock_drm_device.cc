@@ -82,7 +82,6 @@ MockDrmDevice::MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device)
                 std::move(gbm_device)),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
-      restore_crtc_call_count_(0),
       add_framebuffer_call_count_(0),
       remove_framebuffer_call_count_(0),
       page_flip_call_count_(0),
@@ -150,7 +149,7 @@ bool MockDrmDevice::InitializeStateWithResult(
   return plane_manager_->Initialize();
 }
 
-MockDrmDevice::~MockDrmDevice() {}
+MockDrmDevice::~MockDrmDevice() = default;
 
 ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
   ScopedDrmResourcesPtr resources(DrmAllocator<drmModeRes>());
@@ -198,17 +197,11 @@ ScopedDrmCrtcPtr MockDrmDevice::GetCrtc(uint32_t crtc_id) {
 bool MockDrmDevice::SetCrtc(uint32_t crtc_id,
                             uint32_t framebuffer,
                             std::vector<uint32_t> connectors,
-                            drmModeModeInfo* mode) {
+                            const drmModeModeInfo& mode) {
   crtc_fb_[crtc_id] = framebuffer;
   current_framebuffer_ = framebuffer;
   set_crtc_call_count_++;
   return set_crtc_expectation_;
-}
-
-bool MockDrmDevice::SetCrtc(drmModeCrtc* crtc,
-                            std::vector<uint32_t> connectors) {
-  restore_crtc_call_count_++;
-  return true;
 }
 
 bool MockDrmDevice::DisableCrtc(uint32_t crtc_id) {
@@ -304,7 +297,7 @@ bool MockDrmDevice::SetProperty(uint32_t connector_id,
   return true;
 }
 
-ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(void* blob,
+ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(const void* blob,
                                                         size_t size) {
   uint32_t id = ++property_id_generator_;
   allocated_property_blobs_.insert(id);

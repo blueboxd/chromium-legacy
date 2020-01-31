@@ -49,7 +49,8 @@ class TestNativeFileSystemPermissionContext
                          const base::FilePath& path,
                          bool is_directory,
                          int process_id,
-                         int frame_id) override {
+                         int frame_id,
+                         UserAction user_action) override {
     NOTREACHED();
     return nullptr;
   }

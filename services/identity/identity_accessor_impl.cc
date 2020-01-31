@@ -43,17 +43,19 @@ IdentityAccessorImpl::~IdentityAccessorImpl() {
   identity_manager_->RemoveObserver(this);
 }
 
-void IdentityAccessorImpl::GetPrimaryAccountInfo(
-    GetPrimaryAccountInfoCallback callback) {
-  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
+void IdentityAccessorImpl::GetUnconsentedPrimaryAccountInfo(
+    GetUnconsentedPrimaryAccountInfoCallback callback) {
+  CoreAccountInfo account_info =
+      identity_manager_->GetUnconsentedPrimaryAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
   std::move(callback).Run(account_info.account_id, account_info.gaia,
                           account_info.email, account_state);
 }
 
-void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
-    GetPrimaryAccountWhenAvailableCallback callback) {
-  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
+void IdentityAccessorImpl::GetUnconsentedPrimaryAccountWhenAvailable(
+    GetUnconsentedPrimaryAccountWhenAvailableCallback callback) {
+  CoreAccountInfo account_info =
+      identity_manager_->GetUnconsentedPrimaryAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
 
   if (!account_state.has_refresh_token ||
@@ -98,8 +100,11 @@ void IdentityAccessorImpl::OnRefreshTokenUpdatedForAccount(
   OnAccountStateChange(account_info.account_id);
 }
 
-void IdentityAccessorImpl::OnPrimaryAccountSet(
+void IdentityAccessorImpl::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& primary_account_info) {
+  // We only care about the account being set.
+  if (primary_account_info.account_id.empty())
+    return;
   OnAccountStateChange(primary_account_info.account_id);
 }
 
@@ -114,7 +119,7 @@ void IdentityAccessorImpl::OnAccountStateChange(
 
     // Check whether the primary account is available and notify any waiting
     // consumers if so.
-    if (account_state.is_primary_account &&
+    if (account_state.is_unconsented_primary_account &&
         !identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
             account_info->account_id)) {
       DCHECK(!account_info->account_id.empty());
@@ -135,8 +140,9 @@ AccountState IdentityAccessorImpl::GetStateOfAccount(
   AccountState account_state;
   account_state.has_refresh_token =
       identity_manager_->HasAccountWithRefreshToken(account_info.account_id);
-  account_state.is_primary_account =
-      (account_info.account_id == identity_manager_->GetPrimaryAccountId());
+  account_state.is_unconsented_primary_account =
+      (account_info.account_id ==
+       identity_manager_->GetUnconsentedPrimaryAccountId());
   return account_state;
 }
 

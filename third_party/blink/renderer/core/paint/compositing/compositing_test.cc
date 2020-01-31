@@ -53,7 +53,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
     frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
     frame.GetDocument()->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   WebLocalFrame* LocalMainFrame() { return web_view_helper_->LocalMainFrame(); }
@@ -84,7 +84,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
 
   void UpdateAllLifecyclePhases() {
     WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
  private:
@@ -235,13 +235,12 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
 
   void UpdateAllLifecyclePhases() {
     WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   void UpdateAllLifecyclePhasesExceptPaint() {
     WebView().MainFrameWidget()->UpdateLifecycle(
-        WebWidget::LifecycleUpdate::kPrePaint,
-        WebWidget::LifecycleUpdateReason::kTest);
+        WebWidget::LifecycleUpdate::kPrePaint, DocumentUpdateReason::kTest);
   }
 
   cc::PropertyTrees* GetPropertyTrees() {

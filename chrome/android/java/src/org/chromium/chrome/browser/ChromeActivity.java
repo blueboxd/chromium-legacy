@@ -450,6 +450,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     mCompositorViewHolder.getCompositorView());
 
             initializeTabModels();
+            setTabContentManager(new TabContentManager(this, getContentOffsetProvider(),
+                    !SysUtils.isLowEndDevice(), mTabModelSelector::getTabById));
+
             if (!isFinishing() && getFullscreenManager() != null) {
                 getFullscreenManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),
@@ -769,8 +772,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         TraceEvent.begin("ChromeActivity:CompositorInitialization");
         super.initializeCompositor();
 
-        setTabContentManager(new TabContentManager(
-                this, getContentOffsetProvider(), DeviceClassManager.enableSnapshots()));
+        getTabContentManager().initWithNative();
         mCompositorViewHolder.onNativeLibraryReady(getWindowAndroid(), getTabContentManager());
 
         if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {

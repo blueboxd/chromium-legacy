@@ -30,6 +30,7 @@ using chromeos::quick_answers::ResultType;
 // TODO(llin): Update the placeholder after finalizing on the design.
 constexpr char kLoadingPlaceholder[] = "Loading...";
 constexpr char kNoResult[] = "See result in Assistant";
+constexpr char kNetworkError[] = "Cannot connect to internet.";
 
 }  // namespace
 
@@ -149,6 +150,14 @@ void QuickAnswersMenuObserver::OnQuickAnswerReceived(
 
   quick_answer_received_time_ = base::TimeTicks::Now();
   quick_answer_ = std::move(quick_answer);
+}
+
+void QuickAnswersMenuObserver::OnNetworkError() {
+  proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
+                         /*enabled=*/false,
+                         /*hidden=*/false,
+                         /*title=*/base::UTF8ToUTF16(kNetworkError));
+  quick_answer_received_time_ = base::TimeTicks::Now();
 }
 
 void QuickAnswersMenuObserver::OnEligibilityChanged(bool eligible) {

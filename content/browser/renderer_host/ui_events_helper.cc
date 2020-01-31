@@ -12,6 +12,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 
 namespace {
 

@@ -170,6 +170,7 @@ Still reading?
   </issue>
   <issue id="ImpliedQuantity" severity="Error">
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd"/>
+    <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
   </issue>
   <issue id="InconsistentArrays" severity="Error">
     <ignore regexp="android_webview/locale_paks.resources.zip/values/locale-paks.xml"/>
@@ -216,6 +217,7 @@ Still reading?
   <issue id="MissingQuantity">
     <ignore regexp="android_chrome_strings.xml"/>
     <ignore regexp="android_chrome_tab_ui_strings.xml"/>
+    <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
   </issue>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingSuperCall" severity="Error">
@@ -386,6 +388,7 @@ Still reading?
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-zh-rCN/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-zh-rHK/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-zh-rTW/android_chrome_strings.xml"/>
+    <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
   </issue>
   <issue id="UnusedResources">
     <!-- Do not add new suppressions without rationale. -->
@@ -427,11 +430,12 @@ Still reading?
     <ignore regexp="android_webview/test/shell/res/raw/resource_file.html"/>
     <ignore regexp="android_webview/test/shell/res/raw/resource_icon.png"/>
     <ignore regexp="android_webview/tools/automated_ui_tests/java/res/layout/"/>
-    <!-- TODO(crbug.com/1017190): Remove the following 3 suppressions once we lint entire app rather
+    <!-- TODO(crbug.com/1017190): Remove the following 4 suppressions once we lint entire app rather
          than each individual target -->
     <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd"/>
     <ignore regexp="The resource `R.drawable.*_expand_.*` appears to be unused"/>
+    <ignore regexp="The resource `R.drawable.ic_more_vert_24dp_on_dark_bg` appears to be unused"/>
     <!-- 1 resource used by android tv to generate resources.zip file -->
     <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
     <!-- 1 string used by Android's policies system, pulled from app directly -->

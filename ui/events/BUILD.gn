@@ -160,6 +160,7 @@ jumbo_component("events_base") {
     ":platform_event",
     "//base",
     "//ui/events/platform",
+    "//ui/events/types:headers",
     "//ui/gfx/geometry",
   ]
 

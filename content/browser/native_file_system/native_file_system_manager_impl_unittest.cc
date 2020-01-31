@@ -121,8 +121,9 @@ TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
 
   EXPECT_CALL(
       permission_context_,
-      GetReadPermissionGrant(kTestOrigin, kTestPath, /*is_directory=*/false,
-                             kProcessId, kFrameId))
+      GetReadPermissionGrant(
+          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+          NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(allow_grant_));
   EXPECT_CALL(
       permission_context_,
@@ -148,8 +149,9 @@ TEST_F(NativeFileSystemManagerImplTest,
 
   EXPECT_CALL(
       permission_context_,
-      GetReadPermissionGrant(kTestOrigin, kTestPath, /*is_directory=*/false,
-                             kProcessId, kFrameId))
+      GetReadPermissionGrant(
+          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+          NativeFileSystemPermissionContext::UserAction::kSave))
       .WillOnce(testing::Return(allow_grant_));
   EXPECT_CALL(
       permission_context_,
@@ -175,8 +177,9 @@ TEST_F(NativeFileSystemManagerImplTest,
 
   EXPECT_CALL(
       permission_context_,
-      GetReadPermissionGrant(kTestOrigin, kTestPath, /*is_directory=*/true,
-                             kProcessId, kFrameId))
+      GetReadPermissionGrant(
+          kTestOrigin, kTestPath, /*is_directory=*/true, kProcessId, kFrameId,
+          NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(allow_grant_));
   EXPECT_CALL(
       permission_context_,

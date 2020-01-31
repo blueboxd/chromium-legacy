@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_live_region_tracker.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 
@@ -15,10 +16,7 @@ namespace ui {
 namespace {
 
 bool IsActiveLiveRegion(const AXTreeObserver::Change& change) {
-  return change.node->data().HasStringAttribute(
-             ax::mojom::StringAttribute::kLiveStatus) &&
-         change.node->data().GetStringAttribute(
-             ax::mojom::StringAttribute::kLiveStatus) != "off";
+  return AXLiveRegionTracker::IsLiveRegionRoot(change.node);
 }
 
 bool IsContainedInLiveRegion(const AXTreeObserver::Change& change) {
@@ -100,8 +98,10 @@ AXEventGenerator::TargetedEvent AXEventGenerator::Iterator::operator*() const {
 AXEventGenerator::AXEventGenerator() = default;
 
 AXEventGenerator::AXEventGenerator(AXTree* tree) : tree_(tree) {
-  if (tree_)
+  if (tree_) {
     tree_->AddObserver(this);
+    live_region_tracker_ = std::make_unique<AXLiveRegionTracker>(tree_);
+  }
 }
 
 AXEventGenerator::~AXEventGenerator() {
@@ -110,11 +110,15 @@ AXEventGenerator::~AXEventGenerator() {
 }
 
 void AXEventGenerator::SetTree(AXTree* new_tree) {
-  if (tree_)
+  if (tree_) {
     tree_->RemoveObserver(this);
+    live_region_tracker_.reset();
+  }
   tree_ = new_tree;
-  if (tree_)
+  if (tree_) {
     tree_->AddObserver(this);
+    live_region_tracker_ = std::make_unique<AXLiveRegionTracker>(tree_);
+  }
 }
 
 void AXEventGenerator::ReleaseTree() {
@@ -475,6 +479,10 @@ void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
 }
 
 void AXEventGenerator::OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {
+  if (live_region_tracker_->GetLiveRoot(node))
+    FireLiveRegionEvents(node);
+  live_region_tracker_->OnNodeWillBeDeleted(node);
+
   DCHECK_EQ(tree_, tree);
   tree_events_.erase(node);
 }
@@ -506,6 +514,14 @@ void AXEventGenerator::OnAtomicUpdateFinished(
   }
 
   for (const auto& change : changes) {
+    if ((change.type == NODE_CREATED || change.type == SUBTREE_CREATED ||
+         change.type == NODE_REPARENTED || change.type == SUBTREE_REPARENTED)) {
+      if (change.node->data().HasStringAttribute(
+              ax::mojom::StringAttribute::kContainerLiveStatus)) {
+        live_region_tracker_->TrackNode(change.node);
+      }
+    }
+
     if (change.type == SUBTREE_CREATED) {
       AddEvent(change.node, Event::SUBTREE_CREATED);
     } else if (change.type != NODE_CREATED) {
@@ -522,26 +538,26 @@ void AXEventGenerator::OnAtomicUpdateFinished(
   }
 
   FireActiveDescendantEvents();
+  live_region_tracker_->OnAtomicUpdateFinished();
 }
 
 void AXEventGenerator::FireLiveRegionEvents(AXNode* node) {
-  AXNode* live_root = node;
-  while (live_root && !live_root->data().HasStringAttribute(
-                          ax::mojom::StringAttribute::kLiveStatus))
-    live_root = live_root->parent();
+  AXNode* live_root = live_region_tracker_->GetLiveRootIfNotBusy(node);
 
-  if (live_root &&
-      !live_root->data().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
-      live_root->data().GetStringAttribute(
-          ax::mojom::StringAttribute::kLiveStatus) != "off") {
-    // Fire LIVE_REGION_NODE_CHANGED on each node that changed.
-    if (!node->data()
-             .GetStringAttribute(ax::mojom::StringAttribute::kName)
-             .empty())
-      AddEvent(node, Event::LIVE_REGION_NODE_CHANGED);
-    // Fire LIVE_REGION_CHANGED on the root of the live region.
-    AddEvent(live_root, Event::LIVE_REGION_CHANGED);
+  // Note that |live_root| might be nullptr if a live region was just added,
+  // or if it has aria-busy="true".
+  if (!live_root)
+    return;
+
+  // Fire LIVE_REGION_NODE_CHANGED on each node that changed.
+  if (!node->data()
+           .GetStringAttribute(ax::mojom::StringAttribute::kName)
+           .empty()) {
+    AddEvent(node, Event::LIVE_REGION_NODE_CHANGED);
   }
+
+  // Fire LIVE_REGION_CHANGED on the root of the live region.
+  AddEvent(live_root, Event::LIVE_REGION_CHANGED);
 }
 
 void AXEventGenerator::FireActiveDescendantEvents() {

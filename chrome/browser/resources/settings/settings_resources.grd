@@ -184,6 +184,9 @@
       <structure name="IDR_SETTINGS_ON_STARTUP_PAGE_JS"
                  file="on_startup_page/on_startup_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SEARCH_SETTINGS_HTML"
+                 file="search_settings.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SEARCH_SETTINGS_JS"
                  file="search_settings.js"
                  type="chrome_html" />

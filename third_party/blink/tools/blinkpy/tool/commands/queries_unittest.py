@@ -68,21 +68,21 @@ class PrintExpectationsTest(unittest.TestCase):
                        'failures/expected/timeout.html [ Timeout ]\n'))
 
     def test_multiple(self):
-        self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
+        self.run_test(['failures/unexpected/*/text.html', 'failures/expected/timeout.html'],
                       ('// For test-win-win10\n'
-                       'failures/expected/text.html [ Failure ]\n'
                        'failures/expected/timeout.html [ Timeout ]\n'
+                       'failures/unexpected/\*/text.html [ Pass ]\n'
                        '\n'
                        '// For test-win-win7\n'
-                       'failures/expected/text.html [ Failure ]\n'
-                       'failures/expected/timeout.html [ Timeout ]\n'),
+                       'failures/expected/timeout.html [ Timeout ]\n'
+                       'failures/unexpected/\*/text.html [ Pass ]\n'),
                       platform='test-win-*')
 
     def test_full(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
                       ('// For test-win-win7\n'
-                       'Bug(test) failures/expected/text.html [ Failure ]\n'
-                       'Bug(test) failures/expected/timeout.html [ Timeout ]\n'),
+                       'failures/expected/text.html [ Failure ]\n'
+                       'failures/expected/timeout.html [ Timeout ]\n'),
                       full=True)
 
     def test_exclude(self):
@@ -94,13 +94,13 @@ class PrintExpectationsTest(unittest.TestCase):
     def test_include(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/crash.html'],
                       ('// For test-win-win7\n'
-                       'failures/expected/crash.html\n'),
+                       'failures/expected/crash.html [ Crash ]\n'),
                       include_keyword=['crash'])
 
     def test_csv(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
-                      ('test-win-win7,failures/expected/image.html,Bug(test),,FAIL\n'
-                       'test-win-win7,failures/expected/text.html,Bug(test),,FAIL\n'),
+                      ('test-win-win7,failures/expected/image.html,,,FAIL\n'
+                       'test-win-win7,failures/expected/text.html,,,FAIL\n'),
                       csv=True)
 
     def test_paths(self):

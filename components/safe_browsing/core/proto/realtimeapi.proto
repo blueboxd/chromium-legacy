@@ -56,8 +56,13 @@ message RTLookupResponse {
     optional ThreatType threat_type = 1;
     // TTL of the verdict in seconds.
     optional int64 cache_duration_sec = 2;
+
     // A host-suffix/path-prefix expression for caching the verdict
-    optional string cache_expression = 3;
+    // This field is only used by previous versions of Chrome(M81 Canary and
+    // Dev) that only support "COVERING_MATCH". This field is deprecated in
+    // favor of "cache_expression" below.
+    optional string cache_expression_covering_match = 3;
+
     // Type of verdicts issued by the server. Different levels of verdicts from
     // 1 to 100 can be added in future based on the confidence of the verdict.
     // 1 being confidently safe to 100 being confidently dangerous.
@@ -67,7 +72,34 @@ message RTLookupResponse {
       DANGEROUS = 100;
     }
     optional VerdictType verdict_type = 4;
+
+    enum CacheExpressionMatchType {
+      MATCH_TYPE_UNSPECIFIED = 0;
+
+      // The returned cache expression applies to all URLs covered by it. See
+      // the following for how covering works:
+      // https://developers.google.com/safe-browsing/v4/urls-hashing e.g.
+      // "test.com/foo1" of type COVERING_MATCH will not apply to
+      // "test.com/foo2" or "test.com/", but will apply to "test.com/foo1/bar2"
+      // and "baz.test.com/foo1".
+      COVERING_MATCH = 1;
+
+      // The returned cache expression only applies to URLs with the same host
+      // and path after canonicalization. e.g. "test.com/foo1" of type
+      // EXACT_MATCH will not apply to "test.com/" or "test.com/foo1/bar2", but
+      // will apply to "test.com/foo1"
+      EXACT_MATCH = 2;
+    }
+
+    optional CacheExpressionMatchType cache_expression_match_type = 5;
+
+    // The new cache expression. "cache_expression_match_type" indicates how
+    // this expression should be used for matching on the client. If
+    // “cache_expression_match_type” is not set, it means this expression is not
+    // applicable for caching, and the entry should be ignored.
+    optional string cache_expression = 6;
   }
+
   // Each matching url can have multiple threats detected, if the response
   // contains multiple threat_info messages, then they are in decreasing order
   // of severity so that the client could choose first applicable threat_info

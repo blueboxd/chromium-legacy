@@ -37,47 +37,35 @@ source_set("unit_tests") {
   ]
 }
 
-# TODO(crbug.com/1028755): Remove this condition once there are no longer any
-# dependencies on content/.
-if (!is_ios) {
-  source_set("common") {
-    sources = [
-      "safebrowsing_constants.cc",
-      "safebrowsing_constants.h",
-      "safebrowsing_switches.cc",
-      "safebrowsing_switches.h",
-      "utils.cc",
-      "utils.h",
-    ]
+source_set("common") {
+  sources = [
+    "safebrowsing_constants.cc",
+    "safebrowsing_constants.h",
+    "safebrowsing_switches.cc",
+    "safebrowsing_switches.h",
+    "utils.cc",
+    "utils.h",
+  ]
 
-    deps = [
-      "//base",
-      "//components/policy/core/browser:browser",
-      "//components/prefs:prefs",
-      "//components/safe_browsing/core:csd_proto",
-      "//components/safe_browsing/core:features",
-      "//crypto:crypto",
-      "//ipc",
-      "//url/ipc:url_ipc",
-    ]
+  deps = [
+    "//base",
+    "//components/policy/core/browser:browser",
+    "//components/prefs:prefs",
+    "//components/safe_browsing/core:csd_proto",
+    "//components/safe_browsing/core:features",
+    "//crypto:crypto",
+    "//ipc",
+    "//net",
+    "//url/ipc:url_ipc",
+  ]
 
-    public_deps = [ ":interfaces" ]
-  }
+  public_deps = [ ":interfaces" ]
+}
 
-  mojom("interfaces") {
-    sources = [ "safe_browsing.mojom" ]
+mojom("interfaces") {
+  sources = [ "safe_browsing_url_checker.mojom" ]
 
-    public_deps = [
-      "//content/public/common:resource_type_bindings",
-      "//services/network/public/mojom",
-      "//url/mojom:url_mojom_gurl",
-    ]
-
-    enabled_features = []
-    if (safe_browsing_mode == 1) {
-      enabled_features += [ "full_safe_browsing" ]
-    }
-  }
+  public_deps = [ "//url/mojom:url_mojom_gurl" ]
 }
 
 source_set("thread_utils") {

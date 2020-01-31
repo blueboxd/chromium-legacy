@@ -80,6 +80,9 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // thus cannot be changed by user.
   static bool IsTimeZoneResolutionPolicyControlled();
 
+  // Returns true if service should be running for the signin screen.
+  static bool IfServiceShouldBeRunningForSigninScreen();
+
  private:
   int GetTimezoneManagementSetting();
 

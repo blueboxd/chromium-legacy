@@ -81,4 +81,13 @@ suite('NewTabPageAppTest', () => {
         app.shadowRoot.querySelector('ntp-most-visited'), '--tile-title-color',
         'rgb(0, 0, 255)');
   });
+
+  test('clicking voice search button opens voice search overlay', async () => {
+    // Act.
+    app.$.voiceSearchButton.click();
+    await flushTasks();
+
+    // Assert.
+    assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+  });
 });

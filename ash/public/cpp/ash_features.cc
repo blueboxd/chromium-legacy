@@ -83,9 +83,6 @@ const base::Feature kUnlockWithExternalBinary{
 
 const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kVirtualDesks{"VirtualDesks",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -162,10 +159,6 @@ bool IsTrilinearFilteringEnabled() {
   return use_trilinear_filtering;
 }
 
-bool IsVirtualDesksEnabled() {
-  return base::FeatureList::IsEnabled(kVirtualDesks);
-}
-
 bool IsViewsLoginEnabled() {
   // Always show webui login if --show-webui-login is present, which is passed
   // by session manager for automatic recovery. Otherwise, only show views
@@ -229,6 +222,21 @@ bool IsHideShelfControlsInTabletModeEnabled() {
 
 bool IsDisplayChangeModalEnabled() {
   return base::FeatureList::IsEnabled(kDisplayChangeModal);
+}
+
+namespace {
+
+// The boolean flag indicating if "WebUITabStrip" feature is enabled in Chrome.
+bool g_webui_tab_strip_enabled = false;
+
+}  // namespace
+
+void SetWebUITabStripEnabled(bool enabled) {
+  g_webui_tab_strip_enabled = enabled;
+}
+
+bool IsWebUITabStripEnabled() {
+  return g_webui_tab_strip_enabled;
 }
 
 }  // namespace features

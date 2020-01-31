@@ -16,6 +16,7 @@
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 

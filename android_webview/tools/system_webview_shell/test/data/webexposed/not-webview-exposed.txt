@@ -161,6 +161,11 @@ interface WebGLRenderingContext
     method makeXRCompatible
 interface WebGL2RenderingContext
     method makeXRCompatible
+interface XRHitTestSource
+interface XRRay
+interface XRTransientInputHitTestResult
+interface XRHitTestResult
+interface XRTransientInputHitTestSource
 
 [GLOBAL OBJECT]
     method openDatabase

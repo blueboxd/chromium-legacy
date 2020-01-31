@@ -272,7 +272,6 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
 }
 
 void HandleActivateDesk(const ui::Accelerator& accelerator) {
-  DCHECK(features::IsVirtualDesksEnabled());
   auto* desks_controller = DesksController::Get();
   const bool success = desks_controller->ActivateAdjacentDesk(
       /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4,
@@ -294,7 +293,6 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
 }
 
 void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
-  DCHECK(features::IsVirtualDesksEnabled());
   auto* desks_controller = DesksController::Get();
   if (desks_controller->AreDesksBeingModified())
     return;
@@ -351,7 +349,6 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
 }
 
 void HandleNewDesk() {
-  DCHECK(features::IsVirtualDesksEnabled());
   auto* desks_controller = DesksController::Get();
   if (!desks_controller->CanCreateDesks()) {
     ShowToast(kVirtualDesksToastId,
@@ -371,8 +368,6 @@ void HandleNewDesk() {
 }
 
 void HandleRemoveCurrentDesk() {
-  DCHECK(features::IsVirtualDesksEnabled());
-
   auto* desks_controller = DesksController::Get();
   if (!desks_controller->CanRemoveDesks()) {
     ShowToast(kVirtualDesksToastId,
@@ -1732,7 +1727,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case DESKS_MOVE_ACTIVE_ITEM:
     case DESKS_NEW_DESK:
     case DESKS_REMOVE_CURRENT_DESK:
-      return features::IsVirtualDesksEnabled();
+      return true;
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:

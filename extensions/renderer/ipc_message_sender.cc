@@ -25,36 +25,6 @@ namespace extensions {
 
 namespace {
 
-// These values are logged to UMA. Entries should not be renumbered.
-enum class IncludeTlsChannelIdBehavior {
-  // The TLS channel ID was not requested.
-  kNotRequested = 0,
-
-  // DEPRECATED: The TLS channel ID was requested, but was not included because
-  // the target extension did not allow it.
-  // kRequestedButDenied = 1,
-  // DEPRECATED: The TLS channel ID was requested, but was not found.
-  // kRequestedButNotFound = 2,
-  // DEPRECATED: The TLS channel ID was requested, allowed, and included in the
-  // response.
-  // kRequestedAndIncluded = 3,
-
-  // The TLS channel ID was requested, but was not provided because Channel ID
-  // is no longer supported.
-  kRequestedButNotSupported = 4,
-
-  kMaxValue = kRequestedButNotSupported,
-};
-
-void RecordIncludeTlsChannelIdBehavior(bool include_tls_channel_id) {
-  auto tls_channel_id_behavior =
-      include_tls_channel_id
-          ? IncludeTlsChannelIdBehavior::kRequestedButNotSupported
-          : IncludeTlsChannelIdBehavior::kNotRequested;
-  UMA_HISTOGRAM_ENUMERATION("Extensions.Messaging.IncludeChannelIdBehavior",
-                            tls_channel_id_behavior);
-}
-
 class MainThreadIPCMessageSender : public IPCMessageSender {
  public:
   MainThreadIPCMessageSender() : render_thread_(content::RenderThread::Get()) {}
@@ -140,9 +110,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
   void SendOpenMessageChannel(ScriptContext* script_context,
                               const PortId& port_id,
                               const MessageTarget& target,
-                              const std::string& channel_name,
-                              bool include_tls_channel_id) override {
-    RecordIncludeTlsChannelIdBehavior(include_tls_channel_id);
+                              const std::string& channel_name) override {
     content::RenderFrame* render_frame = script_context->GetRenderFrame();
     DCHECK(render_frame);
     PortContext frame_context =
@@ -331,8 +299,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
   void SendOpenMessageChannel(ScriptContext* script_context,
                               const PortId& port_id,
                               const MessageTarget& target,
-                              const std::string& channel_name,
-                              bool include_tls_channel_id) override {
+                              const std::string& channel_name) override {
     DCHECK(!script_context->GetRenderFrame());
     DCHECK(script_context->IsForServiceWorker());
     const Extension* extension = script_context->extension();

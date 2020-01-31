@@ -207,7 +207,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       ServiceWorkerStorage::StatusCallback callback);
   virtual void GetDataFromBackend(
       const std::string& backend_key,
-      ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback);
+      ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback callback);
   virtual void DispatchSyncEvent(
       const std::string& tag,
       scoped_refptr<ServiceWorkerVersion> active_version,

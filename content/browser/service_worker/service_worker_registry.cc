@@ -339,6 +339,22 @@ void ServiceWorkerRegistry::NotifyDoneUninstallingRegistration(
   uninstalling_registrations_.erase(registration->id());
 }
 
+void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
+                                                const GURL& origin,
+                                                StatusCallback callback) {
+  storage()->UpdateToActiveState(
+      registration_id, origin,
+      base::BindOnce(&ServiceWorkerRegistry::DidUpdateToActiveState,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id) {
+  storage()->StoreUncommittedResourceId(
+      resource_id,
+      base::BindOnce(&ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
+                     weak_factory_.GetWeakPtr()));
+}
+
 void ServiceWorkerRegistry::GetUserData(int64_t registration_id,
                                         const std::vector<std::string>& keys,
                                         GetUserDataCallback callback) {
@@ -398,6 +414,134 @@ void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
   storage()->GetUserKeysAndDataByKeyPrefix(
       registration_id, key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserKeysAndData,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::StoreUserData(
+    int64_t registration_id,
+    const GURL& origin,
+    const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
+    StatusCallback callback) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
+      key_value_pairs.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+  for (const auto& kv : key_value_pairs) {
+    if (kv.first.empty()) {
+      RunSoon(FROM_HERE,
+              base::BindOnce(std::move(callback),
+                             blink::ServiceWorkerStatusCode::kErrorFailed));
+      return;
+    }
+  }
+
+  storage()->StoreUserData(
+      registration_id, origin, key_value_pairs,
+      base::BindOnce(&ServiceWorkerRegistry::DidStoreUserData,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::ClearUserData(int64_t registration_id,
+                                          const std::vector<std::string>& keys,
+                                          StatusCallback callback) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
+      keys.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+  for (const std::string& key : keys) {
+    if (key.empty()) {
+      RunSoon(FROM_HERE,
+              base::BindOnce(std::move(callback),
+                             blink::ServiceWorkerStatusCode::kErrorFailed));
+      return;
+    }
+  }
+
+  storage()->ClearUserData(
+      registration_id, keys,
+      base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::ClearUserDataByKeyPrefixes(
+    int64_t registration_id,
+    const std::vector<std::string>& key_prefixes,
+    StatusCallback callback) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
+      key_prefixes.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+  for (const std::string& key_prefix : key_prefixes) {
+    if (key_prefix.empty()) {
+      RunSoon(FROM_HERE,
+              base::BindOnce(std::move(callback),
+                             blink::ServiceWorkerStatusCode::kErrorFailed));
+      return;
+    }
+  }
+
+  storage()->ClearUserDataByKeyPrefixes(
+      registration_id, key_prefixes,
+      base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::ClearUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& key_prefix,
+    StatusCallback callback) {
+  if (key_prefix.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+
+  storage()->ClearUserDataForAllRegistrationsByKeyPrefix(
+      key_prefix,
+      base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::GetUserDataForAllRegistrations(
+    const std::string& key,
+    GetUserDataForAllRegistrationsCallback callback) {
+  if (key.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           std::vector<std::pair<int64_t, std::string>>(),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+
+  storage()->GetUserDataForAllRegistrations(
+      key,
+      base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& key_prefix,
+    GetUserDataForAllRegistrationsCallback callback) {
+  if (key_prefix.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           std::vector<std::pair<int64_t, std::string>>(),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+
+  storage()->GetUserDataForAllRegistrationsByKeyPrefix(
+      key_prefix,
+      base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -775,6 +919,23 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
   std::move(callback).Run(status);
 }
 
+void ServiceWorkerRegistry::DidUpdateToActiveState(
+    StatusCallback callback,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK &&
+      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+    ScheduleDeleteAndStartOver();
+  }
+  std::move(callback).Run(
+      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK)
+    ScheduleDeleteAndStartOver();
+}
+
 void ServiceWorkerRegistry::DidGetUserData(
     GetUserDataCallback callback,
     const std::vector<std::string>& data,
@@ -797,6 +958,39 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
   }
   std::move(callback).Run(
       data_map, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidStoreUserData(
+    StatusCallback callback,
+    ServiceWorkerDatabase::Status status) {
+  // |status| can be NOT_FOUND when the associated registration did not exist in
+  // the database. In the case, we don't have to schedule the corruption
+  // recovery.
+  if (status != ServiceWorkerDatabase::STATUS_OK &&
+      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+    ScheduleDeleteAndStartOver();
+  }
+  std::move(callback).Run(
+      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidClearUserData(
+    StatusCallback callback,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK)
+    ScheduleDeleteAndStartOver();
+  std::move(callback).Run(
+      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
+    GetUserDataForAllRegistrationsCallback callback,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK)
+    ScheduleDeleteAndStartOver();
+  std::move(callback).Run(
+      user_data, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {

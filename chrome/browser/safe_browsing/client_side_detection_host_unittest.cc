@@ -26,7 +26,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom-shared.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"

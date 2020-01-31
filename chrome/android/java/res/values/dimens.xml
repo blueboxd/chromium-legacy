@@ -53,9 +53,6 @@
     <dimen name="tab_title_favicon_start_padding">10dp</dimen>
     <dimen name="tab_title_favicon_end_padding">7dp</dimen>
 
-    <!-- Card dimensions -->
-    <dimen name="default_rounded_corner_radius">8dp</dimen>
-
     <!-- Custom Menu dimensions -->
     <dimen name="tab_switcher_menu_width">222dp</dimen>
     <dimen name="tab_switcher_menu_vertical_padding">8dp</dimen>
@@ -316,12 +313,6 @@
     <dimen name="search_accelerator_height_padding">6dp</dimen>
     <dimen name="search_accelerator_width_margin">4dp</dimen>
 
-    <!-- Modern toolbar dimensions -->
-    <dimen name="modern_toolbar_background_size">40dp</dimen>
-    <!-- Sometimes the modern toolbar is shown at 48dp so a corner radius of
-         24dp is needed to completely round the corners. -->
-    <dimen name="modern_toolbar_background_corner_radius">24dp</dimen>
-
     <!-- Start surface toolbar dimensions -->
     <dimen name="start_surface_toolbar_button_padding_to_button">8dp</dimen>
     <dimen name="start_surface_toolbar_button_padding_to_edge">16dp</dimen>
@@ -404,9 +395,6 @@
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
     <dimen name="snippets_thumbnail_size">124dp</dimen>
-    <!-- The default padding for the peeking card and the amount the card peeks by in the current
-         peeking card animation (the calculations assume this is the same). -->
-    <dimen name="card_padding">16dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_publisher_margin_top">8dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->
@@ -464,6 +452,7 @@
     <dimen name="bookmark_folder_item_left">16dp</dimen>
     <dimen name="bookmark_minimum_dialog_size_tablet">500dp</dimen>
     <dimen name="bookmark_list_view_padding_top">64dp</dimen>
+    <dimen name="bookmark_dialog_toolbar_shadow_height">4dp</dimen>
 
     <!-- Bookmark widget dimensions -->
     <dimen name="bookmark_widget_min_width">64dp</dimen>
@@ -583,23 +572,6 @@
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
 
-    <!-- Modern List Item dimensions -->
-    <dimen name="list_item_min_height">64dp</dimen>
-    <dimen name="list_item_default_margin">16dp</dimen>
-    <dimen name="list_item_start_icon_right_margin">20dp</dimen>
-    <dimen name="list_item_start_icon_width">36dp</dimen>
-    <dimen name="list_item_end_icon_width">56dp</dimen>
-
-    <!-- SelectableListLayout dimensions -->
-    <dimen name="selectable_list_layout_row_padding">16dp</dimen>
-    <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
-    <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
-    <dimen name="search_toolbar_modern_bg_top_bottom_inset">8dp</dimen>
-    <dimen name="search_toolbar_modern_bg_lateral_inset">8dp</dimen>
-    <dimen name="selectable_list_toolbar_nav_button_start_offset">4dp</dimen>
-    <dimen name="selectable_list_search_icon_end_padding">4dp</dimen>
-    <dimen name="selectable_list_toolbar_shadow_height">4dp</dimen>
-
     <!-- Bottom Sheet dimensions -->
     <dimen name="bottom_sheet_min_full_half_distance">140dp</dimen>
     <dimen name="bottom_sheet_peek_height">56dp</dimen>
@@ -608,10 +580,8 @@
 
     <!--  Miscellaneous dimensions -->
     <dimen name="text_bubble_menu_anchor_y_inset">14dp</dimen>
-    <dimen name="action_bar_shadow_height">10dp</dimen>
     <!--  Used as a margin to force the shadow view to overlap other views. -->
     <dimen name="action_bar_shadow_margin_negative">-10dp</dimen>
-    <dimen name="clear_text_button_end_padding">10dp</dimen>
     <dimen name="sync_promo_view_padding">16dp</dimen>
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
     <dimen name="sync_passphrase_type_instructions_padding">25dp</dimen>

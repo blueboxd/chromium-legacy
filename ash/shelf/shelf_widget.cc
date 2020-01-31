@@ -711,6 +711,12 @@ void ShelfWidget::UpdateLayout(bool animate) {
   // TODO(manucornet): Refactor layout update logic into this method.
 }
 
+gfx::Rect ShelfWidget::GetTargetBounds() const {
+  // TODO(manucornet): Store these locally and do not depend on the layout
+  // manager.
+  return shelf_->shelf_layout_manager()->GetShelfBoundsInScreen();
+}
+
 void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   // Do not show shelf widget:
   // * when views based shelf is disabled

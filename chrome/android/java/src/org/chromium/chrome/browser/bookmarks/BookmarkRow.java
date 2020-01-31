@@ -21,7 +21,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
@@ -29,6 +28,7 @@ import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton.PopupMenuShownListener;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.lang.annotation.Retention;

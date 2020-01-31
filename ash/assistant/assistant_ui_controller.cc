@@ -326,6 +326,10 @@ void AssistantUiController::OnUiVisibilityChanged(
       // Only record the entry point when Assistant UI becomes visible.
       assistant::util::RecordAssistantEntryPoint(entry_point.value());
 
+      // Notify Assistant service of the most recent entry point.
+      assistant_->NotifyEntryIntoAssistantUi(
+          entry_point.value_or(AssistantEntryPoint::kUnspecified));
+
       if (!container_view_) {
         DCHECK(model_.ui_mode() == AssistantUiMode::kAmbientUi ||
                model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi);

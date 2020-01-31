@@ -315,8 +315,7 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
       "translate3d(4px, 5px, 6px); width: 100px; height: 200px'></div>");
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   LayoutObject* div_with_transform =
       GetLayoutObjectByElementId("divWithTransform");
@@ -342,8 +341,7 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
   EXPECT_FALSE(inner_div_with_transform->DescendantNeedsPaintPropertyUpdate());
 
   // After a lifecycle update, no nodes should need a descendant update.
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   EXPECT_FALSE(
       GetDocument().GetLayoutView()->DescendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(div_with_transform->DescendantNeedsPaintPropertyUpdate());
@@ -356,8 +354,7 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
   child_frame_view->SetNeedsPaintPropertyUpdate();
   EXPECT_TRUE(
       GetDocument().GetLayoutView()->DescendantNeedsPaintPropertyUpdate());
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   EXPECT_FALSE(
       GetDocument().GetLayoutView()->DescendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(GetDocument().GetLayoutView()->NeedsPaintPropertyUpdate());
@@ -582,16 +579,14 @@ TEST_P(PaintPropertyTreeUpdateTest,
       "<div id='forceScroll' style='height: 3000px;'></div>");
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   EXPECT_EQ(nullptr, DocScroll());
   Document* child_doc = &ChildDocument();
   EXPECT_NE(nullptr, DocScroll(child_doc));
 
   auto* iframe_container = GetDocument().getElementById("iframeContainer");
   iframe_container->setAttribute(html_names::kStyleAttr, "visibility: hidden;");
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   EXPECT_EQ(nullptr, DocScroll());
   EXPECT_EQ(nullptr, DocScroll(child_doc));

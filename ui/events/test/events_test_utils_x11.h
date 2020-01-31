@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11_types.h"
 

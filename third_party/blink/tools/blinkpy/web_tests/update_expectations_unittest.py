@@ -96,11 +96,6 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._host = MockHost()
         self._port = self._host.port_factory.get('test', None)
         self._expectation_factory = FakeBotTestExpectationsFactory()
-        self._port.configuration_specifier_macros_dict = {
-            'mac': ['mac10.10'],
-            'win': ['win7'],
-            'linux': ['trusty']
-        }
         filesystem = self._host.filesystem
         self._write_tests_into_filesystem(filesystem)
 
@@ -128,29 +123,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             type_flag,
             remove_missing)
 
-    def _assert_expectations_match(self, expectations, expected_string):
-        self.assertIsNotNone(expectations)
-        stringified_expectations = '\n'.join(
-            x.to_string() for x in expectations)
-        expected_string = '\n'.join(
-            x.strip() for x in expected_string.split('\n'))
-        self.assertEqual(stringified_expectations, expected_string)
-
     def _parse_expectations(self, expectations):
-        """Parses a TestExpectation file given as string.
-
-        This function takes a string representing the contents of the
-        TestExpectations file and parses it, producing the TestExpectations
-        object and sets it on the Port object where the script will read it
-        from.
-
-        Args:
-            expectations: A string containing the contents of the
-            TestExpectations file to use.
-        """
-        expectations_dict = OrderedDict()
-        expectations_dict['expectations'] = expectations
-        self._port.expectations_dict = lambda: expectations_dict
+        path = self._port.path_to_generic_test_expectations_file()
+        self._host.filesystem.write_text_file(path, expectations)
 
     def _define_builders(self, builders_dict):
         """Defines the available builders for the test.
@@ -168,11 +143,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         failing result.
         """
         test_expectations_before = """
+            # results: [ Pass Timeout Failure ]
             # Even though the results show all passing, none of the
             # expectations are flaky so we shouldn't remove any.
-            Bug(test) test/a.html [ Pass ]
-            Bug(test) test/b.html [ Timeout ]
-            Bug(test) test/c.html [ Failure Timeout ]"""
+            test/a.html [ Pass ]
+            test/b.html [ Timeout ]
+            test/c.html [ Failure Timeout ]"""
 
         self._expectations_remover = (
             self._create_expectations_remover(self.FLAKE_TYPE))
@@ -198,7 +174,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         }
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(
+        self.assertEquals(
             updated_expectations, test_expectations_before)
 
     def test_fail_mode_doesnt_remove_non_fails(self):
@@ -208,14 +184,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         'Crash' results.
         """
         test_expectations_before = """
+            # results: [ Pass Failure Timeout ]
             # Even though the results show all passing, none of the
             # expectations are failing so we shouldn't remove any.
-            Bug(test) test/a.html [ Pass ]
-            Bug(test) test/b.html [ Failure Pass ]
-            Bug(test) test/c.html [ Failure Pass Timeout ]"""
+            test/a.html [ Pass ]
+            test/b.html [ Failure Pass ]
+            test/c.html [ Failure Pass Timeout ]"""
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -236,19 +211,20 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/f.html': ['PASS', 'PASS'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FAIL_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(
+        self.assertEquals(
             updated_expectations, test_expectations_before)
 
     def test_dont_remove_directory_flake(self):
         """Tests that flake lines with directories are untouched."""
         test_expectations_before = """
+            # results: [ Failure Pass ]
             # This expectation is for a whole directory.
-            Bug(test) test/ [ Failure Pass ]"""
+            test/* [ Failure Pass ]"""
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -269,19 +245,20 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/f.html': ['PASS', 'PASS'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FLAKE_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(
+        self.assertEquals(
             updated_expectations, test_expectations_before)
 
     def test_dont_remove_directory_fail(self):
         """Tests that fail lines with directories are untouched."""
         test_expectations_before = """
+            # results: [ Failure ]
             # This expectation is for a whole directory.
-            Bug(test) test/ [ Failure ]"""
+            test/* [ Failure ]"""
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -302,9 +279,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/f.html': ['PASS', 'PASS'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FAIL_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(
+        self.assertEquals(
             updated_expectations, test_expectations_before)
 
     def test_dont_remove_skip(self):
@@ -315,12 +294,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         don't know what the results actually are.
         """
         test_expectations_before = """
+            # results: [ Skip ]
             # Skip expectations should never be removed.
-            Bug(test) test/a.html [ Skip ]
-            Bug(test) test/b.html [ Skip ]
-            Bug(test) test/c.html [ Skip ]"""
+            test/a.html [ Skip ]
+            test/b.html [ Skip ]
+            test/c.html [ Skip ]"""
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -334,27 +313,28 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE'],
+                'test/b.html': ['PASS', 'FAIL'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(
+        self.assertEquals(
             updated_expectations, test_expectations_before)
 
     def test_all_failure_result_types(self):
         """Tests that all failure types are treated as failure."""
         test_expectations_before = (
-            """Bug(test) test/a.html [ Failure Pass ]
-            Bug(test) test/b.html [ Failure Pass ]
-            Bug(test) test/c.html [ Failure Pass ]
-            Bug(test) test/d.html [ Failure Pass ]
+            """# results: [ Failure Pass ]
+            test/a.html [ Failure Pass ]
+            test/b.html [ Failure Pass ]
+            test/c.html [ Failure Pass ]
+            test/d.html [ Failure Pass ]
             # Remove these two since CRASH and TIMEOUT aren't considered
             # Failure.
-            Bug(test) test/e.html [ Failure Pass ]
-            Bug(test) test/f.html [ Failure Pass ]""")
+            test/e.html [ Failure Pass ]
+            test/f.html [ Failure Pass ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -367,21 +347,23 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux Trusty': {
-                'test/a.html': ['PASS', 'IMAGE'],
-                'test/b.html': ['PASS', 'TEXT'],
-                'test/c.html': ['PASS', 'IMAGE+TEXT'],
-                'test/d.html': ['PASS', 'AUDIO'],
+                'test/a.html': ['PASS', 'FAIL'],
+                'test/b.html': ['PASS', 'FAIL'],
+                'test/c.html': ['PASS', 'FAIL'],
+                'test/d.html': ['PASS', 'FAIL'],
                 'test/e.html': ['PASS', 'CRASH'],
                 'test/f.html': ['PASS', 'TIMEOUT'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
-            """Bug(test) test/a.html [ Failure Pass ]
-            Bug(test) test/b.html [ Failure Pass ]
-            Bug(test) test/c.html [ Failure Pass ]
-            Bug(test) test/d.html [ Failure Pass ]"""))
+        self.assertEquals(updated_expectations, (
+            """# results: [ Failure Pass ]
+            test/a.html [ Failure Pass ]
+            test/b.html [ Failure Pass ]
+            test/c.html [ Failure Pass ]
+            test/d.html [ Failure Pass ]"""))
 
     def test_fail_mode_all_fail_types_removed(self):
         """Tests that all types of fail expectation are removed in fail mode.
@@ -389,13 +371,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         Fail expectation types include Failure, Timeout, and Crash.
         """
         test_expectations_before = (
-            """Bug(test) test/a.html [ Failure ]
-            Bug(test) test/b.html [ Timeout ]
-            Bug(test) test/c.html [ Crash ]
-            Bug(test) test/d.html [ Failure ]""")
+            """# results: [ Timeout Crash Failure ]
+            test/a.html [ Failure ]
+            test/b.html [ Timeout ]
+            test/c.html [ Crash ]
+            test/d.html [ Failure ]""")
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -413,14 +394,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/c.html': ['PASS', 'PASS'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FAIL_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
         # The line with test/d.html is not removed since
         # --remove-missing is false by default; lines for
         # tests with no actual results are kept.
-        self._assert_expectations_match(
+        self.assertEquals(
             updated_expectations,
-            'Bug(test) test/d.html [ Failure ]')
+            """# results: [ Timeout Crash Failure ]
+            test/d.html [ Failure ]""")
 
     def test_basic_one_builder(self):
         """Tests basic functionality with a single builder.
@@ -431,16 +415,16 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         allow removal.
         """
         test_expectations_before = (
-            """# Remove these two since they're passing all runs.
-            Bug(test) test/a.html [ Failure Pass ]
-            Bug(test) test/b.html [ Failure ]
+            """# results: [ Failure Pass Crash Timeout ]
+            # Remove these two since they're passing all runs.
+            test/a.html [ Failure Pass ]
+            test/b.html [ Failure ]
             # Remove these two since the failure is not a Timeout
-            Bug(test) test/c.html [ Pass Timeout ]
-            Bug(test) test/d.html [ Timeout ]
+            test/c.html [ Pass Timeout ]
+            test/d.html [ Timeout ]
             # Keep since we have both crashes and passes.
-            Bug(test) test/e.html [ Crash Pass ]""")
+            test/e.html [ Crash Pass ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -455,25 +439,26 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
-                'test/c.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/d.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/c.html': ['PASS', 'FAIL', 'PASS'],
+                'test/d.html': ['PASS', 'FAIL', 'PASS'],
                 'test/e.html': ['PASS', 'CRASH', 'PASS'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
-            """# Keep since we have both crashes and passes.
-            Bug(test) test/e.html [ Crash Pass ]"""))
+        self.assertEquals(updated_expectations, (
+            """# results: [ Failure Pass Crash Timeout ]
+            # Keep since we have both crashes and passes.
+            test/e.html [ Crash Pass ]"""))
 
     def test_flake_mode_all_failure_case(self):
         """Tests that results with all failures are not treated as non-flaky."""
         test_expectations_before = (
-            """# Keep since it's all failures.
-            Bug(test) test/a.html [ Failure Pass ]""")
+            """# results: [ Failure Pass ]
+            # Keep since it's all failures.
+            test/a.html [ Failure Pass ]""")
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -486,14 +471,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux Trusty': {
-                'test/a.html': ['IMAGE', 'IMAGE', 'IMAGE'],
+                'test/a.html': ['FAIL', 'FAIL', 'FAIL'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FLAKE_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
-            """# Keep since it's all failures.
-            Bug(test) test/a.html [ Failure Pass ]"""))
+        self.assertEquals(updated_expectations, (
+            """# results: [ Failure Pass ]
+            # Keep since it's all failures.
+            test/a.html [ Failure Pass ]"""))
 
     def test_remove_none_met(self):
         """Tests that expectations with no matching result are removed.
@@ -502,13 +490,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         be removed, even if there is no passing result.
         """
         test_expectations_before = (
-            """# Remove all since CRASH and TIMEOUT aren't considered Failure.
-            Bug(test) test/a.html [ Failure Pass ]
-            Bug(test) test/b.html [ Failure Pass ]
-            Bug(test) test/c.html [ Failure ]
-            Bug(test) test/d.html [ Failure ]""")
+            """# results: [ Failure Pass ]
+            # Remove all since CRASH and TIMEOUT aren't considered Failure.
+            test/a.html [ Failure Pass ]
+            test/b.html [ Failure Pass ]
+            test/c.html [ Failure ]
+            test/d.html [ Failure ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -527,15 +515,15 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/d.html': ['TIMEOUT'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (''))
+        self.assertEquals(updated_expectations, ('# results: [ Failure Pass ]'))
 
     def test_empty_test_expectations(self):
         """Running on an empty TestExpectations file outputs an empty file."""
         test_expectations_before = ''
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -551,24 +539,25 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, '')
+        self.assertEquals(updated_expectations, '')
 
     def test_basic_multiple_builders(self):
         """Tests basic functionality with multiple builders."""
         test_expectations_before = (
-            """# Remove these two since they're passing on both builders.
-            Bug(test) test/a.html [ Failure Pass ]
-            Bug(test) test/b.html [ Failure ]
+            """# results: [ Failure Pass ]
+            # Remove these two since they're passing on both builders.
+            test/a.html [ Failure Pass ]
+            test/b.html [ Failure ]
             # Keep these two since they're failing on the Mac builder.
-            Bug(test) test/c.html [ Failure Pass ]
-            Bug(test) test/d.html [ Failure ]
+            test/c.html [ Failure Pass ]
+            test/d.html [ Failure ]
             # Keep these two since they're failing on the Linux builder.
-            Bug(test) test/e.html [ Failure Pass ]
-            Bug(test) test/f.html [ Failure ]""")
+            test/e.html [ Failure Pass ]
+            test/f.html [ Failure ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -591,45 +580,52 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
-                'test/e.html': ['AUDIO', 'AUDIO', 'AUDIO'],
-                'test/f.html': ['AUDIO', 'AUDIO', 'AUDIO'],
+                'test/e.html': ['FAIL', 'FAIL', 'FAIL'],
+                'test/f.html': ['FAIL', 'FAIL', 'FAIL'],
             },
             'WebKit Mac10.10': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
-                'test/c.html': ['PASS', 'PASS', 'IMAGE'],
-                'test/d.html': ['PASS', 'PASS', 'IMAGE'],
+                'test/c.html': ['PASS', 'PASS', 'FAIL'],
+                'test/d.html': ['PASS', 'PASS', 'FAIL'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
                 'test/f.html': ['PASS', 'PASS', 'PASS'],
             },
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
-            """# Keep these two since they're failing on the Mac builder.
-            Bug(test) test/c.html [ Failure Pass ]
-            Bug(test) test/d.html [ Failure ]
+        self.assertEquals(updated_expectations, (
+            """# results: [ Failure Pass ]
+            # Keep these two since they're failing on the Mac builder.
+            test/c.html [ Failure Pass ]
+            test/d.html [ Failure ]
             # Keep these two since they're failing on the Linux builder.
-            Bug(test) test/e.html [ Failure Pass ]
-            Bug(test) test/f.html [ Failure ]"""))
+            test/e.html [ Failure Pass ]
+            test/f.html [ Failure ]"""))
 
     def test_multiple_builders_and_platform_specifiers(self):
         """Tests correct operation with platform specifiers."""
-        test_expectations_before = (
-            """# Keep these two since they're failing in the Mac10.10 results.
-            Bug(test) [ Mac ] test/a.html [ Failure Pass ]
-            Bug(test) [ Mac ] test/b.html [ Failure ]
+        test_expectations_before = ("""
+            # tags: [ Linux Mac Win Mac ]
+            # results: [ Failure Pass ]
+            # Keep these two since they're failing in the Mac10.10 results.
+            [ Mac ] test/a.html [ Failure Pass ]
+            [ Mac ] test/b.html [ Failure ]
             # Keep these two since they're failing on the Windows builder.
-            Bug(test) [ Linux Win ] test/c.html [ Failure Pass ]
-            Bug(test) [ Linux Win ] test/d.html [ Failure ]
+            [ Linux ] test/c.html [ Failure Pass ]
+            [ Win ] test/c.html [ Failure Pass ]
+            [ Linux ] test/d.html [ Failure ]
+            [ Win ] test/d.html [ Failure ]
             # Remove these two since they're passing on both Linux and Windows builders.
-            Bug(test) [ Linux Win ] test/e.html [ Failure Pass ]
-            Bug(test) [ Linux Win ] test/f.html [ Failure ]
+            [ Linux ] test/e.html [ Failure Pass ]
+            [ Win ] test/e.html [ Failure Pass ]
+            [ Linux ] test/f.html [ Failure ]
+            [ Win ] test/f.html [ Failure ]
             # Remove these two since they're passing on Mac results
-            Bug(test) [ Mac ] test/g.html [ Failure Pass ]
-            Bug(test) [ Mac ] test/h.html [ Failure ]""")
+            [ Mac ] test/g.html [ Failure Pass ]
+            [ Mac ] test/h.html [ Failure ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -665,16 +661,16 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
                 'test/f.html': ['PASS', 'PASS', 'PASS'],
-                'test/g.html': ['IMAGE', 'PASS', 'PASS'],
-                'test/h.html': ['IMAGE', 'PASS', 'PASS'],
+                'test/g.html': ['FAIL', 'PASS', 'PASS'],
+                'test/h.html': ['FAIL', 'PASS', 'PASS'],
             },
             'WebKit Mac10.10': {
-                'test/a.html': ['PASS', 'PASS', 'IMAGE'],
-                'test/b.html': ['PASS', 'PASS', 'IMAGE'],
-                'test/c.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/d.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/e.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/f.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/a.html': ['PASS', 'PASS', 'FAIL'],
+                'test/b.html': ['PASS', 'PASS', 'FAIL'],
+                'test/c.html': ['PASS', 'FAIL', 'PASS'],
+                'test/d.html': ['PASS', 'FAIL', 'PASS'],
+                'test/e.html': ['PASS', 'FAIL', 'PASS'],
+                'test/f.html': ['PASS', 'FAIL', 'PASS'],
                 'test/g.html': ['PASS', 'PASS', 'PASS'],
                 'test/h.html': ['PASS', 'PASS', 'PASS'],
             },
@@ -691,44 +687,49 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'WebKit Win7': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
-                'test/c.html': ['IMAGE', 'PASS', 'PASS'],
-                'test/d.html': ['IMAGE', 'PASS', 'PASS'],
+                'test/c.html': ['FAIL', 'PASS', 'PASS'],
+                'test/d.html': ['FAIL', 'PASS', 'PASS'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
                 'test/f.html': ['PASS', 'PASS', 'PASS'],
-                'test/g.html': ['IMAGE', 'PASS', 'PASS'],
-                'test/h.html': ['IMAGE', 'PASS', 'PASS'],
+                'test/g.html': ['FAIL', 'PASS', 'PASS'],
+                'test/h.html': ['FAIL', 'PASS', 'PASS'],
             },
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
-            """# Keep these two since they're failing in the Mac10.10 results.
-            Bug(test) [ Mac ] test/a.html [ Failure Pass ]
-            Bug(test) [ Mac ] test/b.html [ Failure ]
+        self.assertEquals(updated_expectations, ("""
+            # tags: [ Linux Mac Win Mac ]
+            # results: [ Failure Pass ]
+            # Keep these two since they're failing in the Mac10.10 results.
+            [ Mac ] test/a.html [ Failure Pass ]
+            [ Mac ] test/b.html [ Failure ]
             # Keep these two since they're failing on the Windows builder.
-            Bug(test) [ Linux Win ] test/c.html [ Failure Pass ]
-            Bug(test) [ Linux Win ] test/d.html [ Failure ]"""))
+            [ Win ] test/c.html [ Failure Pass ]
+            [ Win ] test/d.html [ Failure ]"""))
 
     def test_debug_release_specifiers(self):
         """Tests correct operation of Debug/Release specifiers."""
         test_expectations_before = (
             """# Keep these two since they fail in debug.
-            Bug(test) [ Linux ] test/a.html [ Failure Pass ]
-            Bug(test) [ Linux ] test/b.html [ Failure ]
+            # tags: [ Linux ]
+            # tags: [ Debug Release ]
+            # results: [ Failure Pass ]
+            [ Linux ] test/a.html [ Failure Pass ]
+            [ Linux ] test/b.html [ Failure ]
             # Remove these two since failure is in Release, Debug is all PASS.
-            Bug(test) [ Debug ] test/c.html [ Failure Pass ]
-            Bug(test) [ Debug ] test/d.html [ Failure ]
+            [ Debug ] test/c.html [ Failure Pass ]
+            [ Debug ] test/d.html [ Failure ]
             # Keep these two since they fail in Linux Release.
-            Bug(test) [ Release ] test/e.html [ Failure Pass ]
-            Bug(test) [ Release ] test/f.html [ Failure ]
+            [ Release ] test/e.html [ Failure Pass ]
+            [ Release ] test/f.html [ Failure ]
             # Remove these two since the Release Linux builder is all passing.
-            Bug(test) [ Release Linux ] test/g.html [ Failure Pass ]
-            Bug(test) [ Release Linux ] test/h.html [ Failure ]
+            [ Release Linux ] test/g.html [ Failure Pass ]
+            [ Release Linux ] test/h.html [ Failure ]
             # Remove these two since all the Linux builders PASS.
-            Bug(test) [ Linux ] test/i.html [ Failure Pass ]
-            Bug(test) [ Linux ] test/j.html [ Failure ]""")
+            [ Linux ] test/i.html [ Failure Pass ]
+            [ Linux ] test/j.html [ Failure ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Win7': {
                 'port_name': 'win-win7',
@@ -756,24 +757,24 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
-                'test/c.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/d.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/e.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/f.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/c.html': ['PASS', 'FAIL', 'PASS'],
+                'test/d.html': ['PASS', 'FAIL', 'PASS'],
+                'test/e.html': ['PASS', 'FAIL', 'PASS'],
+                'test/f.html': ['PASS', 'FAIL', 'PASS'],
                 'test/g.html': ['PASS', 'PASS', 'PASS'],
                 'test/h.html': ['PASS', 'PASS', 'PASS'],
                 'test/i.html': ['PASS', 'PASS', 'PASS'],
                 'test/j.html': ['PASS', 'PASS', 'PASS'],
             },
             'WebKit Linux Trusty (dbg)': {
-                'test/a.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/a.html': ['PASS', 'FAIL', 'PASS'],
+                'test/b.html': ['PASS', 'FAIL', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
                 'test/f.html': ['PASS', 'PASS', 'PASS'],
-                'test/g.html': ['IMAGE', 'PASS', 'PASS'],
-                'test/h.html': ['IMAGE', 'PASS', 'PASS'],
+                'test/g.html': ['FAIL', 'PASS', 'PASS'],
+                'test/h.html': ['FAIL', 'PASS', 'PASS'],
                 'test/i.html': ['PASS', 'PASS', 'PASS'],
                 'test/j.html': ['PASS', 'PASS', 'PASS'],
             },
@@ -784,76 +785,58 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
                 'test/f.html': ['PASS', 'PASS', 'PASS'],
-                'test/g.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/h.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/g.html': ['PASS', 'FAIL', 'PASS'],
+                'test/h.html': ['PASS', 'FAIL', 'PASS'],
                 'test/i.html': ['PASS', 'PASS', 'PASS'],
                 'test/j.html': ['PASS', 'PASS', 'PASS'],
             },
             'WebKit Win7': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
-                'test/c.html': ['PASS', 'PASS', 'IMAGE'],
-                'test/d.html': ['PASS', 'PASS', 'IMAGE'],
+                'test/c.html': ['PASS', 'PASS', 'FAIL'],
+                'test/d.html': ['PASS', 'PASS', 'FAIL'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
                 'test/f.html': ['PASS', 'PASS', 'PASS'],
-                'test/g.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/h.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/g.html': ['PASS', 'FAIL', 'PASS'],
+                'test/h.html': ['PASS', 'FAIL', 'PASS'],
                 'test/i.html': ['PASS', 'PASS', 'PASS'],
                 'test/j.html': ['PASS', 'PASS', 'PASS'],
             },
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
+        self.assertEquals(updated_expectations, (
             """# Keep these two since they fail in debug.
-            Bug(test) [ Linux ] test/a.html [ Failure Pass ]
-            Bug(test) [ Linux ] test/b.html [ Failure ]
+            # tags: [ Linux ]
+            # tags: [ Debug Release ]
+            # results: [ Failure Pass ]
+            [ Linux ] test/a.html [ Failure Pass ]
+            [ Linux ] test/b.html [ Failure ]
             # Keep these two since they fail in Linux Release.
-            Bug(test) [ Release ] test/e.html [ Failure Pass ]
-            Bug(test) [ Release ] test/f.html [ Failure ]"""))
+            [ Release ] test/e.html [ Failure Pass ]
+            [ Release ] test/f.html [ Failure ]"""))
 
     def test_preserve_comments_and_whitespace(self):
-        """Tests that comments and whitespace are preserved appropriately.
-
-        Comments and whitespace should be kept unless all the tests grouped
-        below a comment are removed. In that case the comment block should also
-        be removed.
-
-        Ex:
-            # This comment applies to the below tests.
-            Bug(test) test/a.html [ Failure Pass ]
-            Bug(test) test/b.html [ Failure Pass ]
-
-            # <some prose>
-
-            # This is another comment.
-            Bug(test) test/c.html [ Failure Pass ]
-
-        Assuming we removed a.html and c.html we get:
-            # This comment applies to the below tests.
-            Bug(test) test/b.html [ Failure Pass ]
-
-            # <some prose>
-        """
         test_expectations_before = """
+            # results: [ Failure Pass ]
             # Comment A - Keep since these aren't part of any test.
             # Comment B - Keep since these aren't part of any test.
 
             # Comment C - Remove since it's a block belonging to a
             # Comment D - and a is removed.
-            Bug(test) test/a.html [ Failure Pass ]
+            test/a.html [ Failure Pass ]
             # Comment E - Keep since it's below a.
 
 
             # Comment F - Keep since only b is removed
-            Bug(test) test/b.html [ Failure Pass ]
-            Bug(test) test/c.html [ Failure Pass ]
+            test/b.html [ Failure Pass ]
+            test/c.html [ Failure Pass ]
 
             # Comment G - Should be removed since both d and e will be removed.
-            Bug(test) test/d.html [ Failure Pass ]
-            Bug(test) test/e.html [ Failure Pass ]"""
+            test/d.html [ Failure Pass ]
+            test/e.html [ Failure Pass ]"""
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -868,22 +851,23 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
-                'test/c.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/c.html': ['PASS', 'FAIL', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
                 'test/e.html': ['PASS', 'PASS', 'PASS'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, (
-            """
+        self.assertEquals(updated_expectations, ("""
+            # results: [ Failure Pass ]
             # Comment A - Keep since these aren't part of any test.
             # Comment B - Keep since these aren't part of any test.
             # Comment E - Keep since it's below a.
 
 
             # Comment F - Keep since only b is removed
-            Bug(test) test/c.html [ Failure Pass ]"""))
+            test/c.html [ Failure Pass ]"""))
 
     def test_lines_with_no_results_on_builders_kept_by_default(self):
         """Tests the case where there are lines with no results on the builders.
@@ -897,15 +881,16 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         useful to be able to remove it.
         """
         test_expectations_before = """
+            # results: [ Failure Skip Timeout Pass Crash ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
-            Bug(test) test/a.html [ Skip ]
+            test/a.html [ Skip ]
             # The lines below should be kept since the flag for removing
             # such results (--remove-missing) is not passed.
-            Bug(test) test/b.html [ Failure Timeout ]
-            Bug(test) test/c.html [ Failure Pass ]
-            Bug(test) test/d.html [ Pass Timeout ]
-            Bug(test) test/e.html [ Crash Pass ]"""
+            test/b.html [ Failure Timeout ]
+            test/c.html [ Failure Pass ]
+            test/d.html [ Pass Timeout ]
+            test/e.html [ Crash Pass ]"""
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -923,7 +908,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, test_expectations_before)
+        self.assertEquals(updated_expectations, test_expectations_before)
 
     def test_lines_with_no_results_on_builders_can_be_removed(self):
         """Tests that we remove a line that has no results on the builders.
@@ -932,16 +917,16 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         is passed.
         """
         test_expectations_before = """
+            # results: [ Failure Timeout Pass Crash Skip ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
-            Bug(test) test/a.html [ Skip ]
+            test/a.html [ Skip ]
             # The lines below should be removed since the flag for removing
             # such results (--remove-missing) is passed.
-            Bug(test) test/b.html [ Failure Timeout ]
-            Bug(test) test/c.html [ Failure Pass ]
-            Bug(test) test/d.html [ Pass Timeout ]
-            Bug(test) test/e.html [ Crash Pass ]"""
-
+            test/b.html [ Failure Timeout ]
+            test/e.html [ Crash Pass ]
+            test/c.html [ Failure Pass ]
+            test/d.html [ Pass Timeout ]"""
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -959,10 +944,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             remove_missing=True)
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, """
+        self.assertEquals(updated_expectations, """
+            # results: [ Failure Timeout Pass Crash Skip ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
-            Bug(test) test/a.html [ Skip ]""")
+            test/a.html [ Skip ]""")
 
     def test_missing_builders_for_some_configurations(self):
         """Tests the behavior when there are no builders for some configurations.
@@ -977,33 +963,36 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self.set_logging_level(logging.DEBUG)
 
         test_expectations_before = """
+            # tags: [ Win Linux ]
+            # tags: [ Release ]
+            # results: [ Failure Pass ]
+
             # There are no builders that match this configuration at all.
-            Bug(test) [ Win ] test/a.html [ Failure Pass ]
+            [ Win ] test/a.html [ Failure Pass ]
 
             # This matches the existing linux release builder and
             # also linux debug, which has no builder.
-            Bug(test) [ Linux ] test/b.html [ Failure Pass ]
+            [ Linux ] test/b.html [ Failure Pass ]
 
             # This one is marked as Failing and there are some matching
             # configurations with no builders, but for all configurations
             # with existing builders it is passing.
-            Bug(test) test/c.html [ Failure ]
+            test/c.html [ Failure ]
 
             # This one is marked as flaky and there are some matching
             # configurations with no builders, but for all configurations
             # with existing builders, it is non-flaky.
-            Bug(test) test/d.html [ Failure Pass ]
+            test/d.html [ Failure Pass ]
 
             # This one only matches the existing linux release builder,
             # and it's still flaky, so it shouldn't be removed.
-            Bug(test) [ Linux Release ] test/e.html [ Failure Pass ]
+            [ Linux Release ] test/e.html [ Failure Pass ]
 
             # No message should be emitted for this one because it's not
             # marked as flaky or failing, so we don't need to check builder
             # results.
-            Bug(test) test/f.html [ Pass ]"""
+            test/f.html [ Pass ]"""
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -1024,44 +1013,28 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
-                'test/e.html': ['PASS', 'IMAGE', 'PASS'],
-                'test/f.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/e.html': ['PASS', 'FAIL', 'PASS'],
+                'test/f.html': ['PASS', 'FAIL', 'PASS'],
             }
         }
 
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
+        self.assertEquals(
+            updated_expectations, """
+            # tags: [ Win Linux ]
+            # tags: [ Release ]
+            # results: [ Failure Pass ]
 
-        self.assertLog([
-            'DEBUG: No builder with config <win7, x86, release>\n',
-            'DEBUG: No builder with config <win7, x86, debug>\n',
-            'WARNING: No matching builders for line, deleting line.\n',
-            'INFO: Deleting line "Bug(test) [ Win ] test/a.html [ Failure Pass ]"\n',
-            'DEBUG: No builder with config <trusty, x86_64, debug>\n',
-            'DEBUG: Checked builders:\n  WebKit Linux Trusty\n',
-            'INFO: Deleting line "Bug(test) [ Linux ] test/b.html [ Failure Pass ]"\n',
-            'DEBUG: No builder with config <trusty, x86_64, debug>\n',
-            'DEBUG: No builder with config <win7, x86, release>\n',
-            'DEBUG: No builder with config <win7, x86, debug>\n',
-            'DEBUG: Checked builders:\n  WebKit Linux Trusty\n',
-            'INFO: Deleting line "Bug(test) test/c.html [ Failure ]"\n',
-            'DEBUG: No builder with config <trusty, x86_64, debug>\n',
-            'DEBUG: No builder with config <win7, x86, release>\n',
-            'DEBUG: No builder with config <win7, x86, debug>\n',
-            'DEBUG: Checked builders:\n  WebKit Linux Trusty\n',
-            'INFO: Deleting line "Bug(test) test/d.html [ Failure Pass ]"\n',
-        ])
-        self._assert_expectations_match(
-            updated_expectations,
-            """
             # This one only matches the existing linux release builder,
             # and it's still flaky, so it shouldn't be removed.
-            Bug(test) [ Linux Release ] test/e.html [ Failure Pass ]
+            [ Linux Release ] test/e.html [ Failure Pass ]
 
             # No message should be emitted for this one because it's not
             # marked as flaky or failing, so we don't need to check builder
             # results.
-            Bug(test) test/f.html [ Pass ]""")
+            test/f.html [ Pass ]""")
 
     def test_log_missing_results(self):
         """Tests that we emit the appropriate error for missing results.
@@ -1071,16 +1044,18 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         error.
         """
         test_expectations_before = """
-            Bug(test) [ Linux ] test/a.html [ Failure Pass ]
+            # tags: [ Linux ]
+            # tags: [ Release ]
+            # results: [ Failure Pass ]
+            [ Linux ] test/a.html [ Failure Pass ]
             # This line won't emit an error since the Linux Release results
             # exist.
-            Bug(test) [ Linux Release ] test/b.html [ Failure Pass ]
-            Bug(test) [ Release ] test/c.html [ Failure ]
+            [ Linux Release ] test/b.html [ Failure Pass ]
+            [ Release ] test/c.html [ Failure ]
             # This line is not flaky or failing so we shouldn't even check the
             # results.
-            Bug(test) [ Linux ] test/d.html [ Pass ]"""
+            [ Linux ] test/d.html [ Pass ]"""
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -1115,7 +1090,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/b.html': ['PASS', 'FAIL', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
             },
@@ -1127,6 +1102,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             },
         }
 
+        self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
         self.assertLog([
@@ -1138,8 +1114,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         # Also make sure we didn't remove any lines if some builders were
         # missing.
-        self._assert_expectations_match(
-            updated_expectations, test_expectations_before)
+        self.assertEqual(updated_expectations, test_expectations_before)
 
     def test_harness_updates_file(self):
         """Tests that the call harness updates the TestExpectations file."""
@@ -1166,14 +1141,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         test_expectation_path = (
             host.port_factory.get().path_to_generic_test_expectations_file())
         test_expectations = """
+            # tags: [ Linux ]
+            # tags: [ Release ]
+            # results: [ Failure Pass ]
             # Remove since passing on both bots.
-            Bug(test) [ Linux ] test/a.html [ Failure Pass ]
+            [ Linux ] test/a.html [ Failure Pass ]
             # Keep since there's a failure on release bot.
-            Bug(test) [ Linux Release ] test/b.html [ Failure Pass ]
+            [ Linux Release ] test/b.html [ Failure Pass ]
             # Remove since it's passing on both builders.
-            Bug(test) test/c.html [ Failure ]
+            test/c.html [ Failure ]
             # Keep since there's a failure on debug bot.
-            Bug(test) [ Linux ] test/d.html [ Failure ]"""
+            [ Linux ] test/d.html [ Failure ]"""
         files = {
             test_expectation_path: test_expectations
         }
@@ -1185,7 +1163,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         expectation_factory.all_results_by_builder = {
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/b.html': ['PASS', 'FAIL', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
             },
@@ -1193,17 +1171,20 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
-                'test/d.html': ['IMAGE', 'PASS', 'PASS'],
+                'test/d.html': ['FAIL', 'PASS', 'PASS'],
             },
         }
 
         main(host, expectation_factory, [])
-
-        self.assertEqual(host.filesystem.files[test_expectation_path], (
-            """            # Keep since there's a failure on release bot.
-            Bug(test) [ Linux Release ] test/b.html [ Failure Pass ]
+        self.assertEqual(
+            host.filesystem.files[test_expectation_path], ("""
+            # tags: [ Linux ]
+            # tags: [ Release ]
+            # results: [ Failure Pass ]
+            # Keep since there's a failure on release bot.
+            [ Linux Release ] test/b.html [ Failure Pass ]
             # Keep since there's a failure on debug bot.
-            Bug(test) [ Linux ] test/d.html [ Failure ]"""))
+            [ Linux ] test/d.html [ Failure ]"""))
 
     def test_harness_no_expectations(self):
         """Tests behavior when TestExpectations file doesn't exist.
@@ -1266,7 +1247,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             host.port_factory.get().path_to_generic_test_expectations_file())
         test_expectations = """
             # Remove since passing on both bots.
-            Bug(test) [ Linux ] test/a.html [ Failure Pass ]"""
+            # tags: [ Linux ]
+            # results: [ Failure Pass ]
+            [ Linux ] test/a.html [ Failure Pass ]"""
 
         files = {
             test_expectation_path: test_expectations
@@ -1288,7 +1271,10 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         main(host, expectation_factory, [])
 
         self.assertTrue(host.filesystem.isfile(test_expectation_path))
-        self.assertEqual(host.filesystem.files[test_expectation_path], '')
+        self.assertEqual(host.filesystem.files[test_expectation_path], """
+            # Remove since passing on both bots.
+            # tags: [ Linux ]
+            # results: [ Failure Pass ]""")
 
     def test_show_results(self):
         """Tests that passing --show-results shows the removed results.
@@ -1299,15 +1285,15 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """
         test_expectations_before = (
             """# Remove this since it's passing all runs.
-            Bug(test) test/a.html [ Failure Pass ]
+            # results: [ Failure Pass Crash Timeout ]
+            test/a.html [ Failure Pass ]
             # Remove this since, although there's a failure, it's not a timeout.
-            Bug(test) test/b.html [ Pass Timeout ]
+            test/b.html [ Pass Timeout ]
             # Keep since we have both crashes and passes.
-            Bug(test) test/c.html [ Crash Pass ]
+            test/c.html [ Crash Pass ]
             # Remove since it's passing all runs.
-            Bug(test) test/d.html [ Failure ]""")
+            test/d.html [ Failure ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux': {
                 'port_name': 'linux-trusty',
@@ -1321,11 +1307,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/b.html': ['PASS', 'FAIL', 'PASS'],
                 'test/c.html': ['PASS', 'CRASH', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
+        self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.show_removed_results()
         self.assertEqual(
             FlakyTests.FLAKINESS_DASHBOARD_URL
@@ -1337,14 +1325,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """
         test_expectations_before = (
             """# Remove this since it's passing all runs.
+            # results: [ Failure Pass Timeout ]
             crbug.com/1111 test/a.html [ Failure Pass ]
             # Remove this since, although there's a failure, it's not a timeout.
             crbug.com/2222 test/b.html [ Pass Timeout ]
             # Keep since it's not a flake
             crbug.com/3333 test/c.html [ Failure ]""")
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FLAKE_TYPE))
         self._define_builders({
             'WebKit Linux': {
                 'port_name': 'linux-trusty',
@@ -1358,10 +1345,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/b.html': ['PASS', 'FAIL', 'PASS'],
                 'test/c.html': ['PASS', 'PASS', 'PASS'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FLAKE_TYPE))
+        self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.print_suggested_commit_description()
         self.assertLog([
             'INFO: Deleting line "crbug.com/1111 test/a.html [ Failure Pass ]"\n',
@@ -1380,12 +1370,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """
         test_expectations_before = (
             """# Keep since it's not a fail.
+            # results: [ Failure Pass ]
             crbug.com/1111 test/a.html [ Failure Pass ]
             # Remove since it's passing all runs.
             crbug.com/2222 test/b.html [ Failure ]""")
 
-        self._expectations_remover = (
-            self._create_expectations_remover(self.FAIL_TYPE))
         self._define_builders({
             'WebKit Linux': {
                 'port_name': 'linux-trusty',
@@ -1402,6 +1391,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/b.html': ['PASS', 'PASS', 'PASS'],
             }
         }
+        self._expectations_remover = (
+            self._create_expectations_remover(self.FAIL_TYPE))
+        self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.print_suggested_commit_description()
         self.assertLog([
             'INFO: Deleting line "crbug.com/2222 test/b.html [ Failure ]"\n',
@@ -1418,7 +1410,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """Tests display of the suggested commit message.
         """
         test_expectations_before = (
-            """# Remove this since it's passing all runs.
+            """
+            # results: [ Failure Pass Crash Timeout ]
+            # Remove this since it's passing all runs.
             crbug.com/1111 test/a.html [ Failure Pass ]
             # Remove this since, although there's a failure, it's not a timeout.
             crbug.com/1111 test/b.html [ Pass Timeout ]
@@ -1427,13 +1421,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # Remove since it's passing all runs.
             crbug.com/3333 test/d.html [ Failure ]""")
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux': {
                 'port_name': 'linux-trusty',
                 'specifiers': ['Trusty', 'Release']
             },
         })
+
         self._port.all_build_types = ('release',)
         self._port.all_systems = (('trusty', 'x86_64'),)
 
@@ -1441,11 +1435,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectation_factory.all_results_by_builder = {
             'WebKit Linux': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
-                'test/b.html': ['PASS', 'IMAGE', 'PASS'],
+                'test/b.html': ['PASS', 'FAIL', 'PASS'],
                 'test/c.html': ['PASS', 'CRASH', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
             }
         }
+        self._expectations_remover = self._create_expectations_remover()
+        self._expectations_remover.get_updated_test_expectations()
         self._expectations_remover.print_suggested_commit_description()
         self.assertLog([
             'INFO: Deleting line "crbug.com/1111 test/a.html [ Failure Pass ]"\n',

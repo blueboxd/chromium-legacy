@@ -781,6 +781,13 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
       state->EndArray();
     }
 
+    if (debug_info_->compositing_reason_ids.size()) {
+      state->BeginArray("compositing_reason_ids");
+      for (const char* reason_id : debug_info_->compositing_reason_ids)
+        state->AppendString(reason_id);
+      state->EndArray();
+    }
+
     if (debug_info_->invalidations.size()) {
       state->BeginArray("annotated_invalidation_rects");
       for (auto& invalidation : debug_info_->invalidations) {
@@ -1031,6 +1038,10 @@ int LayerImpl::CalculateJitter() {
 
 std::string LayerImpl::DebugName() const {
   return debug_info_ ? debug_info_->name : "";
+}
+
+gfx::ContentColorUsage LayerImpl::GetContentColorUsage() const {
+  return gfx::ContentColorUsage::kSRGB;
 }
 
 }  // namespace cc

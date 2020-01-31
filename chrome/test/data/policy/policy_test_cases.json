@@ -6628,6 +6628,16 @@
     ]
   },
 
+  "URLsToNotCheckForMalwareOfDownloadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToNotCheckForMalwareOfDownloadedContent": ["[*.]google.com"] },
+        "prefs": { "safebrowsing.urls_to_not_check_for_malware_of_downloaded_content": { "local_state": true } }
+      }
+    ]
+  },
+
   "URLsToNotCheckComplianceOfUploadedContent": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [

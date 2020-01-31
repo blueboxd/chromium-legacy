@@ -138,7 +138,7 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
   } else if (options->sameSite() == "lax") {
     same_site = network::mojom::CookieSameSite::LAX_MODE;
   } else {
-    DCHECK_EQ(options->sameSite(), "unrestricted");
+    DCHECK_EQ(options->sameSite(), "none");
     same_site = network::mojom::CookieSameSite::NO_RESTRICTION;
   }
 

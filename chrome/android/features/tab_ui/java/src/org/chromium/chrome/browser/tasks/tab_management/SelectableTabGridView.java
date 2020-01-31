@@ -12,7 +12,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 
 /**
  * Holds the view for a selectable tab grid.

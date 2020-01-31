@@ -90,25 +90,6 @@ float MdTextButton::GetCornerRadius() const {
   return corner_radius_;
 }
 
-void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
-  LabelButton::OnPaintBackground(canvas);
-  if (hover_animation().is_animating() || state() == STATE_HOVERED) {
-    bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
-    int hover_alpha = is_prominent_ ? 0x0C : 0x05;
-    if (should_use_dark_colors)
-      hover_alpha = 0x0A;
-    const SkColor hover_color = should_use_dark_colors && !is_prominent_
-                                    ? gfx::kGoogleBlue300
-                                    : SK_ColorBLACK;
-    SkScalar alpha = hover_animation().CurrentValueBetween(0, hover_alpha);
-    cc::PaintFlags flags;
-    flags.setColor(SkColorSetA(hover_color, alpha));
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setAntiAlias(true);
-    canvas->DrawRoundRect(gfx::RectF(GetLocalBounds()), corner_radius_, flags);
-  }
-}
-
 void MdTextButton::OnThemeChanged() {
   LabelButton::OnThemeChanged();
   UpdateColors();
@@ -140,6 +121,7 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   constexpr int kYOffset = 1;
   constexpr int kSkiaBlurRadius = 2;
   const int shadow_alpha = is_prominent_ ? 0x3D : 0x1A;
+  const bool is_hovered = state() == STATE_HOVERED;
   const SkColor shadow_color = should_use_dark_colors && is_prominent_
                                    ? gfx::kGoogleBlue300
                                    : SK_ColorBLACK;
@@ -151,8 +133,12 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   shadows.emplace_back(
       gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
       SkColorSetA(shadow_color, should_use_dark_colors ? 0x7F : shadow_alpha));
-  const SkColor fill_color =
-      SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
+  int fill_alpha = is_prominent_ ? 0xD : 0x05;
+  if (should_use_dark_colors)
+    fill_alpha = 0x0A;
+  const SkColor fill_color = SkColorSetA(
+      (!is_hovered || is_prominent_) ? SK_ColorWHITE : SK_ColorBLACK,
+      fill_alpha);
   return std::make_unique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
       base::WrapUnique(new BorderShadowLayerDelegate(
@@ -180,6 +166,7 @@ MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
       is_prominent_(false) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
+  set_show_ink_drop_when_hot_tracked(true);
   SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();

@@ -15,7 +15,7 @@ namespace ui {
 
 class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManagerAtomic(DrmDevice* drm);
+  explicit HardwareDisplayPlaneManagerAtomic(DrmDevice* drm);
   ~HardwareDisplayPlaneManagerAtomic() override;
 
   // HardwareDisplayPlaneManager:

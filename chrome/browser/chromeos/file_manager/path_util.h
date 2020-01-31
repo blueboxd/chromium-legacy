@@ -35,7 +35,7 @@ base::FilePath GetMyFilesFolderForProfile(Profile* profile);
 
 // Gets the absolute path for the user's Android Play files (Movies, Pictures,
 // etc..., Android apps excluded). The default path may be overridden by tests.
-base::FilePath GetAndroidPlayFilesPath();
+base::FilePath GetAndroidFilesPath();
 
 // Converts |old_path| to |new_path| and returns true, if the old path points
 // to an old location of user folders (in "Downloads" or "Google Drive").

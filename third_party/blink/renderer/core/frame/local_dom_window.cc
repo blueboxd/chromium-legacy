@@ -706,6 +706,9 @@ void LocalDOMWindow::print(ScriptState* script_state) {
     return;
   }
 
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+    document()->CountUse(WebFeature::kSameOriginIframeWindowPrint);
+  }
   document()->CountUseOnlyInCrossOriginIframe(
       WebFeature::kCrossOriginWindowPrint);
 
@@ -743,6 +746,9 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!page)
     return;
 
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+    document()->CountUse(WebFeature::kSameOriginIframeWindowAlert);
+  }
   document()->CountUseOnlyInCrossOriginIframe(
       WebFeature::kCrossOriginWindowAlert);
 
@@ -773,6 +779,9 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!page)
     return false;
 
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+    document()->CountUse(WebFeature::kSameOriginIframeWindowConfirm);
+  }
   document()->CountUseOnlyInCrossOriginIframe(
       WebFeature::kCrossOriginWindowConfirm);
 
@@ -810,6 +819,9 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
                                                    default_value, return_value))
     return return_value;
 
+  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginSubframe()) {
+    document()->CountUse(WebFeature::kSameOriginIframeWindowPrompt);
+  }
   document()->CountUseOnlyInCrossOriginIframe(
       WebFeature::kCrossOriginWindowPrompt);
 

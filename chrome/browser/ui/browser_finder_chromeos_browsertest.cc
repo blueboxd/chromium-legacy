@@ -4,12 +4,10 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -22,11 +20,6 @@ class BrowserFinderWithDesksTest : public InProcessBrowserTest {
   ~BrowserFinderWithDesksTest() override = default;
 
   // InProcessBrowserTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(ash::features::kVirtualDesks);
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     // Create three desks (two other than the default).
@@ -45,8 +38,6 @@ class BrowserFinderWithDesksTest : public InProcessBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserFinderWithDesksTest);
 };
 

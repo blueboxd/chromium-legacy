@@ -119,6 +119,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
                        const ErrorCallback& error_callback) override;
   uint32_t GetDiscoverableTimeout() const;
   bool IsDiscovering() const override;
+  bool IsDiscoveringForTesting() const;
   std::unordered_map<device::BluetoothDevice*, device::BluetoothDevice::UUIDSet>
   RetrieveGattConnectedDevicesWithDiscoveryFilter(
       const device::BluetoothDiscoveryFilter& discovery_filter) override;

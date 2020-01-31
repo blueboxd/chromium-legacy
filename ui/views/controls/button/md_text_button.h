@@ -59,7 +59,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
  protected:
   // View:
-  void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
 

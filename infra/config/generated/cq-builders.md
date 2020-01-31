@@ -131,6 +131,7 @@ builder.
   * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
   * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
   * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 * [chromeos-amd64-generic-dbg](https://ci.chromium.org/p/chromium/builders/try/chromeos-amd64-generic-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+chromeos-amd64-generic-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+chromeos-amd64-generic-dbg))
@@ -165,6 +166,8 @@ builder.
   * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
+  * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=package:%5Echromium$+file:ui/gl/features.gni)
 
 * [dawn-mac-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-mac-x64-deps-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+dawn-mac-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+dawn-mac-x64-deps-rel))
 
@@ -176,6 +179,8 @@ builder.
   * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
+  * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=package:%5Echromium$+file:ui/gl/features.gni)
 
 * [dawn-win10-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-win10-x64-deps-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+dawn-win10-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+dawn-win10-x64-deps-rel))
 
@@ -187,6 +192,8 @@ builder.
   * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
+  * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=package:%5Echromium$+file:ui/gl/features.gni)
 
 * [dawn-win10-x86-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-win10-x86-deps-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+dawn-win10-x86-deps-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+dawn-win10-x86-deps-rel))
 
@@ -198,6 +205,8 @@ builder.
   * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
+  * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=package:%5Echromium$+file:ui/gl/features.gni)
 
 * [fuchsia-arm64-cast](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-cast) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia-arm64-cast)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia-arm64-cast))
 
@@ -271,6 +280,7 @@ builder.
   * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
   * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
   * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 * [linux_vr](https://ci.chromium.org/p/chromium/builders/try/linux_vr) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux_vr)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux_vr))
@@ -292,6 +302,7 @@ builder.
   * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
   * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
   * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 * [win_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/try/win_optional_gpu_tests_rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win_optional_gpu_tests_rel))
@@ -310,6 +321,7 @@ builder.
   * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
   * [`//third_party/blink/renderer/modules/xr/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/xr/)
   * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:tools/clang/scripts/update.py)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 

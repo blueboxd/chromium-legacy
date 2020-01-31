@@ -37,6 +37,7 @@ include_rules = [
   "+components/omnibox/browser",
   "+components/optimization_guide",
   "+components/os_crypt",
+  "+components/permissions",
   "+components/policy",
   "+components/prefs",
   "+components/safe_browsing/buildflags.h",

@@ -244,6 +244,7 @@ bool HotseatWidget::ShouldShowHotseatBackground() {
 void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   DCHECK(container);
   DCHECK(shelf);
+  shelf_ = shelf;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.name = "HotseatWidget";
@@ -352,6 +353,12 @@ void HotseatWidget::SetTranslucentBackground(
 void HotseatWidget::CalculateTargetBounds() {
   // TODO(manucornet): Move target bounds calculations from the shelf layout
   // manager.
+}
+
+gfx::Rect HotseatWidget::GetTargetBounds() const {
+  // TODO(manucornet): Store these locally and do not depend on the layout
+  // manager.
+  return shelf_->shelf_layout_manager()->GetHotseatBounds();
 }
 
 void HotseatWidget::UpdateLayout(bool animate) {

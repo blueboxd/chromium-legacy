@@ -1198,6 +1198,16 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   api()->glGetIntegervFn(GL_SCISSOR_BOX, scissor_);
   ApplySurfaceDrawOffset();
 
+#if defined(OS_MACOSX)
+  // On mac we need the ANGLE_texture_rectangle extension to support IOSurface
+  // backbuffers, but we don't want it exposed to WebGL user shaders. This
+  // disables support for it in the shader compiler. We then enable it
+  // temporarily when necessary; see
+  // ScopedEnableTextureRectangleInShaderCompiler.
+  if (feature_info_->IsWebGLContext())
+    api()->glDisableFn(GL_TEXTURE_RECTANGLE_ANGLE);
+#endif
+
   set_initialized();
   return gpu::ContextResult::kSuccess;
 }

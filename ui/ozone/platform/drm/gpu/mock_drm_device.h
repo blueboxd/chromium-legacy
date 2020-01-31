@@ -44,7 +44,7 @@ class MockDrmDevice : public DrmDevice {
     std::vector<DrmDevice::Property> properties;
   };
 
-  MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device);
+  explicit MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device);
 
   static ScopedDrmPropertyBlobPtr AllocateInFormatsBlob(
       uint32_t id,
@@ -53,7 +53,6 @@ class MockDrmDevice : public DrmDevice {
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
   int get_set_crtc_call_count() const { return set_crtc_call_count_; }
-  int get_restore_crtc_call_count() const { return restore_crtc_call_count_; }
   int get_add_framebuffer_call_count() const {
     return add_framebuffer_call_count_;
   }
@@ -114,8 +113,7 @@ class MockDrmDevice : public DrmDevice {
   bool SetCrtc(uint32_t crtc_id,
                uint32_t framebuffer,
                std::vector<uint32_t> connectors,
-               drmModeModeInfo* mode) override;
-  bool SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) override;
+               const drmModeModeInfo& mode) override;
   bool DisableCrtc(uint32_t crtc_id) override;
   ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) override;
   bool AddFramebuffer2(uint32_t width,
@@ -139,7 +137,8 @@ class MockDrmDevice : public DrmDevice {
   bool SetProperty(uint32_t connector_id,
                    uint32_t property_id,
                    uint64_t value) override;
-  ScopedDrmPropertyBlob CreatePropertyBlob(void* blob, size_t size) override;
+  ScopedDrmPropertyBlob CreatePropertyBlob(const void* blob,
+                                           size_t size) override;
   void DestroyPropertyBlob(uint32_t id) override;
   bool GetCapability(uint64_t capability, uint64_t* value) override;
   ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id) override;
@@ -183,7 +182,6 @@ class MockDrmDevice : public DrmDevice {
 
   int get_crtc_call_count_;
   int set_crtc_call_count_;
-  int restore_crtc_call_count_;
   int add_framebuffer_call_count_;
   int remove_framebuffer_call_count_;
   int page_flip_call_count_;

@@ -33,7 +33,7 @@ constexpr float kSecondToneOpacity = 0.3f;
 constexpr int kAlpha20 = 51;   // 20%
 constexpr int kAlpha40 = 102;  // 40%
 constexpr int kAlpha60 = 153;  // 60%
-constexpr int kAlpha74 = 188;  // 74%
+constexpr int kAlpha80 = 204;  // 80%
 constexpr int kAlpha90 = 230;  // 90%
 
 // Gets the color mode value from feature flag "--ash-color-mode".
@@ -163,7 +163,7 @@ AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
 SkColor AshColorProvider::GetShieldLayerColorImpl(
     ShieldLayerType type,
     AshColorMode color_mode) const {
-  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha74, kAlpha90};
+  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80, kAlpha90};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
   return SkColorSetA(
       color_mode == AshColorMode::kLight ? SK_ColorWHITE : gfx::kGoogleGrey900,
@@ -173,7 +173,7 @@ SkColor AshColorProvider::GetShieldLayerColorImpl(
 SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
                                                 AshColorMode color_mode) const {
   SkColor light_color, dark_color;
-  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha74,
+  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80,
                          kAlpha90, 0xFF,     0xFF};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
   const int transparent_alpha = kAlphas[static_cast<int>(type)];
@@ -182,7 +182,7 @@ SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
     case BaseLayerType::kTransparent20:
     case BaseLayerType::kTransparent40:
     case BaseLayerType::kTransparent60:
-    case BaseLayerType::kTransparent74:
+    case BaseLayerType::kTransparent80:
     case BaseLayerType::kTransparent90:
       light_color = SkColorSetA(SK_ColorWHITE, transparent_alpha);
       dark_color = SkColorSetA(gfx::kGoogleGrey900, transparent_alpha);

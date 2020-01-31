@@ -13,8 +13,8 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/frame_message_structs.h"
-#include "content/common/tab_switch_time_recorder.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -489,30 +489,35 @@ void ParamTraits<net::SHA256HashValue>::Log(const param_type& p,
   l->append("<SHA256HashValue>");
 }
 
-void ParamTraits<content::RecordTabSwitchTimeRequest>::Write(
+void ParamTraits<content::RecordContentToVisibleTimeRequest>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.tab_switch_start_time);
+  WriteParam(m, p.event_start_time);
   WriteParam(m, p.destination_is_loaded);
   WriteParam(m, p.destination_is_frozen);
+  WriteParam(m, p.show_reason_tab_switching);
+  WriteParam(m, p.show_reason_unoccluded);
 }
 
-bool ParamTraits<content::RecordTabSwitchTimeRequest>::Read(
+bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
-  if (!ReadParam(m, iter, &r->tab_switch_start_time) ||
+  if (!ReadParam(m, iter, &r->event_start_time) ||
       !ReadParam(m, iter, &r->destination_is_loaded) ||
-      !ReadParam(m, iter, &r->destination_is_frozen)) {
+      !ReadParam(m, iter, &r->destination_is_frozen) ||
+      !ReadParam(m, iter, &r->show_reason_tab_switching) ||
+      !ReadParam(m, iter, &r->show_reason_unoccluded)) {
     return false;
   }
 
   return true;
 }
 
-void ParamTraits<content::RecordTabSwitchTimeRequest>::Log(const param_type& p,
-                                                           std::string* l) {
-  l->append("<content::RecordTabSwitchTimeRequest>");
+void ParamTraits<content::RecordContentToVisibleTimeRequest>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<content::RecordContentToVisibleTimeRequest>");
 }
 
 }  // namespace IPC

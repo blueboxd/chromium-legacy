@@ -17,6 +17,7 @@
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/messaging/web_message_port.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -337,10 +338,15 @@ class CastWebContents {
   // See html.spec.whatwg.org/multipage/web-messaging.html sect. 9.4.3
   // for more details on how the target origin policy is applied.
   // Should be called on UI thread.
+  // TODO(crbug.com/803242): Deprecated and will be shortly removed.
   virtual void PostMessageToMainFrame(
       const std::string& target_origin,
       const std::string& data,
       std::vector<mojo::ScopedMessagePipeHandle> channels) = 0;
+  virtual void PostMessageToMainFrame(
+      const std::string& target_origin,
+      const std::string& data,
+      std::vector<blink::WebMessagePort> ports) = 0;
 
   // ===========================================================================
   // Utility Methods

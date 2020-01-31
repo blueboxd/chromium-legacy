@@ -60,8 +60,8 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -98,7 +98,7 @@ class TabListMediator {
          * @see TabContentManager#getTabThumbnailWithCallback
          */
         void getTabThumbnailWithCallback(
-                Tab tab, Callback<Bitmap> callback, boolean forceUpdate, boolean writeToCache);
+                int tabId, Callback<Bitmap> callback, boolean forceUpdate, boolean writeToCache);
     }
 
     /**
@@ -176,8 +176,9 @@ class TabListMediator {
                 callback.onResult(bitmap);
             };
             sFetchCountForTesting++;
+            int tabId = mTab != null ? mTab.getId() : Tab.INVALID_TAB_ID;
             mThumbnailProvider.getTabThumbnailWithCallback(
-                    mTab, forking, mForceUpdate, mWriteToCache);
+                    tabId, forking, mForceUpdate, mWriteToCache);
         }
     }
 

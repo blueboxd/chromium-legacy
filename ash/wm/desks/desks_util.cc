@@ -4,10 +4,6 @@
 
 #include "ash/wm/desks/desks_util.h"
 
-#include <array>
-
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -28,12 +24,25 @@ constexpr std::array<int, kMaxNumberOfDesks> kDesksContainersIds = {
 
 }  // namespace
 
-std::vector<int> GetDesksContainersIds() {
-  if (!features::IsVirtualDesksEnabled())
-    return std::vector<int>({kShellWindowId_DefaultContainerDeprecated});
+// Note: this function avoids having a copy of |kDesksContainersIds| in each
+// translation unit that references it.
+const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds() {
+  return kDesksContainersIds;
+}
 
-  return std::vector<int>(kDesksContainersIds.begin(),
-                          kDesksContainersIds.end());
+std::vector<aura::Window*> GetDesksContainers(aura::Window* root) {
+  DCHECK(root);
+  DCHECK(root->IsRootWindow());
+
+  std::vector<aura::Window*> containers;
+  containers.reserve(kMaxNumberOfDesks);
+  for (const auto& id : kDesksContainersIds) {
+    auto* container = root->GetChildById(id);
+    DCHECK(container);
+    containers.push_back(container);
+  }
+
+  return containers;
 }
 
 const char* GetDeskContainerName(int container_id) {
@@ -58,20 +67,6 @@ const char* GetDeskContainerName(int container_id) {
   }
 }
 
-std::vector<aura::Window*> GetDesksContainers(aura::Window* root) {
-  DCHECK(root);
-  DCHECK(root->IsRootWindow());
-
-  std::vector<aura::Window*> containers;
-  for (const auto& id : GetDesksContainersIds()) {
-    auto* container = root->GetChildById(id);
-    DCHECK(container);
-    containers.emplace_back(container);
-  }
-
-  return containers;
-}
-
 bool IsDeskContainer(const aura::Window* container) {
   DCHECK(container);
   return IsDeskContainerId(container->id());
@@ -85,9 +80,6 @@ bool IsDeskContainerId(int id) {
 }
 
 int GetActiveDeskContainerId() {
-  if (!features::IsVirtualDesksEnabled())
-    return kShellWindowId_DefaultContainerDeprecated;
-
   auto* controller = DesksController::Get();
   DCHECK(controller);
 
@@ -126,9 +118,8 @@ aura::Window* GetDeskContainerForContext(aura::Window* context) {
 }
 
 bool ShouldDesksBarBeCreated() {
-  return features::IsVirtualDesksEnabled() &&
-         (!TabletMode::Get()->InTabletMode() ||
-          DesksController::Get()->desks().size() > 1);
+  return !TabletMode::Get()->InTabletMode() ||
+         DesksController::Get()->desks().size() > 1;
 }
 
 }  // namespace desks_util

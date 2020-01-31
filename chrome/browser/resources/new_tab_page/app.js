@@ -5,6 +5,7 @@
 import './strings.m.js';
 import './most_visited.js';
 import './customize_dialog.js';
+import './voice_search_overlay.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
@@ -27,8 +28,12 @@ class AppElement extends PolymerElement {
     return {
       /** @private {!newTabPage.mojom.Theme} */
       theme_: Object,
+
       /** @private */
       showCustomizeDialog_: Boolean,
+
+      /** @private */
+      showVoiceSearchOverlay_: Boolean,
     };
   }
 
@@ -56,6 +61,11 @@ class AppElement extends PolymerElement {
   }
 
   /** @private */
+  onVoiceSearchClick_() {
+    this.showVoiceSearchOverlay_ = true;
+  }
+
+  /** @private */
   onCustomizeClick_() {
     this.showCustomizeDialog_ = true;
   }
@@ -63,6 +73,11 @@ class AppElement extends PolymerElement {
   /** @private */
   onCustomizeDialogClose_() {
     this.showCustomizeDialog_ = false;
+  }
+
+  /** @private */
+  onVoiceSearchOverlayClose_() {
+    this.showVoiceSearchOverlay_ = false;
   }
 
   /**

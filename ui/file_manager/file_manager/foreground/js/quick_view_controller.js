@@ -282,9 +282,9 @@ class QuickViewController {
     }
 
     // Delete the entry.
-    const deleteMenuItem = CommandHandler.getCommand('delete');
-    if (deleteMenuItem.canDeleteEntries_([entry], this.fileManager_)) {
-      deleteMenuItem.deleteEntries_(
+    const deleteCommand = CommandHandler.getCommand('delete');
+    if (deleteCommand.canDeleteEntries_([entry], this.fileManager_)) {
+      deleteCommand.deleteEntries_(
           [entry], this.fileManager_, this.deleteConfirmDialog_);
     }
   }

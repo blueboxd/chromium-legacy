@@ -11,11 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/account_id/account_id.h"
-#include "components/user_manager/user.h"
 
 namespace em = enterprise_management;
 
@@ -33,7 +29,6 @@ constexpr char kCloudDpsResponse[] = "clouddpsResponse";
 constexpr char kOnline[] = "online";
 constexpr char kSessionStateChangeType[] = "sessionStateChangeType";
 constexpr char kSerialNumber[] = "serialNumber";
-constexpr char kGaiaId[] = "gaiaId";
 constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 constexpr char kTime[] = "time";
 constexpr char kEventId[] = "eventId";
@@ -68,18 +63,6 @@ bool GetHash(const base::Value& event,
 
 }  // namespace
 
-bool GetGaiaId(Profile* profile, int* gaia_id) {
-  if (!profile)
-    return false;
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user)
-    return false;
-  if (!base::StringToInt(user->GetAccountId().GetGaiaId(), gaia_id))
-    return false;
-  return true;
-}
-
 std::string GetSerialNumber() {
   return chromeos::system::StatisticsProvider::GetInstance()
       ->GetEnterpriseMachineID();
@@ -87,8 +70,7 @@ std::string GetSerialNumber() {
 
 base::Value ConvertProtoToValue(
     const em::AppInstallReportRequest* app_install_report_request,
-    const base::Value& context,
-    Profile* profile) {
+    const base::Value& context) {
   DCHECK(app_install_report_request);
 
   base::Value event_list(base::Value::Type::LIST);
@@ -101,7 +83,7 @@ base::Value ConvertProtoToValue(
       base::Value wrapper;
       wrapper = ConvertEventToValue(
           app_install_report.has_package() ? app_install_report.package() : "",
-          app_install_report_log_event, context, profile);
+          app_install_report_log_event, context);
       auto* id = wrapper.FindStringKey(kEventId);
       if (id) {
         if (seen_ids.find(*id) != seen_ids.end()) {
@@ -121,8 +103,7 @@ base::Value ConvertProtoToValue(
 base::Value ConvertEventToValue(
     const std::string& package,
     const em::AppInstallReportLogEvent& app_install_report_log_event,
-    const base::Value& context,
-    Profile* profile) {
+    const base::Value& context) {
   base::Value event(base::Value::Type::DICTIONARY);
 
   if (!package.empty())
@@ -167,10 +148,6 @@ base::Value ConvertEventToValue(
   }
 
   event.SetStringKey(kSerialNumber, GetSerialNumber());
-
-  int gaia_id;
-  if (GetGaiaId(profile, &gaia_id))
-    event.SetIntKey(kGaiaId, gaia_id);
 
   base::Value wrapper(base::Value::Type::DICTIONARY);
   wrapper.SetKey(kAndroidAppInstallEvent, std::move(event));

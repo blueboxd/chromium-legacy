@@ -453,7 +453,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   std::unique_ptr<BroadcastChannelProvider> broadcast_channel_provider_;
-  scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
+  std::unique_ptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;

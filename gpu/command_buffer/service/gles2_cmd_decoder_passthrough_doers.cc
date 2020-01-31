@@ -27,6 +27,42 @@
 namespace gpu {
 namespace gles2 {
 
+// Temporarily allows compilation of shaders that use the
+// ARB_texture_rectangle/ANGLE_texture_rectangle extension. We don't want to
+// expose the extension to WebGL user shaders but we still need to use it for
+// parts of the implementation on macOS. Note that the extension is always
+// enabled on macOS and this only controls shader compilation.
+class GLES2DecoderPassthroughImpl::
+    ScopedEnableTextureRectangleInShaderCompiler {
+ public:
+  ScopedEnableTextureRectangleInShaderCompiler(
+      const ScopedEnableTextureRectangleInShaderCompiler&) = delete;
+  ScopedEnableTextureRectangleInShaderCompiler& operator=(
+      const ScopedEnableTextureRectangleInShaderCompiler&) = delete;
+
+  // This class is a no-op except on macOS.
+#if !defined(OS_MACOSX)
+  explicit ScopedEnableTextureRectangleInShaderCompiler(
+      GLES2DecoderPassthroughImpl* decoder) {}
+
+ private:
+#else
+  explicit ScopedEnableTextureRectangleInShaderCompiler(
+      GLES2DecoderPassthroughImpl* decoder)
+      : decoder_(decoder) {
+    if (decoder_->feature_info_->IsWebGLContext())
+      decoder_->api_->glEnableFn(GL_TEXTURE_RECTANGLE_ANGLE);
+  }
+  ~ScopedEnableTextureRectangleInShaderCompiler() {
+    if (decoder_->feature_info_->IsWebGLContext())
+      decoder_->api_->glDisableFn(GL_TEXTURE_RECTANGLE_ANGLE);
+  }
+
+ private:
+  GLES2DecoderPassthroughImpl* decoder_;
+#endif
+};
+
 namespace {
 
 template <typename ClientType, typename ServiceType, typename GenFunction>
@@ -709,18 +745,7 @@ error::Error GLES2DecoderPassthroughImpl::DoColorMask(GLboolean red,
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCompileShader(GLuint shader) {
-#if defined(OS_MACOSX)
-  // On mac we need this extension to support IOSurface backbuffers, but we
-  // don't want it exposed to WebGL user shaders. Temporarily disable it during
-  // shader compilation.
-  if (feature_info_->IsWebGLContext())
-    api()->glDisableExtensionANGLEFn("GL_ANGLE_texture_rectangle");
-#endif
   api()->glCompileShaderFn(GetShaderServiceID(shader, resources_));
-#if defined(OS_MACOSX)
-  if (feature_info_->IsWebGLContext())
-    api()->glRequestExtensionANGLEFn("GL_ANGLE_texture_rectangle");
-#endif
   return error::kNoError;
 }
 
@@ -4388,6 +4413,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
+  ScopedEnableTextureRectangleInShaderCompiler enable(this);
   BindPendingImageForClientIDIfNeeded(source_id);
   api()->glCopyTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false), source_level,
@@ -4415,6 +4441,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
+  ScopedEnableTextureRectangleInShaderCompiler enable(this);
   BindPendingImageForClientIDIfNeeded(source_id);
   api()->glCopySubTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false), source_level,

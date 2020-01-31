@@ -33,16 +33,16 @@ namespace {
 
 // The number of actions supported when the notification is expanded or not.
 constexpr size_t kMediaNotificationActionsCount = 3;
-constexpr size_t kMediaNotificationExpandedActionsCount = 5;
+constexpr size_t kMediaNotificationExpandedActionsCount = 6;
 
 // Dimensions.
 constexpr int kDefaultMarginSize = 8;
-constexpr int kMediaButtonIconSize = 28;
+constexpr int kMediaButtonIconSize = 16;
 constexpr int kTitleArtistLineHeight = 20;
 constexpr double kMediaImageMaxWidthPct = 0.3;
 constexpr double kMediaImageMaxWidthExpandedPct = 0.4;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(36, 36);
-constexpr int kMediaButtonRowSeparator = 8;
+constexpr int kMediaButtonRowSeparator = 0;
 constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
 constexpr gfx::Insets kIconlessMediaNotificationHeaderInsets =
     gfx::Insets(6, 14, 0, 6);
@@ -50,6 +50,7 @@ constexpr gfx::Insets kIconMediaNotificationHeaderInsets =
     gfx::Insets(6, 0, 0, 6);
 constexpr gfx::Size kMediaNotificationButtonRowSize =
     gfx::Size(124, kMediaButtonSize.height());
+constexpr gfx::Size kPipButtonSeparatorViewSize = gfx::Size(20, 24);
 
 void RecordMetadataHistogram(MediaNotificationViewImpl::Metadata metadata) {
   UMA_HISTOGRAM_ENUMERATION(MediaNotificationViewImpl::kMetadataHistogramName,
@@ -70,12 +71,14 @@ const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
       return &vector_icons::kMediaSeekForwardIcon;
     case MediaSessionAction::kNextTrack:
       return &vector_icons::kMediaNextTrackIcon;
+    case MediaSessionAction::kEnterPictureInPicture:
+      return &vector_icons::kMediaEnterPipIcon;
+    case MediaSessionAction::kExitPictureInPicture:
+      return &vector_icons::kMediaExitPipIcon;
     case MediaSessionAction::kStop:
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:
     case MediaSessionAction::kScrubTo:
-    case MediaSessionAction::kEnterPictureInPicture:
-    case MediaSessionAction::kExitPictureInPicture:
       NOTREACHED();
       break;
   }
@@ -209,6 +212,39 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
       l10n_util::GetStringUTF16(
           IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
 
+  auto pip_button_separator_view = std::make_unique<views::View>();
+  auto* pip_button_separator_view_layout =
+      pip_button_separator_view->SetLayoutManager(
+          std::make_unique<views::BoxLayout>(
+              views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
+  pip_button_separator_view_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  pip_button_separator_view_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  pip_button_separator_view->SetPreferredSize(kPipButtonSeparatorViewSize);
+
+  auto pip_button_separator_stroke = std::make_unique<views::View>();
+  pip_button_separator_stroke->SetPreferredSize(
+      gfx::Size(1, kPipButtonSeparatorViewSize.height()));
+
+  pip_button_separator_view->AddChildView(
+      std::move(pip_button_separator_stroke));
+  pip_button_separator_view_ =
+      button_row_->AddChildView(std::move(pip_button_separator_view));
+
+  auto picture_in_picture_button = views::CreateVectorToggleImageButton(this);
+  picture_in_picture_button->set_tag(
+      static_cast<int>(MediaSessionAction::kEnterPictureInPicture));
+  picture_in_picture_button->SetPreferredSize(kMediaButtonSize);
+  picture_in_picture_button->SetFocusBehavior(
+      views::View::FocusBehavior::ALWAYS);
+  picture_in_picture_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_ENTER_PIP));
+  picture_in_picture_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
+      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_EXIT_PIP));
+  picture_in_picture_button_ =
+      button_row_->AddChildView(std::move(picture_in_picture_button));
+
   SetBackground(std::make_unique<MediaNotificationBackground>(
       message_center::kNotificationCornerRadius,
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
@@ -304,6 +340,16 @@ void MediaNotificationViewImpl::UpdateWithMediaSessionInfo(
   MediaSessionAction action =
       playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
   play_pause_button_->set_tag(static_cast<int>(action));
+
+  bool in_picture_in_picture =
+      session_info &&
+      session_info->picture_in_picture_state ==
+          media_session::mojom::MediaPictureInPictureState::kInPictureInPicture;
+  picture_in_picture_button_->SetToggled(in_picture_in_picture);
+
+  action = in_picture_in_picture ? MediaSessionAction::kExitPictureInPicture
+                                 : MediaSessionAction::kEnterPictureInPicture;
+  picture_in_picture_button_->set_tag(static_cast<int>(action));
 
   UpdateActionButtonsVisibility();
 
@@ -402,13 +448,18 @@ base::string16 MediaNotificationViewImpl::GetSourceTitleForTesting() const {
 
 void MediaNotificationViewImpl::UpdateActionButtonsVisibility() {
   base::flat_set<MediaSessionAction> ignored_actions = {
-      GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
+      GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_)),
+      GetPictureInPictureIgnoredAction(
+          GetActionFromButtonTag(*picture_in_picture_button_))};
 
   base::flat_set<MediaSessionAction> visible_actions =
       GetTopVisibleActions(enabled_actions_, ignored_actions,
                            GetMaxNumActions(IsActuallyExpanded()));
 
   for (auto* view : button_row_->children()) {
+    if (view == pip_button_separator_view_)
+      continue;
+
     views::Button* action_button = views::Button::AsButton(view);
     bool should_show =
         base::Contains(visible_actions, GetActionFromButtonTag(*action_button));
@@ -418,6 +469,13 @@ void MediaNotificationViewImpl::UpdateActionButtonsVisibility() {
 
     if (should_invalidate)
       action_button->InvalidateLayout();
+
+    if (action_button == picture_in_picture_button_) {
+      pip_button_separator_view_->SetVisible(should_show);
+
+      if (should_invalidate)
+        pip_button_separator_view_->InvalidateLayout();
+    }
   }
 
   // We want to give the container a list of all possibly visible actions, and
@@ -496,7 +554,9 @@ bool MediaNotificationViewImpl::IsExpandable() const {
     return false;
 
   base::flat_set<MediaSessionAction> ignored_actions = {
-      GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
+      GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_)),
+      GetPictureInPictureIgnoredAction(
+          GetActionFromButtonTag(*picture_in_picture_button_))};
 
   // If we can show more notifications if we were expanded then we should be
   // expandable.
@@ -525,6 +585,9 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   artist_label_->SetBackgroundColor(background);
   header_row_->SetBackgroundColor(background);
 
+  pip_button_separator_view_->children().front()->SetBackground(
+      views::CreateSolidBackground(foreground));
+
   // Update play/pause button images.
   views::SetImageFromVectorIconWithColor(
       play_pause_button_,
@@ -535,10 +598,22 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
       *GetVectorIconForMediaAction(MediaSessionAction::kPause),
       kMediaButtonIconSize, foreground);
 
+  views::SetImageFromVectorIconWithColor(
+      picture_in_picture_button_,
+      *GetVectorIconForMediaAction(MediaSessionAction::kEnterPictureInPicture),
+      kMediaButtonIconSize, foreground);
+  views::SetToggledImageFromVectorIconWithColor(
+      picture_in_picture_button_,
+      *GetVectorIconForMediaAction(MediaSessionAction::kExitPictureInPicture),
+      kMediaButtonIconSize, foreground);
+
   // Update action buttons.
   for (views::View* child : button_row_->children()) {
     // Skip the play pause button since it is a special case.
     if (child == play_pause_button_)
+      continue;
+
+    if (child == picture_in_picture_button_)
       continue;
 
     // Skip if the view is not an image button.

@@ -42,6 +42,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"

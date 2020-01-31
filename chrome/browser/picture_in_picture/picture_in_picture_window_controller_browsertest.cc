@@ -1342,8 +1342,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when a new surface id is sent to the Picture-in-Picture window, it
 // doesn't move back to its default position.
+// crbug.com/1002489: disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       SurfaceIdChangeDoesNotMoveWindow) {
+                       DISABLED_SurfaceIdChangeDoesNotMoveWindow) {
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureWindowSizePage));
 

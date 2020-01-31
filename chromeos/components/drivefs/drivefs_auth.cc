@@ -52,8 +52,9 @@ void DriveFsAuth::GetAccessToken(
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
                 base::BindOnce(&DriveFsAuth::AuthTimeout,
                                weak_ptr_factory_.GetWeakPtr()));
-  GetIdentityAccessor()->GetPrimaryAccountWhenAvailable(base::BindOnce(
-      &DriveFsAuth::AccountReady, weak_ptr_factory_.GetWeakPtr()));
+  GetIdentityAccessor()->GetUnconsentedPrimaryAccountWhenAvailable(
+      base::BindOnce(&DriveFsAuth::AccountReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveFsAuth::AccountReady(const CoreAccountId& account_id,

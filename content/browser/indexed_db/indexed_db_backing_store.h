@@ -26,8 +26,8 @@
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/indexed_db.h"
-#include "content/browser/indexed_db/indexed_db_blob_info.h"
-#include "content/browser/indexed_db/indexed_db_blob_storage.h"
+#include "content/browser/indexed_db/indexed_db_external_object.h"
+#include "content/browser/indexed_db/indexed_db_external_object_storage.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -129,13 +129,13 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     virtual leveldb::Status Rollback();
 
     void Reset();
-    leveldb::Status PutBlobInfoIfNeeded(
+    leveldb::Status PutExternalObjectsIfNeeded(
         int64_t database_id,
         const std::string& object_store_data_key,
-        std::vector<IndexedDBBlobInfo>*);
-    void PutBlobInfo(int64_t database_id,
-                     const std::string& object_store_data_key,
-                     std::vector<IndexedDBBlobInfo>*);
+        std::vector<IndexedDBExternalObject>*);
+    void PutExternalObjects(int64_t database_id,
+                            const std::string& object_store_data_key,
+                            std::vector<IndexedDBExternalObject>*);
 
     TransactionalLevelDBTransaction* transaction() {
       return transaction_.get();
@@ -143,7 +143,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     virtual uint64_t GetTransactionSize();
 
-    leveldb::Status GetBlobInfoForRecord(
+    leveldb::Status GetExternalObjectsForRecord(
         int64_t database_id,
         const std::string& object_store_data_key,
         IndexedDBValue* value);
@@ -183,9 +183,10 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     base::WeakPtr<IndexedDBBackingStore> backing_store_;
     TransactionalLevelDBFactory* const transactional_leveldb_factory_;
     scoped_refptr<TransactionalLevelDBTransaction> transaction_;
-    std::map<std::string, std::unique_ptr<BlobChangeRecord>> blob_change_map_;
-    std::map<std::string, std::unique_ptr<BlobChangeRecord>>
-        incognito_blob_map_;
+    std::map<std::string, std::unique_ptr<IndexedDBExternalObjectChangeRecord>>
+        external_object_change_map_;
+    std::map<std::string, std::unique_ptr<IndexedDBExternalObjectChangeRecord>>
+        incognito_external_object_map_;
     int64_t database_id_;
 
     // List of blob files being newly written as part of this transaction.
@@ -594,7 +595,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::set<int> child_process_ids_granted_;
-  std::map<std::string, std::unique_ptr<BlobChangeRecord>> incognito_blob_map_;
+  std::map<std::string, std::unique_ptr<IndexedDBExternalObjectChangeRecord>>
+      incognito_external_object_map_;
 
   bool execute_journal_cleaning_on_no_txns_ = false;
   int num_aggregated_journal_cleaning_requests_ = 0;

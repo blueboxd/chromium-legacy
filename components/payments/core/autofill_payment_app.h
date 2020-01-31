@@ -45,6 +45,7 @@ class AutofillPaymentApp
   base::string16 GetMissingInfoLabel() const override;
   bool IsValidForCanMakePayment() const override;
   void RecordUse() override;
+  bool NeedsInstallation() const override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
   bool IsValidForModifier(

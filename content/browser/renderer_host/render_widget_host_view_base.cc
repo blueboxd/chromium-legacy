@@ -762,16 +762,26 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::SetRecordTabSwitchTimeRequest(
+void RenderWidgetHostViewBase::SetRecordContentToVisibleTimeRequest(
     base::TimeTicks start_time,
-    bool destination_is_loaded,
-    bool destination_is_frozen) {
-  last_record_tab_switch_time_request_.emplace(
-      start_time, destination_is_loaded, destination_is_frozen);
+    base::Optional<bool> destination_is_loaded,
+    base::Optional<bool> destination_is_frozen,
+    bool show_reason_tab_switching,
+    bool show_reason_unoccluded) {
+  if (last_record_tab_switch_time_request_.has_value()) {
+    last_record_tab_switch_time_request_.value().UpdateRequest(
+        RecordContentToVisibleTimeRequest(
+            start_time, destination_is_loaded, destination_is_frozen,
+            show_reason_tab_switching, show_reason_unoccluded));
+  } else {
+    last_record_tab_switch_time_request_.emplace(
+        start_time, destination_is_loaded, destination_is_frozen,
+        show_reason_tab_switching, show_reason_unoccluded);
+  }
 }
 
-base::Optional<RecordTabSwitchTimeRequest>
-RenderWidgetHostViewBase::TakeRecordTabSwitchTimeRequest() {
+base::Optional<RecordContentToVisibleTimeRequest>
+RenderWidgetHostViewBase::TakeRecordContentToVisibleTimeRequest() {
   auto stored_state = std::move(last_record_tab_switch_time_request_);
   last_record_tab_switch_time_request_.reset();
   return stored_state;

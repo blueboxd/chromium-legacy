@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
@@ -328,8 +329,7 @@ class CORE_EXPORT LocalFrameView final
   // PaintClean. Set |reason| to indicate the reason for this update,
   // for metrics purposes.
   // Returns whether the lifecycle was successfully updated to PaintClean.
-  bool UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason reason);
+  bool UpdateAllLifecyclePhases(DocumentUpdateReason reason);
 
   // Computes the style, layout, compositing and pre-paint lifecycle stages
   // if needed.
@@ -734,10 +734,10 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
-  // Returns whether the lifecycle was succesfully updated to the
+  // Returns whether the lifecycle was successfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
-                             DocumentLifecycle::LifecycleUpdateReason reason);
+                             DocumentUpdateReason reason);
   // The internal version that does the work after the proper context and checks
   // have passed in the above function call.
   void UpdateLifecyclePhasesInternal(

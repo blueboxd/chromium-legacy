@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_policy.h"
+#include "components/paint_preview/common/file_utils.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
@@ -53,6 +54,9 @@ class PaintPreviewBaseService : public KeyedService {
       base::OnceCallback<void(CaptureStatus,
                               std::unique_ptr<PaintPreviewProto>)>;
 
+  using OnReadProtoCallback =
+      base::OnceCallback<void(std::unique_ptr<PaintPreviewProto>)>;
+
   // Creates a service instance for a feature. Artifacts produced will live in
   // |profile_dir|/paint_preview/|ascii_feature_name|. Implementers of the
   // factory can also elect their factory to not construct services in the event
@@ -71,11 +75,20 @@ class PaintPreviewBaseService : public KeyedService {
   // Returns whether the created service is off the record.
   bool IsOffTheRecord() const { return is_off_the_record_; }
 
-  // Returns the PaintPreviewProto that is associated with |url|. Implementers
-  // of this class should override this function as it returns base::nullopt by
-  // default.
-  virtual base::Optional<PaintPreviewProto> GetCapturedPaintPreviewProto(
-      const GURL& url);
+  // Acquires the PaintPreviewProto that is associated with |url| and sends it
+  // to |onReadProtoCallback|. Default implementation immediately sends nullptr
+  // to |onReadProtoCallback|. Implementers of this class should override this
+  // function. GetCapturedPaintPreviewProtoFromFile can be used if the proto is
+  // saved on disk.
+  virtual void GetCapturedPaintPreviewProto(
+      const GURL& url,
+      OnReadProtoCallback onReadProtoCallback);
+
+  // Asynchronously deserializes PaintPreviewProto from |file_path| and sends it
+  // to |onReadProtoCallback|.
+  void GetCapturedPaintPreviewProtoFromFile(
+      const base::FilePath& file_path,
+      OnReadProtoCallback onReadProtoCallback);
 
   // The following methods both capture a Paint Preview; however, their behavior
   // and intended use is different. The first method is intended for capturing

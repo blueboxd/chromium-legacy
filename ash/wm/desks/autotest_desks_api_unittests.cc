@@ -13,24 +13,7 @@
 
 namespace ash {
 
-class AutotestDesksApiTest : public AshTestBase {
- public:
-  AutotestDesksApiTest() = default;
-  ~AutotestDesksApiTest() override = default;
-
-  AutotestDesksApiTest(const AutotestDesksApiTest& other) = delete;
-  AutotestDesksApiTest& operator=(const AutotestDesksApiTest& rhs) = delete;
-
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using AutotestDesksApiTest = AshTestBase;
 
 TEST_F(AutotestDesksApiTest, CreateNewDesk) {
   AutotestDesksApi test_api;

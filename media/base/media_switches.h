@@ -122,6 +122,7 @@ MEDIA_EXPORT extern const base::Feature kGlobalMediaControls;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsAutoDismiss;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsForCast;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsOverlayControls;
+MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsPictureInPicture;
 MEDIA_EXPORT extern const base::Feature kHardwareMediaKeyHandling;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
 MEDIA_EXPORT extern const base::Feature kInternalMediaSession;

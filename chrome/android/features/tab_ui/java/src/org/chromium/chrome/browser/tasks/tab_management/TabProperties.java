@@ -13,7 +13,7 @@ import android.view.View.AccessibilityDelegate;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;

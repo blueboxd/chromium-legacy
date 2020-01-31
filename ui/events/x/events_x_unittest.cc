@@ -22,6 +22,7 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/test/scoped_event_test_tick_clock.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"

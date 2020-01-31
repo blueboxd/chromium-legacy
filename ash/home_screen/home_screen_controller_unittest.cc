@@ -39,7 +39,7 @@ class HomeScreenControllerTest : public AshTestBase,
                                  public testing::WithParamInterface<bool> {
  public:
   HomeScreenControllerTest() {
-    if (GetParam()) {
+    if (IsWindowDragFromShelfEnabled()) {
       scoped_feature_list_.InitWithFeatures(
           {features::kDragFromShelfToHomeOrOverview}, {});
     } else {
@@ -60,6 +60,8 @@ class HomeScreenControllerTest : public AshTestBase,
     return AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400),
                                          aura::client::WINDOW_TYPE_POPUP);
   }
+
+  bool IsWindowDragFromShelfEnabled() const { return GetParam(); }
 
   HomeScreenController* home_screen_controller() {
     return Shell::Get()->home_screen_controller();
@@ -115,10 +117,27 @@ TEST_P(HomeScreenControllerTest, ShowLauncherHistograms) {
   auto window = CreateTestWindow();
   base::HistogramTester tester;
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);
+
+  // Note that going home animation minimizes the window, and the window layer
+  // is recreated after minimization animation is set up. Create waiter before
+  // the request to go home to ensure the waiter waits for the correct animator.
+  base::OnceClosure waiter =
+      ShellTestApi().CreateWaiterForFinishingWindowAnimation(window.get());
+
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_BROWSER_SEARCH, 0);
   GetEventGenerator()->ReleaseKey(ui::KeyboardCode::VKEY_BROWSER_SEARCH, 0);
 
-  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  std::move(waiter).Run();
+
+  // If window drag from shelf is disabled, the active window is minimized using
+  // different animation, and in that case the window might still be animating.
+  if (!IsWindowDragFromShelfEnabled()) {
+    ASSERT_TRUE(window->layer()->GetAnimator()->is_animating());
+    ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  } else {
+    ASSERT_FALSE(window->layer()->GetAnimator()->is_animating());
+  }
+
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 1);
 }
 
@@ -140,7 +159,7 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   tester.ExpectTotalCount(kHomescreenDragHistogram, 0);
   tester.ExpectTotalCount(kHomescreenDragMaxLatencyHistogram, 0);
 
-  const bool drag_enabled = !GetParam();
+  const bool drag_enabled = !IsWindowDragFromShelfEnabled();
 
   // Create a touch event and drag it twice and verify the histograms are
   // recorded as expected.

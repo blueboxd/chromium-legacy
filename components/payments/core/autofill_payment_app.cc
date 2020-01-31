@@ -122,6 +122,11 @@ void AutofillPaymentApp::RecordUse() {
       credit_card_);
 }
 
+bool AutofillPaymentApp::NeedsInstallation() const {
+  // Autofill payment app is built-in, so it doesn't need installation.
+  return false;
+}
+
 base::string16 AutofillPaymentApp::GetLabel() const {
   return credit_card_.NetworkAndLastFourDigits();
 }

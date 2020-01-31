@@ -6,8 +6,11 @@ package org.chromium.chrome.browser.init;
 
 import android.content.Intent;
 
+import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 
 import java.util.ArrayList;
@@ -20,7 +23,7 @@ import java.util.List;
  *    the library has been loaded.
  */
 class NativeInitializationController {
-    private static final String TAG = "NativeInitializationController";
+    private static final String TAG = "NIController";
 
     private final ChromeActivityNativeDelegate mActivityDelegate;
 
@@ -68,6 +71,11 @@ class NativeInitializationController {
      */
     public void startBackgroundTasks(final boolean allocateChildConnection) {
         ThreadUtils.assertOnUiThread();
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION)) {
+            Log.i(TAG, "Exit early and start Chrome without loading native library!");
+            return;
+        }
+
         assert mBackgroundTasksComplete == null;
         boolean fetchVariationsSeed = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
                 mActivityDelegate.getInitialIntent(), false);

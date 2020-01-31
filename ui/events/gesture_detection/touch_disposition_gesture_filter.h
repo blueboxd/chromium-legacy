@@ -9,10 +9,10 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/bitset_32.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_event_data_packet.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 

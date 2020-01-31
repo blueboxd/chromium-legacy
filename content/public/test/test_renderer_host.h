@@ -29,7 +29,7 @@ namespace aura {
 namespace test {
 class AuraTestHelper;
 }
-}
+}  // namespace aura
 
 namespace display {
 class Screen;
@@ -106,6 +106,9 @@ class RenderFrameHostTester {
   virtual void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& allowlist) = 0;
+
+  // Simulates the frame receiving a user activation.
+  virtual void SimulateUserActivation() = 0;
 
   // Gets all the console messages requested via
   // RenderFrameHost::AddMessageToConsole in this frame.

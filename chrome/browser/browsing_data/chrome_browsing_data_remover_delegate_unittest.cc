@@ -47,7 +47,7 @@
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -87,6 +87,8 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
@@ -572,7 +574,8 @@ class RemovePasswordsTester {
 class RemovePermissionPromptCountsTest {
  public:
   explicit RemovePermissionPromptCountsTest(TestingProfile* profile)
-      : autoblocker_(PermissionDecisionAutoBlocker::GetForProfile(profile)) {}
+      : autoblocker_(
+            PermissionDecisionAutoBlockerFactory::GetForProfile(profile)) {}
 
   int GetDismissCount(const GURL& url, ContentSettingsType permission) {
     return autoblocker_->GetDismissCount(url, permission);
@@ -599,7 +602,7 @@ class RemovePermissionPromptCountsTest {
   }
 
  private:
-  PermissionDecisionAutoBlocker* autoblocker_;
+  permissions::PermissionDecisionAutoBlocker* autoblocker_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePermissionPromptCountsTest);
 };
@@ -2477,7 +2480,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
   filter_builder_2->AddRegisterableDomain(kTestRegisterableDomain1);
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kBlockPromptsIfDismissedOften}, {});
+  feature_list.InitWithFeatures(
+      {permissions::features::kBlockPromptsIfDismissedOften}, {});
 
   {
     // Test REMOVE_HISTORY.

@@ -857,8 +857,7 @@ TEST_F(LayoutObjectTest, UpdateVisualRectAfterAncestorLayout) {
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
     return registry.HasEventHandlers(
         EventHandlerRegistry::EventHandlerClass::kTouchAction);
   }
@@ -931,8 +930,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
     <div id='target'>target</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   Element* iframe_element = GetDocument().QuerySelector("iframe");
   auto* frame_owner_element = To<HTMLFrameOwnerElement>(iframe_element);
   Document* iframe_doc = frame_owner_element->contentDocument();
@@ -942,8 +940,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
 
   Element* occluder = GetDocument().getElementById("occluder");
   occluder->SetInlineStyleProperty(CSSPropertyID::kMarginTop, "-150px");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();
   EXPECT_EQ(result.InnerNode(), occluder);
 }
@@ -966,8 +963,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
     <div>To keep the image alive when target is set display: none</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   auto* target = GetDocument().getElementById("target");
   auto* target_object = target->GetLayoutObject();
@@ -999,8 +995,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
   EXPECT_FALSE(second_line->SlowFirstChild()->ShouldDoFullPaintInvalidation());
 
   target->setAttribute(html_names::kStyleAttr, "display: none");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   target_object = target->GetLayoutObject();
   EXPECT_EQ(nullptr, target_object);
   // The image is still alive because the other div's first line style still

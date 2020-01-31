@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/common/context_menu_params.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -418,7 +419,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverDestroyed);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
+                           NoKeyboardObserverForMouseInput);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverForOnlyTouchInput);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
+                           KeyboardObserverForFocusedNodeChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DropFallbackWhenHidden);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -549,6 +554,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void CancelActiveTouches();
 
+  // Common part of Occluded() and Hide().
+  void HideImpl();
+
   // NOTE: this is null if |is_mus_browser_plugin_guest_| is true.
   aura::Window* window_;
 
@@ -670,6 +678,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // See OnDisplayMetricsChanged() for details.
   bool needs_to_update_display_metrics_ = false;
+
+  Visibility visibility_ = Visibility::HIDDEN;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};
 

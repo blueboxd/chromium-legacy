@@ -20,6 +20,7 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
     Usage(Usage&&);
     Usage& operator=(Usage&&);
 
+    std::vector<base::FilePath> readable_files;
     std::vector<base::FilePath> readable_directories;
     std::vector<base::FilePath> writable_files;
     std::vector<base::FilePath> writable_directories;

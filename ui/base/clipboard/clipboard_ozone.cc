@@ -208,7 +208,7 @@ class ClipboardOzone::AsyncClipboardOzone {
 
     // TODO(https://crbug.com/913422): the implementation is known to be
     // dangerous, and may cause blocks in ui thread. But base::Clipboard was
-    // designed to have synchrous APIs rather than asynchronous ones that at
+    // designed to have synchronous APIs rather than asynchronous ones that at
     // least two system clipboards on X11 and Wayland provide.
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     request->finish_closure = run_loop.QuitClosure();

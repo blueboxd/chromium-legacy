@@ -43,6 +43,8 @@ aggregate_vector_icons("components_vector_icons") {
     "media_router_warning.icon",
     "media_seek_backward.icon",
     "media_seek_forward.icon",
+    "media_enter_pip.icon",
+    "media_exit_pip.icon",
     "mic.icon",
     "midi.icon",
     "notifications.icon",

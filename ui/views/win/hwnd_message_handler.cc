@@ -48,6 +48,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"

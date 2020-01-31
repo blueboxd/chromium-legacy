@@ -65,7 +65,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -78,6 +77,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.util.List;

@@ -36,14 +36,20 @@ class WebAppLaunchManager : public apps::LaunchManager {
   content::WebContents* OpenApplication(
       const apps::AppLaunchParams& params) override;
 
-  bool OpenApplicationWindow(const std::string& app_id,
-                             const base::CommandLine& command_line,
-                             const base::FilePath& current_directory) override;
-
-  bool OpenApplicationTab(const std::string& app_id) override;
+  void LaunchApplication(
+      const std::string& app_id,
+      const base::CommandLine& command_line,
+      const base::FilePath& current_directory,
+      base::OnceCallback<void(Browser* browser,
+                              apps::mojom::LaunchContainer container)> callback)
+      override;
 
  private:
-  void OpenWebApplication(const apps::AppLaunchParams& params);
+  void LaunchWebApplication(
+      apps::AppLaunchParams params,
+      base::OnceCallback<void(Browser* browser,
+                              apps::mojom::LaunchContainer container)>
+          callback);
 
   WebAppProvider* const provider_;
 

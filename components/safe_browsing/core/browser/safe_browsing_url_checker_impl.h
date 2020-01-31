@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "content/public/common/resource_type.h"

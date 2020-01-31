@@ -65,6 +65,8 @@ class MockAssistant : public mojom::Assistant {
   MOCK_METHOD1(SendAssistantFeedback,
                void(chromeos::assistant::mojom::AssistantFeedbackPtr));
 
+  MOCK_METHOD1(NotifyEntryIntoAssistantUi, void(mojom::AssistantEntryPoint));
+
   MOCK_METHOD0(StopAlarmTimerRinging, void());
   MOCK_METHOD1(CreateTimer, void(base::TimeDelta));
 

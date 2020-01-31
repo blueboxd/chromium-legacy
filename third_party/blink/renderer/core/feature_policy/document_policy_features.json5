@@ -1,0 +1,48 @@
+{
+  // All document policy (https://w3c.github.io/webappsec-feature-policy/document-policy.html)
+  // features are defined here.
+  // All Features have to be defined in FeaturePolicyFeature enum as well
+  // (defined in third_party/blink/public/mojom/feature_policy/feature_policy.mojom).
+  // The enum value has to have the same name as the feature name here.
+
+  parameters: {
+    // document_policy_name: "FEATURE_NAME" is used to specify the policy name
+    // which gets parsed from the header or the allow attribute.
+    document_policy_name: {},
+    value_name: {},
+    // valid c++ type strings, e.g. bool, double, float.
+    value_type: {},
+    // valid c++ expression strings, e.g. true/false, 1.0, -1.
+    default_value: {},
+    // "depends_on" specifies relationship to runtime features defined
+    // in "runtime_enabled_features.json5":
+    // depends_on: ["feature1", "feature2", ...]
+    // * If the depends_on features are *only* runtime features, the feature is
+    //   available if any of the runtime features are enabled.
+    // * If the depends_on list includes origin trial features, the feature is
+    //   available if any of the origin trial features are enabled.
+    depends_on: {
+      default: [],
+      valid_type: "list",
+    },
+  },
+
+  data: [
+    {
+      name: "FontDisplay",
+      document_policy_name: "font-display-late-swap",
+      value_name: "",
+      value_type: "bool",
+      default_value: "true",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "UnoptimizedLosslessImages",
+      document_policy_name: "unoptimized-lossless-images",
+      value_name: "bpp",
+      value_type: "double",
+      default_value: "PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble)",
+      depends_on: ["UnoptimizedImagePolicies"],
+    },
+  ],
+}

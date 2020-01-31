@@ -11,6 +11,7 @@
 
 namespace features {
 
+VIZ_COMMON_EXPORT extern const base::Feature kDynamicColorGamut;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaForGLReadback;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaRenderer;
 VIZ_COMMON_EXPORT extern const base::Feature kRecordSkPicture;
@@ -20,6 +21,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kVizFrameSubmissionForWebView;
 VIZ_COMMON_EXPORT extern const base::Feature kUsePreferredIntervalForVideo;
 VIZ_COMMON_EXPORT extern const base::Feature kUseRealBuffersForPageFlipTest;
 
+VIZ_COMMON_EXPORT bool IsDynamicColorGamutEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingDebugEnabled();
 VIZ_COMMON_EXPORT bool IsUsingSkiaForGLReadback();
 VIZ_COMMON_EXPORT bool IsUsingSkiaRenderer();

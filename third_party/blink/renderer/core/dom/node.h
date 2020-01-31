@@ -278,13 +278,13 @@ class CORE_EXPORT Node : public EventTarget {
     return GetDOMNodeType() == DOMNodeType::kDocumentFragment;
   }
 
-  bool IsHTMLElement() const {
+  ALWAYS_INLINE bool IsHTMLElement() const {
     return GetElementNamespaceType() == ElementNamespaceType::kHTML;
   }
-  bool IsMathMLElement() const {
+  ALWAYS_INLINE bool IsMathMLElement() const {
     return GetElementNamespaceType() == ElementNamespaceType::kMathML;
   }
-  bool IsSVGElement() const {
+  ALWAYS_INLINE bool IsSVGElement() const {
     return GetElementNamespaceType() == ElementNamespaceType::kSVG;
   }
 
@@ -989,35 +989,42 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   enum class ElementNamespaceType : uint32_t {
-    kOther = 0,
-    kHTML = 1 << kElementNamespaceTypeShift,
-    kMathML = 2 << kElementNamespaceTypeShift,
-    kSVG = 3 << kElementNamespaceTypeShift,
+    kHTML = 0,
+    kMathML = 1 << kElementNamespaceTypeShift,
+    kSVG = 2 << kElementNamespaceTypeShift,
+    kOther = 3 << kElementNamespaceTypeShift,
   };
-  ElementNamespaceType GetElementNamespaceType() const {
+  ALWAYS_INLINE ElementNamespaceType GetElementNamespaceType() const {
     return static_cast<ElementNamespaceType>(node_flags_ &
                                              kElementNamespaceTypeMask);
   }
 
  protected:
   enum ConstructionType {
-    kCreateOther =
-        kDefaultNodeFlags | static_cast<NodeFlags>(DOMNodeType::kOther),
-    kCreateText =
-        kDefaultNodeFlags | static_cast<NodeFlags>(DOMNodeType::kText),
-    kCreateContainer = kDefaultNodeFlags | kIsContainerFlag,
+    kCreateOther = kDefaultNodeFlags |
+                   static_cast<NodeFlags>(DOMNodeType::kOther) |
+                   static_cast<NodeFlags>(ElementNamespaceType::kOther),
+    kCreateText = kDefaultNodeFlags |
+                  static_cast<NodeFlags>(DOMNodeType::kText) |
+                  static_cast<NodeFlags>(ElementNamespaceType::kOther),
+    kCreateContainer = kDefaultNodeFlags | kIsContainerFlag |
+                       static_cast<NodeFlags>(ElementNamespaceType::kOther),
     kCreateElement =
         kCreateContainer | static_cast<NodeFlags>(DOMNodeType::kElement),
     kCreateDocumentFragment =
         kCreateContainer |
         static_cast<NodeFlags>(DOMNodeType::kDocumentFragment),
     kCreateShadowRoot = kCreateDocumentFragment | kIsInShadowTreeFlag,
-    kCreateHTMLElement =
-        kCreateElement | static_cast<NodeFlags>(ElementNamespaceType::kHTML),
+    kCreateHTMLElement = kDefaultNodeFlags | kIsContainerFlag |
+                         static_cast<NodeFlags>(DOMNodeType::kElement) |
+                         static_cast<NodeFlags>(ElementNamespaceType::kHTML),
     kCreateMathMLElement =
-        kCreateElement | static_cast<NodeFlags>(ElementNamespaceType::kMathML),
-    kCreateSVGElement =
-        kCreateElement | static_cast<NodeFlags>(ElementNamespaceType::kSVG),
+        kDefaultNodeFlags | kIsContainerFlag |
+        static_cast<NodeFlags>(DOMNodeType::kElement) |
+        static_cast<NodeFlags>(ElementNamespaceType::kMathML),
+    kCreateSVGElement = kDefaultNodeFlags | kIsContainerFlag |
+                        static_cast<NodeFlags>(DOMNodeType::kElement) |
+                        static_cast<NodeFlags>(ElementNamespaceType::kSVG),
     kCreateDocument = kCreateContainer | kIsConnectedFlag,
     kCreateV0InsertionPoint = kCreateHTMLElement | kIsV0InsertionPointFlag,
     kCreateEditingText = kCreateText | kHasNameOrIsEditingTextFlag,

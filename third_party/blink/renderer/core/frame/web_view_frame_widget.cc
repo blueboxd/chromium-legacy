@@ -99,7 +99,7 @@ WebViewFrameWidget::GetBeginMainFrameMetrics() {
 }
 
 void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update,
-                                         LifecycleUpdateReason reason) {
+                                         DocumentUpdateReason reason) {
   web_view_->UpdateLifecycle(requested_update, reason);
 }
 

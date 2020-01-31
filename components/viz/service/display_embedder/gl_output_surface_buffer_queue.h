@@ -73,9 +73,17 @@ class VIZ_SERVICE_EXPORT GLOutputSurfaceBufferQueue
   // generate a new texture every time a shared image is re-used.
   base::flat_map<gpu::Mailbox, unsigned> buffer_queue_textures_;
 
-  // The texture currently attached to |fbo_|. It's one of
-  // |buffer_queue_textures_|.
+  // |current_texture_| is the texture currently being drawn to. It's one of
+  // |buffer_queue_textures_| or 0 if the client is not currently drawing (i.e.,
+  // we're not currently in between a BindFramebuffer()/SwapBuffers() pair).
+  // |last_bound_texture_| is the texture that was last bound to |fbo_|. It's
+  // also one of |buffer_queue_textures_| or 0 if no texture has been bound to
+  // |fbo_| or all the buffers in the buffer queue have been freed.
+  //
+  // TODO(andrescj): use an RAII pattern to scope access to |current_texture_|
+  // because it requires Begin/EndSharedImageAccessDirectCHROMIUM().
   unsigned current_texture_ = 0u;
+  unsigned last_bound_texture_ = 0u;
   const unsigned texture_target_;
 
   unsigned fbo_ = 0u;

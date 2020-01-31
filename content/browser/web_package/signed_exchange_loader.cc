@@ -126,7 +126,7 @@ void SignedExchangeLoader::OnUploadProgress(
 }
 
 void SignedExchangeLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
-  // Curerntly CachedMetadata for Signed Exchange is not supported.
+  // CachedMetadata for Signed Exchange is not supported.
   NOTREACHED();
 }
 

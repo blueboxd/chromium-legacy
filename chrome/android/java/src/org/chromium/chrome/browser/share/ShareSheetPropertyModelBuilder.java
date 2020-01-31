@@ -28,17 +28,19 @@ import java.util.List;
  */
 class ShareSheetPropertyModelBuilder {
     private final BottomSheetController mBottomSheetController;
+    private final PackageManager mPackageManager;
 
-    ShareSheetPropertyModelBuilder(BottomSheetController bottomSheetController) {
+    ShareSheetPropertyModelBuilder(
+            BottomSheetController bottomSheetController, PackageManager packageManager) {
         mBottomSheetController = bottomSheetController;
+        mPackageManager = packageManager;
     }
 
     protected ArrayList<PropertyModel> selectThirdPartyApps(
             Activity activity, ShareSheetBottomSheetContent bottomSheet, ShareParams params) {
         Intent intent = ShareHelper.getShareLinkAppCompatibilityIntent();
         final ShareHelper.TargetChosenCallback callback = params.getCallback();
-        PackageManager manager = activity.getPackageManager();
-        List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
+        List<ResolveInfo> resolveInfoList = mPackageManager.queryIntentActivities(intent, 0);
         List<ResolveInfo> thirdPartyActivities = new ArrayList<>();
         for (ResolveInfo res : resolveInfoList) {
             if (!res.activityInfo.packageName.equals(activity.getPackageName())) {
@@ -50,8 +52,8 @@ class ShareSheetPropertyModelBuilder {
         for (int i = 0; i < 7 && i < thirdPartyActivities.size(); ++i) {
             ResolveInfo info = thirdPartyActivities.get(i);
             PropertyModel propertyModel =
-                    createPropertyModel(ShareHelper.loadIconForResolveInfo(info, manager),
-                            (String) info.loadLabel(manager), (shareParams) -> {
+                    createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
+                            (String) info.loadLabel(mPackageManager), (shareParams) -> {
                                 ActivityInfo ai = info.activityInfo;
 
                                 ComponentName component =

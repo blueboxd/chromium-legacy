@@ -50,6 +50,8 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs);
 std::ostream& operator<<(std::ostream& output, RequestAction::Type type);
 std::ostream& operator<<(std::ostream& output, const RequestAction& action);
 std::ostream& operator<<(std::ostream& output, const ParseResult& result);
+std::ostream& operator<<(std::ostream& output,
+                         const base::Optional<RequestAction>& action);
 
 // Returns true if the given extension has a valid indexed ruleset. Should be
 // called on a sequence where file IO is allowed.

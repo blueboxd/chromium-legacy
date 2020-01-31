@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsBasic) {
 }
 
 // Tests chrome.tabs events.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, DISABLED_TabsEvents) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsEvents) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/tabs_events"))
       << message_;

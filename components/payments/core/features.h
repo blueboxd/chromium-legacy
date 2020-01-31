@@ -63,6 +63,10 @@ extern const base::Feature kPaymentRequestSkipToGPayIfNoCard;
 // Controls whether the minimal payment request ui features are enabled.
 extern const base::Feature kWebPaymentsMinimalUI;
 
+// If enabled, just-in-time installable payment handlers are ranked lower than
+// complete autofill instruments in payment sheet's method selection section.
+extern const base::Feature kDownRankJustInTimePaymentApp;
+
 }  // namespace features
 }  // namespace payments
 

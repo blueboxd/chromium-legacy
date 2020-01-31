@@ -1716,12 +1716,14 @@ TabStripSelectionChange TabStripModel::SetSelection(
             tab_switch_event_latency_recorder_.input_event_timestamp();
         // input_event_timestamp may be null in some cases, e.g. in tests.
         selection.new_contents->GetRenderWidgetHostView()
-            ->SetRecordTabSwitchTimeRequest(
+            ->SetRecordContentToVisibleTimeRequest(
                 !input_event_timestamp.is_null() ? input_event_timestamp : now,
                 resource_coordinator::ResourceCoordinatorTabHelper::IsLoaded(
                     selection.new_contents),
                 resource_coordinator::ResourceCoordinatorTabHelper::IsFrozen(
-                    selection.new_contents));
+                    selection.new_contents),
+                /*show_reason_tab_switching=*/true,
+                /*show_reason_unoccluded=*/false);
       }
       tab_switch_event_latency_recorder_.OnWillChangeActiveTab(now);
     }

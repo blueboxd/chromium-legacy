@@ -7,7 +7,7 @@
 enum CookieSameSite {
   "strict",
   "lax",
-  "unrestricted"
+  "none"
 };
 
 dictionary CookieStoreSetOptions {

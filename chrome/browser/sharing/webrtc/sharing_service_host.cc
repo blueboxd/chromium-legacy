@@ -6,6 +6,8 @@
 
 #include "base/callback.h"
 #include "base/guid.h"
+#include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "chrome/browser/sharing/webrtc/sharing_webrtc_connection_host.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
@@ -22,10 +24,66 @@
 
 namespace {
 
-// static
+bool HasVapidInfo(
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
+  return !fcm_configuration.vapid_fcm_token().empty() &&
+         !fcm_configuration.vapid_p256dh().empty() &&
+         !fcm_configuration.vapid_auth_secret().empty();
+}
+
+bool HasSenderIdInfo(
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
+  return !fcm_configuration.sender_id_fcm_token().empty() &&
+         !fcm_configuration.sender_id_p256dh().empty() &&
+         !fcm_configuration.sender_id_auth_secret().empty();
+}
+
+syncer::DeviceInfo::SharingTargetInfo GetVapidTargetInfo(
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
+  if (!HasVapidInfo(fcm_configuration))
+    return {};
+
+  return {fcm_configuration.vapid_fcm_token(), fcm_configuration.vapid_p256dh(),
+          fcm_configuration.vapid_auth_secret()};
+}
+
+syncer::DeviceInfo::SharingTargetInfo GetSenderIdTargetInfo(
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
+  if (!HasSenderIdInfo(fcm_configuration))
+    return {};
+
+  return {fcm_configuration.sender_id_fcm_token(),
+          fcm_configuration.sender_id_p256dh(),
+          fcm_configuration.sender_id_auth_secret()};
+}
+
+SharingWebRtcConnectionHost::EncryptionInfo GetEncryptionInfo(
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
+    SharingSyncPreference* sync_prefs) {
+  // Prefer sender id info if available.
+  if (HasSenderIdInfo(fcm_configuration)) {
+    return {kSharingSenderID, fcm_configuration.sender_id_p256dh(),
+            fcm_configuration.sender_id_auth_secret()};
+  }
+
+  base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
+      sync_prefs->GetFCMRegistration();
+  if (!fcm_registration || !fcm_registration->authorized_entity) {
+    LOG(ERROR) << "Unable to retrieve FCM registration";
+    // TODO(knollr): add UMA logging for this
+    return {};
+  }
+
+  return {*fcm_registration->authorized_entity,
+          fcm_configuration.vapid_p256dh(),
+          fcm_configuration.vapid_auth_secret()};
+}
+
+// TODO(crbug.com/1047246): Remove this after SharingMessageSender supports
+// messages via FCMChannelConfiguration directly.
 std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
     const std::string& device_guid,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
   return std::make_unique<syncer::DeviceInfo>(
       device_guid, /*client_name=*/std::string(),
       /*chrome_version=*/std::string(), /*sync_user_agent=*/std::string(),
@@ -34,7 +92,8 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
       /*hardware_info=*/base::SysInfo::HardwareInfo(),
       /*last_updated_timestamp=*/base::Time(),
       /*send_tab_to_self_receiving_enabled=*/true,
-      syncer::DeviceInfo::SharingInfo(target_info, /*sender_id_target_info=*/{},
+      syncer::DeviceInfo::SharingInfo(GetVapidTargetInfo(fcm_configuration),
+                                      GetSenderIdTargetInfo(fcm_configuration),
                                       /*enabled_features=*/{}));
 }
 
@@ -44,7 +103,6 @@ struct MojoPipe {
   mojo::PendingReceiver<T> receiver{remote.InitWithNewPipeAndPassReceiver()};
 };
 
-// static
 // This is called from the sandboxed process after sending a message.
 void OnMessageSent(
     SharingMessageSender::SendMessageDelegate::SendMessageCallback callback,
@@ -77,8 +135,12 @@ struct SharingWebRtcMojoPipes {
 
 SharingServiceHost::SharingServiceHost(
     SharingMessageSender* message_sender,
+    gcm::GCMDriver* gcm_driver,
+    SharingSyncPreference* sync_prefs,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : message_sender_(message_sender),
+      gcm_driver_(gcm_driver),
+      sync_prefs_(sync_prefs),
       ice_config_fetcher_(url_loader_factory) {}
 
 SharingServiceHost::~SharingServiceHost() = default;
@@ -102,14 +164,16 @@ void SharingServiceHost::DoSendMessageToDevice(
     return;
   }
 
-  // Remote device must have a valid sharing_info.
-  if (!device.sharing_info()) {
+  auto fcm_configuration = sync_prefs_->GetFCMChannel(device);
+  // Remote device must have a valid fcm config.
+  if (!fcm_configuration || (!HasVapidInfo(*fcm_configuration) &&
+                             !HasSenderIdInfo(*fcm_configuration))) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
                             std::string());
     return;
   }
 
-  GetConnection(device.guid(), device.sharing_info()->vapid_target_info)
+  GetConnection(device.guid(), *fcm_configuration)
       ->SendMessage(std::move(webrtc_message),
                     base::BindOnce(&OnMessageSent, std::move(callback),
                                    std::move(message_guid)));
@@ -125,18 +189,18 @@ void SharingServiceHost::OnPeerConnectionClosed(
 // |callback| will be called from the sandboxed process with the remote answer.
 void SharingServiceHost::OnOfferReceived(
     const std::string& device_guid,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info,
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
     const std::string& offer,
     base::OnceCallback<void(const std::string&)> callback) {
-  GetConnection(device_guid, target_info)
+  GetConnection(device_guid, fcm_configuration)
       ->OnOfferReceived(offer, std::move(callback));
 }
 
 void SharingServiceHost::OnIceCandidatesReceived(
     const std::string& device_guid,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info,
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
     std::vector<sharing::mojom::IceCandidatePtr> ice_candidates) {
-  GetConnection(device_guid, target_info)
+  GetConnection(device_guid, fcm_configuration)
       ->OnIceCandidatesReceived(std::move(ice_candidates));
 }
 
@@ -147,7 +211,7 @@ void SharingServiceHost::SetSharingHandlerRegistry(
 
 SharingWebRtcConnectionHost* SharingServiceHost::GetConnection(
     const std::string& device_guid,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
   auto connection_iter = connections_.find(device_guid);
   if (connection_iter != connections_.end())
     return connection_iter->second.get();
@@ -157,16 +221,16 @@ SharingWebRtcConnectionHost* SharingServiceHost::GetConnection(
   auto signalling_host = std::make_unique<WebRtcSignallingHostFCM>(
       std::move(pipes->signalling_sender.receiver),
       std::move(pipes->signalling_receiver.remote), message_sender_,
-      CreateDeviceInfo(device_guid, target_info));
+      CreateDeviceInfo(device_guid, fcm_configuration));
 
   // base::Unretained is safe as the connection is owned by |this|.
   auto result = connections_.emplace(
       device_guid,
       std::make_unique<SharingWebRtcConnectionHost>(
-          std::move(signalling_host), handler_registry_,
-          CreateDeviceInfo(device_guid, target_info),
+          std::move(signalling_host), handler_registry_, gcm_driver_,
+          GetEncryptionInfo(fcm_configuration, sync_prefs_),
           base::BindOnce(&SharingServiceHost::OnPeerConnectionClosed,
-                         base::Unretained(this)),
+                         base::Unretained(this), device_guid),
           std::move(pipes->delegate.receiver),
           std::move(pipes->connection.remote),
           std::move(pipes->socket_manager_client.receiver),

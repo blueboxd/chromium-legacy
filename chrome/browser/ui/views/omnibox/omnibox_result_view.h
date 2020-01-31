@@ -37,6 +37,7 @@ class Image;
 namespace views {
 class Button;
 class FocusRing;
+class MdTextButton;
 }  // namespace views
 
 class OmniboxResultView : public views::View,
@@ -159,6 +160,13 @@ class OmniboxResultView : public views::View,
   OmniboxMatchCellView* suggestion_view_;  // The leading (or left) view.
   OmniboxMatchCellView* keyword_view_;     // The trailing (or right) view.
   OmniboxTabSwitchButton* suggestion_tab_switch_button_;
+
+  // The row of buttons, only assigned and used if OmniboxSuggestionButtonRow
+  // feature is enabled.
+  views::View* button_row_ = nullptr;
+  views::MdTextButton* keyword_button_ = nullptr;
+  views::MdTextButton* pedal_button_ = nullptr;
+  views::MdTextButton* tab_switch_button_ = nullptr;
 
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;

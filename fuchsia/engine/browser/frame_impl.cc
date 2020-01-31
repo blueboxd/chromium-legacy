@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
+#include "third_party/blink/public/common/messaging/web_message_port.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -673,7 +674,7 @@ void FrameImpl::PostMessage(std::string origin,
   }
 
   // Include outgoing MessagePorts in the message.
-  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+  std::vector<blink::WebMessagePort> message_ports;
   if (message.has_outgoing_transfer()) {
     // Verify that all the Transferables are valid before we start allocating
     // resources to them.
@@ -688,14 +689,14 @@ void FrameImpl::PostMessage(std::string origin,
 
     for (fuchsia::web::OutgoingTransferable& outgoing :
          *message.mutable_outgoing_transfer()) {
-      mojo::ScopedMessagePipeHandle port =
-          cr_fuchsia::MessagePortFromFidl(std::move(outgoing.message_port()));
-      if (!port) {
+      blink::WebMessagePort blink_port = cr_fuchsia::BlinkMessagePortFromFidl(
+          std::move(outgoing.message_port()));
+      if (!blink_port.IsValid()) {
         result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
         callback(std::move(result));
         return;
       }
-      message_ports.push_back(std::move(port));
+      message_ports.push_back(std::move(blink_port));
     }
   }
 

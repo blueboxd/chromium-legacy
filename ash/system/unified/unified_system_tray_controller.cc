@@ -350,6 +350,9 @@ void UnifiedSystemTrayController::EnsureExpanded() {
     unified_view_->ResetDetailedView();
   }
   animation_->Show();
+
+  if (IsMessageCenterCollapseRequired())
+    bubble_->CollapseMessageCenter();
 }
 
 void UnifiedSystemTrayController::AnimationEnded(

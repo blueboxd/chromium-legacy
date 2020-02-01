@@ -18,8 +18,8 @@ import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

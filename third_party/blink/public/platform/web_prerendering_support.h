@@ -55,11 +55,6 @@ class WebPrerenderingSupport {
   // it after, for instance, a short redirect chain.
   virtual void Abandon(const WebPrerender&) = 0;
 
-  // Called when the current page has finished requesting early discoverable
-  // resources for prefetch. In prefetch mode link elements do not initiate any
-  // prerenders.
-  virtual void PrefetchFinished() = 0;
-
  protected:
   WebPrerenderingSupport() = default;
   virtual ~WebPrerenderingSupport() = default;

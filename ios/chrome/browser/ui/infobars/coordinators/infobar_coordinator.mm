@@ -41,8 +41,6 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly) infobars::InfoBarDelegate* infobarDelegate;
-// NavigationController that contains the modalViewController.
-@property(nonatomic, weak) UINavigationController* modalNavigationController;
 // The transition delegate used by the Coordinator to present the InfobarBanner.
 // nil if no Banner is being presented.
 @property(nonatomic, strong)
@@ -387,6 +385,11 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 - (void)presentInfobarModalFrom:(UIViewController*)presentingViewController
                          driver:(InfobarModalTransitionDriver*)driver
                      completion:(ProceduralBlock)completion {
+  // |self.modalViewController| only exists while one its being presented, if
+  // this is the case early return since there's one already being presented.
+  if (self.modalViewController)
+    return;
+
   BOOL infobarWasConfigured = [self configureModalViewController];
   if (!infobarWasConfigured) {
     if (driver.transitionMode == InfobarModalTransitionBanner) {
@@ -400,7 +403,6 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
       initWithRootViewController:self.modalViewController];
   navController.transitioningDelegate = driver;
   navController.modalPresentationStyle = UIModalPresentationCustom;
-  self.modalNavigationController = navController;
   [presentingViewController presentViewController:navController
                                          animated:YES
                                        completion:completion];
@@ -481,7 +483,8 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
                                                          completion:completion];
                            }];
 
-  } else if (presentedViewController == self.modalNavigationController) {
+  } else if (presentedViewController ==
+             self.modalViewController.navigationController) {
     [self.baseViewController dismissViewControllerAnimated:animated
                                                 completion:^{
                                                   if (completion)

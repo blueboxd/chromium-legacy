@@ -13,8 +13,7 @@ namespace {
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_HostOnlyRule) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          "", "www.google.com", -1);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("wWw.gOogle.com");
 
   EXPECT_EQ("www.google.com", rule->ToString());
 
@@ -42,8 +41,7 @@ TEST(SchemeHostPortMatcherRuleTest,
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_BasicDomain) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          "", "*.google.com", -1);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString(".gOOgle.com");
 
   EXPECT_EQ("*.google.com", rule->ToString());
 
@@ -69,8 +67,7 @@ TEST(SchemeHostPortMatcherRuleTest,
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_BasicDomainWithPort) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          "", "*.google.com", 80);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("*.GOOGLE.com:80");
 
   EXPECT_EQ("*.google.com:80", rule->ToString());
 
@@ -102,7 +99,7 @@ TEST(SchemeHostPortMatcherRuleTest,
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_MatchAll) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>("", "*", -1);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("*");
 
   EXPECT_EQ("*", rule->ToString());
 
@@ -117,8 +114,8 @@ TEST(SchemeHostPortMatcherRuleTest,
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_HttpScheme) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          "http", "www.google.com", -1);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString(
+          "http://www.google.com");
 
   EXPECT_EQ("http://www.google.com", rule->ToString());
 
@@ -142,8 +139,8 @@ TEST(SchemeHostPortMatcherRuleTest,
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_HttpOnlyWithWildcard) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          "http", "*www.google.com", -1);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString(
+          "http://*www.GOOGLE.com");
 
   EXPECT_EQ("http://*www.google.com", rule->ToString());
 
@@ -165,8 +162,7 @@ TEST(SchemeHostPortMatcherRuleTest,
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherHostnamePatternRule_PunnyCodeHostname) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          "", "*.xn--flw351e.cn", -1);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("*.xn--flw351e.cn");
 
   EXPECT_EQ("*.xn--flw351e.cn", rule->ToString());
   // Google Chinese site.
@@ -230,11 +226,8 @@ TEST(SchemeHostPortMatcherRuleTest, SuffixMatchingTest) {
 }
 
 TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPHostRule_IPv4) {
-  IPAddress ip_address;
-  ignore_result(ip_address.AssignFromIPLiteral("192.168.1.1"));
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPHostRule>(
-          "", IPEndPoint(ip_address, 0));
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("192.168.1.1");
 
   EXPECT_EQ("192.168.1.1", rule->ToString());
 
@@ -255,11 +248,8 @@ TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPHostRule_IPv4) {
 
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherIPHostRule_IPv4WithPort) {
-  IPAddress ip_address;
-  ignore_result(ip_address.AssignFromIPLiteral("192.168.1.1"));
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPHostRule>(
-          "", IPEndPoint(ip_address, 33));
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("192.168.1.1:33");
 
   EXPECT_EQ("192.168.1.1:33", rule->ToString());
 
@@ -280,11 +270,8 @@ TEST(SchemeHostPortMatcherRuleTest,
 
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherIPHostRule_IPv4WithScheme) {
-  IPAddress ip_address;
-  ignore_result(ip_address.AssignFromIPLiteral("192.168.1.1"));
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPHostRule>(
-          "http", IPEndPoint(ip_address, 0));
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("http://192.168.1.1");
 
   EXPECT_EQ("http://192.168.1.1", rule->ToString());
 
@@ -302,13 +289,11 @@ TEST(SchemeHostPortMatcherRuleTest,
 }
 
 TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPHostRule_IPv6) {
-  IPAddress ip_address;
-  // Note that the IPv6 address needs to be canonicalized.
-  ignore_result(ip_address.AssignFromIPLiteral("3ffe:2a00:100:7031::1"));
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPHostRule>(
-          "", IPEndPoint(ip_address, 0));
+      SchemeHostPortMatcherRule::FromUntrimmedRawString(
+          "[3ffe:2a00:100:7031:0:0::1]");
 
+  // Note that the IPv6 address is canonicalized.
   EXPECT_EQ("[3ffe:2a00:100:7031::1]", rule->ToString());
 
   EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
@@ -330,13 +315,11 @@ TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPHostRule_IPv6) {
 
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherIPHostRule_IPv6WithPort) {
-  IPAddress ip_address;
-  // Note that the IPv6 address needs to be canonicalized.
-  ignore_result(ip_address.AssignFromIPLiteral("3ffe:2a00:100:7031::1"));
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPHostRule>(
-          "", IPEndPoint(ip_address, 33));
+      SchemeHostPortMatcherRule::FromUntrimmedRawString(
+          "[3ffe:2a00:100:7031:0:0::1]:33");
 
+  // Note that the IPv6 address is canonicalized.
   EXPECT_EQ("[3ffe:2a00:100:7031::1]:33", rule->ToString());
 
   EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
@@ -358,13 +341,11 @@ TEST(SchemeHostPortMatcherRuleTest,
 
 TEST(SchemeHostPortMatcherRuleTest,
      SchemeHostPortMatcherIPHostRule_IPv6WithScheme) {
-  IPAddress ip_address;
-  // Note that the IPv6 address needs to be canonicalized.
-  ignore_result(ip_address.AssignFromIPLiteral("3ffe:2a00:100:7031::1"));
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPHostRule>(
-          "https", IPEndPoint(ip_address, 0));
+      SchemeHostPortMatcherRule::FromUntrimmedRawString(
+          "https://[3ffe:2a00:100:7031:0:0::1]");
 
+  // Note that the IPv6 address is canonicalized.
   EXPECT_EQ("https://[3ffe:2a00:100:7031::1]", rule->ToString());
 
   EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
@@ -382,8 +363,7 @@ TEST(SchemeHostPortMatcherRuleTest,
 
 TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPBlockRule_IPv4) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPBlockRule>(
-          "192.168.1.1/16", "", IPAddress(192, 168, 1, 1), 16);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("192.168.1.1/16");
 
   EXPECT_EQ("192.168.1.1/16", rule->ToString());
 
@@ -409,11 +389,7 @@ TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPBlockRule_IPv4) {
 
 TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPBlockRule_IPv6) {
   std::unique_ptr<SchemeHostPortMatcherRule> rule =
-      std::make_unique<SchemeHostPortMatcherIPBlockRule>(
-          "a:b:c:d::/48", "",
-          IPAddress(0x0, 0xa, 0x0, 0xb, 0x0, 0xc, 0x0, 0xd, 0x0, 0x0, 0x0, 0x0,
-                    0x0, 0x0, 0x0, 0x0),
-          48);
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("a:b:c:d::/48");
 
   EXPECT_EQ("a:b:c:d::/48", rule->ToString());
 
@@ -453,6 +429,64 @@ TEST(SchemeHostPortMatcherRuleTest, SchemeHostPortMatcherIPBlockRule_IPv6) {
             rule->Evaluate(GURL("http://192.168.11.11")));
   EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
             rule->Evaluate(GURL("http://10.10.1.1")));
+}
+
+TEST(SchemeHostPortMatcherRuleTest, ParseWildcardAtStart) {
+  std::unique_ptr<SchemeHostPortMatcherRule> rule =
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("*.org:443");
+  EXPECT_EQ("*.org:443", rule->ToString());
+
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            rule->Evaluate(GURL("https://example.org:443")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            rule->Evaluate(GURL("https://example.org")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kInclude,
+            rule->Evaluate(GURL("http://foo.org:443")));
+
+  EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
+            rule->Evaluate(GURL("https://example.org:80")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
+            rule->Evaluate(GURL("https://example.com:80")));
+  EXPECT_EQ(SchemeHostPortMatcherResult::kNoMatch,
+            rule->Evaluate(GURL("https://example.orgg:80")));
+}
+
+TEST(SchemeHostPortMatcherRuleTest, ParseInvalidPort) {
+  std::unique_ptr<SchemeHostPortMatcherRule> rule =
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("*.com:+443");
+  EXPECT_EQ(nullptr, rule);
+
+  rule = SchemeHostPortMatcherRule::FromUntrimmedRawString("*.com:-443");
+  EXPECT_EQ(nullptr, rule);
+
+  rule = SchemeHostPortMatcherRule::FromUntrimmedRawString("*.com:0x443");
+  EXPECT_EQ(nullptr, rule);
+}
+
+// Test that parsing an IPv6 range given a bracketed literal is not supported.
+// Whether IPv6 literals need to be bracketed or not is pretty much a coin toss
+// depending on the context, and here it is expected to be unbracketed to match
+// macOS. It would be fine to support bracketed too, however none of the
+// grammars we parse need that.
+TEST(SchemeHostPortMatcherRuleTest, ParseBracketedCIDR_IPv6) {
+  std::unique_ptr<SchemeHostPortMatcherRule> rule =
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("[a:b:c:d::]/48");
+  EXPECT_EQ(nullptr, rule);
+}
+
+TEST(SchemeHostPortMatcherRuleTest, BadInputs) {
+  std::unique_ptr<SchemeHostPortMatcherRule> rule =
+      SchemeHostPortMatcherRule::FromUntrimmedRawString("://");
+  EXPECT_EQ(nullptr, rule);
+
+  rule = SchemeHostPortMatcherRule::FromUntrimmedRawString("  ");
+  EXPECT_EQ(nullptr, rule);
+
+  rule = SchemeHostPortMatcherRule::FromUntrimmedRawString("http://");
+  EXPECT_EQ(nullptr, rule);
+
+  rule = SchemeHostPortMatcherRule::FromUntrimmedRawString("*.foo.com:-34");
+  EXPECT_EQ(nullptr, rule);
 }
 
 }  // anonymous namespace

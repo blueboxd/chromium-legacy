@@ -27,8 +27,8 @@
 namespace {
 
 // Create a basic mode for a 6x4 screen.
-const drmModeModeInfo kDefaultMode =
-    {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
+                                      0, 0, 0, 0, 0, 0, {'\0'}};
 
 constexpr uint32_t kCrtcIdBase = 1;
 constexpr uint32_t kPrimaryCrtc = kCrtcIdBase;
@@ -163,8 +163,12 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
     }
   }
 
-  drm_->InitializeState(crtc_properties, plane_properties, property_names,
-                        use_atomic);
+  std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(2);
+  connector_properties[0].id = kPrimaryConnector;
+  connector_properties[1].id = kSecondaryConnector;
+
+  drm_->InitializeState(crtc_properties, connector_properties, plane_properties,
+                        property_names, use_atomic);
 }
 
 void HardwareDisplayControllerTest::SchedulePageFlip(

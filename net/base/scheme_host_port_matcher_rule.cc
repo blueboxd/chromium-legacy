@@ -6,6 +6,9 @@
 
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/parse_number.h"
+#include "net/base/url_util.h"
 #include "url/url_util.h"
 
 namespace net {
@@ -20,6 +23,79 @@ std::string AddBracketsIfIPv6(const IPAddress& ip_address) {
 }
 
 }  // namespace
+
+// static
+std::unique_ptr<SchemeHostPortMatcherRule>
+SchemeHostPortMatcherRule::FromUntrimmedRawString(
+    const std::string& raw_untrimmed) {
+  std::string raw;
+  base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
+
+  // Extract any scheme-restriction.
+  std::string::size_type scheme_pos = raw.find("://");
+  std::string scheme;
+  if (scheme_pos != std::string::npos) {
+    scheme = raw.substr(0, scheme_pos);
+    raw = raw.substr(scheme_pos + 3);
+    if (scheme.empty())
+      return nullptr;
+  }
+
+  if (raw.empty())
+    return nullptr;
+
+  // If there is a forward slash in the input, it is probably a CIDR style
+  // mask.
+  if (raw.find('/') != std::string::npos) {
+    IPAddress ip_prefix;
+    size_t prefix_length_in_bits;
+
+    if (!ParseCIDRBlock(raw, &ip_prefix, &prefix_length_in_bits))
+      return nullptr;
+
+    return std::make_unique<SchemeHostPortMatcherIPBlockRule>(
+        raw, scheme, ip_prefix, prefix_length_in_bits);
+  }
+
+  // Check if we have an <ip-address>[:port] input. We need to treat this
+  // separately since the IP literal may not be in a canonical form.
+  std::string host;
+  int port;
+  if (ParseHostAndPort(raw, &host, &port)) {
+    // TODO(eroman): HostForURL() below DCHECKs() when |host| contains an
+    // embedded '\0'.
+    if (host.find('\0') != std::string::npos)
+      return nullptr;
+
+    IPAddress ip_address;
+    if (ip_address.AssignFromIPLiteral(host)) {
+      // Instead of -1, 0 is invalid for IPEndPoint.
+      int adjusted_port = port == -1 ? 0 : port;
+      return std::make_unique<SchemeHostPortMatcherIPHostRule>(
+          scheme, IPEndPoint(ip_address, adjusted_port));
+    }
+  }
+
+  // Otherwise assume we have <hostname-pattern>[:port].
+  std::string::size_type pos_colon = raw.rfind(':');
+  port = -1;
+  if (pos_colon != std::string::npos) {
+    if (!ParseInt32(base::StringPiece(raw.begin() + pos_colon + 1, raw.end()),
+                    ParseIntFormat::NON_NEGATIVE, &port) ||
+        port > 0xFFFF) {
+      return nullptr;  // Port was invalid.
+    }
+    raw = raw.substr(0, pos_colon);
+  }
+
+  // Special-case hostnames that begin with a period.
+  // For example, we remap ".google.com" --> "*.google.com".
+  if (base::StartsWith(raw, ".", base::CompareCase::SENSITIVE))
+    raw = "*" + raw;
+
+  return std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(scheme, raw,
+                                                                    port);
+}
 
 bool SchemeHostPortMatcherRule::IsHostnamePatternRule() const {
   return false;

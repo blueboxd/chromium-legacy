@@ -145,7 +145,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
             }
         }
 
-        ImageView imageView = view.findViewById(R.id.icon_view);
+        ImageView imageView = view.findViewById(R.id.start_icon);
         imageView.setVisibility(View.GONE);
 
         return view;

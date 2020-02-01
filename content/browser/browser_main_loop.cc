@@ -65,6 +65,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
 #include "content/browser/download/save_file_manager.h"
+#include "content/browser/field_trial_synchronizer.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -1247,6 +1248,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   data_decoder_service_provider_ = std::make_unique<OopDataDecoder>();
 
   HistogramSynchronizer::GetInstance();
+
+  field_trial_synchronizer_ = base::MakeRefCounted<FieldTrialSynchronizer>();
 
   // cc assumes a single client name for metrics in a process, which is
   // is inconsistent with single process mode where both the renderer and

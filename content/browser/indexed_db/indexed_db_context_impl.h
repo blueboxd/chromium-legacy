@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/mojom/native_file_system_context.mojom.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/public/browser/indexed_db_context.h"
@@ -74,6 +75,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       base::Clock* clock,
       mojo::PendingRemote<storage::mojom::BlobStorageContext>
           blob_storage_context,
+      mojo::PendingRemote<storage::mojom::NativeFileSystemContext>
+          native_file_system_context,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       scoped_refptr<base::SequencedTaskRunner> custom_task_runner);
 
@@ -154,6 +157,14 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   bool is_incognito() const { return data_path_.empty(); }
 
+  storage::mojom::BlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_ ? blob_storage_context_.get() : nullptr;
+  }
+  storage::mojom::NativeFileSystemContext* native_file_system_context() const {
+    return native_file_system_context_ ? native_file_system_context_.get()
+                                       : nullptr;
+  }
+
   // Only callable on the IDB task runner.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -193,6 +204,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // Bound and accessed on the |idb_task_runner_|.
   mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;
+  mojo::Remote<storage::mojom::NativeFileSystemContext>
+      native_file_system_context_;
   std::unique_ptr<IndexedDBFactoryImpl> indexeddb_factory_;
 
   // If |data_path_| is empty then this is an incognito session and the backing

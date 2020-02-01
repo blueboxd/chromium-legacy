@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
+#include "components/services/storage/public/mojom/native_file_system_context.mojom.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/common/content_export.h"
@@ -48,7 +49,8 @@ class StoragePartitionImpl;
 // thread only.
 class CONTENT_EXPORT NativeFileSystemManagerImpl
     : public NativeFileSystemEntryFactory,
-      public blink::mojom::NativeFileSystemManager {
+      public blink::mojom::NativeFileSystemManager,
+      public storage::mojom::NativeFileSystemContext {
  public:
   using BindingContext = NativeFileSystemEntryFactory::BindingContext;
 
@@ -85,6 +87,9 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const BindingContext& binding_context,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
+  void BindInternalsReceiver(
+      mojo::PendingReceiver<storage::mojom::NativeFileSystemContext> receiver);
+
   // blink::mojom::NativeFileSystemManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(
@@ -100,6 +105,16 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemDirectoryHandle>
           directory_handle_receiver) override;
+
+  // storage::mojom::NativeFileSystemContext:
+  void SerializeHandle(
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+      SerializeHandleCallback callback) override;
+  void DeserializeHandle(
+      const url::Origin& origin,
+      const std::vector<uint8_t>& bits,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token)
+      override;
 
   // NativeFileSystemEntryFactory:
   blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPath(
@@ -233,6 +248,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       ResolvedTokenCallback callback,
       const base::UnguessableToken& token);
 
+  void DidResolveForSerializeHandle(
+      SerializeHandleCallback callback,
+      NativeFileSystemTransferTokenImpl* resolved_token);
+
   // Creates a FileSystemURL which corresponds to a FilePath and Origin.
   struct FileSystemURLAndFSHandle {
     storage::FileSystemURL url;
@@ -261,6 +280,9 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   // transferability etc.
   mojo::ReceiverSet<blink::mojom::NativeFileSystemManager, BindingContext>
       receivers_;
+
+  mojo::ReceiverSet<storage::mojom::NativeFileSystemContext>
+      internals_receivers_;
 
   // All the receivers for file and directory handles that have references to
   // them.

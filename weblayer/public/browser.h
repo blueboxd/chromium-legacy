@@ -66,6 +66,8 @@ class Browser {
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
   virtual void RemoveObserver(BrowserObserver* observer) = 0;
+
+  virtual void VisibleSecurityStateOfActiveTabChanged() = 0;
 };
 
 }  // namespace weblayer

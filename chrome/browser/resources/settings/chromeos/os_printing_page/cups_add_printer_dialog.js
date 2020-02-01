@@ -275,6 +275,20 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * Indicates whether the value in the Manufacturer dropdown is a valid
+     * printer manufacturer.
+     * @private
+     */
+    isManufacturerInvalid_: Boolean,
+
+    /**
+     * Indicates whether the value in the Model dropdown is a valid printer
+     * model.
+     * @private
+     */
+    isModelInvalid_: Boolean,
   },
 
   observers: [
@@ -444,10 +458,12 @@ Polymer({
    * @return {boolean} Whether we have enough information to set up the printer
    * @private
    */
-  canAddPrinter_(ppdManufacturer, ppdModel, printerPPDPath) {
-    return !this.addPrinterInProgress_ &&
+  canAddPrinter_(ppdManufacturer, ppdModel, printerPPDPath,
+      addPrinterInProgress, isManufacturerInvalid, isModelInvalid) {
+    return !addPrinterInProgress &&
         settings.printing.isPPDInfoValid(
-            ppdManufacturer, ppdModel, printerPPDPath);
+            ppdManufacturer, ppdModel, printerPPDPath) &&
+        !isManufacturerInvalid && !isModelInvalid;
   },
 });
 

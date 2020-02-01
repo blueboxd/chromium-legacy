@@ -16,8 +16,8 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 /**

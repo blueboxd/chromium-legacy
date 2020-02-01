@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/test/fake_s3_server.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -97,7 +96,6 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   void DisableAssistant();
   void DisableWarmerWelcome();
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   FakeS3Server fake_s3_server_;
   FakeS3Mode mode_;
   std::unique_ptr<ash::AssistantTestApi> test_api_;

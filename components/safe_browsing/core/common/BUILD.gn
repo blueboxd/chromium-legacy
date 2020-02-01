@@ -60,6 +60,11 @@ source_set("common") {
   ]
 
   public_deps = [ ":interfaces" ]
+
+  if (!is_ios) {
+    sources += [ "//components/safe_browsing/content/common/safebrowsing_constants_content.cc" ]
+    deps += [ "//content/public/common:resource_type_header" ]
+  }
 }
 
 mojom("interfaces") {

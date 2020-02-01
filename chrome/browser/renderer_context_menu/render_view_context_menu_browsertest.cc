@@ -62,6 +62,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -630,7 +631,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
 
   // Set up referrer URL with fragment.
   const GURL kReferrerWithFragment("http://foo.com/test#fragment");
-  const std::string kCorrectReferrer("http://foo.com/test");
+  const std::string kCorrectReferrer(
+      base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)
+          ? "http://foo.com/"
+          : "http://foo.com/test");
 
   // Set up menu with link URL.
   content::ContextMenuParams context_menu_params;

@@ -126,6 +126,11 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void IntrinsicSizingInfoOfChildChanged(
       mojom::blink::IntrinsicSizingInfoPtr sizing_info) override;
 
+  void SetMainFrameViewportSize(const IntSize&) override;
+  IntSize GetMainFrameViewportSize() const override;
+  void SetMainFrameScrollOffset(const IntPoint&) override;
+  IntPoint GetMainFrameScrollOffset() const override;
+
  private:
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
@@ -148,6 +153,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   bool prevent_contents_opaque_changes_ = false;
   bool is_surface_layer_ = false;
   ParsedFeaturePolicy feature_policy_header_;
+  IntSize main_frame_viewport_size_;
+  IntPoint main_frame_scroll_offset_;
 
   mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
       remote_frame_host_remote_;

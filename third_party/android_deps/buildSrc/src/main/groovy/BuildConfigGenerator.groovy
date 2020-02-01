@@ -256,7 +256,8 @@ class BuildConfigGenerator extends DefaultTask {
         }
         if (dependencyId.startsWith('androidx_') ||
             dependencyId.startsWith('com_android_support_') ||
-            dependencyId.startsWith('android_arch_')) {
+            dependencyId.startsWith('android_arch_') ||
+            dependencyId.startsWith('com_android_tools_build_jetifier')) {
           sb.append('  skip_jetify  = true\n')
         }
         switch(dependencyId) {

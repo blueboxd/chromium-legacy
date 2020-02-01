@@ -10,16 +10,20 @@ source_set("infobars") {
     "sc_infobar_banner_no_modal_coordinator.mm",
     "sc_infobar_container_view_controller.h",
     "sc_infobar_container_view_controller.mm",
+    "sc_infobar_modal_save_card_coordinator.h",
+    "sc_infobar_modal_save_card_coordinator.mm",
   ]
   deps = [
     ":constants",
     "//base",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/ui/autofill:autofill_message",
     "//ios/chrome/browser/ui/infobars/banners",
     "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/ui/infobars/modals",
     "//ios/chrome/browser/ui/infobars/presentation",
     "//ios/showcase/common",
+    "//url",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

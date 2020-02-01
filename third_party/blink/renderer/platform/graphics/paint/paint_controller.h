@@ -28,7 +28,7 @@
 
 namespace blink {
 
-static const size_t kInitialDisplayItemListCapacityBytes = 512;
+static constexpr wtf_size_t kInitialDisplayItemListCapacityBytes = 512;
 
 // FrameFirstPaint stores first-paint, text or image painted for the
 // corresponding frame. They are never reset to false. First-paint is defined in
@@ -134,10 +134,10 @@ class PLATFORM_EXPORT PaintController {
   // true. Otherwise returns false.
   bool UseCachedSubsequenceIfPossible(const DisplayItemClient&);
 
-  size_t BeginSubsequence();
+  wtf_size_t BeginSubsequence();
   // The |start| parameter should be the return value of the corresponding
   // BeginSubsequence().
-  void EndSubsequence(const DisplayItemClient&, size_t start);
+  void EndSubsequence(const DisplayItemClient&, wtf_size_t start);
 
   void BeginSkippingCache() {
     if (usage_ == kTransient)
@@ -280,21 +280,22 @@ class PLATFORM_EXPORT PaintController {
 
   // Set new item state (cache skipping, etc) for a new item.
   void ProcessNewItem(DisplayItem&);
-  DisplayItem& MoveItemFromCurrentListToNewList(size_t);
+  DisplayItem& MoveItemFromCurrentListToNewList(wtf_size_t);
 
   // Maps clients to indices of display items or chunks of each client.
-  using IndicesByClientMap = HashMap<const DisplayItemClient*, Vector<size_t>>;
+  using IndicesByClientMap =
+      HashMap<const DisplayItemClient*, Vector<wtf_size_t>>;
 
-  static size_t FindMatchingItemFromIndex(const DisplayItem::Id&,
-                                          const IndicesByClientMap&,
-                                          const DisplayItemList&);
+  static wtf_size_t FindMatchingItemFromIndex(const DisplayItem::Id&,
+                                              const IndicesByClientMap&,
+                                              const DisplayItemList&);
   static void AddToIndicesByClientMap(const DisplayItemClient&,
-                                      size_t index,
+                                      wtf_size_t index,
                                       IndicesByClientMap&);
 
-  size_t FindCachedItem(const DisplayItem::Id&);
-  size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
-  void CopyCachedSubsequence(size_t begin_index, size_t end_index);
+  wtf_size_t FindCachedItem(const DisplayItem::Id&);
+  wtf_size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
+  void CopyCachedSubsequence(wtf_size_t begin_index, wtf_size_t end_index);
 
   void UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
       const PaintChunk::Id& id_with_fragment,
@@ -328,12 +329,12 @@ class PLATFORM_EXPORT PaintController {
 
   struct SubsequenceMarkers {
     SubsequenceMarkers() : start(0), end(0) {}
-    SubsequenceMarkers(size_t start_arg, size_t end_arg)
+    SubsequenceMarkers(wtf_size_t start_arg, wtf_size_t end_arg)
         : start(start_arg), end(end_arg) {}
     // The start and end (not included) index within current_paint_artifact_
     // of this subsequence.
-    size_t start;
-    size_t end;
+    wtf_size_t start;
+    wtf_size_t end;
   };
 
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient&);
@@ -366,8 +367,8 @@ class PLATFORM_EXPORT PaintController {
 
   unsigned skipping_cache_count_ = 0;
 
-  size_t num_cached_new_items_ = 0;
-  size_t num_cached_new_subsequences_ = 0;
+  wtf_size_t num_cached_new_items_ = 0;
+  wtf_size_t num_cached_new_subsequences_ = 0;
 
   // Stores indices to valid cacheable display items in
   // current_paint_artifact_.GetDisplayItemList() that have not been matched by
@@ -381,16 +382,16 @@ class PLATFORM_EXPORT PaintController {
   IndicesByClientMap out_of_order_item_indices_;
 
   // The next item in the current list for sequential match.
-  size_t next_item_to_match_ = 0;
+  wtf_size_t next_item_to_match_ = 0;
 
   // The next item in the current list to be indexed for out-of-order cache
   // requests.
-  size_t next_item_to_index_ = 0;
+  wtf_size_t next_item_to_index_ = 0;
 
 #if DCHECK_IS_ON()
-  size_t num_indexed_items_ = 0;
-  size_t num_sequential_matches_ = 0;
-  size_t num_out_of_order_matches_ = 0;
+  wtf_size_t num_indexed_items_ = 0;
+  wtf_size_t num_sequential_matches_ = 0;
+  wtf_size_t num_out_of_order_matches_ = 0;
 
   // This is used to check duplicated ids during CreateAndAppend().
   IndicesByClientMap new_display_item_indices_by_client_;
@@ -404,8 +405,8 @@ class PLATFORM_EXPORT PaintController {
   // end of the cached drawing or subsequence in the current list. The functions
   // return false to let the client do actual painting, and PaintController will
   // check if the actual painting results are the same as the cached.
-  size_t under_invalidation_checking_begin_ = 0;
-  size_t under_invalidation_checking_end_ = 0;
+  wtf_size_t under_invalidation_checking_begin_ = 0;
+  wtf_size_t under_invalidation_checking_end_ = 0;
 
   String under_invalidation_message_prefix_;
 
@@ -413,7 +414,7 @@ class PLATFORM_EXPORT PaintController {
       HashMap<const DisplayItemClient*, SubsequenceMarkers>;
   CachedSubsequenceMap current_cached_subsequences_;
   CachedSubsequenceMap new_cached_subsequences_;
-  size_t last_cached_subsequence_end_ = 0;
+  wtf_size_t last_cached_subsequence_end_ = 0;
 
   unsigned current_fragment_ = 0;
 

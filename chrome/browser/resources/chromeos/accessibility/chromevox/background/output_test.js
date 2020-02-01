@@ -197,8 +197,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'Headings', function() {
       function(root) {
         let el = root.firstChild;
         for (let i = 1; i <= 6; ++i) {
-          var range = cursors.Range.fromNode(el);
-          var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+          const range = cursors.Range.fromNode(el);
+          const o = new Output().withSpeechAndBraille(range, null, 'navigate');
           const letter = String.fromCharCode('a'.charCodeAt(0) + i - 1);
           assertEqualsJSON(
               {
@@ -248,7 +248,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', function() {
       '<audio src="foo.mp3" controls></audio>', function(root) {
         let el = root.find({role: 'button'});
         let range = cursors.Range.fromNode(el);
-        var o = new Output().withoutHints().withSpeechAndBraille(
+        let o = new Output().withoutHints().withSpeechAndBraille(
             range, null, 'navigate');
 
         checkSpeechOutput(
@@ -272,7 +272,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', function() {
         el = el.nextSibling.nextSibling.nextSibling;
         const prevRange = range;
         range = cursors.Range.fromNode(el);
-        var o = new Output().withoutHints().withSpeechAndBraille(
+        o = new Output().withoutHints().withSpeechAndBraille(
             range, prevRange, 'navigate');
         checkSpeechOutput(
             '|audio time scrubber|Slider|0:00|Min 0|Max 0',
@@ -607,8 +607,8 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     'graphicsSymbol',
     'suggestion',
   ]);
-  for (var key in Output.ROLE_INFO_) {
-    var value = Output.ROLE_INFO_[key];
+  for (const key in Output.ROLE_INFO_) {
+    const value = Output.ROLE_INFO_[key];
     if (value.msgId) {
       Msgs.getMsg(value.msgId);
       if (!kNoBrailleMessageRequired.has(key)) {
@@ -620,8 +620,8 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       assertNotNullNorUndefined(Earcon[value.earconId]);
     }
   }
-  for (var key in Output.STATE_INFO_) {
-    var value = Output.STATE_INFO_[key];
+  for (const key in Output.STATE_INFO_) {
+    const value = Output.STATE_INFO_[key];
     for (innerKey in value) {
       const innerValue = value[innerKey];
       if (typeof (innerValue) == 'boolean') {
@@ -636,7 +636,7 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       }
     }
   }
-  for (var key in Output.INPUT_TYPE_MESSAGE_IDS_) {
+  for (const key in Output.INPUT_TYPE_MESSAGE_IDS_) {
     const msgId = Output.INPUT_TYPE_MESSAGE_IDS_[key];
     assertFalse(/[A-Z]+/.test(msgId));
     Msgs.getMsg(msgId);

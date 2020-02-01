@@ -30,21 +30,18 @@ import java.util.List;
 public final class Browser {
     private final IBrowser mImpl;
     private final ObserverList<TabListCallback> mTabListCallbacks;
+    private final UrlBarController mUrlBarController;
 
     Browser(IBrowser impl) {
         mImpl = impl;
         mTabListCallbacks = new ObserverList<TabListCallback>();
+
         try {
             mImpl.setClient(new BrowserClientImpl());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-        try {
-            for (Object tab : impl.getTabs()) {
-                // getTabs() returns List<TabImpl>, which isn't accessible from the client library.
-                ITab iTab = ITab.Stub.asInterface((android.os.IBinder) tab);
-                // Tab's constructor calls registerTab().
-                new Tab(iTab, this);
+            if (WebLayer.getSupportedMajorVersionInternal() >= 81) {
+                mUrlBarController = new UrlBarController(mImpl.getUrlBarController());
+            } else {
+                mUrlBarController = null;
             }
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -227,6 +224,19 @@ public final class Browser {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    /**
+     * Returns the UrlBarController.
+     * @since 81
+     */
+    @NonNull
+    public UrlBarController getUrlBarController() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 81) {
+            throw new UnsupportedOperationException();
+        }
+        return mUrlBarController;
     }
 
     private final class BrowserClientImpl extends IBrowserClient.Stub {

@@ -42,7 +42,7 @@ def merge_shard_results(summary_json, jsons_to_merge):
   Returns dict with merged test output on success or None on failure. Emits
   annotations.
   """
-  # summary.json is produced by swarming.py itself. We are mostly interested
+  # summary.json is produced by swarming client itself. We are mostly interested
   # in the number of shards.
   try:
     with open(summary_json) as f:

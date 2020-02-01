@@ -63,6 +63,7 @@ class TestSharedWorkerService : public content::SharedWorkerService {
   // content::SharedWorkerService
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  void EnumerateSharedWorkers(Observer* observer) override;
   bool TerminateWorker(const GURL& url,
                        const std::string& name,
                        const url::Origin& constructor_origin) override;
@@ -108,12 +109,18 @@ void TestSharedWorkerService::AddObserver(Observer* observer) {
 void TestSharedWorkerService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
+void TestSharedWorkerService::EnumerateSharedWorkers(Observer* observer) {
+  // Not implemented.
+  ADD_FAILURE();
+}
 
 bool TestSharedWorkerService::TerminateWorker(
     const GURL& url,
     const std::string& name,
     const url::Origin& constructor_origin) {
-  return true;
+  // Not implemented.
+  ADD_FAILURE();
+  return false;
 }
 
 content::SharedWorkerInstance TestSharedWorkerService::StartSharedWorker(
@@ -460,6 +467,7 @@ void WorkerWatcherTest::CallOnGraphAndWait(
             std::move(graph_callback).Run(graph);
             quit_closure.Run();
           }));
+  run_loop.Run();
 }
 
 WorkerNodeImpl* WorkerWatcherTest::GetSharedWorkerNode(

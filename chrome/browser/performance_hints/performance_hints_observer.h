@@ -75,6 +75,9 @@ class PerformanceHintsObserver
                         optimization_guide::proto::PerformanceHint>>
       hints_;
 
+  // True if the ProcessPerformanceHint callback has been run.
+  bool hint_processed_ = false;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<PerformanceHintsObserver> weak_factory_{this};

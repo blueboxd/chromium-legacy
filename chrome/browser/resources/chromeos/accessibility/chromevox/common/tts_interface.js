@@ -48,13 +48,11 @@ QueueMode = {
 };
 
 /**
- * @interface
  * An interface for clients who want to get notified when an utterance
  * starts or ends from any source.
+ * @interface
  */
 TtsCapturingEventListener = class {
-  constructor() {}
-
   /**
    * Called when any utterance starts.
    */
@@ -101,6 +99,12 @@ TtsInterface = class {
    * @param {TtsCapturingEventListener} listener Listener to get called.
    */
   addCapturingEventListener(listener) {}
+
+  /**
+   * Removes a listener to get called whenever any utterance starts or ends.
+   * @param {TtsCapturingEventListener} listener Listener to get called.
+   */
+  removeCapturingEventListener(listener) {}
 
   /**
    * Increases a TTS speech property.

@@ -7,6 +7,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -131,13 +132,12 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_EnabledMainFrameOnly) {
-  for (int i = 0; i <= static_cast<int>(content::ResourceType::kMaxValue);
-       i++) {
-    content::ResourceType resource_type = static_cast<content::ResourceType>(i);
+  for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
+    ResourceType resource_type = static_cast<ResourceType>(i);
     bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
         resource_type);
     switch (resource_type) {
-      case content::ResourceType::kMainFrame:
+      case ResourceType::kMainFrame:
         EXPECT_TRUE(enabled);
         break;
       default:

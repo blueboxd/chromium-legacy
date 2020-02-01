@@ -375,7 +375,7 @@ KeyUtil = class {
             modifier = 'Ctrl';
             break;
           case 'searchKeyHeld':
-            var searchKey = KeyUtil.getReadableNameForKeyCode(91);
+            const searchKey = KeyUtil.getReadableNameForKeyCode(91);
             modifier = searchKey;
             break;
           case 'altKey':
@@ -388,11 +388,11 @@ KeyUtil = class {
             modifier = 'Shift';
             break;
           case 'metaKey':
-            var metaKey = KeyUtil.getReadableNameForKeyCode(91);
+            const metaKey = KeyUtil.getReadableNameForKeyCode(91);
             modifier = metaKey;
             break;
           case 'keyCode':
-            var keyCode = keySequence.keys[keyPressed][index];
+            const keyCode = keySequence.keys[keyPressed][index];
             // We make sure the keyCode isn't for a modifier key. If it is, then
             // we've already added that into the string above.
             if (!keySequence.isModifierKey(keyCode) && !opt_modifiers) {
@@ -439,7 +439,7 @@ KeyUtil = class {
     let isSet = false;
     const originalState = key.doubleTap;
     key.doubleTap = true;
-    for (var i = 0, keySeq; keySeq = KeySequence.doubleTapCache[i]; i++) {
+    for (let i = 0, keySeq; keySeq = KeySequence.doubleTapCache[i]; i++) {
       if (keySeq.equals(key)) {
         isSet = true;
         break;

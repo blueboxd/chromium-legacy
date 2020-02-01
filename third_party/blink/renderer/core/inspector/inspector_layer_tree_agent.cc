@@ -277,7 +277,7 @@ Response InspectorLayerTreeAgent::enable() {
     return Response::Error("The root frame doesn't have document");
 
   inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
-      DocumentUpdateReason::kOther);
+      DocumentUpdateReason::kInspector);
 
   LayerTreePainted();
   LayerTreeDidChange();
@@ -409,7 +409,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
     return Response::Error("Layer does not draw content");
 
   inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
-      DocumentUpdateReason::kOther);
+      DocumentUpdateReason::kInspector);
 
   suppress_layer_paint_events_ = false;
 

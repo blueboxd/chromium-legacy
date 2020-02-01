@@ -951,7 +951,8 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
     if (AutoscrollController* controller =
             scroll_manager_->GetAutoscrollController()) {
       // Avoid updating the lifecycle unless it's possible to autoscroll.
-      layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint();
+      layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+          DocumentUpdateReason::kScroll);
 
       // The lifecycle update above may have invalidated the previous layout.
       layout_object = target_node->GetLayoutObject();

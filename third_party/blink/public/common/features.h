@@ -47,9 +47,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kRawClipboard;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCOfferExtmapAllowMixed;
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHWH264Encoding;
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHWVP8Encoding;
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHWVP9Encoding;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcMultiplexCodec;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHideLocalIpsWithMdns;
 
@@ -104,6 +101,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
+BLINK_COMMON_EXPORT extern const base::Feature kWebRtcUseMinMaxVEADimensions;
+
 // Blink garbage collection.
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapCompaction;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentMarking;
@@ -143,6 +142,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kDispatchBeforeUnloadOnFreeze;
 BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyCanvas2dImageChromium;
 BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyCanvas2dSwapChain;
 BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyWebGLSwapChain;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kForceExtraRenderingToTrackStickyFrame;
 
 }  // namespace features
 }  // namespace blink

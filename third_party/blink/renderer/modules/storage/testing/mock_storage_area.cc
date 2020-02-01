@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/storage/testing/mock_storage_area.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -28,7 +29,7 @@ MockStorageArea::GetAssociatedInterfaceRemote() {
 }
 
 void MockStorageArea::AddObserver(
-    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaObserver> observer) {
+    mojo::PendingRemote<mojom::blink::StorageAreaObserver> observer) {
   ++observer_count_;
 }
 
@@ -42,7 +43,7 @@ void MockStorageArea::Put(
   observed_key_ = key;
   observed_value_ = value;
   observed_source_ = source;
-  pending_callbacks_.push_back(std::move(callback));
+  std::move(callback).Run(true);
 }
 
 void MockStorageArea::Delete(
@@ -53,14 +54,17 @@ void MockStorageArea::Delete(
   observed_delete_ = true;
   observed_key_ = key;
   observed_source_ = source;
-  pending_callbacks_.push_back(std::move(callback));
+  std::move(callback).Run(true);
 }
 
-void MockStorageArea::DeleteAll(const String& source,
-                                DeleteAllCallback callback) {
+void MockStorageArea::DeleteAll(
+    const String& source,
+    mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer,
+    DeleteAllCallback callback) {
   observed_delete_all_ = true;
   observed_source_ = source;
-  pending_callbacks_.push_back(std::move(callback));
+  ++observer_count_;
+  std::move(callback).Run(true);
 }
 
 void MockStorageArea::Get(const Vector<uint8_t>& key, GetCallback callback) {
@@ -68,17 +72,11 @@ void MockStorageArea::Get(const Vector<uint8_t>& key, GetCallback callback) {
 }
 
 void MockStorageArea::GetAll(
-    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
-        complete_callback,
+    mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer,
     GetAllCallback callback) {
-  mojo::AssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
-      complete_remote(std::move(complete_callback));
-  pending_callbacks_.push_back(
-      WTF::Bind(&mojom::blink::StorageAreaGetAllCallback::Complete,
-                std::move(complete_remote)));
-
   observed_get_all_ = true;
-  std::move(callback).Run(true, std::move(get_all_return_values_));
+  ++observer_count_;
+  std::move(callback).Run(std::move(get_all_return_values_));
 }
 
 }  // namespace blink

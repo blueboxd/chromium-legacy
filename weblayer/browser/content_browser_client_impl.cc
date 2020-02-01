@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
@@ -345,11 +346,15 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
       base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
-      base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
-      IsSafebrowsingSupported()) {
-    throttles.push_back(
-        GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(handle));
+  if (handle->IsInMainFrame()) {
+    if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
+        base::FeatureList::IsEnabled(
+            safe_browsing::kCommittedSBInterstitials) &&
+        IsSafebrowsingSupported()) {
+      throttles.push_back(
+          GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(
+              handle));
+    }
   }
 #endif
   return throttles;

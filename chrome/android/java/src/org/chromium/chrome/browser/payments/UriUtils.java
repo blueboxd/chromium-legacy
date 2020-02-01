@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 /** URI utilities. */
@@ -59,18 +59,7 @@ public class UriUtils {
      */
     public static URI getOrigin(URI uri) {
         assert uri != null;
-
-        String originString = uri.resolve("/").toString();
-
-        // Strip the trailing slash.
-        if (!originString.isEmpty() && originString.charAt(originString.length() - 1) == '/') {
-            originString = originString.substring(0, originString.length() - 1);
-        }
-
-        URI origin = parseUriFromString(originString);
-        assert origin != null;
-
-        return origin;
+        return uri.getOrigin();
     }
 
     private UriUtils() {}

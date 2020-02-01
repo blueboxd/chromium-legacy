@@ -294,6 +294,14 @@ HungRendererDialogView::HungRendererDialogView() {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
+
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &HungRendererDialogView::RestartHangTimer, base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &HungRendererDialogView::ForceCrashHungRenderer, base::Unretained(this)));
+  DialogDelegate::set_close_callback(base::BindOnce(
+      &HungRendererDialogView::RestartHangTimer, base::Unretained(this)));
+
   DialogModelChanged();
 
   views::GridLayout* layout =
@@ -407,7 +415,7 @@ void HungRendererDialogView::WindowClosing() {
   g_instance_ = nullptr;
 }
 
-bool HungRendererDialogView::Cancel() {
+void HungRendererDialogView::ForceCrashHungRenderer() {
   auto* render_widget_host = hung_pages_table_model_->GetRenderWidgetHost();
   bool currently_unresponsive =
       render_widget_host && render_widget_host->IsCurrentlyUnresponsive();
@@ -427,16 +435,6 @@ bool HungRendererDialogView::Cancel() {
     rph->Shutdown(content::RESULT_CODE_HUNG);
 #endif
   }
-  return true;
-}
-
-bool HungRendererDialogView::Accept() {
-  RestartHangTimer();
-  return true;
-}
-
-bool HungRendererDialogView::Close() {
-  return Accept();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

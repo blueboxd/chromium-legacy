@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
@@ -110,7 +111,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     signin::IdentityManager* identity_manager_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
-      resource_type_(resource_type),
+      resource_type_(static_cast<ResourceType>(resource_type)),
       has_user_gesture_(has_user_gesture),
       web_contents_getter_(web_contents_getter),
       url_checker_delegate_(std::move(url_checker_delegate)),
@@ -180,7 +181,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 
   if (load_flags_ & net::LOAD_PREFETCH) {
     // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
-    if (resource_type_ == content::ResourceType::kMainFrame) {
+    if (resource_type_ == ResourceType::kMainFrame) {
       url_checker_delegate_->MaybeDestroyPrerenderContents(
           web_contents_getter_);
     }
@@ -203,8 +204,8 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
     for (size_t i = 1; i < urls_.size(); ++i)
       resource.redirect_urls.push_back(urls_[i].url);
   }
-  resource.is_subresource = resource_type_ != content::ResourceType::kMainFrame;
-  resource.is_subframe = resource_type_ == content::ResourceType::kSubFrame;
+  resource.is_subresource = resource_type_ != ResourceType::kMainFrame;
+  resource.is_subframe = resource_type_ == ResourceType::kSubFrame;
   resource.threat_type = threat_type;
   resource.threat_metadata = metadata;
   resource.callback =
@@ -218,7 +219,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
   url_checker_delegate_->StartDisplayingBlockingPageHelper(
       resource, urls_[next_index_].method, headers_,
-      resource_type_ == content::ResourceType::kMainFrame, has_user_gesture_);
+      resource_type_ == ResourceType::kMainFrame, has_user_gesture_);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
@@ -267,7 +268,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     // TODO(yzshen): Consider moving CanCheckResourceType() to the renderer
     // side. That would save some IPCs. It requires a method on the
     // SafeBrowsing mojo interface to query all supported resource types.
-    if (!database_manager_->CanCheckResourceType(resource_type_)) {
+    if (!database_manager_->CanCheckResourceType(
+            static_cast<content::ResourceType>(resource_type_))) {
       // TODO(vakh): Consider changing this metric to
       // SafeBrowsing.V4ResourceType to be consistent with the other PVer4
       // metrics.
@@ -440,7 +442,7 @@ bool SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
 void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
     bool did_match_allowlist) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
-  DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
+  DCHECK_EQ(ResourceType::kMainFrame, resource_type_);
 
   const GURL& url = urls_[next_index_].url;
   if (did_match_allowlist) {
@@ -544,7 +546,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
 void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     std::unique_ptr<RTLookupResponse> response) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
-  DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
+  DCHECK_EQ(ResourceType::kMainFrame, resource_type_);
 
   if (url_web_ui_token_ != -1) {
     // The following is to log this RTLookupResponse on any open

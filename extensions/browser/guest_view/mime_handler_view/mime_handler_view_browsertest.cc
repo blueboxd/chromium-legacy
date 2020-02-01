@@ -18,9 +18,9 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -367,10 +367,10 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
   ASSERT_TRUE(content::ExecuteScript(main_frame,
                                      "object.data = './testEmbedded.csv';"
                                      "object.type = 'text/csv';"));
-  app_modal::JavaScriptAppModalDialog* alert =
+  javascript_dialogs::AppModalDialogController* alert =
       ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(alert->is_before_unload_dialog());
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 
   EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
 }
@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
   web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL), {},
                                         ui::PAGE_TRANSITION_TYPED, "");
 
-  app_modal::JavaScriptAppModalDialog* before_unload_dialog =
+  javascript_dialogs::AppModalDialogController* before_unload_dialog =
       ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
   EXPECT_FALSE(before_unload_dialog->is_reload());
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
   web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL), {},
                                         ui::PAGE_TRANSITION_TYPED, "");
 
-  app_modal::JavaScriptAppModalDialog* before_unload_dialog =
+  javascript_dialogs::AppModalDialogController* before_unload_dialog =
       ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
   EXPECT_FALSE(before_unload_dialog->is_reload());

@@ -10,7 +10,7 @@ be modified or renamed to support side-by-side channel installs.
 
 import os.path
 
-from . import commands, signing
+from . import commands, parts
 
 _CF_BUNDLE_EXE = 'CFBundleExecutable'
 _CF_BUNDLE_ID = 'CFBundleIdentifier'
@@ -145,7 +145,7 @@ def _process_entitlements(paths, dist, config):
 
     entitlements_names = [
         part.entitlements
-        for part in signing.get_parts(config).values()
+        for part in parts.get_parts(config).values()
         if part.entitlements
     ]
     for entitlements_name in entitlements_names:

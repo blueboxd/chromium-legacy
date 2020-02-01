@@ -8,12 +8,16 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -36,6 +40,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -63,6 +68,9 @@ class IsolatedPrerenderBrowserTest
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+
+    // Ensure the service gets created before the tests start.
+    IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
 
     origin_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
@@ -182,7 +190,31 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
 
   // Navigate to the same origin and expect it to have cookies.
   // Note: This check needs to come after the prerender, otherwise the prerender
-  // will be cancelled because the origin was recently loaded.
+  // will be canceled because the origin was recently loaded.
   ui_test_utils::NavigateToURL(browser(), GetOriginServerURL("/simple.html"));
   EXPECT_EQ(1U, origin_server_request_with_cookies());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    IsolatedPrerenderBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(ServiceWorkerRegistrationIsObserved)) {
+  SetDataSaverEnabled(true);
+
+  // Load a page that registers a service worker.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetOriginServerURL("/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "register('network_fallback_worker.js');"));
+
+  IsolatedPrerenderService* isolated_prerender_service =
+      IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(base::Optional<bool>(true),
+            isolated_prerender_service->service_workers_observer()
+                ->IsServiceWorkerRegisteredForOrigin(
+                    url::Origin::Create(GetOriginServerURL("/"))));
+  EXPECT_EQ(base::Optional<bool>(false),
+            isolated_prerender_service->service_workers_observer()
+                ->IsServiceWorkerRegisteredForOrigin(
+                    url::Origin::Create(GURL("https://unregistered.com"))));
 }

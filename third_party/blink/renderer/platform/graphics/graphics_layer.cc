@@ -207,9 +207,8 @@ bool GraphicsLayer::SetChildren(const GraphicsLayerVector& new_children) {
 
   RemoveAllChildren();
 
-  size_t list_size = new_children.size();
-  for (size_t i = 0; i < list_size; ++i)
-    AddChildInternal(new_children[i]);
+  for (auto* new_child : new_children)
+    AddChildInternal(new_child);
 
   NotifyChildListChange();
 

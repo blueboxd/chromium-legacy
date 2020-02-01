@@ -487,6 +487,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   MouseEvent(const MouseEvent& copy);
   ~MouseEvent() override;
 
+  void InitializeNative();
+
   class DispatcherApi {
    public:
     explicit DispatcherApi(MouseEvent* event) : event_(event) {}
@@ -804,6 +806,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
   KeyEvent& operator=(const KeyEvent& rhs);
 
   ~KeyEvent() override;
+
+  void InitializeNative();
 
   // This bypasses the normal mapping from keystroke events to characters,
   // which allows an I18N virtual keyboard to fabricate a keyboard event that

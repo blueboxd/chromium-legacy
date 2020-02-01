@@ -37,9 +37,6 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
   void Init() override;
   bool ShouldShowCloseButton() const override;
   void OnDialogInitialized() override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
 
   // GlobalErrorBubbleViewBase implementation.
   void CloseBubbleView() override;

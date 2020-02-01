@@ -23,7 +23,7 @@ namespace net {
 class DnsResponse;
 class DnsSession;
 class NetLogWithSource;
-class URLRequestContext;
+class ResolveContext;
 
 // DnsTransaction implements a stub DNS resolver as defined in RFC 1034.
 // The DnsTransaction takes care of retransmissions, name server fallback (or
@@ -106,12 +106,12 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       const NetLogWithSource& net_log,
       bool secure,
       DnsConfig::SecureDnsMode secure_dns_mode,
-      URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
+      ResolveContext* resolve_context) WARN_UNUSED_RESULT = 0;
 
   // Creates a runner to run the DoH probe sequence for all configured DoH
   // resolvers.
   virtual std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
-      URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
+      ResolveContext* resolve_context) WARN_UNUSED_RESULT = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by
   // transactions from this factory.

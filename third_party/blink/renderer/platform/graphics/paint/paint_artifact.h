@@ -61,7 +61,7 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
   }
 
   Vector<PaintChunk>::const_iterator FindChunkByDisplayItemIndex(
-      size_t index) const {
+      wtf_size_t index) const {
     return FindChunkInVectorByDisplayItemIndex(PaintChunks(), index);
   }
 

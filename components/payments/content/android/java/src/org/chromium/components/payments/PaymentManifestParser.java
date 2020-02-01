@@ -9,8 +9,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 /** Parses payment manifests in a utility process. */

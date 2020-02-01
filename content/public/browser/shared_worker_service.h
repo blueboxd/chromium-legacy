@@ -59,6 +59,18 @@ class CONTENT_EXPORT SharedWorkerService {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Invokes OnWorkerStarted() on |observer| for all existing shared workers.
+  //
+  // This function must be invoked in conjunction with AddObserver(). It is
+  // meant to be used by an observer that dynamically subscribe to the
+  // SharedWorkerService while some workers are already running. It avoids
+  // receiving a OnBeforeWorkerTerminated() event without having received the
+  // corresponding OnWorkerStart() event.
+  //
+  // Note: Due to current callers not needing it, this function does NOT call
+  //       OnClientAdded() for each worker's clients.
+  virtual void EnumerateSharedWorkers(Observer* observer) = 0;
+
   // Terminates the given shared worker identified by its name, the URL of
   // its main script resource, and the constructor origin. Returns true on
   // success.

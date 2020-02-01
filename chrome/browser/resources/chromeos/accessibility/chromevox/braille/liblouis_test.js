@@ -69,7 +69,7 @@ LIBLOUIS_TEST_F_WITH_PREAMBLE(
     'MAYBE_checkAllTables', function(liblouis) {
       BrailleTable.getAll(this.newCallback(function(tables) {
         let i = 0;
-        var checkNextTable = function() {
+        const checkNextTable = function() {
           const table = tables[i++];
           if (table) {
             this.withTranslator(
@@ -139,14 +139,14 @@ LIBLOUIS_TEST_F('testKeyEventStaticData', function(liblouis) {
         this.newCallback(function(cells, textToBraille, brailleToText) {
           // A-Z.
           const view = new Uint8Array(cells);
-          for (var i = 0; i < 26; i++) {
+          for (let i = 0; i < 26; i++) {
             assertEquals(
                 String.fromCharCode(i + 65),
                 BrailleKeyEvent.brailleDotsToStandardKeyCode[view[i]]);
           }
 
           // 0-9.
-          for (var i = 27; i < 37; i++) {
+          for (let i = 27; i < 37; i++) {
             assertEquals(
                 String.fromCharCode(i + 21),
                 BrailleKeyEvent.brailleDotsToStandardKeyCode[view[i]]);

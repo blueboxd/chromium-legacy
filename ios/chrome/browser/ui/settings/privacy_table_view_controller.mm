@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -138,10 +139,11 @@ GURL GoogleServicesSettingsURL() {
       _browserState->GetPrefs()->GetBoolean(prefs::kIosHandoffToOtherDevices)
           ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
           : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _handoffDetailItem =
-      [self detailItemWithType:ItemTypeOtherDevicesHandoff
-                       titleId:IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES
-                    detailText:detailText];
+  _handoffDetailItem = [self
+           detailItemWithType:ItemTypeOtherDevicesHandoff
+                      titleId:IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES
+                   detailText:detailText
+      accessibilityIdentifier:kSettingsHandoffCellId];
 
   return _handoffDetailItem;
 }
@@ -162,18 +164,22 @@ GURL GoogleServicesSettingsURL() {
 - (TableViewItem*)clearBrowsingDetailItem {
   return [self detailItemWithType:ItemTypeClearBrowsingDataClear
                           titleId:IDS_IOS_CLEAR_BROWSING_DATA_TITLE
-                       detailText:nil];
+                       detailText:nil
+          accessibilityIdentifier:kSettingsClearBrowsingDataCellId];
 }
 
 - (TableViewDetailIconItem*)detailItemWithType:(NSInteger)type
                                        titleId:(NSInteger)titleId
-                                    detailText:(NSString*)detailText {
+                                    detailText:(NSString*)detailText
+                       accessibilityIdentifier:
+                           (NSString*)accessibilityIdentifier {
   TableViewDetailIconItem* detailItem =
       [[TableViewDetailIconItem alloc] initWithType:type];
   detailItem.text = l10n_util::GetNSString(titleId);
   detailItem.detailText = detailText;
   detailItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   detailItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  detailItem.accessibilityIdentifier = accessibilityIdentifier;
 
   return detailItem;
 }

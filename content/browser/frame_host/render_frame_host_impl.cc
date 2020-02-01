@@ -4474,8 +4474,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   GetProcess()->FilterURL(false, &params->target_url);
 
   bool effective_transient_activation_state =
-      params->mimic_user_gesture ||
-      frame_tree_node_->HasTransientUserActivation();
+      params->allow_popup || frame_tree_node_->HasTransientUserActivation();
 
   // Ignore window creation when sent from a frame that's not current or
   // created.

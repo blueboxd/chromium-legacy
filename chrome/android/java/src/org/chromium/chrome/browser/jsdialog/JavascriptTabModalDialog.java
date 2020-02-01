@@ -9,7 +9,7 @@ import android.content.Context;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.components.app_modal.JavascriptModalDialog;
+import org.chromium.components.javascript_dialogs.JavascriptModalDialog;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;

@@ -27,6 +27,50 @@ using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 
 namespace {
 
+// Configuration for which extensions to warn/block. These parameters are set
+// differently for testing, so the listed defaults are only used when the flag
+// is manually enabled (and in unit tests).
+//
+// Extensions must be in lower case! Extensions are compared against save path
+// determined by Chrome prior to the user seeing a file picker.
+//
+// The extension list for each type (warn, block, silent block) can be
+// configured in two ways: as an allowlist, or as a blocklist. When the
+// extension list is a blocklist, extensions listed will trigger a
+// warning/block. If the extension list is configured as an allowlist, all
+// extensions EXCEPT those listed will trigger a warning/block.
+//
+// To make manual testing easier, the defaults are to have a small blocklist for
+// block/silent block, and a small allowlist for warnings. This means that
+// every mixed content download will at *least* generate a warning.
+const base::FeatureParam<bool> kTreatSilentBlockListAsAllowlist(
+    &features::kTreatUnsafeDownloadsAsActive,
+    "TreatSilentBlockListAsAllowlist",
+    false);
+const base::FeatureParam<std::string> kSilentBlockExtensionList(
+    &features::kTreatUnsafeDownloadsAsActive,
+    "SilentBlockExtensionList",
+    "silently_blocked_for_testing");
+
+const base::FeatureParam<bool> kTreatBlockListAsAllowlist(
+    &features::kTreatUnsafeDownloadsAsActive,
+    "TreatBlockListAsAllowlist",
+    false);
+const base::FeatureParam<std::string> kBlockExtensionList(
+    &features::kTreatUnsafeDownloadsAsActive,
+    "BlockExtensionList",
+    "exe,scr,msi,vb,dmg,pkg,crx,gz,gzip,zip,bz2,rar,7z,tar");
+
+// Note: this is an allowlist, so acts as a catch-all.
+const base::FeatureParam<bool> kTreatWarnListAsAllowlist(
+    &features::kTreatUnsafeDownloadsAsActive,
+    "TreatWarnListAsAllowlist",
+    true);
+const base::FeatureParam<std::string> kWarnExtensionList(
+    &features::kTreatUnsafeDownloadsAsActive,
+    "WarnExtensionList",
+    "dont_warn_for_testing");
+
 // Map the string file extension to the corresponding histogram enum.
 InsecureDownloadExtensions GetExtensionEnumFromString(
     const std::string& extension) {
@@ -135,147 +179,187 @@ InsecureDownloadSecurityStatus GetDownloadBlockingEnum(
   return InsecureDownloadSecurityStatus::kInitiatorInsecureFileInsecure;
 }
 
-}  // namespace
-MixedContentStatus GetMixedContentStatusForDownload(
-    const base::FilePath& path,
-    const download::DownloadItem& item) {
-  // Extensions must be in lower case! Extensions are compared against save path
-  // determined by Chrome prior to the user seeing a file picker.
-  const std::vector<std::string> kDefaultUnsafeExtensions = {
-      "exe", "scr", "msi", "vb",  "dmg", "pkg", "crx",
-      "gz",  "zip", "bz2", "rar", "7z",  "tar",
-  };
-
-  auto download_source = item.GetDownloadSource();
-  auto transition_type = item.GetTransitionType();
-
-  // Ignore downloads that don't qualify for blocking. At a minimum, this
-  // includes:
-  //  - retries/reloads (since the original DL would have been blocked, and
-  //    initiating context is lost on retry anyway),
-  //  - anything triggered directly from the address bar or similar.
-  //  - internal-Chrome downloads (e.g. downloading profile photos),
-  //  - webview/CCT,
-  //  - anything extension related,
-  //  - etc.
-  //
-  // TODO(1029062): INTERNAL_API is also used for background fetch. That
-  // probably isn't the correct behavior, since INTERNAL_API is otherwise used
-  // for Chrome stuff. Background fetch should probably be HTTPS-only.
-  //
-  // We permit DownloadSource::CONTEXT_MENU and DownloadSource::WEB_CONTENTS_API
-  // since we infer their 'initiator' as the tab page, below. However,
-  // eventually they will receive differing treatment.
-  if (download_source == DownloadSource::RETRY ||
-      (transition_type & ui::PAGE_TRANSITION_RELOAD) ||
-      (transition_type & ui::PAGE_TRANSITION_TYPED) ||
-      (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
-      (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK) ||
-      (transition_type & ui::PAGE_TRANSITION_AUTO_TOPLEVEL) ||
-      (transition_type & ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
-      (transition_type & ui::PAGE_TRANSITION_FROM_API) ||
-      download_source == DownloadSource::OFFLINE_PAGE ||
-      download_source == DownloadSource::INTERNAL_API ||
-      download_source == DownloadSource::EXTENSION_API ||
-      download_source == DownloadSource::EXTENSION_INSTALLER) {
-    base::UmaHistogramEnumeration(
-        kInsecureDownloadHistogramName,
-        InsecureDownloadSecurityStatus::kDownloadIgnored);
-    return MixedContentStatus::SAFE;
-  }
-
-  // Evaluate download security
-  const GURL& dl_url = item.GetURL();
-  bool is_download_secure = content::IsOriginSecure(dl_url) ||
-                            dl_url.SchemeIsBlob() || dl_url.SchemeIsFile();
-  bool is_redirect_chain_secure = true;
-  for (const auto& url : item.GetUrlChain()) {
-    if (!content::IsOriginSecure(url)) {
-      is_redirect_chain_secure = false;
-      break;
+struct MixedContentDownloadData {
+  MixedContentDownloadData(const base::FilePath& path,
+                           const download::DownloadItem* item)
+      : item_(item) {
+    // Configure initiator.
+    bool initiator_inferred = false;
+    initiator_ = item->GetRequestInitiator();
+    if (!initiator_.has_value() && item->GetTabUrl().is_valid()) {
+      initiator_inferred = true;
+      initiator_ = url::Origin::Create(item->GetTabUrl());
     }
-  }
-  is_download_secure = is_download_secure && is_redirect_chain_secure;
 
-  // Check field trials for override of the unsafe extensions.
-  std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
-      features::kTreatUnsafeDownloadsAsActive,
-      features::kTreatUnsafeDownloadsAsActiveParamName);
-  std::vector<base::StringPiece> unsafe_extensions = base::SplitStringPiece(
-      field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (unsafe_extensions.empty()) {
-    unsafe_extensions.insert(unsafe_extensions.end(),
-                             kDefaultUnsafeExtensions.begin(),
-                             kDefaultUnsafeExtensions.end());
-  }
-
-  auto initiator = item.GetRequestInitiator();
-
-  bool is_inferred = false;
-  if (!initiator.has_value() && item.GetTabUrl().is_valid()) {
-    initiator = url::Origin::Create(item.GetTabUrl());
-    is_inferred = true;
-  }
-
-  // Then see if that extension is blocked
-  bool found_blocked_extension = false;
+    // Extract extension.
 #if defined(OS_WIN)
-  std::string extension(base::WideToUTF8(path.FinalExtension()));
+    extension_ = base::WideToUTF8(path.FinalExtension());
 #else
-  std::string extension(path.FinalExtension());
+    extension_ = path.FinalExtension();
 #endif
-  if (!extension.empty()) {
-    extension = extension.substr(1);  // Omit leading dot.
-    for (const auto& unsafe_extension : unsafe_extensions) {
-      if (base::LowerCaseEqualsASCII(extension, unsafe_extension)) {
-        found_blocked_extension = true;
+    if (!extension_.empty()) {
+      DCHECK_EQ(extension_[0], '.');
+      extension_ = extension_.substr(1);  // Omit leading dot.
+    }
+
+    // Evaluate download security.
+    is_redirect_chain_secure_ = true;
+    for (const auto& url : item->GetUrlChain()) {
+      if (!content::IsOriginSecure(url)) {
+        is_redirect_chain_secure_ = false;
         break;
       }
     }
+    const GURL& dl_url = item->GetURL();
+    bool is_download_secure = is_redirect_chain_secure_ &&
+                              (content::IsOriginSecure(dl_url) ||
+                               dl_url.SchemeIsBlob() || dl_url.SchemeIsFile());
+
+    // Configure mixed content status.
+    // Some downloads don't qualify for blocking, and are thus never
+    // mixed-content. At a minimum, this includes:
+    //  - retries/reloads (since the original DL would have been blocked, and
+    //    initiating context is lost on retry anyway),
+    //  - anything triggered directly from the address bar or similar.
+    //  - internal-Chrome downloads (e.g. downloading profile photos),
+    //  - webview/CCT,
+    //  - anything extension related,
+    //  - etc.
+    //
+    // TODO(1029062): INTERNAL_API is also used for background fetch. That
+    // probably isn't the correct behavior, since INTERNAL_API is otherwise used
+    // for Chrome stuff. Background fetch should probably be HTTPS-only.
+    auto download_source = item->GetDownloadSource();
+    auto transition_type = item->GetTransitionType();
+    if (download_source == DownloadSource::RETRY ||
+        (transition_type & ui::PAGE_TRANSITION_RELOAD) ||
+        (transition_type & ui::PAGE_TRANSITION_TYPED) ||
+        (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
+        (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK) ||
+        (transition_type & ui::PAGE_TRANSITION_AUTO_TOPLEVEL) ||
+        (transition_type & ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+        (transition_type & ui::PAGE_TRANSITION_FROM_API) ||
+        download_source == DownloadSource::OFFLINE_PAGE ||
+        download_source == DownloadSource::INTERNAL_API ||
+        download_source == DownloadSource::EXTENSION_API ||
+        download_source == DownloadSource::EXTENSION_INSTALLER) {
+      base::UmaHistogramEnumeration(
+          kInsecureDownloadHistogramName,
+          InsecureDownloadSecurityStatus::kDownloadIgnored);
+      is_mixed_content_ = false;
+    } else {  // Not ignorable download.
+      // Record some metrics first.
+      auto security_status = GetDownloadBlockingEnum(
+          initiator_, is_download_secure, initiator_inferred);
+      base::UmaHistogramEnumeration(
+          GetDownloadBlockingExtensionMetricName(security_status),
+          GetExtensionEnumFromString(extension_));
+      base::UmaHistogramEnumeration(kInsecureDownloadHistogramName,
+                                    security_status);
+      download::RecordDownloadValidationMetrics(
+          download::DownloadMetricsCallsite::kMixContentDownloadBlocking,
+          download::CheckDownloadConnectionSecurity(item->GetURL(),
+                                                    item->GetUrlChain()),
+          download::DownloadContentFromMimeType(item->GetMimeType(), false));
+
+      is_mixed_content_ =
+          (initiator_.has_value() &&
+           initiator_->GetURL().SchemeIsCryptographic() && !is_download_secure);
+    }
   }
 
-  auto security_status =
-      GetDownloadBlockingEnum(initiator, is_download_secure, is_inferred);
-  base::UmaHistogramEnumeration(
-      GetDownloadBlockingExtensionMetricName(security_status),
-      GetExtensionEnumFromString(extension));
-  base::UmaHistogramEnumeration(kInsecureDownloadHistogramName,
-                                security_status);
-  download::RecordDownloadValidationMetrics(
-      download::DownloadMetricsCallsite::kMixContentDownloadBlocking,
-      download::CheckDownloadConnectionSecurity(dl_url, item.GetUrlChain()),
-      download::DownloadContentFromMimeType(item.GetMimeType(), false));
+  base::Optional<url::Origin> initiator_;
+  std::string extension_;
+  const download::DownloadItem* item_;
+  bool is_redirect_chain_secure_;
+  bool is_mixed_content_;
+};
 
-  if (!(initiator.has_value() && initiator->GetURL().SchemeIsCryptographic() &&
-        !is_download_secure && found_blocked_extension &&
-        base::FeatureList::IsEnabled(
-            features::kTreatUnsafeDownloadsAsActive))) {
+// Whether or not |extension| is contained in the comma-separated list in a
+// feature param specified by |override_param_name|. If |override_param_name| is
+// not set, defaults to |default_extensions|.
+bool ContainsExtension(const base::FeatureParam<std::string>& extensions,
+                       const base::FeatureParam<bool>& is_allowlist,
+                       const std::string& download_extension) {
+  auto extensions_str = extensions.Get();
+  std::vector<base::StringPiece> listed_extensions = base::SplitStringPiece(
+      extensions_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const auto& unsafe_extension : listed_extensions) {
+    DCHECK_EQ(base::ToLowerASCII(unsafe_extension), unsafe_extension);
+    if (base::LowerCaseEqualsASCII(download_extension, unsafe_extension)) {
+      return !is_allowlist.Get();  // aka true when it's a blocklist.
+    }
+  }
+
+  return is_allowlist.Get();  // aka false when it's a blocklist.
+}
+
+// Just print a descriptive message to the console about the blocked download.
+// |is_blocked| indicates whether this download will be blocked now.
+void PrintConsoleMessage(const MixedContentDownloadData& data,
+                         bool is_blocked) {
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(data.item_);
+  if (!web_contents) {
+    return;
+  }
+
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kError,
+      base::StringPrintf(
+          "Mixed Content: The site at '%s' was loaded over a secure "
+          "connection, but the file at '%s' was %s an insecure "
+          "connection. This file should be served over HTTPS. "
+          "This download %s.",
+          data.initiator_->GetURL().spec().c_str(),
+          data.item_->GetURL().spec().c_str(),
+          (data.is_redirect_chain_secure_ ? "loaded over"
+                                          : "redirected through"),
+          (is_blocked ? "has been blocked"
+                      : "will be blocked in future versions of Chrome")));
+}
+
+}  // namespace
+
+MixedContentStatus GetMixedContentStatusForDownload(
+    const base::FilePath& path,
+    const download::DownloadItem* item) {
+  MixedContentDownloadData data(path, item);
+
+  if (!data.is_mixed_content_ ||
+      !base::FeatureList::IsEnabled(features::kTreatUnsafeDownloadsAsActive)) {
     return MixedContentStatus::SAFE;
   }
 
-  content::WebContents* web_contents =
-      content::DownloadItemUtils::GetWebContents(&item);
-  if (web_contents) {
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        base::StringPrintf(
-            "Mixed Content: The site at '%s' was loaded over a secure "
-            "connection, but the file at '%s' was %s an insecure "
-            "connection. This file should be served over HTTPS.",
-            initiator->GetURL().spec().c_str(), item.GetURL().spec().c_str(),
-            (is_redirect_chain_secure ? "loaded over" : "redirected through")));
+  if (ContainsExtension(kSilentBlockExtensionList,
+                        kTreatSilentBlockListAsAllowlist, data.extension_)) {
+    PrintConsoleMessage(data, true);
+
+    // Only permit silent blocking when not initiated by an explicit user
+    // action.  Otherwise, fall back to visible blocking.
+    auto download_source = data.item_->GetDownloadSource();
+    if (download_source == DownloadSource::CONTEXT_MENU ||
+        download_source == DownloadSource::WEB_CONTENTS_API) {
+      return MixedContentStatus::BLOCK;
+    }
+
+    return MixedContentStatus::SILENT_BLOCK;
   }
 
-  // In the future, we will be more selective based on extension, and will want
-  // to never use SILENT_BLOCK when the download is explicitly requested. We can
-  // filter those out with something like this:
-  /*
-  if (download_source == DownloadSource::CONTEXT_MENU ||
-      download_source == DownloadSource::WEB_CONTENTS_API) {
+  if (ContainsExtension(kBlockExtensionList, kTreatBlockListAsAllowlist,
+                        data.extension_)) {
+    PrintConsoleMessage(data, true);
     return MixedContentStatus::BLOCK;
   }
-  return MixedContentStatus::WARN;
-  */
 
-  return MixedContentStatus::SILENT_BLOCK;
+  if (ContainsExtension(kWarnExtensionList, kTreatWarnListAsAllowlist,
+                        data.extension_)) {
+    PrintConsoleMessage(data, true);
+    return MixedContentStatus::WARN;
+  }
+
+  // The download is still mixed content, but we're not blocking it yet.
+  PrintConsoleMessage(data, false);
+  return MixedContentStatus::SAFE;
 }

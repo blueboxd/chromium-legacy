@@ -1,0 +1,63 @@
+<body>
+</body>
+<script>
+function appendSmallParagraph() {
+  let p = document.createElement("P");
+  let t = document.createTextNode("abc");
+  p.appendChild(t);
+  document.body.appendChild(p);
+  document.body.appendChild(p.cloneNode(true));
+  document.body.appendChild(p.cloneNode(true));
+}
+
+function appendLargeParagraph() {
+  // Append a lot of contents to make the page scrollable.
+  for (let i = 0; i < 500; ++i) {
+    appendSmallParagraph();
+  }
+}
+
+function appendFrame(frame_id, url, sticky_type, height_ratio) {
+  let frame = document.createElement('iframe');
+  frame.src = url;
+  frame.id = frame_id;
+  frame.name = frame_id;
+  frame.width = window.innerWidth;
+  frame.height = window.innerHeight * height_ratio;
+
+  if (sticky_type == 'reposition') {
+    // Reset the frame's position to the top of the viewport every 50ms.
+    frame.style.top = window.scrollY;
+    frame.style.position = 'fixed';
+    setInterval(function(){
+      frame.style.top = window.scrollY;
+    }, 50);
+  } else if (sticky_type == 'fixed_position') {
+    // Fix the frame's position to the top of the viewport.
+    frame.style.top = window.scrollY;
+    frame.style.position = 'fixed';
+  } else if (sticky_type == 'sticky_position') {
+    // Position the frame relative until it's about to be scrolled up out of
+    // the viewport - then it sticks to the top of the viewport.
+    frame.style.position = 'sticky';
+    frame.style.top = '0px';
+  }
+
+  document.body.appendChild(frame);
+}
+
+function autoScrollUp() {
+  setInterval(function(){
+    window.scrollTo(0, window.scrollY + 1);
+  }, 20);
+}
+
+function autoMoveFirstIframeDown() {
+  setInterval(function(){
+    let f = document.getElementsByTagName("iframe")[0];
+    let rect = f.getBoundingClientRect();
+    f.style.top = rect.top + 1 + 'px';
+  }, 20);
+}
+
+</script>

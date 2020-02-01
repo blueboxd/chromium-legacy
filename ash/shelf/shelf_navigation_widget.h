@@ -96,6 +96,8 @@ class ASH_EXPORT ShelfNavigationWidget : public TabletModeObserver,
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
 
+  void UpdateTargetBoundsForGesture();
+
  private:
   class Delegate;
 
@@ -103,6 +105,7 @@ class ASH_EXPORT ShelfNavigationWidget : public TabletModeObserver,
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;
+  gfx::Rect target_bounds_;
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfNavigationWidget);

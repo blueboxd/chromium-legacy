@@ -38,10 +38,10 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.URI;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

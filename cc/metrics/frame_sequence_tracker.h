@@ -110,7 +110,7 @@ class CC_EXPORT FrameSequenceMetrics {
   bool HasEnoughDataForReporting() const;
   bool HasDataLeftForReporting() const;
   // Report related metrics: throughput, checkboarding...
-  void ReportMetrics(std::string debug_trace = std::string());
+  void ReportMetrics();
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
   ThroughputData& main_throughput() { return main_throughput_; }
@@ -178,7 +178,8 @@ class CC_EXPORT FrameSequenceTrackerCollection {
                          bool has_missing_content,
                          const viz::BeginFrameAck& ack,
                          const viz::BeginFrameArgs& origin_args);
-  void NotifyFrameEnd(const viz::BeginFrameArgs& args);
+  void NotifyFrameEnd(const viz::BeginFrameArgs& args,
+                      const viz::BeginFrameArgs& main_args);
 
   // Note that this notifies the trackers of the presentation-feedbacks, and
   // destroys any tracker that had been scheduled for destruction (using
@@ -260,7 +261,8 @@ class CC_EXPORT FrameSequenceTracker {
                          const viz::BeginFrameAck& ack,
                          const viz::BeginFrameArgs& origin_args);
 
-  void ReportFrameEnd(const viz::BeginFrameArgs& args);
+  void ReportFrameEnd(const viz::BeginFrameArgs& args,
+                      const viz::BeginFrameArgs& main_args);
 
   // Notifies the tracker of the presentation-feedback of a previously submitted
   // CompositorFrame with |frame_token|.

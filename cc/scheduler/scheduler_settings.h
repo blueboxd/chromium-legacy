@@ -39,13 +39,14 @@ class CC_EXPORT SchedulerSettings {
   // This is enabled for android-webview.
   bool using_synchronous_renderer_compositor = false;
 
-  // This is used to determine whether some begin-frames should be skipped (both
-  // in the main-thread and the compositor-thread) if previous frames have had
-  // high latency.
+  // This is used to determine whether some begin-frames should be skipped
+  // (either in the main-thread or the compositor-thread) if previous frames
+  // have had high latency.
   // It is enabled by default on desktop platforms, and has been recently
   // disabled by default on android. It may be disabled on all platforms. See
   // more in https://crbug.com/933846
-  bool enable_latency_recovery = true;
+  bool enable_impl_latency_recovery = true;
+  bool enable_main_latency_recovery = true;
 
   // Turning this on effectively disables pipelining of compositor frame
   // production stages by waiting for each stage to complete before producing

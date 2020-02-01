@@ -50,10 +50,7 @@ config("inside_blink") {
     ]
 
     if (!is_chromeos || default_toolchain != "//build/toolchain/cros:target") {
-      cflags += [
-        "-Wno-enum-enum-conversion",
-        "-Wno-enum-float-conversion",
-      ]
+      cflags += [ "-Wno-enum-float-conversion" ]
     }
   }
 }

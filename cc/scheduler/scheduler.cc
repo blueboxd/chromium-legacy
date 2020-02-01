@@ -932,7 +932,7 @@ bool Scheduler::ShouldRecoverMainLatency(
     bool can_activate_before_deadline) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
-  if (!settings_.enable_latency_recovery)
+  if (!settings_.enable_main_latency_recovery)
     return false;
 
   // The main thread is in a low latency mode and there's no need to recover.
@@ -964,7 +964,7 @@ bool Scheduler::ShouldRecoverImplLatency(
     bool can_activate_before_deadline) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
-  if (!settings_.enable_latency_recovery)
+  if (!settings_.enable_impl_latency_recovery)
     return false;
 
   // Disable impl thread latency recovery when using the unthrottled

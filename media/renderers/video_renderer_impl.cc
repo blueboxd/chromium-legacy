@@ -569,9 +569,6 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::Status status,
   // Attempt to purge bad frames in case of underflow or backgrounding.
   RemoveFramesForUnderflowOrBackgroundRendering();
 
-  // We may have removed all frames above and have reached end of stream.
-  MaybeFireEndedCallback_Locked(time_progressing_);
-
   // Update any statistics since the last call.
   UpdateStats_Locked();
 
@@ -597,6 +594,10 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::Status status,
   // Signal buffering state if we've met our conditions.
   if (buffering_state_ == BUFFERING_HAVE_NOTHING && HaveEnoughData_Locked())
     TransitionToHaveEnough_Locked();
+
+  // We may have removed all frames above and have reached end of stream. This
+  // must happen after the buffering state change has been signaled.
+  MaybeFireEndedCallback_Locked(time_progressing_);
 
   // Always request more decoded video if we have capacity.
   AttemptRead_Locked();
@@ -801,8 +802,12 @@ void VideoRendererImpl::MaybeFireEndedCallback_Locked(bool time_progressing) {
   if (!received_end_of_stream_ || rendered_end_of_stream_)
     return;
 
+  const bool have_frames_after_start_time =
+      algorithm_->frames_queued() &&
+      !IsBeforeStartTime(algorithm_->last_frame());
+
   // Don't fire ended if time isn't moving and we have frames.
-  if (!time_progressing && algorithm_->frames_queued())
+  if (!time_progressing && have_frames_after_start_time)
     return;
 
   // Fire ended if we have no more effective frames, only ever had one frame, or
@@ -814,6 +819,9 @@ void VideoRendererImpl::MaybeFireEndedCallback_Locked(bool time_progressing) {
     should_render_end_of_stream = true;
   } else if (algorithm_->frames_queued() == 1u &&
              algorithm_->average_frame_duration().is_zero()) {
+    should_render_end_of_stream = true;
+  } else if (algorithm_->frames_queued() == 1u &&
+             algorithm_->render_interval().is_zero()) {
     should_render_end_of_stream = true;
   } else if (algorithm_->frames_queued() == 1u &&
              algorithm_->effective_frames_queued() == 1) {

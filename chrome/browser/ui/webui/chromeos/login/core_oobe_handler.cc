@@ -55,7 +55,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
@@ -474,10 +473,6 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("selectToSpeakEnabled",
                        AccessibilityManager::Get()->IsSelectToSpeakEnabled());
-  a11y_info.SetBoolean(
-      "enableExperimentalA11yFeatures",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityFeatures));
   DCHECK(MagnificationManager::Get());
   a11y_info.SetBoolean("screenMagnifierEnabled",
                        MagnificationManager::Get()->IsMagnifierEnabled());

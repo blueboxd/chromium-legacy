@@ -50,7 +50,6 @@ BluetoothBrailleDisplayUI = class {
     const title = document.createElement('h2');
     title.textContent = Msgs.getMsg('options_bluetooth_braille_display_title');
     container.appendChild(title);
-
     const controls = document.createElement('div');
     container.appendChild(controls);
     this.controls_ = controls;
@@ -106,7 +105,7 @@ BluetoothBrailleDisplayUI = class {
 
     // Remove any displays that were removed.
     for (let i = 0; i < this.displaySelect_.children.length; i++) {
-      var domDisplay = this.displaySelect_.children[i];
+      const domDisplay = this.displaySelect_.children[i];
       if (!displays.find((display) => domDisplay.id == display.address)) {
         domDisplay.remove();
       }
@@ -151,7 +150,7 @@ BluetoothBrailleDisplayUI = class {
     pincodeField.setAttribute('aria-labelledby', 'pincodeLabel');
     form.appendChild(pincodeField);
 
-    var timeoutId;
+    let timeoutId = -1;
     form.addEventListener('submit', (evt) => {
       if (timeoutId) {
         clearTimeout(timeoutId);

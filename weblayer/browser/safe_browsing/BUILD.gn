@@ -14,6 +14,8 @@ source_set("safe_browsing") {
     "safe_browsing_navigation_throttle.h",
     "safe_browsing_service.cc",
     "safe_browsing_service.h",
+    "safe_browsing_subresource_helper.cc",
+    "safe_browsing_subresource_helper.h",
     "safe_browsing_ui_manager.cc",
     "safe_browsing_ui_manager.h",
     "url_checker_delegate_impl.cc",

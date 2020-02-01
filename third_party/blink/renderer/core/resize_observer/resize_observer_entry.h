@@ -13,22 +13,34 @@ namespace blink {
 
 class Element;
 class DOMRectReadOnly;
+class LayoutSize;
+class ComputedStyle;
+class ResizeObserverSize;
 class LayoutRect;
 
 class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ResizeObserverEntry(Element* target, const LayoutRect& content_rect);
+  ResizeObserverEntry(Element* target);
 
   Element* target() const { return target_; }
   DOMRectReadOnly* contentRect() const { return content_rect_; }
+  ResizeObserverSize* contentBoxSize() const { return content_box_size_; }
+  ResizeObserverSize* borderBoxSize() const { return border_box_size_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
   Member<Element> target_;
   Member<DOMRectReadOnly> content_rect_;
+  Member<ResizeObserverSize> content_box_size_;
+  Member<ResizeObserverSize> border_box_size_;
+
+  static DOMRectReadOnly* ZoomAdjustedLayoutRect(LayoutRect content_rect,
+                                                 const ComputedStyle& style);
+  static ResizeObserverSize* ZoomAdjustedSize(const LayoutSize box_size,
+                                              const ComputedStyle& style);
 };
 
 }  // namespace blink

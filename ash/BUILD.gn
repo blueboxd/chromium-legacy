@@ -1712,7 +1712,6 @@ test("ash_unittests") {
     "assistant/assistant_screen_context_controller_unittest.cc",
     "assistant/assistant_state_controller_unittest.cc",
     "assistant/model/assistant_query_history_unittest.cc",
-    "assistant/ui/assistant_container_view_unittest.cc",
     "assistant/ui/assistant_web_container_view_unittest.cc",
     "assistant/util/deep_link_util_unittest.cc",
     "autoclick/autoclick_drag_event_rewriter_unittest.cc",

@@ -104,23 +104,36 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
 
   std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
       const webrtc::SdpVideoFormat& format) override {
-    std::unique_ptr<webrtc::VideoEncoder> software_encoder;
-    if (IsFormatSupported(&software_encoder_factory_, format)) {
-      software_encoder = std::make_unique<webrtc::EncoderSimulcastProxy>(
-          &software_encoder_factory_, format);
+    const bool supported_in_software =
+        IsFormatSupported(&software_encoder_factory_, format);
+    const bool supported_in_hardware =
+        IsFormatSupported(hardware_encoder_factory_.get(), format);
+
+    if (!supported_in_software && !supported_in_hardware)
+      return nullptr;
+
+    if (base::EqualsCaseInsensitiveASCII(format.name.c_str(),
+                                         cricket::kVp9CodecName)) {
+      // For VP9, we don't use simulcast.
+      if (supported_in_hardware && supported_in_software) {
+        return Wrap(software_encoder_factory_.CreateVideoEncoder(format),
+                    hardware_encoder_factory_->CreateVideoEncoder(format));
+      } else if (supported_in_software) {
+        return software_encoder_factory_.CreateVideoEncoder(format);
+      }
+      return hardware_encoder_factory_->CreateVideoEncoder(format);
     }
 
-    std::unique_ptr<webrtc::VideoEncoder> hardware_encoder;
-    if (IsFormatSupported(hardware_encoder_factory_.get(), format)) {
-      hardware_encoder =
-          base::EqualsCaseInsensitiveASCII(format.name.c_str(),
-                                           cricket::kVp9CodecName)
-              ? hardware_encoder_factory_->CreateVideoEncoder(format)
-              : std::make_unique<webrtc::SimulcastEncoderAdapter>(
-                    hardware_encoder_factory_.get(), format);
+    if (!supported_in_hardware || !hardware_encoder_factory_.get()) {
+      return std::make_unique<webrtc::SimulcastEncoderAdapter>(
+          &software_encoder_factory_, nullptr, format);
+    } else if (!supported_in_software) {
+      return std::make_unique<webrtc::SimulcastEncoderAdapter>(
+          hardware_encoder_factory_.get(), nullptr, format);
     }
 
-    return Wrap(std::move(software_encoder), std::move(hardware_encoder));
+    return std::make_unique<webrtc::SimulcastEncoderAdapter>(
+        hardware_encoder_factory_.get(), &software_encoder_factory_, format);
   }
 
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override {

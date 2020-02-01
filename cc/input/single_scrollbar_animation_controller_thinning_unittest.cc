@@ -62,7 +62,6 @@ class SingleScrollbarAnimationControllerThinningTest
     root_layer()->SetBounds(gfx::Size(100, 100));
     auto* scroll_layer = AddLayer<LayerImpl>();
     scroll_layer->SetBounds(gfx::Size(200, 200));
-    scroll_layer->SetScrollable(gfx::Size(100, 100));
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
 
@@ -79,7 +78,7 @@ class SingleScrollbarAnimationControllerThinningTest
 
     CopyProperties(root_layer(), scroll_layer);
     CreateTransformNode(scroll_layer);
-    CreateScrollNode(scroll_layer);
+    CreateScrollNode(scroll_layer, gfx::Size(100, 100));
     CopyProperties(scroll_layer, scrollbar_layer_);
     scrollbar_layer_->SetOffsetToTransformParent(gfx::Vector2dF(90, 0));
     CreateEffectNode(scrollbar_layer_).has_potential_opacity_animation = true;

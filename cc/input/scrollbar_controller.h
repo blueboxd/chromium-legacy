@@ -247,6 +247,9 @@ class CC_EXPORT ScrollbarController {
   // Returns the ratio of the scroller length to the scrollbar length. This is
   // needed to scale the scroll delta for thumb drag.
   float GetScrollerToScrollbarRatio(const ScrollbarLayerImplBase* scrollbar);
+
+  int GetViewportLength(const ScrollbarLayerImplBase* scrollbar) const;
+
   LayerTreeHostImpl* layer_tree_host_impl_;
 
   // Used to safeguard against firing GSE without firing GSB and GSU. For

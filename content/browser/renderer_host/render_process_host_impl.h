@@ -262,7 +262,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void ForceCrash() override;
-  void CleanupCorbExceptionForPluginUponDestruction() override;
+  void CleanupNetworkServicePluginExceptionsUponDestruction() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 
@@ -605,10 +605,23 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
       override;
 
-  // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
-  // exception will be removed when the corresponding RenderProcessHostImpl is
-  // destroyed (see |cleanup_corb_exception_for_plugin_upon_destruction_|).
+  // Disables CORB (Cross-Origin Read Blocking) and
+  // |request_initiator_site_lock| enforcement for |process_id|.
+  //
+  // The exception will be removed when the corresponding RenderProcessHostImpl
+  // is destroyed (see
+  // |cleanup_network_service_plugin_exceptions_upon_destruction_|).
   static void AddCorbExceptionForPlugin(int process_id);
+
+  // Allows |process_id| to use an additional |allowed_request_initiator|
+  // (bypassing |request_initiator_site_lock| enforcement).
+  //
+  // The exception will be removed when the corresponding RenderProcessHostImpl
+  // is destroyed (see
+  // |cleanup_network_service_plugin_exceptions_upon_destruction_|).
+  static void AddAllowedRequestInitiatorForPlugin(
+      int process_id,
+      const url::Origin& allowed_request_initiator);
 
   using IpcSendWatcher = base::RepeatingCallback<void(const IPC::Message& msg)>;
   void SetIpcSendWatcherForTesting(IpcSendWatcher watcher) {
@@ -1109,7 +1122,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<mojo::Receiver<viz::mojom::CompositingModeReporter>>
       compositing_mode_reporter_;
 
-  bool cleanup_corb_exception_for_plugin_upon_destruction_ = false;
+  bool cleanup_network_service_plugin_exceptions_upon_destruction_ = false;
 
   // Fields for recording MediaStream UMA.
   bool has_recorded_media_stream_frame_depth_metric_ = false;

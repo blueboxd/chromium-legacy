@@ -19,8 +19,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-
-import java.net.URI;
+import org.chromium.url.URI;
 
 /**
  * PaymentHandler coordinator, which owns the component overall, i.e., creates other objects in the

@@ -37,6 +37,7 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models import test_results
+from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.views import printing
 
 
@@ -104,11 +105,11 @@ class Testprinter(unittest.TestCase):
         printer = printing.Printer(host, options, regular_output)
         return printer, regular_output
 
-    def get_result(self, test_name, result_type=test_expectations.PASS, run_time=0):
+    def get_result(self, test_name, result_type=ResultType.Pass, run_time=0):
         failures = []
-        if result_type == test_expectations.TIMEOUT:
+        if result_type == ResultType.Timeout:
             failures = [test_failures.FailureTimeout()]
-        elif result_type == test_expectations.CRASH:
+        elif result_type == ResultType.Crash:
             failures = [test_failures.FailureCrash()]
         return test_results.TestResult(test_name, failures=failures, test_run_time=run_time)
 

@@ -55,9 +55,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   gfx::Size CalculatePreferredSize() const override;
   base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
 
   // download::DownloadItem::Observer:
   void OnDownloadUpdated(download::DownloadItem* download) override;
@@ -92,6 +89,18 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
       ui::DIALOG_BUTTON_CANCEL,
       show_context_ ? l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD)
                     : l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN));
+
+  auto make_done_callback = [&](DownloadDangerPrompt::Action action) {
+    return base::BindOnce(&DownloadDangerPromptViews::RunDone,
+                          base::Unretained(this), action);
+  };
+
+  // Note that the presentational concept of "Accept/Cancel" is inverted from
+  // the model's concept of ACCEPT/CANCEL. In the UI, the safe path is "Accept"
+  // and the dangerous path is "Cancel".
+  DialogDelegate::set_accept_callback(make_done_callback(CANCEL));
+  DialogDelegate::set_cancel_callback(make_done_callback(ACCEPT));
+  DialogDelegate::set_close_callback(make_done_callback(DISMISS));
 
   download_->AddObserver(this);
 
@@ -160,27 +169,6 @@ base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
 
 ui::ModalType DownloadDangerPromptViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
-}
-
-bool DownloadDangerPromptViews::Accept() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Note that the presentational concept of "Accept/Cancel" is inverted from
-  // the model's concept of ACCEPT/CANCEL. In the UI, the safe path is "Accept"
-  // and the dangerous path is "Cancel".
-  RunDone(CANCEL);
-  return true;
-}
-
-bool DownloadDangerPromptViews::Cancel() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  RunDone(ACCEPT);
-  return true;
-}
-
-bool DownloadDangerPromptViews::Close() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  RunDone(DISMISS);
-  return true;
 }
 
 // download::DownloadItem::Observer:

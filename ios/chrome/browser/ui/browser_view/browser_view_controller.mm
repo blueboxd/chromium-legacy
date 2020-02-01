@@ -1371,7 +1371,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self uninstallDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
   // Disconnect child coordinators.
-  [_activityServiceCoordinator disconnect];
+  [_activityServiceCoordinator stop];
   [self.popupMenuCoordinator stop];
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
@@ -2166,13 +2166,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Create child coordinators.
   _activityServiceCoordinator = [[ActivityServiceLegacyCoordinator alloc]
-      initWithBaseViewController:self];
-  _activityServiceCoordinator.dispatcher = self.commandDispatcher;
-  _activityServiceCoordinator.tabModel = self.tabModel;
-  _activityServiceCoordinator.browserState = self.browserState;
+      initWithBaseViewController:self
+                         browser:self.browser];
   _activityServiceCoordinator.positionProvider =
       [self.primaryToolbarCoordinator activityServicePositioner];
   _activityServiceCoordinator.presentationProvider = self;
+  [_activityServiceCoordinator start];
 
   // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
   if (!IsDownloadInfobarMessagesUIEnabled()) {

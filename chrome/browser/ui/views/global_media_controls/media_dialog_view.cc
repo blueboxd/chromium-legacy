@@ -96,10 +96,6 @@ std::unique_ptr<OverlayMediaNotification> MediaDialogView::PopOut(
   return active_sessions_view_->PopOut(id, bounds);
 }
 
-bool MediaDialogView::Close() {
-  return Cancel();
-}
-
 void MediaDialogView::AddedToWidget() {
   int corner_radius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);

@@ -196,7 +196,8 @@ bool WebAXObject::UpdateLayoutAndCheckValidity() {
       return false;
     if (IsLayoutClean(document))
       return true;
-    if (!document->View()->UpdateLifecycleToCompositingCleanPlusScrolling())
+    if (!document->View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+            DocumentUpdateReason::kAccessibility))
       return false;
   }
 

@@ -27,7 +27,8 @@
         <div id="pinKeyboardContainer">
           <pin-keyboard id="pinKeyboard" enable-letters
               has-error="[[isErrorLabelVisible_(errorLabelId_, userEdited_)]]"
-              aria-invalid$="[[isAriaInvalid_(parameters, userEdited_)]]"
+              aria-label="[[getLabel_(locale, parameters, errorLabelId_,
+                                      userEdited_)]]"
               on-pin-change="onPinChange_" on-submit="onSubmit_"
               disabled="[[!canEdit_]]">
             <div id="errorContainer" role="alert" problem

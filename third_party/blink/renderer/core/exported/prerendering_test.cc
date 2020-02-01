@@ -152,8 +152,6 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
     abandoned_prerenders_.push_back(prerender);
   }
 
-  void PrefetchFinished() override {}
-
   Vector<WebPrerender> added_prerenders_;
   Vector<WebPrerender> canceled_prerenders_;
   Vector<WebPrerender> abandoned_prerenders_;

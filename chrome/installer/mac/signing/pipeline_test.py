@@ -55,9 +55,9 @@ def _get_adjacent_item(l, o):
                   'copy_dir_overwrite_and_count_changes', 'run_command',
                   'make_dir', 'shutil', 'write_file', 'set_executable')
     })
-@mock.patch.multiple(
-    'signing.signing',
-    **{m: mock.DEFAULT for m in ('sign_part', 'sign_chrome', 'verify_part')})
+@mock.patch.multiple('signing.signing',
+                     **{m: mock.DEFAULT for m in ('sign_part', 'verify_part')})
+@mock.patch.multiple('signing.parts', **{'sign_chrome': mock.DEFAULT})
 @mock.patch('signing.commands.tempfile.mkdtemp', _get_work_dir)
 class TestPipelineHelpers(unittest.TestCase):
 
@@ -203,8 +203,7 @@ class TestPipelineHelpers(unittest.TestCase):
                 '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
                 '$W/modified_unsigned_framework',
                 dry_run=False),
-            mock.call.sign_chrome(
-                paths, channel_dist_config, sign_framework=True),
+            mock.call.sign_chrome(paths, channel_dist_config, sign_framework=True),
             mock.call.copy_dir_overwrite_and_count_changes(
                 '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
                 '$W/modified_unsigned_framework',
@@ -716,7 +715,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_all(self.paths, config)
+        pipeline.sign_chrome(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -779,7 +778,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_all(self.paths, config)
+        pipeline.sign_chrome(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -845,7 +844,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_all(self.paths, config)
+        pipeline.sign_chrome(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -900,7 +899,7 @@ class TestSignAll(unittest.TestCase):
         kwargs['wait_for_results'].return_value = iter([app_uuid])
 
         config = test_config.TestConfig()
-        pipeline.sign_all(self.paths, config, disable_packaging=True)
+        pipeline.sign_chrome(self.paths, config, disable_packaging=True)
 
         manager.assert_has_calls([
             # First customize the distribution and sign it.
@@ -936,7 +935,7 @@ class TestSignAll(unittest.TestCase):
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
-        pipeline.sign_all(self.paths, config, do_notarization=False)
+        pipeline.sign_chrome(self.paths, config, do_notarization=False)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -960,7 +959,7 @@ class TestSignAll(unittest.TestCase):
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
-        pipeline.sign_all(
+        pipeline.sign_chrome(
             self.paths, config, disable_packaging=True, do_notarization=False)
 
         manager.assert_has_calls([
@@ -1006,7 +1005,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_all(self.paths, config, do_notarization=False)
+        pipeline.sign_chrome(self.paths, config, do_notarization=False)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
         self.assertEqual(4, kwargs['_customize_and_sign_chrome'].call_count)

@@ -175,7 +175,7 @@ KeySequence = class {
   extractKey_(keyEvent) {
     for (const prop in this.keys) {
       if (prop == 'keyCode') {
-        var keyCode;
+        let keyCode;
         // TODO (rshearer): This is temporary until we find a library that can
         // convert between ASCII charcodes and keycodes.
         if (keyEvent.type == 'keypress' && keyEvent[prop] >= 97 &&

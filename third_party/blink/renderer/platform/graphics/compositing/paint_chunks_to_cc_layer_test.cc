@@ -175,7 +175,7 @@ struct TestChunks {
                 const ClipPaintPropertyNode& c,
                 const EffectPaintPropertyNode& e,
                 const IntRect& bounds = IntRect(0, 0, 100, 100)) {
-    size_t i = items.size();
+    auto i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(
         DefaultId().client, DefaultId().type, std::move(record));
     chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));

@@ -30,7 +30,7 @@ class MinimalBrowserPersisterTest : public WebLayerBrowserTest {
   void SetUpOnMainThread() override {
     WebLayerBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
-    browser_ = std::make_unique<BrowserImpl>(GetProfile(), nullptr);
+    browser_ = Browser::Create(GetProfile(), nullptr);
     tab_ = static_cast<TabImpl*>(browser_->AddTab(Tab::Create(GetProfile())));
     browser_->SetActiveTab(tab_);
   }
@@ -50,16 +50,20 @@ class MinimalBrowserPersisterTest : public WebLayerBrowserTest {
   void RecreateBrowserFromCurrentState(int max_size_in_bytes = 0) {
     Browser::PersistenceInfo persistence_info;
     persistence_info.minimal_state =
-        browser_->GetMinimalPersistenceState(max_size_in_bytes);
+        browser_impl()->GetMinimalPersistenceState(max_size_in_bytes);
     tab_ = nullptr;
-    browser_ = std::make_unique<BrowserImpl>(GetProfile(), &persistence_info);
+    browser_ = Browser::Create(GetProfile(), &persistence_info);
     // There is always at least one tab created (even if restore fails).
     ASSERT_GE(browser_->GetTabs().size(), 1u);
     tab_ = static_cast<TabImpl*>(browser_->GetTabs()[0]);
   }
 
  protected:
-  std::unique_ptr<BrowserImpl> browser_;
+  BrowserImpl* browser_impl() {
+    return static_cast<BrowserImpl*>(browser_.get());
+  }
+
+  std::unique_ptr<Browser> browser_;
   TabImpl* tab_ = nullptr;
 };
 

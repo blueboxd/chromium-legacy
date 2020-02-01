@@ -403,17 +403,10 @@ float ScrollbarController::GetScrollerToScrollbarRatio(
       scrollbar->orientation() == ScrollbarOrientation::VERTICAL
           ? thumb_rect.height()
           : thumb_rect.width();
+  int viewport_length = GetViewportLength(scrollbar);
 
-  const LayerImpl* owner_scroll_layer =
-      layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
-          scrollbar->scroll_element_id());
-  const float viewport_length =
-      scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-          ? owner_scroll_layer->scroll_container_bounds().height()
-          : (owner_scroll_layer->scroll_container_bounds().width());
-
-  return ((scroll_layer_length - viewport_length) /
-          (scrollbar_track_length - scrollbar_thumb_length));
+  return (scroll_layer_length - viewport_length) /
+         (scrollbar_track_length - scrollbar_thumb_length);
 }
 
 void ScrollbarController::ResetState() {
@@ -597,13 +590,23 @@ LayerImpl* ScrollbarController::GetLayerHitByPoint(
   return layer_impl;
 }
 
+int ScrollbarController::GetViewportLength(
+    const ScrollbarLayerImplBase* scrollbar) const {
+  const ScrollNode* scroll_node =
+      layer_tree_host_impl_->active_tree()
+          ->property_trees()
+          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+  DCHECK(scroll_node);
+  return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+             ? scroll_node->container_bounds.height()
+             : scroll_node->container_bounds.width();
+}
+
 int ScrollbarController::GetScrollDeltaForScrollbarPart(
     const ScrollbarLayerImplBase* scrollbar,
     const ScrollbarPart scrollbar_part,
     const bool shift_modifier) {
   int scroll_delta = 0;
-  int viewport_length = 0;
-  LayerImpl* owner_scroll_layer = nullptr;
 
   switch (scrollbar_part) {
     case ScrollbarPart::BACK_BUTTON:
@@ -611,20 +614,15 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
       scroll_delta = kPixelsPerLineStep * ScreenSpaceScaleFactor();
       break;
     case ScrollbarPart::BACK_TRACK:
-    case ScrollbarPart::FORWARD_TRACK:
+    case ScrollbarPart::FORWARD_TRACK: {
       if (shift_modifier) {
         scroll_delta = GetScrollDeltaForAbsoluteJump(scrollbar);
         break;
       }
-      owner_scroll_layer =
-          layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
-              scrollbar->scroll_element_id());
-      viewport_length =
-          scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-              ? owner_scroll_layer->scroll_container_bounds().height()
-              : (owner_scroll_layer->scroll_container_bounds().width());
-      scroll_delta = viewport_length * kMinFractionToStepWhenPaging;
+      scroll_delta =
+          GetViewportLength(scrollbar) * kMinFractionToStepWhenPaging;
       break;
+    }
     default:
       scroll_delta = 0;
   }

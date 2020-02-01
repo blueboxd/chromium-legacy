@@ -9,8 +9,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
-
-import java.net.URI;
+import org.chromium.url.URI;
 
 /**
  * See comment in:

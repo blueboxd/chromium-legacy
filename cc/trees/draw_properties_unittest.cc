@@ -331,12 +331,8 @@ TEST_F(DrawPropertiesTest, TransformsAboutScrollOffset) {
   sublayer->SetBounds(gfx::Size(500, 500));
 
   LayerImpl* scroll_layer = AddLayer<LayerImpl>();
-  scroll_layer->SetBounds(gfx::Size(10, 20));
-
+  scroll_layer->SetBounds(sublayer->bounds());
   scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
-  scroll_layer->SetScrollable(
-      gfx::Size(scroll_layer->bounds().width() + kMaxScrollOffset.x(),
-                scroll_layer->bounds().height() + kMaxScrollOffset.y()));
 
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(3, 4));
@@ -344,7 +340,10 @@ TEST_F(DrawPropertiesTest, TransformsAboutScrollOffset) {
 
   CopyProperties(OuterViewportScrollLayer(), scroll_layer);
   CreateTransformNode(scroll_layer);
-  CreateScrollNode(scroll_layer);
+  CreateScrollNode(
+      scroll_layer,
+      gfx::Size(scroll_layer->bounds().width() - kMaxScrollOffset.x(),
+                scroll_layer->bounds().height() - kMaxScrollOffset.y()));
   CopyProperties(scroll_layer, sublayer);
 
   auto& scroll_tree = GetPropertyTrees(scroll_layer)->scroll_tree;
@@ -4290,11 +4289,10 @@ TEST_F(DrawPropertiesTest, ClipParentScrolledInterveningLayer) {
       RenderSurfaceReason::kTest;
 
   intervening->SetBounds(gfx::Size(5, 5));
-  intervening->SetScrollable(gfx::Size(1, 1));
   intervening->SetElementId(LayerIdToElementIdForTesting(intervening->id()));
   CopyProperties(render_surface1, intervening);
   CreateTransformNode(intervening).post_translation = gfx::Vector2dF(1, 1);
-  CreateScrollNode(intervening);
+  CreateScrollNode(intervening, gfx::Size(1, 1));
   CreateClipNode(intervening);
 
   render_surface2->SetDrawsContent(true);
@@ -4561,7 +4559,7 @@ TEST_F(DrawPropertiesTest, ScrollChildAndScrollParentDifferentTargets) {
   CopyProperties(scroll_child_target, scroll_parent_target);
   CreateTransformNode(scroll_parent_target).post_translation =
       gfx::Vector2dF(10, 10);
-  CreateScrollNode(scroll_parent_target);
+  CreateScrollNode(scroll_parent_target, gfx::Size());
   CreateEffectNode(scroll_parent_target).render_surface_reason =
       RenderSurfaceReason::kTest;
   CreateClipNode(scroll_parent_target);
@@ -4647,11 +4645,10 @@ TEST_F(DrawPropertiesTest, ScrollSnapping) {
 
   scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetBounds(gfx::Size(30, 30));
-  scroller->SetScrollable(container->bounds());
   scroller->SetDrawsContent(true);
   CopyProperties(container, scroller);
   CreateTransformNode(scroller).post_translation = container_offset;
-  CreateScrollNode(scroller);
+  CreateScrollNode(scroller, container->bounds());
 
   // Rounded to integers already.
   {
@@ -4712,11 +4709,10 @@ TEST_F(DrawPropertiesTest, ScrollSnappingWithAnimatedScreenSpaceTransform) {
   CopyProperties(surface, container);
 
   scroller->SetBounds(gfx::Size(100, 100));
-  scroller->SetScrollable(container->bounds());
   scroller->SetDrawsContent(true);
   CopyProperties(container, scroller);
   CreateTransformNode(scroller);
-  CreateScrollNode(scroller);
+  CreateScrollNode(scroller, container->bounds());
 
   gfx::Transform end_scale;
   end_scale.Scale(2.f, 2.f);
@@ -4762,10 +4758,9 @@ TEST_F(DrawPropertiesTest, ScrollSnappingWithScrollChild) {
   gfx::Vector2dF container_offset(10.3f, 10.3f);
 
   scroller->SetBounds(gfx::Size(100, 100));
-  scroller->SetScrollable(container->bounds());
   CopyProperties(container, scroller);
   CreateTransformNode(scroller).post_translation = container_offset;
-  CreateScrollNode(scroller);
+  CreateScrollNode(scroller, container->bounds());
 
   scroll_child->SetBounds(gfx::Size(10, 10));
   CopyProperties(root, scroll_child);
@@ -4817,10 +4812,9 @@ class DrawPropertiesStickyPositionTest : public DrawPropertiesTest {
     root_->AddChild(container_);
 
     scroller_->SetBounds(gfx::Size(1000, 1000));
-    scroller_->SetScrollable(container_->bounds());
     CopyProperties(container_.get(), scroller_.get());
     CreateTransformNode(scroller_.get());
-    CreateScrollNode(scroller_.get());
+    CreateScrollNode(scroller_.get(), container_->bounds());
     root_->AddChild(scroller_);
   }
 
@@ -6386,7 +6380,6 @@ TEST_F(DrawPropertiesTest, UpdateScrollChildPosition) {
   root->SetBounds(gfx::Size(50, 50));
 
   scroll_parent->SetBounds(gfx::Size(30, 30));
-  scroll_parent->SetScrollable(gfx::Size(50, 50));
   scroll_parent->SetElementId(
       LayerIdToElementIdForTesting(scroll_parent->id()));
   scroll_parent->SetDrawsContent(true);
@@ -6396,7 +6389,7 @@ TEST_F(DrawPropertiesTest, UpdateScrollChildPosition) {
 
   CopyProperties(root, scroll_parent);
   CreateTransformNode(scroll_parent);
-  CreateScrollNode(scroll_parent);
+  CreateScrollNode(scroll_parent, gfx::Size(50, 50));
   CopyProperties(scroll_parent, scroll_child);
   CreateTransformNode(scroll_child).local.Scale(2.f, 2.f);
 

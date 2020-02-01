@@ -24,7 +24,7 @@ LogPage = class {
     LogPage.LogStore = LogPage.backgroundWindow.LogStore.getInstance();
 
     /** Create filter checkboxes. */
-    for (var type of Object.values(LogStore.LogType)) {
+    for (const type of Object.values(LogStore.LogType)) {
       const label = document.createElement('label');
       const input = document.createElement('input');
       input.id = type + 'Filter';
@@ -46,7 +46,7 @@ LogPage = class {
     };
 
     const params = new URLSearchParams(location.search);
-    for (var type of Object.values(LogStore.LogType)) {
+    for (const type of Object.values(LogStore.LogType)) {
       const typeFilter = type + 'Filter';
       LogPage.setFilterTypeEnabled(typeFilter, params.get(typeFilter));
     }

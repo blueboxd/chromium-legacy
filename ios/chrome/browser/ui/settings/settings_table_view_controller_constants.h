@@ -49,7 +49,34 @@ extern NSString* const kSettingsContentSettingsCellId;
 // The accessibility identifier of the Bandwidth cell.
 extern NSString* const kSettingsBandwidthCellId;
 
-// The accessibility identifier of the Aboud cell.
+// The accessibility identifier of the About cell.
 extern NSString* const kSettingsAboutCellId;
+
+// The accessibility identifier of the Open Source Licences cell.
+extern NSString* const kSettingsOpenSourceLicencesCellId;
+
+// The accessibility identifier of the TOS cell.
+extern NSString* const kSettingsTOSCellId;
+
+// The accessibility identifier of the Privacy Notice cell.
+extern NSString* const kSettingsPrivacyNoticeCellId;
+
+// The accessibility identifier of the Preload cell.
+extern NSString* const kSettingsPreloadCellId;
+
+// The accessibility identifier of the Block Popups cell.
+extern NSString* const kSettingsBlockPopupsCellId;
+
+// The accessibility identifier of the Default Apps cell.
+extern NSString* const kSettingsDefaultAppsCellId;
+
+// The accessibility identifier of the Add Language cell.
+extern NSString* const kSettingsAddLanguageCellId;
+
+// The accessibility identifier of the Clear Browsing Data cell.
+extern NSString* const kSettingsClearBrowsingDataCellId;
+
+// The accessibility identifier of the Handoff cell.
+extern NSString* const kSettingsHandoffCellId;
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_TABLE_VIEW_CONTROLLER_CONSTANTS_H_

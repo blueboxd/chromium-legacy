@@ -89,8 +89,7 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
 
 template <typename LayerTreeType>
 void SynchronizeTreesInternal(LayerTreeType* source_tree,
-                              LayerTreeImpl* tree_impl,
-                              PropertyTrees* property_trees) {
+                              LayerTreeImpl* tree_impl) {
   DCHECK(tree_impl);
 
   TRACE_EVENT0("cc", "TreeSynchronizer::SynchronizeTrees");
@@ -112,8 +111,7 @@ void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
   if (!layer_root) {
     tree_impl->DetachLayers();
   } else {
-    SynchronizeTreesInternal(layer_root->layer_tree_host(), tree_impl,
-                             layer_root->layer_tree_host()->property_trees());
+    SynchronizeTreesInternal(layer_root->layer_tree_host(), tree_impl);
   }
 }
 
@@ -122,8 +120,7 @@ void TreeSynchronizer::SynchronizeTrees(LayerTreeImpl* pending_tree,
   if (pending_tree->LayerListIsEmpty()) {
     active_tree->DetachLayers();
   } else {
-    SynchronizeTreesInternal(pending_tree, active_tree,
-                             pending_tree->property_trees());
+    SynchronizeTreesInternal(pending_tree, active_tree);
   }
 }
 

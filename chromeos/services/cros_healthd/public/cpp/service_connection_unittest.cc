@@ -4,6 +4,7 @@
 
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -81,13 +82,14 @@ MakeNonRemovableBlockDeviceInfo() {
 }
 
 mojom::BatteryInfoPtr MakeBatteryInfo() {
+  mojom::SmartBatteryInfoPtr smart_info = mojom::SmartBatteryInfo::New(
+      "2018-08-06" /* manufacture_date */, 981729 /* temperature */);
   return mojom::BatteryInfo::New(
       2 /* cycle_count */, 12.9 /* voltage_now */,
       "battery_vendor" /* vendor */, "serial_number" /* serial_number */,
       5.275 /* charge_full_design */, 5.292 /* charge_full */,
-      11.55 /* voltage_min_design */, 51785890 /* manufacture_date_smart */,
-      /*temperature smart=*/981729, /*model_name=*/"battery_model",
-      /*charge_now=*/5.123);
+      11.55 /* voltage_min_design */, "battery_model" /* model_name */,
+      5.123 /* charge_now */, std::move(smart_info));
 }
 
 mojom::CachedVpdInfoPtr MakeCachedVpdInfo() {

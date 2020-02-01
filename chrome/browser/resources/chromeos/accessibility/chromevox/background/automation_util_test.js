@@ -153,8 +153,7 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'HitTest', function() {
       const loc = node.location;
       return {x: loc.left + loc.width / 2, y: loc.top + loc.height / 2};
     }
-    var h1, h2, a;
-    [h1, h2, a] = r.findAll({role: 'inlineTextBox'});
+    const [h1, h2, a] = r.findAll({role: 'inlineTextBox'});
 
     assertEquals(h1, AutomationUtil.hitTest(r, getCP(h1)));
     assertEquals(h1, AutomationUtil.hitTest(r, getCP(h1.parent)));

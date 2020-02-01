@@ -99,15 +99,15 @@ ChromeVoxCursorsTest = class extends ChromeVoxNextE2ETest {
      */
     runCursorMovesOnDocument(doc, moves, opt_testType) {
       this.runWithLoadedTree(doc, function(root) {
-        var start = null;
+        let start = null;
 
         // This occurs as a result of a load complete.
-        var start = AutomationUtil.findNodePost(
+        start = AutomationUtil.findNodePost(
             root, FORWARD, AutomationPredicate.leaf);
 
-        var cursor = new cursors.Cursor(start, 0);
+        const cursor = new cursors.Cursor(start, 0);
         if (!opt_testType || opt_testType == this.CURSOR) {
-          var cursor = new cursors.Cursor(start, 0);
+          const cursor = new cursors.Cursor(start, 0);
           this.cursorMoveAndAssert(cursor, moves);
         } else if (opt_testType == this.RANGE) {
           const range = new cursors.Range(cursor, cursor);
@@ -478,11 +478,11 @@ TEST_F('ChromeVoxCursorsTest', 'InlineElementOffset', function() {
             }));
 
         // This is the link's static text.
-        var testNode = root.lastChild.lastChild.previousSibling.firstChild;
+        const testNode = root.lastChild.lastChild.previousSibling.firstChild;
         assertEquals(RoleType.STATIC_TEXT, testNode.role);
         assertEquals('test', testNode.name);
 
-        var ofSelectionNode = root.lastChild.lastChild;
+        const ofSelectionNode = root.lastChild.lastChild;
         const cur = new cursors.Cursor(ofSelectionNode, 0);
         assertEquals('of selection', cur.selectionNode_.name);
         assertEquals(RoleType.STATIC_TEXT, cur.selectionNode_.role);

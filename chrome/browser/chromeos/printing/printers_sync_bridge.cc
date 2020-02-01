@@ -42,28 +42,18 @@ std::unique_ptr<EntityData> CopyToEntityData(
   return entity_data;
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class MakeAndModelMigrationState {
-  kNotMigrated = 0,
-  kMigrated = 1,
-  kMaxValue = kMigrated,
-};
-
 // Computes the make_and_model field for old |specifics| where it is missing.
 // Returns true if an update was made.  make_and_model is computed from the
 // manufacturer and model strings.
 bool MigrateMakeAndModel(sync_pb::PrinterSpecifics* specifics) {
   if (specifics->has_make_and_model()) {
-    base::UmaHistogramEnumeration("Printing.CUPS.MigratedMakeAndModel",
-                                  MakeAndModelMigrationState::kNotMigrated);
+    base::UmaHistogramBoolean("Printing.CUPS.MigratedMakeAndModel", false);
     return false;
   }
 
   specifics->set_make_and_model(
       chromeos::MakeAndModel(specifics->manufacturer(), specifics->model()));
-  base::UmaHistogramEnumeration("Printing.CUPS.MigratedMakeAndModel",
-                                MakeAndModelMigrationState::kMigrated);
+  base::UmaHistogramBoolean("Printing.CUPS.MigratedMakeAndModel", true);
   return true;
 }
 

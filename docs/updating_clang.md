@@ -46,14 +46,9 @@ An archive of all packages built so far is at https://is.gd/chromeclang
     not have the necessary credentials to do the upload, ask clang@chromium.org
     to find someone who does
 1.  Run an exhaustive set of try jobs to test the new compiler. The CL
-    description created by upload_revision.py includes `CQ_INCLUDE_TRYBOTS`
-    lines for all needed bots, so it's sufficient to just run:
-
-    ```shell
-    git cl try && \
-    git cl try -B chrome/try -b iphone-device -b ipad-device \
-      -b linux-chromeos-chrome
-    ```
+    description created by upload_revision.py includes `Cq-Include-Trybots:`
+    lines for all needed bots, so it's sufficient to just run `git cl try`
+    (or hit "CQ DRY RUN" on gerrit).
 
 1.  Commit roll CL from the first step
 1.  The bots will now pull the prebuilt binary, and goma will have a matching

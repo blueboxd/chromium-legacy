@@ -699,7 +699,8 @@ void XR::ExitPresent(base::OnceClosure on_exited) {
     // SetBaseBackgroundColor updates composited layer mappings.
     // That DCHECKs IsAllowedToQueryCompositingState which requires
     // DocumentLifecycle >= kInCompositingUpdate.
-    frame_view->UpdateLifecycleToCompositingInputsClean();
+    frame_view->UpdateLifecycleToCompositingInputsClean(
+        DocumentUpdateReason::kBaseColor);
     frame_view->SetBaseBackgroundColor(original_base_background_color_);
   }
 }
@@ -1189,7 +1190,8 @@ void XR::OnRequestSessionReturned(
         // SetBaseBackgroundColor updates composited layer mappings.
         // That DCHECKs IsAllowedToQueryCompositingState which requires
         // DocumentLifecycle >= kInCompositingUpdate.
-        frame_view->UpdateLifecycleToCompositingInputsClean();
+        frame_view->UpdateLifecycleToCompositingInputsClean(
+            DocumentUpdateReason::kBaseColor);
         original_base_background_color_ = frame_view->BaseBackgroundColor();
         frame_view->SetBaseBackgroundColor(Color::kTransparent);
       }

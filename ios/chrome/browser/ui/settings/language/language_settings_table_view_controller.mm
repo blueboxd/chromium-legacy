@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -426,6 +427,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_BUTTON_TITLE);
   addLanguageItem.textColor = [UIColor colorNamed:kBlueColor];
   addLanguageItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  addLanguageItem.accessibilityIdentifier = kSettingsAddLanguageCellId;
   [self.tableViewModel addItem:addLanguageItem
        toSectionWithIdentifier:SectionIdentifierLanguages];
 }

@@ -69,7 +69,8 @@ TEST_F(CompositingInputsUpdaterTest,
 
   // Before we update compositing inputs, validate that the current ancestor
   // overflow no longer has a scrollable area.
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(sticky->Layer()->AncestorOverflowLayer()->GetScrollableArea());
   EXPECT_EQ(sticky->Layer()->AncestorOverflowLayer(), outer_scroller->Layer());
 

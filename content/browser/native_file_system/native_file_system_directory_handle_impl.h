@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
@@ -22,7 +23,7 @@ namespace content {
 //
 // This class is not thread safe, all methods must be called from the same
 // sequence.
-class NativeFileSystemDirectoryHandleImpl
+class CONTENT_EXPORT NativeFileSystemDirectoryHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemDirectoryHandle {
  public:

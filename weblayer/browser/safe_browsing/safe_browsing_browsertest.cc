@@ -50,6 +50,7 @@ class FakeSafeBrowsingApiHandler
       std::unique_ptr<URLCheckCallbackMeta> callback,
       const GURL& url,
       const safe_browsing::SBThreatTypeSet& threat_types) override {
+    LOG(INFO) << "BLA test handler url=" + url.spec();
     RunCallbackOnIOThread(std::move(callback), GetSafeBrowsingRestriction(url),
                           safe_browsing::ThreatMetadata());
   }
@@ -182,6 +183,16 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, ShowsInterstitial_Unwanted) {
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, ShowsInterstitial_Billing) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_BILLING, true);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest,
+                       ShowsInterstitial_Malware_Subresource) {
+  GURL page_with_script_url =
+      embedded_test_server()->GetURL("/simple_page_with_script.html");
+  GURL script_url = embedded_test_server()->GetURL("/script.js");
+  fake_handler_->AddRestriction(script_url,
+                                safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
+  Navigate(page_with_script_url, true);
 }
 
 }  // namespace weblayer

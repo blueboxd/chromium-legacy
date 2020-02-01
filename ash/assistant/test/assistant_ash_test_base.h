@@ -12,7 +12,6 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 
 namespace aura {
 class Window;
@@ -161,7 +160,6 @@ class AssistantAshTestBase : public AshTestBase {
 
   std::unique_ptr<AssistantTestApi> test_api_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   AssistantController* controller_ = nullptr;
 
   std::vector<std::unique_ptr<aura::Window>> windows_;

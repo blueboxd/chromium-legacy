@@ -40,7 +40,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/scroll_and_scale_set.h"
+#include "cc/trees/scroll_node.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "skia/public/mojom/skcolor.mojom-blink.h"
@@ -197,6 +197,12 @@ void ForAllGraphicsLayers(GraphicsLayer& layer, const Function& function) {
   for (auto* child : layer.Children()) {
     ForAllGraphicsLayers(*child, function);
   }
+}
+
+const cc::ScrollNode* GetScrollNode(const cc::Layer* layer) {
+  return layer->layer_tree_host()
+      ->property_trees()
+      ->scroll_tree.FindNodeFromElementId(layer->element_id());
 }
 
 }  // namespace
@@ -7620,8 +7626,9 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   ASSERT_TRUE(cc_scroll_layer);
 
   // Verify that the cc::Layer is not scrollable initially.
-  ASSERT_FALSE(cc_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_FALSE(cc_scroll_layer->GetUserScrollableVertical());
+  auto* scroll_node = GetScrollNode(cc_scroll_layer);
+  ASSERT_FALSE(scroll_node->user_scrollable_horizontal);
+  ASSERT_FALSE(scroll_node->user_scrollable_vertical);
 
   // Call javascript to make the layer scrollable, and verify it.
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
@@ -7629,8 +7636,9 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   cc_scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
+  scroll_node = GetScrollNode(cc_scroll_layer);
+  ASSERT_TRUE(scroll_node->user_scrollable_horizontal);
+  ASSERT_TRUE(scroll_node->user_scrollable_vertical);
 }
 
 // Test that currentHistoryItem reflects the current page, not the provisional
@@ -7919,10 +7927,14 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   cc::Layer* visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().LayerForScrolling();
 
-  ASSERT_FALSE(layout_viewport_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_FALSE(layout_viewport_scroll_layer->GetUserScrollableVertical());
-  ASSERT_FALSE(visual_viewport_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_FALSE(visual_viewport_scroll_layer->GetUserScrollableVertical());
+  auto* layout_viewport_scroll_node =
+      GetScrollNode(layout_viewport_scroll_layer);
+  ASSERT_FALSE(layout_viewport_scroll_node->user_scrollable_horizontal);
+  ASSERT_FALSE(layout_viewport_scroll_node->user_scrollable_vertical);
+  auto* visual_viewport_scroll_node =
+      GetScrollNode(visual_viewport_scroll_layer);
+  ASSERT_FALSE(visual_viewport_scroll_node->user_scrollable_horizontal);
+  ASSERT_FALSE(visual_viewport_scroll_node->user_scrollable_vertical);
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
@@ -7934,10 +7946,12 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
       frame_view->GetScrollableArea()->LayerForScrolling();
   visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().LayerForScrolling();
-  ASSERT_TRUE(layout_viewport_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_TRUE(layout_viewport_scroll_layer->GetUserScrollableVertical());
-  ASSERT_TRUE(visual_viewport_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_TRUE(visual_viewport_scroll_layer->GetUserScrollableVertical());
+  layout_viewport_scroll_node = GetScrollNode(layout_viewport_scroll_layer);
+  ASSERT_TRUE(layout_viewport_scroll_node->user_scrollable_horizontal);
+  ASSERT_TRUE(layout_viewport_scroll_node->user_scrollable_vertical);
+  visual_viewport_scroll_node = GetScrollNode(visual_viewport_scroll_layer);
+  ASSERT_TRUE(visual_viewport_scroll_node->user_scrollable_horizontal);
+  ASSERT_TRUE(visual_viewport_scroll_node->user_scrollable_vertical);
 }
 
 TEST_F(WebFrameTest, FullscreenMainFrame) {
@@ -7957,9 +7971,10 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                                    ->View()
                                    ->LayoutViewport()
                                    ->LayerForScrolling();
-  ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
+  auto* scroll_node = GetScrollNode(cc_scroll_layer);
+  ASSERT_TRUE(scroll_node->scrollable);
+  ASSERT_TRUE(scroll_node->user_scrollable_horizontal);
+  ASSERT_TRUE(scroll_node->user_scrollable_vertical);
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
@@ -7980,15 +7995,17 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                         ->View()
                         ->LayoutViewport()
                         ->LayerForScrolling();
-  ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
+  scroll_node = GetScrollNode(cc_scroll_layer);
+  ASSERT_TRUE(scroll_node->scrollable);
+  ASSERT_TRUE(scroll_node->user_scrollable_horizontal);
+  ASSERT_TRUE(scroll_node->user_scrollable_vertical);
 
   // Verify the main frame still behaves correctly after a resize.
   web_view_helper.Resize(WebSize(viewport_height, viewport_width));
-  ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
-  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
+  scroll_node = GetScrollNode(cc_scroll_layer);
+  ASSERT_TRUE(scroll_node->scrollable);
+  ASSERT_TRUE(scroll_node->user_scrollable_horizontal);
+  ASSERT_TRUE(scroll_node->user_scrollable_vertical);
 }
 
 TEST_F(WebFrameTest, FullscreenSubframe) {
@@ -12782,68 +12799,6 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   // UpdateForSameDocumentNavigation().
 
   tester.ExpectTotalCount(histogramName, 3);
-}
-
-TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize();
-  web_view_helper.Resize(WebSize(200, 200));
-  WebViewImpl* web_view = web_view_helper.GetWebView();
-
-  InitializeWithHTML(*web_view->MainFrameImpl()->GetFrame(),
-                     "<style>"
-                     "  #scrollable {"
-                     "    height: 100px;"
-                     "    width: 100px;"
-                     "    overflow: scroll;"
-                     "    will-change: transform;"
-                     "  }"
-                     "  #forceScroll { height: 120px; width: 50px; }"
-                     "</style>"
-                     "<div id='scrollable'>"
-                     "  <div id='forceScroll'></div>"
-                     "</div>");
-
-  UpdateAllLifecyclePhases(web_view);
-
-  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* scrollable = document->getElementById("scrollable");
-
-  auto* scrollable_area =
-      ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
-  EXPECT_NE(nullptr, scrollable_area);
-
-  // We should have a composited layer for scrolling due to will-change.
-  cc::Layer* cc_scroll_layer = scrollable_area->LayerForScrolling();
-  EXPECT_NE(nullptr, cc_scroll_layer);
-
-  // Ensure a synthetic impl-side scroll offset propagates to the scrollable
-  // area using the DidScroll callback.
-  EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
-  cc::ScrollAndScaleSet scroll_and_scale_set;
-  scroll_and_scale_set.scrolls.push_back({scrollable_area->GetScrollElementId(),
-                                          gfx::ScrollOffset(0, 1),
-                                          base::nullopt});
-  cc_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
-      &scroll_and_scale_set);
-  UpdateAllLifecyclePhases(web_view);
-  EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
-
-  // Make the scrollable area non-scrollable.
-  scrollable->setAttribute(html_names::kStyleAttr, "overflow: visible");
-
-  // Update layout without updating compositing state.
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
-  frame->ExecuteScript(
-      WebScriptSource("var forceLayoutFromScript = scrollable.offsetTop;"));
-  EXPECT_EQ(document->Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
-
-  EXPECT_EQ(nullptr,
-            ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea());
-
-  // The web scroll layer has not been deleted yet and we should be able to
-  // apply impl-side offsets without crashing.
-  cc_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 }
 
 static void TestFramePrinting(WebLocalFrameImpl* frame) {

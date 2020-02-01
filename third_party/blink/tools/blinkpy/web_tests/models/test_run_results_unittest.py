@@ -33,16 +33,18 @@ from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models import test_results
 from blinkpy.web_tests.models import test_run_results
+from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port.driver import DriverOutput
 
-def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
+
+def get_result(test_name, result_type=ResultType.Pass, run_time=0):
     failures = []
     dummy_1, dummy_2 = DriverOutput(None, None, None, None), DriverOutput(None, None, None, None)
-    if result_type == test_expectations.TIMEOUT:
+    if result_type == ResultType.Timeout:
         failures = [test_failures.FailureTimeout(dummy_1)]
-    elif result_type == test_expectations.CRASH:
+    elif result_type == ResultType.Crash:
         failures = [test_failures.FailureCrash(dummy_1)]
-    elif result_type == test_expectations.FAIL:
+    elif result_type == ResultType.Failure:
         failures = [test_failures.TestFailure(dummy_1, dummy_2)]
     return test_results.TestResult(test_name, failures=failures, test_run_time=run_time)
 
@@ -58,9 +60,12 @@ def run_results(port, extra_skipped_tests=None):
         'failures/expected/text.html',
         'passes/skipped/skip.html'
     ]
-    expectations = test_expectations.TestExpectations(port, tests)
+    expectations = test_expectations.TestExpectations(port)
     if extra_skipped_tests:
-        expectations.add_extra_skipped_tests(extra_skipped_tests)
+        extra_expectations = '# results: [ Skip ]'
+        for test in extra_skipped_tests:
+            extra_expectations += '\n%s [ Skip ]' % test
+        expectations.merge_raw_expectations(extra_expectations)
     return test_run_results.TestRunResults(expectations, len(tests))
 
 
@@ -70,14 +75,14 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
     all_retry_results = []
     initial_results = run_results(port, extra_skipped_tests)
     if expected:
-        initial_results.add(get_result('passes/text.html', test_expectations.PASS), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/audio.html', test_expectations.FAIL), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/timeout.html', test_expectations.TIMEOUT), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/crash.html', test_expectations.CRASH), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/leak.html', test_expectations.FAIL), expected, test_is_slow)
+        initial_results.add(get_result('passes/text.html', ResultType.Pass), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/audio.html', ResultType.Failure), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/timeout.html', ResultType.Timeout), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/crash.html', ResultType.Crash), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/leak.html', ResultType.Failure), expected, test_is_slow)
     elif passing:
         skipped_result = get_result('passes/skipped/skip.html')
-        skipped_result.type = test_expectations.SKIP
+        skipped_result.type = ResultType.Skip
         initial_results.add(skipped_result, True, test_is_slow)
 
         initial_results.add(get_result('passes/text.html', run_time=1), expected, test_is_slow)
@@ -86,18 +91,18 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
         initial_results.add(get_result('failures/expected/crash.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/leak.html'), expected, test_is_slow)
     else:
-        initial_results.add(get_result('passes/text.html', test_expectations.TIMEOUT, run_time=1), expected, test_is_slow)
+        initial_results.add(get_result('passes/text.html', ResultType.Timeout, run_time=1), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/audio.html',
-                                       test_expectations.CRASH, run_time=0.049), expected, test_is_slow)
+                                       ResultType.Crash, run_time=0.049), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html',
-                                       test_expectations.FAIL, run_time=0.05), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/crash.html', test_expectations.TIMEOUT), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/leak.html', test_expectations.TIMEOUT), expected, test_is_slow)
+                                       ResultType.Failure, run_time=0.05), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/crash.html', ResultType.Timeout), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/leak.html', ResultType.Timeout), expected, test_is_slow)
 
         # we only list keyboard.html here, since normally this is WontFix
-        initial_results.add(get_result('failures/expected/keyboard.html', test_expectations.SKIP), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/keyboard.html', ResultType.Skip), expected, test_is_slow)
 
-        initial_results.add(get_result('failures/expected/text.html', test_expectations.FAIL), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/text.html', ResultType.Failure), expected, test_is_slow)
 
         all_retry_results = [run_results(port, extra_skipped_tests),
                              run_results(port, extra_skipped_tests),
@@ -108,46 +113,46 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
                 run_result.add(new_result, expected, test_is_slow)
 
         if flaky:
-            add_result_to_all_retries(get_result('passes/text.html', test_expectations.PASS), True)
+            add_result_to_all_retries(get_result('passes/text.html', ResultType.Pass), True)
             add_result_to_all_retries(
-                get_result('failures/expected/audio.html', test_expectations.FAIL), True)
+                get_result('failures/expected/audio.html', ResultType.Failure), True)
             add_result_to_all_retries(
-                get_result('failures/expected/leak.html', test_expectations.FAIL), True)
+                get_result('failures/expected/leak.html', ResultType.Failure), True)
             add_result_to_all_retries(
-                get_result('failures/expected/timeout.html', test_expectations.FAIL), True)
+                get_result('failures/expected/timeout.html', ResultType.Failure), True)
 
             all_retry_results[0].add(
-                get_result('failures/expected/crash.html', test_expectations.FAIL),
+                get_result('failures/expected/crash.html', ResultType.Failure),
                 False, test_is_slow)
             all_retry_results[1].add(
-                get_result('failures/expected/crash.html', test_expectations.CRASH),
+                get_result('failures/expected/crash.html', ResultType.Crash),
                 True, test_is_slow)
             all_retry_results[2].add(
-                get_result('failures/expected/crash.html', test_expectations.FAIL),
+                get_result('failures/expected/crash.html', ResultType.Failure),
                 False, test_is_slow)
 
             all_retry_results[0].add(
-                get_result('failures/expected/text.html', test_expectations.FAIL),
+                get_result('failures/expected/text.html', ResultType.Failure),
                 True, test_is_slow)
 
         else:
             add_result_to_all_retries(
-                get_result('passes/text.html', test_expectations.TIMEOUT), False)
+                get_result('passes/text.html', ResultType.Timeout), False)
             add_result_to_all_retries(
-                get_result('failures/expected/audio.html', test_expectations.FAIL), False)
+                get_result('failures/expected/audio.html', ResultType.Failure), False)
             add_result_to_all_retries(
-                get_result('failures/expected/crash.html', test_expectations.TIMEOUT), False)
+                get_result('failures/expected/crash.html', ResultType.Timeout), False)
             add_result_to_all_retries(
-                get_result('failures/expected/leak.html', test_expectations.TIMEOUT), False)
+                get_result('failures/expected/leak.html', ResultType.Timeout), False)
 
             all_retry_results[0].add(
-                get_result('failures/expected/timeout.html', test_expectations.FAIL),
+                get_result('failures/expected/timeout.html', ResultType.Failure),
                 False, test_is_slow)
             all_retry_results[1].add(
-                get_result('failures/expected/timeout.html', test_expectations.CRASH),
+                get_result('failures/expected/timeout.html', ResultType.Crash),
                 False, test_is_slow)
             all_retry_results[2].add(
-                get_result('failures/expected/timeout.html', test_expectations.FAIL),
+                get_result('failures/expected/timeout.html', ResultType.Failure),
                 False, test_is_slow)
 
     return test_run_results.summarize_results(
@@ -209,7 +214,6 @@ class SummarizedResultsTest(unittest.TestCase):
                 'CRASH': 1,
                 'PASS': 1,
                 'SKIP': 0,
-                'SLOW': 0,
                 'TIMEOUT': 3,
                 'FAIL': 2,
             })
@@ -221,7 +225,6 @@ class SummarizedResultsTest(unittest.TestCase):
                 'CRASH': 1,
                 'PASS': 1,
                 'SKIP': 0,
-                'SLOW': 0,
                 'TIMEOUT': 1,
                 'FAIL': 2,
             })
@@ -233,7 +236,6 @@ class SummarizedResultsTest(unittest.TestCase):
                 'CRASH': 0,
                 'PASS': 5,
                 'SKIP': 1,
-                'SLOW': 0,
                 'TIMEOUT': 0,
                 'FAIL': 0,
             })
@@ -247,17 +249,17 @@ class SummarizedResultsTest(unittest.TestCase):
     def test_bug_entry(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
-        self.assertEquals(summary['tests']['passes']['skipped']['skip.html']['bugs'], ['Bug(test)'])
+        self.assertEquals(summary['tests']['passes']['skipped']['skip.html']['bugs'], ['crbug.com/123'])
 
     def test_extra_skipped_tests(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False, extra_skipped_tests=['passes/text.html'])
-        self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'NOTRUN')
+        self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'SKIP')
 
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertEquals(summary['tests']['failures']['expected']['keyboard.html']['expected'], 'CRASH SKIP')
+        self.assertEquals(summary['tests']['failures']['expected']['keyboard.html']['expected'], 'SKIP CRASH')
         self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
         self.assertEqual(summary['num_passes'], 1)
         self.assertEqual(summary['num_regressions'], 6)
@@ -306,15 +308,15 @@ class SummarizedResultsTest(unittest.TestCase):
 
     def test_timeout_then_unexpected_pass(self):
         test_name = 'failures/expected/text.html'
-        expectations = test_expectations.TestExpectations(self.port, [test_name])
+        expectations = test_expectations.TestExpectations(self.port)
         initial_results = test_run_results.TestRunResults(expectations, 1)
-        initial_results.add(get_result(test_name, test_expectations.TIMEOUT, run_time=1), False, False)
+        initial_results.add(get_result(test_name, ResultType.Timeout, run_time=1), False, False)
         all_retry_results = [test_run_results.TestRunResults(expectations, 1),
                              test_run_results.TestRunResults(expectations, 1),
                              test_run_results.TestRunResults(expectations, 1)]
-        all_retry_results[0].add(get_result(test_name, test_expectations.FAIL, run_time=0.1), False, False)
-        all_retry_results[1].add(get_result(test_name, test_expectations.PASS, run_time=0.1), False, False)
-        all_retry_results[2].add(get_result(test_name, test_expectations.PASS, run_time=0.1), False, False)
+        all_retry_results[0].add(get_result(test_name, ResultType.Failure, run_time=0.1), False, False)
+        all_retry_results[1].add(get_result(test_name, ResultType.Pass, run_time=0.1), False, False)
+        all_retry_results[2].add(get_result(test_name, ResultType.Pass, run_time=0.1), False, False)
         summary = test_run_results.summarize_results(
             self.port, expectations, initial_results, all_retry_results)
         self.assertIn('is_unexpected', summary['tests']['failures']['expected']['text.html'])
@@ -355,15 +357,15 @@ class SummarizedResultsTest(unittest.TestCase):
 
     def test_summarized_results_flaky_pass_after_first_retry(self):
         test_name = 'passes/text.html'
-        expectations = test_expectations.TestExpectations(self.port, [test_name])
+        expectations = test_expectations.TestExpectations(self.port)
         initial_results = test_run_results.TestRunResults(expectations, 1)
-        initial_results.add(get_result(test_name, test_expectations.CRASH), False, False)
+        initial_results.add(get_result(test_name, ResultType.Crash), False, False)
         all_retry_results = [test_run_results.TestRunResults(expectations, 1),
                              test_run_results.TestRunResults(expectations, 1),
                              test_run_results.TestRunResults(expectations, 1)]
-        all_retry_results[0].add(get_result(test_name, test_expectations.TIMEOUT), False, False)
-        all_retry_results[1].add(get_result(test_name, test_expectations.PASS), True, False)
-        all_retry_results[2].add(get_result(test_name, test_expectations.PASS), True, False)
+        all_retry_results[0].add(get_result(test_name, ResultType.Timeout), False, False)
+        all_retry_results[1].add(get_result(test_name, ResultType.Pass), True, False)
+        all_retry_results[2].add(get_result(test_name, ResultType.Pass), True, False)
         summary = test_run_results.summarize_results(
             self.port, expectations, initial_results, all_retry_results)
         self.assertTrue('is_unexpected' not in summary['tests']['passes']['text.html'])
@@ -375,14 +377,14 @@ class SummarizedResultsTest(unittest.TestCase):
 
     def test_summarized_results_with_iterations(self):
         test_name = 'passes/text.html'
-        expectations = test_expectations.TestExpectations(self.port, [test_name])
+        expectations = test_expectations.TestExpectations(self.port)
         initial_results = test_run_results.TestRunResults(expectations, 3)
-        initial_results.add(get_result(test_name, test_expectations.CRASH), False, False)
-        initial_results.add(get_result(test_name, test_expectations.FAIL), False, False)
-        initial_results.add(get_result(test_name, test_expectations.TIMEOUT), False, False)
+        initial_results.add(get_result(test_name, ResultType.Crash), False, False)
+        initial_results.add(get_result(test_name, ResultType.Failure), False, False)
+        initial_results.add(get_result(test_name, ResultType.Timeout), False, False)
         all_retry_results = [test_run_results.TestRunResults(expectations, 2)]
-        all_retry_results[0].add(get_result(test_name, test_expectations.FAIL), False, False)
-        all_retry_results[0].add(get_result(test_name, test_expectations.FAIL), False, False)
+        all_retry_results[0].add(get_result(test_name, ResultType.Failure), False, False)
+        all_retry_results[0].add(get_result(test_name, ResultType.Failure), False, False)
 
         summary = test_run_results.summarize_results(
             self.port, expectations, initial_results, all_retry_results)

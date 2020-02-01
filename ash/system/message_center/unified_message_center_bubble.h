@@ -60,6 +60,9 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   // Returns true if notifications are shown.
   bool IsMessageCenterVisible();
 
+  // Returns true if only StackedNotificationBar is visible.
+  bool IsMessageCenterCollapsed();
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   TrayBubbleView* GetBubbleView() const override;

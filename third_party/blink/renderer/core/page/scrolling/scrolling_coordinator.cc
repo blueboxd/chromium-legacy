@@ -404,14 +404,12 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     IntSize scroll_contents_size =
         PhysicalRect(subpixel_accumulation, contents_size).PixelSnappedSize();
 
-    IntSize container_size = scrollable_area->VisibleContentRect().Size();
-    cc_layer->SetScrollable(gfx::Size(container_size));
-
     // The scrolling contents layer must be at least as large as its clip.
     // The visual viewport is special because the size of its scrolling
     // content depends on the page scale factor. Its scrollable content is
     // the layout viewport which is sized based on the minimum allowed page
     // scale so it actually can be smaller than its clip.
+    IntSize container_size = scrollable_area->VisibleContentRect().Size();
     scroll_contents_size = scroll_contents_size.ExpandedTo(container_size);
 
     // This call has to go through the GraphicsLayer method to preserve

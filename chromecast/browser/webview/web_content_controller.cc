@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
@@ -38,8 +39,24 @@ WebContentController::~WebContentController() {
     surface_->RemoveSurfaceObserver(this);
     surface_->SetEmbeddedSurfaceId(base::RepeatingCallback<viz::SurfaceId()>());
   }
-  for (auto* rwh : current_render_widget_set_) {
-    rwh->RemoveInputEventObserver(this);
+  if (!current_render_widget_set_.empty()) {
+    // A WebContentController can be destructed without us we have recieved
+    // RenderViewDeleted notifications for all observed RenderWidgetHosts,
+    // so we go through the current_render_widget_set_ to remove the input
+    // event observers. It has sometimes been the case (perhaps only on a
+    // renderer process crash -- TODO(kpschoedel) investiage this) that an
+    // observed RenderWidgetHost has disappeared without notification.
+    // Therefore, it is not safe to call RemoveInputEventObserver on every
+    // RenderWidgetHost that we started observing; we need to remove only
+    // from currently live RenderWidgetHosts.
+    std::unique_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+    while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+      auto it = current_render_widget_set_.find(widget);
+      if (it != current_render_widget_set_.end()) {
+        widget->RemoveInputEventObserver(this);
+      }
+    }
   }
 }
 

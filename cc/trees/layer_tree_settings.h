@@ -40,7 +40,8 @@ class CC_EXPORT LayerTreeSettings {
   // When |enable_early_damage_check| is true, the early damage check is
   // performed if one of the last |damaged_frame_limit| frames had no damage.
   int damaged_frame_limit = 3;
-  bool enable_latency_recovery = true;
+  bool enable_impl_latency_recovery = true;
+  bool enable_main_latency_recovery = true;
   bool can_use_lcd_text = true;
   bool gpu_rasterization_forced = false;
   bool gpu_rasterization_disabled = false;

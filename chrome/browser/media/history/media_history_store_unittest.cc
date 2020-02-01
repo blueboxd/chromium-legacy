@@ -47,7 +47,7 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     // Set up the local DB connection used for assertions.
     base::FilePath db_file =
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Media History"));
-    EXPECT_TRUE(db_.Open(db_file));
+    ASSERT_TRUE(db_.Open(db_file));
   }
 
   void TearDown() override { content::RunAllTasksUntilIdle(); }

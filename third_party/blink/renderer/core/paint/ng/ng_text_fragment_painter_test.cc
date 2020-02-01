@@ -39,7 +39,8 @@ TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   const LayoutNGBlockFlow& block_flow = ToLayoutNGBlockFlow(container);
 
   InvalidateAll(RootPaintController());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   Paint(IntRect(0, 0, 640, 480));
 
   const NGPaintFragment& root_fragment = *block_flow.PaintFragment();

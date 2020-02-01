@@ -127,6 +127,16 @@ void ComputeEventLatencyOS(const PlatformEvent& native_event) {
           "Event.Latency.OS.TOUCH_RELEASED",
           base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
       return;
+    case ET_KEY_PRESSED:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.KEY_PRESSED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
+      return;
+    case ET_MOUSE_PRESSED:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.MOUSE_PRESSED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
+      return;
     default:
       return;
   }

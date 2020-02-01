@@ -177,13 +177,13 @@ class BotTestExpectationsTest(unittest.TestCase):
             }
         }
         self._assert_expectations(test_data, {
-            'foo/veryflaky.html': sorted(['FAIL', 'PASS']),
+            'foo/veryflaky.html': {'FAIL', 'PASS'},
         }, only_ignore_very_flaky=True)
 
         self._assert_expectations(test_data, {
-            'foo/veryflaky.html': sorted(['FAIL', 'PASS']),
-            'foo/notverflakynoexpected.html': ['FAIL', 'TIMEOUT'],
-            'foo/maybeflaky.html': sorted(['FAIL', 'PASS']),
+            'foo/veryflaky.html': {'FAIL', 'PASS'},
+            'foo/notverflakynoexpected.html': {'FAIL', 'TIMEOUT'},
+            'foo/maybeflaky.html': {'FAIL', 'PASS'},
         }, only_ignore_very_flaky=False)
 
     def test_unexpected_results_no_unexpected(self):
@@ -216,11 +216,11 @@ class BotTestExpectationsTest(unittest.TestCase):
             }
         }
         self._assert_unexpected_results(test_data, {
-            'foo/pass1.html': sorted(['FAIL', 'PASS']),
-            'foo/pass2.html': sorted(['FAIL', 'PASS']),
-            'foo/fail.html': sorted(['FAIL', 'PASS']),
-            'foo/f_p.html': sorted(['FAIL', 'PASS']),
-            'foo/crash.html': sorted(['SKIP', 'CRASH', 'FAIL']),
-            'foo/i_f.html': sorted(['FAIL', 'PASS']),
-            'foo/all.html': sorted(['PASS', 'FAIL', 'TIMEOUT', 'CRASH']),
+            'foo/pass1.html': {'FAIL', 'PASS'},
+            'foo/pass2.html': {'FAIL', 'PASS'},
+            'foo/fail.html': {'FAIL', 'PASS'},
+            'foo/f_p.html': {'FAIL', 'PASS'},
+            'foo/crash.html': {'SKIP', 'CRASH', 'FAIL'},
+            'foo/i_f.html': {'FAIL', 'PASS'},
+            'foo/all.html': {'PASS', 'FAIL', 'TIMEOUT', 'CRASH'},
         })

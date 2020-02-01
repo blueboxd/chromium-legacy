@@ -58,11 +58,13 @@ void EnableMethodManifestUrlForSupportedApps(
 
 }  // namespace
 
-ManifestVerifier::ManifestVerifier(content::WebContents* web_contents,
+ManifestVerifier::ManifestVerifier(const url::Origin& merchant_origin,
+                                   content::WebContents* web_contents,
                                    PaymentManifestDownloader* downloader,
                                    PaymentManifestParser* parser,
                                    PaymentManifestWebDataService* cache)
-    : log_(web_contents),
+    : merchant_origin_(merchant_origin),
+      log_(web_contents),
       downloader_(downloader),
       parser_(parser),
       cache_(cache),
@@ -203,7 +205,7 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
   }
 
   downloader_->DownloadPaymentMethodManifest(
-      method_manifest_url,
+      merchant_origin_, method_manifest_url,
       base::BindOnce(&ManifestVerifier::OnPaymentMethodManifestDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), method_manifest_url));
 }

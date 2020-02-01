@@ -51,7 +51,7 @@ class SubsequenceRecorder final {
  private:
   PaintController& paint_controller_;
   const DisplayItemClient& client_;
-  size_t start_;
+  wtf_size_t start_;
 
   DISALLOW_COPY_AND_ASSIGN(SubsequenceRecorder);
 };

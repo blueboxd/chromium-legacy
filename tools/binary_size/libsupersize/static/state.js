@@ -13,6 +13,9 @@
 /** @type {HTMLFormElement} Form containing options and filters */
 const form = document.getElementById('options');
 
+/** @type {HTMLInputElement} */
+const methodCountInput = form.elements.namedItem('method_count');
+
 /** Utilities for working with the DOM */
 const dom = {
   /**
@@ -169,8 +172,6 @@ function _startListeners() {
 
   /** @type {HTMLFieldSetElement} */
   const typesFilterContainer = document.getElementById('types-filter');
-  /** @type {HTMLInputElement} */
-  const methodCountInput = form.elements.namedItem('method_count');
   /** @type {HTMLFieldSetElement} */
   const byteunit = form.elements.namedItem('byteunit');
   /** @type {HTMLCollectionOf<HTMLInputElement>} */
@@ -349,8 +350,6 @@ function _makeIconTemplateGetter() {
 }
 
 function _makeSizeTextGetter() {
-  const _SIZE_CHANGE_CUTOFF = 50000;
-
   /**
    * Create the contents for the size element of a tree node.
    * The unit to use is selected from the current state.
@@ -411,8 +410,10 @@ function _makeSizeTextGetter() {
    * @param {number} value
    */
   function setSizeClasses(sizeElement, value) {
+    const cutOff = methodCountInput.checked ? 10 : 50000;
     const shouldHaveStyle =
-      state.has('diff_mode') && Math.abs(value) > _SIZE_CHANGE_CUTOFF;
+      state.has('diff_mode') && Math.abs(value) > cutOff;
+
     if (shouldHaveStyle) {
       if (value < 0) {
         sizeElement.classList.add('shrunk');

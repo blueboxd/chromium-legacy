@@ -66,8 +66,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  bool Accept() override;
-  bool Close() override;
   void OnThemeChanged() override;
 
  private:

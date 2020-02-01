@@ -10,11 +10,11 @@ namespace browser_watcher {
 // DO NOT REMOVE OR REORDER VALUES. This is logged persistently in a histogram.
 enum class CollectOnCrashEvent {
   kCollectAttempt,
-  kUserDataDirNotEmpty,
-  kPathExists,
+  kUserDataDirNotEmptyUnused,  // No longer used.
+  kPathExistsUnused,           // No longer used.
   kReportExtractionSuccess,
-  kPmaSetDeletedFailed,
-  kOpenForDeleteFailed,
+  kPmaSetDeletedFailedUnused,  // No longer used.
+  kOpenForDeleteFailedUnused,  // No longer used.
   kSuccess,
   kInMemoryAnnotationExists,
   // New values go here.
@@ -24,12 +24,12 @@ enum class CollectOnCrashEvent {
 // DO NOT REMOVE OR REORDER VALUES. This is logged persistently in a histogram.
 enum class StabilityRecordEvent {
   kRecordAttempt,
-  kStabilityDirectoryExists,
-  kGotStabilityPath,
+  kStabilityDirectoryExistsUnused,  // No longer used.
+  kGotStabilityPathUnused,          // No longer used.
   kGotTracker,
-  kMarkDeleted,
-  kMarkDeletedGotFile,
-  kOpenForDeleteFailed,
+  kMarkDeletedUnused,          // No longer used.
+  kMarkDeletedGotFileUnused,   // No longer used.
+  kOpenForDeleteFailedUnused,  // No longer used.
   // New values go here.
   kStabilityRecordEventMax
 };

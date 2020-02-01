@@ -2271,13 +2271,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunDisplayLockingTest(FILE_PATH_LITERAL("non-activatable.html"));
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// The test is flaky on Win and Linux. crbug.com/1043480.
-#define MAYBE_DisplayLockingAll DISABLED_DisplayLockingAll
-#else
-#define MAYBE_DisplayLockingAll DisplayLockingAll
-#endif
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_DisplayLockingAll) {
+// crbug.com/1043480: disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_DisplayLockingAll) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("all.html"));
 }
 

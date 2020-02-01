@@ -4,6 +4,7 @@
 
 #include "components/arc/session/arc_property_util.h"
 
+#include <map>
 #include <memory>
 
 #include "base/command_line.h"
@@ -18,13 +19,40 @@ namespace {
 
 constexpr char kCrosConfigPropertiesPath[] = "/arc/build-properties";
 
-class ArcVmClientAdapterUtilTest : public testing::Test {
+class FakeCrosConfig : public arc::CrosConfig {
  public:
-  ArcVmClientAdapterUtilTest() = default;
-  ~ArcVmClientAdapterUtilTest() override = default;
-  ArcVmClientAdapterUtilTest(const ArcVmClientAdapterUtilTest&) = delete;
-  ArcVmClientAdapterUtilTest& operator=(const ArcVmClientAdapterUtilTest&) =
-      delete;
+  FakeCrosConfig() = default;
+  ~FakeCrosConfig() override = default;
+  FakeCrosConfig(const FakeCrosConfig&) = delete;
+  FakeCrosConfig& operator=(const FakeCrosConfig&) = delete;
+
+  bool GetString(const std::string& path,
+                 const std::string& property,
+                 std::string* val_out) override {
+    auto it = overrides_.find(property);
+    if (it != overrides_.end()) {
+      *val_out = it->second;
+      return true;
+    }
+    return arc::CrosConfig::GetString(path, property, val_out);
+  }
+
+  void SetString(const std::string& path,
+                 const std::string& property,
+                 const std::string& value) {
+    overrides_.emplace(property, value);
+  }
+
+ private:
+  std::map<std::string, std::string> overrides_;
+};
+
+class ArcPropertyUtilTest : public testing::Test {
+ public:
+  ArcPropertyUtilTest() = default;
+  ~ArcPropertyUtilTest() override = default;
+  ArcPropertyUtilTest(const ArcPropertyUtilTest&) = delete;
+  ArcPropertyUtilTest& operator=(const ArcPropertyUtilTest&) = delete;
 
   void SetUp() override { ASSERT_TRUE(dir_.CreateUniqueTempDir()); }
 
@@ -42,8 +70,119 @@ class ArcVmClientAdapterUtilTest : public testing::Test {
   base::ScopedTempDir dir_;
 };
 
+TEST_F(ArcPropertyUtilTest, TestPropertyExpansions) {
+  FakeCrosConfig config;
+  config.SetString("/arc/build-properties", "brand", "alphabet");
+
+  std::string expanded;
+  EXPECT_TRUE(ExpandPropertyContentsForTesting(
+      "line1\n{brand}\nline3\n{brand} {brand}", &config, &expanded));
+  EXPECT_EQ("line1\nalphabet\nline3\nalphabet alphabet\n", expanded);
+}
+
+TEST_F(ArcPropertyUtilTest, TestPropertyExpansionsUnmatchedBrace) {
+  FakeCrosConfig config;
+  config.SetString("/arc/build-properties", "brand", "alphabet");
+
+  std::string expanded;
+  EXPECT_FALSE(ExpandPropertyContentsForTesting("line{1\nline}2\nline3",
+                                                &config, &expanded));
+}
+
+TEST_F(ArcPropertyUtilTest, TestPropertyExpansionsRecursive) {
+  FakeCrosConfig config;
+  config.SetString("/arc/build-properties", "brand", "alphabet");
+  config.SetString("/arc/build-properties", "model", "{brand} soup");
+
+  std::string expanded;
+  EXPECT_TRUE(ExpandPropertyContentsForTesting("{model}", &config, &expanded));
+  EXPECT_EQ("alphabet soup\n", expanded);
+}
+
+TEST_F(ArcPropertyUtilTest, TestPropertyExpansionsMissingProperty) {
+  FakeCrosConfig config;
+  config.SetString("/arc/build-properties", "model", "{brand} soup");
+
+  std::string expanded;
+
+  EXPECT_FALSE(ExpandPropertyContentsForTesting("{missing-property}", &config,
+                                                &expanded));
+  EXPECT_FALSE(ExpandPropertyContentsForTesting("{model}", &config, &expanded));
+}
+
+// Verify that ro.product.board gets copied to ro.oem.key1 as well.
+TEST_F(ArcPropertyUtilTest, TestPropertyExpansionBoard) {
+  FakeCrosConfig config;
+  config.SetString("/arc/build-properties", "board", "testboard");
+
+  std::string expanded;
+  EXPECT_TRUE(ExpandPropertyContentsForTesting("ro.product.board={board}",
+                                               &config, &expanded));
+  EXPECT_EQ("ro.product.board=testboard\nro.oem.key1=testboard\n", expanded);
+}
+
+// Non-fingerprint property should do simple truncation.
+TEST_F(ArcPropertyUtilTest, TestPropertyTruncation) {
+  std::string truncated;
+  EXPECT_TRUE(TruncateAndroidPropertyForTesting(
+      "property.name="
+      "012345678901234567890123456789012345678901234567890123456789"
+      "01234567890123456789012345678901",
+      &truncated));
+  EXPECT_EQ(
+      "property.name=0123456789012345678901234567890123456789"
+      "012345678901234567890123456789012345678901234567890",
+      truncated);
+}
+
+// Fingerprint truncation with /release-keys should do simple truncation.
+TEST_F(ArcPropertyUtilTest, TestPropertyTruncationFingerprintRelease) {
+  std::string truncated;
+  EXPECT_TRUE(TruncateAndroidPropertyForTesting(
+      "ro.bootimage.build.fingerprint=google/toolongdevicename/"
+      "toolongdevicename_cheets:7.1.1/R65-10299.0.9999/4538390:user/"
+      "release-keys",
+      &truncated));
+  EXPECT_EQ(
+      "ro.bootimage.build.fingerprint=google/toolongdevicename/"
+      "toolongdevicename_cheets:7.1.1/R65-10299.0.9999/4538390:user/relea",
+      truncated);
+}
+
+// Fingerprint truncation with /dev-keys needs to preserve the /dev-keys.
+TEST_F(ArcPropertyUtilTest, TestPropertyTruncationFingerprintDev) {
+  std::string truncated;
+  EXPECT_TRUE(TruncateAndroidPropertyForTesting(
+      "ro.bootimage.build.fingerprint=google/toolongdevicename/"
+      "toolongdevicename_cheets:7.1.1/R65-10299.0.9999/4538390:user/dev-keys",
+      &truncated));
+  EXPECT_EQ(
+      "ro.bootimage.build.fingerprint=google/toolongdevicena/"
+      "toolongdevicena_cheets/R65-10299.0.9999/4538390:user/dev-keys",
+      truncated);
+}
+
+// Fingerprint truncation with the wrong format should fail.
+TEST_F(ArcPropertyUtilTest, TestPropertyTruncationBadFingerprint) {
+  std::string truncated;
+  EXPECT_FALSE(TruncateAndroidPropertyForTesting(
+      "ro.bootimage.build.fingerprint=google/toolongdevicename/"
+      "toolongdevicename_cheets:7.1.1:123456789012345678901234567890/dev-keys",
+      &truncated));
+}
+
+// Fingerprint truncation without enough room should fail.
+TEST_F(ArcPropertyUtilTest, TestPropertyTruncationFingerprintShortDevice) {
+  std::string truncated;
+  EXPECT_FALSE(TruncateAndroidPropertyForTesting(
+      "ro.bootimage.build.fingerprint=google/dev/"
+      "dev_cheets:7.1.1/R65-10299.0.9999/453839012345678901234567890"
+      "12345678901234567890:user/dev-keys",
+      &truncated));
+}
+
 // Tests that the GetString method works as intended.
-TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_GetString) {
+TEST_F(ArcPropertyUtilTest, CrosConfig_GetString) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(chromeos::switches::kArcBuildProperties,
                                   "{\"k1\":\"v1\",\"k2\":\"v2\",\"k3\":3}");
@@ -60,13 +199,13 @@ TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_GetString) {
 
 // Tests that CrosConfig can handle the case where the command line is not
 // passed.
-TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_NoCommandline) {
+TEST_F(ArcPropertyUtilTest, CrosConfig_NoCommandline) {
   std::string str;
   EXPECT_FALSE(config()->GetString(kCrosConfigPropertiesPath, "k1", &str));
 }
 
 // Tests that CrosConfig can handle an empty command line.
-TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_EmptyCommandline) {
+TEST_F(ArcPropertyUtilTest, CrosConfig_EmptyCommandline) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(chromeos::switches::kArcBuildProperties, "");
   std::string str;
@@ -74,7 +213,7 @@ TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_EmptyCommandline) {
 }
 
 // Tests that CrosConfig can handle JSON whose top-level is not a dict.
-TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_NoDict) {
+TEST_F(ArcPropertyUtilTest, CrosConfig_NoDict) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(chromeos::switches::kArcBuildProperties,
                                   "[\"k1\"]");
@@ -83,7 +222,7 @@ TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_NoDict) {
 }
 
 // Tests that CrosConfig can handle an invalid JSON.
-TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_InvalidJson) {
+TEST_F(ArcPropertyUtilTest, CrosConfig_InvalidJson) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(chromeos::switches::kArcBuildProperties,
                                   "{\"k1\":}");  // parse error: no value
@@ -93,7 +232,7 @@ TEST_F(ArcVmClientAdapterUtilTest, CrosConfig_InvalidJson) {
 
 // Tests that ExpandPropertyFile works as intended when no property expantion
 // is needed.
-TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_NoExpansion) {
+TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_NoExpansion) {
   constexpr const char kValidProp[] = "ro.foo=bar\nro.baz=boo";
   base::FilePath path;
   ASSERT_TRUE(CreateTemporaryFileInDir(GetTempDir(), &path));
@@ -109,7 +248,7 @@ TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_NoExpansion) {
 
 // Tests that ExpandPropertyFile works as intended when property expantion
 // is needed.
-TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_Expansion) {
+TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_Expansion) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(chromeos::switches::kArcBuildProperties,
                                   "{\"k1\":\"v1\",\"k2\":\"v2\"}");
@@ -128,7 +267,7 @@ TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_Expansion) {
 
 // Tests that ExpandPropertyFile works as intended when nested property
 // expantion is needed.
-TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_NestedExpansion) {
+TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_NestedExpansion) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(chromeos::switches::kArcBuildProperties,
                                   "{\"k1\":\"{k2}\",\"k2\":\"v2\"}");
@@ -146,7 +285,7 @@ TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_NestedExpansion) {
 }
 
 // Test that ExpandPropertyFile handles the case where a property is not found.
-TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_CannotExpand) {
+TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_CannotExpand) {
   constexpr const char kValidProp[] =
       "ro.foo={nonexistent-property}\nro.baz=boo\n";
   base::FilePath path;
@@ -158,14 +297,14 @@ TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_CannotExpand) {
 
 // Test that ExpandPropertyFile handles the case where the input file is not
 // found.
-TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_NoSourceFile) {
+TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_NoSourceFile) {
   EXPECT_FALSE(ExpandPropertyFile(base::FilePath("/nonexistent"),
                                   base::FilePath("/nonexistent2"), config()));
 }
 
 // Test that ExpandPropertyFile handles the case where the output file cannot
 // be written.
-TEST_F(ArcVmClientAdapterUtilTest, ExpandPropertyFile_CannotWrite) {
+TEST_F(ArcPropertyUtilTest, ExpandPropertyFile_CannotWrite) {
   constexpr const char kValidProp[] = "ro.foo=bar\nro.baz=boo\n";
   base::FilePath path;
   ASSERT_TRUE(CreateTemporaryFileInDir(GetTempDir(), &path));

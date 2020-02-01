@@ -26,19 +26,20 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace payments {
 
 // TODO(crbug.com/782270): Use cache to accelerate crawling procedure.
 // TODO(crbug.com/782270): Add integration tests for this class.
 InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
+    const url::Origin& merchant_origin,
     content::WebContents* web_contents,
     PaymentManifestDownloader* downloader,
     PaymentManifestParser* parser,
     PaymentManifestWebDataService* cache)
     : WebContentsObserver(web_contents),
       log_(web_contents),
+      merchant_origin_(merchant_origin),
       downloader_(downloader),
       parser_(parser),
       number_of_payment_method_manifest_to_download_(0),
@@ -79,7 +80,7 @@ void InstallablePaymentAppCrawler::Start(
   number_of_payment_method_manifest_to_download_ = manifests_to_download.size();
   for (const auto& url : manifests_to_download) {
     downloader_->DownloadPaymentMethodManifest(
-        url,
+        merchant_origin_, url,
         base::BindOnce(
             &InstallablePaymentAppCrawler::OnPaymentMethodManifestDownloaded,
             weak_ptr_factory_.GetWeakPtr(), url));
@@ -172,6 +173,7 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
     number_of_web_app_manifest_to_download_++;
     downloaded_web_app_manifests_.insert(web_app_manifest_url);
     downloader_->DownloadWebAppManifest(
+        url::Origin::Create(method_manifest_url_after_redirects),
         web_app_manifest_url,
         base::BindOnce(
             &InstallablePaymentAppCrawler::OnPaymentWebAppManifestDownloaded,

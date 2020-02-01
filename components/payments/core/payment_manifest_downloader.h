@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -74,11 +75,12 @@ class PaymentManifestDownloader {
 
   virtual ~PaymentManifestDownloader();
 
-  // Download a payment method manifest via two consecutive HTTP requests:
+  // Download a payment method manifest from |url| via two consecutive HTTP
+  // requests:
   //
-  // 1) HEAD request for the payment method name. The HTTP response header is
-  //    parsed for Link header that points to the location of the payment method
-  //    manifest file. Example of a relative location:
+  // 1) HEAD request for the payment method name |url|. The HTTP response header
+  //    is parsed for Link header that points to the location of the payment
+  //    method manifest file. Example of a relative location:
   //
   //      Link: <data/payment-manifest.json>; rel="payment-method-manifest"
   //
@@ -92,16 +94,28 @@ class PaymentManifestDownloader {
   //
   // 2) GET request for the payment method manifest file.
   //
-  // |url| should be a valid URL with HTTPS scheme.
-  void DownloadPaymentMethodManifest(const GURL& url,
+  // |merchant_origin| should be the origin of the iframe that created the
+  // PaymentRequest object. It is used by security features like
+  // 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  //
+  // |url| should be valid according to UrlUtil::IsValidManifestUrl() to
+  // download.
+  void DownloadPaymentMethodManifest(const url::Origin& merchant_origin,
+                                     const GURL& url,
                                      PaymentManifestDownloadCallback callback);
 
-  // Download a web app manifest via a single HTTP request:
+  // Download a web app manifest from |url| via a single HTTP request:
   //
   // 1) GET request for the payment method name.
   //
-  // |url| should be a valid URL with HTTPS scheme.
-  void DownloadWebAppManifest(const GURL& url,
+  // |payment_method_manifest_origin| should be the origin of the payment method
+  // manifest that is pointing to this web app manifest. It is used for security
+  // features like 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  //
+  // |url| should be valid according to UrlUtil::IsValidManifestUrl() to
+  // download.
+  void DownloadWebAppManifest(const url::Origin& payment_method_manifest_origin,
+                              const GURL& url,
                               PaymentManifestDownloadCallback callback);
 
   // Overridden in TestDownloader to convert |url| to a test server URL. The
@@ -120,6 +134,7 @@ class PaymentManifestDownloader {
 
     int allowed_number_of_redirects = 0;
     std::string method;
+    url::Origin request_initiator;
     GURL original_url;
     std::unique_ptr<network::SimpleURLLoader> loader;
     PaymentManifestDownloadCallback callback;
@@ -150,7 +165,8 @@ class PaymentManifestDownloader {
   GURL GetLoaderOriginalURLForTesting();
 
   // Overridden in TestDownloader.
-  virtual void InitiateDownload(const GURL& url,
+  virtual void InitiateDownload(const url::Origin& request_initiator,
+                                const GURL& url,
                                 const std::string& method,
                                 int allowed_number_of_redirects,
                                 PaymentManifestDownloadCallback callback);

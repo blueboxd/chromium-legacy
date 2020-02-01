@@ -166,9 +166,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
 
   // HungPagesTableModel::Delegate overrides:
   void TabUpdated() override;
@@ -185,6 +182,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // Restart the hang timer, giving the page more time.
   void RestartHangTimer();
+  void ForceCrashHungRenderer();
 
   void UpdateLabels();
 

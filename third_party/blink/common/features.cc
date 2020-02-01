@@ -164,30 +164,6 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables HW VP8 encoding on Android.
-const base::Feature kWebRtcHWVP8Encoding {
-  "WebRtcHWVP8Encoding",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-// Enables HW VP9 encoding on Android.
-const base::Feature kWebRtcHWVP9Encoding {
-  "WebRtcHWVP9Encoding",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-// Enables HW H264 encoding on Android.
-const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables negotiation of experimental multiplex codec in SDP.
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -362,6 +338,10 @@ const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
 
+// Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
+const base::Feature kWebRtcUseMinMaxVEADimensions{
+    "WebRtcUseMinMaxVEADimensions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Blink garbage collection.
 // Enables compaction of backing stores on Blink's heap.
 const base::Feature kBlinkHeapCompaction{"BlinkHeapCompaction",
@@ -467,6 +447,11 @@ const base::Feature kLowLatencyCanvas2dSwapChain{
 // Enables the use of shared image swap chains for low latency webgl canvas.
 const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables forcing additional rendering of subframes for the purpose of sticky
+// frame tracking.
+const base::Feature kForceExtraRenderingToTrackStickyFrame{
+    "ForceExtraRenderingToTrackStickyFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

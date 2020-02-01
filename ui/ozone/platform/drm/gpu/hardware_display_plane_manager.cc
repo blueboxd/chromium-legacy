@@ -101,6 +101,15 @@ int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) const {
   return -1;
 }
 
+int HardwareDisplayPlaneManager::LookupConnectorIndex(
+    uint32_t connector_id) const {
+  for (size_t i = 0; i < connectors_props_.size(); ++i) {
+    if (connectors_props_[i].id == connector_id)
+      return i;
+  }
+  return -1;
+}
+
 bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
                                                const DrmOverlayPlane& overlay,
                                                uint32_t crtc_index) const {
@@ -314,6 +323,23 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState() {
     return false;
   }
 
+  for (int i = 0; i < resources->count_connectors; ++i) {
+    ConnectorProperties state_props;
+    state_props.id = resources->connectors[i];
+
+    ScopedDrmObjectPropertyPtr props(drm_->GetObjectProperties(
+        resources->connectors[i], DRM_MODE_OBJECT_CONNECTOR));
+    if (!props) {
+      PLOG(ERROR) << "Failed to get Connector properties for connector="
+                  << state_props.id;
+      continue;
+    }
+    GetDrmPropertyForName(drm_, props.get(), "CRTC_ID", &state_props.crtc_id);
+    DCHECK(!drm_->is_atomic() || state_props.crtc_id.id);
+
+    connectors_props_.emplace_back(std::move(state_props));
+  }
+
   unsigned int num_crtcs_with_out_fence_ptr = 0;
 
   for (int i = 0; i < resources->count_crtcs; ++i) {
@@ -328,6 +354,12 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState() {
       continue;
     }
 
+    GetDrmPropertyForName(drm_, props.get(), "ACTIVE",
+                          &state.properties.active);
+    DCHECK(!drm_->is_atomic() || state.properties.active.id);
+    GetDrmPropertyForName(drm_, props.get(), "MODE_ID",
+                          &state.properties.mode_id);
+    DCHECK(!drm_->is_atomic() || state.properties.mode_id.id);
     // These properties are optional. If they don't exist we can tell by the
     // invalid ID.
     GetDrmPropertyForName(drm_, props.get(), "CTM", &state.properties.ctm);

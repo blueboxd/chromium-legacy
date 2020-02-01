@@ -137,7 +137,7 @@ public class NightModeReparentingControllerTest {
         Assert.assertEquals(1, tab.getId());
         verify(mTask, times(1)).detach();
 
-        mController.onStartWithNative();
+        mController.onNativeInitialized();
         verify(mTask, times(1)).finish(anyObject(), anyObject());
     }
 
@@ -147,7 +147,7 @@ public class NightModeReparentingControllerTest {
         mController.onNightModeStateChanged();
 
         doReturn(null).when(mDelegate.getTabModelSelector()).getModel(anyBoolean());
-        mController.onStartWithNative();
+        mController.onNativeInitialized();
 
         AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(1);
         Assert.assertNull(params);
@@ -183,7 +183,7 @@ public class NightModeReparentingControllerTest {
 
         verify(mTask, times(2)).detach();
 
-        mController.onStartWithNative();
+        mController.onNativeInitialized();
         verify(mTask, times(2)).finish(anyObject(), anyObject());
     }
 
@@ -210,7 +210,7 @@ public class NightModeReparentingControllerTest {
 
         verify(mTask, times(2)).detach();
 
-        mController.onStartWithNative();
+        mController.onNativeInitialized();
         verify(mTask, times(2)).finish(anyObject(), anyObject());
     }
 
@@ -248,7 +248,7 @@ public class NightModeReparentingControllerTest {
 
         verify(mTask, times(3)).detach();
 
-        mController.onStartWithNative();
+        mController.onNativeInitialized();
         verify(mTask, times(3)).finish(anyObject(), anyObject());
     }
 
@@ -256,7 +256,7 @@ public class NightModeReparentingControllerTest {
     public void testTabGetsStored_noTab() {
         try {
             mController.onNightModeStateChanged();
-            mController.onStartWithNative();
+            mController.onNativeInitialized();
             verify(mTask, times(0)).finish(anyObject(), anyObject());
         } catch (Exception e) {
             Assert.assertTrue(

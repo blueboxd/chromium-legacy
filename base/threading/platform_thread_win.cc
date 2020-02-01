@@ -384,8 +384,6 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
       internal::AssertMemoryPriority(thread_handle, MEMORY_PRIORITY_VERY_LOW);
     }
   }
-
-  DCHECK_EQ(GetCurrentThreadPriority(), priority);
 }
 
 // static

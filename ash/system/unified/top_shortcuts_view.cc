@@ -206,14 +206,6 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   collapse_button_ = new CollapseButton(this);
   AddChildView(collapse_button_);
-
-  OnAccessibilityStatusChanged();
-
-  shell->accessibility_controller()->AddObserver(this);
-}
-
-TopShortcutsView::~TopShortcutsView() {
-  Shell::Get()->accessibility_controller()->RemoveObserver(this);
 }
 
 void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
@@ -234,11 +226,6 @@ void TopShortcutsView::ButtonPressed(views::Button* sender,
     controller_->HandlePowerAction();
   else if (sender == collapse_button_)
     controller_->ToggleExpanded();
-}
-
-void TopShortcutsView::OnAccessibilityStatusChanged() {
-  collapse_button_->SetEnabled(
-      !Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
 const char* TopShortcutsView::GetClassName() const {

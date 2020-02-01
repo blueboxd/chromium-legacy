@@ -31,6 +31,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/resolve_context.h"
 #include "net/dns/system_dns_config_change_notifier.h"
 #include "url/gurl.h"
 
@@ -50,7 +51,6 @@ class MDnsSocketFactory;
 class NetLog;
 class NetLogWithSource;
 class NetworkIsolationKey;
-class URLRequestContext;
 
 // Scheduler and controller of host resolution requests. Because of the global
 // nature of host resolutions, this class is generally expected to be singleton
@@ -139,22 +139,25 @@ class NET_EXPORT HostResolverManager
   // be called.
   ~HostResolverManager() override;
 
-  // If |host_cache| is non-null, its HostCache::Invalidator must have already
-  // been added (via AddHostCacheInvalidator()). If |optional_parameters|
-  // specifies any cache usage other than LOCAL_ONLY, there must be a 1:1
-  // correspondence between |request_context| and |host_cache|, and both should
-  // come from the same ContextHostResolver.
+  // |resolve_context| must have already been added (via
+  // RegisterResolveContext()). If |optional_parameters| specifies any cache
+  // usage other than LOCAL_ONLY, there must be a 1:1 correspondence between
+  // |resolve_context| and |host_cache|, and both should come from the same
+  // ContextHostResolver.
+  //
+  // TODO(crbug.com/1022059): Use the HostCache out of the ResolveContext
+  // instead of passing it separately.
   std::unique_ptr<CancellableResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters,
-      URLRequestContext* request_context,
+      ResolveContext* resolve_context,
       HostCache* host_cache);
-  // |request_context| is the context to use for the probes, and it is expected
+  // |resolve_context| is the context to use for the probes, and it is expected
   // to be the context of the calling ContextHostResolver.
   std::unique_ptr<CancellableProbeRequest> CreateDohProbeRequest(
-      URLRequestContext* request_context);
+      ResolveContext* resolvet_context);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
 
@@ -174,19 +177,19 @@ class NET_EXPORT HostResolverManager
   // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(DnsConfigOverrides overrides);
 
-  // Support for invalidating HostCaches on changes to network or DNS
-  // configuration. HostCaches should register/deregister invalidators here
-  // rather than attempting to listen for relevant network change signals
-  // themselves because HostResolverManager needs to coordinate invalidations
-  // with in-progress resolves and because some invalidations are triggered by
-  // changes to manager properties/configuration rather than pure network
-  // changes.
+  // Support for invalidating cached per-context data on changes to network or
+  // DNS configuration. ContextHostResolvers should register/deregister
+  // themselves here rather than attempting to listen for relevant network
+  // change signals themselves because HostResolverManager needs to coordinate
+  // invalidations with in-progress resolves and because some invalidations are
+  // triggered by changes to manager properties/configuration rather than pure
+  // network changes.
   //
   // Note: Invalidation handling must not call back into HostResolverManager as
   // the invalidation is expected to be handled atomically with other clearing
   // and aborting actions.
-  void AddHostCacheInvalidator(HostCache::Invalidator* invalidator);
-  void RemoveHostCacheInvalidator(const HostCache::Invalidator* invalidator);
+  void RegisterResolveContext(ResolveContext* context);
+  void DeregisterResolveContext(const ResolveContext* context);
 
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
@@ -289,6 +292,7 @@ class NET_EXPORT HostResolverManager
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
       HostCache* cache,
+      ResolveContext* resolve_context,
       DnsQueryType* out_effective_query_type,
       HostResolverFlags* out_effective_host_resolver_flags,
       DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
@@ -356,6 +360,7 @@ class NET_EXPORT HostResolverManager
                     bool insecure_tasks_allowed,
                     bool allow_cache,
                     bool prioritize_local_lookups,
+                    ResolveContext* resolve_context,
                     std::deque<TaskType>* out_tasks);
 
   // Initialized the sequence of tasks to run to resolve a request. The sequence
@@ -367,6 +372,7 @@ class NET_EXPORT HostResolverManager
       HostResolverFlags flags,
       base::Optional<SecureDnsMode> secure_dns_mode_override,
       ResolveHostParameters::CacheUsage cache_usage,
+      ResolveContext* resolve_context,
       DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
       std::deque<TaskType>* out_tasks);
 
@@ -381,6 +387,7 @@ class NET_EXPORT HostResolverManager
       ResolveHostParameters::CacheUsage cache_usage,
       const IPAddress* ip_address,
       const NetLogWithSource& net_log,
+      ResolveContext* resolve_context,
       DnsQueryType* out_effective_type,
       HostResolverFlags* out_effective_flags,
       DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
@@ -456,7 +463,7 @@ class NET_EXPORT HostResolverManager
   // Returns |nullptr| if DoH probes are currently not allowed (due to
   // configuration or current connection state).
   std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
-      URLRequestContext* url_request_context);
+      ResolveContext* resolve_context);
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().
@@ -504,11 +511,11 @@ class NET_EXPORT HostResolverManager
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;
 
-  // For HostCache invalidation notifications.
-  base::ObserverList<HostCache::Invalidator,
+  // For per-context cache invalidation notifications.
+  base::ObserverList<ResolveContext,
                      true /* check_empty */,
                      false /* allow_reentrancy */>
-      host_cache_invalidators_;
+      registered_contexts_;
   bool invalidation_in_progress_;
 
   THREAD_CHECKER(thread_checker_);

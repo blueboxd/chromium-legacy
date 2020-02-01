@@ -1525,14 +1525,15 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
                                              0.f, false);
   EXPECT_TRUE(animation_host_->IsElementAnimating(element_id));
 
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
   test_layer->SetLayerTreeHost(layer_tree_host_.get());
   // Layer should now be registered by element id.
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(test_layer,
+            layer_tree_host_->LayerByElementIdForTesting(element_id));
 
   test_layer->SetLayerTreeHost(nullptr);
   // Layer should have been un-registered.
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
 }
 
 TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
@@ -1541,18 +1542,20 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   ElementId element_id = ElementId(2);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
 
   test_layer->SetElementId(element_id);
   // Layer should now be registered by element id.
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(test_layer,
+            layer_tree_host_->LayerByElementIdForTesting(element_id));
 
   ElementId other_element_id = ElementId(3);
   test_layer->SetElementId(other_element_id);
   // The layer should have been unregistered from the original element
   // id and registered with the new one.
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(other_element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
+  EXPECT_EQ(test_layer,
+            layer_tree_host_->LayerByElementIdForTesting(other_element_id));
 
   test_layer->SetLayerTreeHost(nullptr);
 }
@@ -1827,94 +1830,6 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
   EXPECT_EQ(
       gfx::RRectF(gfx::RectF(gfx::Rect(kLayerSize)), kUpdatedRoundedCorners),
       node_5->rounded_corner_bounds);
-}
-
-class LayerTestWithLayerLists : public LayerTest {
- protected:
-  void SetUp() override {
-    settings_.use_layer_lists = true;
-    LayerTest::SetUp();
-  }
-};
-
-TEST_F(LayerTestWithLayerLists, LayerTreeHostRegistersScrollingElementId) {
-  scoped_refptr<Layer> normal_layer = Layer::Create();
-  scoped_refptr<Layer> scrolling_layer = Layer::Create();
-  scrolling_layer->SetScrollable(gfx::Size(1000, 1000));
-  ElementId normal_element_id = ElementId(2);
-  ElementId scrolling_element_id = ElementId(3);
-  normal_layer->SetElementId(normal_element_id);
-  scrolling_layer->SetElementId(scrolling_element_id);
-
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(normal_element_id));
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(scrolling_element_id));
-  normal_layer->SetLayerTreeHost(layer_tree_host_.get());
-  scrolling_layer->SetLayerTreeHost(layer_tree_host_.get());
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(normal_element_id));
-  EXPECT_EQ(scrolling_layer,
-            layer_tree_host_->LayerByElementId(scrolling_element_id));
-
-  normal_layer->SetLayerTreeHost(nullptr);
-  scrolling_layer->SetLayerTreeHost(nullptr);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(scrolling_element_id));
-}
-
-TEST_F(LayerTestWithLayerLists, ChangingScrollableElementIdRegistersElement) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  test_layer->SetScrollable(gfx::Size(1000, 1000));
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
-
-  ElementId element_id = ElementId(2);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  // Setting the element id should register the layer.
-  test_layer->SetElementId(element_id);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
-
-  // Unsetting the element id should unregister the layer.
-  test_layer->SetElementId(ElementId());
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  test_layer->SetLayerTreeHost(nullptr);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-}
-
-TEST_F(LayerTestWithLayerLists, ChangingScrollableRegistersElement) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
-
-  ElementId element_id = ElementId(2);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  // Setting the element id commits the element id but should not register
-  // the layer.
-  test_layer->SetElementId(element_id);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  // Making the layer scrollable should register it.
-  test_layer->SetScrollable(gfx::Size(1000, 1000));
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
-
-  // Unsetting the element id should unregister the layer.
-  test_layer->SetElementId(ElementId());
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  test_layer->SetLayerTreeHost(nullptr);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-}
-
-TEST_F(LayerTestWithLayerLists, SetElementIdUsingLayerLists) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  ElementId element_id = ElementId(2);
-  test_layer->SetElementId(element_id);
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 }
 
 }  // namespace

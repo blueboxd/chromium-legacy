@@ -135,8 +135,9 @@ function doTranslationTest(
           new ExpandingBrailleTranslator(uncontractedTranslator);
     }
     const extraCellsSpan = text.getSpanInstanceOf(ExtraCellsSpan);
+    let extraCellsSpanPos;
     if (extraCellsSpan) {
-      var extraCellsSpanPos = text.getSpanStart(extraCellsSpan);
+      extraCellsSpanPos = text.getSpanStart(extraCellsSpan);
     }
     const expectedTextToBraille = [];
     const expectedBrailleToText = [];
@@ -186,9 +187,10 @@ function runTranslationTestVariants(
   }
   fullName += testCase.name;
   let input = testCase.input;
+  let selectionStart;
   if (withExtraCells) {
     input = input.substring(0);  // Shallow copy.
-    var selectionStart =
+    selectionStart =
         input.getSpanStart(input.getSpanInstanceOf(ValueSelectionSpan));
     const extraCellsSpan = new ExtraCellsSpan();
     extraCellsSpan.cells = new Uint8Array(['e'.charCodeAt(0)]).buffer;
@@ -310,13 +312,13 @@ TEST_F(
       });
 
       const expType = ExpandingBrailleTranslator.ExpansionType;
-      for (var i = 0, testCase; testCase = TESTDATA[i]; ++i) {
+      for (let i = 0, testCase; testCase = TESTDATA[i]; ++i) {
         runTranslationTestVariants(testCase, false, expType.SELECTION, false);
         runTranslationTestVariants(testCase, true, expType.NONE, false);
         runTranslationTestVariants(testCase, true, expType.SELECTION, false);
         runTranslationTestVariants(testCase, true, expType.ALL, false);
       }
-      for (var i = 0, testCase; testCase = TESTDATA_WITH_SELECTION[i]; ++i) {
+      for (let i = 0, testCase; testCase = TESTDATA_WITH_SELECTION[i]; ++i) {
         runTranslationTestVariants(testCase, true, expType.SELECTION, true);
       }
 

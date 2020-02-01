@@ -54,6 +54,7 @@ import org.chromium.content_public.browser.InputMethodManagerWrapper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.ViewUtils;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.ime.TextInputAction;
 import org.chromium.ui.base.ime.TextInputType;
 
@@ -86,7 +87,8 @@ import java.util.List;
  * lifetime of the object.
  */
 @JNINamespace("content")
-public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData {
+public class ImeAdapterImpl
+        implements ImeAdapter, WindowEventObserver, UserData, InputMethodManagerWrapper.Delegate {
     private static final String TAG = "Ime";
     private static final boolean DEBUG_LOGS = false;
 
@@ -108,6 +110,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
 
     private final WebContentsImpl mWebContents;
     private ViewAndroidDelegate mViewDelegate;
+    private WindowAndroid mWindowAndroid;
 
     // This holds the information necessary for constructing CursorAnchorInfo, and notifies to
     // InputMethodManager on appropriate timing, depending on how IME requested the information
@@ -183,9 +186,9 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
     /**
      * Returns an instance of the default {@link InputMethodManagerWrapper}
      */
-    public static InputMethodManagerWrapper createDefaultInputMethodManagerWrapper(
-            Context context) {
-        return new InputMethodManagerWrapperImpl(context);
+    public static InputMethodManagerWrapper createDefaultInputMethodManagerWrapper(Context context,
+            WindowAndroid windowAndroid, InputMethodManagerWrapper.Delegate delegate) {
+        return new InputMethodManagerWrapperImpl(context, windowAndroid, delegate);
     }
 
     /**
@@ -196,9 +199,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         mWebContents = (WebContentsImpl) webContents;
         mViewDelegate = mWebContents.getViewAndroidDelegate();
         assert mViewDelegate != null;
+
         // Use application context here to avoid leaking the activity context.
-        InputMethodManagerWrapper wrapper =
-                createDefaultInputMethodManagerWrapper(ContextUtils.getApplicationContext());
+        InputMethodManagerWrapper wrapper = createDefaultInputMethodManagerWrapper(
+                ContextUtils.getApplicationContext(), mWebContents.getTopLevelNativeWindow(), this);
 
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(getContainerView().getResources().getConfiguration());
@@ -327,6 +331,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
                     ImeAdapterImpl.this, false /* not an immediate request */,
                     false /* disable monitoring */);
         }
+
+        if (mInputConnection != null) mInputMethodManagerWrapper.onInputConnectionCreated();
         return mInputConnection;
     }
 
@@ -335,6 +341,11 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         // The previous input connection might be waiting for state update.
         if (mInputConnection != null) mInputConnection.unblockOnUiThread();
         mInputConnection = inputConnection;
+    }
+
+    @Override
+    public boolean hasInputConnection() {
+        return mInputConnection != null;
     }
 
     @Override
@@ -617,6 +628,13 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
     public void onWindowFocusChanged(boolean gainFocus) {
         if (mInputConnectionFactory != null) {
             mInputConnectionFactory.onWindowFocusChanged(gainFocus);
+        }
+    }
+
+    @Override
+    public void onWindowAndroidChanged(WindowAndroid windowAndroid) {
+        if (mInputMethodManagerWrapper != null) {
+            mInputMethodManagerWrapper.onWindowAndroidChanged(windowAndroid);
         }
     }
 

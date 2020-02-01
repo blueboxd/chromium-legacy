@@ -31,13 +31,13 @@ TestMsgs = class {
     if (!messageId) {
       throw Error('Message id required');
     }
-    var messageString = TestMsgs.Untranslated[messageId.toUpperCase()];
+    let messageString = TestMsgs.Untranslated[messageId.toUpperCase()];
     if (messageString === undefined) {
       const messageObj = TestMessages[('chromevox_' + messageId).toUpperCase()];
       if (messageObj === undefined) {
         throw Error('missing-msg: ' + messageId);
       }
-      var messageString = messageObj.message;
+      messageString = messageObj.message;
       const placeholders = messageObj.placeholders;
       if (placeholders) {
         for (name in placeholders) {

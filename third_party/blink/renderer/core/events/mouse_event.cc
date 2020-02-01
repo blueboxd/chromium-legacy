@@ -561,9 +561,7 @@ double MouseEvent::offsetX() {
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-             ? offset_location_.X()
-             : std::round(offset_location_.X());
+  return std::round(offset_location_.X());
 }
 
 double MouseEvent::offsetY() {
@@ -571,9 +569,7 @@ double MouseEvent::offsetY() {
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-             ? offset_location_.Y()
-             : std::round(offset_location_.Y());
+  return std::round(offset_location_.Y());
 }
 
 }  // namespace blink

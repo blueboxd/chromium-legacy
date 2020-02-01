@@ -24,6 +24,7 @@
 #include "ui/events/test/scoped_event_test_tick_clock.h"
 #include "ui/events/types/event_type.h"
 #include "ui/events/x/events_x_utils.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"
 
@@ -77,6 +78,11 @@ float ComputeRotationAngle(float twist) {
   return rotation_angle;
 }
 
+std::string FlooredEventLocationString(const XEvent& xev) {
+  return gfx::ToFlooredPoint(gfx::PointF(ui::EventLocationFromXEvent(xev)))
+      .ToString();
+}
+
 }  // namespace
 
 class EventsXTest : public testing::Test {
@@ -101,65 +107,65 @@ TEST_F(EventsXTest, ButtonEvents) {
   gfx::Vector2d offset;
 
   InitButtonEvent(&event, true, location, 1, 0);
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(&event));
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromXEvent(event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON,
-            ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
+            ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
 
   InitButtonEvent(&event, true, location, 2, Button1Mask | ShiftMask);
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
-                ui::EF_SHIFT_DOWN,
-            ui::EventFlagsFromNative(&event));
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_SHIFT_DOWN,
+      ui::EventFlagsFromXEvent(event));
   EXPECT_EQ(ui::EF_MIDDLE_MOUSE_BUTTON,
-            ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
+            ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
 
   InitButtonEvent(&event, false, location, 3, 0);
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromNative(&event));
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromXEvent(event));
   EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON,
-            ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
+            ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
 
   // Scroll up.
   InitButtonEvent(&event, true, location, 4, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
-  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
-  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(0, ui::EventFlagsFromXEvent(event));
+  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
+  offset = ui::GetMouseWheelOffsetFromXEvent(event);
   EXPECT_GT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
 
   // Scroll down.
   InitButtonEvent(&event, true, location, 5, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
-  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
-  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(0, ui::EventFlagsFromXEvent(event));
+  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
+  offset = ui::GetMouseWheelOffsetFromXEvent(event);
   EXPECT_LT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
 
   // Scroll left.
   InitButtonEvent(&event, true, location, 6, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
-  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
-  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(0, ui::EventFlagsFromXEvent(event));
+  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
+  offset = ui::GetMouseWheelOffsetFromXEvent(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_GT(offset.x(), 0);
 
   // Scroll right.
   InitButtonEvent(&event, true, location, 7, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
-  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromNative(&event));
-  EXPECT_EQ(location, gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)));
-  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ(0, ui::EventFlagsFromXEvent(event));
+  EXPECT_EQ(ui::EF_NONE, ui::GetChangedMouseButtonFlagsFromXEvent(event));
+  EXPECT_EQ(location, ui::EventLocationFromXEvent(event));
+  offset = ui::GetMouseWheelOffsetFromXEvent(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_LT(offset.x(), 0);
 
@@ -171,12 +177,12 @@ TEST_F(EventsXTest, AvoidExtraEventsOnWheelRelease) {
   gfx::Point location(5, 10);
 
   InitButtonEvent(&event, true, location, 4, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromXEvent(event));
 
   // We should return ET_UNKNOWN for the release event instead of returning
   // ET_MOUSEWHEEL; otherwise we'll scroll twice for each scrollwheel step.
   InitButtonEvent(&event, false, location, 4, 0);
-  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(&event));
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromXEvent(event));
 
   // TODO(derat): Test XInput code.
 }
@@ -191,24 +197,20 @@ TEST_F(EventsXTest, EnterLeaveEvent) {
 
   // Mouse enter events are converted to mouse move events to be consistent with
   // the way views handle mouse enter. See comments for EnterNotify case in
-  // ui::EventTypeFromNative for more details.
-  EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromNative(&event));
-  EXPECT_TRUE(ui::EventFlagsFromNative(&event) & ui::EF_IS_SYNTHESIZED);
-  EXPECT_EQ(
-      "10,20",
-      gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)).ToString());
-  EXPECT_EQ("110,120", ui::EventSystemLocationFromNative(&event).ToString());
+  // ui::EventTypeFromXEvent for more details.
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromXEvent(event));
+  EXPECT_TRUE(ui::EventFlagsFromXEvent(event) & ui::EF_IS_SYNTHESIZED);
+  EXPECT_EQ("10,20", ui::EventLocationFromXEvent(event).ToString());
+  EXPECT_EQ("110,120", ui::EventSystemLocationFromXEvent(event).ToString());
 
   event.xcrossing.type = LeaveNotify;
   event.xcrossing.x = 30;
   event.xcrossing.y = 40;
   event.xcrossing.x_root = 230;
   event.xcrossing.y_root = 240;
-  EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(
-      "30,40",
-      gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)).ToString());
-  EXPECT_EQ("230,240", ui::EventSystemLocationFromNative(&event).ToString());
+  EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromXEvent(event));
+  EXPECT_EQ("30,40", ui::EventLocationFromXEvent(event).ToString());
+  EXPECT_EQ("230,240", ui::EventSystemLocationFromXEvent(event).ToString());
 }
 
 TEST_F(EventsXTest, ClickCount) {
@@ -221,17 +223,17 @@ TEST_F(EventsXTest, ClickCount) {
     InitButtonEvent(&event, true, location, 1, 0);
     {
       event.xbutton.time = time_stamp.InMilliseconds() & UINT32_MAX;
-      MouseEvent mouseev(&event);
-      EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouseev.type());
-      EXPECT_EQ(i, mouseev.GetClickCount());
+      auto mouseev = ui::BuildMouseEventFromXEvent(event);
+      EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouseev->type());
+      EXPECT_EQ(i, mouseev->GetClickCount());
     }
 
     InitButtonEvent(&event, false, location, 1, 0);
     {
       event.xbutton.time = time_stamp.InMilliseconds();
-      MouseEvent mouseev(&event);
-      EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouseev.type());
-      EXPECT_EQ(i, mouseev.GetClickCount());
+      auto mouseev = ui::BuildMouseEventFromXEvent(event);
+      EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouseev->type());
+      EXPECT_EQ(i, mouseev->GetClickCount());
     }
     time_stamp += base::TimeDelta::FromMilliseconds(1);
   }
@@ -251,13 +253,11 @@ TEST_F(EventsXTest, TouchEventBasic) {
   ui::ScopedXI2Event scoped_xevent;
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("10,10",
-            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
-                .ToString());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromXEvent(*scoped_xevent));
+  EXPECT_EQ("10,10", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 0);
   PointerDetails pointer_details =
-      GetTouchPointerDetailsFromNative(scoped_xevent);
+      GetTouchPointerDetailsFromXEvent(*scoped_xevent);
   EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.15f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.1f);
@@ -268,12 +268,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
       Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.5f));
   scoped_xevent.InitTouchEvent(
       0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("20,20",
-            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
-                .ToString());
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromXEvent(*scoped_xevent));
+  EXPECT_EQ("20,20", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 0);
-  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  pointer_details = GetTouchPointerDetailsFromXEvent(*scoped_xevent);
   EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.25f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.1f);
@@ -286,12 +284,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 500));
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("200,200",
-            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
-                .ToString());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromXEvent(*scoped_xevent));
+  EXPECT_EQ("200,200", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 1);
-  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  pointer_details = GetTouchPointerDetailsFromXEvent(*scoped_xevent);
   EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.45f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 50.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.5f);
@@ -302,12 +298,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 50));
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("30,30",
-            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
-                .ToString());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromXEvent(*scoped_xevent));
+  EXPECT_EQ("30,30", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 0);
-  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  pointer_details = GetTouchPointerDetailsFromXEvent(*scoped_xevent);
   EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.25f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.f);
@@ -318,12 +312,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_MAJOR, 50));
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
-  EXPECT_EQ("200,200",
-            gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
-                .ToString());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromXEvent(*scoped_xevent));
+  EXPECT_EQ("200,200", FlooredEventLocationString(*scoped_xevent));
   EXPECT_EQ(GetTouchIdFromXEvent(*scoped_xevent), 1);
-  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  pointer_details = GetTouchPointerDetailsFromXEvent(*scoped_xevent);
   EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.45f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 25.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.f);
@@ -350,13 +342,13 @@ TEST_F(EventsXTest, TouchEventNotRemovingFromNativeMapping) {
   ui::ScopedXI2Event xpress0;
   xpress0.InitTouchEvent(kDeviceId, XI_TouchBegin, kTrackingId,
                          gfx::Point(10, 10), valuators);
-  std::unique_ptr<ui::TouchEvent> upress0(new ui::TouchEvent(xpress0));
+  auto upress0 = ui::BuildTouchEventFromXEvent(*xpress0);
   EXPECT_EQ(kDeviceId, GetTouchIdForTrackingId(kTrackingId));
 
   ui::ScopedXI2Event xpress1;
   xpress1.InitTouchEvent(kDeviceId, XI_TouchBegin, kTrackingId,
                          gfx::Point(20, 20), valuators);
-  ui::TouchEvent upress1(xpress1);
+  auto upress1 = ui::BuildTouchEventFromXEvent(*xpress1);
   EXPECT_EQ(kDeviceId, GetTouchIdForTrackingId(kTrackingId));
 
   // The second touch release should clear the mapping from the
@@ -364,16 +356,14 @@ TEST_F(EventsXTest, TouchEventNotRemovingFromNativeMapping) {
   ui::ScopedXI2Event xrelease1;
   xrelease1.InitTouchEvent(kDeviceId, XI_TouchEnd, kTrackingId,
                            gfx::Point(10, 10), valuators);
-  {
-    ui::TouchEvent urelease1(xrelease1);
-  }
+  { auto urelease1 = ui::BuildTouchEventFromXEvent(*xrelease1); }
   EXPECT_EQ(-1, GetTouchIdForTrackingId(kTrackingId));
 }
 
 // Copied events should not remove native touch id mappings, as this causes a
 // crash (crbug.com/467102). Copied events do not contain a proper
 // PlatformEvent and should not attempt to access it.
-TEST_F(EventsXTest, CopiedTouchEventNotRemovingFromNativeMapping) {
+TEST_F(EventsXTest, CopiedTouchEventNotRemovingFromXEventMapping) {
   std::vector<int> devices;
   devices.push_back(0);
   ui::SetUpTouchDevicesForTest(devices);
@@ -382,11 +372,11 @@ TEST_F(EventsXTest, CopiedTouchEventNotRemovingFromNativeMapping) {
   // Create a release event which has a native touch id mapping.
   ui::ScopedXI2Event xrelease0;
   xrelease0.InitTouchEvent(0, XI_TouchEnd, 0, gfx::Point(10, 10), valuators);
-  ui::TouchEvent urelease0(xrelease0);
+  auto urelease0 = ui::BuildTouchEventFromXEvent(*xrelease0);
   {
     // When the copy is destructed it should not attempt to remove the mapping.
     // Exiting this scope should not cause a crash.
-    ui::TouchEvent copy = urelease0;
+    TouchEvent copy = *urelease0;
   }
 }
 
@@ -413,7 +403,7 @@ TEST_F(EventsXTest, DisableKeyboard) {
                           ui::ET_KEY_PRESSED,
                           ui::VKEY_A,
                           0);
-  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromXEvent(*xev));
 
   // The B key is allowed as an exception, and should return KEY_PRESSED.
   xev.InitGenericKeyEvent(master_device_id,
@@ -421,7 +411,7 @@ TEST_F(EventsXTest, DisableKeyboard) {
                           ui::ET_KEY_PRESSED,
                           ui::VKEY_B,
                           0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
 
   // Both A and B are allowed on an unblocked keyboard device.
   xev.InitGenericKeyEvent(master_device_id,
@@ -429,13 +419,13 @@ TEST_F(EventsXTest, DisableKeyboard) {
                           ui::ET_KEY_PRESSED,
                           ui::VKEY_A,
                           0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
   xev.InitGenericKeyEvent(master_device_id,
                           other_device_id,
                           ui::ET_KEY_PRESSED,
                           ui::VKEY_B,
                           0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
 
   device_data_manager->EnableDevice(blocked_device_id);
   device_data_manager->SetDisabledKeyboardAllowedKeys(nullptr);
@@ -446,7 +436,7 @@ TEST_F(EventsXTest, DisableKeyboard) {
                           ui::ET_KEY_PRESSED,
                           ui::VKEY_A,
                           0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromXEvent(*xev));
 }
 
 // Verifies that the type of events from a disabled mouse is ET_UNKNOWN.
@@ -466,17 +456,17 @@ TEST_F(EventsXTest, DisableMouse) {
   ScopedXI2Event xev;
   xev.InitGenericButtonEvent(blocked_device_id, ET_MOUSE_PRESSED, gfx::Point(),
       EF_LEFT_MOUSE_BUTTON);
-  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromXEvent(*xev));
 
   xev.InitGenericButtonEvent(other_device_id, ET_MOUSE_PRESSED, gfx::Point(),
       EF_LEFT_MOUSE_BUTTON);
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromXEvent(*xev));
 
   device_data_manager->EnableDevice(blocked_device_id);
 
   xev.InitGenericButtonEvent(blocked_device_id, ET_MOUSE_PRESSED, gfx::Point(),
       EF_LEFT_MOUSE_BUTTON);
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromXEvent(*xev));
 }
 
 #if !defined(OS_CHROMEOS)
@@ -491,12 +481,12 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
-      ui::KeyEvent key_event(&x_event);
+      auto key_event = ui::BuildKeyEventFromXEvent(x_event);
       if (is_char) {
-        KeyEventTestApi test_event(&key_event);
+        KeyEventTestApi test_event(key_event.get());
         test_event.set_is_char(true);
       }
-      EXPECT_TRUE(key_event.flags() & ui::EF_IME_FABRICATED_KEY);
+      EXPECT_TRUE(key_event->flags() & ui::EF_IME_FABRICATED_KEY);
     }
   }
 
@@ -508,12 +498,12 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
-      ui::KeyEvent key_event(&x_event);
+      auto key_event = ui::BuildKeyEventFromXEvent(x_event);
       if (is_char) {
-        KeyEventTestApi test_event(&key_event);
+        KeyEventTestApi test_event(key_event.get());
         test_event.set_is_char(true);
       }
-      EXPECT_FALSE(key_event.flags() & ui::EF_IME_FABRICATED_KEY);
+      EXPECT_FALSE(key_event->flags() & ui::EF_IME_FABRICATED_KEY);
     }
   }
 }
@@ -529,7 +519,7 @@ TEST_F(EventsXTest, IgnoresMotionEventForMouseWheelScroll) {
   xev.InitScrollEvent(device_id, 1, 2, 3, 4, 1);
   // We shouldn't produce a mouse move event on a mouse wheel
   // scroll. These events are only produced for some mice.
-  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromXEvent(*xev));
 }
 
 namespace {
@@ -550,14 +540,14 @@ TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
   ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 0xFFFFFFFF;
-  EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));
+  EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromXEvent(event));
 
   clock.SetNowTicks(TimeTicksFromMillis(0x100000007));
   ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 3;
   EXPECT_EQ(TimeTicksFromMillis(0x100000000 + 3),
-            ui::EventTimeFromNative(&event));
+            ui::EventTimeFromXEvent(event));
 }
 
 TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
@@ -569,15 +559,15 @@ TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
   ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 6;
-  EXPECT_EQ(TimeTicksFromMillis(6), ui::EventTimeFromNative(&event));
+  EXPECT_EQ(TimeTicksFromMillis(6), ui::EventTimeFromXEvent(event));
   event.xbutton.time = 7;
-  EXPECT_EQ(TimeTicksFromMillis(7), ui::EventTimeFromNative(&event));
+  EXPECT_EQ(TimeTicksFromMillis(7), ui::EventTimeFromXEvent(event));
 
   clock.SetNowTicks(TimeTicksFromMillis(0x100000005));
   ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 0xFFFFFFFF;
-  EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));
+  EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromXEvent(event));
 }
 
 }  // namespace ui

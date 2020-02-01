@@ -5,6 +5,7 @@
 #include "chrome/browser/media/history/media_history_store.h"
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media/history/media_history_engagement_table.h"
@@ -45,7 +46,7 @@ class MediaHistoryStoreInternal
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
   virtual ~MediaHistoryStoreInternal();
 
-  // Opens the database file from the profile path. Separated from the
+  // Opens the database file from the |db_path|. Separated from the
   // constructor to ease construction/destruction of this object on one thread
   // and database access on the DB sequence of |db_task_runner_|.
   void Initialize();
@@ -71,8 +72,10 @@ class MediaHistoryStoreInternal
   GetPlaybackSessions(unsigned int num_sessions,
                       MediaHistoryStore::GetPlaybackSessionsFilter filter);
 
+  void RazeAndClose();
+
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
-  base::FilePath db_path_;
+  const base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
   sql::MetaTable meta_table_;
   scoped_refptr<MediaHistoryEngagementTable> engagement_table_;
@@ -261,10 +264,20 @@ MediaHistoryStoreInternal::GetPlaybackSessions(
   return session_table_->GetPlaybackSessions(num_sessions, std::move(filter));
 }
 
+void MediaHistoryStoreInternal::RazeAndClose() {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+
+  if (db_ && db_->is_open())
+    db_->RazeAndClose();
+
+  sql::Database::Delete(db_path_);
+}
+
 MediaHistoryStore::MediaHistoryStore(
     Profile* profile,
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
-    : db_(new MediaHistoryStoreInternal(profile, db_task_runner)) {
+    : db_(new MediaHistoryStoreInternal(profile, db_task_runner)),
+      profile_(profile) {
   db_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::Initialize, db_));
 }
@@ -279,6 +292,24 @@ void MediaHistoryStore::SavePlayback(
   db_->db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::SavePlayback, db_,
                                 watch_time));
+}
+
+scoped_refptr<base::UpdateableSequencedTaskRunner>
+MediaHistoryStore::GetDBTaskRunnerForTest() {
+  return db_->db_task_runner_;
+}
+
+void MediaHistoryStore::EraseDatabaseAndCreateNew() {
+  auto db_task_runner = db_->db_task_runner_;
+  auto db_path = db_->db_path_;
+
+  db_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::RazeAndClose, db_));
+
+  // Create a new internal store.
+  db_ = new MediaHistoryStoreInternal(profile_, db_task_runner);
+  db_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::Initialize, db_));
 }
 
 void MediaHistoryStore::GetMediaHistoryStats(

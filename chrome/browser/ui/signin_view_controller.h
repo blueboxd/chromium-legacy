@@ -91,7 +91,10 @@ class SigninViewController {
   // |account_id| should be signed into the content area. Otherwise, the method
   // fails with |kAccountNotSignedIn| error.
   // Calls |reauth_callback| on completion of the reauth flow, or on error. The
-  // callback may be called synchronously.
+  // callback may be called synchronously. The user may also ignore the reauth
+  // indefinitely.
+  // The reauth prompt that is currently displayed can be cancelled by
+  // CloseModalSignin().
   void ShowReauthPrompt(
       Browser* browser,
       const CoreAccountId& account_id,

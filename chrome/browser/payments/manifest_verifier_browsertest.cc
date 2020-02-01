@@ -23,6 +23,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "url/origin.h"
 
 namespace payments {
 namespace {
@@ -59,7 +60,8 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
         Profile::FromBrowserContext(context),
         ServiceAccessType::EXPLICIT_ACCESS);
 
-    ManifestVerifier verifier(web_contents, downloader.get(), parser.get(),
+    ManifestVerifier verifier(url::Origin::Create(GURL("https://chromium.org")),
+                              web_contents, downloader.get(), parser.get(),
                               cache.get());
 
     base::RunLoop run_loop;

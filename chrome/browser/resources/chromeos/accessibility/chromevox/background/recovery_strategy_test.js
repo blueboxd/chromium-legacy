@@ -27,7 +27,7 @@ TEST_F('ChromeVoxRecoveryStrategyTest', 'ReparentedRecovery', function() {
     <button id="go"</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var p = document.getElementById('p');
+        let p = document.getElementById('p');
         p.remove();
         document.body.appendChild(p);
       });

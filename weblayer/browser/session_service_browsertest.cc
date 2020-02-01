@@ -168,7 +168,9 @@ std::unique_ptr<BrowserImpl> CreateBrowser(ProfileImpl* profile,
                                            const std::string& persistence_id) {
   Browser::PersistenceInfo info;
   info.id = persistence_id;
-  return std::make_unique<BrowserImpl>(profile, &info);
+  auto browser = Browser::Create(profile, &info);
+  return std::unique_ptr<BrowserImpl>(
+      static_cast<BrowserImpl*>(browser.release()));
 }
 
 }  // namespace

@@ -312,7 +312,7 @@ cursors.Cursor = class {
           newIndex = 0;
         }
         // BOUND and DIRECTIONAL are the same for characters.
-        var text = this.getText();
+        const text = this.getText();
         newIndex = dir == Dir.FORWARD ?
             StringUtil.nextCodePointOffset(text, newIndex) :
             StringUtil.previousCodePointOffset(text, newIndex);
@@ -341,7 +341,8 @@ cursors.Cursor = class {
         }
 
         // Ensure start position is on or after first word.
-        var firstWordStart = (newNode.wordStarts && newNode.wordStarts.length) ?
+        const firstWordStart =
+            (newNode.wordStarts && newNode.wordStarts.length) ?
             newNode.wordStarts[0] :
             0;
         if (newIndex < firstWordStart) {
@@ -350,8 +351,8 @@ cursors.Cursor = class {
         }
 
         switch (movement) {
-          case cursors.Movement.BOUND:
-            var wordStarts, wordEnds;
+          case cursors.Movement.BOUND: {
+            let wordStarts, wordEnds;
             if (newNode.role == RoleType.INLINE_TEXT_BOX) {
               wordStarts = newNode.wordStarts;
               wordEnds = newNode.wordEnds;
@@ -359,8 +360,8 @@ cursors.Cursor = class {
               wordStarts = newNode.nonInlineTextWordStarts;
               wordEnds = newNode.nonInlineTextWordEnds;
             }
-            var start, end;
-            for (var i = 0; i < wordStarts.length; i++) {
+            let start, end;
+            for (let i = 0; i < wordStarts.length; i++) {
               if (newIndex >= wordStarts[i] && newIndex <= wordEnds[i]) {
                 start = wordStarts[i];
                 end = wordEnds[i];
@@ -370,10 +371,10 @@ cursors.Cursor = class {
             if (goog.isDef(start) && goog.isDef(end)) {
               newIndex = dir == Dir.FORWARD ? end : start;
             }
-            break;
-          case cursors.Movement.DIRECTIONAL:
-            var wordStarts, wordEnds;
-            var start;
+          } break;
+          case cursors.Movement.DIRECTIONAL: {
+            let wordStarts, wordEnds;
+            let start;
             if (newNode.role == RoleType.INLINE_TEXT_BOX) {
               wordStarts = newNode.wordStarts;
               wordEnds = newNode.wordEnds;
@@ -382,7 +383,7 @@ cursors.Cursor = class {
               wordEnds = newNode.nonInlineTextWordEnds;
             }
             // Go to the next word stop in the same piece of text.
-            for (var i = 0; i < wordStarts.length; i++) {
+            for (let i = 0; i < wordStarts.length; i++) {
               if (newIndex >= wordStarts[i] && newIndex <= wordEnds[i]) {
                 const nextIndex = dir == Dir.FORWARD ? i + 1 : i - 1;
                 start = wordStarts[nextIndex];
@@ -415,6 +416,7 @@ cursors.Cursor = class {
                 }
               }
             }
+          }
         }
         break;
       case cursors.Unit.TEXT:
@@ -424,8 +426,8 @@ cursors.Cursor = class {
             newIndex = dir == Dir.FORWARD ? this.getText().length - 1 : 0;
             break;
           case cursors.Movement.DIRECTIONAL:
-            var pred = unit == cursors.Unit.TEXT ? AutomationPredicate.leaf :
-                                                   AutomationPredicate.object;
+            const pred = unit == cursors.Unit.TEXT ? AutomationPredicate.leaf :
+                                                     AutomationPredicate.object;
             newNode =
                 AutomationUtil.findNextNode(newNode, dir, pred) || originalNode;
             newIndex = cursors.NODE_INDEX;
@@ -528,8 +530,8 @@ cursors.Cursor = class {
           break;
         }
 
-        var targetLine, targetIndex = 0;
-        for (var i = 0, line, cur = 0; line = lines[i]; i++) {
+        let targetLine, targetIndex = 0;
+        for (let i = 0, line, cur = 0; line = lines[i]; i++) {
           const lineLength = line.name ? line.name.length : 1;
           cur += lineLength;
           if (cur > newIndex) {

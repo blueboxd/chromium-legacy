@@ -5937,6 +5937,32 @@ TEST_F(LegacyTLSDeprecationTest, PrioritizeCertErrorsOverLegacyTLS) {
   EXPECT_TRUE(info.cert_status & CERT_STATUS_DATE_INVALID);
 }
 
+// Checks that legacy TLS errors are not fatal.
+TEST_F(LegacyTLSDeprecationTest, LegacyTLSErrorsNotFatal) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLConfig client_config;
+
+  // Connection should fail with ERR_SSL_OBSOLETE_VERSION and the legacy TLS
+  // cert status.
+  int rv;
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  transport_security_state_->AddHSTS(host_port_pair().host(), expiry, true);
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_OBSOLETE_VERSION));
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_LEGACY_TLS);
+
+  // The error should not be marked as fatal.
+  EXPECT_FALSE(info.is_fatal_cert_error);
+}
+
 TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNewSession) {
   const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
 

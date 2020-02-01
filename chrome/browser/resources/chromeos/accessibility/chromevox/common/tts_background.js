@@ -18,7 +18,7 @@ goog.require('ChromeVox');
 goog.require('goog.i18n.MessageFormat');
 
 
-var Utterance = class {
+const Utterance = class {
   /**
    * @param {string} textString The string of text to be spoken.
    * @param {Object} properties Speech properties to use for this utterance.
@@ -509,6 +509,14 @@ TtsBackground = class extends ChromeTtsBase {
   /** @override */
   addCapturingEventListener(listener) {
     this.capturingTtsEventListeners_.push(listener);
+  }
+
+  /** @override */
+  removeCapturingEventListener(listener) {
+    this.capturingTtsEventListeners_ =
+        this.capturingTtsEventListeners_.filter((item) => {
+          return item != listener;
+        });
   }
 
   /**

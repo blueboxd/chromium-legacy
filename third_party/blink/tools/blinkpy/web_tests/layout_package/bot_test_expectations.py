@@ -36,9 +36,7 @@ import os.path
 import urllib
 import urllib2
 
-from blinkpy.web_tests.models.test_expectations import TestExpectations, PASS
-from blinkpy.web_tests.models.test_expectations import TestExpectationLine
-
+from blinkpy.web_tests.models.typ_types import Expectation, ResultType
 
 _log = logging.getLogger(__name__)
 
@@ -167,18 +165,6 @@ class BotTestExpectations(object):
         self.results_json = results_json
         self.specifiers = specifiers or set(builders.specifiers_for_builder(results_json.builder_name))
 
-    def _line_from_test_and_flaky_types(self, test_path, flaky_types):
-        line = TestExpectationLine()
-        line.original_string = test_path
-        line.name = test_path
-        line.filename = test_path
-        line.path = test_path  # FIXME: Should this be normpath?
-        line.matching_tests = [test_path]
-        line.bugs = ['crbug.com/FILE_A_BUG_BEFORE_COMMITTING_THIS']
-        line.expectations = sorted(flaky_types)
-        line.specifiers = self.specifiers
-        return line
-
     def flakes_by_path(self, only_ignore_very_flaky):
         """Sets test expectations to bot results if there are at least two distinct results."""
         flakes_by_path = {}
@@ -186,52 +172,36 @@ class BotTestExpectations(object):
             flaky_types = self._flaky_types_in_results(entry, only_ignore_very_flaky)
             if len(flaky_types) <= 1:
                 continue
-            flakes_by_path[test_path] = sorted(flaky_types)
+            flakes_by_path[test_path] = flaky_types
         return flakes_by_path
 
     def unexpected_results_by_path(self):
-        """For tests with unexpected results, returns original expectations + results."""
-        def exp_to_string(exp):
-            return TestExpectations.EXPECTATIONS_TO_STRING.get(exp, None)
-
-        def string_to_exp(string):
-            # Needs a bit more logic than the method above,
-            # since a PASS is 0 and evaluates to False.
-            result = TestExpectations.EXPECTATIONS.get(string.lower(), None)
-            if not result is None:
-                return result
-            raise ValueError(string)
 
         unexpected_results_by_path = {}
         for test_path, entry in self.results_json.walk_results():
             # Expectations for this test. No expectation defaults to PASS.
-            exp_string = entry.get(self.results_json.EXPECTATIONS_KEY, u'PASS')
+            exp_string =  entry.get(self.results_json.EXPECTATIONS_KEY, ResultType.Pass)
 
             # All run-length-encoded results for this test.
             results_dict = entry.get(self.results_json.RESULTS_KEY, {})
-
-            # Set of expectations for this test.
-            expectations = set(map(string_to_exp, exp_string.split(' ')))
 
             # Set of distinct results for this test.
             result_types = self._all_types_in_results(results_dict)
 
             # Distinct results as non-encoded strings.
-            result_strings = map(self.results_json.expectation_for_type, result_types)
+            results = map(self.results_json.expectation_for_type, result_types)
 
-            # Distinct resulting expectations.
-            result_exp = map(string_to_exp, result_strings)
+            # Get test expectations
+            expectations = exp_string.split(' ')
 
-            expected = lambda e: TestExpectations.result_was_expected(e, expectations)
+            # Unexpected results will become additional expectations
+            additional_expectations = [res for res in results if res not in expectations]
 
-            additional_expectations = set(e for e in result_exp if not expected(e))
-
-            # Test did not have unexpected results.
             if not additional_expectations:
                 continue
 
-            expectations.update(additional_expectations)
-            unexpected_results_by_path[test_path] = sorted(map(exp_to_string, expectations))
+            # Get typ expectation result tags
+            unexpected_results_by_path[test_path] = set(expectations + additional_expectations)
         return unexpected_results_by_path
 
     def all_results_by_path(self):
@@ -274,6 +244,9 @@ class BotTestExpectations(object):
                 lines.append(line)
         return lines
 
+    def _line_from_test_and_flaky_types(self, test_name, flaky_types):
+        return Expectation(tags=self.specifiers, test=test_name, results=flaky_types)
+
     def _all_types_in_results(self, run_length_encoded_results):
         results = set()
 
@@ -286,18 +259,15 @@ class BotTestExpectations(object):
 
         return results
 
-    def _result_to_enum(self, result):
-        return TestExpectations.EXPECTATIONS[result.lower()]
-
     def _flaky_types_in_results(self, results_entry, only_ignore_very_flaky):
         flaky_results = set()
 
         # Always include pass as an expected result. Passes will never turn the bot red.
         # This fixes cases where the expectations have an implicit Pass, e.g. [ Slow ].
-        latest_expectations = [PASS]
+        latest_expectations = [ResultType.Pass]
         if self.results_json.EXPECTATIONS_KEY in results_entry:
             expectations_list = results_entry[self.results_json.EXPECTATIONS_KEY].split(' ')
-            latest_expectations += [self._result_to_enum(expectation) for expectation in expectations_list]
+            latest_expectations.extend(expectations_list)
 
         for result_item in results_entry[self.results_json.RESULTS_KEY]:
             _, result_types_str = self.results_json.occurances_and_type_from_result_item(result_item)
@@ -323,7 +293,6 @@ class BotTestExpectations(object):
 
             has_unexpected_results = False
             for result_type in result_types:
-                result_enum = self._result_to_enum(result_type)
                 # TODO(ojan): We really should be grabbing the expected results from the time
                 # of the run instead of looking at the latest expected results. That's a lot
                 # more complicated though. So far we've been looking at the aggregated
@@ -332,7 +301,7 @@ class BotTestExpectations(object):
                 # individual runs' full_results.json, which would be slow and more complicated.
                 # The only thing we lose by not fixing this is that a test that was flaky
                 # and got fixed will still get printed out until 100 runs have passed.
-                if not TestExpectations.result_was_expected(result_enum, latest_expectations):
+                if result_type not in latest_expectations:
                     has_unexpected_results = True
                     break
 

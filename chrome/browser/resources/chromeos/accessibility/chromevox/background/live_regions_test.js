@@ -277,8 +277,8 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SilentOnNodeChange', function() {
       hello!
     </div>
     <script>
-      var live = document.getElementById('live');
-      var pressed = true;
+      let live = document.getElementById('live');
+      let pressed = true;
       setInterval(function() {
         live.setAttribute('aria-pressed', pressed);
         pressed = !pressed;
@@ -308,8 +308,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
   `,
       function(root) {
         const live = new LiveRegions(ChromeVoxState.instance);
-        var t1, t2;
-        [t1, t2] = root.findAll({role: RoleType.STATIC_TEXT});
+        const [t1, t2] = root.findAll({role: RoleType.STATIC_TEXT});
         mockFeedback.expectSpeech('hello there')
             .clearPendingOutput()
             .call(function() {
@@ -343,9 +342,9 @@ TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveStatusOff', function() {
       `
     <div><input aria-live="off" type="text"></input></div>
     <script>
-      var input = document.querySelector('input');
-      var div = document.querySelector('div');
-      var clicks = 0;
+      let input = document.querySelector('input');
+      let div = document.querySelector('div');
+      let clicks = 0;
       div.addEventListener('click', () => {
         clicks++;
         if (clicks == 1) {

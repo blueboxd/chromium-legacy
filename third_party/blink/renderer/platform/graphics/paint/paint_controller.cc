@@ -49,7 +49,7 @@ bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
     return false;
   }
 
-  size_t cached_item =
+  auto cached_item =
       FindCachedItem(DisplayItem::Id(client, type, current_fragment_));
   if (cached_item == kNotFound) {
     // See FindOutOfOrderCachedItemForward() for explanation of the situation.
@@ -145,7 +145,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
-  size_t start = BeginSubsequence();
+  auto start = BeginSubsequence();
   CopyCachedSubsequence(markers->start, markers->end);
   EndSubsequence(client, start);
   return true;
@@ -159,15 +159,15 @@ PaintController::SubsequenceMarkers* PaintController::GetSubsequenceMarkers(
   return &result->value;
 }
 
-size_t PaintController::BeginSubsequence() {
+wtf_size_t PaintController::BeginSubsequence() {
   // Force new paint chunk which is required for subsequence caching.
   new_paint_chunks_.ForceNewChunk();
   return new_display_item_list_.size();
 }
 
 void PaintController::EndSubsequence(const DisplayItemClient& client,
-                                     size_t start) {
-  size_t end = new_display_item_list_.size();
+                                     wtf_size_t start) {
+  auto end = new_display_item_list_.size();
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       IsCheckingUnderInvalidation()) {
@@ -220,9 +220,9 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
   }
 
   if (usage_ == kMultiplePaints && display_item.IsCacheable()) {
-    size_t index = FindMatchingItemFromIndex(
-        display_item.GetId(), new_display_item_indices_by_client_,
-        new_display_item_list_);
+    auto index = FindMatchingItemFromIndex(display_item.GetId(),
+                                           new_display_item_indices_by_client_,
+                                           new_display_item_list_);
     if (index != kNotFound) {
       ShowDebugData();
       NOTREACHED() << "DisplayItem " << display_item.AsDebugString().Utf8()
@@ -253,7 +253,8 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
   }
 }
 
-DisplayItem& PaintController::MoveItemFromCurrentListToNewList(size_t index) {
+DisplayItem& PaintController::MoveItemFromCurrentListToNewList(
+    wtf_size_t index) {
   return new_display_item_list_.AppendByMoving(
       current_paint_artifact_->GetDisplayItemList()[index]);
 }
@@ -288,7 +289,7 @@ bool PaintController::ClientCacheIsValid(
   return client.IsValid();
 }
 
-size_t PaintController::FindMatchingItemFromIndex(
+wtf_size_t PaintController::FindMatchingItemFromIndex(
     const DisplayItem::Id& id,
     const IndicesByClientMap& display_item_indices_by_client,
     const DisplayItemList& list) {
@@ -297,8 +298,7 @@ size_t PaintController::FindMatchingItemFromIndex(
   if (it == display_item_indices_by_client.end())
     return kNotFound;
 
-  const Vector<size_t>& indices = it->value;
-  for (size_t index : indices) {
+  for (auto index : it->value) {
     const DisplayItem& existing_item = list[index];
     if (existing_item.IsTombstone())
       continue;
@@ -311,17 +311,17 @@ size_t PaintController::FindMatchingItemFromIndex(
 }
 
 void PaintController::AddToIndicesByClientMap(const DisplayItemClient& client,
-                                              size_t index,
+                                              wtf_size_t index,
                                               IndicesByClientMap& map) {
   auto it = map.find(&client);
   auto& indices =
       it == map.end()
-          ? map.insert(&client, Vector<size_t>()).stored_value->value
+          ? map.insert(&client, Vector<wtf_size_t>()).stored_value->value
           : it->value;
   indices.push_back(index);
 }
 
-size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
+wtf_size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
   DCHECK(ClientCacheIsValid(id.client));
 
   if (next_item_to_match_ <
@@ -342,7 +342,7 @@ size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
     }
   }
 
-  size_t found_index =
+  wtf_size_t found_index =
       FindMatchingItemFromIndex(id, out_of_order_item_indices_,
                                 current_paint_artifact_->GetDisplayItemList());
   if (found_index != kNotFound) {
@@ -356,9 +356,9 @@ size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
 }
 
 // Find forward for the item and index all skipped indexable items.
-size_t PaintController::FindOutOfOrderCachedItemForward(
+wtf_size_t PaintController::FindOutOfOrderCachedItemForward(
     const DisplayItem::Id& id) {
-  for (size_t i = next_item_to_index_;
+  for (auto i = next_item_to_index_;
        i < current_paint_artifact_->GetDisplayItemList().size(); ++i) {
     const DisplayItem& item = current_paint_artifact_->GetDisplayItemList()[i];
     if (item.IsTombstone())
@@ -398,8 +398,8 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
 // When paintUnderInvaldiationCheckingEnabled() we'll not actually
 // copy the subsequence, but mark the begin and end of the subsequence for
 // under-invalidation checking.
-void PaintController::CopyCachedSubsequence(size_t begin_index,
-                                            size_t end_index) {
+void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
+                                            wtf_size_t end_index) {
   DCHECK(!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
 
   const DisplayItem* cached_item =
@@ -413,7 +413,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
   UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
       cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
 
-  for (size_t current_index = begin_index; current_index < end_index;
+  for (auto current_index = begin_index; current_index < end_index;
        ++current_index) {
     cached_item = &current_paint_artifact_->GetDisplayItemList()[current_index];
     SECURITY_CHECK(!cached_item->IsTombstone());
@@ -669,7 +669,7 @@ void PaintController::CheckUnderInvalidation() {
   }
 
   const DisplayItem& new_item = new_display_item_list_.Last();
-  size_t old_item_index = under_invalidation_checking_begin_;
+  auto old_item_index = under_invalidation_checking_begin_;
   DisplayItem* old_item =
       old_item_index < current_paint_artifact_->GetDisplayItemList().size()
           ? &current_paint_artifact_->GetDisplayItemList()[old_item_index]

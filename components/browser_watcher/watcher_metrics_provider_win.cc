@@ -28,8 +28,6 @@
 #include "base/task/task_traits.h"
 #include "base/win/registry.h"
 #include "components/browser_watcher/features.h"
-#include "components/browser_watcher/postmortem_report_collector.h"
-#include "components/browser_watcher/stability_paths.h"
 #include "components/metrics/system_session_analyzer_win.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
@@ -160,11 +158,6 @@ enum CollectionInitializationStatus {
   INIT_STATUS_MAX = 4
 };
 
-void LogCollectionInitStatus(CollectionInitializationStatus status) {
-  base::UmaHistogramEnumeration("ActivityTracker.Collect.InitStatus", status,
-                                INIT_STATUS_MAX);
-}
-
 // Returns a task runner appropriate for running background tasks that perform
 // file I/O.
 scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
@@ -220,84 +213,6 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   // necessary to implement some form of global locking, which is not worth it
   // here.
   RecordExitCodes(registry_path_);
-}
-
-void WatcherMetricsProviderWin::AsyncInit(base::OnceClosure done_callback) {
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&WatcherMetricsProviderWin::CollectPostmortemReportsImpl,
-                     weak_ptr_factory_.GetWeakPtr()),
-      std::move(done_callback));
-}
-
-// TODO(manzagop): consider mechanisms for partial collection if this is to be
-//     used on a critical path.
-void WatcherMetricsProviderWin::CollectPostmortemReportsImpl() {
-  SCOPED_UMA_HISTOGRAM_TIMER("ActivityTracker.Collect.TotalTime");
-
-  bool is_stability_debugging_on = base::FeatureList::IsEnabled(
-      browser_watcher::kExtendedCrashReportingFeature);
-  if (!is_stability_debugging_on) {
-    return;  // TODO(manzagop): scan for possible data to delete?
-  }
-
-  if (user_data_dir_.empty() || crash_dir_.empty()) {
-    LogCollectionInitStatus(UNKNOWN_DIR);
-    return;
-  }
-
-  // Determine which files to harvest.
-  base::FilePath stability_dir = GetStabilityDir(user_data_dir_);
-
-  base::FilePath current_stability_file;
-  if (!GetStabilityFileForProcess(base::Process::Current(), user_data_dir_,
-                                  &current_stability_file)) {
-    LogCollectionInitStatus(GET_STABILITY_FILE_PATH_FAILED);
-    return;
-  }
-  const std::set<base::FilePath>& excluded_stability_files = {
-      current_stability_file};
-
-  std::vector<base::FilePath> stability_files = GetStabilityFiles(
-      stability_dir, GetStabilityFilePattern(), excluded_stability_files);
-  base::UmaHistogramCounts100("ActivityTracker.Collect.StabilityFileCount",
-                              stability_files.size());
-
-  // If postmortem collection is disabled, delete the files.
-  const bool should_collect = base::GetFieldTrialParamByFeatureAsBool(
-      browser_watcher::kExtendedCrashReportingFeature,
-      browser_watcher::kCollectPostmortemParam, false);
-
-  // Create a database. Note: Chrome already has a g_database in crashpad.cc but
-  // it has internal linkage. Create a new one.
-  std::unique_ptr<crashpad::CrashReportDatabase> crashpad_database;
-  if (should_collect) {
-    crashpad_database =
-        crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir_);
-    if (!crashpad_database) {
-      LOG(ERROR) << "Failed to initialize a CrashPad database.";
-      LogCollectionInitStatus(CRASHPAD_DATABASE_INIT_FAILED);
-      // Note: continue to processing the files anyway.
-    }
-  }
-
-  // Note: this is logged even when Crashpad database initialization fails.
-  LogCollectionInitStatus(INIT_SUCCESS);
-
-  const size_t kSystemSessionsToInspect = 5U;
-  metrics::SystemSessionAnalyzer analyzer(kSystemSessionsToInspect);
-
-  if (should_collect) {
-    base::string16 product_name, version_number, channel_name;
-    exe_details_cb_.Run(&product_name, &version_number, &channel_name);
-    PostmortemReportCollector collector(
-        base::UTF16ToUTF8(product_name), base::UTF16ToUTF8(version_number),
-        base::UTF16ToUTF8(channel_name), crashpad_database.get(), &analyzer);
-    collector.Process(stability_files);
-  } else {
-    PostmortemReportCollector collector(&analyzer);
-    collector.Process(stability_files);
-  }
 }
 
 }  // namespace browser_watcher

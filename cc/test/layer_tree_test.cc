@@ -190,8 +190,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return has_damage;
   }
 
-  void DidFinishImplFrame() override {
-    LayerTreeHostImpl::DidFinishImplFrame();
+  void DidFinishImplFrame(const viz::BeginFrameArgs& main_args) override {
+    LayerTreeHostImpl::DidFinishImplFrame(main_args);
     test_hooks_->DidFinishImplFrameOnThread(this);
   }
 
@@ -651,14 +651,6 @@ LayerTreeTest::~LayerTreeTest() {
     animation_host_->SetMutatorHostClient(nullptr);
 }
 
-gfx::Vector2dF LayerTreeTest::ScrollDelta(LayerImpl* layer_impl) {
-  gfx::ScrollOffset delta = layer_impl->layer_tree_impl()
-                                ->property_trees()
-                                ->scroll_tree.GetScrollOffsetDeltaForTesting(
-                                    layer_impl->element_id());
-  return gfx::Vector2dF(delta.x(), delta.y());
-}
-
 void LayerTreeTest::EndTest() {
   {
     base::AutoLock hold(test_ended_lock_);
@@ -1056,7 +1048,8 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   }
   // Disable latency recovery to make the scheduler more predictable in its
   // actions and less dependent on timings to make decisions.
-  settings_.enable_latency_recovery = false;
+  settings_.enable_impl_latency_recovery = false;
+  settings_.enable_main_latency_recovery = false;
   InitializeSettings(&settings_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -223,7 +223,6 @@ crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/scrollbar-ti
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/same-page-navigate.html [ Failure Pass ]
 
 crbug.com/915926 fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
-crbug.com/915926 virtual/mouseevent_fractional/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
 crbug.com/915926 virtual/scroll_customization/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
 
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass Failure ]
@@ -237,11 +236,6 @@ crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
 crbug.com/857490 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
 crbug.com/857490 fast/events/wheel/wheel-fling-cancel.html [ Skip ]
-crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
-crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
-crbug.com/857490 virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
-crbug.com/857490 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
-crbug.com/857490 virtual/mouseevent_fractional/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
@@ -396,7 +390,7 @@ crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-si
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-svg.html [ Failure ]
 
 # Most of these fail due to subpixel differences, but a couple are real failures.
-crbug.com/1044742 [ Win7 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
+crbug.com/1044742 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/1044742 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/1044742 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-parent.html [ Failure ]
 crbug.com/1044742 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-sibling.html [ Failure ]
@@ -825,9 +819,6 @@ crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
-crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
-crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
-crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 external/wpt/paint-timing/sibling-painting-first-image.html [ Failure ]
 crbug.com/591099 virtual/paint-timing/external/wpt/paint-timing/sibling-painting-first-image.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200/css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
@@ -944,7 +935,6 @@ crbug.com/591099 [ Mac10.13 ] fast/dynamic/outerHTML-doc.html [ Failure ]
 # A few other lines for this test are commented out above to avoid conflicting expectations.
 # If they are not also fixed, reinstate them when removing these lines.
 crbug.com/982211 fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
-crbug.com/982211 virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 
 crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
@@ -1748,10 +1738,6 @@ crbug.com/891427 paint/invalidation/scroll/fixed-img-src-change-after-scroll.htm
 crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-body-scrollablearea.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-div-body-scrollablearea.html [ Pass Failure Timeout Crash ]
 
-# This was disabled by sheriff on Dec 31. Also failing on Win7, will need more investigation.
-crbug.com/891427 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-
 # ====== OOPIF-mode failures until here ======
 
 # ====== Cascade failures from here ======
@@ -1884,7 +1870,6 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
-crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
@@ -1895,14 +1880,7 @@ crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-d
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-# MouseEvent coordinates tests failed with --enable-fatures=FractionalMouseEvent
-crbug.com/779170 virtual/mouseevent_fractional/fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
-crbug.com/779170 virtual/mouseevent_fractional/fast/events/constructors/mouse-event-constructor.html [ Failure ]
-crbug.com/779170 virtual/mouseevent_fractional/fast/events/constructors/wheel-event-constructor.html [ Failure ]
-crbug.com/779170 virtual/mouseevent_fractional/fast/events/zoom-dblclick.html [ Failure ]
-
 crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
-crbug.com/892032 virtual/mouseevent_fractional/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 
 crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -1989,11 +1967,6 @@ crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-
 crbug.com/944583 [ Mac ] fast/events/space-scroll-textinput-canceled.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] fast/scrolling/percentage-mousewheel-scroll-on-iframe.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] fast/scrolling/percentage-mousewheel-scroll.html [ Pass Failure ]
-crbug.com/944583 [ Mac ] virtual/mouseevent_fractional/fast/events/space-scroll-textinput-canceled.html [ Pass Failure ]
-crbug.com/944583 [ Mac ] virtual/mouseevent_fractional/fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
-crbug.com/944583 [ Mac ] virtual/mouseevent_fractional/fast/events/keyboard-scroll-by-page.html [ Pass Failure ]
-crbug.com/944583 [ Mac ] virtual/mouseevent_fractional/fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Pass Failure ]
-crbug.com/944583 [ Mac ] virtual/mouseevent_fractional/fast/events/platform-wheelevent-paging-xy-in-scrolling-div.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] virtual/scroll_customization/fast/scrolling/percentage-mousewheel-scroll-on-iframe.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] virtual/scroll_customization/fast/scrolling/percentage-mousewheel-scroll.html [ Pass Failure ]
 
@@ -2283,15 +2256,13 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
 crbug.com/346473 fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
-crbug.com/346473 virtual/mouseevent_fractional/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
+
 # In addition to having no support on Mac, the following test times out
 # regularly on Windows.
 crbug.com/613672 [ Mac ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
@@ -2313,23 +2284,6 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-input-fi
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scroll.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scroll-by-page.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-mainframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scroll.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scroll-by-page.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Skip ]
@@ -2348,7 +2302,6 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
 ### See crbug.com/891427 comment near the top of this file:
 ####crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
@@ -2552,7 +2505,6 @@ crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
 crbug.com/663847 fast/events/context-no-deselect.html [ Failure Pass ]
-crbug.com/663847 virtual/mouseevent_fractional/fast/events/context-no-deselect.html [ Failure Pass ]
 
 crbug.com/611658 [ Win ] virtual/text-antialias/emphasis-combined-text.html [ Failure ]
 
@@ -2663,7 +2615,6 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 crbug.com/828506 [ Win ] fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-crbug.com/828506 [ Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 
 # Failure messages are unstable so we cannot create baselines.
@@ -4258,7 +4209,6 @@ crbug.com/990331 virtual/audio-service/http/tests/media/media-source/mediasource
 crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Failure ]
 
 crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
-crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 
 crbug.com/702837 virtual/text-antialias/aat-morx.html [ Skip ]
@@ -4612,7 +4562,6 @@ crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-0
 
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
-crbug.com/722212 virtual/mouseevent_fractional/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
 crbug.com/722943 [ Win ] media/audio-repaint.html [ Crash ]
 crbug.com/722943 [ Win ] virtual/audio-service/media/audio-repaint.html [ Crash ]
@@ -4864,7 +4813,6 @@ crbug.com/773122 [ Win7 ] virtual/text-antialias/whitespace/022.html [ Failure P
 
 # Sheriff failures 2017-10-13
 crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
-crbug.com/774463 [ Win7 Debug ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
@@ -5071,8 +5019,6 @@ crbug.com/754986 virtual/audio-service/media/video-transformed.html [ Pass Failu
 # Sheriff 2018-03-29
 crbug.com/827209 [ Win ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 crbug.com/827209 [ Linux ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
-crbug.com/827209 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
-crbug.com/827209 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
@@ -5114,7 +5060,6 @@ crbug.com/833658 [ Mac ] virtual/audio-service/media/video-controls-focus-moveme
 
 # Sheriff 2018-04-23
 crbug.com/833331 [ Win10 ] inspector-protocol/page/pageNavigateToFragment.js [ Pass Failure ]
-crbug.com/831796 virtual/mouseevent_fractional/fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 
 # Sheriff 2018-04-25
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
@@ -5157,9 +5102,6 @@ crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pas
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure Timeout ]
 
 # Sheriff 2018-06-08
-crbug.com/851090 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
-crbug.com/851090 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
-
 # Flaky timeout only on Mac 10.13.
 crbug.com/853360 [ Mac10.13 ] http/tests/misc/slow-loading-image-in-pattern.html [ Timeout Pass ]
 crbug.com/853360 [ Retina ] http/tests/misc/slow-loading-image-in-pattern.html [ Timeout Pass ]
@@ -5237,35 +5179,17 @@ crbug.com/862589 [ Win ] virtual/threaded/fast/idle-callback/long_idle_periods.h
 
 # fast/events/middleClickAutoscroll-* are failing on Mac
 crbug.com/874162 [ Mac ] fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
-crbug.com/874162 [ Mac ] fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
-crbug.com/874162 [ Mac ] fast/events/autoscroll-in-textarea.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-in-textarea.html [ Skip ]
-crbug.com/874162 [ Mac ] fast/events/autoscroll-over-scrollbar.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-over-scrollbar.html [ Skip ]
-crbug.com/874162 [ Mac ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-drag.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-latching.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
 # The next also fails due to crbug.com/891427, thus disabled on all platforms.
-crbug.com/874162 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 
 # Flaky
 crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
@@ -5303,10 +5227,6 @@ crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeo
 # Sheriff 2018-10-09
 crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 
-# Sheriff 2018-10-12
-crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
-crbug.com/891155 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
-
 # Sheriff 2018-10-15
 crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font-matching.html [ Failure Pass ]
 
@@ -5331,8 +5251,6 @@ crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/
 crbug.com/766357 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
-crbug.com/899222 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
-crbug.com/899222 [ Win ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
 crbug.com/899222 [ Linux ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 crbug.com/899222 [ Win ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 
@@ -5357,9 +5275,6 @@ crbug.com/907412 external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 
 #Sheriff 2018-11-22
 crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failure ]
-
-# Sheriff 2018-11-23
-crbug.com/874162 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
 
 # Sheriff 2018-11-26
 crbug.com/908347 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
@@ -5449,7 +5364,6 @@ crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-clic
 crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/mouseevent_fractional/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass Timeout Crash ]
@@ -5685,7 +5599,6 @@ crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-co
 crbug.com/946534 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
 crbug.com/946534 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
 crbug.com/948785 [ Debug ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
-crbug.com/948785 [ Debug ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
 
 # Sheriff 2019-05-01
 crbug.com/958347 [ Linux ] external/wpt/editing/run/removeformat.html [ Pass Crash ]
@@ -6542,3 +6455,6 @@ crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-break
 
 # Color difference on MacOS 10.14
 crbug.com/1047126 [ Mac10.14 ] external/wpt/css/css-color/color-initial-canvastext.html [ Failure ]
+
+# Sheriff 2020-01-31
+crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]

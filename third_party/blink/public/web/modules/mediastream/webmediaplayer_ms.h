@@ -145,6 +145,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   bool Seeking() const override;
   double Duration() const override;
   double CurrentTime() const override;
+  bool IsEnded() const override;
 
   // Internal states of loading and network.
   WebMediaPlayer::NetworkState GetNetworkState() const override;

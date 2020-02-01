@@ -120,6 +120,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Perform cleanup that cannot be done in the destructor.
   void Shutdown();
 
+  bool IsAnyOverviewItemDragged() const;
+
   // Called when the last overview item from a grid is deleted.
   void OnGridEmpty();
 

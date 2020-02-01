@@ -346,6 +346,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // remote ancestor frames and their respective scroll positions, clips, etc.
   void SetViewportIntersectionFromParent(const ViewportIntersectionState&);
 
+  IntSize GetMainFrameViewportSize() const override;
+  IntPoint GetMainFrameScrollOffset() const override;
+
   // See viewport_intersection_state.h for more info on these methods.
   gfx::Point RemoteViewportOffset() const {
     return intersection_state_.viewport_offset;
@@ -356,7 +359,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   IntRect RemoteMainFrameDocumentIntersection() const {
     return intersection_state_.main_frame_document_intersection;
   }
+
+  bool CanSkipStickyFrameTracking() const {
+    return intersection_state_.can_skip_sticky_frame_tracking;
+  }
+
   FrameOcclusionState GetOcclusionState() const;
+
   bool NeedsOcclusionTracking() const;
 
   // Replaces the initial empty document with a Document suitable for

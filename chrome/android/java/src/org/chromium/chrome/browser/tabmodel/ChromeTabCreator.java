@@ -129,7 +129,9 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 TabReparentingParams params = (TabReparentingParams) asyncParams;
                 tab = params.getTabToReparent();
                 ReparentingTask.from(tab).finish(
-                        ReparentingDelegateFactory.createReparentingTaskDelegate(mActivity),
+                        ReparentingDelegateFactory.createReparentingTaskDelegate(
+                                mActivity.getCompositorViewHolder(), mActivity.getWindowAndroid(),
+                                mActivity.getTabDelegateFactory()),
                         params.getFinalizeCallback());
             } else if (asyncParams != null && asyncParams.getWebContents() != null) {
                 openInForeground = true;

@@ -94,7 +94,8 @@ void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
   }
 
   Document& document = element_->GetDocument();
-  document.View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+  document.View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+      DocumentUpdateReason::kAccessibility);
   AXObjectCache& cache = ax_context_->GetAXObjectCache();
   AXID ax_id = cache.GetAXID(element_);
 

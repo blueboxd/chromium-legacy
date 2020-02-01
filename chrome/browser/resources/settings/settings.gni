@@ -1,0 +1,20 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Common namespace rewrites for all polymer_modulizer() or js_modulizer()
+# targets in Settings.
+settings_namespace_rewrites = [
+  "cr_slider.SliderTick|SliderTick",
+  "settings.ExtensionControlBrowserProxyImpl|ExtensionControlBrowserProxyImpl",
+  "Settings.PrefUtil.prefToString|prefToString",
+  "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
+
+  # TODO(1026426): Add more entries above as needed.
+]
+
+settings_auto_imports = [
+  "chrome/browser/resources/settings/i18n_setup.html|loadTimeData",
+  "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
+  "chrome/browser/resources/settings/controls/settings_boolean_control_behavior.html|SettingsBooleanControlBehavior",
+]

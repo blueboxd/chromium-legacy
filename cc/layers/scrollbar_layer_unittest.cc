@@ -812,12 +812,11 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
                                                   kIsLeftSideVerticalScrollbar);
 
   scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
-  scroll_layer->SetScrollable(gfx::Size(980, 980));
   scroll_layer->SetBounds(gfx::Size(980, 980));
 
   CopyProperties(impl.root_layer(), scroll_layer);
   CreateTransformNode(scroll_layer);
-  CreateScrollNode(scroll_layer);
+  CreateScrollNode(scroll_layer, gfx::Size(980, 980));
   CopyProperties(scroll_layer, scrollbar_layer);
 
   DCHECK(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
@@ -842,6 +841,8 @@ TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
   SetupViewport(impl.root_layer(), gfx::Size(), gfx::Size(900, 900));
 
   auto* scroll_layer = impl.OuterViewportScrollLayer();
+  EXPECT_FALSE(GetScrollNode(scroll_layer)->scrollable);
+
   const int kTrackStart = 0;
   const int kThumbThickness = 10;
   const bool kIsLeftSideVerticalScrollbar = false;
@@ -853,13 +854,18 @@ TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
   EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
+  GetScrollNode(scroll_layer)->container_bounds = gfx::Size(900, 900);
   scroll_layer->SetBounds(gfx::Size(900, 900));
-  // If the scroll layer is not scrollable, the bounds do not affect scrollbar
-  // geometries.
+  scroll_layer->UpdateScrollable();
+  EXPECT_FALSE(GetScrollNode(scroll_layer)->scrollable);
+  // If the scroll layer is not scrollable, the bounds and the container bounds
+  // do not affect scrollbar geometries.
   EXPECT_FALSE(
       impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
 
-  scroll_layer->SetScrollable(gfx::Size(900, 900));
+  // Changing scrollable to true should require an update.
+  GetScrollNode(scroll_layer)->scrollable = true;
+  scroll_layer->UpdateScrollable();
   EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
@@ -868,11 +874,25 @@ TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
   EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
+  // Changes to the container bounds should require an update.
+  GetScrollNode(scroll_layer)->container_bounds = gfx::Size(500, 500);
+  scroll_layer->UpdateScrollable();
+  EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
+  impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
+
   // Not changing the current value should not require an update.
-  scroll_layer->SetScrollable(gfx::Size(900, 900));
   scroll_layer->SetBounds(gfx::Size(980, 980));
   EXPECT_FALSE(
       impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
+  scroll_layer->UpdateScrollable();
+  EXPECT_FALSE(
+      impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
+
+  // Changing scrollable to false should require an update.
+  GetScrollNode(scroll_layer)->scrollable = false;
+  scroll_layer->UpdateScrollable();
+  EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
+  impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 }
 
 TEST_F(AuraScrollbarLayerTest, ScrollbarLayerCreateAfterSetScrollable) {

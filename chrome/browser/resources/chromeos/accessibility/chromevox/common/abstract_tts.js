@@ -89,6 +89,9 @@ AbstractTts = class {
   addCapturingEventListener(listener) {}
 
   /** @override */
+  removeCapturingEventListener(listener) {}
+
+  /** @override */
   increaseOrDecreaseProperty(propertyName, increase) {
     const min = this.propertyMin[propertyName];
     const max = this.propertyMax[propertyName];

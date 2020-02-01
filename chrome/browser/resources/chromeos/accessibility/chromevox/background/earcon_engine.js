@@ -498,7 +498,7 @@ EarconEngine = class {
         gainNode.connect(envelopeNode);
 
         for (let j = 0; j < pitches.length; j++) {
-          var freqDecay;
+          let freqDecay;
           if (reverse) {
             freqDecay = Math.pow(0.75, pitches.length - j);
           } else {

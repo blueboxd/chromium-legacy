@@ -8,14 +8,17 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {assertStyle, keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedTest', () => {
   /** @type {!MostVisitedElement} */
   let mostVisited;
 
-  /** @type {TestProxy} */
+  /**
+   * @implements {BrowserProxy}
+   * @extends {TestBrowserProxy}
+   */
   let testProxy;
 
   /**
@@ -64,7 +67,13 @@ suite('NewTabPageMostVisitedTest', () => {
   setup(() => {
     PolymerTest.clearBody();
 
-    testProxy = new TestProxy();
+    testProxy = createTestProxy();
+    testProxy.handler.setResultFor('addMostVisitedTile', Promise.resolve({
+      success: true,
+    }));
+    testProxy.handler.setResultFor('updateMostVisitedTile', Promise.resolve({
+      success: true,
+    }));
     BrowserProxy.instance_ = testProxy;
 
     mostVisited = document.createElement('ntp-most-visited');

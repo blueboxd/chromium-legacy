@@ -193,10 +193,6 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
           *base::CommandLine::ForCurrentProcess()),
       std::move(feature_list), browser_field_trials_.get());
   variations::InitCrashKeys();
-
-  // Initialize FieldTrialSynchronizer system, which is used to synchronize
-  // field trial state with child process.
-  field_trial_synchronizer_ = base::MakeRefCounted<FieldTrialSynchronizer>();
 }
 
 void ChromeFeatureListCreator::CreateMetricsServices() {

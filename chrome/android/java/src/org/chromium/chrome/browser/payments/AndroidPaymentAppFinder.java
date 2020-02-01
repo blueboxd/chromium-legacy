@@ -17,10 +17,9 @@ import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -238,28 +237,29 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             URI appOrigin = null;
             URI defaultUriMethod = null;
             if (!TextUtils.isEmpty(defaultMethod)) {
+                if (UriUtils.looksLikeUriMethod(defaultMethod)) {
+                    defaultUriMethod = UriUtils.parseUriFromString(defaultMethod);
+                    if (defaultUriMethod != null) defaultMethod = defaultUriMethod.toString();
+                }
                 if (!methodToAppsMapping.containsKey(defaultMethod)) {
                     methodToAppsMapping.put(defaultMethod, new HashSet<ResolveInfo>());
                 }
                 methodToAppsMapping.get(defaultMethod).add(app);
 
-                if (UriUtils.looksLikeUriMethod(defaultMethod)) {
-                    defaultUriMethod = UriUtils.parseUriFromString(defaultMethod);
-                    if (defaultUriMethod != null) {
-                        uriMethods.add(defaultUriMethod);
+                if (defaultUriMethod != null) {
+                    uriMethods.add(defaultUriMethod);
 
-                        if (!uriMethodToDefaultAppsMapping.containsKey(defaultUriMethod)) {
-                            uriMethodToDefaultAppsMapping.put(
-                                    defaultUriMethod, new HashSet<ResolveInfo>());
-                        }
-                        uriMethodToDefaultAppsMapping.get(defaultUriMethod).add(app);
-
-                        appOrigin = UriUtils.getOrigin(defaultUriMethod);
-                        if (!mOriginToUriDefaultMethodsMapping.containsKey(appOrigin)) {
-                            mOriginToUriDefaultMethodsMapping.put(appOrigin, new HashSet<URI>());
-                        }
-                        mOriginToUriDefaultMethodsMapping.get(appOrigin).add(defaultUriMethod);
+                    if (!uriMethodToDefaultAppsMapping.containsKey(defaultUriMethod)) {
+                        uriMethodToDefaultAppsMapping.put(
+                                defaultUriMethod, new HashSet<ResolveInfo>());
                     }
+                    uriMethodToDefaultAppsMapping.get(defaultUriMethod).add(app);
+
+                    appOrigin = UriUtils.getOrigin(defaultUriMethod);
+                    if (!mOriginToUriDefaultMethodsMapping.containsKey(appOrigin)) {
+                        mOriginToUriDefaultMethodsMapping.put(appOrigin, new HashSet<URI>());
+                    }
+                    mOriginToUriDefaultMethodsMapping.get(appOrigin).add(defaultUriMethod);
                 }
             }
 
@@ -358,7 +358,15 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                         activityInfo.applicationInfo, resId);
         if (nonDefaultPaymentMethodNames == null) return result;
 
-        Collections.addAll(result, nonDefaultPaymentMethodNames);
+        // Normalize methods that look like URIs in the same way they will be normalized in
+        // #findAndroidPaymentApps.
+        for (String method : nonDefaultPaymentMethodNames) {
+            URI uriMethod = null;
+            if (UriUtils.looksLikeUriMethod(method)) {
+                uriMethod = UriUtils.parseUriFromString(method);
+            }
+            result.add(uriMethod != null ? uriMethod.toString() : method);
+        }
 
         return result;
     }

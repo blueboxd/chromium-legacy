@@ -209,7 +209,8 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   scroll_layer->GetScrollableArea()->SetScrollOffset(
       ScrollOffset(1000, 1000),
       mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(PhysicalOffset(0, 0),
             content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(
@@ -244,7 +245,8 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   scroll_layer->GetScrollableArea()->SetScrollOffset(
       ScrollOffset(1000, 1000),
       mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(PhysicalOffset(0, 0),
             content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(
@@ -1958,7 +1960,8 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   target_element->setAttribute(html_names::kStyleAttr,
                                "overflow: hidden; float: left");
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   // TODO(yosin): Once multicol in LayoutNG, we should remove following
   // assignments. This is because the layout tree maybe reattached. In LayoutNG
   // phase 1, layout tree is reattached because multicol forces legacy layout.
@@ -1995,7 +1998,8 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
 
   body->setAttribute(html_names::kStyleAttr, "margin-top: 0");
   target_element->setAttribute(html_names::kStyleAttr, "top: 0");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(target_object->HasLayer());
   EXPECT_TRUE(body_layer->SelfNeedsRepaint());

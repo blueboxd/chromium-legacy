@@ -56,6 +56,12 @@
 #include "weblayer/browser/captive_portal_service_factory.h"
 #endif
 
+#if defined(OS_ANDROID)
+using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+#endif
+
 namespace weblayer {
 
 namespace {
@@ -140,8 +146,7 @@ void HandleJavaScriptResult(
 }  // namespace
 
 #if defined(OS_ANDROID)
-TabImpl::TabImpl(ProfileImpl* profile,
-                 const base::android::JavaParamRef<jobject>& java_impl)
+TabImpl::TabImpl(ProfileImpl* profile, const JavaParamRef<jobject>& java_impl)
     : TabImpl(profile) {
   java_impl_ = java_impl;
 }
@@ -292,10 +297,9 @@ void TabImpl::DisableAutofillSystemIntegrationForTesting() {
   g_system_autofill_disabled_for_testing = true;
 }
 
-static jlong JNI_TabImpl_CreateTab(
-    JNIEnv* env,
-    jlong profile,
-    const base::android::JavaParamRef<jobject>& java_impl) {
+static jlong JNI_TabImpl_CreateTab(JNIEnv* env,
+                                   jlong profile,
+                                   const JavaParamRef<jobject>& java_impl) {
   return reinterpret_cast<intptr_t>(
       new TabImpl(reinterpret_cast<ProfileImpl*>(profile), java_impl));
 }
@@ -310,33 +314,31 @@ static void JNI_TabImpl_DeleteTab(JNIEnv* env, jlong tab) {
     owned_tab.reset(tab_impl);
 }
 
-base::android::ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(
+ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    const JavaParamRef<jobject>& obj) {
   return web_contents_->GetJavaWebContents();
 }
 
 void TabImpl::SetTopControlsContainerView(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& caller,
     jlong native_top_controls_container_view) {
   top_controls_container_view_ = reinterpret_cast<TopControlsContainerView*>(
       native_top_controls_container_view);
 }
 
-void TabImpl::ExecuteScript(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& script,
-    bool use_separate_isolate,
-    const base::android::JavaParamRef<jobject>& callback) {
+void TabImpl::ExecuteScript(JNIEnv* env,
+                            const JavaParamRef<jstring>& script,
+                            bool use_separate_isolate,
+                            const JavaParamRef<jobject>& callback) {
   base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
   ExecuteScript(base::android::ConvertJavaStringToUTF16(script),
                 use_separate_isolate,
                 base::BindOnce(&HandleJavaScriptResult, jcallback));
 }
 
-void TabImpl::SetJavaImpl(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& impl) {
+void TabImpl::SetJavaImpl(JNIEnv* env, const JavaParamRef<jobject>& impl) {
   // This should only be called early on and only once.
   DCHECK(!java_impl_);
   java_impl_ = impl;
@@ -344,7 +346,7 @@ void TabImpl::SetJavaImpl(JNIEnv* env,
 
 void TabImpl::OnAutofillProviderChanged(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& autofill_provider) {
+    const JavaParamRef<jobject>& autofill_provider) {
   if (g_system_autofill_disabled_for_testing)
     return;
 
@@ -421,8 +423,8 @@ bool TabImpl::DoBrowserControlsShrinkRendererSize(
     const content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
   TRACE_EVENT0("weblayer", "Java_TabImpl_doBrowserControlsShrinkRendererSize");
-  return Java_TabImpl_doBrowserControlsShrinkRendererSize(
-      base::android::AttachCurrentThread(), java_impl_);
+  return Java_TabImpl_doBrowserControlsShrinkRendererSize(AttachCurrentThread(),
+                                                          java_impl_);
 #else
   return false;
 #endif
@@ -509,7 +511,7 @@ void TabImpl::FindMatchRectsReply(content::WebContents* web_contents,
                                   int version,
                                   const std::vector<gfx::RectF>& rects,
                                   const gfx::RectF& active_rect) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = AttachCurrentThread();
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
       Java_TabImpl_createFindMatchRectsDetails(
@@ -559,11 +561,18 @@ void TabImpl::OnFindResultAvailable(content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
   const find_in_page::FindNotificationDetails& find_result =
       GetFindTabHelper()->find_result();
-  JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = AttachCurrentThread();
   Java_TabImpl_onFindResultAvailable(
       env, java_impl_, find_result.number_of_matches(),
       find_result.active_match_ordinal(), find_result.final_update());
 #endif
+}
+
+void TabImpl::DidChangeVisibleSecurityState() {
+  if (browser_) {
+    if (browser_->GetActiveTab() == this)
+      browser_->VisibleSecurityStateOfActiveTabChanged();
+  }
 }
 
 void TabImpl::OnExitFullscreen() {

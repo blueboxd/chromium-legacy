@@ -606,6 +606,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   VideoColorSpace current_color_space_;
 
   base::Optional<DisplayHelper> display_helper_;
+  bool use_empty_video_hdr_metadata_ = false;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_{this};

@@ -51,10 +51,10 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "components/app_modal/javascript_dialog_manager.h"
 #include "components/find_in_page/find_notification_details.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/infobars/core/infobar.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/file_select_listener.h"
@@ -283,7 +283,7 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
   if (!vr::VrTabHelper::IsInVr(source)) {
     return JavaScriptDialogTabHelper::FromWebContents(source);
   }
-  return app_modal::JavaScriptDialogManager::GetInstance();
+  return javascript_dialogs::AppModalDialogManager::GetInstance();
 }
 
 void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(

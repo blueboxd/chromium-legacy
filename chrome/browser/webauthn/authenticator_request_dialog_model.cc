@@ -185,13 +185,7 @@ void AuthenticatorRequestDialogModel::
   // Windows UI.
   if (transport_availability_.has_win_native_api_authenticator &&
       transport_availability_.available_transports.empty()) {
-    if (might_create_resident_credential_ &&
-        !transport_availability_
-             .win_native_ui_shows_resident_credential_notice) {
-      SetCurrentStep(Step::kResidentCredentialConfirmation);
-    } else {
-      HideDialogAndDispatchToNativeWindowsApi();
-    }
+    StartWinNativeApi();
     return;
   }
 
@@ -263,6 +257,17 @@ void AuthenticatorRequestDialogModel::
       transport_availability()->win_native_api_authenticator_id);
 
   HideDialog();
+}
+
+void AuthenticatorRequestDialogModel::StartWinNativeApi() {
+  DCHECK(transport_availability_.has_win_native_api_authenticator);
+
+  if (might_create_resident_credential_ &&
+      !transport_availability_.win_native_ui_shows_resident_credential_notice) {
+    SetCurrentStep(Step::kResidentCredentialConfirmation);
+  } else {
+    HideDialogAndDispatchToNativeWindowsApi();
+  }
 }
 
 void AuthenticatorRequestDialogModel::StartPhonePairing() {

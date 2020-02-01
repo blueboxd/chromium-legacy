@@ -384,6 +384,9 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       ui::DIALOG_BUTTON_OK,
       done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text);
   DialogDelegate::SetExtraView(CreateHelpAndManageView());
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&ContentSettingBubbleModel::OnDoneButtonClicked,
+                     base::Unretained(content_setting_bubble_model_.get())));
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -550,16 +553,6 @@ void ContentSettingBubbleContents::Init() {
   }
 
   content_setting_bubble_model_->set_owner(this);
-}
-
-bool ContentSettingBubbleContents::Accept() {
-  content_setting_bubble_model_->OnDoneButtonClicked();
-
-  return true;
-}
-
-bool ContentSettingBubbleContents::Close() {
-  return true;
 }
 
 void ContentSettingBubbleContents::StyleLearnMoreButton() {

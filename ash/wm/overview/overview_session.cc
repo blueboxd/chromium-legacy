@@ -271,6 +271,10 @@ void OverviewSession::Shutdown() {
   }
 }
 
+bool OverviewSession::IsAnyOverviewItemDragged() const {
+  return window_drag_controller_ && window_drag_controller_->item();
+}
+
 void OverviewSession::OnGridEmpty() {
   if (!IsEmpty())
     return;
@@ -1021,7 +1025,7 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
 
 void OverviewSession::Move(bool reverse) {
   // Do not allow moving the highlight while in the middle of a drag.
-  if (window_drag_controller_ && window_drag_controller_->item())
+  if (IsAnyOverviewItemDragged())
     return;
 
   highlight_controller_->MoveHighlight(reverse);

@@ -12500,6 +12500,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileLocationBarTapped">
+  <owner>stkhapugin@chromium.org</owner>
+  <owner>rkgibson@chromium.org</owner>
+  <description>
+    The user has tapped location bar, which will focus the omnibox. iOS only.
+  </description>
+</action>
+
 <action name="MobileMenuAddToBookmarks">
   <owner>aurimas@chromium.org</owner>
   <description>
@@ -13089,7 +13097,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="MobileOmniboxFocused">
+<action name="MobileOmniboxFocused" not_user_triggered="true">
   <owner>stkhapugin@chromium.org</owner>
   <description>
     Omnibox focused (either directly or through one of the shortcuts). iOS only.
@@ -13916,6 +13924,15 @@ should be able to be added at any place in this file.
     User pressed the reload icon in the toolbar. Pre-M55, MobileToolbarReload
     accounted for all reload actions. M55+, this metric only refers to reloads
     that occurred from the toolbar.
+  </description>
+</action>
+
+<action name="MobileToolbarSearchButtonTapped">
+  <owner>stkhapugin@chromium.org</owner>
+  <owner>rkgibson@chromium.org</owner>
+  <description>
+    The user has tapped on search bottom toolbar, which will focus the omnibox.
+    iOS only.
   </description>
 </action>
 
@@ -22327,6 +22344,15 @@ should be able to be added at any place in this file.
   <description>
     User changed the color of a group through the color picker in the tab group
     editor bubble.
+  </description>
+</action>
+
+<action name="TabGroups_TabGroupBubble_NameChanged">
+  <owner>connily@chromium.org</owner>
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User changed the name of a group through the editor bubble.
   </description>
 </action>
 

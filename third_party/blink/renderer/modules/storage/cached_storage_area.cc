@@ -6,12 +6,12 @@
 
 #include <inttypes.h>
 
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -29,26 +29,6 @@ namespace {
 // are serialized on disk.
 enum class StorageFormat : uint8_t { UTF16 = 0, Latin1 = 1 };
 
-class GetAllCallback : public mojom::blink::StorageAreaGetAllCallback {
- public:
-  static mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
-  CreateAndBind(base::OnceCallback<void(bool)> callback) {
-    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
-        pending_remote;
-    mojo::MakeSelfOwnedAssociatedReceiver(
-        base::WrapUnique(new GetAllCallback(std::move(callback))),
-        pending_remote.InitWithNewEndpointAndPassReceiver());
-    return pending_remote;
-  }
-
- private:
-  explicit GetAllCallback(base::OnceCallback<void(bool)> callback)
-      : m_callback(std::move(callback)) {}
-  void Complete(bool success) override { std::move(m_callback).Run(success); }
-
-  base::OnceCallback<void(bool)> m_callback;
-};
-
 // These methods are used to pack and unpack the page_url/storage_area_id into
 // source strings to/from the browser.
 String PackSource(const KURL& page_url, const String& storage_area_id) {
@@ -63,6 +43,19 @@ void UnpackSource(const String& source,
   DCHECK_EQ(result.size(), 2u);
   *page_url = KURL(result[0]);
   *storage_area_id = result[1];
+}
+
+// Makes a callback which ignores the |success| result of some async operation
+// but which also holds onto a paused WebScopedVirtualTimePauser until invoked.
+base::OnceCallback<void(bool)> MakeSuccessCallback(
+    CachedStorageArea::Source* source) {
+  WebScopedVirtualTimePauser virtual_time_pauser =
+      source->CreateWebScopedVirtualTimePauser(
+          "CachedStorageArea",
+          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+  virtual_time_pauser.PauseVirtualTime();
+  return WTF::Bind([](WebScopedVirtualTimePauser, bool) {},
+                   std::move(virtual_time_pauser));
 }
 
 }  // namespace
@@ -110,42 +103,28 @@ bool CachedStorageArea::SetItem(const String& key,
   // A quick check to reject obviously overbudget items to avoid priming the
   // cache.
   if ((key.length() + value.length()) * 2 >
-      mojom::blink::StorageArea::kPerStorageAreaQuota)
+      mojom::blink::StorageArea::kPerStorageAreaQuota) {
     return false;
+  }
 
   EnsureLoaded();
   String old_value;
   if (!map_->SetItem(key, value, &old_value))
     return false;
 
-  // Determine data formats.
-  const FormatOption key_format = GetKeyFormat();
   const FormatOption value_format = GetValueFormat();
-
-  // Ignore mutations to |key| until OnSetItemComplete.
-  auto ignore_add_result = ignore_key_mutations_.insert(key, 1);
-  if (!ignore_add_result.is_new_entry)
-    ignore_add_result.stored_value->value++;
-
   base::Optional<Vector<uint8_t>> optional_old_value;
-  if (!old_value.IsNull())
+  if (!old_value.IsNull() && should_send_old_value_on_mutations_)
     optional_old_value = StringToUint8Vector(old_value, value_format);
-
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
-
-  blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      source->CreateWebScopedVirtualTimePauser(
-          "CachedStorageArea",
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-  virtual_time_pauser.PauseVirtualTime();
-  mojo_area_->Put(StringToUint8Vector(key, key_format),
+  String source_string = PackSource(page_url, source_id);
+  mojo_area_->Put(StringToUint8Vector(key, GetKeyFormat()),
                   StringToUint8Vector(value, value_format), optional_old_value,
-                  PackSource(page_url, source_id),
-                  WTF::Bind(&CachedStorageArea::OnSetItemComplete,
-                            weak_factory_.GetWeakPtr(), key,
-                            std::move(virtual_time_pauser)));
-  if (IsSessionStorage() && old_value != value)
+                  source_string, MakeSuccessCallback(source));
+  if (!IsSessionStorage())
+    EnqueuePendingMutation(key, value, old_value, source_string);
+  else if (old_value != value)
     EnqueueStorageEvent(key, old_value, value, page_url, source_id);
   return true;
 }
@@ -158,64 +137,54 @@ void CachedStorageArea::RemoveItem(const String& key, Source* source) {
   if (!map_->RemoveItem(key, &old_value))
     return;
 
-  // Determine data formats.
-  const FormatOption key_format = GetKeyFormat();
-  const FormatOption value_format = GetValueFormat();
-
-  // Ignore mutations to |key| until OnRemoveItemComplete.
-  auto ignore_add_result = ignore_key_mutations_.insert(key, 1);
-  if (!ignore_add_result.is_new_entry)
-    ignore_add_result.stored_value->value++;
-
   base::Optional<Vector<uint8_t>> optional_old_value;
   if (should_send_old_value_on_mutations_)
-    optional_old_value = StringToUint8Vector(old_value, value_format);
-
+    optional_old_value = StringToUint8Vector(old_value, GetValueFormat());
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
-
-  blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      source->CreateWebScopedVirtualTimePauser(
-          "CachedStorageArea",
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-  virtual_time_pauser.PauseVirtualTime();
-  mojo_area_->Delete(StringToUint8Vector(key, key_format), optional_old_value,
-                     PackSource(page_url, source_id),
-                     WTF::Bind(&CachedStorageArea::OnRemoveItemComplete,
-                               weak_factory_.GetWeakPtr(), key,
-                               std::move(virtual_time_pauser)));
-
-  if (IsSessionStorage())
+  String source_string = PackSource(page_url, source_id);
+  mojo_area_->Delete(StringToUint8Vector(key, GetKeyFormat()),
+                     optional_old_value, source_string,
+                     MakeSuccessCallback(source));
+  if (!IsSessionStorage())
+    EnqueuePendingMutation(key, String(), old_value, source_string);
+  else
     EnqueueStorageEvent(key, old_value, String(), page_url, source_id);
 }
 
 void CachedStorageArea::Clear(Source* source) {
   DCHECK(areas_->Contains(source));
 
+  mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer;
   bool already_empty = false;
   if (IsSessionStorage()) {
     EnsureLoaded();
     already_empty = map_->GetLength() == 0u;
+  } else if (!map_) {
+    // If this is our first operation on the StorageArea, |map_| is null and
+    // |receiver_| is still bound to the initial StorageAreaObserver pipe
+    // created upon CachedStorageArea construction. We rebind |receiver_| here
+    // with a new pipe whose event sequence will be synchronized against the
+    // backend from the exact point at which the impending |DeleteAll()|
+    // operation takes place. The first event observed after this will always
+    // be a corresponding |AllDeleted()| from |source|.
+    DCHECK(pending_mutations_by_source_.IsEmpty());
+    DCHECK(pending_mutations_by_key_.IsEmpty());
+    receiver_.reset();
+    new_observer = receiver_.BindNewPipeAndPassRemote();
   }
-  // No need to prime the cache in this case.
-  Reset();
+
   map_ = std::make_unique<StorageAreaMap>(
       mojom::blink::StorageArea::kPerStorageAreaQuota);
-  ignore_all_mutations_ = true;
 
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
-
-  blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      source->CreateWebScopedVirtualTimePauser(
-          "CachedStorageArea",
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-  virtual_time_pauser.PauseVirtualTime();
-  mojo_area_->DeleteAll(
-      PackSource(page_url, source_id),
-      WTF::Bind(&CachedStorageArea::OnClearComplete, weak_factory_.GetWeakPtr(),
-                std::move(virtual_time_pauser)));
-  if (IsSessionStorage() && !already_empty)
+  String source_string = PackSource(page_url, source_id);
+  mojo_area_->DeleteAll(source_string, std::move(new_observer),
+                        MakeSuccessCallback(source));
+  if (!IsSessionStorage())
+    EnqueuePendingMutation(String(), String(), String(), source_string);
+  else if (!already_empty)
     EnqueueStorageEvent(String(), String(), String(), page_url, source_id);
 }
 
@@ -233,11 +202,11 @@ CachedStorageArea::CachedStorageArea(
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
       inspector_event_listener_(listener),
-      mojo_area_remote_(std::move(area), ipc_runner),
+      ipc_task_runner_(std::move(ipc_runner)),
+      mojo_area_remote_(std::move(area), ipc_task_runner_),
       mojo_area_(mojo_area_remote_.get()),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  mojo_area_->AddObserver(
-      receiver_.BindNewEndpointAndPassRemote(std::move(ipc_runner)));
+  mojo_area_->AddObserver(receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DOMStorage",
       ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
@@ -251,11 +220,11 @@ CachedStorageArea::CachedStorageArea(
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
       inspector_event_listener_(listener),
-      mojo_area_associated_remote_(std::move(area), ipc_runner),
+      ipc_task_runner_(std::move(ipc_runner)),
+      mojo_area_associated_remote_(std::move(area), ipc_task_runner_),
       mojo_area_(mojo_area_associated_remote_.get()),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  mojo_area_->AddObserver(
-      receiver_.BindNewEndpointAndPassRemote(std::move(ipc_runner)));
+  mojo_area_->AddObserver(receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DOMStorage",
       ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
@@ -266,85 +235,158 @@ CachedStorageArea::~CachedStorageArea() {
       this);
 }
 
-void CachedStorageArea::KeyAdded(const Vector<uint8_t>& key,
-                                 const Vector<uint8_t>& value,
-                                 const String& source) {
+void CachedStorageArea::KeyChanged(
+    const Vector<uint8_t>& key,
+    const Vector<uint8_t>& new_value,
+    const base::Optional<Vector<uint8_t>>& old_value,
+    const String& source) {
   DCHECK(!IsSessionStorage());
-  KeyAddedOrChanged(key, value, String(), source);
-}
-
-void CachedStorageArea::KeyChanged(const Vector<uint8_t>& key,
-                                   const Vector<uint8_t>& new_value,
-                                   const Vector<uint8_t>& old_value,
-                                   const String& source) {
-  DCHECK(!IsSessionStorage());
-  KeyAddedOrChanged(
-      key, new_value,
-      Uint8VectorToString(old_value, FormatOption::kLocalStorageDetectFormat),
-      source);
-}
-
-void CachedStorageArea::KeyDeleted(const Vector<uint8_t>& key,
-                                   const Vector<uint8_t>& old_value,
-                                   const String& source) {
-  DCHECK(!IsSessionStorage());
-  KURL page_url;
-  String storage_area_id;
-  UnpackSource(source, &page_url, &storage_area_id);
 
   String key_string =
       Uint8VectorToString(key, FormatOption::kLocalStorageDetectFormat);
-
-  bool from_local_area = false;
-  String old_value_string =
-      Uint8VectorToString(old_value, FormatOption::kLocalStorageDetectFormat);
-  for (const auto& area : *areas_) {
-    if (area.value == storage_area_id) {
-      from_local_area = true;
-      break;
-    }
+  String new_value_string =
+      Uint8VectorToString(new_value, FormatOption::kLocalStorageDetectFormat);
+  String old_value_string;
+  if (old_value) {
+    old_value_string = Uint8VectorToString(
+        *old_value, FormatOption::kLocalStorageDetectFormat);
   }
-  if (map_ && !from_local_area) {
-    // This was from another process or the storage area is gone. If the former,
-    // remove it from our cache if we haven't already changed it and are waiting
-    // for the confirmation callback. In the latter case, we won't do anything
-    // because ignore_key_mutations_ won't be updated until the callback runs.
-    if (!ignore_all_mutations_ &&
-        ignore_key_mutations_.find(key_string) == ignore_key_mutations_.end())
-      map_->RemoveItem(key_string, nullptr);
-  }
-  EnqueueStorageEvent(key_string, old_value_string, String(), page_url,
-                      storage_area_id);
-}
 
-void CachedStorageArea::AllDeleted(const String& source) {
+  std::unique_ptr<PendingMutation> local_mutation = PopPendingMutation(source);
+  if (map_ && !local_mutation)
+    MaybeApplyNonLocalMutationForKey(key_string, new_value_string);
+
+  // If we did pop a mutation, it had better be for the same key this event
+  // references.
+  DCHECK(!local_mutation || local_mutation->key == key_string);
+
   KURL page_url;
   String storage_area_id;
   UnpackSource(source, &page_url, &storage_area_id);
+  EnqueueStorageEvent(key_string, old_value_string, new_value_string, page_url,
+                      storage_area_id);
+}
 
-  bool from_local_area = false;
-  for (const auto& area : *areas_) {
-    if (area.value == storage_area_id) {
-      from_local_area = true;
-      break;
-    }
+void CachedStorageArea::KeyChangeFailed(const Vector<uint8_t>& key,
+                                        const String& source) {
+  DCHECK(!IsSessionStorage());
+
+  String key_string =
+      Uint8VectorToString(key, FormatOption::kLocalStorageDetectFormat);
+  std::unique_ptr<PendingMutation> local_mutation = PopPendingMutation(source);
+
+  // We don't care about failed changes from other clients.
+  if (!local_mutation)
+    return;
+
+  // If we did pop a mutation, it had better be for the same key this event
+  // references.
+  DCHECK_EQ(local_mutation->key, key_string);
+
+  // A pending local mutation was rejected by the backend.
+  String old_value = local_mutation->old_value;
+  auto key_queue_iter = pending_mutations_by_key_.find(key_string);
+  if (key_queue_iter == pending_mutations_by_key_.end()) {
+    // If this was the only pending local mutation for the key, we simply revert
+    // the cache to the stored |old_value|. Note that this may not be the value
+    // originally stored before the corresponding |Put()| which enqueued this
+    // mutation: see logic below and in |MaybeApplyNonLocalMutationForKey()| for
+    // potential updates to the stored |old_value|.
+    DCHECK(map_);
+    String invalid_cached_value = map_->GetItem(key_string);
+    if (old_value.IsNull())
+      map_->RemoveItem(key_string, nullptr);
+    else
+      map_->SetItemIgnoringQuota(key_string, old_value);
+
+    KURL page_url;
+    String storage_area_id;
+    UnpackSource(source, &page_url, &storage_area_id);
+    EnqueueStorageEvent(key_string, invalid_cached_value, old_value, page_url,
+                        storage_area_id);
+    return;
   }
-  if (map_ && !from_local_area && !ignore_all_mutations_) {
-    auto old = std::move(map_);
+
+  // This was NOT the only pending local mutation for the key, so its failure
+  // is irrelevant to the current cache state (i.e. something has already
+  // overwritten its local change.) In this case, there's no event to dispatch
+  // and no cache update to make. We do however need to propagate the stored
+  // |old_value| to the next queued PendingMutation so that *it* can restore the
+  // correct value if it fails.
+  key_queue_iter->value.front()->old_value = old_value;
+}
+
+void CachedStorageArea::KeyDeleted(
+    const Vector<uint8_t>& key,
+    const base::Optional<Vector<uint8_t>>& old_value,
+    const String& source) {
+  DCHECK(!IsSessionStorage());
+
+  String key_string =
+      Uint8VectorToString(key, FormatOption::kLocalStorageDetectFormat);
+  std::unique_ptr<PendingMutation> local_mutation = PopPendingMutation(source);
+
+  if (map_ && !local_mutation)
+    MaybeApplyNonLocalMutationForKey(key_string, String());
+
+  // If we did pop a mutation, it had better be for the same key this event
+  // references.
+  DCHECK(!local_mutation || local_mutation->key == key_string);
+
+  if (old_value) {
+    KURL page_url;
+    String storage_area_id;
+    UnpackSource(source, &page_url, &storage_area_id);
+    EnqueueStorageEvent(
+        key_string,
+        Uint8VectorToString(*old_value,
+                            FormatOption::kLocalStorageDetectFormat),
+        String(), page_url, storage_area_id);
+  }
+}
+
+void CachedStorageArea::AllDeleted(bool was_nonempty, const String& source) {
+  std::unique_ptr<PendingMutation> local_mutation = PopPendingMutation(source);
+
+  // Note that if this event was from a local source, we've already cleared the
+  // cache when |Clear()| was called so there's nothing to do other than
+  // broadcast the StorageEvent (see below). Broadcast was deferred until now in
+  // that case because we needed to know whether the StorageArea was actually
+  // non-empty prior to the call.
+  if (!local_mutation) {
     map_ = std::make_unique<StorageAreaMap>(
         mojom::blink::StorageArea::kPerStorageAreaQuota);
 
-    // We have to retain local additions which happened after this clear
-    // operation from another process.
-    auto iter = ignore_key_mutations_.begin();
-    while (iter != ignore_key_mutations_.end()) {
-      String value = old->GetItem(iter->key);
-      if (!value.IsNull())
-        map_->SetItemIgnoringQuota(iter->key, value);
-      ++iter;
+    // Re-apply the most recent local mutations for each key. These must have
+    // occurred after the deletion, because we haven't observed events for them
+    // yet. Since they would eventually need to be restored by those impending
+    // events otherwise, we instead restore them now to avoid observable churn
+    // in the storage state.
+    for (const auto& key_mutations : pending_mutations_by_key_) {
+      DCHECK(!key_mutations.value.empty());
+      PendingMutation* const most_recent_mutation = key_mutations.value.back();
+      if (!most_recent_mutation->new_value.IsNull()) {
+        map_->SetItemIgnoringQuota(key_mutations.key,
+                                   most_recent_mutation->new_value);
+      }
+
+      // And now the first unacked mutation should revert to an empty value on
+      // failure since that's the state in the backend.
+      key_mutations.value.front()->old_value = String();
     }
   }
-  EnqueueStorageEvent(String(), String(), String(), page_url, storage_area_id);
+
+  // If we did pop a mutation, it had better be from a corresponding |Clear()|,
+  // i.e. with no key value.
+  DCHECK(!local_mutation || local_mutation->key.IsNull());
+
+  if (was_nonempty) {
+    KURL page_url;
+    String storage_area_id;
+    UnpackSource(source, &page_url, &storage_area_id);
+    EnqueueStorageEvent(String(), String(), String(), page_url,
+                        storage_area_id);
+  }
 }
 
 void CachedStorageArea::ShouldSendOldValueOnMutations(bool value) {
@@ -369,81 +411,87 @@ bool CachedStorageArea::OnMemoryDump(
   return true;
 }
 
-void CachedStorageArea::KeyAddedOrChanged(const Vector<uint8_t>& key,
-                                          const Vector<uint8_t>& new_value,
-                                          const String& old_value,
-                                          const String& source) {
-  DCHECK(!IsSessionStorage());
-  KURL page_url;
-  String storage_area_id;
-  UnpackSource(source, &page_url, &storage_area_id);
+void CachedStorageArea::EnqueuePendingMutation(const String& key,
+                                               const String& new_value,
+                                               const String& old_value,
+                                               const String& source) {
+  // Track this pending mutation until we observe a corresponding event on
+  // our StorageAreaObserver interface. As long as this operation is pending,
+  // we will effectively ignore other observed mutations on this key. Note that
+  // |old_value| may be updated while this PendingMutation sits in queue, if
+  // non-local mutations are observed while waiting for this local mutation to
+  // be acknowledged. See logic in |MaybeApplyNonLocalMutationForKey()|.
+  auto mutation = std::make_unique<PendingMutation>();
+  mutation->key = key;
+  mutation->new_value = new_value;
+  mutation->old_value = old_value;
 
-  String key_string =
-      Uint8VectorToString(key, FormatOption::kLocalStorageDetectFormat);
-  String new_value_string =
-      Uint8VectorToString(new_value, FormatOption::kLocalStorageDetectFormat);
-
-  bool from_local_area = false;
-  for (const auto& area : *areas_) {
-    if (area.value == storage_area_id) {
-      from_local_area = true;
-      break;
-    }
+  // |key| is null for |Clear()| mutation events.
+  if (!key.IsNull()) {
+    pending_mutations_by_key_.insert(key, Deque<PendingMutation*>())
+        .stored_value->value.push_back(mutation.get());
   }
-  if (map_ && !from_local_area) {
-    // This was from another process or the storage area is gone. If the former,
-    // apply it to our cache if we haven't already changed it and are waiting
-    // for the confirmation callback. In the latter case, we won't do anything
-    // because ignore_key_mutations_ won't be updated until the callback runs.
-    if (!ignore_all_mutations_ &&
-        ignore_key_mutations_.find(key_string) == ignore_key_mutations_.end()) {
-      // We turn off quota checking here to accommodate the over budget
-      // allowance that's provided in the browser process.
-      map_->SetItemIgnoringQuota(key_string, new_value_string);
-    }
-  }
-  EnqueueStorageEvent(key_string, old_value, new_value_string, page_url,
-                      storage_area_id);
+  pending_mutations_by_source_.insert(source, OwnedPendingMutationQueue())
+      .stored_value->value.push_back(std::move(mutation));
 }
 
-void CachedStorageArea::OnSetItemComplete(const String& key,
-                                          WebScopedVirtualTimePauser,
-                                          bool success) {
-  if (!success) {
-    Reset();
+std::unique_ptr<CachedStorageArea::PendingMutation>
+CachedStorageArea::PopPendingMutation(const String& source) {
+  auto source_queue_iter = pending_mutations_by_source_.find(source);
+  if (source_queue_iter == pending_mutations_by_source_.end())
+    return nullptr;
+
+  OwnedPendingMutationQueue& mutations_for_source = source_queue_iter->value;
+  DCHECK(!mutations_for_source.IsEmpty());
+  std::unique_ptr<PendingMutation> mutation =
+      std::move(mutations_for_source.front());
+  mutations_for_source.pop_front();
+  if (mutations_for_source.empty())
+    pending_mutations_by_source_.erase(source_queue_iter);
+
+  // If |key| is non-null, the oldest mutation queued for that key MUST be this
+  // mutation, and we remove it as well. If |key| is null, that means |mutation|
+  // was a |DeleteAll()| request and there is no corresponding per-key queue
+  // entry.
+  const String key = mutation->key;
+  if (!key.IsNull()) {
+    auto key_queue_iter = pending_mutations_by_key_.find(key);
+    DCHECK(key_queue_iter != pending_mutations_by_key_.end());
+    DCHECK_EQ(key_queue_iter->value.front(), mutation.get());
+    key_queue_iter->value.pop_front();
+    if (key_queue_iter->value.empty())
+      pending_mutations_by_key_.erase(key_queue_iter);
+  }
+
+  return mutation;
+}
+
+void CachedStorageArea::MaybeApplyNonLocalMutationForKey(
+    const String& key,
+    const String& new_value) {
+  DCHECK(map_);
+  auto key_queue_iter = pending_mutations_by_key_.find(key);
+  if (key_queue_iter == pending_mutations_by_key_.end()) {
+    // No pending local mutations, so we can apply this non-local mutation
+    // directly to our cache and then we're done.
+    if (new_value.IsNull()) {
+      map_->RemoveItem(key, nullptr);
+    } else {
+      // We turn off quota checking here to accommodate the over budget
+      // allowance that's provided in the browser process.
+      map_->SetItemIgnoringQuota(key, new_value);
+    }
+
     return;
   }
 
-  auto it = ignore_key_mutations_.find(key);
-  DCHECK(it != ignore_key_mutations_.end());
-  if (--it->value == 0)
-    ignore_key_mutations_.erase(it);
-}
-
-void CachedStorageArea::OnRemoveItemComplete(const String& key,
-                                             WebScopedVirtualTimePauser,
-                                             bool success) {
-  DCHECK(success);
-  auto it = ignore_key_mutations_.find(key);
-  DCHECK(it != ignore_key_mutations_.end());
-  if (--it->value == 0)
-    ignore_key_mutations_.erase(it);
-}
-
-void CachedStorageArea::OnClearComplete(WebScopedVirtualTimePauser,
-                                        bool success) {
-  DCHECK(success);
-  DCHECK(ignore_all_mutations_);
-  ignore_all_mutations_ = false;
-}
-
-void CachedStorageArea::OnGetAllComplete(bool success) {
-  // Since the GetAll method is synchronous, we need this asynchronously
-  // delivered notification to avoid applying changes to the returned array
-  // that we already have.
-  DCHECK(success);
-  DCHECK(ignore_all_mutations_);
-  ignore_all_mutations_ = false;
+  // We don't want to apply this mutation yet, possibly ever. We need to wait
+  // until one or more pending local mutations are acknowledged either
+  // successfully or unsuccessfully. For now we stash this non-local mutation in
+  // the |old_value| at the front of the key's queue so we don't lose it. If the
+  // local mutation eventually fails, we may restore the key to this non-local
+  // mutation value.
+  key_queue_iter->value.front()->old_value = new_value;
 }
 
 void CachedStorageArea::EnsureLoaded() {
@@ -455,13 +503,14 @@ void CachedStorageArea::EnsureLoaded() {
   // problem. See https://crbug.com/915577.
   scoped_refptr<CachedStorageArea> keep_alive(this);
   base::TimeTicks before = base::TimeTicks::Now();
-  ignore_all_mutations_ = true;
-  bool success = false;
   Vector<mojom::blink::KeyValuePtr> data;
-  mojo_area_->GetAll(
-      GetAllCallback::CreateAndBind(WTF::Bind(
-          &CachedStorageArea::OnGetAllComplete, weak_factory_.GetWeakPtr())),
-      &success, &data);
+
+  // We had no cached |map_|, which means |receiver_| was bound to the original
+  // StorageAreaObserver pipe created upon CachedStorageArea construction. We
+  // replace it with a new receiver whose event sequence is synchronized against
+  // the result of |GetAll()| for consistency.
+  receiver_.reset();
+  mojo_area_->GetAll(receiver_.BindNewPipeAndPassRemote(), &data);
 
   // Determine data formats.
   const FormatOption key_format = GetKeyFormat();
@@ -497,13 +546,6 @@ void CachedStorageArea::EnsureLoaded() {
   }
 }
 
-void CachedStorageArea::Reset() {
-  map_ = nullptr;
-  ignore_key_mutations_.clear();
-  ignore_all_mutations_ = false;
-  weak_factory_.InvalidateWeakPtrs();
-}
-
 CachedStorageArea::FormatOption CachedStorageArea::GetKeyFormat() const {
   return IsSessionStorage() ? FormatOption::kSessionStorageForceUTF8
                             : FormatOption::kLocalStorageDetectFormat;
@@ -523,6 +565,10 @@ void CachedStorageArea::EnqueueStorageEvent(const String& key,
                                             const String& new_value,
                                             const String& url,
                                             const String& storage_area_id) {
+  // Ignore key-change events which aren't actually changing the value.
+  if (!key.IsNull() && new_value == old_value)
+    return;
+
   HeapVector<Member<Source>, 1> areas_to_remove_;
   for (const auto& area : *areas_) {
     if (area.value != storage_area_id) {

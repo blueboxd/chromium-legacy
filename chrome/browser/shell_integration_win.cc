@@ -31,8 +31,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/registry.h"
@@ -748,8 +748,18 @@ void MigrateTaskbarPins() {
     return;
   }
 
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT})
+  // MigrateTaskbarPinsCallback just calls MigrateShortcutsInPathInternal
+  // several times with different parameters.  Each call may or may not load
+  // DLL's. Since the callback may take the loader lock several times, and this
+  // is the bulk of the callback's work, run the whole thing on a foreground
+  // thread.
+  //
+  // BEST_EFFORT means it will be scheduled after higher-priority tasks, but
+  // MUST_USE_FOREGROUND means that when it is scheduled it will run in the
+  // foregound.
+  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
+                                base::TaskPriority::BEST_EFFORT,
+                                base::ThreadPolicy::MUST_USE_FOREGROUND})
       ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
                                            taskbar_path, implicit_apps_path));
 }
@@ -782,9 +792,10 @@ void GetIsPinnedToTaskbarState(
 
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
                                    const base::FilePath& path) {
-  // Mitigate the issues caused by loading DLLs on a background thread
-  // (http://crbug/973868).
-  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+  // This function may load DLL's so ensure it is running in a foreground
+  // thread.
+  DCHECK_GT(base::PlatformThread::GetCurrentThreadPriority(),
+            base::ThreadPriority::BACKGROUND);
 
   // Enumerate all pinned shortcuts in the given path directly.
   base::FileEnumerator shortcuts_enum(

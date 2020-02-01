@@ -163,7 +163,7 @@ void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     // interactive move/resize.
     auto bounds_in_px =
         desktop_window_tree_host_->AsWindowTreeHost()->GetBoundsInPixels();
-    auto screen_point_in_px = event->root_location();
+    auto screen_point_in_px = event->location();
     screen_point_in_px.Offset(bounds_in_px.x(), bounds_in_px.y());
     handler_->DispatchHostWindowDragMovement(hittest, screen_point_in_px);
     event->StopPropagation();

@@ -77,6 +77,16 @@ void SharedWorkerServiceImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void SharedWorkerServiceImpl::EnumerateSharedWorkers(Observer* observer) {
+  for (const auto& host : worker_hosts_) {
+    if (host->started()) {
+      observer->OnWorkerStarted(host->instance(),
+                                host->GetProcessHost()->GetID(),
+                                host->dev_tools_token());
+    }
+  }
+}
+
 bool SharedWorkerServiceImpl::TerminateWorker(
     const GURL& url,
     const std::string& name,

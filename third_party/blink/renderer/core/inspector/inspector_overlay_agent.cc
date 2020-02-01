@@ -819,7 +819,7 @@ void InspectorOverlayAgent::PaintOverlayPage() {
   inspect_tool_->Draw(WindowToViewportScale());
 
   OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
-      DocumentUpdateReason::kOther);
+      DocumentUpdateReason::kInspector);
 }
 
 static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(

@@ -123,38 +123,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, HttpBasicAuthenticationInPortal) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, FocusTransfersAcrossActivation) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/portal/activate.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(true, content::EvalJs(contents, "loadPromise"));
-  EXPECT_TRUE(content::ExecJs(contents,
-                              "var blurPromise = new Promise(r => {"
-                              "  window.onblur = () => r(true)"
-                              "})"));
-  EXPECT_TRUE(content::ExecJs(contents,
-                              "var button = document.createElement('button');"
-                              "document.body.appendChild(button);"
-                              "button.focus();"
-                              "var buttonBlurPromise = new Promise(r => {"
-                              "  button.onblur = () => r(true)"
-                              "});"));
-  WebContents* portal_contents = contents->GetInnerWebContents()[0];
-  EXPECT_TRUE(content::ExecJs(portal_contents,
-                              "var focusPromise = new Promise(r => {"
-                              "  window.onfocus = () => r(true)"
-                              "})"));
-
-  // Activate the portal, and then check if the predecessor contents lost focus,
-  // and the portal contents got focus.
-  EXPECT_EQ(true, content::EvalJs(contents, "activate()"));
-  EXPECT_EQ(true, content::EvalJs(contents, "blurPromise"));
-  EXPECT_EQ(true, content::EvalJs(contents, "buttonBlurPromise"));
-  EXPECT_EQ(true, content::EvalJs(portal_contents, "focusPromise"));
-}
-
 namespace {
 
 std::vector<base::string16> GetRendererTaskTitles(

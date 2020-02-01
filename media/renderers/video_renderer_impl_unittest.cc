@@ -416,10 +416,45 @@ TEST_F(VideoRendererImplTest, InitializeAndEndOfStream) {
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
     WaitableMessageLoopEvent event;
-    EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-        .WillOnce(RunClosure(event.GetClosure()));
-    EXPECT_CALL(mock_cb_, OnEnded());
+    {
+      // Buffering state changes must happen before end of stream.
+      testing::InSequence in_sequence;
+      EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
+          .WillOnce(RunClosure(event.GetClosure()));
+      EXPECT_CALL(mock_cb_, OnEnded());
+    }
     SatisfyPendingDecodeWithEndOfStream();
+    event.RunAndWait();
+  }
+  // Firing a time state changed to true should be ignored...
+  renderer_->OnTimeProgressing();
+  EXPECT_FALSE(null_video_sink_->is_started());
+  Destroy();
+}
+
+TEST_F(VideoRendererImplTest, InitializeAndEndOfStreamOneStaleFrame) {
+  Initialize();
+  StartPlayingFrom(10000);
+  QueueFrames("0");
+  QueueFrame(DecodeStatus::OK, VideoFrame::CreateEOSFrame());
+  WaitForPendingDecode();
+  {
+    SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
+    WaitableMessageLoopEvent event;
+
+    EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
+    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
+    EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
+    EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
+
+    {
+      // Buffering state changes must happen before end of stream.
+      testing::InSequence in_sequence;
+      EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
+          .WillOnce(RunClosure(event.GetClosure()));
+      EXPECT_CALL(mock_cb_, OnEnded());
+    }
+    SatisfyPendingDecode();
     event.RunAndWait();
   }
   // Firing a time state changed to true should be ignored...

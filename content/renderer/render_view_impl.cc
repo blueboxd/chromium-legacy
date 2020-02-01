@@ -1245,14 +1245,9 @@ WebView* RenderViewImpl::CreateView(
   // The user activation check is done at the browser process through
   // |frame_host->CreateNewWindow()| call below.  But the extensions case
   // handled through the following |if| is an exception.
-  //
-  // TODO(mustaq): Investigate if mimic_user_gesture can wrongly expose presence
-  // of user activation w/o any user interaction, e.g. through
-  // |WebChromeClient#onCreateWindow|. One case to deep-dive: disabling popup
-  // blocker then calling window.open at onload event. crbug.com/929729
-  params->mimic_user_gesture = false;
+  params->allow_popup = false;
   if (GetContentClient()->renderer()->AllowPopup())
-    params->mimic_user_gesture = true;
+    params->allow_popup = true;
 
   params->window_container_type = WindowFeaturesToContainerType(features);
 
@@ -1775,7 +1770,7 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
   if (webview()->MainFrameWidget()) {
     webview()->MainFrameWidget()->UpdateLifecycle(
         WebWidget::LifecycleUpdate::kLayout,
-        blink::DocumentUpdateReason::kOther);
+        blink::DocumentUpdateReason::kSizeChange);
   }
 
   // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.

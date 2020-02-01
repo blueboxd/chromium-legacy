@@ -219,7 +219,11 @@ void DrmOverlayValidatorTest::InitializeDrmState(
                             crtc_plane_properties.end());
   }
 
-  drm_->InitializeState(crtc_properties, plane_properties, property_names,
+  std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(1);
+  connector_properties[0].id = kConnectorIdBase;
+
+  drm_->InitializeState(crtc_properties, connector_properties, plane_properties,
+                        property_names,
                         /* use_atomic= */ true);
 }
 

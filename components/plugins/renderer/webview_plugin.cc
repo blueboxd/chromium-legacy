@@ -410,7 +410,7 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // Run the lifecycle now so that it is clean.
   DCHECK(web_view()->MainFrameWidget());
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      blink::DocumentUpdateReason::kOther);
+      blink::DocumentUpdateReason::kPlugin);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> WebViewPlugin::GetTaskRunner() {

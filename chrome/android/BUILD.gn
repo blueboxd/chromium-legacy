@@ -144,13 +144,13 @@ android_resources("chrome_app_java_resources") {
     "//chrome/browser/ui/android/appmenu:java_resources",
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//chrome/browser/ui/messages/android:java_resources",
-    "//components/app_modal/android:java_resources",
     "//components/autofill/android:autofill_java_resources",
     "//components/browser_ui/modaldialog/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java_resources",
     "//components/find_in_page/android:java_resources",
+    "//components/javascript_dialogs/android:java_resources",
     "//components/policy:app_restrictions_resources",
     "//components/strings:components_locale_settings_grd",
     "//components/strings:components_strings_grd",
@@ -262,7 +262,6 @@ android_library("chrome_java") {
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//chrome/lib/lifecycle/public/android:java",
-    "//components/app_modal/android:java",
     "//components/autofill/android:autofill_java",
     "//components/autofill_assistant/browser:proto_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
@@ -290,6 +289,7 @@ android_library("chrome_java") {
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
     "//components/invalidation/impl:java",
+    "//components/javascript_dialogs/android:java",
     "//components/language/android:language_bridge_java",
     "//components/location/android:location_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -373,6 +373,7 @@ android_library("chrome_java") {
     "//ui/android:ui_java",
     "//ui/base/mojom:mojom_java",
     "//ui/gfx/geometry/mojom:mojom_java",
+    "//url:gurl_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
 
@@ -778,7 +779,6 @@ android_library("chrome_test_java") {
     "//chrome/lib/lifecycle/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
-    "//components/app_modal/android:java",
     "//components/autofill/android:autofill_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_javatests",
@@ -804,6 +804,7 @@ android_library("chrome_test_java") {
     "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
     "//components/invalidation/impl:java",
     "//components/invalidation/impl:javatests",
+    "//components/javascript_dialogs/android:java",
     "//components/location/android:location_java",
     "//components/metrics:metrics_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -872,6 +873,7 @@ android_library("chrome_test_java") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
     "//ui/base/mojom:mojom_java",
+    "//url:gurl_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
 
@@ -1769,6 +1771,8 @@ template("monochrome_public_apk_or_module_tmpl") {
       deps += [
         ":monochrome_java",
         "//android_webview:platform_service_bridge_upstream_implementation_java",
+        "//android_webview/nonembedded:icon_resources",
+        "//android_webview/nonembedded:monochrome_devui_launcher_icon_resources",
       ]
       if (webview_includes_weblayer) {
         deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
@@ -2873,6 +2877,7 @@ android_library("native_java_unittests_java") {
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
+    "//url:gurl_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
   sources = [

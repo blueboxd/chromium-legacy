@@ -25,9 +25,7 @@ function setSubmitListener(form, fetchDataUrl) {
   form.addEventListener('submit', event => {
     event.preventDefault();
     const dataUrl = fetchDataUrl();
-    // Exclude unwind_cfi via a filter as a work-around for it being included
-    // in the size data. It's a file that exists in dev but not beta/stable.
-    window.open(`viewer.html?load_url=${dataUrl}&exclude=assets%2Funwind_cfi`);
+    window.open(`viewer.html?load_url=${dataUrl}`);
   });
 }
 

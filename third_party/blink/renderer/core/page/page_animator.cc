@@ -145,18 +145,21 @@ void PageAnimator::UpdateAllLifecyclePhases(LocalFrame& root_frame,
   }
 }
 
-void PageAnimator::UpdateAllLifecyclePhasesExceptPaint(LocalFrame& root_frame) {
+void PageAnimator::UpdateAllLifecyclePhasesExceptPaint(
+    LocalFrame& root_frame,
+    DocumentUpdateReason reason) {
   LocalFrameView* view = root_frame.View();
   base::AutoReset<bool> servicing(&updating_layout_and_style_for_painting_,
                                   true);
-  view->UpdateAllLifecyclePhasesExceptPaint();
+  view->UpdateAllLifecyclePhasesExceptPaint(reason);
 }
 
-void PageAnimator::UpdateLifecycleToLayoutClean(LocalFrame& root_frame) {
+void PageAnimator::UpdateLifecycleToLayoutClean(LocalFrame& root_frame,
+                                                DocumentUpdateReason reason) {
   LocalFrameView* view = root_frame.View();
   base::AutoReset<bool> servicing(&updating_layout_and_style_for_painting_,
                                   true);
-  view->UpdateLifecycleToLayoutClean();
+  view->UpdateLifecycleToLayoutClean(reason);
 }
 
 void PageAnimator::UpdateHitTestOcclusionData(LocalFrame& root_frame) {

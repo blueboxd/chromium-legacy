@@ -42,7 +42,7 @@ class PaintChunkSubset {
     }
 
     // The index in the whole paint chunks set.
-    size_t OriginalIndex() const { return subset_.OriginalIndex(offset_); }
+    wtf_size_t OriginalIndex() const { return subset_.OriginalIndex(offset_); }
 
    private:
     friend class PaintChunkSubset;

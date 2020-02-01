@@ -530,6 +530,64 @@ suite('CupsAddPrinterDialogTests', function() {
           assertFalse(dialog.showManuallyAddDialog_);
         });
   });
+
+  /**
+   * Test that the add button of the manufacturer dialog is disabled when the
+   * manufacturer or model dropdown has an incorrect value.
+   */
+  test('AddButtonDisabledAfterClicking', function() {
+    // From the add manually dialog, click the add button to advance to the
+    // manufacturer dialog.
+    const addDialog = dialog.$$('add-printer-manually-dialog');
+    assertTrue(!!addDialog);
+    Polymer.dom.flush();
+    fillAddManuallyDialog(addDialog);
+    clickAddButton(addDialog);
+    Polymer.dom.flush();
+
+    return cupsPrintersBrowserProxy
+        .whenCalled('getCupsPrinterManufacturersList')
+        .then(function() {
+          const manufacturerDialog =
+              dialog.$$('add-printer-manufacturer-model-dialog');
+          assertTrue(!!manufacturerDialog);
+
+          const manufacturerDropdown =
+              manufacturerDialog.$$('#manufacturerDropdown');
+          const modelDropdown =
+              manufacturerDialog.$$('#modelDropdown');
+          const addButton = manufacturerDialog.$$('#addPrinterButton');
+
+          // Set the starting values for manufacturer and model dropdown.
+          manufacturerDropdown.value = 'make';
+          modelDropdown.value = 'model';
+          assertFalse(addButton.disabled);
+
+          // Mimic typing in random input. Make sure the Add button becomes
+          // disabled.
+          manufacturerDropdown.$$('#search').value = 'hlrRkJQkNsh';
+          manufacturerDropdown.$$('#search').fire('input');
+          assertTrue(addButton.disabled);
+
+          // Then mimic typing in the original value to re-enable the Add
+          // button.
+          manufacturerDropdown.$$('#search').value = 'make';
+          manufacturerDropdown.$$('#search').fire('input');
+          assertFalse(addButton.disabled);
+
+          // Mimic typing in random input. Make sure the Add button becomes
+          // disabled.
+          modelDropdown.$$('#search').value = 'hlrRkJQkNsh';
+          modelDropdown.$$('#search').fire('input');
+          assertTrue(addButton.disabled);
+
+          // Then mimic typing in the original value to re-enable the Add
+          // button.
+          modelDropdown.$$('#search').value = 'model';
+          modelDropdown.$$('#search').fire('input');
+          assertFalse(addButton.disabled);
+        });
+  });
 });
 
 suite('EditPrinterDialog', function() {

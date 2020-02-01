@@ -60,7 +60,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
         browser_context_->GetPath(),
         browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy(),
         base::DefaultClock::GetInstance(),
-        mojo::PendingRemote<storage::mojom::BlobStorageContext>(),
+        /*blob_storage_context=*/mojo::NullRemote(),
+        /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     base::RunLoop().RunUntilIdle();

@@ -61,9 +61,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedFiles;
 // Enables the Assistant search redirection in the app list.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantSearch;
 
-// Enables the embedded Assistant UI in the app list.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantLauncherUI;
-
 // Enables ghosting in any AppsGridView (folder or root) when dragging an item.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
 

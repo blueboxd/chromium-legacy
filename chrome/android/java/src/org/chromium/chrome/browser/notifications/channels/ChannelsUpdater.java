@@ -4,25 +4,24 @@
 
 package org.chromium.chrome.browser.notifications.channels;
 
-import android.content.SharedPreferences;
 import android.os.Build;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Contains helper methods for checking if we should update channels and updating them if so.
  */
 public class ChannelsUpdater {
-    @VisibleForTesting
-    static final String CHANNELS_VERSION_KEY = "channels_version_key";
 
     private static final Object sLock = new Object();
 
     private final ChannelsInitializer mChannelsInitializer;
-    private final SharedPreferences mSharedPreferences;
+    private final SharedPreferencesManager mSharedPreferences;
     private final boolean mIsAtLeastO;
     private final int mChannelsVersion;
 
@@ -35,15 +34,15 @@ public class ChannelsUpdater {
         // when we won't need it. It's ok for these parameters to be null when mIsAtLeastO is false.
         public static final ChannelsUpdater INSTANCE = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
                 ? new ChannelsUpdater(false /* isAtLeastO */, null, null, -1)
-                : new ChannelsUpdater(true /* isAtLeastO */, ContextUtils.getAppSharedPreferences(),
-                          new ChannelsInitializer(new NotificationManagerProxyImpl(
-                                                          ContextUtils.getApplicationContext()),
-                                  ContextUtils.getApplicationContext().getResources()),
-                          ChannelDefinitions.CHANNELS_VERSION);
+                : new ChannelsUpdater(true /* isAtLeastO */, SharedPreferencesManager.getInstance(),
+                        new ChannelsInitializer(new NotificationManagerProxyImpl(
+                                                        ContextUtils.getApplicationContext()),
+                                ContextUtils.getApplicationContext().getResources()),
+                        ChannelDefinitions.CHANNELS_VERSION);
     }
 
     @VisibleForTesting
-    ChannelsUpdater(boolean isAtLeastO, SharedPreferences sharedPreferences,
+    ChannelsUpdater(boolean isAtLeastO, SharedPreferencesManager sharedPreferences,
             ChannelsInitializer channelsInitializer, int channelsVersion) {
         mIsAtLeastO = isAtLeastO;
         mSharedPreferences = sharedPreferences;
@@ -53,7 +52,9 @@ public class ChannelsUpdater {
 
     public boolean shouldUpdateChannels() {
         return mIsAtLeastO
-                && mSharedPreferences.getInt(CHANNELS_VERSION_KEY, -1) != mChannelsVersion;
+                && mSharedPreferences.readInt(
+                           ChromePreferenceKeys.NOTIFICATIONS_CHANNELS_VERSION, -1)
+                != mChannelsVersion;
     }
 
     public void updateChannels() {
@@ -76,6 +77,7 @@ public class ChannelsUpdater {
 
     private void storeChannelVersionInPrefs() {
         assert mSharedPreferences != null;
-        mSharedPreferences.edit().putInt(CHANNELS_VERSION_KEY, mChannelsVersion).apply();
+        mSharedPreferences.writeInt(
+                ChromePreferenceKeys.NOTIFICATIONS_CHANNELS_VERSION, mChannelsVersion);
     }
 }

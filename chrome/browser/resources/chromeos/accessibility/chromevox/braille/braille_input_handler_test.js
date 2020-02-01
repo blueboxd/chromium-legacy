@@ -228,8 +228,8 @@ FakeEditor = class {
     assertEquals(this.contextID_, msg.contextID);
     switch (msg.type) {
       case 'replaceText':
-        var deleteBefore = msg.deleteBefore;
-        var newText = msg.newText;
+        const deleteBefore = msg.deleteBefore;
+        const newText = msg.newText;
         assertTrue(goog.isNumber(deleteBefore));
         assertTrue(goog.isString(newText));
         assertTrue(deleteBefore <= this.selectionStart_);
@@ -342,14 +342,14 @@ FakeTranslator = class {
     let pos = 0;
     while (pos < cellsArray.length) {
       let match = null;
-      outer: for (var i = 0, entry; entry = this.table_[i]; ++i) {
+      outer: for (let i = 0, j, entry; entry = this.table_[i]; ++i) {
         if (pos + entry[0].length > cellsArray.length) {
           continue;
         }
         if (entry.start && pos > 0 && cellsArray[pos - 1] !== 0) {
           continue;
         }
-        for (var j = 0; j < entry[0].length; ++j) {
+        for (j = 0; j < entry[0].length; ++j) {
           if (entry[0][j] !== cellsArray[pos + j]) {
             continue outer;
           }

@@ -706,10 +706,11 @@ void ChromeContentClient::AddContentDecryptionModules(
 // Example standard schemes: https://, chrome-extension://, chrome://, file://
 // Example nonstandard schemes: mailto:, data:, javascript:, about:
 static const char* const kChromeStandardURLSchemes[] = {
-    extensions::kExtensionScheme,
-    chrome::kChromeNativeScheme,
-    chrome::kChromeSearchScheme,
-    dom_distiller::kDomDistillerScheme,
+    extensions::kExtensionScheme, chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,  dom_distiller::kDomDistillerScheme,
+#if defined(OS_ANDROID)
+    chrome::kAndroidAppScheme,
+#endif
 #if defined(OS_CHROMEOS)
     chrome::kCrosScheme,
 #endif

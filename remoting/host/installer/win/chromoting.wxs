@@ -766,6 +766,13 @@
        Impersonate="no"
        Return="ignore"/>
 
+    <CustomAction Id="remove_debug_log"
+      Directory="binaries"
+      ExeCommand='cmd /c del /f debug.log'
+      Execute="deferred"
+      Impersonate="no"
+      Return="ignore"/>
+
     <InstallExecuteSequence>
       <!-- Set REINSTALL=all and REINSTALLMODE=amus if the user reruns the
            MSI, which will force reinstalling all files and services.  -->
@@ -793,6 +800,9 @@
            See http://msdn.microsoft.com/en-us/library/aa371197.aspx. -->
       <RemoveExistingProducts After="InstallInitialize" />
 
+      <Custom Action="remove_debug_log" Before="RemoveFiles">
+        Installed AND (NOT MAINTENANCE)
+      </Custom>
       <Custom Action="remove_symbolic_link" Before="RemoveFiles">
         Installed AND (NOT MAINTENANCE)
       </Custom>

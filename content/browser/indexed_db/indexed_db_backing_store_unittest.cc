@@ -76,6 +76,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
+      storage::mojom::NativeFileSystemContext* native_file_system_context,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
@@ -86,6 +87,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                               blob_path,
                               std::move(db),
                               blob_storage_context,
+                              native_file_system_context,
                               std::move(blob_files_cleaned),
                               std::move(report_outstanding_blobs),
                               std::move(idb_task_runner),
@@ -119,11 +121,13 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(
       IndexedDBContextImpl* idb_context,
-      storage::mojom::BlobStorageContext* blob_storage_context)
+      storage::mojom::BlobStorageContext* blob_storage_context,
+      storage::mojom::NativeFileSystemContext* native_file_system_context)
       : IndexedDBFactoryImpl(idb_context,
                              IndexedDBClassFactory::Get(),
-                             base::DefaultClock::GetInstance(),
-                             blob_storage_context) {}
+                             base::DefaultClock::GetInstance()),
+        blob_storage_context_(blob_storage_context),
+        native_file_system_context_(native_file_system_context) {}
   ~TestIDBFactory() override = default;
 
  protected:
@@ -133,20 +137,27 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
-      storage::mojom::BlobStorageContext* blob_storage_context,
+      storage::mojom::BlobStorageContext*,
+      storage::mojom::NativeFileSystemContext*,
       IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
       IndexedDBBackingStore::ReportOutstandingBlobsCallback
           report_outstanding_blobs,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner) override {
+    // Use the overridden blob storage and native file system contexts rather
+    // than the versions that were passed in to this method. This way tests can
+    // use a different context from what is stored in the IndexedDBContext.
     return std::make_unique<TestableIndexedDBBackingStore>(
         backing_store_mode, leveldb_factory, origin, blob_path, std::move(db),
-        blob_storage_context, std::move(blob_files_cleaned),
-        std::move(report_outstanding_blobs), std::move(idb_task_runner),
-        std::move(io_task_runner));
+        blob_storage_context_, native_file_system_context_,
+        std::move(blob_files_cleaned), std::move(report_outstanding_blobs),
+        std::move(idb_task_runner), std::move(io_task_runner));
   }
 
  private:
+  storage::mojom::BlobStorageContext* blob_storage_context_;
+  storage::mojom::NativeFileSystemContext* native_file_system_context_;
+
   DISALLOW_COPY_AND_ASSIGN(TestIDBFactory);
 };
 
@@ -220,7 +231,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
         base::DefaultClock::GetInstance(),
-        mojo::PendingRemote<storage::mojom::BlobStorageContext>(),
+        /*blob_storage_context=*/mojo::NullRemote(),
+        /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
 
@@ -236,8 +248,9 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
   void CreateFactoryAndBackingStore() {
     const Origin origin = Origin::Create(GURL("http://localhost:81"));
-    idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get(),
-                                                    blob_context_.get());
+    idb_factory_ = std::make_unique<TestIDBFactory>(
+        idb_context_.get(), blob_context_.get(),
+        /*native_file_system_context=*/nullptr);
 
     leveldb::Status s;
     std::tie(origin_state_handle_, s, std::ignore, data_loss_info_,

@@ -251,7 +251,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Getters for bounds and opacity of the various sub-components.
   gfx::Rect GetShelfBoundsInScreen() const;
-  gfx::Rect GetNavigationBounds() const;
   gfx::Rect GetHotseatBounds() const;
   gfx::Rect GetStatusAreaBoundsInScreen() const;
   float GetOpacity() const;
@@ -287,56 +286,9 @@ class ASH_EXPORT ShelfLayoutManager
 
     gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
     gfx::Rect shelf_bounds_in_shelf;    // Bounds of the shelf minus status area
-    gfx::Rect nav_bounds_in_shelf;      // Bounds of nav widget within shelf
     gfx::Rect hotseat_bounds_in_shelf;  // Bounds of the hotseat within shelf
     gfx::Rect status_bounds_in_screen;  // Bounds of status area within screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
-
-    bool operator==(const TargetBounds& other) {
-      return opacity == other.opacity && shelf_bounds == other.shelf_bounds &&
-             shelf_bounds_in_shelf == other.shelf_bounds_in_shelf &&
-             nav_bounds_in_shelf == other.nav_bounds_in_shelf &&
-             hotseat_bounds_in_shelf == other.hotseat_bounds_in_shelf &&
-             status_bounds_in_screen == other.status_bounds_in_screen &&
-             shelf_insets == other.shelf_insets;
-    }
-
-    std::string diff_for_debug(const TargetBounds& other) {
-      std::string diff = "";
-      if (*this == other)
-        return diff;
-      if (opacity != other.opacity) {
-        diff += " opacity " + base::NumberToString(opacity) + " vs " +
-                base::NumberToString(other.opacity);
-      }
-      if (shelf_bounds != other.shelf_bounds) {
-        diff += " shelf_bounds " + shelf_bounds.ToString() + " vs " +
-                other.shelf_bounds.ToString();
-      }
-      if (shelf_bounds_in_shelf != other.shelf_bounds_in_shelf) {
-        diff += " shelf_bounds_in_shelf " + shelf_bounds_in_shelf.ToString() +
-                " vs " + other.shelf_bounds_in_shelf.ToString();
-      }
-      if (nav_bounds_in_shelf != other.nav_bounds_in_shelf) {
-        diff += " nav_bounds_in_shelf " + nav_bounds_in_shelf.ToString() +
-                " vs " + other.nav_bounds_in_shelf.ToString();
-      }
-      if (hotseat_bounds_in_shelf != other.hotseat_bounds_in_shelf) {
-        diff += " hotseat_bounds_in_shelf " +
-                hotseat_bounds_in_shelf.ToString() + " vs " +
-                other.hotseat_bounds_in_shelf.ToString();
-      }
-      if (status_bounds_in_screen != other.status_bounds_in_screen) {
-        diff += " status_bounds_in_screen " +
-                status_bounds_in_screen.ToString() + " vs " +
-                other.status_bounds_in_screen.ToString();
-      }
-      if (shelf_insets != other.shelf_insets) {
-        diff += " shelf_insets " + shelf_insets.ToString() + " vs " +
-                other.shelf_insets.ToString();
-      }
-      return diff;
-    }
   };
 
   struct State {
@@ -533,6 +485,10 @@ class ASH_EXPORT ShelfLayoutManager
   void MaybeCancelWindowDrag();
   bool IsWindowDragInProgress() const;
 
+  // Updates the visibility state because of the change on the system tray.
+  void UpdateVisibilityStateForSystemTrayChange(
+      message_center::Visibility visibility);
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_ = false;
@@ -682,6 +638,10 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Tracks whether the shelf is currently dimmed for inactivity.
   bool dimmed_for_inactivity_ = false;
+
+  // Callback to update the shelf's state when the visibility of system tray
+  // changes.
+  base::CancelableOnceClosure visibility_update_for_tray_callback_;
 
   // Records the presentation time for hotseat dragging.
   std::unique_ptr<PresentationTimeRecorder> hotseat_presentation_time_recorder_;

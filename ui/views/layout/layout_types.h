@@ -54,6 +54,8 @@ class VIEWS_EXPORT SizeBounds {
     height_ = std::move(height);
   }
 
+  constexpr bool is_fully_bounded() const { return width_ && height_; }
+
   // Enlarges (or shrinks, if negative) each upper bound that is present by the
   // specified amounts.
   void Enlarge(int width, int height);

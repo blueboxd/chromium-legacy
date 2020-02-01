@@ -66,12 +66,11 @@ void PageWidgetDelegate::UpdateLifecycle(
     WebWidget::LifecycleUpdate requested_update,
     DocumentUpdateReason reason) {
   if (requested_update == WebWidget::LifecycleUpdate::kLayout) {
-    page.Animator().UpdateLifecycleToLayoutClean(root);
+    page.Animator().UpdateLifecycleToLayoutClean(root, reason);
   } else if (requested_update == WebWidget::LifecycleUpdate::kPrePaint) {
-    page.Animator().UpdateAllLifecyclePhasesExceptPaint(root);
+    page.Animator().UpdateAllLifecyclePhasesExceptPaint(root, reason);
   } else {
-    page.Animator().UpdateAllLifecyclePhases(
-        root, static_cast<DocumentUpdateReason>(reason));
+    page.Animator().UpdateAllLifecyclePhases(root, reason);
   }
 }
 

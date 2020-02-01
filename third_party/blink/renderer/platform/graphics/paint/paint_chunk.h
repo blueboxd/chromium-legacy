@@ -28,8 +28,8 @@ struct PLATFORM_EXPORT PaintChunk {
 
   using Id = DisplayItem::Id;
 
-  PaintChunk(size_t begin,
-             size_t end,
+  PaintChunk(wtf_size_t begin,
+             wtf_size_t end,
              const Id& id,
              const PropertyTreeState& props)
       : begin_index(begin),
@@ -41,7 +41,7 @@ struct PLATFORM_EXPORT PaintChunk {
     DCHECK_GT(end_index, begin_index);
   }
 
-  size_t size() const {
+  wtf_size_t size() const {
     DCHECK_GT(end_index, begin_index);
     return end_index - begin_index;
   }
@@ -65,24 +65,16 @@ struct PLATFORM_EXPORT PaintChunk {
     return !client_is_just_created;
   }
 
-  size_t MemoryUsageInBytes() const {
-    size_t total_size = sizeof(*this);
-    if (hit_test_data) {
-      total_size += sizeof(*hit_test_data);
-      total_size +=
-          hit_test_data->touch_action_rects.capacity() * sizeof(HitTestRect);
-    }
-    return total_size;
-  }
+  size_t MemoryUsageInBytes() const;
 
   String ToString() const;
 
   // Index of the first drawing in this chunk.
-  size_t begin_index;
+  wtf_size_t begin_index;
 
   // Index of the first drawing not in this chunk, so that there are
   // |endIndex - beginIndex| drawings in the chunk.
-  size_t end_index;
+  wtf_size_t end_index;
 
   // Identifier of this chunk. It should be unique if |is_cacheable| is true.
   // This is used to match a new chunk to a cached old chunk to track changes
@@ -118,13 +110,13 @@ struct PLATFORM_EXPORT PaintChunk {
   bool client_is_just_created;
 };
 
-inline bool ChunkLessThanIndex(const PaintChunk& chunk, size_t index) {
+inline bool ChunkLessThanIndex(const PaintChunk& chunk, wtf_size_t index) {
   return chunk.end_index <= index;
 }
 
 inline Vector<PaintChunk>::iterator FindChunkInVectorByDisplayItemIndex(
     Vector<PaintChunk>& chunks,
-    size_t index) {
+    wtf_size_t index) {
   auto* chunk =
       std::lower_bound(chunks.begin(), chunks.end(), index, ChunkLessThanIndex);
   DCHECK(chunk == chunks.end() ||
@@ -134,7 +126,7 @@ inline Vector<PaintChunk>::iterator FindChunkInVectorByDisplayItemIndex(
 
 inline Vector<PaintChunk>::const_iterator FindChunkInVectorByDisplayItemIndex(
     const Vector<PaintChunk>& chunks,
-    size_t index) {
+    wtf_size_t index) {
   return FindChunkInVectorByDisplayItemIndex(
       const_cast<Vector<PaintChunk>&>(chunks), index);
 }

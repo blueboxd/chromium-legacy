@@ -179,7 +179,7 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
 
   drop_target_node->GetLayoutObject()
       ->GetFrameView()
-      ->UpdateAllLifecyclePhasesExceptPaint();
+      ->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kScroll);
 
   LayoutBox* scrollable =
       LayoutBox::FindAutoscrollable(drop_target_node->GetLayoutObject(),

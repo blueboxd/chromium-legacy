@@ -103,13 +103,6 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android-binary-size',
-    executable = 'recipe:binary_size_trybot',
-    goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
-)
-
-try_.chromium_android_builder(
     name = 'android-cronet-arm-dbg',
     tryjob = try_.job(
         location_regexp = [
@@ -238,12 +231,6 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android_compile_dbg',
-    goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
-)
-
-try_.chromium_android_builder(
     name = 'android_compile_x64_dbg',
     tryjob = try_.job(
         location_regexp = [
@@ -273,10 +260,6 @@ try_.chromium_android_builder(
     ),
 )
 
-try_.chromium_android_builder(
-    name = 'android_cronet',
-    tryjob = try_.job(),
-)
 
 try_.chromium_android_builder(
     name = 'android_cronet_tester',
@@ -297,10 +280,6 @@ try_.chromium_android_builder(
     name = 'android_unswarmed_pixel_aosp',
 )
 
-try_.chromium_android_builder(
-    name = 'cast_shell_android',
-    tryjob = try_.job(),
-)
 
 try_.chromium_android_builder(
     name = 'linux_android_dbg_ng',
@@ -396,10 +375,6 @@ try_.chromium_chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
 )
 
-try_.chromium_chromiumos_builder(
-    name = 'chromeos-arm-generic-rel',
-    tryjob = try_.job(),
-)
 
 try_.chromium_chromiumos_builder(
     name = 'chromeos-kevin-compile-rel',
@@ -420,10 +395,6 @@ try_.chromium_chromiumos_builder(
     ),
 )
 
-try_.chromium_chromiumos_builder(
-    name = 'linux-chromeos-compile-dbg',
-    tryjob = try_.job(),
-)
 
 try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-dbg',
@@ -520,10 +491,6 @@ try_.chromium_linux_builder(
     name = 'cast_shell_audio_linux',
 )
 
-try_.chromium_linux_builder(
-    name = 'cast_shell_linux',
-    tryjob = try_.job(),
-)
 
 try_.chromium_linux_builder(
     name = 'closure_compilation',
@@ -572,15 +539,6 @@ try_.chromium_linux_builder(
     ),
 )
 
-try_.chromium_linux_builder(
-    name = 'fuchsia_arm64',
-    tryjob = try_.job(),
-)
-
-try_.chromium_linux_builder(
-    name = 'fuchsia_x64',
-    tryjob = try_.job(),
-)
 
 try_.chromium_linux_builder(
     name = 'layout_test_leak_detection',
@@ -627,16 +585,6 @@ try_.chromium_linux_builder(
     goma_backend = None,
 )
 
-try_.chromium_linux_builder(
-    name = 'linux-libfuzzer-asan-rel',
-    executable = 'recipe:chromium_libfuzzer_trybot',
-    tryjob = try_.job(),
-)
-
-try_.chromium_linux_builder(
-    name = 'linux-ozone-rel',
-    tryjob = try_.job(),
-)
 
 try_.chromium_linux_builder(
     name = 'linux-trusty-rel',
@@ -662,13 +610,6 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = 'linux_chromium_archive_rel_ng',
-)
-
-try_.chromium_linux_builder(
-    name = 'linux_chromium_asan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
-    tryjob = try_.job(),
 )
 
 try_.chromium_linux_builder(
@@ -700,17 +641,6 @@ try_.chromium_linux_builder(
     name = 'linux_chromium_compile_dbg_32_ng',
 )
 
-try_.chromium_linux_builder(
-    name = 'linux_chromium_compile_dbg_ng',
-    caches = [
-        swarming.cache(
-            name = 'builder',
-            path = 'linux_debug',
-        ),
-    ],
-    goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
-)
 
 try_.chromium_linux_builder(
     name = 'linux_chromium_compile_rel_ng',
@@ -736,11 +666,6 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
 )
 
-try_.chromium_linux_builder(
-    name = 'linux_chromium_tsan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
-)
 
 try_.chromium_linux_builder(
     name = 'linux_chromium_ubsan_rel_ng',
@@ -852,12 +777,6 @@ try_.chromium_mac_builder(
     goma_jobs = goma.jobs.J150,
 )
 
-try_.chromium_mac_builder(
-    name = 'mac_chromium_compile_dbg_ng',
-    goma_jobs = goma.jobs.J150,
-    os = os.MAC_10_13,
-    tryjob = try_.job(),
-)
 
 try_.chromium_mac_builder(
     name = 'mac_chromium_compile_rel_ng',
@@ -1019,14 +938,6 @@ try_.chromium_win_builder(
 )
 
 try_.chromium_win_builder(
-    name = 'win-libfuzzer-asan-rel',
-    builderless = False,
-    executable = 'recipe:chromium_libfuzzer_trybot',
-    os = os.WINDOWS_ANY,
-    tryjob = try_.job(),
-)
-
-try_.chromium_win_builder(
     name = 'win10_chromium_x64_dbg_ng',
     os = os.WINDOWS_10,
 )
@@ -1057,11 +968,6 @@ try_.chromium_win_builder(
     name = 'win_archive',
 )
 
-try_.chromium_win_builder(
-    name = 'win_chromium_compile_dbg_ng',
-    goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
-)
 
 try_.chromium_win_builder(
     name = 'win_chromium_compile_rel_ng',
@@ -1195,7 +1101,10 @@ def chrome_internal_verifier(
       builder = 'chrome:try/' + builder,
       cq_group = 'cq',
       includable_only = True,
-      owner_whitelist = ["googlers"],
+      owner_whitelist = [
+          "googlers",
+          "project-chromium-robot-committers",
+      ],
   )
 
 chrome_internal_verifier(

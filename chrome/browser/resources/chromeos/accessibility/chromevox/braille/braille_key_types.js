@@ -198,17 +198,17 @@ BrailleKeyEvent.legacyKeyCodeMap_ = {
 
 (function() {
 // Add 0-9.
-for (var i = '0'.charCodeAt(0); i < '9'.charCodeAt(0); ++i) {
+for (let i = '0'.charCodeAt(0); i < '9'.charCodeAt(0); ++i) {
   BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
 }
 
 // Add A-Z.
-for (var i = 'A'.charCodeAt(0); i < 'Z'.charCodeAt(0); ++i) {
+for (let i = 'A'.charCodeAt(0); i < 'Z'.charCodeAt(0); ++i) {
   BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
 }
 
 // Add the F1 to F12 keys.
-for (var i = 0; i < 12; ++i) {
+for (let i = 0; i < 12; ++i) {
   BrailleKeyEvent.legacyKeyCodeMap_['F' + (i + 1)] = 112 + i;
 }
 })();

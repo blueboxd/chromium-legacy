@@ -306,8 +306,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (!self.signinInteractionCoordinator) {
     self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser
-                                                   dispatcher:self.dispatcher];
+        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser];
   }
 
   // |_authenticationOperationInProgress| is reset when the signin operation is

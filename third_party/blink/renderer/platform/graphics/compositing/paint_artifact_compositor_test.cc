@@ -184,8 +184,9 @@ class PaintArtifactCompositorTest : public testing::Test,
   // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be
   // a scroll hit test layer, whereas currently this will be a content layer.
   cc::Layer* ScrollableLayerAt(size_t num) {
+    const cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
     for (auto& layer : RootLayer()->children()) {
-      if (layer->scrollable()) {
+      if (scroll_tree.FindNodeFromElementId(layer->element_id())) {
         if (num == 0)
           return layer.get();
         num--;
@@ -199,8 +200,9 @@ class PaintArtifactCompositorTest : public testing::Test,
   // content layers are scrollable and non-scrollable, so this will return the
   // |num|th content layer that is not scrollable.
   cc::Layer* NonScrollableLayerAt(size_t num) {
+    const cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
     for (auto& layer : RootLayer()->children()) {
-      if (!layer->scrollable()) {
+      if (!scroll_tree.FindNodeFromElementId(layer->element_id())) {
         if (num == 0)
           return layer.get();
         num--;
@@ -1063,6 +1065,7 @@ static scoped_refptr<ScrollPaintPropertyNode> CreateScroll(
 
 static void CheckCcScrollNode(const ScrollPaintPropertyNode& blink_scroll,
                               const cc::ScrollNode& cc_scroll) {
+  EXPECT_TRUE(cc_scroll.scrollable);
   EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContainerRect().Size()),
             cc_scroll.container_bounds);
   EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContentsSize()),
@@ -1119,7 +1122,6 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
               Pointee(DrawsRectangle(FloatRect(0, 0, 57, 19), Color::kWhite)));
 
   auto* scroll_layer = ScrollableLayerAt(0);
-  EXPECT_TRUE(scroll_layer->scrollable());
   // The scroll layer should be sized to the container bounds.
   // TODO(pdr): The container bounds will not include scrollbars but the scroll
   // layer should extend below scrollbars.

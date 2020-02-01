@@ -39,10 +39,16 @@ base::span<const uint8_t> MakeBytes(base::StringPiece str) {
   return base::as_bytes(base::make_span(str));
 }
 
+mojo::PendingRemote<blink::mojom::StorageAreaObserver> MakeStubObserver() {
+  mojo::PendingRemote<blink::mojom::StorageAreaObserver> observer;
+  ignore_result(observer.InitWithNewPipeAndPassReceiver());
+  return observer;
+}
+
 class MockListener : public SessionStorageDataMap::Listener {
  public:
-  MockListener() {}
-  ~MockListener() override {}
+  MockListener() = default;
+  ~MockListener() override = default;
   MOCK_METHOD2(OnDataMapCreation,
                void(const std::vector<uint8_t>& map_id,
                     SessionStorageDataMap* map));
@@ -50,44 +56,18 @@ class MockListener : public SessionStorageDataMap::Listener {
   MOCK_METHOD1(OnCommitResult, void(leveldb::Status status));
 };
 
-void GetAllDataCallback(bool* success_out,
+void GetAllDataCallback(base::OnceClosure callback,
                         std::vector<blink::mojom::KeyValuePtr>* data_out,
-                        bool success,
                         std::vector<blink::mojom::KeyValuePtr> data) {
-  *success_out = success;
   *data_out = std::move(data);
+  std::move(callback).Run();
 }
 
-base::OnceCallback<void(bool success,
-                        std::vector<blink::mojom::KeyValuePtr> data)>
-MakeGetAllCallback(bool* sucess_out,
-                   std::vector<blink::mojom::KeyValuePtr>* data_out) {
-  return base::BindOnce(&GetAllDataCallback, sucess_out, data_out);
+blink::mojom::StorageArea::GetAllCallback MakeGetAllCallback(
+    base::OnceClosure callback,
+    std::vector<blink::mojom::KeyValuePtr>* data_out) {
+  return base::BindOnce(&GetAllDataCallback, std::move(callback), data_out);
 }
-
-class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
- public:
-  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
-  CreateAndBind(bool* result, base::OnceClosure callback) {
-    mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback> remote;
-    mojo::MakeSelfOwnedAssociatedReceiver(
-        base::WrapUnique(new GetAllCallback(result, std::move(callback))),
-        remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
-    return remote.Unbind();
-  }
-
- private:
-  GetAllCallback(bool* result, base::OnceClosure callback)
-      : result_(result), callback_(std::move(callback)) {}
-  void Complete(bool success) override {
-    *result_ = success;
-    if (callback_)
-      std::move(callback_).Run();
-  }
-
-  bool* result_;
-  base::OnceClosure callback_;
-};
 
 class SessionStorageDataMapTest : public testing::Test {
  public:
@@ -160,16 +140,12 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
                                                                 test_origin_),
           database_.get());
 
-  bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
-  bool done = false;
   base::RunLoop loop;
-  map->storage_area()->GetAll(
-      GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
-      MakeGetAllCallback(&success, &data));
+  map->storage_area()->GetAll(MakeStubObserver(),
+                              MakeGetAllCallback(loop.QuitClosure(), &data));
   loop.Run();
 
-  EXPECT_TRUE(done);
   ASSERT_EQ(1u, data.size());
   EXPECT_EQ(StdStringToUint8Vector("key1"), data[0]->key);
   EXPECT_EQ(StdStringToUint8Vector("data1"), data[0]->value);
@@ -192,16 +168,12 @@ TEST_F(SessionStorageDataMapTest, ExplicitlyEmpty) {
       base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
       database_.get());
 
-  bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
-  bool done = false;
   base::RunLoop loop;
-  map->storage_area()->GetAll(
-      GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
-      MakeGetAllCallback(&success, &data));
+  map->storage_area()->GetAll(MakeStubObserver(),
+                              MakeGetAllCallback(loop.QuitClosure(), &data));
   loop.Run();
 
-  EXPECT_TRUE(done);
   ASSERT_EQ(0u, data.size());
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
@@ -237,16 +209,12 @@ TEST_F(SessionStorageDataMapTest, Clone) {
                                                                 test_origin_),
           map1);
 
-  bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
-  bool done = false;
   base::RunLoop loop;
-  map2->storage_area()->GetAll(
-      GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
-      MakeGetAllCallback(&success, &data));
+  map2->storage_area()->GetAll(MakeStubObserver(),
+                               MakeGetAllCallback(loop.QuitClosure(), &data));
   loop.Run();
 
-  EXPECT_TRUE(done);
   ASSERT_EQ(1u, data.size());
   EXPECT_EQ(StdStringToUint8Vector("key1"), data[0]->key);
   EXPECT_EQ(StdStringToUint8Vector("data1"), data[0]->value);

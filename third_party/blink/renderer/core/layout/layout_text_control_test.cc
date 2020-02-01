@@ -44,7 +44,8 @@ TEST_F(LayoutTextControlTest,
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
   inputElement->setAttribute(html_names::kClassAttr, "pseudoSelection");
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
   UpdateAllLifecyclePhasesForTest();
@@ -69,7 +70,8 @@ TEST_F(LayoutTextControlTest,
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
   inputElement->setAttribute(html_names::kClassAttr, "pseudoSelection");
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
   UpdateAllLifecyclePhasesForTest();
@@ -94,7 +96,8 @@ TEST_F(LayoutTextControlTest,
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
   inputElement->removeAttribute(html_names::kClassAttr);
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
   UpdateAllLifecyclePhasesForTest();

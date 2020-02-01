@@ -4,6 +4,10 @@
 
 package org.chromium.shape_detection;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -50,10 +54,22 @@ public class BarcodeDetectionProviderImpl implements BarcodeDetectionProvider {
     public void onConnectionError(MojoException e) {}
 
     public static BarcodeDetectionProvider create() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                    ContextUtils.getApplicationContext())
+        Context ctx = ContextUtils.getApplicationContext();
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(ctx)
                 != ConnectionResult.SUCCESS) {
-            Log.e(TAG, "Google Play Services not available");
+            Log.w(TAG, "Google Play Services not available");
+            return null;
+        }
+        try {
+            PackageInfo playServicesPackage = ctx.getPackageManager().getPackageInfo(
+                    GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0);
+            if (playServicesPackage.versionCode < 19742000) {
+                // https://crbug.com/1020746
+                Log.w(TAG, "Detection disabled (%s < 19.7.42)", playServicesPackage.versionName);
+                return null;
+            }
+        } catch (NameNotFoundException e) {
+            Log.w(TAG, "Google Play Services not available");
             return null;
         }
         return new BarcodeDetectionProviderImpl();

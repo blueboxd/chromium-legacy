@@ -39,6 +39,7 @@ source_set("common") {
     "//fuchsia/base",
     "//fuchsia/base:modular",
     "//third_party/fuchsia-sdk/sdk:fuchsia-ui-app",
+    "//ui/gfx/geometry",
     "//url",
   ]
   public_deps = [

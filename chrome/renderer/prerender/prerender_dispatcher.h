@@ -33,12 +33,7 @@ class PrerenderDispatcher : public content::RenderThreadObserver,
   PrerenderDispatcher();
   ~PrerenderDispatcher() override;
 
-  void IncrementPrefetchCount();
-  void DecrementPrefetchCount();
-
  private:
-  friend class PrerenderDispatcherTest;
-
   // chrome::mojom::PrerenderDispatcher:
   void PrerenderStart(int prerender_id) override;
   void PrerenderStopLoading(int prerender_id) override;
@@ -59,15 +54,9 @@ class PrerenderDispatcher : public content::RenderThreadObserver,
   void Add(const blink::WebPrerender& prerender) override;
   void Cancel(const blink::WebPrerender& prerender) override;
   void Abandon(const blink::WebPrerender& prerender) override;
-  void PrefetchFinished() override;
 
   // From WebKit, prerender elements launched by renderers in our process.
   std::map<int, blink::WebPrerender> prerenders_;
-
-  int prefetch_count_ = 0;
-  bool prefetch_finished_ = false;
-  base::TimeTicks process_start_time_;
-  base::TimeTicks prefetch_parsed_time_;
 
   mojo::AssociatedReceiverSet<chrome::mojom::PrerenderDispatcher> receivers_;
 };

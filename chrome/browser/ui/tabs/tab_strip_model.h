@@ -478,6 +478,7 @@ class TabStripModel : public TabGroupController {
     CommandCloseOtherTabs,
     CommandCloseTabsToRight,
     CommandTogglePinned,
+    CommandToggleGrouped,
     CommandFocusMode,
     CommandToggleSiteMuted,
     CommandSendTabToSelf,
@@ -512,6 +513,10 @@ class TabStripModel : public TabGroupController {
   // Returns true if 'CommandTogglePinned' will pin. |index| is the index
   // supplied to |ExecuteContextMenuCommand|.
   bool WillContextMenuPin(int index);
+
+  // Returns true if 'CommandToggleGrouped' will group. |index| is the index
+  // supplied to |ExecuteContextMenuCommand|.
+  bool WillContextMenuGroup(int index);
 
   // Convert a ContextMenuCommand into a browser command. Returns true if a
   // corresponding browser command exists, false otherwise.

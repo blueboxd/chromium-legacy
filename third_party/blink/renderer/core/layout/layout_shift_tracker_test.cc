@@ -80,7 +80,8 @@ TEST_F(LayoutShiftTrackerTest, CompositedShiftBeforeFirstPaint) {
 
   GetDocument().getElementById("B")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("tr"));
-  GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling();
+  GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling(
+      DocumentUpdateReason::kTest);
   GetDocument().getElementById("A")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("hide"));
   UpdateAllLifecyclePhases();

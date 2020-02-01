@@ -33,11 +33,11 @@ if (!is_ios) {
       "//components/prefs",
       "//components/safe_browsing/core:features",
       "//components/safe_browsing/core:realtimeapi_proto",
+      "//components/safe_browsing/core/common",
       "//components/safe_browsing/core/common:safe_browsing_prefs",
       "//components/unified_consent",
       "//components/user_prefs",
       "//content/public/browser",
-      "//content/public/common:resource_type_header",
     ]
   }
 
@@ -52,6 +52,7 @@ if (!is_ios) {
       ":url_lookup_service",
       "//base/test:test_support",
       "//components/safe_browsing/core:features",
+      "//components/safe_browsing/core/common",
       "//components/safe_browsing/core/common:safe_browsing_prefs",
       "//components/safe_browsing/core/common:test_support",
       "//components/sync_preferences:test_support",

@@ -1170,7 +1170,8 @@ TEST_F(CanvasRenderingContext2DTestAccelerated,
 
   // The page is hidden so it doesn't make sense to paint, and doing so will
   // DCHECK. Update all other lifecycle phases.
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // Wake up again, which should request a compositing update synchronously.

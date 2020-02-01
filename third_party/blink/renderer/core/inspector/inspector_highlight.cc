@@ -479,7 +479,8 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
   boxes_ = std::make_unique<protocol::Array<protocol::Array<double>>>();
   computed_style_ = protocol::DictionaryValue::create();
 
-  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
     return;
@@ -708,7 +709,8 @@ bool InspectorHighlight::GetBoxModel(
     Node* node,
     std::unique_ptr<protocol::DOM::BoxModel>* model,
     bool use_absolute_zoom) {
-  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   LayoutObject* layout_object = node->GetLayoutObject();
   LocalFrameView* view = node->GetDocument().View();
   if (!layout_object || !view)

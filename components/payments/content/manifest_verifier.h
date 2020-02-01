@@ -20,6 +20,7 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -62,10 +63,16 @@ class ManifestVerifier final : public WebDataServiceConsumer {
                               const std::string& error_message)>;
 
   // Creates the verifier and starts up the parser utility process.
+  //
+  // |merchant_origin| should be the origin of the iframe that created the
+  // PaymentRequest object. It is used by security features like
+  // 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  //
   // The owner of ManifestVerifier owns |downloader|, |parser| and
   // |cache|. They should live until |finished_using_resources| parameter to
   // Verify() method is called.
-  ManifestVerifier(content::WebContents* web_contents,
+  ManifestVerifier(const url::Origin& merchant_origin,
+                   content::WebContents* web_contents,
                    PaymentManifestDownloader* downloader,
                    PaymentManifestParser* parser,
                    PaymentManifestWebDataService* cache);
@@ -102,6 +109,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // Called immediately preceding the verification callback invocation.
   void RemoveInvalidPaymentApps();
 
+  const url::Origin merchant_origin_;
   DeveloperConsoleLogger log_;
 
   // Downloads the manifests.

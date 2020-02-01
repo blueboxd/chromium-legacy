@@ -154,6 +154,10 @@ void AuthenticatorTransportSelectorSheetModel::StartPhonePairing() {
   dialog_model()->StartPhonePairing();
 }
 
+void AuthenticatorTransportSelectorSheetModel::StartWinNativeApi() {
+  dialog_model()->StartWinNativeApi();
+}
+
 // AuthenticatorInsertAndActivateUsbSheetModel ----------------------
 
 AuthenticatorInsertAndActivateUsbSheetModel::

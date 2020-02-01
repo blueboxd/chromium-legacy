@@ -142,27 +142,19 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   // Note that these values are adjusted to counter the effects of zoom, so that
   // values exposed via DOM APIs are invariant under zooming.
   virtual double screenX() const {
-    return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-               ? screen_location_.X()
-               : static_cast<int>(screen_location_.X());
+    return static_cast<int>(screen_location_.X());
   }
 
   virtual double screenY() const {
-    return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-               ? screen_location_.Y()
-               : static_cast<int>(screen_location_.Y());
+    return static_cast<int>(screen_location_.Y());
   }
 
   virtual double clientX() const {
-    return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-               ? client_location_.X()
-               : static_cast<int>(client_location_.X());
+    return static_cast<int>(client_location_.X());
   }
 
   virtual double clientY() const {
-    return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-               ? client_location_.Y()
-               : static_cast<int>(client_location_.Y());
+    return static_cast<int>(client_location_.Y());
   }
 
   int movementX() const { return movement_delta_.X(); }
@@ -174,17 +166,9 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   virtual double offsetX();
   virtual double offsetY();
 
-  virtual double pageX() const {
-    return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-               ? page_location_.X()
-               : static_cast<int>(page_location_.X());
-  }
+  virtual double pageX() const { return static_cast<int>(page_location_.X()); }
 
-  virtual double pageY() const {
-    return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-               ? page_location_.Y()
-               : static_cast<int>(page_location_.Y());
-  }
+  virtual double pageY() const { return static_cast<int>(page_location_.Y()); }
 
   double x() const { return clientX(); }
   double y() const { return clientY(); }
@@ -202,19 +186,17 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   void Trace(blink::Visitor*) override;
 
+  DoublePoint screen_location_;
+  DoublePoint client_location_;
+  DoublePoint page_location_;    // zoomed CSS pixels
+  DoublePoint offset_location_;  // zoomed CSS pixels
+
  protected:
   int16_t RawButton() const { return button_; }
 
   void ReceivedTarget() override;
 
-  // TODO(eirage): Move these coordinates related field back to private
-  // when MouseEvent fractional flag is removed.
   void ComputeRelativePosition();
-
-  DoublePoint screen_location_;
-  DoublePoint client_location_;
-  DoublePoint page_location_;    // zoomed CSS pixels
-  DoublePoint offset_location_;  // zoomed CSS pixels
 
   bool has_cached_relative_position_ = false;
 

@@ -250,22 +250,15 @@ class CC_EXPORT LayerImpl {
   }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
-  gfx::ScrollOffset CurrentScrollOffset() const;
-
-  gfx::ScrollOffset MaxScrollOffset() const;
-  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset) const;
-  gfx::Vector2dF ClampScrollToMaxScrollOffset();
 
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
-  // Marks this layer as being scrollable and needing an associated scroll node.
-  // The scroll node's bounds and container_bounds will be kept in sync with
-  // this layer.
-  void SetScrollable(const gfx::Size& bounds);
-  gfx::Size scroll_container_bounds() const { return scroll_container_bounds_; }
-  bool scrollable() const { return scrollable_; }
+  // Called during a commit or activation, after the property trees are pushed.
+  // It detects changes of scrollable status and scroll container size in the
+  // scroll property, and invalidate scrollbar geometries etc. for the changes.
+  void UpdateScrollable();
 
   void SetNonFastScrollableRegion(const Region& region) {
     non_fast_scrollable_region_ = region;
@@ -474,12 +467,10 @@ class CC_EXPORT LayerImpl {
 
   gfx::Vector2dF offset_to_transform_parent_;
 
-  // Size of the scroll container that this layer scrolls in.
+  // These fields are copies of |container_bounds| and |scrollable| fields in
+  // ScrollNode, and are updated in UpdateScrollable(). The copy is for change
+  // detection only.
   gfx::Size scroll_container_bounds_;
-
-  // Indicates that this layer will have a scroll property node and that this
-  // layer's bounds correspond to the scroll node's bounds (both |bounds| and
-  // |scroll_container_bounds|).
   bool scrollable_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.

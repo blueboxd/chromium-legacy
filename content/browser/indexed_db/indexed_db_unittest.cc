@@ -99,7 +99,8 @@ class IndexedDBTest : public testing::Test {
             /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
             base::DefaultClock::GetInstance(),
-            mojo::PendingRemote<storage::mojom::BlobStorageContext>(),
+            /*blob_storage_context=*/mojo::NullRemote(),
+            /*native_file_system_context=*/mojo::NullRemote(),
             base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());

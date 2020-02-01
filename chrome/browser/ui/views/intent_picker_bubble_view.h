@@ -91,9 +91,6 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   static void CloseCurrentBubble();
 
   // LocationBarBubbleDelegateView overrides:
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
   bool ShouldShowCloseButton() const override;
 
   PageActionIconType icon_type() const { return icon_type_; }
@@ -144,6 +141,10 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   void OnKeyEvent(ui::KeyEvent* event) override;
 
   void Initialize();
+
+  void OnDialogAccepted();
+  void OnDialogCancelled();
+  void OnDialogClosed();
 
   // Retrieves the IntentPickerLabelButton* contained at position |index| from
   // the internal ScrollView.

@@ -118,7 +118,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
       <div id="delete" role="button">Delete</div>
       <script>
         document.getElementById('delete').addEventListener('click', function() {
-          var d = document.getElementById('disappearing');
+          let d = document.getElementById('disappearing');
           d.parentElement.removeChild(d);
           document.getElementById('live').innerText = 'Deleted';
           document.body.offsetTop
@@ -415,7 +415,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_UseEditableState', function() {
           editable.focus();
         });
 
-        var editable = rootNode.find({role: RoleType.TEXT_FIELD});
+        const editable = rootNode.find({role: RoleType.TEXT_FIELD});
         const nonEditable = rootNode.find({role: RoleType.PARAGRAPH});
 
         this.listenOnce(nonEditable, 'focus', assertDoesntExist);
@@ -539,7 +539,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NoisySlider', function() {
     <div id="slider" tabindex=0 role="slider"></div>
     <script>
       function update() {
-        var s = document.getElementById('slider');
+        let s = document.getElementById('slider');
         s.setAttribute('aria-valuetext', '');
         s.setAttribute('aria-valuetext', 'noisy');
         setTimeout(update, 500);
@@ -567,8 +567,8 @@ TEST_F('ChromeVoxBackgroundTest', 'Checkbox', function() {
       `
     <div id="go" role="checkbox">go</div>
     <script>
-      var go = document.getElementById('go');
-      var isChecked = true;
+      let go = document.getElementById('go');
+      let isChecked = true;
       go.addEventListener('click', function(e) {
         if (isChecked) {
           go.setAttribute('aria-checked', true);
@@ -1495,13 +1495,13 @@ TEST_F(
       <div id="1" role="treeitem"></div>
       <div id="2" role="treeitem"></div>
     <script>
-      var alt = false;
-      var active = document.getElementById('active');
-      var one = document.getElementById('1');
-      var two = document.getElementById('2');
+      let alt = false;
+      let active = document.getElementById('active');
+      let one = document.getElementById('1');
+      let two = document.getElementById('2');
       active.addEventListener('click', function() {
-        var sel = alt ? one : two;
-        var unsel = alt ? two : one;
+        let sel = alt ? one : two;
+        let unsel = alt ? two : one;
         active.setAttribute('aria-activedescendant', sel.id);
         sel.setAttribute('aria-selected', true);
         unsel.setAttribute('aria-selected', false);
@@ -1856,10 +1856,10 @@ TEST_F('ChromeVoxBackgroundTest', 'ReinsertedNodeRecovery', function() {
     </div>
     <button id="end">end</button>
     <script>
-      var div =       document.body.firstElementChild;
-      var start =       document.getElementById('start');
+      let div =       document.body.firstElementChild;
+      let start =       document.getElementById('start');
       document.getElementById('hot').addEventListener('focus', (evt) => {
-        var hot = evt.target;
+        let hot = evt.target;
         hot.remove();
         div.insertAfter(hot, start);
       });
@@ -2027,8 +2027,8 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_PopUpButtonSetSize', function() {
     </select>
     </div>
     <script>
-      var button = document.getElementById('button');
-      var expanded = false;
+      let button = document.getElementById('button');
+      let expanded = false;
       button.addEventListener('click', function(e) {
         if (expanded) {
           button.setAttribute('aria-expanded', false);

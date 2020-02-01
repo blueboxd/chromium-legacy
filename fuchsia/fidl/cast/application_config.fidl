@@ -4,6 +4,7 @@
 
 library chromium.cast;
 
+using fuchsia.ui.gfx;
 using fuchsia.web;
 
 /// Describes the configuration under which a Cast application should run.
@@ -31,6 +32,9 @@ table ApplicationConfig {
 
   /// The URL of the agent to handle this application.
   7: string agent_url;
+
+  /// Simulates a different resolution for rendering.
+  8: fuchsia.ui.gfx.vec2 force_content_dimensions;
 };
 
 /// Service interface for working with application configurations.

@@ -138,7 +138,7 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
   if (!web_plugin_)
     return;
 
-  web_plugin_->UpdateAllLifecyclePhases(DocumentUpdateReason::kOther);
+  web_plugin_->UpdateAllLifecyclePhases(DocumentUpdateReason::kPlugin);
 }
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,

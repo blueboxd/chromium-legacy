@@ -16,12 +16,12 @@
 #include "weblayer/browser/java/jni/TopControlsContainerView_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 
 namespace weblayer {
 
 TopControlsContainerView::TopControlsContainerView(
-    const base::android::JavaParamRef<jobject>&
-        java_top_controls_container_view,
+    const JavaParamRef<jobject>& java_top_controls_container_view,
     ContentViewRenderView* content_view_render_view)
     : java_top_controls_container_view_(java_top_controls_container_view),
       content_view_render_view_(content_view_render_view) {
@@ -36,7 +36,7 @@ int TopControlsContainerView::GetTopControlsHeight() {
 
 void TopControlsContainerView::CreateTopControlsLayer(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& caller,
     int id) {
   top_controls_resource_id_ = id;
   top_controls_layer_ = cc::UIResourceLayer::Create();
@@ -53,19 +53,19 @@ void TopControlsContainerView::CreateTopControlsLayer(
 
 void TopControlsContainerView::DeleteTopControlsContainerView(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+    const JavaParamRef<jobject>& caller) {
   delete this;
 }
 
 void TopControlsContainerView::DeleteTopControlsLayer(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+    const JavaParamRef<jobject>& caller) {
   top_controls_layer_.reset();
 }
 
 void TopControlsContainerView::SetTopControlsOffset(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& caller,
     int top_controls_offset_y,
     int top_content_offset_y) {
   // |top_controls_layer_| may not be created if the top controls view has 0
@@ -80,7 +80,7 @@ void TopControlsContainerView::SetTopControlsOffset(
 
 void TopControlsContainerView::SetTopControlsSize(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& caller,
     int width,
     int height) {
   DCHECK(top_controls_layer_);
@@ -89,7 +89,7 @@ void TopControlsContainerView::SetTopControlsSize(
 
 void TopControlsContainerView::UpdateTopControlsResource(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+    const JavaParamRef<jobject>& caller) {
   DCHECK(top_controls_layer_);
   ui::ResourceManager& resource_manager =
       content_view_render_view_->compositor()->GetResourceManager();
@@ -102,8 +102,8 @@ void TopControlsContainerView::UpdateTopControlsResource(
 
 void TopControlsContainerView::SetWebContents(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller,
-    const base::android::JavaParamRef<jobject>& web_contents) {
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& web_contents) {
   Observe(content::WebContents::FromJavaWebContents(web_contents));
 }
 
@@ -119,8 +119,7 @@ void TopControlsContainerView::DidToggleFullscreenModeForTab(
 
 static jlong JNI_TopControlsContainerView_CreateTopControlsContainerView(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>&
-        java_top_controls_container_view,
+    const JavaParamRef<jobject>& java_top_controls_container_view,
     jlong native_content_view_render_view) {
   return reinterpret_cast<jlong>(
       new TopControlsContainerView(java_top_controls_container_view,

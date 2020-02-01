@@ -719,6 +719,21 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
   EmitKeywordHistogram(entry_method);
 }
 
+void OmniboxEditModel::ExecutePedal(const AutocompleteMatch& match,
+                                    base::TimeTicks match_selection_timestamp) {
+  CHECK(match.pedal);
+  {
+    // This block resets omnibox to unedited state and closes popup, which
+    // may not seem necessary in cases of navigation but makes sense for
+    // taking Pedal actions in general.
+    base::AutoReset<bool> tmp(&in_revert_, true);
+    view_->RevertAll();
+  }
+  OmniboxPedal::ExecutionContext context(*client_, *controller_,
+                                         match_selection_timestamp);
+  match.pedal->Execute(context);
+}
+
 void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  WindowOpenDisposition disposition,
                                  const GURL& alternate_nav_url,
@@ -731,17 +746,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   autocomplete_controller()->UpdateMatchDestinationURLWithQueryFormulationTime(
       elapsed_time_since_user_first_modified_omnibox, &match);
 
-  if (match.pedal) {
-    {
-      // This block resets omnibox to unedited state and closes popup, which
-      // may not seem necessary in cases of navigation but makes sense for
-      // taking Pedal actions in general.
-      base::AutoReset<bool> tmp(&in_revert_, true);
-      view_->RevertAll();
-    }
-    OmniboxPedal::ExecutionContext context(*client_, *controller_,
-                                           match_selection_timestamp);
-    match.pedal->Execute(context);
+  // Matches with |pedal| may be opened normally or executed, but when a match
+  // is a dedicated Pedal suggestion, it should always be executed. This only
+  // happens when the button row feature is disabled.
+  if (match.pedal && !OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    ExecutePedal(match, match_selection_timestamp);
     return;
   }
 

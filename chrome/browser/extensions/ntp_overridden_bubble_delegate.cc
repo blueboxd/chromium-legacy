@@ -23,10 +23,6 @@
 
 namespace {
 
-// Whether the user has been notified about extension overriding the new tab
-// page.
-const char kNtpBubbleAcknowledged[] = "ack_ntp_bubble";
-
 // Whether existing NTP extensions have been automatically acknowledged.
 const char kDidAcknowledgeExistingNtpExtensions[] =
     "ack_existing_ntp_extensions";
@@ -47,6 +43,9 @@ base::LazyInstance<std::set<std::pair<Profile*, std::string>>>::Leaky
 }  // namespace
 
 namespace extensions {
+
+const char NtpOverriddenBubbleDelegate::kNtpBubbleAcknowledged[] =
+    "ack_ntp_bubble";
 
 NtpOverriddenBubbleDelegate::NtpOverriddenBubbleDelegate(Profile* profile)
     : extensions::ExtensionMessageBubbleController::Delegate(profile),

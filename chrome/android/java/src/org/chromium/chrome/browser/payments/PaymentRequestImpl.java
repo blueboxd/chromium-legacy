@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.autofill.prefeditor.Completable;
 import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
@@ -90,8 +89,9 @@ import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.payments.mojom.PaymentShippingType;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.url.Origin;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -410,6 +410,7 @@ public class PaymentRequestImpl
     private final WebContents mWebContents;
     private final String mTopLevelOrigin;
     private final String mPaymentRequestOrigin;
+    private final Origin mPaymentRequestSecurityOrigin;
     private final String mMerchantName;
     @Nullable
     private final byte[][] mCertificateChain;
@@ -581,6 +582,7 @@ public class PaymentRequestImpl
 
         mPaymentRequestOrigin =
                 UrlFormatter.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
+        mPaymentRequestSecurityOrigin = mRenderFrameHost.getLastCommittedOrigin();
         mTopLevelOrigin =
                 UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl());
 
@@ -1303,10 +1305,11 @@ public class PaymentRequestImpl
     private boolean openPaymentHandlerWindowInternal(URI url) {
         assert mInvokedPaymentInstrument != null;
         assert mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp;
-        assert Origin.create(url.toString())
-                .equals(Origin.create(((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
-                                              .getScope()
-                                              .toString()));
+        assert org.chromium.chrome.browser.browserservices.Origin.create(url.toString())
+                .equals(org.chromium.chrome.browser.browserservices.Origin.create(
+                        ((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
+                                .getScope()
+                                .toString()));
 
         if (mPaymentHandlerUi != null) return false;
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
@@ -2524,6 +2527,12 @@ public class PaymentRequestImpl
     @Override
     public String getPaymentRequestOrigin() {
         return mPaymentRequestOrigin;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Origin getPaymentRequestSecurityOrigin() {
+        return mPaymentRequestSecurityOrigin;
     }
 
     // PaymentAppFactoryParams implementation.

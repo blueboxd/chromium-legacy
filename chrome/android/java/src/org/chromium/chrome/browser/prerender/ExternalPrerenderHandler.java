@@ -9,7 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Pair;
-import android.view.WindowManager;
+import android.view.Display;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.display.DisplayAndroidManager;
 
 /**
  * A handler class for prerender requests coming from  other applications.
@@ -119,8 +120,8 @@ public class ExternalPrerenderHandler {
         // The bounds rectangle includes the bottom bar and the custom tabs bar as well.
         Rect screenBounds = new Rect();
         Point screenSize = new Point();
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        wm.getDefaultDisplay().getSize(screenSize);
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(context);
+        display.getSize(screenSize);
         Resources resources = context.getResources();
         int statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android");
         try {

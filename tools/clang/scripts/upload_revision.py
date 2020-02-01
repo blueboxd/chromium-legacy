@@ -26,6 +26,7 @@ THIS_DIR = os.path.dirname(__file__)
 UPDATE_PY_PATH = os.path.join(THIS_DIR, "update.py")
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
 
+# Keep lines in here at <= 72 columns, else they wrap in gerrit.
 COMMIT_FOOTER = \
 '''
 
@@ -38,11 +39,11 @@ Cq-Include-Trybots: chromium/try:linux-chromeos-dbg,win-asan
 Cq-Include-Trybots: chromium/try:chromeos-amd64-generic-cfi-thin-lto-rel
 Cq-Include-Trybots: chromium/try:linux_chromium_compile_dbg_32_ng
 Cq-Include-Trybots: chromium/try:win7-rel,win-angle-deqp-rel-32
-Cq-Include-Trybots: chromium/try:win-angle-deqp-rel-64,dawn-win10-x86-deps-rel
+Cq-Include-Trybots: chromium/try:win-angle-deqp-rel-64
+Cq-Include-Trybots: chromium/try:dawn-win10-x86-deps-rel
+Cq-Include-Trybots: chrome/try:iphone-device,ipad-device
+Cq-Include-Trybots: chrome/try:linux-chromeos-chrome
 '''
-# TODO(https://crbug.com/1047347): Add:
-# Cq-Include-Trybots: chrome/try:iphone-device,ipad-device,linux-chromeos-chrome
-# and remove that from updating_clang.md
 
 is_win = sys.platform.startswith('win32')
 

@@ -290,13 +290,11 @@ TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
       ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
-      &mock_observer);
-  ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
+  ss_leveldb1->AddObserver(mock_observer.Bind());
   ss_leveldb1.FlushForTesting();
 
   base::RunLoop loop;
-  EXPECT_CALL(mock_observer, AllDeleted("\n"))
+  EXPECT_CALL(mock_observer, AllDeleted(true, "\n"))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
   ss_leveldb_impl1->NotifyObserversAllDeleted();
   loop.Run();
@@ -343,9 +341,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // any changes (see SessionStorageAreaImpl class comment about when observers
   // are called).
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
-      &mock_observer);
-  ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
+  ss_leveldb1->AddObserver(mock_observer.Bind());
 
   // The |DeleteAll| call will fork the maps, and the observer should see a
   // DeleteAll.

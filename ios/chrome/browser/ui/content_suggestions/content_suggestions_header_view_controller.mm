@@ -60,6 +60,7 @@ using base::UserMetricsAction;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UIButton* accessibilityButton;
 @property(nonatomic, strong) UIButton* identityDiscButton;
+@property(nonatomic, strong) UIButton* fakeTapButton;
 @property(nonatomic, strong) NSLayoutConstraint* doodleHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleTopMarginConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* fakeOmniboxWidthConstraint;
@@ -114,6 +115,10 @@ using base::UserMetricsAction;
         if (IsSplitToolbarMode()) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
+        // Fake Tap button only needs to work in portrait. Disable the button
+        // in landscape because in landscape the button covers logoView (which
+        // need to handle taps).
+        self.fakeTapButton.userInteractionEnabled = IsSplitToolbarMode();
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
@@ -214,10 +219,11 @@ using base::UserMetricsAction;
   if (!self.headerView) {
     self.headerView =
         base::mac::ObjCCastStrict<ContentSuggestionsHeaderView>(self.view);
-    [self addFakeTapView];
     [self addFakeOmnibox];
 
     [self.headerView addSubview:self.logoVendor.view];
+    // Fake Tap View has identity disc, which should render above the doodle.
+    [self addFakeTapView];
     [self.headerView addSubview:self.fakeOmnibox];
     self.logoVendor.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.fakeOmnibox.translatesAutoresizingMaskIntoConstraints = NO;
@@ -302,14 +308,25 @@ using base::UserMetricsAction;
   }
 }
 
+// On NTP in split toolbar mode the omnibox has different location (in the
+// middle of the screen), but the users have muscle memory and still tap on area
+// where omnibox is normally placed (the top area of NTP). Fake Tap Button is
+// located in the same position where omnibox is normally placed and focuses the
+// omnibox when tapped. Fake Tap Button user interactions are only enabled in
+// split toolbar mode.
 - (void)addFakeTapView {
-  UIButton* fakeTapButton = [[UIButton alloc] init];
-  fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
-  fakeTapButton.isAccessibilityElement = NO;
-  [self.headerView addToolbarView:fakeTapButton];
-  [fakeTapButton addTarget:self
-                    action:@selector(fakeboxTapped)
-          forControlEvents:UIControlEventTouchUpInside];
+  UIView* toolbar = [[UIView alloc] init];
+  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  self.fakeTapButton = [[UIButton alloc] init];
+  self.fakeTapButton.userInteractionEnabled = IsSplitToolbarMode();
+  self.fakeTapButton.isAccessibilityElement = NO;
+  self.fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [toolbar addSubview:self.fakeTapButton];
+  [self.headerView addToolbarView:toolbar];
+  [self.fakeTapButton addTarget:self
+                         action:@selector(fakeboxTapped)
+               forControlEvents:UIControlEventTouchUpInside];
+  AddSameConstraints(self.fakeTapButton, toolbar);
 }
 
 - (void)addIdentityDisc {

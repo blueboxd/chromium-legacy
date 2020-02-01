@@ -108,11 +108,10 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManager::Observer {
 
 class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
  protected:
-  ArcSessionManagerTest() {}
+  ArcSessionManagerTest() = default;
+  ~ArcSessionManagerTest() override = default;
 
   // MixinBasedInProcessBrowserTest:
-  ~ArcSessionManagerTest() override {}
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
@@ -150,7 +149,7 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     // Seed account info properly.
-    identity_test_env()->MakePrimaryAccountAvailable(kFakeUserName);
+    identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(kFakeUserName);
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -216,6 +215,10 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
     return identity_test_environment_adaptor_->identity_test_env();
   }
 
+  signin::IdentityManager* identity_manager() {
+    return identity_test_env()->identity_manager();
+  }
+
  private:
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -230,7 +233,8 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {
   EnableArc();
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      kUnmanagedAuthToken, base::Time::Max());
+      identity_manager()->GetUnconsentedPrimaryAccountId(), kUnmanagedAuthToken,
+      base::Time::Max());
   ASSERT_EQ(ArcSessionManager::State::ACTIVE,
             ArcSessionManager::Get()->state());
 }
@@ -255,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   EnableArc();
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      kManagedAuthToken, base::Time::Max());
+      identity_manager()->GetUnconsentedPrimaryAccountId(), kManagedAuthToken,
+      base::Time::Max());
   ArcPlayStoreDisabledWaiter().Wait();
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }

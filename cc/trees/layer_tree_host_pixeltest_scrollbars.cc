@@ -78,7 +78,9 @@ class PaintedScrollbar : public FakeScrollbar {
 
 LayerTreeTest::RendererType const kRendererTypes[] = {
     LayerTreeTest::RENDERER_GL,
+#if defined(GL_ON_PLATFORM)
     LayerTreeTest::RENDERER_SKIA_GL,
+#endif
 #if defined(ENABLE_CC_VULKAN_TESTS)
     LayerTreeTest::RENDERER_SKIA_VK,
 #endif

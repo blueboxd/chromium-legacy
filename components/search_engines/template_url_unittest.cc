@@ -1741,7 +1741,7 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the current common case, which uses no home country or previous
   // event.
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      2, 1, std::string(), 0, 0, false);
+      2, 1, std::string(), 0, 0, false, std::string(), std::string());
   search_terms_args.contextual_search_params = params;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1754,7 +1754,7 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the home country and non-zero event data case.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 2, "CH", 1657713458, 5, false);
+          2, 2, "CH", 1657713458, 5, false, std::string(), std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
 
@@ -1770,13 +1770,24 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test exact-search.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 1, std::string(), 0, 0, true);
+          2, 1, std::string(), 0, 0, true, std::string(), std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
-
   // Find our param.
   size_t found_pos = result.find("ctxsl_exact=1");
   EXPECT_NE(found_pos, std::string::npos);
+
+  // Test source and target languages.
+  search_terms_args.contextual_search_params =
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
+          2, 1, std::string(), 0, 0, true, "es", "de");
+  result =
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
+  // Find our params.
+  size_t source_pos = result.find("tlitesl=es");
+  EXPECT_NE(source_pos, std::string::npos);
+  size_t target_pos = result.find("tlitetl=de");
+  EXPECT_NE(target_pos, std::string::npos);
 }
 
 TEST_F(TemplateURLTest, GenerateKeyword) {

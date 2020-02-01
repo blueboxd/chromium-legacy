@@ -32,7 +32,7 @@ BluetoothBrailleDisplayListener = class {
 /**
  * Manages interaction with the bluetooth and braille subsystems in Chrome.
  * A caller can use this class by doing:
- * var manager = new BluetoothBrailleDisplayManager();
+ * let manager = new BluetoothBrailleDisplayManager();
  * manager.addListener(listenerObject); // listenerObject receives updates on
  *                                     // important events in bluetooth.
  * manager.start();  // Starts bluetooth discovery.

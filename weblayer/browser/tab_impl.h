@@ -188,6 +188,7 @@ class TabImpl : public Tab,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
+  void DidChangeVisibleSecurityState() override;
 
   // find_in_page::FindResultObserver:
   void OnFindResultAvailable(content::WebContents* web_contents) override;

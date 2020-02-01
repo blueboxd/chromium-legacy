@@ -543,8 +543,11 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   if (quic::VersionUsesHttp3(version_.transport_version)) {
     MaybeAddHttp3SettingsFrames();
 
-    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-    AddQuicStreamFrame(2, false, priority_data);
+    if (priority != 1) {
+      std::string priority_data =
+          GenerateHttp3PriorityData(priority, stream_id);
+      AddQuicStreamFrame(2, false, priority_data);
+    }
 
     std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
                                           spdy_headers_frame_length);
@@ -590,8 +593,11 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
   if (quic::VersionUsesHttp3(version_.transport_version)) {
     MaybeAddHttp3SettingsFrames();
 
-    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-    AddQuicStreamFrame(2, false, priority_data);
+    if (priority != 1) {
+      std::string priority_data =
+          GenerateHttp3PriorityData(priority, stream_id);
+      AddQuicStreamFrame(2, false, priority_data);
+    }
 
     std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
                                           spdy_headers_frame_length);
@@ -1269,6 +1275,8 @@ std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
       quic::kDefaultQpackMaxDynamicTableCapacity;
   settings.values[quic::SETTINGS_QPACK_BLOCKED_STREAMS] =
       quic::kDefaultMaximumBlockedStreams;
+  // Greased setting.
+  settings.values[0x40] = 20;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       quic::HttpEncoder::SerializeSettingsFrame(settings, &buffer);

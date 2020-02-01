@@ -62,11 +62,14 @@ class TransportHoverListModel2 : public HoverListModel {
     virtual void OnTransportSelected(AuthenticatorTransport transport) = 0;
     // Called when the user selects the item to pair a new phone.
     virtual void StartPhonePairing() = 0;
+    // Called to trigger the native Windows API.
+    virtual void StartWinNativeApi() = 0;
   };
 
   explicit TransportHoverListModel2(
       std::vector<AuthenticatorTransport> transport_list,
       bool cable_extension_provided,
+      bool win_native_api_enabled,
       Delegate* delegate);
   ~TransportHoverListModel2() override;
 
@@ -86,6 +89,7 @@ class TransportHoverListModel2 : public HoverListModel {
  private:
   std::vector<AuthenticatorTransport> transport_list_;
   const bool cable_extension_provided_;
+  const bool win_native_api_enabled_;
   Delegate* const delegate_;  // Weak, may be nullptr.
 
   DISALLOW_COPY_AND_ASSIGN(TransportHoverListModel2);

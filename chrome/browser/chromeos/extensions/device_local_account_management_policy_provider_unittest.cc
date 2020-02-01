@@ -589,50 +589,56 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   }
 }
 
-TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
-  DeviceLocalAccountManagementPolicyProvider
-      provider(policy::DeviceLocalAccount::TYPE_KIOSK_APP);
+TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSessions) {
+  std::vector<policy::DeviceLocalAccount::Type> types = {
+      policy::DeviceLocalAccount::TYPE_KIOSK_APP,
+      policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP};
 
-  // Verify that a platform app can be installed.
-  scoped_refptr<const extensions::Extension> extension = CreatePlatformApp();
-  ASSERT_TRUE(extension.get());
-  base::string16 error;
-  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(base::string16(), error);
-  error.clear();
+  for (auto type : types) {
+    LOG(INFO) << "Testing device local account type = "<< static_cast<int>(type);
+    DeviceLocalAccountManagementPolicyProvider provider(type);
 
-  // Verify that an extension whose location has been whitelisted for use in
-  // other types of device-local accounts cannot be installed in a single-app
-  // kiosk session.
-  extension = CreateExternalComponentExtension();
-  ASSERT_TRUE(extension.get());
-  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(base::string16(), error);
-  error.clear();
+    // Verify that a platform app can be installed.
+    scoped_refptr<const extensions::Extension> extension = CreatePlatformApp();
+    ASSERT_TRUE(extension.get());
+    base::string16 error;
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
 
-  extension = CreateComponentExtension();
-  ASSERT_TRUE(extension.get());
-  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(base::string16(), error);
-  error.clear();
+    // Verify that an extension whose location has been whitelisted for use in
+    // other types of device-local accounts cannot be installed in a single-app
+    // kiosk session.
+    extension = CreateExternalComponentExtension();
+    ASSERT_TRUE(extension.get());
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
 
-  // Verify that an extension whose type has been whitelisted for use in other
-  // types of device-local accounts cannot be installed in a single-app kiosk
-  // session.
-  extension = CreateHostedApp();
-  ASSERT_TRUE(extension.get());
-  EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_NE(base::string16(), error);
-  error.clear();
+    extension = CreateComponentExtension();
+    ASSERT_TRUE(extension.get());
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
 
-  // Verify that an extension whose ID has been whitelisted for use in other
-  // types of device-local accounts cannot be installed in a single-app kiosk
-  // session.
-  extension = CreateRegularExtension(kWhitelistedId);
-  ASSERT_TRUE(extension.get());
-  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(base::string16(), error);
-  error.clear();
+    // Verify that an extension whose type has been whitelisted for use in other
+    // types of device-local accounts cannot be installed in a single-app kiosk
+    // session.
+    extension = CreateHostedApp();
+    ASSERT_TRUE(extension.get());
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+
+    // Verify that an extension whose ID has been whitelisted for use in other
+    // types of device-local accounts cannot be installed in a single-app kiosk
+    // session.
+    extension = CreateRegularExtension(kWhitelistedId);
+    ASSERT_TRUE(extension.get());
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
 }
 
 TEST(DeviceLocalAccountManagementPolicyProviderTest, IsWhitelisted) {

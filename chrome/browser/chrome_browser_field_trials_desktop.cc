@@ -40,7 +40,6 @@
 #include "components/browser_watcher/stability_data_names.h"
 #include "components/browser_watcher/stability_debugging.h"
 #include "components/browser_watcher/stability_metrics.h"
-#include "components/browser_watcher/stability_paths.h"
 #include "components/browser_watcher/stability_report.pb.h"
 #endif
 
@@ -107,7 +106,7 @@ void RecordChromeModuleInfo(
   global_tracker->RecordModuleInfo(module);
 }
 
-void SetupStabilityDebugging() {
+void SetupExtendedCrashReporting() {
   if (!base::FeatureList::IsEnabled(
           browser_watcher::kExtendedCrashReportingFeature)) {
     return;
@@ -119,43 +118,14 @@ void SetupStabilityDebugging() {
   const int kStackDepth = 4;
   const uint64_t kAllocatorId = 0;
 
-  // Check whether activities are to be recorded persistently or only in-memory.
-  const bool in_memory_only = base::GetFieldTrialParamByFeatureAsBool(
-      browser_watcher::kExtendedCrashReportingFeature,
-      browser_watcher::kInMemoryOnlyParam, true);
-  if (in_memory_only) {
-    base::debug::GlobalActivityTracker::CreateWithAllocator(
-        std::make_unique<base::LocalPersistentMemoryAllocator>(
-            kMemorySize, kAllocatorId,
-            browser_watcher::kExtendedCrashReportingFeature.name),
-        kStackDepth, 0);
-  } else {
-    // Ensure the stability directory exists and determine the stability file's
-    // path.
-    base::FilePath user_data_dir;
-    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
-        !base::CreateDirectory(
-            browser_watcher::GetStabilityDir(user_data_dir))) {
-      return;
-    }
-    browser_watcher::LogStabilityRecordEvent(
-        browser_watcher::StabilityRecordEvent::kStabilityDirectoryExists);
-
-    base::FilePath stability_file;
-    if (!browser_watcher::GetStabilityFileForProcess(
-            base::Process::Current(), user_data_dir, &stability_file)) {
-      return;
-    }
-    browser_watcher::LogStabilityRecordEvent(
-        browser_watcher::StabilityRecordEvent::kGotStabilityPath);
-
-    base::debug::GlobalActivityTracker::CreateWithFile(
-        stability_file, kMemorySize, kAllocatorId, "", kStackDepth);
-  }
+  base::debug::GlobalActivityTracker::CreateWithAllocator(
+      std::make_unique<base::LocalPersistentMemoryAllocator>(
+          kMemorySize, kAllocatorId,
+          browser_watcher::kExtendedCrashReportingFeature.name),
+      kStackDepth, 0);
 
   // Track code activities (such as posting task, blocking on locks, and
   // joining threads) that can cause hanging threads and general instability
-
   base::debug::GlobalActivityTracker* global_tracker =
       base::debug::GlobalActivityTracker::Get();
   if (!global_tracker)
@@ -167,6 +137,9 @@ void SetupStabilityDebugging() {
   auto* allocator = global_tracker->allocator();
   static browser_watcher::ActivityTrackerAnnotation activity_tracker_annotation(
       allocator->data(), allocator->size());
+
+  // Record the main DLL module info for easier symbolization.
+  RecordChromeModuleInfo(global_tracker);
 
   browser_watcher::LogStabilityRecordEvent(
       browser_watcher::StabilityRecordEvent::kGotTracker);
@@ -197,32 +170,6 @@ void SetupStabilityDebugging() {
   proc_data.SetInt(browser_watcher::kStabilityProcessType,
                    browser_watcher::ProcessState::BROWSER_PROCESS);
 
-  if (!in_memory_only) {
-    // Record information about chrome's module. We want this to be done early.
-    RecordChromeModuleInfo(global_tracker);
-
-    // Trigger a flush of the memory mapped file to maximize the chances of
-    // having a minimal amount of content in the stability file, even if
-    // the system crashes or loses power. Even running in the background,
-    // this is a potentially expensive operation, so done under an experiment
-    // to allow measuring the performance effects, if any.
-    const bool should_flush = base::GetFieldTrialParamByFeatureAsBool(
-        browser_watcher::kExtendedCrashReportingFeature,
-        browser_watcher::kInitFlushParam, false);
-    if (should_flush) {
-      base::PostTask(
-          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-          base::BindOnce(&base::PersistentMemoryAllocator::Flush,
-                         base::Unretained(global_tracker->allocator()), true));
-    }
-
-    // Store a copy of the system profile in this allocator. There will be some
-    // delay before this gets populated, perhaps as much as a minute. Because
-    // of this, there is no need to flush it here.
-    metrics::GlobalPersistentSystemProfile::GetInstance()
-        ->RegisterPersistentAllocator(global_tracker->allocator());
-  }
-
   browser_watcher::RegisterStabilityVEH();
 }
 #endif  // defined(OS_WIN)
@@ -233,7 +180,7 @@ void SetupDesktopFieldTrials() {
   prerender::ConfigureNoStatePrefetch();
   SetupStunProbeTrial();
 #if defined(OS_WIN)
-  SetupStabilityDebugging();
+  SetupExtendedCrashReporting();
 #endif  // defined(OS_WIN)
 }
 

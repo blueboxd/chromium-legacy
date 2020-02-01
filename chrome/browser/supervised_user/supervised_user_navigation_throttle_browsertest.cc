@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
+#include "chrome/browser/supervised_user/navigation_finished_waiter.h"
 #include "chrome/browser/supervised_user/permission_request_creator_mock.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
@@ -45,47 +46,6 @@ static const char* kExampleHost = "www.example.com";
 static const char* kExampleHost2 = "www.example2.com";
 static const char* kIframeHost1 = "www.iframe1.com";
 static const char* kIframeHost2 = "www.iframe2.com";
-
-// Helper class to wait for a particular navigation in a particular render
-// frame.
-class NavigationFinishedWaiter : public content::WebContentsObserver {
- public:
-  NavigationFinishedWaiter(WebContents* web_contents,
-                           int frame_id,
-                           const GURL& url)
-      : content::WebContentsObserver(web_contents),
-        frame_id_(frame_id),
-        url_(url) {}
-
-  ~NavigationFinishedWaiter() override = default;
-
-  void Wait() {
-    if (did_finish_)
-      return;
-    run_loop_.Run();
-  }
-
-  // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
- private:
-  int frame_id_;
-  GURL url_;
-  bool did_finish_ = false;
-  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationFinishedWaiter);
-};
-
-void NavigationFinishedWaiter::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->GetFrameTreeNodeId() != frame_id_ ||
-      navigation_handle->GetURL() != url_)
-    return;
-  did_finish_ = true;
-  run_loop_.Quit();
-}
 
 // Class to keep track of iframes created and destroyed.
 class RenderFrameTracker : public content::WebContentsObserver {

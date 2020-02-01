@@ -41,8 +41,6 @@ const base::Feature kEnableSuggestedFiles{"EnableSuggestedFiles",
 // Assistant search.
 const base::Feature kEnableAssistantSearch{"EnableEmbeddedAssistantUI",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableAssistantLauncherUI{
-    "EnableAssistantLauncherUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -115,9 +113,9 @@ bool IsAssistantSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableAssistantSearch);
 }
 
+// TODO(b/148080975): Remove.
 bool IsAssistantLauncherUIEnabled() {
-  return IsAssistantSearchEnabled() ||
-         base::FeatureList::IsEnabled(kEnableAssistantLauncherUI);
+  return true;
 }
 
 bool IsAppGridGhostEnabled() {

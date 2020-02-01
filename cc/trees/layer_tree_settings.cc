@@ -26,7 +26,10 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       main_frame_before_activation_enabled;
   scheduler_settings.using_synchronous_renderer_compositor =
       using_synchronous_renderer_compositor;
-  scheduler_settings.enable_latency_recovery = enable_latency_recovery;
+  scheduler_settings.enable_impl_latency_recovery =
+      enable_impl_latency_recovery;
+  scheduler_settings.enable_main_latency_recovery =
+      enable_main_latency_recovery;
   scheduler_settings.wait_for_all_pipeline_stages_before_draw =
       wait_for_all_pipeline_stages_before_draw;
   return scheduler_settings;

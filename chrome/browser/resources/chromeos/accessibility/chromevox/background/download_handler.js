@@ -94,12 +94,12 @@ DownloadHandler.init = function() {
           /** @type {!chrome.downloads.DownloadItem} */ (item));
 
       // Speech and braille output.
-      var optSubs = [DownloadHandler.downloadItemData_[id].fileName];
+      const optSubs = [DownloadHandler.downloadItemData_[id].fileName];
       DownloadHandler.speechAndBrailleOutput(
           'download_started', QueueMode.FLUSH, optSubs);
     } else if (state) {
       const currentState = state.current;
-      var msgId = '';
+      let msgId = '';
       // Only give notification for COMPLETE and INTERRUPTED.
       // IN_PROGRESS notifications are given by notifyProgress function.
       if (currentState === chrome.downloads.State.COMPLETE) {
@@ -110,15 +110,15 @@ DownloadHandler.init = function() {
         return;
       }
 
-      var optSubs = [storedItem.fileName];
+      const optSubs = [storedItem.fileName];
       clearInterval(storedItem.notifyProgressId);
       delete DownloadHandler.downloadItemData_[id];
       // Speech and braille output.
       DownloadHandler.speechAndBrailleOutput(msgId, QueueMode.FLUSH, optSubs);
     } else if (paused) {
       // Will be either resumed or paused.
-      var msgId = 'download_resumed';
-      var optSubs = [storedItem.fileName];
+      let msgId = 'download_resumed';
+      const optSubs = [storedItem.fileName];
       if (paused.current === true) {
         // Download paused.
         msgId = 'download_paused';

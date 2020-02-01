@@ -2677,34 +2677,28 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   const VideoPixelFormat pixel_format = g_env->test_streams_[0]->pixel_format;
   size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   CHECK_LE(num_planes, 3u);
-  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
-      aligned_data[3];
   std::vector<ColorPlaneLayout> planes(num_planes);
-  std::vector<size_t> buffer_sizes(num_planes);
-  uint8_t* frame_data[3] = {};
-  // This VideoFrame is dummy. Each plane is stored in a separate buffer and
-  // each buffer size is the same as the plane size.
+  size_t offset = 0;
   for (size_t i = 0; i < num_planes; i++) {
-    size_t plane_size =
-        VideoFrame::PlaneSize(pixel_format, i, input_coded_size).GetArea();
-    aligned_data[i].resize(plane_size);
-    frame_data[i] = reinterpret_cast<uint8_t*>(aligned_data[i].data());
+    size_t plane_size = base::bits::Align(
+        VideoFrame::PlaneSize(pixel_format, i, input_coded_size).GetArea(),
+        kPlatformBufferAlignment);
+
     planes[i].stride =
         VideoFrame::RowBytes(i, pixel_format, input_coded_size.width());
-    planes[i].offset = 0;
+    planes[i].offset = offset;
     planes[i].size = plane_size;
+    offset += plane_size;
   }
-
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, input_coded_size, std::move(planes));
+      pixel_format, input_coded_size, std::move(planes),
+      kPlatformBufferAlignment);
   ASSERT_TRUE(layout);
-
-  scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::WrapExternalYuvDataWithLayout(
-          *layout, gfx::Rect(input_coded_size), input_coded_size, frame_data[0],
-          frame_data[1], frame_data[2],
-          base::TimeDelta().FromMilliseconds(
-              base::Time::kMillisecondsPerSecond / fps_));
+  scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrameWithLayout(
+      *layout, gfx::Rect(input_coded_size), input_coded_size,
+      base::TimeDelta().FromMilliseconds(base::Time::kMillisecondsPerSecond /
+                                         fps_),
+      true);
 
   encoder_->Encode(video_frame, false);
 }

@@ -463,13 +463,13 @@ let SerializedSpan;
  * Maps type names to serialization info objects.
  * @type {Map<string, SerializeInfo>}
  */
-var serializableSpansByName = new Map();
+const serializableSpansByName = new Map();
 
 /**
  * Maps constructors to serialization info objects.
  * @type {Map<Function, SerializeInfo>}
  */
-var serializableSpansByConstructor = new Map();
+const serializableSpansByConstructor = new Map();
 
 // Helpers for implementing the various |get*| methods of |Spannable|.
 

@@ -55,20 +55,20 @@ class PaintControllerTestBase : public testing::Test {
 
   PaintController& GetPaintController() { return *paint_controller_; }
 
-  size_t NumCachedNewItems() const {
+  wtf_size_t NumCachedNewItems() const {
     return paint_controller_->num_cached_new_items_;
   }
-  size_t NumCachedNewSubsequences() const {
+  wtf_size_t NumCachedNewSubsequences() const {
     return paint_controller_->num_cached_new_subsequences_;
   }
 #if DCHECK_IS_ON()
-  size_t NumIndexedItems() const {
+  wtf_size_t NumIndexedItems() const {
     return paint_controller_->num_indexed_items_;
   }
-  size_t NumSequentialMatches() const {
+  wtf_size_t NumSequentialMatches() const {
     return paint_controller_->num_sequential_matches_;
   }
-  size_t NumOutOfOrderMatches() const {
+  wtf_size_t NumOutOfOrderMatches() const {
     return paint_controller_->num_out_of_order_matches_;
   }
 #endif
@@ -116,8 +116,8 @@ MATCHER_P2(IsSameId, client, type, "") {
 //             ELementsAre(IsPaintChunk(0, 1, id1, properties1),
 //                         IsPaintChunk(1, 3, id2, properties2)));
 inline bool CheckChunk(const PaintChunk& chunk,
-                       size_t begin,
-                       size_t end,
+                       wtf_size_t begin,
+                       wtf_size_t end,
                        const PaintChunk::Id& id,
                        const PropertyTreeState& properties,
                        const HitTestData* hit_test_data = nullptr) {

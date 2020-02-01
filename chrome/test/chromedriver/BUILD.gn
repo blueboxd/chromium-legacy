@@ -6,6 +6,7 @@ import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//build/util/lastchange.gni")
 import("//testing/test.gni")
+import("//third_party/ffmpeg/ffmpeg_options.gni")
 
 action("embed_js_in_cpp") {
   script = "embed_js_in_cpp.py"
@@ -330,6 +331,13 @@ executable("chromedriver") {
     "//net/traffic_annotation:test_support",
     "//services/network/public/mojom",
   ]
+
+  if (is_mac && is_component_ffmpeg) {
+    ldflags = [
+      "-rpath",
+      "@executable_path/.",
+    ]
+  }
 }
 
 python_library("chromedriver_py_tests") {

@@ -10,6 +10,7 @@ mac_signing_sources = [
   "signing/model.py",
   "signing/modification.py",
   "signing/notarize.py",
+  "signing/parts.py",
   "signing/pipeline.py",
   "signing/signing.py",
 ]

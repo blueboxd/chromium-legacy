@@ -28,3 +28,14 @@ NSString* const kSettingsContentSettingsCellId =
     @"kSettingsContentSettingsCellId";
 NSString* const kSettingsBandwidthCellId = @"kSettingsBandwidthCellId";
 NSString* const kSettingsAboutCellId = @"kSettingsAboutCellId";
+NSString* const kSettingsOpenSourceLicencesCellId =
+    @"kSettingsOpenSourceLicencesCellId";
+NSString* const kSettingsTOSCellId = @"kSettingsTOSCellId";
+NSString* const kSettingsPrivacyNoticeCellId = @"kSettingsPrivacyNoticeCellId";
+NSString* const kSettingsPreloadCellId = @"kSettingsPreloadCellId";
+NSString* const kSettingsBlockPopupsCellId = @"kSettingsBlockPopupsCellId";
+NSString* const kSettingsDefaultAppsCellId = @"kSettingsDefaultAppsCellId";
+NSString* const kSettingsAddLanguageCellId = @"kSettingsAddLanguageCellId";
+NSString* const kSettingsClearBrowsingDataCellId =
+    @"kSettingsClearBrowsingDataCellId";
+NSString* const kSettingsHandoffCellId = @"kSettingsHandoffCellId";

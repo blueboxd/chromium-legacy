@@ -46,9 +46,12 @@ EffectNode& CreateEffectNode(Layer*,
                              int parent_id = EffectTree::kInvalidNodeId);
 EffectNode& CreateEffectNode(LayerImpl*,
                              int parent_id = EffectTree::kInvalidNodeId);
+// The scroll node is not scrollable if |scroll_container_bounds| is empty.
 ScrollNode& CreateScrollNode(Layer*,
+                             const gfx::Size& scroll_container_bounds,
                              int parent_id = ScrollTree::kInvalidNodeId);
 ScrollNode& CreateScrollNode(LayerImpl*,
+                             const gfx::Size& scroll_container_bounds,
                              int parent_id = ScrollTree::kInvalidNodeId);
 
 // These functions create property nodes not associated with layers.
@@ -85,6 +88,9 @@ ScrollNode* GetScrollNode(const LayerType* layer) {
 
 void SetScrollOffset(Layer*, const gfx::ScrollOffset&);
 void SetScrollOffset(LayerImpl*, const gfx::ScrollOffset&);
+// Used to synchronize the main-thread scroll offset with the impl-side. The
+// difference from SetScrollOffset() is this function doesn't schedule commit.
+void SetScrollOffsetFromImplSide(Layer*, const gfx::ScrollOffset&);
 
 template <typename LayerType>
 void SetLocalTransformChanged(const LayerType* layer) {
@@ -180,6 +186,12 @@ void SetupViewport(LayerImpl* root,
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
 RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer);
+
+gfx::ScrollOffset ScrollOffsetBase(const LayerImpl* layer);
+gfx::ScrollOffset ScrollDelta(const LayerImpl* layer);
+gfx::ScrollOffset CurrentScrollOffset(const Layer* layer);
+gfx::ScrollOffset CurrentScrollOffset(const LayerImpl* layer);
+gfx::ScrollOffset MaxScrollOffset(const LayerImpl* layer);
 
 }  // namespace cc
 

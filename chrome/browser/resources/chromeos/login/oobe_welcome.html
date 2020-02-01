@@ -193,12 +193,11 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.dockedMagnifierEnabled]]"
+        <oobe-a11y-option id="accessibility-docked-magnifier"
+            checked="[[a11yStatus.dockedMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableDockedMagnifier"
-            label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]"
-            id="dockedMagnifierOobeOption"
-            hidden="[[!a11yStatus.enableExperimentalA11yFeatures]]">
+            label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'dockedMagnifierOption')]]
           </span>

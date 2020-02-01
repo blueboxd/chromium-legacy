@@ -133,10 +133,16 @@ class HardwareDisplayPlaneManager {
                                            uint32_t format) const;
 
  protected:
+  struct ConnectorProperties {
+    uint32_t id;
+    DrmDevice::Property crtc_id;
+  };
+
   struct CrtcProperties {
     // Unique identifier for the CRTC. This must be greater than 0 to be valid.
     uint32_t id;
-
+    DrmDevice::Property active;
+    DrmDevice::Property mode_id;
     // Optional properties.
     DrmDevice::Property ctm;
     DrmDevice::Property gamma_lut;
@@ -182,8 +188,10 @@ class HardwareDisplayPlaneManager {
       uint32_t crtc_index,
       const DrmOverlayPlane& overlay) const;
 
-  // Convert |crtc_id| into an index, returning -1 if the ID couldn't be found.
+  // Convert |crtc/connector_id| into an index, returning -1 if the ID couldn't
+  // be found.
   int LookupCrtcIndex(uint32_t crtc_id) const;
+  int LookupConnectorIndex(uint32_t connector_idx) const;
 
   // Returns true if |plane| can support |overlay| and compatible with
   // |crtc_index|.
@@ -208,6 +216,7 @@ class HardwareDisplayPlaneManager {
 
   std::vector<std::unique_ptr<HardwareDisplayPlane>> planes_;
   std::vector<CrtcState> crtc_state_;
+  std::vector<ConnectorProperties> connectors_props_;
   std::vector<uint32_t> supported_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManager);

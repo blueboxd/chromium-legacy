@@ -20,6 +20,7 @@ namespace {
 constexpr int kTagExtraBase = 1 << 16;
 // Command ID for triggering QR flow.
 constexpr int kPairPhoneTag = kTagExtraBase + 0;
+constexpr int kNativeWinApiTag = kTagExtraBase + 1;
 }  // namespace
 
 TransportHoverListModel::TransportHoverListModel(
@@ -87,9 +88,11 @@ bool TransportHoverListModel::StyleForTwoLines() const {
 TransportHoverListModel2::TransportHoverListModel2(
     std::vector<AuthenticatorTransport> transport_list,
     bool cable_extension_provided,
+    bool win_native_api_enabled,
     Delegate* delegate)
     : transport_list_(std::move(transport_list)),
       cable_extension_provided_(cable_extension_provided),
+      win_native_api_enabled_(win_native_api_enabled),
       delegate_(delegate) {}
 
 TransportHoverListModel2::~TransportHoverListModel2() = default;
@@ -128,6 +131,10 @@ std::vector<int> TransportHoverListModel2::GetThrobberTags() const {
 std::vector<int> TransportHoverListModel2::GetButtonTags() const {
   std::vector<int> tags({kPairPhoneTag});
 
+  if (win_native_api_enabled_) {
+    tags.push_back(kNativeWinApiTag);
+  }
+
   for (const auto transport : transport_list_) {
     switch (transport) {
       // These are throbbers, not buttons; ignore.
@@ -148,13 +155,19 @@ std::vector<int> TransportHoverListModel2::GetButtonTags() const {
 }
 
 base::string16 TransportHoverListModel2::GetItemText(int item_tag) const {
-  if (item_tag == kPairPhoneTag) {
-    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_PAIR_PHONE);
-  }
+  switch (item_tag) {
+    case kPairPhoneTag:
+      return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_PAIR_PHONE);
 
-  return GetTransportHumanReadableName(
-      static_cast<AuthenticatorTransport>(item_tag),
-      TransportSelectionContext::kTransportSelectionSheet);
+    case kNativeWinApiTag:
+      return l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN);
+
+    default:
+      return GetTransportHumanReadableName(
+          static_cast<AuthenticatorTransport>(item_tag),
+          TransportSelectionContext::kTransportSelectionSheet);
+  }
 }
 
 base::string16 TransportHoverListModel2::GetDescriptionText(
@@ -180,10 +193,18 @@ base::string16 TransportHoverListModel2::GetDescriptionText(
 
 const gfx::VectorIcon* TransportHoverListModel2::GetItemIcon(
     int item_tag) const {
-  if (item_tag == kPairPhoneTag) {
-    return &kSmartphoneIcon;
+  switch (item_tag) {
+    case kPairPhoneTag:
+      return &kSmartphoneIcon;
+
+    case kNativeWinApiTag:
+      return GetTransportVectorIcon(
+          AuthenticatorTransport::kUsbHumanInterfaceDevice);
+
+    default:
+      return GetTransportVectorIcon(
+          static_cast<AuthenticatorTransport>(item_tag));
   }
-  return GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));
 }
 
 void TransportHoverListModel2::OnListItemSelected(int item_tag) {
@@ -191,16 +212,25 @@ void TransportHoverListModel2::OnListItemSelected(int item_tag) {
     return;
   }
 
-  if (item_tag == kPairPhoneTag) {
-    delegate_->StartPhonePairing();
-    return;
-  }
+  switch (item_tag) {
+    case kPairPhoneTag:
+      delegate_->StartPhonePairing();
+      break;
 
-  delegate_->OnTransportSelected(static_cast<AuthenticatorTransport>(item_tag));
+    case kNativeWinApiTag:
+      delegate_->StartWinNativeApi();
+      break;
+
+    default:
+      delegate_->OnTransportSelected(
+          static_cast<AuthenticatorTransport>(item_tag));
+      break;
+  }
 }
 
 size_t TransportHoverListModel2::GetPreferredItemCount() const {
-  return transport_list_.size() + /* pairing a phone */ 1;
+  return transport_list_.size() + /* pairing a phone */ 1 +
+         static_cast<int>(win_native_api_enabled_);
 }
 
 bool TransportHoverListModel2::StyleForTwoLines() const {

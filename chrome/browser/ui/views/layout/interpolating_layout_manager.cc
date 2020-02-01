@@ -86,8 +86,7 @@ views::ProposedLayout InterpolatingLayoutManager::CalculateProposedLayout(
     const views::SizeBounds& size_bounds) const {
   // For interpolating layout we will never call this method for unbounded
   // sizes.
-  DCHECK(size_bounds.width());
-  DCHECK(size_bounds.height());
+  DCHECK(size_bounds.is_fully_bounded());
   const gfx::Size size(*size_bounds.width(), *size_bounds.height());
 
   const LayoutInterpolation interpolation = GetInterpolation(size_bounds);

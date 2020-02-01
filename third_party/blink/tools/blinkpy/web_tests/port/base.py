@@ -44,14 +44,14 @@ import tempfile
 from blinkpy.common import exit_codes
 from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
+from blinkpy.common import path_finder
 from blinkpy.common.memoized import memoized
-from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.w3c.wpt_manifest import WPTManifest, MANIFEST_NAME
 from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
-from blinkpy.web_tests.models.test_expectations import TestExpectationParser
 from blinkpy.web_tests.models.test_run_results import TestRunException
+from blinkpy.web_tests.models.typ_types import TestExpectations, ResultType
 from blinkpy.web_tests.port import driver
 from blinkpy.web_tests.port import server_process
 from blinkpy.web_tests.port.factory import PortFactory
@@ -151,7 +151,7 @@ class Port(object):
 
     CONFIGURATION_SPECIFIER_MACROS = {
         # NOTE: We don't support specifiers for mac10.15 because
-        # we don't have separate baselines for it (it share the mac10.14
+        # we don't have separate baselines for it (it shares the mac10.14
         # results in the platform/mac directory). This list will need to be
         # updated if/when we actually have separate baselines.
         'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13',
@@ -237,7 +237,7 @@ class Port(object):
         self.host = host
         self._executive = host.executive
         self._filesystem = host.filesystem
-        self._path_finder = PathFinder(host.filesystem)
+        self._path_finder = path_finder.PathFinder(host.filesystem)
 
         self._http_server = None
         self._websocket_server = None
@@ -1053,12 +1053,9 @@ class Port(object):
         # parser, etc.) is very similar to blinkpy/w3c/test_copier.py.
         path = self.path_to_never_fix_tests_file()
         contents = self._filesystem.read_text_file(path)
-        parser = TestExpectationParser(self, all_tests=(), is_lint_mode=False)
-        expectation_lines = parser.parse(path, contents)
-        for line in expectation_lines:
-            if line.name == test and self.test_configuration() in line.matching_configurations:
-                return True
-        return False
+        test_expectations = TestExpectations(tags=self.get_platform_tags())
+        test_expectations.parse_tagged_list(contents)
+        return ResultType.Skip in test_expectations.expectations_for(test).results
 
     def path_to_never_fix_tests_file(self):
         return self._filesystem.join(self.web_tests_dir(), 'NeverFixTests')
@@ -1072,8 +1069,7 @@ class Port(object):
         return self._name
 
     def operating_system(self):
-        # Subclasses should override this default implementation.
-        return 'mac'
+        raise NotImplementedError
 
     def version(self):
         """Returns a string indicating the version of a given platform

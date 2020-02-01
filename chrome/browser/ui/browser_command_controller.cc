@@ -753,6 +753,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_WINDOW_PIN_TAB:
       PinTab(browser_);
       break;
+    case IDC_WINDOW_GROUP_TAB:
+      GroupTab(browser_);
+      break;
     case IDC_WINDOW_CLOSE_TABS_TO_RIGHT:
       CloseTabsToRight(browser_);
       break;
@@ -768,6 +771,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_PIN_TARGET_TAB:
       PinKeyboardFocusedTab(browser_);
+      break;
+    case IDC_GROUP_TARGET_TAB:
+      GroupKeyboardFocusedTab(browser_);
       break;
     case IDC_DUPLICATE_TARGET_TAB:
       DuplicateKeyboardFocusedTab(browser_);
@@ -1053,6 +1059,7 @@ void BrowserCommandController::InitCommandState() {
 
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
                                         normal_window);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
@@ -1139,6 +1146,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE,
                                         !browser_->deprecated_is_app());
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB,
+                                        !browser_->deprecated_is_app());
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB,
                                         !browser_->deprecated_is_app());
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
                                         CanCloseTabsToRight(browser_));
@@ -1485,6 +1494,8 @@ void BrowserCommandController::UpdateCommandsForTabKeyboardFocus(
       IDC_MUTE_TARGET_SITE, normal_window && target_index.has_value());
   command_updater_.UpdateCommandEnabled(
       IDC_PIN_TARGET_TAB, normal_window && target_index.has_value());
+  command_updater_.UpdateCommandEnabled(
+      IDC_GROUP_TARGET_TAB, normal_window && target_index.has_value());
 }
 
 void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {

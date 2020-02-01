@@ -12,8 +12,12 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_options.h"
 
 namespace blink {
+
+constexpr const char* kBoxOptionBorderBox = "border-box";
+constexpr const char* kBoxOptionContentBox = "content-box";
 
 ResizeObserver* ResizeObserver::Create(Document& document,
                                        V8ResizeObserverCallback* callback) {
@@ -45,17 +49,53 @@ ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
   controller_->AddObserver(*this);
 }
 
-void ResizeObserver::observe(Element* target) {
-  auto& observer_map = target->EnsureResizeObserverData();
-  if (observer_map.Contains(this))
-    return;  // Already registered.
+ResizeObserverBoxOptions ResizeObserver::ParseBoxOptions(
+    const String& box_options) {
+  if (box_options == kBoxOptionBorderBox)
+    return ResizeObserverBoxOptions::BorderBox;
+  if (box_options == kBoxOptionContentBox)
+    return ResizeObserverBoxOptions::ContentBox;
+  return ResizeObserverBoxOptions::ContentBox;
+}
 
-  auto* observation = MakeGarbageCollected<ResizeObservation>(target, this);
+void ResizeObserver::observeInternal(Element* target,
+                                     ResizeObserverBoxOptions box_option) {
+  auto& observer_map = target->EnsureResizeObserverData();
+
+  if (observer_map.Contains(this)) {
+    auto observation = observer_map.find(this);
+    if ((*observation).value->observedBox() == box_option)
+      return;
+
+    // Unobserve target if box_option has changed and target already existed. If
+    // there is an existing observation of a different box, this new observation
+    // takes precedence. See:
+    // https://drafts.csswg.org/resize-observer/#processing-model
+    observations_.erase((*observation).value);
+    auto index = active_observations_.Find((*observation).value);
+    if (index != kNotFound) {
+      active_observations_.EraseAt(index);
+    }
+    observer_map.erase(observation);
+  }
+
+  auto* observation =
+      MakeGarbageCollected<ResizeObservation>(target, this, box_option);
   observations_.insert(observation);
   observer_map.Set(this, observation);
 
   if (LocalFrameView* frame_view = target->GetDocument().View())
     frame_view->ScheduleAnimation();
+}
+
+void ResizeObserver::observe(Element* target,
+                             const ResizeObserverOptions* options) {
+  ResizeObserverBoxOptions box_option = ParseBoxOptions(options->box());
+  observeInternal(target, box_option);
+}
+
+void ResizeObserver::observe(Element* target) {
+  observeInternal(target, ResizeObserverBoxOptions::ContentBox);
 }
 
 void ResizeObserver::unobserve(Element* target) {
@@ -123,26 +163,9 @@ void ResizeObserver::DeliverObservations() {
     if (!execution_context || execution_context->IsContextDestroyed())
       continue;
 
-    LayoutPoint location = observation->ComputeTargetLocation();
-    LayoutSize size = observation->ComputeTargetSize();
-    observation->SetObservationSize(size);
-
-    LayoutRect content_rect(location, size);
-    if (observation->Target()->GetLayoutObject()) {
-      // Must adjust for zoom in order to report non-zoomed size.
-      const ComputedStyle& style =
-          observation->Target()->GetLayoutObject()->StyleRef();
-      content_rect.SetX(
-          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.X(), style));
-      content_rect.SetY(
-          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.Y(), style));
-      content_rect.SetWidth(
-          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.Width(), style));
-      content_rect.SetHeight(AdjustForAbsoluteZoom::AdjustLayoutUnit(
-          content_rect.Height(), style));
-    }
-    auto* entry = MakeGarbageCollected<ResizeObserverEntry>(
-        observation->Target(), content_rect);
+    observation->SetObservationSize(observation->ComputeTargetSize());
+    auto* entry =
+        MakeGarbageCollected<ResizeObserverEntry>(observation->Target());
     entries.push_back(entry);
   }
 

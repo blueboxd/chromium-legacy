@@ -1368,6 +1368,60 @@ TEST_F(SharedWorkerServiceImplTest, Observer) {
   EXPECT_EQ(0u, observer.GetClientCount());
 }
 
+TEST_F(SharedWorkerServiceImplTest, EnumerateSharedWorkers) {
+  TestSharedWorkerServiceObserver observer;
+
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("http://example.com/"));
+  TestRenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+  MockRenderProcessHost* renderer_host = render_frame_host->GetProcess();
+  const int process_id = renderer_host->GetID();
+  renderer_host->OverrideBinderForTesting(
+      blink::mojom::SharedWorkerFactory::Name_,
+      base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
+                          base::Unretained(this), process_id));
+
+  MockSharedWorkerClient client;
+  MessagePortChannel local_port;
+  const GURL kUrl("http://example.com/w.js");
+  ConnectToSharedWorker(
+      MakeSharedWorkerConnector(render_frame_host->GetGlobalFrameRoutingId()),
+      kUrl, "name", &client, &local_port);
+
+  mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> factory_receiver =
+      WaitForFactoryReceiver(process_id);
+  MockSharedWorkerFactory factory(std::move(factory_receiver));
+  base::RunLoop().RunUntilIdle();
+
+  mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
+  mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
+  EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
+      kUrl, "name", network::mojom::ContentSecurityPolicyType::kReport,
+      &worker_host, &worker_receiver));
+  MockSharedWorker worker(std::move(worker_receiver));
+  base::RunLoop().RunUntilIdle();
+
+  int connection_request_id;
+  MessagePortChannel port;
+  EXPECT_TRUE(worker.CheckReceivedConnect(&connection_request_id, &port));
+
+  EXPECT_TRUE(client.CheckReceivedOnCreated());
+
+  // The observer was never registered to the SharedWorkerService.
+  EXPECT_EQ(0u, observer.GetWorkerCount());
+
+  // Retrieve running shared workers.
+  content::BrowserContext::GetDefaultStoragePartition(browser_context_.get())
+      ->GetSharedWorkerService()
+      ->EnumerateSharedWorkers(&observer);
+
+  EXPECT_EQ(1u, observer.GetWorkerCount());
+
+  // Cleanup.
+  worker_host->OnContextClosed();
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(SharedWorkerServiceImplTest, CollapseDuplicateNotifications) {
   TestSharedWorkerServiceObserver observer;
 

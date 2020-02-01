@@ -125,6 +125,7 @@ class IndexedDBFactoryTest : public testing::Test {
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
+        /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
   }
@@ -135,6 +136,7 @@ class IndexedDBFactoryTest : public testing::Test {
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
+        /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
   }
@@ -144,6 +146,7 @@ class IndexedDBFactoryTest : public testing::Test {
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
         /*blob_storage_context=*/mojo::NullRemote(),
+        /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     if (factory)

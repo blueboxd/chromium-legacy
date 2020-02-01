@@ -725,7 +725,6 @@ const base::Feature kAppManagement{"AppManagement",
 // from a secure page
 const base::Feature kTreatUnsafeDownloadsAsActive{
     "TreatUnsafeDownloadsAsActive", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kTreatUnsafeDownloadsAsActiveParamName[] = "ExtensionList";
 
 // Enables or disables the intervention that unloads ad iframes with intensive
 // resource usage.

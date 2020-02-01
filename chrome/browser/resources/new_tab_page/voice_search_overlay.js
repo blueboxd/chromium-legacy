@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {BrowserProxy} from './browser_proxy.js';
 
 /**
@@ -45,6 +45,18 @@ const ERROR_TIMEOUT_SHORT_MS = 3000;
  * @type {number}
  */
 const ERROR_TIMEOUT_LONG_MS = 8000;
+
+/**
+ * The minimum transition time for the volume rings.
+ * @private
+ */
+const VOLUME_ANIMATION_DURATION_MIN_MS = 170;
+
+/**
+ * The range of the transition time for the volume rings.
+ * @private
+ */
+const VOLUME_ANIMATION_DURATION_RANGE_MS = 10;
 
 /**
  * The set of controller states.
@@ -171,6 +183,18 @@ class VoiceSearchOverlayElement extends PolymerElement {
         value: `https://support.google.com/chrome/?` +
             `p=ui_voice_search&hl=${window.navigator.language}`,
       },
+
+      /** @private */
+      micVolumeLevel_: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @private */
+      micVolumeDuration_: {
+        type: Number,
+        value: VOLUME_ANIMATION_DURATION_MIN_MS,
+      },
     };
   }
 
@@ -256,6 +280,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   onSpeechStart_() {
     this.resetIdleTimer_();
     this.state_ = State.SPEECH_RECEIVED;
+    this.animateVolume_();
   }
 
   /**
@@ -370,6 +395,23 @@ class VoiceSearchOverlayElement extends PolymerElement {
     this.resetErrorTimer_(getErrorTimeout(error));
   }
 
+  /** @private */
+  animateVolume_() {
+    this.micVolumeLevel_ = 0;
+    this.micVolumeDuration_ = VOLUME_ANIMATION_DURATION_MIN_MS;
+    if (this.state_ !== State.SPEECH_RECEIVED &&
+        this.state_ !== State.RESULT_RECEIVED) {
+      return;
+    }
+    this.micVolumeLevel_ = BrowserProxy.getInstance().random();
+    this.micVolumeDuration_ = Math.round(
+        VOLUME_ANIMATION_DURATION_MIN_MS +
+        BrowserProxy.getInstance().random() *
+            VOLUME_ANIMATION_DURATION_RANGE_MS);
+    BrowserProxy.getInstance().setTimeout(
+        this.animateVolume_.bind(this), this.micVolumeDuration_);
+  }
+
   /**
    * @return {string}
    * @private
@@ -406,6 +448,22 @@ class VoiceSearchOverlayElement extends PolymerElement {
         return 'try-again';
       default:
         return 'none';
+    }
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getMicClass_() {
+    switch (this.state_) {
+      case State.AUDIO_RECEIVED:
+        return 'listening';
+      case State.SPEECH_RECEIVED:
+      case State.RESULT_RECEIVED:
+        return 'receiving';
+      default:
+        return '';
     }
   }
 }

@@ -3158,8 +3158,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
-    gfx::ScrollOffset offset = scroll_layer_->CurrentScrollOffset();
-    scroll_layer_->SetScrollOffset(offset + args.inner_delta);
+    gfx::ScrollOffset offset = CurrentScrollOffset(scroll_layer_.get());
+    SetScrollOffset(scroll_layer_.get(), offset + args.inner_delta);
     layer_tree_host()->SetPageScaleFactorAndLimits(args.page_scale_delta, 0.5f,
                                                    2.f);
   }
@@ -3203,7 +3203,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 // Single thread proxy does not support impl-side page scale changes.
 MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
-class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
+class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
+                                         public ScrollCallbacks {
  protected:
   ViewportDeltasAppliedDuringPinch() : sent_gesture_(false) {
     SetUseLayerLists();
@@ -3215,6 +3216,8 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     Layer* root = layer_tree_host()->root_layer();
     SetupViewport(root, gfx::Size(500, 500), gfx::Size(500, 500));
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+    layer_tree_host()->property_trees()->scroll_tree.SetScrollCallbacks(
+        weak_ptr_factory_.GetWeakPtr());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -3235,13 +3238,32 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
 
     auto* scroll_layer =
         layer_tree_host()->InnerViewportScrollLayerForTesting();
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), scroll_layer->CurrentScrollOffset());
+    EXPECT_EQ(scroll_layer->element_id(), last_scrolled_element_id_);
+    EXPECT_EQ(gfx::ScrollOffset(50, 50), last_scrolled_offset_);
+    // The scroll offset in scroll tree needs update from blink which doesn't
+    // exist in this test.
+    EXPECT_EQ(gfx::ScrollOffset(), CurrentScrollOffset(scroll_layer));
     EndTest();
   }
 
   void AfterTest() override { EXPECT_TRUE(sent_gesture_); }
 
+  // ScrollCallbacks
+  void DidScroll(ElementId element_id,
+                 const gfx::ScrollOffset& scroll_offset,
+                 const base::Optional<TargetSnapAreaElementIds>&
+                     snap_target_ids) override {
+    last_scrolled_element_id_ = element_id;
+    last_scrolled_offset_ = scroll_offset;
+  }
+  void DidChangeScrollbarsHidden(ElementId, bool) override {}
+
+ private:
   bool sent_gesture_;
+  ElementId last_scrolled_element_id_;
+  gfx::ScrollOffset last_scrolled_offset_;
+  base::WeakPtrFactory<ViewportDeltasAppliedDuringPinch> weak_ptr_factory_{
+      this};
 };
 
 MULTI_THREAD_TEST_F(ViewportDeltasAppliedDuringPinch);

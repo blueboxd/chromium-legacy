@@ -58,7 +58,7 @@
     <message name="IDS_PDF_PAGE_INDEX" desc="Accessible label for each page, describing the page number">
       {COUNT, plural,
          =1 {Page 1}
-         other {Page #}}
+         other {Page {COUNT}}}
     </message>
     <message name="IDS_PDF_DOCUMENT_PAGE_COUNT" desc="Accessible name of PDF document. It gives information about the number of pages in the PDF file">
       {COUNT, plural,

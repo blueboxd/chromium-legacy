@@ -65,7 +65,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
 
 #if DCHECK_IS_ON()
   // Ensures the list size does not change during the recorder's scope.
-  size_t initial_display_item_list_size_;
+  wtf_size_t initial_display_item_list_size_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DrawingRecorder);

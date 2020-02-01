@@ -294,11 +294,6 @@
     "args": ["--enable-features=Reporting,NetworkErrorLogging"]
   },
   {
-    "prefix": "mouseevent_fractional",
-    "bases": ["fast/events"],
-    "args": ["--enable-blink-features=FractionalMouseEvent"]
-  },
-  {
     "prefix": "compositor_threaded_scrollbar_scrolling",
     "bases": ["fast/scrolling/scrollbars",
               "paint/invalidation/scroll/sticky"],

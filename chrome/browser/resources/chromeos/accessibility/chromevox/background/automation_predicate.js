@@ -24,7 +24,7 @@ const State = chrome.automation.StateType;
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-var hasActionableDescendant = function(node) {
+const hasActionableDescendant = function(node) {
   // DefaultActionVerb does not have value 'none' even though it gets set.
   if (node.defaultActionVerb != 'none') {
     return true;
@@ -220,7 +220,7 @@ AutomationPredicate = class {
     if (node.name && node.nameFrom == 'contents') {
       let onlyStaticText = true;
       let textLength = 0;
-      for (var i = 0, child; child = node.children[i]; i++) {
+      for (let i = 0, child; child = node.children[i]; i++) {
         if (child.role != Role.STATIC_TEXT) {
           onlyStaticText = false;
           break;

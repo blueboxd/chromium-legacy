@@ -34,7 +34,6 @@ namespace cc {
 
 class Animation;
 class AnimationHost;
-class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostForTesting;
 class LayerTreeTestLayerTreeFrameSinkClient;
@@ -192,8 +191,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // pixel tests or a software-compositing OutputSurface.
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
-
-  gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl);
 
   base::SingleThreadTaskRunner* image_worker_task_runner() const {
     return image_worker_->task_runner().get();

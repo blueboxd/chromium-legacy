@@ -475,7 +475,7 @@ class YUVReadbackTest : public testing::Test {
 
 TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
   for (int use_mrt = 0; use_mrt <= 1; ++use_mrt) {
-    // This test uses the gpu.service/gpu_decoder tracing events to detect how
+    // This test uses the gpu.service/gpu.decoder tracing events to detect how
     // many scaling passes are actually performed by the YUV readback pipeline.
     StartTracing(TRACE_DISABLED_BY_DEFAULT(
         "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu.decoder"));

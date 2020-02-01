@@ -107,6 +107,7 @@ PaymentRequest::PaymentRequest(
           web_contents_->GetLastCommittedURL())),
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
           render_frame_host->GetLastCommittedURL())),
+      frame_security_origin_(render_frame_host->GetLastCommittedOrigin()),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       ukm::GetSourceIdForWebContentsDocument(web_contents)) {
@@ -185,7 +186,8 @@ void PaymentRequest::Init(
       std::move(options), std::move(details), std::move(method_data),
       /*observer=*/this, delegate_->GetApplicationLocale());
   state_ = std::make_unique<PaymentRequestState>(
-      web_contents_, top_level_origin_, frame_origin_, spec_.get(),
+      web_contents_, top_level_origin_, frame_origin_, frame_security_origin_,
+      spec_.get(),
       /*delegate=*/this, delegate_->GetApplicationLocale(),
       delegate_->GetPersonalDataManager(), delegate_.get(),
       base::BindRepeating(&PaymentRequest::SetInvokedServiceWorkerIdentity,

@@ -36,7 +36,8 @@ TEST_F(PaintLayerCompositorTest, AdvancingToCompositingInputsClean) {
 
   box_layer->SetNeedsCompositingInputsUpdate();
 
-  GetDocument().View()->UpdateLifecycleToCompositingInputsClean();
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
   EXPECT_FALSE(box_layer->NeedsCompositingInputsUpdate());
@@ -63,7 +64,8 @@ TEST_F(PaintLayerCompositorTest,
 
   // Update the lifecycle to CompositingInputsClean. This should not start the
   // animation lifecycle.
-  GetDocument().View()->UpdateLifecycleToCompositingInputsClean();
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
 
@@ -110,7 +112,8 @@ TEST_F(PaintLayerCompositorTest, CompositingInputsUpdateStopsContainStrict) {
   EXPECT_FALSE(wrapper->NeedsCompositingInputsUpdate());
   EXPECT_TRUE(target->NeedsCompositingInputsUpdate());
 
-  GetDocument().View()->UpdateLifecycleToCompositingInputsClean();
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
   EXPECT_FALSE(wrapper->NeedsCompositingInputsUpdate());

@@ -155,20 +155,22 @@ PaymentManifestDownloader::PaymentManifestDownloader(
 PaymentManifestDownloader::~PaymentManifestDownloader() {}
 
 void PaymentManifestDownloader::DownloadPaymentMethodManifest(
+    const url::Origin& merchant_origin,
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
   DCHECK(UrlUtil::IsValidManifestUrl(url));
   // Restrict number of redirects for efficiency and breaking circle.
-  InitiateDownload(url, "HEAD",
+  InitiateDownload(merchant_origin, url, "HEAD",
                    /*allowed_number_of_redirects=*/3, std::move(callback));
 }
 
 void PaymentManifestDownloader::DownloadWebAppManifest(
+    const url::Origin& payment_method_manifest_origin,
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
   DCHECK(UrlUtil::IsValidManifestUrl(url));
-  InitiateDownload(url, "GET", /*allowed_number_of_redirects=*/0,
-                   std::move(callback));
+  InitiateDownload(payment_method_manifest_origin, url, "GET",
+                   /*allowed_number_of_redirects=*/0, std::move(callback));
 }
 
 GURL PaymentManifestDownloader::FindTestServerURL(const GURL& url) const {
@@ -201,7 +203,8 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
       if (net::registry_controlled_domains::SameDomainOrHost(
               download->original_url, redirect_url,
               net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-        InitiateDownload(redirect_url, "HEAD",
+        // Redirects preserve the original request initiator.
+        InitiateDownload(download->request_initiator, redirect_url, "HEAD",
                          --download->allowed_number_of_redirects,
                          std::move(download->callback));
         return;
@@ -276,9 +279,12 @@ void PaymentManifestDownloader::OnURLLoaderCompleteInternal(
     return;
   }
 
-  InitiateDownload(payment_method_manifest_url, "GET",
-                   /*allowed_number_of_redirects=*/0,
-                   std::move(download->callback));
+  // The request initiator for the payment method manifest is the origin of the
+  // HEAD request with the HTTP link header.
+  // https://github.com/w3c/webappsec-fetch-metadata/issues/30
+  InitiateDownload(
+      url::Origin::Create(final_url), payment_method_manifest_url, "GET",
+      /*allowed_number_of_redirects=*/0, std::move(download->callback));
 }
 
 network::SimpleURLLoader* PaymentManifestDownloader::GetLoaderForTesting() {
@@ -292,6 +298,7 @@ GURL PaymentManifestDownloader::GetLoaderOriginalURLForTesting() {
 }
 
 void PaymentManifestDownloader::InitiateDownload(
+    const url::Origin& request_initiator,
     const GURL& url,
     const std::string& method,
     int allowed_number_of_redirects,
@@ -319,6 +326,7 @@ void PaymentManifestDownloader::InitiateDownload(
           policy_exception_justification: "Not implemented."
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->request_initiator = request_initiator;
   resource_request->url = url;
   resource_request->method = method;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
@@ -334,6 +342,7 @@ void PaymentManifestDownloader::InitiateDownload(
                      weak_ptr_factory_.GetWeakPtr(), loader.get()));
 
   auto download = std::make_unique<Download>();
+  download->request_initiator = request_initiator;
   download->method = method;
   download->original_url = url;
   download->loader = std::move(loader);

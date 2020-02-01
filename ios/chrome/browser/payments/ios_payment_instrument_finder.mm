@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -115,6 +116,7 @@ IOSPaymentInstrumentFinder::CreateIOSPaymentInstrumentsForMethods(
 
   for (const GURL& method : filtered_methods) {
     downloader_.DownloadPaymentMethodManifest(
+        url::Origin(),  // Opaque origin.
         method,
         base::BindOnce(&IOSPaymentInstrumentFinder::OnPaymentManifestDownloaded,
                        weak_factory_.GetWeakPtr(), method));
@@ -150,6 +152,7 @@ void IOSPaymentInstrumentFinder::OnPaymentManifestDownloaded(
 
   for (const GURL& web_app_manifest_url : web_app_manifest_urls) {
     downloader_.DownloadWebAppManifest(
+        url::Origin(),  // Opaque origin.
         web_app_manifest_url,
         base::BindOnce(&IOSPaymentInstrumentFinder::OnWebAppManifestDownloaded,
                        weak_factory_.GetWeakPtr(), method,

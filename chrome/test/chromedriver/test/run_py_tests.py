@@ -2167,17 +2167,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_redbox.html'))
     analysisResult = 'FAIL'
-    i = 0
     redElement = self._driver.FindElement('css selector', '#box')
-    # In some cases (particularly on Mac),
-    # scrollbars are displayed briefly after scrolling,
-    # causing failures in verifying the screenshot.
-    # Retries until the scrollbars disappear.
-    while analysisResult != 'PASS' and i < 3:
-      analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
-      i += 1
-      if analysisResult != 'PASS':
-        time.sleep(0.5)
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeElementScreenshotInIframe(self):
@@ -2186,17 +2177,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
     analysisResult = 'FAIL'
-    i = 0
     redElement = self._driver.FindElement('css selector', '#box')
-    # In some cases (particularly on Mac),
-    # scrollbars are displayed briefly after scrolling,
-    # causing failures in verifying the screenshot.
-    # Retries until the scrollbars disappear.
-    while analysisResult != 'PASS' and i < 3:
-      analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
-      i += 1
-      if analysisResult != 'PASS':
-        time.sleep(0.5)
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeLargeElementScreenshot(self):

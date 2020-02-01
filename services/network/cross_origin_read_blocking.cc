@@ -1304,8 +1304,7 @@ bool CrossOriginReadBlocking::ShouldAllowForPlugin(int process_id) {
 // static
 void CrossOriginReadBlocking::RemoveExceptionForPlugin(int process_id) {
   std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
-  size_t number_of_elements_removed = plugin_proxies.erase(process_id);
-  DCHECK_EQ(1u, number_of_elements_removed);
+  plugin_proxies.erase(process_id);
 }
 
 }  // namespace network

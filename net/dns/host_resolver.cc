@@ -21,6 +21,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/dns/resolve_context.h"
 
 namespace net {
 
@@ -165,9 +166,11 @@ std::unique_ptr<HostResolver> HostResolver::CreateResolver(
     bool enable_caching) {
   DCHECK(manager);
 
-  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
-  auto resolver =
-      std::make_unique<ContextHostResolver>(manager, std::move(cache));
+  auto resolve_context = std::make_unique<ResolveContext>(
+      nullptr /* url_request_context */, enable_caching);
+
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager, std::move(resolve_context));
 
   if (host_mapping_rules.empty())
     return resolver;
@@ -201,13 +204,14 @@ HostResolver::CreateStandaloneContextResolver(
     NetLog* net_log,
     base::Optional<ManagerOptions> options,
     bool enable_caching) {
-  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
+  auto resolve_context = std::make_unique<ResolveContext>(
+      nullptr /* url_request_context */, enable_caching);
 
   return std::make_unique<ContextHostResolver>(
       std::make_unique<HostResolverManager>(
           std::move(options).value_or(ManagerOptions()),
           NetworkChangeNotifier::GetSystemDnsConfigNotifier(), net_log),
-      std::move(cache));
+      std::move(resolve_context));
 }
 
 // static

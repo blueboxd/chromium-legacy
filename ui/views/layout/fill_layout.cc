@@ -33,8 +33,7 @@ ProposedLayout FillLayout::CalculateProposedLayout(
   // Because we explicitly override GetPreferredSize and
   // GetPreferredHeightForWidth(), we should always call this method with well-
   // defined bounds.
-  DCHECK(size_bounds.width().has_value());
-  DCHECK(size_bounds.height().has_value());
+  DCHECK(size_bounds.is_fully_bounded());
 
   ProposedLayout layout;
   layout.host_size = host_view()->size();

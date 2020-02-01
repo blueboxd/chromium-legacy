@@ -1,4 +1,8 @@
 <style>
+  :host {
+    --receiving-audio-color: var(--google-red-refresh-500);
+  }
+
   #dialog {
     align-items: center;
     background-color: var(--ntp-background-override-color);
@@ -45,11 +49,17 @@
     left: 16px;
   }
 
+  #content {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    width: 660px;
+  }
+
   #texts {
     color: var(--ntp-secondary-text-color);
+    flex-grow: 1;
     font-size: 32px;
-    max-width: 660px;
-    min-width: 622px;
     text-align: start;
   }
 
@@ -69,43 +79,124 @@
     margin-inline-start: 0.25em;
     text-decoration: none;
   }
+
+  #micContainer {
+    --mic-button-size: 165px;
+    --mic-container-size: 300px;
+    align-items: center;
+    display: grid;
+    flex-shrink: 0;
+    height: var(--mic-container-size);
+    justify-items: center;
+    width: var(--mic-container-size);
+  }
+
+  #micContainer > * {
+    grid-column-start: 1;
+    grid-row-start: 1;
+  }
+
+  #micVolume {
+    --mic-volume-size: calc(var(--mic-button-size) +
+        var(--mic-volume-level) * (var(--mic-container-size) -
+            var(--mic-button-size)));
+    align-items: center;
+    background-color: var(--ntp-border-color);
+    border-radius: 50%;
+    display: flex;
+    height: var(--mic-volume-size);
+    justify-content: center;
+    transition-duration: var(--mic-volume-duration);
+    transition-property: height, width;
+    transition-timing-function: ease-in-out;
+    width: var(--mic-volume-size);
+  }
+
+  #micVolumeCutout {
+    background-color: var(--ntp-background-override-color);
+    border-radius: 50%;
+    height: var(--mic-button-size);
+    width: var(--mic-button-size);
+  }
+
+  #micButton {
+    border-radius: 50%;
+    height: var(--mic-button-size);
+    transition: background-color 200ms ease-in-out;
+    width: var(--mic-button-size);
+  }
+
+  .receiving #micButton {
+    background-color: var(--receiving-audio-color);
+    border-color: var(--receiving-audio-color);
+  }
+
+  #micIcon {
+    -webkit-mask-image: url(icons/mic.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--ntp-border-color);
+    height: 80px;
+    transition: background-color 200ms ease-in-out;
+    width: 80px;
+  }
+
+  .listening #micIcon {
+    background-color: var(--receiving-audio-color);
+  }
+
+  .receiving #micIcon {
+    background-color: white;
+  }
 </style>
 <dialog id="dialog" on-close="onOverlayClose_" on-click="onOverlayClick_">
   <button id="closeButton" tabindex="0" title="$i18n{close}">×</button>
-  <!-- TODO(crbug.com/1042534): Add microphone button. -->
   <!-- TODO(crbug.com/1042534): Add animations. -->
   <!-- TODO(crbug.com/1042534): Add Listening state. -->
-  <iron-pages id="texts" selected="[[getText_(state_)]]"
-      attr-for-selected="text" fallback-selection="none" aria-live="polite">
-    <div text="none"></div>
-    <div text="waiting">$i18n{waiting}</div>
-    <div text="speak">$i18n{speak}</div>
-    <div text="result">
-      <span id="finalResult">[[finalResult_]]</span>
-      <span>[[interimResult_]]</span>
+  <div id="content">
+    <iron-pages id="texts" selected="[[getText_(state_)]]"
+        attr-for-selected="text" fallback-selection="none" aria-live="polite">
+      <div text="none"></div>
+      <div text="waiting">$i18n{waiting}</div>
+      <div text="speak">$i18n{speak}</div>
+      <div text="result">
+        <span id="finalResult">[[finalResult_]]</span>
+        <span>[[interimResult_]]</span>
+      </div>
+      <div text="error">
+        <iron-pages id="errors" selected="[[error_]]" attr-for-selected="error"
+            fallback-selection="7">
+          <span error="1">$i18n{noVoice}</span>
+          <span error="2">$i18n{audioError}</span>
+          <span error="3">$i18n{networkError}</span>
+          <span error="4">$i18n{permissionError}</span>
+          <span error="5">$i18n{languageError}</span>
+          <span error="6">$i18n{noTranslation}</span>
+          <span error="7">$i18n{otherError}</span>
+        </iron-pages>
+        <iron-pages id="errorLinks" selected="[[getErrorLink_(error_)]]"
+            attr-for-selected="link" fallback-selection="none">
+          <span link="none"></span>
+          <a link="learn-more" target="_blank" href="[[helpUrl_]]"><!--
+            -->$i18n{learnMore}
+          </a>
+          <a link="details" target="_blank" href="[[helpUrl_]]"><!--
+            -->$i18n{details}
+          </a>
+          <a link="try-again" href="#">$i18n{tryAgain}</a>
+        </iron-pages>
+      </div>
+    </iron-pages>
+    <div id="micContainer" class$="[[getMicClass_(state_)]]">
+      <div id="micVolume"
+          style="--mic-volume-level: [[micVolumeLevel_]];
+                --mic-volume-duration: [[micVolumeDuration_]]ms;">
+        <div id="micVolumeCutout">
+        </div>
+      </div>
+      <cr-button id="micButton">
+        <div id="micIcon"></div>
+      </cr-button>
     </div>
-    <div text="error">
-      <iron-pages id="errors" selected="[[error_]]" attr-for-selected="error"
-          fallback-selection="7">
-        <span error="1">$i18n{noVoice}</span>
-        <span error="2">$i18n{audioError}</span>
-        <span error="3">$i18n{networkError}</span>
-        <span error="4">$i18n{permissionError}</span>
-        <span error="5">$i18n{languageError}</span>
-        <span error="6">$i18n{noTranslation}</span>
-        <span error="7">$i18n{otherError}</span>
-      </iron-pages>
-      <iron-pages id="errorLinks" selected="[[getErrorLink_(error_)]]"
-          attr-for-selected="link" fallback-selection="none">
-        <span link="none"></span>
-        <a link="learn-more" target="_blank" href="[[helpUrl_]]"><!--
-          -->$i18n{learnMore}
-        </a>
-        <a link="details" target="_blank" href="[[helpUrl_]]"><!--
-          -->$i18n{details}
-        </a>
-        <a link="try-again" href="#">$i18n{tryAgain}</a>
-      </iron-pages>
-    </div>
-  </iron-pages>
+  </div>
 </dialog>

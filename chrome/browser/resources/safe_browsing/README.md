@@ -10,7 +10,7 @@ Rendered version of this file: https://chromium.googlesource.com/chromium/src/+/
 
 
 ## Procedure for adding/modifying file type(s)
-  * **Edit** `download_file_types.asciipb`, `enums.xml`, and `download_stats.cc`
+  * **Edit** `download_file_types.asciipb` and `enums.xml`.
   * Get it reviewed, **submit.**
   * **Push** it to all users via component update:
     * Wait 1-3 day for this to run on Canary to verify it doesn't crash Chrome.

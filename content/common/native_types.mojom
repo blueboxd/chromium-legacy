@@ -95,16 +95,4 @@ enum PreferredColorScheme;
 enum SystemThemeColor;
 
 [Native]
-struct ContentSecurityPolicy;
-
-[Native]
-struct CSPDirective;
-
-[Native]
-struct CSPSourceList;
-
-[Native]
-struct CSPSource;
-
-[Native]
 struct CSPViolationParams;

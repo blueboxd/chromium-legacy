@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.payments.PaymentApp.PaymentRequestUpdateEvent
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.url.Origin;
 
 import java.util.Map;
 
@@ -42,6 +43,15 @@ public interface PaymentAppFactoryParams {
      * PaymentRequest API as formatted by UrlFormatter.formatUrlForSecurityDisplay().
      */
     default String getPaymentRequestOrigin() {
+        return null;
+    }
+
+    /**
+     * @return The origin of the iframe that invoked the PaymentRequest API. Can be opaque. Used by
+     * security features like 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'. Should not be
+     * null.
+     */
+    default Origin getPaymentRequestSecurityOrigin() {
         return null;
     }
 

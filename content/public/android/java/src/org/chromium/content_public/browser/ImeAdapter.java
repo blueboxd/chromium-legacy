@@ -12,6 +12,7 @@ import android.view.inputmethod.InputConnection;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.content.browser.input.ImeAdapterImpl;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Adapts and plumbs android IME service onto the chrome text input API.
@@ -34,8 +35,10 @@ public interface ImeAdapter {
      * @return the default {@link InputMethodManagerWrapper} that the ImeAdapter uses to
      * make calls to the InputMethodManager.
      */
-    static InputMethodManagerWrapper createDefaultInputMethodManagerWrapper(Context context) {
-        return ImeAdapterImpl.createDefaultInputMethodManagerWrapper(context);
+    static InputMethodManagerWrapper createDefaultInputMethodManagerWrapper(Context context,
+            WindowAndroid windowAndroid, InputMethodManagerWrapper.Delegate delegate) {
+        return ImeAdapterImpl.createDefaultInputMethodManagerWrapper(
+                context, windowAndroid, delegate);
     }
 
     /**

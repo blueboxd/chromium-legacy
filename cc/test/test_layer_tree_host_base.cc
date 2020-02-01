@@ -119,7 +119,6 @@ void TestLayerTreeHostBase::SetupPendingTree(
     auto* page_scale_layer = AddLayer<LayerImpl>(pending_tree);
     pending_layer_ = AddLayer<FakePictureLayerImpl>(pending_tree);
     pending_layer_->SetDrawsContent(true);
-    pending_layer_->SetScrollable(gfx::Size(1, 1));
 
     pending_tree->SetElementIdsForTesting();
     SetupRootProperties(pending_root);
@@ -127,7 +126,7 @@ void TestLayerTreeHostBase::SetupPendingTree(
     CreateTransformNode(page_scale_layer).in_subtree_of_page_scale_layer = true;
     CopyProperties(page_scale_layer, pending_layer_);
     CreateTransformNode(pending_layer_);
-    CreateScrollNode(pending_layer_);
+    CreateScrollNode(pending_layer_, gfx::Size(1, 1));
 
     auto viewport_property_ids = pending_tree->ViewportPropertyIdsForTesting();
     viewport_property_ids.page_scale_transform =

@@ -20,8 +20,8 @@ import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;

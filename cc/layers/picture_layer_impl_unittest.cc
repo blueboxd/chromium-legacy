@@ -4882,7 +4882,7 @@ TEST_F(LegacySWPictureLayerImplTest, ScrollPropagatesToPending) {
                                .ToString());
   // Scroll offset in property trees is not propagated from the active tree to
   // the pending tree.
-  SetScrollOffset(pending_layer(), active_layer()->CurrentScrollOffset());
+  SetScrollOffset(pending_layer(), CurrentScrollOffset(active_layer()));
   UpdateDrawProperties(host_impl()->pending_tree());
   EXPECT_EQ("0,50 100x100", pending_layer()
                                 ->HighResTiling()

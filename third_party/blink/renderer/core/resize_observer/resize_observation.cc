@@ -3,20 +3,23 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
-
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 
 namespace blink {
 
-ResizeObservation::ResizeObservation(Element* target, ResizeObserver* observer)
+ResizeObservation::ResizeObservation(Element* target,
+                                     ResizeObserver* observer,
+                                     ResizeObserverBoxOptions observed_box)
     : target_(target),
       observer_(observer),
       observation_size_(0, 0),
-      element_size_changed_(true) {
+      element_size_changed_(true),
+      observed_box_(observed_box) {
   DCHECK(target_);
   observer_->ElementSizeChanged();
 }
@@ -55,23 +58,27 @@ size_t ResizeObservation::TargetDepth() {
 LayoutSize ResizeObservation::ComputeTargetSize() const {
   if (target_) {
     if (LayoutObject* layout_object = target_->GetLayoutObject()) {
+      // https://drafts.csswg.org/resize-observer/#calculate-box-size states
+      // that the bounding box should be used for SVGGraphicsElements regardless
+      // of the observed box.
       if (auto* svg_graphics_element =
               DynamicTo<SVGGraphicsElement>(target_.Get())) {
         return LayoutSize(svg_graphics_element->GetBBox().Size());
       }
-      if (layout_object->IsBox())
-        return ToLayoutBox(layout_object)->ContentSize();
+      if (!layout_object->IsBox())
+        return LayoutSize();
+
+      switch (observed_box_) {
+        case ResizeObserverBoxOptions::BorderBox:
+          return ToLayoutBox(layout_object)->BorderBoxRect().Size();
+        case ResizeObserverBoxOptions::ContentBox:
+          return ToLayoutBox(layout_object)->ContentSize();
+        default:
+          NOTREACHED();
+      }
     }
   }
   return LayoutSize();
-}
-
-LayoutPoint ResizeObservation::ComputeTargetLocation() const {
-  if (target_ && !target_->IsSVGElement()) {
-    if (LayoutBox* layout = target_->GetLayoutBox())
-      return LayoutPoint(layout->PaddingLeft(), layout->PaddingTop());
-  }
-  return LayoutPoint();
 }
 
 void ResizeObservation::ElementSizeChanged() {

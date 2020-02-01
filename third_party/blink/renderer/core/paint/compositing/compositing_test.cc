@@ -8,6 +8,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/scroll_and_scale_set.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -125,9 +126,13 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   CompositorElementId scroll_element_id = scrollable_area->GetScrollElementId();
   const auto* overflow_scroll_layer =
       CcLayerByCcElementId(RootCcLayer(), scroll_element_id);
-  EXPECT_TRUE(overflow_scroll_layer->scrollable());
-  EXPECT_EQ(overflow_scroll_layer->scroll_container_bounds(),
-            gfx::Size(100, 100));
+  const auto* scroll_node =
+      RootCcLayer()
+          ->layer_tree_host()
+          ->property_trees()
+          ->scroll_tree.FindNodeFromElementId(scroll_element_id);
+  EXPECT_TRUE(scroll_node->scrollable);
+  EXPECT_EQ(scroll_node->container_bounds, gfx::Size(100, 100));
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
@@ -155,8 +160,10 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // apply impl-side offsets without crashing.
   ASSERT_EQ(overflow_scroll_layer,
             CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
-  const_cast<cc::Layer*>(overflow_scroll_layer)
-      ->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
+  scroll_and_scale_set.scrolls[0] = {scroll_element_id, gfx::ScrollOffset(0, 1),
+                                     base::nullopt};
+  overflow_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
+      &scroll_and_scale_set);
 
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
@@ -177,9 +184,13 @@ TEST_P(CompositingTest, FrameViewScroll) {
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   EXPECT_NE(nullptr, scrollable_area);
 
-  const auto* scroll_layer = CcLayerByCcElementId(
-      RootCcLayer(), scrollable_area->GetScrollElementId());
-  EXPECT_TRUE(scroll_layer->scrollable());
+  const auto* scroll_node = RootCcLayer()
+                                ->layer_tree_host()
+                                ->property_trees()
+                                ->scroll_tree.FindNodeFromElementId(
+                                    scrollable_area->GetScrollElementId());
+  ASSERT_TRUE(scroll_node);
+  EXPECT_TRUE(scroll_node->scrollable);
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
@@ -188,7 +199,7 @@ TEST_P(CompositingTest, FrameViewScroll) {
   scroll_and_scale_set.scrolls.push_back({scrollable_area->GetScrollElementId(),
                                           gfx::ScrollOffset(0, 1),
                                           base::nullopt});
-  scroll_layer->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
+  RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }

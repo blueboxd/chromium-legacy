@@ -397,7 +397,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.use_painted_device_scale_factor = true;
   // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android. Disable
   // for now, with a plan to disable more widely once viz launches.
-  settings.enable_latency_recovery = false;
+  settings.enable_impl_latency_recovery = false;
+  settings.enable_main_latency_recovery = false;
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 

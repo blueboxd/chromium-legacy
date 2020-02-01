@@ -72,11 +72,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/app_modal_dialog_queue.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/switches.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_queue.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/command_storage_manager_test_helper.h"
@@ -132,8 +132,6 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
-using app_modal::AppModalDialogQueue;
-using app_modal::JavaScriptAppModalDialog;
 using base::ASCIIToUTF16;
 using content::HostZoomMap;
 using content::InterstitialPage;
@@ -144,6 +142,8 @@ using content::Referrer;
 using content::WebContents;
 using content::WebContentsObserver;
 using extensions::Extension;
+using javascript_dialogs::AppModalDialogController;
+using javascript_dialogs::AppModalDialogQueue;
 
 namespace {
 
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("window.location.href = 'about:blank'"),
       base::NullCallback());
-  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   EXPECT_TRUE(dialog_queue->HasActiveDialog());
@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ReloadThenCancelBeforeUnload) {
   // Navigate to another page, but click cancel in the dialog.  Make sure that
   // the throbber stops spinning.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
 
   alert->CloseModalDialog();
   EXPECT_FALSE(contents->IsLoading());
@@ -822,12 +822,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
       ->GetMainFrame()
       ->ExecuteJavaScriptWithUserGestureForTests(
           ASCIIToUTF16("w.close(); alert('bar');"));
-  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  alert->native_dialog()->AcceptAppModalDialog();
+  AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 
   alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_FALSE(alert->is_before_unload_dialog());
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 }
 
 // Test that when a page has an onbeforeunload handler, reloading a page shows a
@@ -840,11 +840,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
 
   // Reload the page, and check that we get a "before reload" dialog.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->is_reload());
 
   // Proceed with the reload.
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
   EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   content::PrepContentsForBeforeUnloadTest(contents);
@@ -859,7 +859,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
   EXPECT_FALSE(alert->is_reload());
 
   // Accept the navigation so we end up on a page without a beforeunload hook.
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 }
 
 class BrowserTestWithTabGroupsEnabled : public BrowserTest {
@@ -985,10 +985,10 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
 
   // The beforeunload handler will run at exit, ensure it does, and then accept
   // it to allow shutdown to proceed.
-  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(alert);
   EXPECT_TRUE(alert->is_before_unload_dialog());
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 
   // But wait there's more! If this test times out, it likely means that the
   // browser has not been able to quit correctly, indicating there's a
@@ -1765,10 +1765,6 @@ void OnZoomLevelChanged(base::OnceClosure* callback,
                         const HostZoomMap::ZoomLevelChange& host) {
   std::move(*callback).Run();
 }
-
-}  // namespace
-
-namespace {
 
 int GetZoomPercent(content::WebContents* contents,
                    bool* enable_plus,

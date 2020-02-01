@@ -167,6 +167,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   double Duration() const override;
   virtual double timelineOffset() const;
   double CurrentTime() const override;
+  bool IsEnded() const override;
 
   bool PausedWhenHidden() const override;
 

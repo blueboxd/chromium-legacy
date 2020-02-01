@@ -258,6 +258,12 @@ class GC_PLUGIN_IGNORE(
       DCHECK(result.is_new_entry);
     }
 
+    void AddRootEdge(State* destination, std::string edge_name) {
+      // State may represent root groups in which case there may exist multiple
+      // references to the same |destination|.
+      named_edges_.insert(destination, std::move(edge_name));
+    }
+
     std::string EdgeName(State* destination) {
       auto it = named_edges_.find(destination);
       if (it != named_edges_.end())
@@ -650,7 +656,7 @@ void V8EmbedderGraphBuilder::VisitRoot(void* object,
     State* const current = GetOrCreateState(
         traceable, HeapObjectHeader::FromPayload(traceable)->Name(),
         parent->GetDomTreeState());
-    parent->AddEdge(current, location.ToString());
+    parent->AddRootEdge(current, location.ToString());
   }
   Visit(object, wrapper_descriptor);
 }

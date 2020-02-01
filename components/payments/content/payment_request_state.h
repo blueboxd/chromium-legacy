@@ -24,6 +24,7 @@
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "url/origin.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -113,6 +114,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
       content::WebContents* web_contents,
       const GURL& top_level_origin,
       const GURL& frame_origin,
+      const url::Origin& frame_security_origin,
       PaymentRequestSpec* spec,
       Delegate* delegate,
       const std::string& app_locale,
@@ -128,6 +130,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   PaymentRequestSpec* GetSpec() override;
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
+  const url::Origin& GetFrameSecurityOrigin() override;
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   bool MayCrawlForInstallablePaymentApps() override;
@@ -332,6 +335,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   content::WebContents* web_contents_;
   const GURL top_origin_;
   const GURL frame_origin_;
+  const url::Origin frame_security_origin_;
   size_t number_of_payment_app_factories_ = 0;
 
   // True when the requested autofill data (shipping address and/or contact

@@ -208,7 +208,8 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintCaching) {
                                hit_test_chunk_properties, hit_test_data)));
 
   sibling_element->setAttribute(html_names::kStyleAttr, "background: green;");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(PaintWithoutCommit());
   // Only the background display item of the sibling should be invalidated.
   EXPECT_EQ(2, NumCachedNewItems());

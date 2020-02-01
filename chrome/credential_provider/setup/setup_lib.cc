@@ -28,6 +28,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 
 namespace credential_provider {
@@ -239,6 +240,12 @@ HRESULT DoInstall(const base::FilePath& installer_path,
     // through.
   }
 
+  hr = WriteCredentialProviderRegistryValues();
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "WriteCredentialProviderRegistryValues failed hr="
+                 << putHR(hr);
+  }
+
   return S_OK;
 }
 
@@ -375,6 +382,20 @@ HRESULT WriteUninstallRegistryValues(const base::FilePath& setup_exe) {
                    << " hr=" << putHR(hr);
       return hr;
     }
+  }
+
+  return HRESULT_FROM_WIN32(status);
+}
+
+HRESULT WriteCredentialProviderRegistryValues() {
+  base::win::RegKey key;
+  LONG status = key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                           KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (status != ERROR_SUCCESS) {
+    HRESULT hr = HRESULT_FROM_WIN32(status);
+    LOGFN(ERROR) << "Unable to create " << kGcpRootKeyName
+                 << " hr=" << putHR(hr);
+    return hr;
   }
 
   return HRESULT_FROM_WIN32(status);

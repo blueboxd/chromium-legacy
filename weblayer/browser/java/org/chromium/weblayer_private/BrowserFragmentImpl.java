@@ -54,10 +54,10 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         super.onCreate(savedInstanceState);
         // onCreate() is only called once
         assert mBrowser == null;
-        mBrowser = new BrowserImpl(mProfile, mPersistenceId, savedInstanceState);
         // onCreate() is always called after onAttach(). onAttach() sets |mContext|.
         assert mContext != null;
-        mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
+        mBrowser = new BrowserImpl(mProfile, mPersistenceId, savedInstanceState, mContext,
+                new FragmentWindowAndroid(mContext, this));
     }
 
     @Override

@@ -274,7 +274,6 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-      <part file="app_modal_strings.grdp" />
       <part file="autofill_assistant_strings.grdp" />
       <part file="autofill_payments_strings.grdp" />
       <part file="autofill_strings.grdp" />
@@ -289,6 +288,7 @@
       <part file="find_in_page_strings.grdp" />
       <part file="flags_strings.grdp" />
       <part file="history_strings.grdp" />
+      <part file="javascript_dialogs_strings.grdp" />
       <part file="login_dialog_strings.grdp" />
       <part file="media_message_center_strings.grdp" />
       <part file="new_or_sad_tab_strings.grdp" />

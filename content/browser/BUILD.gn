@@ -91,6 +91,7 @@ jumbo_source_set("browser") {
     "//content/browser/cookie_store:cookie_store_proto",
     "//content/browser/devtools:devtools_background_services_proto",
     "//content/browser/devtools:protocol_sources",
+    "//content/browser/native_file_system:native_file_system_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/payments:payment_app_proto",
     "//content/browser/process_internals:mojo_bindings",
@@ -833,6 +834,8 @@ jumbo_source_set("browser") {
     "download/save_types.h",
     "field_trial_recorder.cc",
     "field_trial_recorder.h",
+    "field_trial_synchronizer.cc",
+    "field_trial_synchronizer.h",
     "file_system/browser_file_system_helper.cc",
     "file_system/browser_file_system_helper.h",
     "file_system/file_system_manager_impl.cc",
@@ -2426,6 +2429,7 @@ jumbo_source_set("browser") {
       "//ui/android",
       "//ui/compositor",
       "//ui/compositor/host",
+      "//url:gurl_android",
       "//url:origin_android",
     ]
     if (enable_vulkan) {

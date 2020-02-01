@@ -19,6 +19,7 @@ extern const base::Feature kAndroidBlockIntentNonSafelistedHeaders;
 extern const base::Feature kAndroidNightMode;
 extern const base::Feature kAndroidNightModeCCT;
 extern const base::Feature kAndroidNightModeForQ;
+extern const base::Feature kAndroidNightModeTabReparenting;
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kAndroidPaymentApps;

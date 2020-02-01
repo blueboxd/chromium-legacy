@@ -33,8 +33,8 @@
 class Browser;
 class Profile;
 
-namespace app_modal {
-class JavaScriptAppModalDialog;
+namespace javascript_dialogs {
+class AppModalDialogController;
 }
 
 namespace base {
@@ -177,7 +177,7 @@ GURL GetTestUrl(const base::FilePath& dir, const base::FilePath& file);
 bool GetRelativeBuildDirectory(base::FilePath* build_dir);
 
 // Blocks until an application modal dialog is shown and returns it.
-app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog();
+javascript_dialogs::AppModalDialogController* WaitForAppModalDialog();
 
 #if defined(TOOLKIT_VIEWS)
 // Blocks until the given view attains the given visibility state.

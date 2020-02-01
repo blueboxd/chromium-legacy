@@ -1317,9 +1317,6 @@ void ExtractUnderlines(NSAttributedString* string,
       return;
   }
 
-  // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
-  ui::ComputeEventLatencyOS(event);
-
   // Use an NSEvent monitor to listen for the wheel-end end. This ensures that
   // the event is received even when the mouse cursor is no longer over the view
   // when the scrolling ends (e.g. if the tab was switched). This is necessary

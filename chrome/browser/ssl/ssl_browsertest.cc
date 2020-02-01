@@ -7280,6 +7280,33 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSPagesNotCached) {
   observer.WaitForNavigation();  // Will fail if resource is loaded from cache.
 }
 
+// Tests that a page with legacy TLS and HSTS shows a bypassable interstitial
+// rather than a hard non-bypassable HSTS warning.
+IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSNotFatal) {
+  // Set HSTS for the test page.
+  ssl_test_util::SetHSTSForHostName(browser()->profile(), kHstsTestHostName);
+
+  // Connect over TLS 1.0 and proceed through the interstitial.
+  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
+  ASSERT_TRUE(https_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL(kHstsTestHostName, "/ssl/google.html"));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+
+  // Verify that there is a proceed link in the interstitial.
+  int result = security_interstitials::CMD_ERROR;
+  const std::string javascript = base::StringPrintf(
+      "domAutomationController.send("
+      "(document.querySelector(\"#proceed-link\") === null) "
+      "? (%d) : (%d))",
+      security_interstitials::CMD_TEXT_NOT_FOUND,
+      security_interstitials::CMD_TEXT_FOUND);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(tab->GetMainFrame(),
+                                                  javascript, &result));
+  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND, result);
+}
+
 // Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes
 // through the new NetworkServiceClient interface to deliver cert error
 // notifications to the browser which then overrides the certificate error.

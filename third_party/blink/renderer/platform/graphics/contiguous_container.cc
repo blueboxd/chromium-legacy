@@ -22,7 +22,7 @@ class ContiguousContainerBase::Buffer {
   USING_FAST_MALLOC(Buffer);
 
  public:
-  Buffer(size_t buffer_size, const char* type_name) {
+  Buffer(wtf_size_t buffer_size, const char* type_name) {
     capacity_ = WTF::Partitions::BufferActualSize(buffer_size);
     begin_ = end_ =
         static_cast<char*>(WTF::Partitions::BufferMalloc(capacity_, type_name));
@@ -34,12 +34,12 @@ class ContiguousContainerBase::Buffer {
     WTF::Partitions::BufferFree(begin_);
   }
 
-  size_t Capacity() const { return capacity_; }
-  size_t UsedCapacity() const { return end_ - begin_; }
-  size_t UnusedCapacity() const { return Capacity() - UsedCapacity(); }
+  wtf_size_t Capacity() const { return capacity_; }
+  wtf_size_t UsedCapacity() const { return end_ - begin_; }
+  wtf_size_t UnusedCapacity() const { return Capacity() - UsedCapacity(); }
   bool IsEmpty() const { return UsedCapacity() == 0; }
 
-  void* Allocate(size_t object_size) {
+  void* Allocate(wtf_size_t object_size) {
     DCHECK_GE(UnusedCapacity(), object_size);
     ANNOTATE_CHANGE_SIZE(begin_, capacity_, UsedCapacity(),
                          UsedCapacity() + object_size);
@@ -60,12 +60,12 @@ class ContiguousContainerBase::Buffer {
   // m_begin <= m_end <= m_begin + m_capacity
   char* begin_;
   char* end_;
-  size_t capacity_;
+  wtf_size_t capacity_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
-ContiguousContainerBase::ContiguousContainerBase(size_t max_object_size)
+ContiguousContainerBase::ContiguousContainerBase(wtf_size_t max_object_size)
     : end_index_(0), max_object_size_(max_object_size) {}
 
 ContiguousContainerBase::ContiguousContainerBase(
@@ -82,31 +82,31 @@ ContiguousContainerBase& ContiguousContainerBase::operator=(
   return *this;
 }
 
-size_t ContiguousContainerBase::CapacityInBytes() const {
-  size_t capacity = 0;
+wtf_size_t ContiguousContainerBase::CapacityInBytes() const {
+  wtf_size_t capacity = 0;
   for (const auto& buffer : buffers_)
     capacity += buffer->Capacity();
   return capacity;
 }
 
-size_t ContiguousContainerBase::UsedCapacityInBytes() const {
-  size_t used_capacity = 0;
+wtf_size_t ContiguousContainerBase::UsedCapacityInBytes() const {
+  wtf_size_t used_capacity = 0;
   for (const auto& buffer : buffers_)
     used_capacity += buffer->UsedCapacity();
   return used_capacity;
 }
 
-size_t ContiguousContainerBase::MemoryUsageInBytes() const {
+wtf_size_t ContiguousContainerBase::MemoryUsageInBytes() const {
   return sizeof(*this) + CapacityInBytes() +
          elements_.capacity() * sizeof(elements_[0]);
 }
 
-void ContiguousContainerBase::ReserveInitialCapacity(size_t buffer_size,
+void ContiguousContainerBase::ReserveInitialCapacity(wtf_size_t buffer_size,
                                                      const char* type_name) {
   AllocateNewBufferForNextAllocation(buffer_size, type_name);
 }
 
-void* ContiguousContainerBase::Allocate(size_t object_size,
+void* ContiguousContainerBase::Allocate(wtf_size_t object_size,
                                         const char* type_name) {
   DCHECK_LE(object_size, max_object_size_);
 
@@ -120,9 +120,9 @@ void* ContiguousContainerBase::Allocate(size_t object_size,
   }
 
   if (!buffer_for_alloc) {
-    size_t new_buffer_size = buffers_.IsEmpty()
-                                 ? kDefaultInitialBufferSize * max_object_size_
-                                 : 2 * buffers_.back()->Capacity();
+    wtf_size_t new_buffer_size =
+        buffers_.IsEmpty() ? kDefaultInitialBufferSize * max_object_size_
+                           : 2 * buffers_.back()->Capacity();
     buffer_for_alloc =
         AllocateNewBufferForNextAllocation(new_buffer_size, type_name);
   }
@@ -169,7 +169,7 @@ void ContiguousContainerBase::ShrinkToFit() {
 
 ContiguousContainerBase::Buffer*
 ContiguousContainerBase::AllocateNewBufferForNextAllocation(
-    size_t buffer_size,
+    wtf_size_t buffer_size,
     const char* type_name) {
   DCHECK(buffers_.IsEmpty() || end_index_ == buffers_.size() - 1);
   std::unique_ptr<Buffer> new_buffer =

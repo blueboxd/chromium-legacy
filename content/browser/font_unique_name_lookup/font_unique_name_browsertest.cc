@@ -117,20 +117,10 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
   }
 
 #if defined(OS_WIN)
-  // The Windows service for font unique name lookup needs a cache directory to
-  // persist the cached information. Configure a temporary one before running
-  // this test.
-  void SetUpInProcessBrowserTestFixture() override {
-    DevToolsProtocolTest::SetUpInProcessBrowserTestFixture();
-    DWriteFontLookupTableBuilder* table_builder =
-        DWriteFontLookupTableBuilder::GetInstance();
-    ASSERT_TRUE(cache_directory_.CreateUniqueTempDir());
-    table_builder->SetCacheDirectoryForTesting(cache_directory_.GetPath());
-  }
-
   void PreRunTestOnMainThread() override {
     DWriteFontLookupTableBuilder* table_builder =
         DWriteFontLookupTableBuilder::GetInstance();
+    table_builder->ResetStateForTesting();
     table_builder->SchedulePrepareFontUniqueNameTableIfNeeded();
     DevToolsProtocolTest::PreRunTestOnMainThread();
   }

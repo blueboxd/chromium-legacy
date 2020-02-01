@@ -1117,7 +1117,8 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
   ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kScrollIntoView);
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   ScrollIntoViewNoVisualUpdate(options);
 }
 
@@ -1153,7 +1154,8 @@ void Element::ScrollIntoViewNoVisualUpdate(
 }
 
 void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
 
   if (!GetLayoutObject())
     return;
@@ -1173,7 +1175,8 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
 }
 
 int Element::OffsetLeft() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
@@ -1184,7 +1187,8 @@ int Element::OffsetLeft() {
 }
 
 int Element::OffsetTop() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(layout_object->PixelSnappedOffsetTop(OffsetParent())),
@@ -1194,7 +1198,8 @@ int Element::OffsetTop() {
 }
 
 int Element::OffsetWidth() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
@@ -1205,7 +1210,8 @@ int Element::OffsetWidth() {
 }
 
 int Element::OffsetHeight() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
@@ -1825,7 +1831,8 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
 }
 
 IntRect Element::BoundsInViewport() const {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kUnknown);
 
   LocalFrameView* view = GetDocument().View();
   if (!view)
@@ -1908,7 +1915,8 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
 }
 
 void Element::ClientQuads(Vector<FloatQuad>& quads) {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
 
   LayoutObject* element_layout_object = GetLayoutObject();
   if (!element_layout_object)

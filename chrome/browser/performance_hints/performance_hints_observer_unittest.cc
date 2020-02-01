@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -133,12 +134,16 @@ TEST_F(PerformanceHintsObserverTest, HasPerformanceHints) {
   ASSERT_NE(observer, nullptr);
   CallDidFinishNavigation(observer);
 
+  base::HistogramTester histogram_tester;
+
   EXPECT_THAT(
       observer->HintForURL(GURL("http://www.test.com")),
       testing::Optional(testing::AllOf(
           testing::Property(&PerformanceHint::wildcard_pattern, Eq("test.com")),
           testing::Property(&PerformanceHint::performance_class,
                             Eq(optimization_guide::proto::PERFORMANCE_SLOW)))));
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintFound*/ 3, 1);
   EXPECT_THAT(
       observer->HintForURL(GURL("https://www.othersite.net/this/link")),
       testing::Optional(testing::AllOf(
@@ -146,8 +151,12 @@ TEST_F(PerformanceHintsObserverTest, HasPerformanceHints) {
                             Eq("othersite.net")),
           testing::Property(&PerformanceHint::performance_class,
                             Eq(optimization_guide::proto::PERFORMANCE_FAST)))));
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintFound*/ 3, 2);
   EXPECT_THAT(observer->HintForURL(GURL("https://www.nohint.com")),
               Eq(base::nullopt));
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintNotFound*/ 0, 1);
 }
 
 TEST_F(PerformanceHintsObserverTest, NoHintsForPage) {
@@ -166,8 +175,13 @@ TEST_F(PerformanceHintsObserverTest, NoHintsForPage) {
   ASSERT_NE(observer, nullptr);
   CallDidFinishNavigation(observer);
 
+  base::HistogramTester histogram_tester;
+
   EXPECT_THAT(observer->HintForURL(GURL("https://www.nohint.com")),
               Eq(base::nullopt));
+
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintNotFound*/ 0, 1);
 }
 
 TEST_F(PerformanceHintsObserverTest, PerformanceInfoRequestedBeforeCallback) {
@@ -183,8 +197,13 @@ TEST_F(PerformanceHintsObserverTest, PerformanceInfoRequestedBeforeCallback) {
   ASSERT_NE(observer, nullptr);
   CallDidFinishNavigation(observer);
 
+  base::HistogramTester histogram_tester;
+
   EXPECT_THAT(observer->HintForURL(GURL("https://www.nohint.com")),
               Eq(base::nullopt));
+
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintNotReady*/ 1, 1);
 }
 
 TEST_F(PerformanceHintsObserverTest, OptimizationGuideDisabled) {

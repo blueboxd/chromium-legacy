@@ -128,6 +128,12 @@
       showcase::kClassForInstantiationKey : @"SCBadgeCoordinator",
       showcase::kUseCaseKey : @"Badge View",
     },
+    @{
+      showcase::kClassForDisplayKey : @"SaveCardModalViewController",
+      showcase::
+      kClassForInstantiationKey : @"SCInfobarModalSaveCardCoordinator",
+      showcase::kUseCaseKey : @"Save Card Modal",
+    },
   ];
 }
 

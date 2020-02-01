@@ -19,14 +19,16 @@ struct PaintChunk;
 // each derived display item; the ideal value is the least common multiple.
 // The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
 // in PaintController::CreateAndAppend().
-static const size_t kDisplayItemAlignment = alignof(ScrollbarDisplayItem);
-static const size_t kMaximumDisplayItemSize = sizeof(ScrollbarDisplayItem);
+static constexpr wtf_size_t kDisplayItemAlignment =
+    alignof(ScrollbarDisplayItem);
+static constexpr wtf_size_t kMaximumDisplayItemSize =
+    sizeof(ScrollbarDisplayItem);
 
 // A container for a list of display items.
 class PLATFORM_EXPORT DisplayItemList
     : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
  public:
-  DisplayItemList(size_t initial_size_bytes)
+  DisplayItemList(wtf_size_t initial_size_bytes)
       : ContiguousContainer(kMaximumDisplayItemSize, initial_size_bytes) {}
   DisplayItemList(DisplayItemList&& source)
       : ContiguousContainer(std::move(source)) {}
@@ -87,11 +89,11 @@ class PLATFORM_EXPORT DisplayItemList
   };
   typedef unsigned JsonFlags;
 
-  std::unique_ptr<JSONArray> SubsequenceAsJSON(size_t begin_index,
-                                               size_t end_index,
+  std::unique_ptr<JSONArray> SubsequenceAsJSON(wtf_size_t begin_index,
+                                               wtf_size_t end_index,
                                                JsonFlags) const;
-  void AppendSubsequenceAsJSON(size_t begin_index,
-                               size_t end_index,
+  void AppendSubsequenceAsJSON(wtf_size_t begin_index,
+                               wtf_size_t end_index,
                                JsonFlags,
                                JSONArray&) const;
 #endif  // DCHECK_IS_ON()

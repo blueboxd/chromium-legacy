@@ -64,10 +64,12 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
 
   void UpdateAllLifecyclePhasesForCaretTest() {
     // Partial lifecycle updates should not affect caret paint invalidation.
-    GetDocument().View()->UpdateLifecycleToLayoutClean();
+    GetDocument().View()->UpdateLifecycleToLayoutClean(
+        DocumentUpdateReason::kTest);
     UpdateAllLifecyclePhasesForTest();
     // Partial lifecycle updates should not affect caret paint invalidation.
-    GetDocument().View()->UpdateLifecycleToLayoutClean();
+    GetDocument().View()->UpdateLifecycleToLayoutClean(
+        DocumentUpdateReason::kTest);
   }
 };
 
@@ -86,7 +88,8 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   GetDocument().View()->SetTracksRasterInvalidations(true);
   GetDocument().body()->focus();
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();
@@ -110,7 +113,8 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
       SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
 
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();
@@ -138,7 +142,8 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
 
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();
@@ -167,7 +172,8 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   // Focus the body.
   GetDocument().body()->focus();
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();
@@ -188,7 +194,8 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
           .Build());
 
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();
@@ -219,7 +226,8 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
           .Build());
 
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();
@@ -256,7 +264,8 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element2, 0))
           .Build());
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(block2->ShouldPaintCursorCaret());
   EXPECT_EQ(block2, CaretLayoutBlock());
   EXPECT_FALSE(block1->ShouldPaintCursorCaret());
@@ -267,7 +276,8 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element1, 0))
           .Build());
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(block1->ShouldPaintCursorCaret());
   EXPECT_EQ(block1, CaretLayoutBlock());
   EXPECT_FALSE(block2->ShouldPaintCursorCaret());
@@ -279,7 +289,8 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element2, 0))
           .Build());
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(block2->ShouldPaintCursorCaret());
   EXPECT_EQ(block2, CaretLayoutBlock());
   EXPECT_FALSE(block1->ShouldPaintCursorCaret());
@@ -298,7 +309,8 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
   UpdateAllLifecyclePhasesForCaretTest();
   // Remove selection.
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(block1, PreviousCaretLayoutBlock());
 }
 
@@ -326,7 +338,8 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   Selection().SetCaretVisible(true);
 
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
 
   UpdateAllLifecyclePhasesForCaretTest();

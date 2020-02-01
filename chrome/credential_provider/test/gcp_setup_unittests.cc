@@ -34,6 +34,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +55,7 @@ class GcpSetupTest : public ::testing::Test {
   void ExpectCredentialProviderToBeRegistered(
       bool registered,
       const base::string16& product_version);
+  void ExpectRequiredRegistryEntriesToBePresent();
 
   base::FilePath installed_path_for_version(
       const base::string16& product_version) {
@@ -176,6 +178,11 @@ void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
   }
 }
 
+void GcpSetupTest::ExpectRequiredRegistryEntriesToBePresent() {
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_READ);
+  EXPECT_TRUE(key.Valid());
+}
+
 void GcpSetupTest::SetUp() {
   ASSERT_TRUE(SUCCEEDED(
       CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE)));
@@ -230,6 +237,7 @@ TEST_F(GcpSetupTest, DoInstall) {
             DoInstall(module_path(), product_version(), fakes_for_testing()));
   ExpectAllFilesToExist(true, product_version());
   ExpectCredentialProviderToBeRegistered(true, product_version());
+  ExpectRequiredRegistryEntriesToBePresent();
 
   EXPECT_FALSE(
       fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
@@ -502,6 +510,20 @@ TEST_F(GcpSetupTest, WriteUninstallStrings) {
 
   EXPECT_EQ(uninstall_arguments,
             expected_uninstall_arguments.GetCommandLineString());
+}
+
+TEST_F(GcpSetupTest, WriteCredentialProviderRegistryValues) {
+  // Verify keys don't exist.
+  base::win::RegKey key;
+  ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                                    KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+
+  // Write GCPW registry keys.
+  ASSERT_EQ(S_OK, WriteCredentialProviderRegistryValues());
+
+  // Verify keys were created.
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                                    KEY_ALL_ACCESS | KEY_WOW64_32KEY));
 }
 
 TEST_F(GcpSetupTest, DoInstallWritesUninstallStrings) {

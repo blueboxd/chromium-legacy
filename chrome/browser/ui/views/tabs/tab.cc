@@ -741,7 +741,7 @@ void Tab::SetClosing(bool closing) {
 }
 
 base::Optional<SkColor> Tab::GetGroupColor() const {
-  if (!group().has_value())
+  if (closing_ || !group().has_value())
     return base::nullopt;
 
   return controller_->GetPaintedGroupColor(

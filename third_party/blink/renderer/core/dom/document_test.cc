@@ -934,19 +934,19 @@ TEST_F(DocumentTest,
   // Asking for any element that is not affected by a sticky element should only
   // advance the lifecycle to layout clean.
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("ancestor"));
+      GetDocument().getElementById("ancestor"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             GetDocument().Lifecycle().GetState());
 
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("nonSticky"));
+      GetDocument().getElementById("nonSticky"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             GetDocument().Lifecycle().GetState());
 
   // However, asking for either the sticky element or it's descendents should
   // clean compositing inputs as well.
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("sticky"));
+      GetDocument().getElementById("sticky"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
 
@@ -956,7 +956,7 @@ TEST_F(DocumentTest,
             GetDocument().Lifecycle().GetState());
 
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("stickyChild"));
+      GetDocument().getElementById("stickyChild"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
 }

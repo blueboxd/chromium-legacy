@@ -2655,8 +2655,6 @@ TEST_F(AppListViewTest, BackAction) {
 
 // Tests selecting search result to show embedded Assistant UI.
 TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
-  scoped_feature_list_.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI}, {});
   Show();
 
   // Initially the search box is inactive, hitting Enter to activate it.
@@ -2687,9 +2685,6 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
 // Tests that the correct contents is visible in the contents_view upon
 // reshowing. See b/142069648 for the details.
 TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI}, {});
   Initialize(true /*is_tablet_mode*/);
   Show(true /*is_tablet_mode*/);
 
@@ -2708,13 +2703,11 @@ TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
       contents_view()->GetPageView(assistant_page_index)->GetVisible());
 }
 
-// Tests that no answer card view when kEnableAssistantLauncherUI is enabled.
+// Tests that no answer card view when kEnableAssistantSearch is enabled.
 TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI,
-       app_list_features::kEnableAssistantSearch},
-      {});
+      {app_list_features::kEnableAssistantSearch}, {});
   ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
   ASSERT_TRUE(app_list_features::IsAssistantSearchEnabled());
 
@@ -2727,9 +2720,6 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
 // Tests that pressing escape when in embedded Assistant UI results in showing
 // the search page view.
 TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI}, {});
   ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2749,9 +2739,6 @@ TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
 // Tests that clicking empty region in AppListview when showing Assistant UI
 // should go back to peeking state.
 TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI}, {});
   ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2784,9 +2771,6 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
 
 // Tests that expand arrow is not visible when showing embedded Assistant UI.
 TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI}, {});
   ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2803,9 +2787,6 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
 
 // Tests that search box is not visible when showing embedded Assistant UI.
 TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantLauncherUI}, {});
   ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);

@@ -16,8 +16,8 @@ import org.chromium.components.payments.PaymentManifestDownloader.ManifestDownlo
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallback;
 import org.chromium.components.payments.WebAppManifestSection;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;

@@ -8582,14 +8582,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_MUTE_SITE_MAC" desc="The Mac menu item for muting the selected tab(s).">
           Mute Site
         </message>
-        <message name="IDS_PIN_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
-          Pin Tab
-        </message>
         <message name="IDS_MUTE_TARGET_SITE_MAC" desc="The Mac menu item for muting the selected tab(s).">
           Mute Selected Site
         </message>
+        <message name="IDS_PIN_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
+          Pin Tab
+        </message>
         <message name="IDS_PIN_TARGET_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
           Pin Selected Tab
+        </message>
+        <message name="IDS_GROUP_TAB_MAC" desc="The Mac menu item for adding the selected tab(s) to a new tab group.">
+          Group Tab
+        </message>
+        <message name="IDS_GROUP_TARGET_TAB_MAC" desc="The Mac menu item for adding the selected tab(s) to a new tab group.">
+          Group Selected Tab
         </message>
         <!-- Help menu -->
         <message name="IDS_FEEDBACK_MAC" desc="The Mac menu item to report a bug in the Help menu.">

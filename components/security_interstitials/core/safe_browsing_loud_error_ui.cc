@@ -27,7 +27,7 @@ const char kSbDiagnosticUrl[] =
 
 // Constants for the V4 phishing string upgrades.
 const char kReportPhishingErrorUrl[] =
-    "https://www.google.com/safebrowsing/report_error/";
+    "https://safebrowsing.google.com/safebrowsing/report_error/?url=%s";
 
 void RecordExtendedReportingPrefChanged(bool report) {
   UMA_HISTOGRAM_BOOLEAN(
@@ -213,7 +213,10 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
     case CMD_REPORT_PHISHING_ERROR: {
       controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::REPORT_PHISHING_ERROR);
-      GURL phishing_error_url(kReportPhishingErrorUrl);
+      std::string phishing_error = base::StringPrintf(
+          kReportPhishingErrorUrl,
+          net::EscapeQueryParamValue(request_url().spec(), true).c_str());
+      GURL phishing_error_url(phishing_error);
       phishing_error_url = google_util::AppendGoogleLocaleParam(
           phishing_error_url, app_locale());
       controller()->OpenURL(should_open_links_in_new_tab(), phishing_error_url);

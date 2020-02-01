@@ -14,14 +14,15 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/dns_hosts.h"
-#include "net/url_request/url_request_context.h"
 
 namespace net {
 
 class AddressSorter;
 class ClientSocketFactory;
+class DnsSession;
 class DnsTransactionFactory;
 class NetLog;
+class ResolveContext;
 
 // Entry point for HostResolverManager to interact with the built-in async
 // resolver, as implemented by DnsTransactionFactory. Manages configuration and
@@ -45,7 +46,8 @@ class NET_EXPORT DnsClient {
 
   // When true, DoH should not be used in AUTOMATIC mode since no DoH servers
   // have a successful probe state.
-  virtual bool FallbackFromSecureTransactionPreferred() const = 0;
+  virtual bool FallbackFromSecureTransactionPreferred(
+      ResolveContext* context) const = 0;
 
   // When true, insecure DNS transactions should not be used when reasonable
   // fallback alternatives, e.g. system resolution can be used instead.
@@ -58,6 +60,13 @@ class NET_EXPORT DnsClient {
   // Returns whether or not the effective config changed.
   virtual bool SetSystemConfig(base::Optional<DnsConfig> system_config) = 0;
   virtual bool SetConfigOverrides(DnsConfigOverrides config_overrides) = 0;
+
+  // Used for tracking per-context-per-session data.
+  // TODO(crbug.com/1022059): Once more per-context-per-session data has been
+  // moved to ResolveContext and it doesn't need to call back into DnsSession,
+  // convert this to a more limited session handle to prevent overuse of
+  // DnsSession outside the DnsClient code.
+  virtual DnsSession* GetCurrentSession() = 0;
 
   // Retrieve the current DNS configuration that would be used if transactions
   // were otherwise currently allowed. Returns null if configuration is

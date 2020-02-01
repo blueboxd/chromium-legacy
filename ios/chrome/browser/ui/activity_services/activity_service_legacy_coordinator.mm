@@ -7,8 +7,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_controller.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
@@ -44,10 +44,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 @implementation ActivityServiceLegacyCoordinator
 
-@synthesize browserState = _browserState;
-@synthesize dispatcher = _dispatcher;
-@synthesize tabModel = _tabModel;
-
 @synthesize positionProvider = _positionProvider;
 @synthesize presentationProvider = _presentationProvider;
 
@@ -55,29 +51,19 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 #pragma mark - Public methods
 
-- (void)disconnect {
-  self.browserState = nil;
-  self.dispatcher = nil;
+- (void)start {
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(sharePage)];
+}
+
+- (void)stop {
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
 }
 
 - (void)cancelShare {
   id<ShareProtocol> controller = [ActivityServiceController sharedInstance];
   [controller cancelShareAnimated:NO];
-}
-
-#pragma mark - Properties
-
-- (void)setDispatcher:(CommandDispatcher*)dispatcher {
-  if (dispatcher == self.dispatcher) {
-    return;
-  }
-
-  if (self.dispatcher) {
-    [self.dispatcher stopDispatchingToTarget:self];
-  }
-
-  [dispatcher startDispatchingToTarget:self forSelector:@selector(sharePage)];
-  _dispatcher = dispatcher;
 }
 
 #pragma mark - Command handlers
@@ -86,7 +72,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
   self.sharePageStartTime = base::TimeTicks::Now();
   __weak ActivityServiceLegacyCoordinator* weakSelf = self;
   activity_services::RetrieveCanonicalUrl(
-      self.tabModel.webStateList->GetActiveWebState(), ^(const GURL& url) {
+      self.browser->GetWebStateList()->GetActiveWebState(), ^(const GURL& url) {
         [weakSelf sharePageWithCanonicalURL:url];
       });
 }
@@ -94,7 +80,8 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 #pragma mark - Providers
 
 - (id<PasswordFormFiller>)currentPasswordFormFiller {
-  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  web::WebState* webState =
+      self.browser->GetWebStateList()->GetActiveWebState();
   return webState ? PasswordTabHelper::FromWebState(webState)
                         ->GetPasswordFormFiller()
                   : nil;
@@ -104,7 +91,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 - (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL {
   ShareToData* data = activity_services::ShareToDataForWebState(
-      self.tabModel.webStateList->GetActiveWebState(), canonicalURL);
+      self.browser->GetWebStateList()->GetActiveWebState(), canonicalURL);
   if (!data)
     return;
 
@@ -118,10 +105,12 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
     self.sharePageStartTime = base::TimeTicks();
   }
 
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
   [controller shareWithData:data
-               browserState:self.browserState
+               browserState:self.browser->GetBrowserState()
                  dispatcher:static_cast<id<BrowserCommands, SnackbarCommands>>(
-                                self.dispatcher)
+                                self.browser->GetCommandDispatcher())
            passwordProvider:self
            positionProvider:self.positionProvider
        presentationProvider:self.presentationProvider];

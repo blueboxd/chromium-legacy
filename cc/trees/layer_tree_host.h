@@ -532,14 +532,17 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 
+  // These methods are for layer tree mode only.
   // Returns the layer with the given |element_id|. In layer-list mode, only
   // scrollable layers are registered in this map.
-  Layer* LayerByElementId(ElementId element_id) const;
   void RegisterElement(ElementId element_id,
                        ElementListType list_type,
                        Layer* layer);
   void UnregisterElement(ElementId element_id, ElementListType list_type);
 
+  Layer* LayerByElementIdForTesting(ElementId element_id) const;
+
+  // For layer list mode only.
   void UpdateActiveElements();
 
   void SetElementIdsForTesting();
@@ -717,6 +720,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // free of slow-paths before toggling the flag.
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
+  // For layer tree mode only.
+  Layer* LayerByElementId(ElementId element_id) const;
+
   void ApplyViewportChanges(const ScrollAndScaleSet& info);
   void RecordManipulationTypeCounts(const ScrollAndScaleSet& scroll_info);
   void SendOverscrollAndScrollEndEventsFromImplSide(
@@ -845,7 +851,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Layer id to Layer map.
   std::unordered_map<int, Layer*> layer_id_map_;
 
-  // In layer-list mode, this map is only used for scrollable layers.
+  // This is for layer tree mode only.
   std::unordered_map<ElementId, Layer*, ElementIdHash> element_layers_map_;
 
   bool in_paint_layer_contents_ = false;

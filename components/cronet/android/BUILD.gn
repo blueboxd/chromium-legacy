@@ -1108,7 +1108,7 @@ if (!is_component_build) {
       "//third_party/netty4:netty_all_java",
     ]
 
-    enable_multidex = false
+    enable_multidex = true
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_configs = [

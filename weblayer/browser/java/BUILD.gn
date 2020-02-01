@@ -51,6 +51,7 @@ android_library("java") {
     "org/chromium/weblayer_private/TabCallbackProxy.java",
     "org/chromium/weblayer_private/TabImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
+    "org/chromium/weblayer_private/UrlBarControllerImpl.java",
     "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
@@ -203,6 +204,7 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/IRemoteFragmentClient.aidl",
     "org/chromium/weblayer_private/interfaces/ITab.aidl",
     "org/chromium/weblayer_private/interfaces/ITabClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IUrlBarController.aidl",
     "org/chromium/weblayer_private/interfaces/IWebLayer.aidl",
     "org/chromium/weblayer_private/interfaces/IWebLayerFactory.aidl",
   ]

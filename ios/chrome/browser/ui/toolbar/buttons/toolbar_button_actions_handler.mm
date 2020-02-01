@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -56,6 +58,8 @@
 }
 
 - (void)searchAction:(id)sender {
+  base::RecordAction(
+      base::UserMetricsAction("MobileToolbarSearchButtonTapped"));
   [self.dispatcher closeFindInPage];
   if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
     UIView* senderView = base::mac::ObjCCastStrict<UIView>(sender);

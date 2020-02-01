@@ -9,20 +9,28 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-
-//
-// Interface tests.
-//
+#include "ppapi/shared_impl/test_utils.h"
 
 // Disable tests under ASAN.  http://crbug.com/104832.
 // This is a bit heavy handed, but the majority of these tests fail under ASAN.
 // See bug for history.
-#if !defined(ADDRESS_SANITIZER)
-
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_MouseLock_SucceedWhenAllowed DISABLED_MouseLock_SucceedWhenAllowed
+#else
+#define MAYBE_MouseLock_SucceedWhenAllowed MouseLock_SucceedWhenAllowed
+#endif  // ADDRESS_SANITIZER
 // Disabled due to timeouts: http://crbug.com/136548
-IN_PROC_BROWSER_TEST_F(
-    OutOfProcessPPAPITest, DISABLED_MouseLock_SucceedWhenAllowed) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
+                       MAYBE_MouseLock_SucceedWhenAllowed) {
   RunTestViaHTTP("MouseLock_SucceedWhenAllowed");
 }
 
-#endif // ADDRESS_SANITIZER
+// Flaky on Linux and Windows. http://crbug.com/135403
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_ImeInputEvent DISABLED_ImeInputEvent
+#else
+#define MAYBE_ImeInputEvent ImeInputEvent
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_ImeInputEvent) {
+  RunTest(ppapi::StripTestPrefixes("ImeInputEvent"));
+}

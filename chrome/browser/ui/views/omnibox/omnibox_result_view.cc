@@ -361,9 +361,9 @@ void OmniboxResultView::ButtonPressed(views::Button* button,
     // TODO(orinj): Implement.
   } else if (button == pedal_button_) {
     DCHECK(match_.pedal);
-    // TODO(orinj): Open the match in a way that does not conflict with search
-    // or tab switch. Various dispositions are now possible from a single match.
-    OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+    // Pedal action intent means we execute the match instead of opening it.
+    popup_contents_view_->model()->edit_model()->ExecutePedal(
+        match_, event.time_stamp());
   } else {
     NOTREACHED();
   }

@@ -1268,6 +1268,8 @@ TEST_P(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
 // Hides the hotseat if the hotseat is in kExtendedMode and the system tray
 // is about to show (see https://crbug.com/1028321).
 TEST_P(HotseatWidgetTest, DismissHotseatWhenSystemTrayShows) {
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1276,15 +1278,36 @@ TEST_P(HotseatWidgetTest, DismissHotseatWhenSystemTrayShows) {
   SwipeUpOnShelf();
   ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
-  // Activates the system tray when hotseat is in kExtended mode.
+  // Activates the system tray when hotseat is in kExtended mode and waits for
+  // the update in system tray to finish.
   StatusAreaWidget* status_area_widget = GetShelfWidget()->status_area_widget();
   const gfx::Point status_area_widget_center =
       status_area_widget->GetNativeView()->GetBoundsInScreen().CenterPoint();
   GetEventGenerator()->GestureTapAt(status_area_widget_center);
+  base::RunLoop().RunUntilIdle();
 
   // Expects that the system tray shows and the hotseat is hidden.
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
   EXPECT_TRUE(status_area_widget->unified_system_tray()->IsBubbleShown());
+
+  // Early out since the remaining code is only meaningful for auto-hide shelf.
+  if (GetPrimaryShelf()->auto_hide_behavior() !=
+      ShelfAutoHideBehavior::kAlways) {
+    return;
+  }
+
+  // Auto-hide shelf should show when opening the system tray.
+  EXPECT_EQ(ShelfAutoHideState::SHELF_AUTO_HIDE_SHOWN,
+            GetShelfLayoutManager()->auto_hide_state());
+
+  // Auto-hide shelf should hide when closing the system tray.
+  GetEventGenerator()->GestureTapAt(status_area_widget_center);
+
+  // Waits for the system tray to be closed.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ShelfAutoHideState::SHELF_AUTO_HIDE_HIDDEN,
+            GetShelfLayoutManager()->auto_hide_state());
 }
 
 // Tests that the work area updates once each when going to/from tablet mode

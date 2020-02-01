@@ -112,12 +112,20 @@ class TemplateURLRef {
       // whatever else is in the context.  The returned search term should not
       // be expanded, and the server will honor this along with creating a
       // narrow Search Term.
+      // The |source_lang| specifies a source language hint to apply for
+      // translation or to indicate that translation might be appropriate.
+      // This comes from CLD evaluating the selection and/or page content.
+      // The |target_lang| specifies the best language to translate into for
+      // the user, which also indicates when translation is appropriate or
+      // helpful.  This comes from the Chrome Language Model.
       ContextualSearchParams(int version,
                              int contextual_cards_version,
-                             const std::string& home_country,
+                             std::string home_country,
                              int64_t previous_event_id,
                              int previous_event_results,
-                             bool is_exact_search);
+                             bool is_exact_search,
+                             std::string source_lang,
+                             std::string target_lang);
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
@@ -148,6 +156,12 @@ class TemplateURLRef {
       // A flag that restricts the search to exactly match the selection rather
       // than expanding the Search Term to include other words in the context.
       bool is_exact_search = false;
+
+      // Source language string to translate from.
+      std::string source_lang;
+
+      // Target language string to be translated into.
+      std::string target_lang;
     };
 
     // Estimates dynamic memory usage.

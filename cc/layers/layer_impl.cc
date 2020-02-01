@@ -297,23 +297,37 @@ gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
   return scroll_tree.ScrollBy(scroll_node, scroll, layer_tree_impl());
 }
 
-void LayerImpl::SetScrollable(const gfx::Size& bounds) {
-  if (scrollable_ && scroll_container_bounds_ == bounds)
+void LayerImpl::UpdateScrollable() {
+  if (!element_id()) {
+    scrollable_ = false;
     return;
+  }
 
+  const auto* scroll_node = GetScrollTree().FindNodeFromElementId(element_id());
   bool was_scrollable = scrollable_;
-  scrollable_ = true;
-  scroll_container_bounds_ = bounds;
+  scrollable_ = scroll_node && scroll_node->scrollable;
+  if (was_scrollable == scrollable_ &&
+      (!scrollable_ ||
+       scroll_container_bounds_ == scroll_node->container_bounds)) {
+    return;
+  }
+
+  scroll_container_bounds_ =
+      scrollable_ ? scroll_node->container_bounds : gfx::Size();
 
   // Scrollbar positions depend on the bounds.
   layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
 
-  if (!was_scrollable)
-    layer_tree_impl()->AddScrollableLayer(this);
+  if (was_scrollable != scrollable_) {
+    if (scrollable_)
+      layer_tree_impl()->AddScrollableLayer(this);
+    else
+      layer_tree_impl()->RemoveScrollableLayer(this);
+  }
 
   if (layer_tree_impl()->settings().scrollbar_animator ==
       LayerTreeSettings::AURA_OVERLAY) {
-    set_needs_show_scrollbars(true);
+    set_needs_show_scrollbars(scrollable_);
   }
 
   NoteLayerPropertyChanged();
@@ -390,8 +404,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
     layer->layer_property_changed_from_property_trees_ = true;
 
   layer->SetBounds(bounds_);
-  if (scrollable_)
-    layer->SetScrollable(scroll_container_bounds_);
+  layer->UpdateScrollable();
 
   layer->set_is_scrollbar(is_scrollbar_);
 
@@ -437,9 +450,6 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
   result->SetInteger("clip_tree_index", clip_tree_index());
   result->SetInteger("effect_tree_index", effect_tree_index());
   result->SetInteger("scroll_tree_index", scroll_tree_index());
-
-  if (scrollable())
-    result->SetBoolean("Scrollable", true);
 
   if (!GetAllTouchActionRegions().IsEmpty()) {
     std::unique_ptr<base::Value> region = GetAllTouchActionRegions().AsValue();
@@ -540,7 +550,7 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
   bounds_ = bounds;
 
   // Scrollbar positions depend on the scrolling layer bounds.
-  if (scrollable())
+  if (scrollable_)
     layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
 
   NoteLayerPropertyChanged();
@@ -643,10 +653,6 @@ void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
     layer_tree_impl()->DidUpdateScrollOffset(element_id());
 }
 
-gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
-  return GetScrollTree().current_scroll_offset(element_id());
-}
-
 SimpleEnclosedRegion LayerImpl::VisibleOpaqueRegion() const {
   if (contents_opaque())
     return SimpleEnclosedRegion(visible_layer_rect());
@@ -664,26 +670,6 @@ void LayerImpl::OnPurgeMemory() {
 void LayerImpl::ReleaseTileResources() {}
 
 void LayerImpl::RecreateTileResources() {}
-
-gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
-  return GetScrollTree().MaxScrollOffset(scroll_tree_index());
-}
-
-gfx::ScrollOffset LayerImpl::ClampScrollOffsetToLimits(
-    gfx::ScrollOffset offset) const {
-  offset.SetToMin(MaxScrollOffset());
-  offset.SetToMax(gfx::ScrollOffset());
-  return offset;
-}
-
-gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
-  gfx::ScrollOffset old_offset = CurrentScrollOffset();
-  gfx::ScrollOffset clamped_offset = ClampScrollOffsetToLimits(old_offset);
-  gfx::Vector2dF delta = clamped_offset.DeltaFrom(old_offset);
-  if (!delta.IsZero())
-    ScrollBy(delta);
-  return delta;
-}
 
 void LayerImpl::SetNeedsPushProperties() {
   // There's no need to push layer properties on the active tree, or when
@@ -735,8 +721,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   if (element_id_)
     element_id_.AddToTracedValue(state);
-
-  MathUtil::AddToTracedValue("scroll_offset", CurrentScrollOffset(), state);
 
   if (!ScreenSpaceTransform().IsIdentity())
     MathUtil::AddToTracedValue("screen_space_transform", ScreenSpaceTransform(),

@@ -32,15 +32,9 @@ class TabImpl;
 
 class BrowserImpl : public Browser {
  public:
-#if defined(OS_ANDROID)
-  BrowserImpl(ProfileImpl* profile,
-              const PersistenceInfo* persistence_info,
-              const base::android::JavaParamRef<jobject>& java_impl);
-#endif
-  BrowserImpl(ProfileImpl* profile, const PersistenceInfo* persistence_info);
-  ~BrowserImpl() override;
   BrowserImpl(const BrowserImpl&) = delete;
   BrowserImpl& operator=(const BrowserImpl&) = delete;
+  ~BrowserImpl() override;
 
   SessionService* session_service() { return session_service_.get(); }
 
@@ -81,6 +75,13 @@ class BrowserImpl : public Browser {
   base::android::ScopedJavaLocalRef<jbyteArray> GetMinimalPersistenceState(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
+  void RestoreStateIfNecessary(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jstring>& j_persistence_id,
+      const base::android::JavaParamRef<jbyteArray>& j_persistence_crypto_key,
+      const base::android::JavaParamRef<jbyteArray>&
+          j_minimal_persistence_state);
 #endif
 
   // Used in tests to specify a non-default max (0 means use the default).
@@ -97,8 +98,19 @@ class BrowserImpl : public Browser {
   std::vector<uint8_t> GetMinimalPersistenceState() override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
+  void VisibleSecurityStateOfActiveTabChanged() override;
 
  private:
+  // For creation.
+  friend class Browser;
+#if defined(OS_ANDROID)
+  friend BrowserImpl* CreateBrowserForAndroid(
+      ProfileImpl*,
+      const base::android::JavaParamRef<jobject>&);
+#endif
+
+  explicit BrowserImpl(ProfileImpl* profile);
+
   void RestoreStateIfNecessary(const PersistenceInfo& persistence_info);
 
   // Returns the path used by |session_service_|.
@@ -111,7 +123,7 @@ class BrowserImpl : public Browser {
   ProfileImpl* profile_;
   std::vector<std::unique_ptr<Tab>> tabs_;
   TabImpl* active_tab_ = nullptr;
-  const std::string persistence_id_;
+  std::string persistence_id_;
   std::unique_ptr<SessionService> session_service_;
 };
 

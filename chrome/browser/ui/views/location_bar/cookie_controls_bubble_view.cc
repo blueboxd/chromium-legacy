@@ -163,6 +163,8 @@ void CookieControlsBubbleView::UpdateUi() {
        status_ == CookieControlsController::Status::kDisabledForSite)
           ? ui::DIALOG_BUTTON_OK
           : ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &CookieControlsBubbleView::OnDialogAccepted, base::Unretained(this)));
 
   DialogModelChanged();
   Layout();
@@ -267,7 +269,7 @@ void CookieControlsBubbleView::WindowClosing() {
   controller_->OnBubbleUiClosing(web_contents());
 }
 
-bool CookieControlsBubbleView::Accept() {
+void CookieControlsBubbleView::OnDialogAccepted() {
   if (intermediate_step_ == IntermediateStep::kTurnOffButton) {
     base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOff"));
     controller_->OnCookieBlockingEnabledForSite(false);
@@ -277,11 +279,6 @@ bool CookieControlsBubbleView::Accept() {
     base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOn"));
     controller_->OnCookieBlockingEnabledForSite(true);
   }
-  return true;
-}
-
-bool CookieControlsBubbleView::Close() {
-  return Cancel();
 }
 
 void CookieControlsBubbleView::ShowCookiesLinkClicked() {

@@ -49,6 +49,8 @@ const char kPinnedExtensions[] = "extensions.pinned_extensions";
 const char kStorageGarbageCollect[] = "extensions.storage.garbagecollect";
 const char kToolbar[] = "extensions.toolbar";
 const char kToolbarSize[] = "extensions.toolbarsize";
+const char kPinnedExtensionsMigrationComplete[] =
+    "extensions.pinned_extension_migration";
 
 const char kPrefPreferences[] = "preferences";
 const char kPrefIncognitoPreferences[] = "incognito_preferences";

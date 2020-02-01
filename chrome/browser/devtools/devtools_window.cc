@@ -36,7 +36,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/app_modal/javascript_dialog_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -1276,7 +1276,7 @@ bool DevToolsWindow::HandleKeyboardEvent(
 
 content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager(
     WebContents* source) {
-  return app_modal::JavaScriptDialogManager::GetInstance();
+  return javascript_dialogs::AppModalDialogManager::GetInstance();
 }
 
 content::ColorChooser* DevToolsWindow::OpenColorChooser(

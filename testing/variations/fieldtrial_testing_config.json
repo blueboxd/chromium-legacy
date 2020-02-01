@@ -96,36 +96,6 @@
             ]
         }
     ],
-    "AmpBackgroundTab": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "AmpBackgroundTab",
-                    "enable_features": [
-                        "CCTBackgroundTab"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AndroidAIAFetching": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AndroidAIAFetching"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidClipboardSuggestionsRemoval": [
         {
             "platforms": [
@@ -588,21 +558,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AppendFrameOriginToNetworkIsolationKey"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AppleScriptExecuteJavaScript": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AppleScriptExecuteJavaScript"
                     ]
                 }
             ]
@@ -3018,6 +2973,34 @@
             ]
         }
     ],
+    "HistoryServiceAndProfileSyncServiceUseThreadPool": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "all_enabled_20200129",
+                    "enable_features": [
+                        "HistoryServiceUsesTaskScheduler",
+                        "ProfileSyncServiceUsesThreadPool"
+                    ]
+                },
+                {
+                    "name": "all_disabled_20200129",
+                    "disable_features": [
+                        "HistoryServiceUsesTaskScheduler",
+                        "ProfileSyncServiceUsesThreadPool"
+                    ]
+                }
+            ]
+        }
+    ],
     "IDBTombstoneSweeper": [
         {
             "platforms": [
@@ -3473,6 +3456,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LegacyTLSWarnings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LowPriorityAdProcesses": [
+        {
+            "platforms": [
+                "chromeos",
+                "ios",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled0",
+                    "enable_features": [
+                        "UseFramePriorityInRenderProcessHost"
                     ]
                 }
             ]
@@ -5168,26 +5169,6 @@
             ]
         }
     ],
-    "ProfileSyncServiceUsesThreadPool": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20191112",
-                    "enable_features": [
-                        "ProfileSyncServiceUsesThreadPool"
-                    ]
-                }
-            ]
-        }
-    ],
     "ProgressBarAnimationAndroid": [
         {
             "platforms": [
@@ -5321,6 +5302,25 @@
                 },
                 {
                     "name": "Disabled"
+                }
+            ]
+        }
+    ],
+    "ReducedReferrerGranularity": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReducedReferrerGranularity"
+                    ]
                 }
             ]
         }
@@ -6846,7 +6846,7 @@
             ],
             "experiments": [
                 {
-                    "name": "UMA_Enabled",
+                    "name": "UMA_Enabled_202002",
                     "enable_features": [
                         "DemographicMetricsReporting"
                     ],
@@ -7784,24 +7784,6 @@
                     "name": "libvpx_for_vp8",
                     "disable_features": [
                         "FFmpegDecodeOpaqueVP8"
-                    ]
-                }
-            ]
-        }
-    ],
-    "low-priority-ad-processes": [
-        {
-            "platforms": [
-                "chromeos",
-                "ios",
-                "linux",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "LowPriorityAdProcesses",
-                    "enable_features": [
-                        "UseFramePriorityInRenderProcessHost"
                     ]
                 }
             ]

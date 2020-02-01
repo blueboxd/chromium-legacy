@@ -292,10 +292,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 
   base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   html_source->AddBoolean(
-      "showExperimentalA11yFeatures",
-      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityFeatures));
-
-  html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilitySwitchAccess));
 

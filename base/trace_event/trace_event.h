@@ -490,27 +490,12 @@ class BASE_EXPORT TraceID {
         : scope_(scope), raw_id_(global_id.raw_id()) {
       id_flags_ = TRACE_EVENT_FLAG_HAS_GLOBAL_ID;
     }
-    WithScope(const char* scope,
-              unsigned long long prefix,
-              unsigned long long raw_id)
-        : scope_(scope), has_prefix_(true), prefix_(prefix), raw_id_(raw_id) {}
-    WithScope(const char* scope, unsigned long long prefix, GlobalId global_id)
-        : scope_(scope),
-          has_prefix_(true),
-          prefix_(prefix),
-          raw_id_(global_id.raw_id()) {
-      id_flags_ = TRACE_EVENT_FLAG_HAS_GLOBAL_ID;
-    }
     unsigned long long raw_id() const { return raw_id_; }
     const char* scope() const { return scope_; }
-    bool has_prefix() const { return has_prefix_; }
-    unsigned long long prefix() const { return prefix_; }
     unsigned int id_flags() const { return id_flags_; }
 
    private:
     const char* scope_ = nullptr;
-    bool has_prefix_ = false;
-    unsigned long long prefix_;
     unsigned long long raw_id_;
     unsigned int id_flags_ = TRACE_EVENT_FLAG_HAS_ID;
   };
@@ -542,21 +527,15 @@ class BASE_EXPORT TraceID {
   }
   TraceID(WithScope scoped_id)
       : scope_(scoped_id.scope()),
-        has_prefix_(scoped_id.has_prefix()),
-        prefix_(scoped_id.prefix()),
         raw_id_(scoped_id.raw_id()),
         id_flags_(scoped_id.id_flags()) {}
 
   unsigned long long raw_id() const { return raw_id_; }
   const char* scope() const { return scope_; }
-  bool has_prefix() const { return has_prefix_; }
-  unsigned long long prefix() const { return prefix_; }
   unsigned int id_flags() const { return id_flags_; }
 
  private:
   const char* scope_ = nullptr;
-  bool has_prefix_ = false;
-  unsigned long long prefix_;
   unsigned long long raw_id_;
   unsigned int id_flags_ = TRACE_EVENT_FLAG_HAS_ID;
 };

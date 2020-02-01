@@ -39,9 +39,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/download/public/common/download_item.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -66,11 +66,11 @@
 
 namespace {
 
-app_modal::NativeAppModalDialog* GetNextDialog() {
-  app_modal::JavaScriptAppModalDialog* dialog =
+javascript_dialogs::AppModalDialogView* GetNextDialog() {
+  javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
-  CHECK(dialog->native_dialog());
-  return dialog->native_dialog();
+  CHECK(dialog->view());
+  return dialog->view();
 }
 
 // Note: call |PrepareForDialog| on the relevant WebContents or Browser before

@@ -103,6 +103,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Reset time has been reached at |timestamp|.
   void OnResetTimeReached(base::Time timestamp);
 
+  // Called from WebTimeActivityProvider to update chrome app state.
+  void OnChromeAppActivityChanged(ChromeAppActivityState state,
+                                  base::Time timestamp);
+
  private:
   // Bundles detailed data stored for a specific app.
   struct AppDetails {

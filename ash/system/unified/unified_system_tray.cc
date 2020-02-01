@@ -259,11 +259,14 @@ bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
 
   Shell::Get()->focus_cycler()->FocusWidget(message_center_widget);
 
-  // Do not focus an individual element in quick settings if chrome vox is
-  // enabled
-  if (!ShouldEnableExtraKeyboardAccessibility())
+  // Focus an individual element in the message center if chrome vox is
+  // disabled. Otherwise, ensure the message center is expanded.
+  if (!ShouldEnableExtraKeyboardAccessibility()) {
     message_center_bubble_->FocusEntered(reverse);
-
+  } else if (message_center_bubble_->IsMessageCenterCollapsed()) {
+    ExpandMessageCenter();
+    EnsureQuickSettingsCollapsed(true /*animate*/);
+  }
   return true;
 }
 
@@ -274,10 +277,12 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
   views::Widget* quick_settings_widget = bubble_->GetBubbleWidget();
   Shell::Get()->focus_cycler()->FocusWidget(quick_settings_widget);
 
-  // Do not focus an individual element in quick settings if chrome vox is
-  // enabled
+  // Focus an individual element in quick settings if chrome vox is
+  // disabled. Otherwise, ensure quick settings is expanded.
   if (!ShouldEnableExtraKeyboardAccessibility())
     bubble_->FocusEntered(reverse);
+  else
+    EnsureBubbleExpanded();
 
   return true;
 }

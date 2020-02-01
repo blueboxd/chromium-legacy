@@ -106,9 +106,16 @@ void MimeHandlerViewEmbedder::DidFinishNavigation(
 
 void MimeHandlerViewEmbedder::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  // If an extension injects a frame before we finish attaching the PDF's
+  // iframe, then we don't want to early out by mistake. We also put an
+  // unguessable name element on the <embed> to guard against the possibility
+  // that someone injects an <embed>, but that can be done in a separate CL.
   if (!render_frame_host_ ||
       render_frame_host_ != render_frame_host->GetParent() ||
-      render_frame_host_->GetLastCommittedURL() != resource_url_) {
+      render_frame_host_->GetLastCommittedURL() != resource_url_ ||
+      render_frame_host->GetFrameOwnerElementType() !=
+          blink::FrameOwnerElementType::kEmbed ||
+      render_frame_host->GetFrameName() != internal_id_) {
     return;
   }
   if (!ready_to_create_mime_handler_view_) {

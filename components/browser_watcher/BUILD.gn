@@ -31,33 +31,13 @@ if (is_win) {
       "watcher_metrics_provider_win.h",
     ]
     deps = [
-      ":postmortem_stability",
-      ":stability_client",
-      "//base",
-      "//components/metrics",
-      "//third_party/crashpad/crashpad/client",
-    ]
-  }
-
-  static_library("postmortem_stability") {
-    sources = [
-      "postmortem_minidump_writer.h",
-      "postmortem_minidump_writer_win.cc",
-      "postmortem_report_collector.cc",
-      "postmortem_report_collector.h",
-    ]
-    deps = [
       ":stability_client",
       ":stability_common",
       ":stability_report_proto",
       "//base",
-      "//components/metrics:metrics",
-      "//components/variations",
+      "//components/metrics",
       "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/minidump",
-      "//third_party/crashpad/crashpad/util",
     ]
-    ldflags = [ "/DELAYLOAD:wevtapi.dll" ]  # Only used after unclean shutdowns.
   }
 
   static_library("crash_stability") {
@@ -106,8 +86,6 @@ if (is_win) {
       "stability_debugging.h",
       "stability_metrics.cc",
       "stability_metrics.h",
-      "stability_paths.cc",
-      "stability_paths.h",
     ]
     deps = [
       "//base",
@@ -121,10 +99,7 @@ if (is_win) {
       "activity_tracker_annotation_unittest.cc",
       "endsession_watcher_window_win_unittest.cc",
       "exit_code_watcher_win_unittest.cc",
-      "postmortem_minidump_writer_win_unittest.cc",
-      "postmortem_report_collector_unittest.cc",
       "stability_debugging_win_unittest.cc",
-      "stability_paths_unittest.cc",
       "stability_report_extractor_unittest.cc",
       "watcher_client_win_unittest.cc",
       "watcher_metrics_provider_win_unittest.cc",
@@ -134,7 +109,6 @@ if (is_win) {
     deps = [
       ":browser_watcher",
       ":browser_watcher_client",
-      ":postmortem_stability",
       ":stability_client",
       ":stability_common",
       ":stability_report_proto",
@@ -164,7 +138,9 @@ if (is_win) {
   executable("fetch_system_session_events") {
     sources = [ "fetch_system_session_events_main_win.cc" ]
     deps = [
-      ":postmortem_stability",
+      ":stability_client",
+      ":stability_common",
+      ":stability_report_proto",
       "//base",
       "//components/metrics:metrics",
     ]

@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
-#include "chrome/browser/prerender/isolated/prefetched_response_container.h"
+#include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -49,7 +49,7 @@ class IsolatedPrerenderTabHelper
       content::NavigationHandle* navigation_handle) override;
 
   // Takes ownership of a prefetched response by URL, if one if available.
-  std::unique_ptr<PrefetchedResponseContainer> TakePrefetchResponse(
+  std::unique_ptr<PrefetchedMainframeResponseContainer> TakePrefetchResponse(
       const GURL& url);
 
  private:
@@ -102,7 +102,7 @@ class IsolatedPrerenderTabHelper
 
   // All prefetched responses by URL. This is cleared every time a mainframe
   // navigation commits.
-  std::map<GURL, std::unique_ptr<PrefetchedResponseContainer>>
+  std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
       prefetched_responses_;
 
   SEQUENCE_CHECKER(sequence_checker_);

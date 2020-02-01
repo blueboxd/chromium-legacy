@@ -71,7 +71,9 @@ class StartSurfaceToolbarView extends RelativeLayout {
         mLogoRect.set(mLogo.getLeft(), mLogo.getTop(), mLogo.getRight(), mLogo.getBottom());
         for (int viewIndex = 0; viewIndex < getChildCount(); viewIndex++) {
             View view = getChildAt(viewIndex);
-            if (view == mLogo) continue;
+            if (view == mLogo || view.getVisibility() == View.GONE) continue;
+
+            assert view.getVisibility() == View.VISIBLE;
             mViewRect.set(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
             if (Rect.intersects(mLogoRect, mViewRect)) {
                 mLogo.setVisibility(View.GONE);

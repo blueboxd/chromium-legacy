@@ -79,14 +79,14 @@ OptionsPage = class {
         localStorage['enableEventStreamLogging'] == 'false');
 
     if (localStorage['audioStrategy']) {
-      for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
+      for (let i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
         if (opt.id == localStorage['audioStrategy']) {
           opt.setAttribute('selected', '');
         }
       }
     }
     if (localStorage['capitalStrategy']) {
-      for (var i = 0, opt; opt = $('capitalStrategy').options[i]; ++i) {
+      for (let i = 0, opt; opt = $('capitalStrategy').options[i]; ++i) {
         if (opt.id == localStorage['capitalStrategy']) {
           opt.setAttribute('selected', '');
         }
@@ -263,7 +263,7 @@ OptionsPage = class {
       const activeTable = localStorage[node.id] || localStorage['brailleTable'];
       // Gather the display names and sort them according to locale.
       const items = [];
-      for (var i = 0, table; table = tables[i]; i++) {
+      for (let i = 0, table; table = tables[i]; i++) {
         if (table.dots !== dots) {
           continue;
         }
@@ -272,7 +272,7 @@ OptionsPage = class {
       items.sort(function(a, b) {
         return a.name.localeCompare(b.name);
       });
-      for (var i = 0, item; item = items[i]; ++i) {
+      for (let i = 0, item; item = items[i]; ++i) {
         const elem = document.createElement('option');
         elem.id = item.id;
         elem.textContent = item.name;
@@ -463,7 +463,7 @@ OptionsPage.consoleTts;
  * @param {string} id Id of the input box.
  * @param {string} pref Preference key in localStorage to access and modify.
  */
-var handleNumericalInputPref = function(id, pref) {
+const handleNumericalInputPref = function(id, pref) {
   $(id).addEventListener('input', function(evt) {
     if ($(id).value === '') {
       return;

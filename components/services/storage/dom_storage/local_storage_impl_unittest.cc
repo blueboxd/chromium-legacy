@@ -20,12 +20,7 @@
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "components/services/storage/public/cpp/constants.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -54,49 +49,53 @@ void GetStorageUsageCallback(
 class TestLevelDBObserver : public blink::mojom::StorageAreaObserver {
  public:
   struct Observation {
-    enum { kAdd, kChange, kDelete, kDeleteAll } type;
+    enum { kChange, kChangeFailed, kDelete, kDeleteAll } type;
     std::string key;
-    std::string old_value;
+    base::Optional<std::string> old_value;
     std::string new_value;
     std::string source;
   };
 
   TestLevelDBObserver() = default;
 
-  mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> Bind() {
-    return receiver_.BindNewEndpointAndPassRemote();
+  mojo::PendingRemote<blink::mojom::StorageAreaObserver> Bind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   const std::vector<Observation>& observations() { return observations_; }
 
  private:
-  void KeyAdded(const std::vector<uint8_t>& key,
-                const std::vector<uint8_t>& value,
-                const std::string& source) override {
-    observations_.push_back({Observation::kAdd, Uint8VectorToStdString(key), "",
-                             Uint8VectorToStdString(value), source});
-  }
   void KeyChanged(const std::vector<uint8_t>& key,
                   const std::vector<uint8_t>& new_value,
-                  const std::vector<uint8_t>& old_value,
+                  const base::Optional<std::vector<uint8_t>>& old_value,
                   const std::string& source) override {
-    observations_.push_back({Observation::kChange, Uint8VectorToStdString(key),
-                             Uint8VectorToStdString(old_value),
-                             Uint8VectorToStdString(new_value), source});
+    observations_.push_back(
+        {Observation::kChange, Uint8VectorToStdString(key),
+         old_value ? base::make_optional(Uint8VectorToStdString(*old_value))
+                   : base::nullopt,
+         Uint8VectorToStdString(new_value), source});
+  }
+  void KeyChangeFailed(const std::vector<uint8_t>& key,
+                       const std::string& source) override {
+    observations_.push_back({Observation::kChangeFailed,
+                             Uint8VectorToStdString(key), "", "", source});
   }
   void KeyDeleted(const std::vector<uint8_t>& key,
-                  const std::vector<uint8_t>& old_value,
+                  const base::Optional<std::vector<uint8_t>>& old_value,
                   const std::string& source) override {
-    observations_.push_back({Observation::kDelete, Uint8VectorToStdString(key),
-                             Uint8VectorToStdString(old_value), "", source});
+    observations_.push_back(
+        {Observation::kDelete, Uint8VectorToStdString(key),
+         old_value ? base::make_optional(Uint8VectorToStdString(*old_value))
+                   : base::nullopt,
+         "", source});
   }
-  void AllDeleted(const std::string& source) override {
+  void AllDeleted(bool was_nonempty, const std::string& source) override {
     observations_.push_back({Observation::kDeleteAll, "", "", "", source});
   }
   void ShouldSendOldValueOnMutations(bool value) override {}
 
   std::vector<Observation> observations_;
-  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> receiver_{this};
+  mojo::Receiver<blink::mojom::StorageAreaObserver> receiver_{this};
 };
 
 }  // namespace
@@ -246,14 +245,11 @@ class LocalStorageImplTest : public testing::Test {
 
     base::RunLoop run_loop;
     std::vector<blink::mojom::KeyValuePtr> data;
-    bool success = false;
-    bool done = false;
-    area->GetAll(
-        test::GetAllCallback::CreateAndBind(&done, run_loop.QuitClosure()),
-        test::MakeGetAllCallback(&success, &data));
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> unused_observer;
+    ignore_result(unused_observer.InitWithNewPipeAndPassReceiver());
+    area->GetAll(std::move(unused_observer),
+                 test::MakeGetAllCallback(run_loop.QuitClosure(), &data));
     run_loop.Run();
-    EXPECT_TRUE(done);
-    EXPECT_TRUE(success);
 
     for (auto& entry : data) {
       if (key == entry->key) {
@@ -514,7 +510,7 @@ TEST_F(LocalStorageImplTest, MetaDataClearedOnDeleteAll) {
   area.reset();
 
   context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
-  area->DeleteAll("source", base::DoNothing());
+  area->DeleteAll("source", mojo::NullRemote(), base::DoNothing());
   area.reset();
 
   // Make sure all data gets committed to disk.
@@ -654,7 +650,7 @@ TEST_F(LocalStorageImplTest, DeleteStorageWithPendingWrites) {
   RunUntilIdle();
 
   ASSERT_EQ(2u, observer.observations().size());
-  EXPECT_EQ(TestLevelDBObserver::Observation::kAdd,
+  EXPECT_EQ(TestLevelDBObserver::Observation::kChange,
             observer.observations()[0].type);
   EXPECT_EQ(TestLevelDBObserver::Observation::kDeleteAll,
             observer.observations()[1].type);
@@ -1144,10 +1140,7 @@ TEST_F(LocalStorageImplTest, RecreateOnCommitFailure) {
   open_loop->Run();
   ASSERT_EQ(1u, num_database_open_requests);
 
-  // And deleting the value from the new area should have failed (as the
-  // database is empty).
   delete_loop.Run();
-  EXPECT_EQ(0u, observer3.observations().size());
   area1.reset();
 
   {
@@ -1162,8 +1155,7 @@ TEST_F(LocalStorageImplTest, RecreateOnCommitFailure) {
   // all commits until the connection was closed.
   ASSERT_EQ(values_written, observer2.observations().size());
   for (size_t i = 0; i < values_written; ++i) {
-    EXPECT_EQ(i ? TestLevelDBObserver::Observation::kChange
-                : TestLevelDBObserver::Observation::kAdd,
+    EXPECT_EQ(TestLevelDBObserver::Observation::kChange,
               observer2.observations()[i].type);
     EXPECT_EQ(Uint8VectorToStdString(key), observer2.observations()[i].key);
   }

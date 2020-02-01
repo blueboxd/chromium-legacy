@@ -13,6 +13,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -79,7 +80,6 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
           initWithBaseViewController:controller
                              browser:self.browser
                                 mode:mode];
-  self.googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   self.googleServicesSettingsCoordinator.navigationController = controller;
   // Starting the coordinator will add its view controller to the navigation
   // controller.
@@ -142,15 +142,18 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
 - (void)finishedWithResult:(AdvancedSigninSettingsCoordinatorResult)result {
   DCHECK(self.advancedSigninSettingsNavigationController);
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   switch (result) {
     case AdvancedSyncSettingsCoordinatorResultConfirm: {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_ConfirmAdvancedSyncSettings"));
       syncer::SyncService* syncService =
-          ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+          ProfileSyncServiceFactory::GetForBrowserState(
+              self.browser->GetBrowserState());
       unified_consent::metrics::RecordSyncSetupDataTypesHistrogam(
-          syncService->GetUserSettings(), self.browserState->GetPrefs());
+          syncService->GetUserSettings(),
+          self.browser->GetBrowserState()->GetPrefs());
       if (syncSetupService->IsSyncEnabled()) {
         // FirstSetupComplete flag should be only turned on when the user agrees
         // to start Sync.
@@ -164,7 +167,8 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
       base::RecordAction(base::UserMetricsAction(
           "Signin_Signin_ConfirmCancelAdvancedSyncSettings"));
       syncSetupService->CommitSyncChanges();
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState)
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
           ->SignOut(signin_metrics::ABORT_SIGNIN,
                     /*force_clear_browsing_data=*/false, nil);
       break;

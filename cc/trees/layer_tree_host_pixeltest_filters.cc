@@ -72,7 +72,9 @@ class LayerTreeHostFiltersPixelTest
 
 LayerTreeTest::RendererType const kRendererTypes[] = {
     LayerTreeTest::RENDERER_GL,
+#if defined(GL_ON_PLATFORM)
     LayerTreeTest::RENDERER_SKIA_GL,
+#endif
     LayerTreeTest::RENDERER_SOFTWARE,
 #if defined(ENABLE_CC_VULKAN_TESTS)
     LayerTreeTest::RENDERER_SKIA_VK,
@@ -87,7 +89,9 @@ using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
 LayerTreeTest::RendererType const kRendererTypesGpu[] = {
     LayerTreeTest::RENDERER_GL,
+#if defined(GL_ON_PLATFORM)
     LayerTreeTest::RENDERER_SKIA_GL,
+#endif
 #if defined(ENABLE_CC_VULKAN_TESTS)
     LayerTreeTest::RENDERER_SKIA_VK,
 #endif

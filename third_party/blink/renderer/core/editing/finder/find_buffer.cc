@@ -24,108 +24,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
+namespace {
 
-FindBuffer::FindBuffer(const EphemeralRangeInFlatTree& range) {
-  DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
-  CollectTextUntilBlockBoundary(range);
-}
-
-FindBuffer::Results::Results() {
-  empty_result_ = true;
-}
-
-FindBuffer::Results::Results(const FindBuffer& find_buffer,
-                             TextSearcherICU* text_searcher,
-                             const Vector<UChar>& buffer,
-                             const String& search_text,
-                             const blink::FindOptions options) {
-  // We need to own the |search_text| because |text_searcher_| only has a
-  // StringView (doesn't own the search text).
-  search_text_ = search_text;
-  find_buffer_ = &find_buffer;
-  text_searcher_ = text_searcher;
-  text_searcher_->SetPattern(search_text_, options);
-  text_searcher_->SetText(buffer.data(), buffer.size());
-  text_searcher_->SetOffset(0);
-}
-
-FindBuffer::Results::Iterator::Iterator(const FindBuffer& find_buffer,
-                                        TextSearcherICU* text_searcher,
-                                        const String& search_text)
-    : find_buffer_(&find_buffer),
-      text_searcher_(text_searcher),
-      has_match_(true) {
-  operator++();
-}
-
-const FindBuffer::BufferMatchResult FindBuffer::Results::Iterator::operator*()
-    const {
-  DCHECK(has_match_);
-  return FindBuffer::BufferMatchResult({match_.start, match_.length});
-}
-
-void FindBuffer::Results::Iterator::operator++() {
-  DCHECK(has_match_);
-  has_match_ = text_searcher_->NextMatchResult(match_);
-  if (has_match_ && find_buffer_ && find_buffer_->IsInvalidMatch(match_))
-    operator++();
-}
-
-bool FindBuffer::IsInvalidMatch(MatchResultICU match) const {
-  // Invalid matches are a result of accidentally matching elements that are
-  // replaced with the max code point, and may lead to crashes. To avoid
-  // crashing, we should skip the matches that are invalid - they would have
-  // either an empty position or a non-offset-in-anchor position.
-  const unsigned start_index = match.start;
-  PositionInFlatTree start_position =
-      PositionAtStartOfCharacterAtIndex(start_index);
-  if (start_position.IsNull() || !start_position.IsOffsetInAnchor())
-    return true;
-
-  const unsigned end_index = match.start + match.length;
-  DCHECK_LE(start_index, end_index);
-  PositionInFlatTree end_position =
-      PositionAtEndOfCharacterAtIndex(end_index - 1);
-  if (end_position.IsNull() || !end_position.IsOffsetInAnchor())
-    return true;
-  return false;
-}
-
-FindBuffer::Results::Iterator FindBuffer::Results::begin() const {
-  if (empty_result_)
-    return end();
-  text_searcher_->SetOffset(0);
-  return Iterator(*find_buffer_, text_searcher_, search_text_);
-}
-
-FindBuffer::Results::Iterator FindBuffer::Results::end() const {
-  return Iterator();
-}
-
-bool FindBuffer::Results::IsEmpty() const {
-  return begin() == end();
-}
-
-FindBuffer::BufferMatchResult FindBuffer::Results::front() const {
-  return *begin();
-}
-
-FindBuffer::BufferMatchResult FindBuffer::Results::back() const {
-  Iterator last_result;
-  for (Iterator it = begin(); it != end(); ++it) {
-    last_result = it;
-  }
-  return *last_result;
-}
-
-unsigned FindBuffer::Results::CountForTesting() const {
-  unsigned result = 0;
-  for (Iterator it = begin(); it != end(); ++it) {
-    ++result;
-  }
-  return result;
-}
-
+// Returns true if the search should ignore the given |node|'s contents. In
+// other words, we don't need to recurse into the node's children.
 bool ShouldIgnoreContents(const Node& node) {
   const auto* element = DynamicTo<HTMLElement>(node);
   if (!element)
@@ -145,6 +47,9 @@ bool ShouldIgnoreContents(const Node& node) {
               DisplayLockActivationReason::kFindInPage));
 }
 
+// Returns the first ancestor that isn't searchable. In other words, either
+// ShouldIgnoreContents() returns true for it or it has a display: none style.
+// Returns nullptr if no such ancestor exists.
 Node* GetNonSearchableAncestor(const Node& node) {
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     const ComputedStyle* style = ancestor.EnsureComputedStyle();
@@ -157,12 +62,15 @@ Node* GetNonSearchableAncestor(const Node& node) {
   return nullptr;
 }
 
+// Returns true if the given |display| is considered a 'block'
 bool IsBlock(EDisplay display) {
   return display == EDisplay::kBlock || display == EDisplay::kTable ||
          display == EDisplay::kFlowRoot || display == EDisplay::kGrid ||
          display == EDisplay::kFlex || display == EDisplay::kListItem;
 }
 
+// Returns the next node after |start_node| (including start node) that is a
+// text node and is searchable and visible.
 Node* GetVisibleTextNode(Node& start_node) {
   Node* node = &start_node;
   // Move to outside display none subtree if we're inside one.
@@ -193,6 +101,8 @@ Node* GetVisibleTextNode(Node& start_node) {
   return nullptr;
 }
 
+// Returns the closest ancestor of |start_node| (including the node itself) that
+// is a block.
 Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
   // Gets lowest inclusive ancestor that has block display value.
   // <div id=outer>a<div id=inner>b</div>c</div>
@@ -204,6 +114,33 @@ Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
       return ancestor;
   }
   return *start_node.GetDocument().documentElement();
+}
+}  // namespace
+
+// FindBuffer implementation.
+FindBuffer::FindBuffer(const EphemeralRangeInFlatTree& range) {
+  DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
+  CollectTextUntilBlockBoundary(range);
+}
+
+bool FindBuffer::IsInvalidMatch(MatchResultICU match) const {
+  // Invalid matches are a result of accidentally matching elements that are
+  // replaced with the max code point, and may lead to crashes. To avoid
+  // crashing, we should skip the matches that are invalid - they would have
+  // either an empty position or a non-offset-in-anchor position.
+  const unsigned start_index = match.start;
+  PositionInFlatTree start_position =
+      PositionAtStartOfCharacterAtIndex(start_index);
+  if (start_position.IsNull() || !start_position.IsOffsetInAnchor())
+    return true;
+
+  const unsigned end_index = match.start + match.length;
+  DCHECK_LE(start_index, end_index);
+  PositionInFlatTree end_position =
+      PositionAtEndOfCharacterAtIndex(end_index - 1);
+  if (end_position.IsNull() || !end_position.IsOffsetInAnchor())
+    return true;
+  return false;
 }
 
 EphemeralRangeInFlatTree FindBuffer::FindMatchInRange(
@@ -308,11 +245,12 @@ void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
   }
 }
 
-// Collects text until block boundary located at or after |start_node|
-// to |buffer_|. Saves the next starting node after the block to
-// |node_after_block_|.
 void FindBuffer::CollectTextUntilBlockBoundary(
     const EphemeralRangeInFlatTree& range) {
+  // Collects text until block boundary located at or after |start_node|
+  // to |buffer_|. Saves the next starting node after the block to
+  // |node_after_block_|.
+
   DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
 
   node_after_block_ = nullptr;
@@ -499,6 +437,84 @@ void FindBuffer::AddTextToBuffer(const Text& text_node,
     buffer_.Append(text_for_unit.Characters16(), text_for_unit.length());
     last_unit_end = unit.TextContentEnd();
   }
+}
+
+// FindBuffer::Results implementation.
+FindBuffer::Results::Results() {
+  empty_result_ = true;
+}
+
+FindBuffer::Results::Results(const FindBuffer& find_buffer,
+                             TextSearcherICU* text_searcher,
+                             const Vector<UChar>& buffer,
+                             const String& search_text,
+                             const blink::FindOptions options) {
+  // We need to own the |search_text| because |text_searcher_| only has a
+  // StringView (doesn't own the search text).
+  search_text_ = search_text;
+  find_buffer_ = &find_buffer;
+  text_searcher_ = text_searcher;
+  text_searcher_->SetPattern(search_text_, options);
+  text_searcher_->SetText(buffer.data(), buffer.size());
+  text_searcher_->SetOffset(0);
+}
+
+FindBuffer::Results::Iterator FindBuffer::Results::begin() const {
+  if (empty_result_)
+    return end();
+  text_searcher_->SetOffset(0);
+  return Iterator(*find_buffer_, text_searcher_, search_text_);
+}
+
+FindBuffer::Results::Iterator FindBuffer::Results::end() const {
+  return Iterator();
+}
+
+bool FindBuffer::Results::IsEmpty() const {
+  return begin() == end();
+}
+
+FindBuffer::BufferMatchResult FindBuffer::Results::front() const {
+  return *begin();
+}
+
+FindBuffer::BufferMatchResult FindBuffer::Results::back() const {
+  Iterator last_result;
+  for (Iterator it = begin(); it != end(); ++it) {
+    last_result = it;
+  }
+  return *last_result;
+}
+
+unsigned FindBuffer::Results::CountForTesting() const {
+  unsigned result = 0;
+  for (Iterator it = begin(); it != end(); ++it) {
+    ++result;
+  }
+  return result;
+}
+
+// Findbuffer::Results::Iterator implementation.
+FindBuffer::Results::Iterator::Iterator(const FindBuffer& find_buffer,
+                                        TextSearcherICU* text_searcher,
+                                        const String& search_text)
+    : find_buffer_(&find_buffer),
+      text_searcher_(text_searcher),
+      has_match_(true) {
+  operator++();
+}
+
+const FindBuffer::BufferMatchResult FindBuffer::Results::Iterator::operator*()
+    const {
+  DCHECK(has_match_);
+  return FindBuffer::BufferMatchResult({match_.start, match_.length});
+}
+
+void FindBuffer::Results::Iterator::operator++() {
+  DCHECK(has_match_);
+  has_match_ = text_searcher_->NextMatchResult(match_);
+  if (has_match_ && find_buffer_ && find_buffer_->IsInvalidMatch(match_))
+    operator++();
 }
 
 }  // namespace blink

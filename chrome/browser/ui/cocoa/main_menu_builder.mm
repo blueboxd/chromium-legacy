@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
@@ -420,6 +421,16 @@ base::scoped_nsobject<NSMenuItem> BuildTabMenu(
                   .command_id(IDC_PIN_TARGET_TAB)
                   .is_alternate()
                   .key_equivalent(@"", NSAlternateKeyMask),
+              Item(IDS_GROUP_TAB_MAC)
+                  .command_id(IDC_WINDOW_GROUP_TAB)
+                  .remove_if(
+                      !base::FeatureList::IsEnabled(features::kTabGroups)),
+              Item(IDS_GROUP_TARGET_TAB_MAC)
+                  .command_id(IDC_GROUP_TARGET_TAB)
+                  .is_alternate()
+                  .key_equivalent(@"", NSAlternateKeyMask)
+                  .remove_if(
+                      !base::FeatureList::IsEnabled(features::kTabGroups)),
               Item(IDS_TAB_CXMENU_CLOSEOTHERTABS)
                   .command_id(IDC_WINDOW_CLOSE_OTHER_TABS),
               Item(IDS_TAB_CXMENU_CLOSETABSTORIGHT)

@@ -8,6 +8,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -66,7 +67,8 @@ TEST_F(CompositedLayerMappingTest, SubpixelAccumulationChange) {
   Element* target = GetDocument().getElementById("target");
   target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
@@ -88,7 +90,8 @@ TEST_F(CompositedLayerMappingTest,
   Element* target = GetDocument().getElementById("target");
   target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
@@ -131,7 +134,8 @@ TEST_F(CompositedLayerMappingTest,
   Element* target = GetDocument().getElementById("target");
   target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
@@ -1199,7 +1203,8 @@ TEST_F(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {
 
   sticky_layer->SetNeedsCompositingInputsUpdate();
   EXPECT_TRUE(sticky_layer->NeedsCompositingInputsUpdate());
-  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(sticky_layer->NeedsCompositingInputsUpdate());
 }
 
@@ -1432,20 +1437,23 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
       scrolling_layer->layer_tree_host()->property_trees()->scroll_tree;
   EXPECT_EQ(0, scroll_tree.current_scroll_offset(element_id).y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
-  EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
+  auto* scroll_node = scroll_tree.FindNodeFromElementId(element_id);
+  EXPECT_EQ(100, scroll_node->container_bounds.height());
 
   scrollerElement->setScrollTop(300);
   scrollerElement->setAttribute(html_names::kStyleAttr, "max-height: 25px;");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50, scroll_tree.current_scroll_offset(element_id).y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
-  EXPECT_EQ(25, scrolling_layer->scroll_container_bounds().height());
+  scroll_node = scroll_tree.FindNodeFromElementId(element_id);
+  EXPECT_EQ(25, scroll_node->container_bounds.height());
 
   scrollerElement->setAttribute(html_names::kStyleAttr, "max-height: 300px;");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50, scroll_tree.current_scroll_offset(element_id).y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
-  EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
+  scroll_node = scroll_tree.FindNodeFromElementId(element_id);
+  EXPECT_EQ(100, scroll_node->container_bounds.height());
 }
 
 TEST_F(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
@@ -1794,12 +1802,14 @@ TEST_F(CompositedLayerMappingTest,
   GetDocument()
       .getElementById("uncorrelated")
       ->setAttribute(html_names::kStyleAttr, "width: 200px");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(mapping->NeedsRepaint(*vertical_scrollbar_layer));
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "height: 300px");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(mapping->NeedsRepaint(*vertical_scrollbar_layer));
 }
 

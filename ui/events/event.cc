@@ -44,17 +44,6 @@
 namespace ui {
 namespace {
 
-#if defined(USE_X11)
-bool X11EventHasNonStandardState(const PlatformEvent& event) {
-  const unsigned int kAllStateMask =
-      Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask |
-      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask | ShiftMask |
-      LockMask | ControlMask | AnyModifier;
-
-  return event && (event->xkey.state & ~kAllStateMask) != 0;
-}
-#endif
-
 constexpr int kChangedButtonFlagMask =
     ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
     ui::EF_RIGHT_MOUSE_BUTTON | ui::EF_BACK_MOUSE_BUTTON |
@@ -478,8 +467,7 @@ MouseEvent::MouseEvent(const PlatformEvent& native_event)
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
-  if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
-    SetClickCount(GetRepeatCount(*this));
+  InitializeNative();
 #if defined(USE_X11)
   SetProperties(GetEventPropertiesFromXEvent(type(), *native_event));
 #endif
@@ -522,6 +510,12 @@ MouseEvent::MouseEvent(EventType type,
 MouseEvent::MouseEvent(const MouseEvent& other) = default;
 
 MouseEvent::~MouseEvent() = default;
+
+void MouseEvent::InitializeNative() {
+  if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED) {
+    SetClickCount(GetRepeatCount(*this));
+  }
+}
 
 // static
 bool MouseEvent::IsRepeatedClickEvent(const MouseEvent& event1,
@@ -816,36 +810,7 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
-  latency()->AddLatencyNumberWithTimestamp(
-      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
-
-  KeyEvent** last_key_event = &last_key_event_;
-
-#if defined(USE_X11)
-  // Use a different static variable for key events that have non standard
-  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
-  // to detect the re-posted event for example. crbug.com/385873.
-  if (X11EventHasNonStandardState(native_event))
-    last_key_event = &last_ibus_key_event_;
-
-  NormalizeFlags();
-  key_ = GetDomKeyFromXEvent(native_event);
-  SetProperties(GetEventPropertiesFromXEvent(type(), *native_event));
-#elif defined(OS_WIN)
-  // Only Windows has native character events.
-  if (is_char_) {
-    key_ = DomKey::FromCharacter(static_cast<int32_t>(native_event.wParam));
-    set_flags(PlatformKeyMap::ReplaceControlAndAltWithAltGraph(flags()));
-  } else {
-    int adjusted_flags = flags();
-    key_ = PlatformKeyMap::DomKeyFromKeyboardCode(key_code(), &adjusted_flags);
-    set_flags(adjusted_flags);
-  }
-#endif
-
-  if (IsRepeated(last_key_event))
-    set_flags(flags() | ui::EF_IS_REPEAT);
+  InitializeNative();
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -911,7 +876,44 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
   return *this;
 }
 
-KeyEvent::~KeyEvent() {}
+KeyEvent::~KeyEvent() = default;
+
+void KeyEvent::InitializeNative() {
+  latency()->AddLatencyNumberWithTimestamp(
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
+
+  KeyEvent** last_key_event = &last_key_event_;
+
+#if defined(USE_X11)
+  // Use a different static variable for key events that have non standard
+  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
+  // to detect the re-posted event for example. crbug.com/385873.
+  if (properties() && properties()->contains(kPropertyKeyboardIBusFlag)) {
+    last_key_event = &last_ibus_key_event_;
+  }
+
+  NormalizeFlags();
+  // TODO(crbug.com/965991): Remove once PlatformEvent migration is done.
+  if (native_event()) {
+    key_ = GetDomKeyFromXEvent(native_event());
+    SetProperties(GetEventPropertiesFromXEvent(type(), *native_event()));
+  }
+#elif defined(OS_WIN)
+  // Only Windows has native character events.
+  if (is_char_) {
+    key_ = DomKey::FromCharacter(static_cast<int32_t>(native_event().wParam));
+    set_flags(PlatformKeyMap::ReplaceControlAndAltWithAltGraph(flags()));
+  } else {
+    int adjusted_flags = flags();
+    key_ = PlatformKeyMap::DomKeyFromKeyboardCode(key_code(), &adjusted_flags);
+    set_flags(adjusted_flags);
+  }
+#endif
+
+  if (IsRepeated(last_key_event))
+    set_flags(flags() | ui::EF_IS_REPEAT);
+}
 
 void KeyEvent::ApplyLayout() const {
   ui::DomCode code = code_;

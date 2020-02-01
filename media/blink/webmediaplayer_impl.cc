@@ -1090,12 +1090,22 @@ double WebMediaPlayerImpl::CurrentTime() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
-  // TODO(scherkus): Replace with an explicit ended signal to HTMLMediaElement,
-  // see http://crbug.com/409280
-  // Note: Duration() may be infinity.
-  return (ended_ && !std::isinf(Duration()))
-             ? Duration()
+  // Even though we have an explicit ended signal, a lot of content doesn't have
+  // an accurate duration -- with some formats (e.g., VBR MP3, OGG) it can't be
+  // known without a complete play-through from beginning to end.
+  //
+  // The HTML5 spec says that upon ended, current time must equal duration. Due
+  // to the aforementioned issue, if we rely exclusively on current time, we can
+  // be a few milliseconds off of the duration.
+  const auto duration = Duration();
+  return (ended_ && !std::isinf(duration))
+             ? duration
              : GetCurrentTimeInternal().InSecondsF();
+}
+
+bool WebMediaPlayerImpl::IsEnded() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return ended_;
 }
 
 WebMediaPlayer::NetworkState WebMediaPlayerImpl::GetNetworkState() const {

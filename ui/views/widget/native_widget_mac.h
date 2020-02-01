@@ -32,7 +32,7 @@ namespace test {
 class HitTestNativeWidgetMac;
 class MockNativeWidgetMac;
 class WidgetTest;
-}
+}  // namespace test
 class NativeWidgetMacNSWindowHost;
 
 class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
@@ -51,6 +51,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   // Deletes |bridge_| and informs |delegate_| that the native widget is
   // destroyed.
   void WindowDestroyed();
+
+  // Called when the backing NSWindow gains or loses key status.
+  void OnWindowKeyStatusChanged(bool is_key, bool is_content_first_responder);
 
   // The vertical position from which sheets should be anchored, from the top
   // of the content view.

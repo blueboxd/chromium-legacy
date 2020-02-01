@@ -1085,7 +1085,7 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       // No role description.
       break;
     case ax::mojom::Role::kTime:
-      message_id = IDS_AX_ROLE_TIME;
+      // No role description.
       break;
     case ax::mojom::Role::kTimer:
       message_id = IDS_AX_ROLE_TIMER;

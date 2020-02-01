@@ -135,11 +135,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'Android WebView L (dbg)',
-    triggered_by = ['Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
     name = 'Android WebView M (dbg)',
     triggered_by = ['Android arm64 Builder (dbg)'],
 )
@@ -160,11 +155,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'Android arm Builder (dbg)',
-    execution_timeout = 4 * time.hour,
-)
-
-ci.android_builder(
     name = 'Android arm64 Builder (dbg)',
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 4 * time.hour,
@@ -180,11 +170,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'Cast Android (dbg)',
-)
-
-
-ci.android_builder(
     name = 'Deterministic Android',
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
@@ -197,42 +182,8 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'KitKat Phone Tester (dbg)',
-    triggered_by = ['Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'KitKat Tablet Tester',
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 10 * time.hour,
-    triggered_by = ['Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Lollipop Phone Tester',
-    triggered_by = ['Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Lollipop Tablet Tester',
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 10 * time.hour,
-    triggered_by = ['Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
     name = 'Marshmallow 64 bit Tester',
     triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Marshmallow Tablet Tester',
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 8 * time.hour,
-    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -257,11 +208,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'android-cronet-arm-rel',
-    notifies = ['cronet'],
-)
-
-ci.android_builder(
     name = 'android-cronet-arm64-dbg',
     notifies = ['cronet'],
 )
@@ -274,18 +220,6 @@ ci.android_builder(
 ci.android_builder(
     name = 'android-cronet-asan-arm-rel',
     notifies = ['cronet'],
-)
-
-ci.android_builder(
-    name = 'android-cronet-kitkat-arm-rel',
-    notifies = ['cronet'],
-    triggered_by = ['android-cronet-arm-rel'],
-)
-
-ci.android_builder(
-    name = 'android-cronet-lollipop-arm-rel',
-    notifies = ['cronet'],
-    triggered_by = ['android-cronet-arm-rel'],
 )
 
 # Runs on a specific machine with an attached phone
@@ -441,15 +375,7 @@ ci.chromiumos_builder(
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-arm-generic-rel',
-)
-
-ci.chromiumos_builder(
     name = 'chromeos-kevin-rel',
-)
-
-ci.chromiumos_builder(
-    name = 'linux-chromeos-dbg',
 )
 
 
@@ -1704,18 +1630,8 @@ ci.gpu_fyi_windows_builder(
 
 
 ci.linux_builder(
-    name = 'Fuchsia x64',
-    notifies = ['cr-fuchsia'],
-)
-
-ci.linux_builder(
     name = 'Cast Audio Linux',
     ssd = True,
-)
-
-ci.linux_builder(
-    name = 'Cast Linux',
-    goma_jobs = goma.jobs.J50,
 )
 
 ci.linux_builder(
@@ -1736,11 +1652,6 @@ ci.linux_builder(
     cores = 32,
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
-)
-
-ci.linux_builder(
-    name = 'Fuchsia ARM64',
-    notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -1781,10 +1692,6 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
-    name = 'linux-ozone-rel',
-)
-
-ci.linux_builder(
     name = 'linux-trusty-rel',
     os = os.LINUX_TRUSTY,
 )
@@ -1795,18 +1702,6 @@ ci.linux_builder(
     schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
     triggered_by = [],
-)
-
-
-ci.mac_builder(
-    name = 'Mac Builder (dbg)',
-    os = os.MAC_ANY,
-)
-
-ci.mac_builder(
-    name = 'Mac10.13 Tests (dbg)',
-    os = os.MAC_ANY,
-    triggered_by = ['Mac Builder (dbg)'],
 )
 
 
@@ -1837,21 +1732,6 @@ ci.memory_builder(
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
     # times have been brought down to reasonable level
     execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
-)
-
-ci.memory_builder(
-    name = 'Linux ASan LSan Builder',
-    ssd = True,
-)
-
-ci.memory_builder(
-    name = 'Linux ASan LSan Tests (1)',
-    triggered_by = ['Linux ASan LSan Builder'],
-)
-
-ci.memory_builder(
-    name = 'Linux ASan Tests (sandboxed)',
-    triggered_by = ['Linux ASan LSan Builder'],
 )
 
 ci.memory_builder(
@@ -2007,12 +1887,6 @@ ci.win_builder(
 )
 
 ci.win_builder(
-    name = 'Win Builder (dbg)',
-    cores = 32,
-    os = os.WINDOWS_ANY,
-)
-
-ci.win_builder(
     name = 'Win x64 Builder (dbg)',
     cores = 32,
     builderless = True,
@@ -2034,12 +1908,6 @@ ci.win_builder(
     name = 'Win7 Tests (1)',
     os = os.WINDOWS_7,
     triggered_by = ['Win Builder'],
-)
-
-ci.win_builder(
-    name = 'Win7 Tests (dbg)(1)',
-    os = os.WINDOWS_7,
-    triggered_by = ['Win Builder (dbg)'],
 )
 
 ci.win_builder(

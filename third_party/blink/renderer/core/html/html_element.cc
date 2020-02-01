@@ -1462,7 +1462,8 @@ void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
 }
 
 int HTMLElement::offsetLeftForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1473,7 +1474,8 @@ int HTMLElement::offsetLeftForBinding() {
 }
 
 int HTMLElement::offsetTopForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1484,7 +1486,8 @@ int HTMLElement::offsetTopForBinding() {
 }
 
 int HTMLElement::offsetWidthForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1497,7 +1500,8 @@ int HTMLElement::offsetWidthForBinding() {
 
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavascript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(

@@ -7,7 +7,6 @@
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
@@ -317,10 +316,7 @@ AssistantTestMixin::AssistantTestMixin(
       user_mixin_(std::make_unique<LoggedInUserMixin>(host,
                                                       test_base,
                                                       GetTestUserInfo(),
-                                                      embedded_test_server)) {
-  scoped_feature_list_.InitAndEnableFeature(
-      app_list_features::kEnableAssistantLauncherUI);
-}
+                                                      embedded_test_server)) {}
 
 AssistantTestMixin::~AssistantTestMixin() = default;
 

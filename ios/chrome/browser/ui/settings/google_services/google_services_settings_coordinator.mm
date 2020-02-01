@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -17,6 +18,8 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
@@ -171,7 +174,8 @@
                                   shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
                                  postSignInAction:POST_SIGNIN_ACTION_START_SYNC
                          presentingViewController:self.viewController];
-  self.authenticationFlow.dispatcher = self.dispatcher;
+  self.authenticationFlow.dispatcher = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), BrowsingDataCommands);
   __weak GoogleServicesSettingsCoordinator* weakSelf = self;
   [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {
     // TODO(crbug.com/889919): Needs to add histogram for |success|.
@@ -199,7 +203,11 @@
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
           initWithBrowserState:self.browserState];
-  controller.dispatcher = self.dispatcher;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  controller.dispatcher = static_cast<
+      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
+      self.browser->GetCommandDispatcher());
   [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -209,8 +217,7 @@
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   DCHECK(!self.signinInteractionCoordinator);
   self.signinInteractionCoordinator =
-      [[SigninInteractionCoordinator alloc] initWithBrowser:self.browser
-                                                 dispatcher:self.dispatcher];
+      [[SigninInteractionCoordinator alloc] initWithBrowser:self.browser];
   __weak __typeof(self) weakSelf = self;
   [self.signinInteractionCoordinator
             signInWithIdentity:nil
@@ -236,7 +243,11 @@
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
-  self.manageSyncSettingsCoordinator.dispatcher = self.dispatcher;
+  // TODO(crbug.com/1029346): Remove dispatcher from the property of the
+  // coordinator.
+  self.manageSyncSettingsCoordinator.dispatcher = static_cast<
+      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
+      self.browser->GetCommandDispatcher());
   self.manageSyncSettingsCoordinator.navigationController =
       self.navigationController;
   self.manageSyncSettingsCoordinator.delegate = self;
@@ -248,7 +259,9 @@
       GURL(kManageYourGoogleAccountURL),
       GetApplicationContext()->GetApplicationLocale());
   OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:url];
-  [self.dispatcher closeSettingsUIAndOpenURL:command];
+  id<ApplicationCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  [handler closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate

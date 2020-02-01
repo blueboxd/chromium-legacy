@@ -58,7 +58,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(r) {
       const url = opt_url || TestUtils.createUrlForDoc(doc);
-      var listener = function(evt) {
+      const listener = function(evt) {
         if (evt.target.root.url != url) {
           return;
         }
@@ -81,7 +81,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
   }
 
   listenOnce(node, eventType, callback, capture) {
-    var innerCallback = this.newCallback(function() {
+    const innerCallback = this.newCallback(function() {
       node.removeEventListener(eventType, innerCallback, capture);
       callback.apply(this, arguments);
     });

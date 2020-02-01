@@ -33,7 +33,6 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
-  void AsyncInit(base::OnceClosure done_callback) override;
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
   // Note: this function collects metrics, some of which are related to the
@@ -50,9 +49,6 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
       metrics::SystemProfileProto* system_profile_proto) override;
 
  private:
-  // TODO(manzagop): avoid collecting reports for clean exits from the fast exit
-  // path.
-  void CollectPostmortemReportsImpl();
 
   bool recording_enabled_;
   bool cleanup_scheduled_;

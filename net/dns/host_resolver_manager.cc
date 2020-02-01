@@ -30,7 +30,9 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/linked_list.h"
+#include "base/containers/queue.h"
 #include "base/debug/debugger.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -45,6 +47,7 @@
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -83,6 +86,7 @@
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/dns/record_parsed.h"
+#include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -91,8 +95,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/datagram_client_socket.h"
-#include "net/url_request/url_request_context.h"
-#include "url/url_canon_ip.h"
 
 #if BUILDFLAG(ENABLE_MDNS)
 #include "net/dns/mdns_client_impl.h"
@@ -495,7 +497,7 @@ class HostResolverManager::RequestImpl
               const HostPortPair& request_host,
               const NetworkIsolationKey& network_isolation_key,
               const base::Optional<ResolveHostParameters>& optional_parameters,
-              URLRequestContext* request_context,
+              ResolveContext* resolve_context,
               HostCache* host_cache,
               base::WeakPtr<HostResolverManager> resolver)
       : source_net_log_(source_net_log),
@@ -507,7 +509,7 @@ class HostResolverManager::RequestImpl
                 : NetworkIsolationKey()),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
-        request_context_(request_context),
+        resolve_context_(resolve_context),
         host_cache_(host_cache),
         host_resolver_flags_(
             HostResolver::ParametersToHostResolverFlags(parameters_)),
@@ -666,7 +668,7 @@ class HostResolverManager::RequestImpl
 
   const ResolveHostParameters& parameters() const { return parameters_; }
 
-  URLRequestContext* request_context() const { return request_context_; }
+  ResolveContext* resolve_context() const { return resolve_context_; }
 
   HostCache* host_cache() const { return host_cache_; }
 
@@ -723,7 +725,8 @@ class HostResolverManager::RequestImpl
   const HostPortPair request_host_;
   const NetworkIsolationKey network_isolation_key_;
   ResolveHostParameters parameters_;
-  URLRequestContext* const request_context_;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* const resolve_context_;
   HostCache* const host_cache_;
   const HostResolverFlags host_resolver_flags_;
 
@@ -750,11 +753,9 @@ class HostResolverManager::RequestImpl
 
 class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
  public:
-  ProbeRequestImpl(URLRequestContext* context,
+  ProbeRequestImpl(ResolveContext* context,
                    base::WeakPtr<HostResolverManager> resolver)
-      : context_(context), resolver_(resolver) {
-    DCHECK(context_);
-  }
+      : context_(context), resolver_(resolver) {}
 
   ProbeRequestImpl(const ProbeRequestImpl&) = delete;
   ProbeRequestImpl& operator=(const ProbeRequestImpl&) = delete;
@@ -771,7 +772,6 @@ class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
 
   int Start() override {
     DCHECK(resolver_);
-    DCHECK(context_);
     DCHECK_EQ(0u, resolver_->started_doh_probe_requests_.count(this));
 
     resolver_->started_doh_probe_requests_.insert(this);
@@ -798,7 +798,8 @@ class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
   void CancelRunner() { runner_.reset(); }
 
  private:
-  URLRequestContext* context_;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* context_;
   std::unique_ptr<DnsProbeRunner> runner_;
   base::WeakPtr<HostResolverManager> resolver_;
 };
@@ -1059,7 +1060,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   DnsTask(DnsClient* client,
           base::StringPiece hostname,
           DnsQueryType query_type,
-          URLRequestContext* request_context,
+          ResolveContext* resolve_context,
           bool secure,
           DnsConfig::SecureDnsMode secure_dns_mode,
           Delegate* delegate,
@@ -1067,7 +1068,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           const base::TickClock* tick_clock)
       : client_(client),
         hostname_(hostname),
-        request_context_(request_context),
+        resolve_context_(resolve_context),
         secure_(secure),
         secure_dns_mode_(secure_dns_mode),
         delegate_(delegate),
@@ -1135,13 +1136,14 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   std::unique_ptr<DnsTransaction> CreateTransaction(
       DnsQueryType dns_query_type) {
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
+
     std::unique_ptr<DnsTransaction> trans =
         client_->GetTransactionFactory()->CreateTransaction(
             hostname_, DnsQueryTypeToQtype(dns_query_type),
             base::BindOnce(&DnsTask::OnTransactionComplete,
                            base::Unretained(this), tick_clock_->NowTicks(),
                            dns_query_type),
-            net_log_, secure_, secure_dns_mode_, request_context_);
+            net_log_, secure_, secure_dns_mode_, resolve_context_);
     trans->SetRequestPriority(delegate_->priority());
     return trans;
   }
@@ -1712,7 +1714,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsClient* client_;
   std::string hostname_;
-  URLRequestContext* const request_context_;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* const resolve_context_;
 
   // Whether lookups in this DnsTask should occur using DoH or plaintext.
   const bool secure_;
@@ -1756,11 +1759,12 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
 struct HostResolverManager::JobKey {
   bool operator<(const JobKey& other) const {
-    return std::tie(query_type, flags, source, secure_dns_mode, request_context,
-                    hostname, network_isolation_key_) <
-           std::tie(other.query_type, other.flags, other.source,
-                    other.secure_dns_mode, other.request_context,
-                    other.hostname, other.network_isolation_key_);
+    return std::forward_as_tuple(query_type, flags, source, secure_dns_mode,
+                                 resolve_context, hostname,
+                                 network_isolation_key_) <
+           std::forward_as_tuple(other.query_type, other.flags, other.source,
+                                 other.secure_dns_mode, other.resolve_context,
+                                 other.hostname, other.network_isolation_key_);
   }
 
   std::string hostname;
@@ -1769,7 +1773,8 @@ struct HostResolverManager::JobKey {
   HostResolverFlags flags;
   HostResolverSource source;
   DnsConfig::SecureDnsMode secure_dns_mode;
-  URLRequestContext* request_context;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* resolve_context;
 };
 
 // Aggregates all Requests for the same Key. Dispatched via PriorityDispatch.
@@ -1786,7 +1791,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       HostResolverSource requested_source,
       ResolveHostParameters::CacheUsage cache_usage,
       DnsConfig::SecureDnsMode secure_dns_mode,
-      URLRequestContext* request_context,
+      ResolveContext* resolve_context,
       HostCache* host_cache,
       std::deque<TaskType> tasks,
       RequestPriority priority,
@@ -1801,7 +1806,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         requested_source_(requested_source),
         cache_usage_(cache_usage),
         secure_dns_mode_(secure_dns_mode),
-        request_context_(request_context),
+        resolve_context_(resolve_context),
         host_cache_(host_cache),
         tasks_(tasks),
         job_running_(false),
@@ -1870,8 +1875,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   void AddRequest(RequestImpl* request) {
-    // Job currently assumes a 1:1 correspondence between URLRequestContext and
-    // HostCache. Since the URLRequestContext is part of the JobKey, any request
+    // Job currently assumes a 1:1 correspondence between ResolveContext and
+    // HostCache. Since the ResolveContext is part of the JobKey, any request
     // added to any existing Job should share the same HostCache.
     DCHECK_EQ(host_cache_, request->host_cache());
     DCHECK_EQ(hostname_, request->request_host().host());
@@ -2260,7 +2265,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     // Need to create the task even if we're going to post a failure instead of
     // running it, as a "started" job needs a task to be properly cleaned up.
     dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), hostname_,
-                                query_type_, request_context_, secure,
+                                query_type_, resolve_context_, secure,
                                 secure_dns_mode_, this, net_log_, tick_clock_));
     dns_task_->StartNextTransaction();
     // Schedule a second transaction, if needed. DoH queries can bypass the
@@ -2662,7 +2667,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   const HostResolverSource requested_source_;
   const ResolveHostParameters::CacheUsage cache_usage_;
   const DnsConfig::SecureDnsMode secure_dns_mode_;
-  URLRequestContext* const request_context_;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* const resolve_context_;
   // TODO(crbug.com/969847): Consider allowing requests within a single Job to
   // have different HostCaches.
   HostCache* const host_cache_;
@@ -2808,23 +2814,27 @@ HostResolverManager::CreateRequest(
     const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters,
-    URLRequestContext* request_context,
+    ResolveContext* resolve_context,
     HostCache* host_cache) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!invalidation_in_progress_);
 
-  // HostCaches must add invalidators (via AddHostCacheInvalidator()) before use
-  // to ensure they are invalidated on network and configuration changes.
-  if (host_cache)
-    DCHECK(host_cache_invalidators_.HasObserver(host_cache->invalidator()));
+  // TODO(https://crbug.com/1042354):  Remove once
+  // NetworkContextConfigurationBrowserTest.DnsCacheIsolation has been fixed.
+  DVLOG(4) << "HostResolverManager::CreateRequest: host_cache=" << host_cache
+           << ", host=" << host.ToString();
+
+  // ResolveContexts must register (via RegisterResolveContext()) before use to
+  // ensure cached data is invalidated on network and configuration changes.
+  DCHECK(registered_contexts_.HasObserver(resolve_context));
 
   return std::make_unique<RequestImpl>(
       net_log, host, network_isolation_key, optional_parameters,
-      request_context, host_cache, weak_ptr_factory_.GetWeakPtr());
+      resolve_context, host_cache, weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<HostResolverManager::CancellableProbeRequest>
-HostResolverManager::CreateDohProbeRequest(URLRequestContext* context) {
+HostResolverManager::CreateDohProbeRequest(ResolveContext* context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return std::make_unique<ProbeRequestImpl>(context,
@@ -2911,14 +2921,13 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
   }
 }
 
-void HostResolverManager::AddHostCacheInvalidator(
-    HostCache::Invalidator* invalidator) {
-  host_cache_invalidators_.AddObserver(invalidator);
+void HostResolverManager::RegisterResolveContext(ResolveContext* context) {
+  registered_contexts_.AddObserver(context);
 }
 
-void HostResolverManager::RemoveHostCacheInvalidator(
-    const HostCache::Invalidator* invalidator) {
-  host_cache_invalidators_.RemoveObserver(invalidator);
+void HostResolverManager::DeregisterResolveContext(
+    const ResolveContext* context) {
+  registered_contexts_.RemoveObserver(context);
 }
 
 void HostResolverManager::SetTickClockForTesting(
@@ -2999,7 +3008,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
       request->host_resolver_flags(),
       request->parameters().secure_dns_mode_override,
       request->parameters().cache_usage, request->source_net_log(),
-      request->host_cache(), &effective_query_type,
+      request->host_cache(), request->resolve_context(), &effective_query_type,
       &effective_host_resolver_flags, &effective_secure_dns_mode, &tasks,
       &stale_info);
   if (results.error() != ERR_DNS_CACHE_MISS ||
@@ -3033,6 +3042,7 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     ResolveHostParameters::CacheUsage cache_usage,
     const NetLogWithSource& source_net_log,
     HostCache* cache,
+    ResolveContext* resolve_context,
     DnsQueryType* out_effective_query_type,
     HostResolverFlags* out_effective_host_resolver_flags,
     DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
@@ -3049,9 +3059,9 @@ HostCache::Entry HostResolverManager::ResolveLocally(
 
   GetEffectiveParametersForRequest(
       hostname, dns_query_type, source, flags, secure_dns_mode_override,
-      cache_usage, ip_address_ptr, source_net_log, out_effective_query_type,
-      out_effective_host_resolver_flags, out_effective_secure_dns_mode,
-      out_tasks);
+      cache_usage, ip_address_ptr, source_net_log, resolve_context,
+      out_effective_query_type, out_effective_host_resolver_flags,
+      out_effective_secure_dns_mode, out_tasks);
 
   if (!ip_address.IsValid()) {
     // Check that the caller supplied a valid hostname to resolve. For
@@ -3150,7 +3160,7 @@ void HostResolverManager::CreateAndStartJob(
       request->request_host().host(), request->network_isolation_key(),
       effective_query_type,           effective_host_resolver_flags,
       request->parameters().source,   effective_secure_dns_mode,
-      request->request_context()};
+      request->resolve_context()};
 
   auto jobit = jobs_.find(key);
   Job* job;
@@ -3160,7 +3170,7 @@ void HostResolverManager::CreateAndStartJob(
         request->network_isolation_key(), effective_query_type,
         effective_host_resolver_flags, request->parameters().source,
         request->parameters().cache_usage, effective_secure_dns_mode,
-        request->request_context(), request->host_cache(), std::move(tasks),
+        request->resolve_context(), request->host_cache(), std::move(tasks),
         request->priority(), proc_task_runner_, request->source_net_log(),
         tick_clock_);
     job = new_job.get();
@@ -3387,6 +3397,7 @@ void HostResolverManager::PushDnsTasks(bool proc_task_allowed,
                                        bool insecure_tasks_allowed,
                                        bool allow_cache,
                                        bool prioritize_local_lookups,
+                                       ResolveContext* resolve_context,
                                        std::deque<TaskType>* out_tasks) {
   DCHECK(dns_client_);
   DCHECK(dns_client_->GetEffectiveConfig());
@@ -3406,7 +3417,8 @@ void HostResolverManager::PushDnsTasks(bool proc_task_allowed,
       break;
     case DnsConfig::SecureDnsMode::AUTOMATIC:
       DCHECK(!allow_cache || out_tasks->front() == TaskType::CACHE_LOOKUP);
-      if (dns_client_->FallbackFromSecureTransactionPreferred()) {
+      if (dns_client_->FallbackFromSecureTransactionPreferred(
+              resolve_context)) {
         // Don't run a secure DnsTask if there are no available DoH servers.
         if (dns_tasks_allowed && insecure_tasks_allowed)
           out_tasks->push_back(TaskType::DNS);
@@ -3464,6 +3476,7 @@ void HostResolverManager::CreateTaskSequence(
     HostResolverFlags flags,
     base::Optional<DnsConfig::SecureDnsMode> secure_dns_mode_override,
     ResolveHostParameters::CacheUsage cache_usage,
+    ResolveContext* resolve_context,
     DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
     std::deque<TaskType>* out_tasks) {
   DCHECK(out_tasks->empty());
@@ -3507,7 +3520,7 @@ void HostResolverManager::CreateTaskSequence(
               !dns_client_->FallbackFromInsecureTransactionPreferred();
           PushDnsTasks(proc_task_allowed, *out_effective_secure_dns_mode,
                        insecure_allowed, allow_cache, prioritize_local_lookups,
-                       out_tasks);
+                       resolve_context, out_tasks);
         } else if (proc_task_allowed) {
           out_tasks->push_back(TaskType::PROC);
         }
@@ -3528,7 +3541,7 @@ void HostResolverManager::CreateTaskSequence(
         PushDnsTasks(false /* proc_task_allowed */,
                      *out_effective_secure_dns_mode,
                      dns_client_->CanUseInsecureDnsTransactions(), allow_cache,
-                     prioritize_local_lookups, out_tasks);
+                     prioritize_local_lookups, resolve_context, out_tasks);
       }
       break;
     case HostResolverSource::MULTICAST_DNS:
@@ -3549,6 +3562,7 @@ void HostResolverManager::GetEffectiveParametersForRequest(
     ResolveHostParameters::CacheUsage cache_usage,
     const IPAddress* ip_address,
     const NetLogWithSource& net_log,
+    ResolveContext* resolve_context,
     DnsQueryType* out_effective_type,
     HostResolverFlags* out_effective_flags,
     DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
@@ -3577,7 +3591,8 @@ void HostResolverManager::GetEffectiveParametersForRequest(
 
   CreateTaskSequence(hostname, *out_effective_type, source,
                      *out_effective_flags, secure_dns_mode_override,
-                     cache_usage, out_effective_secure_dns_mode, out_tasks);
+                     cache_usage, resolve_context,
+                     out_effective_secure_dns_mode, out_tasks);
 }
 
 bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
@@ -3840,8 +3855,10 @@ void HostResolverManager::InvalidateCaches() {
 #endif
 
   invalidation_in_progress_ = true;
-  for (auto& invalidator : host_cache_invalidators_)
-    invalidator.Invalidate();
+  for (auto& context : registered_contexts_) {
+    context.InvalidateCaches(dns_client_ ? dns_client_->GetCurrentSession()
+                                         : nullptr);
+  }
   invalidation_in_progress_ = false;
 
 #if DCHECK_IS_ON()
@@ -3852,7 +3869,7 @@ void HostResolverManager::InvalidateCaches() {
 }
 
 std::unique_ptr<DnsProbeRunner> HostResolverManager::CreateDohProbeRunner(
-    URLRequestContext* url_request_context) {
+    ResolveContext* resolve_context) {
   if (!dns_client_->CanUseSecureDnsTransactions() ||
       NetworkChangeNotifier::GetConnectionType() ==
           NetworkChangeNotifier::CONNECTION_NONE) {
@@ -3860,7 +3877,7 @@ std::unique_ptr<DnsProbeRunner> HostResolverManager::CreateDohProbeRunner(
   }
 
   return dns_client_->GetTransactionFactory()->CreateDohProbeRunner(
-      url_request_context);
+      resolve_context);
 }
 
 void HostResolverManager::RequestImpl::Cancel() {

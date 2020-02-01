@@ -62,6 +62,9 @@ int EnableStatsCollection(const base::CommandLine& cmdline);
 // ClientState key in support of uninstallation by the MSI wrapper.
 HRESULT WriteUninstallRegistryValues(const base::FilePath& setup_exe);
 
+// Writes the registry entries Credential Provider uses at runtime.
+HRESULT WriteCredentialProviderRegistryValues();
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_SETUP_SETUP_LIB_H_

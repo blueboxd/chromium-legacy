@@ -464,7 +464,17 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   base::Optional<int> next_selected_index =
       order_controller_->DetermineNewSelectedIndex(index);
 
-  UngroupTab(index);
+  // Here we update the group model manually instead of calling UngroupTab(), so
+  // that the tab isn't prematurely ungrouped. Ungrouping the tab can change its
+  // position while it's still animating closed, which can result in the wrong
+  // view getting removed.
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
+  if (group.has_value()) {
+    TabGroup* tab_group = group_model_->GetTabGroup(group.value());
+    tab_group->RemoveTab();
+    if (tab_group->IsEmpty())
+      group_model_->RemoveTabGroup(group.value());
+  }
 
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
   contents_data_.erase(contents_data_.begin() + index);
@@ -1183,6 +1193,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandTogglePinned:
       return true;
 
+    case CommandToggleGrouped:
+      return true;
+
     case CommandFocusMode:
       return GetIndicesForCommand(context_index).size() == 1;
 
@@ -1317,6 +1330,17 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
+    case CommandToggleGrouped: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      bool group = WillContextMenuGroup(context_index);
+      if (group)
+        AddToNewGroup(indices);
+      else
+        RemoveFromGroup(indices);
+
+      break;
+    }
+
     case CommandFocusMode: {
       base::RecordAction(UserMetricsAction("TabContextMenu_FocusMode"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
@@ -1388,6 +1412,22 @@ bool TabStripModel::WillContextMenuPin(int index) {
   for (size_t i = 0; i < indices.size() && all_pinned; ++i)
     all_pinned = IsTabPinned(indices[i]);
   return !all_pinned;
+}
+
+bool TabStripModel::WillContextMenuGroup(int index) {
+  std::vector<int> indices = GetIndicesForCommand(index);
+  DCHECK(!indices.empty());
+
+  // If all tabs are in the same group, then we ungroup, otherwise we group.
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(indices[0]);
+  if (!group.has_value())
+    return true;
+
+  for (size_t i = 1; i < indices.size(); ++i) {
+    if (GetTabGroupForTab(indices[i]) != group)
+      return true;
+  }
+  return false;
 }
 
 // static
@@ -1930,12 +1970,13 @@ base::Optional<tab_groups::TabGroupId> TabStripModel::UngroupTab(int index) {
   if (!group.has_value())
     return base::nullopt;
 
-  TabGroup* tab_group = group_model_->GetTabGroup(group.value());
-
+  // Update the tab.
   contents_data_[index]->set_group(base::nullopt);
   for (auto& observer : observers_)
     observer.TabGroupedStateChanged(base::nullopt, index);
 
+  // Update the group model.
+  TabGroup* tab_group = group_model_->GetTabGroup(group.value());
   tab_group->RemoveTab();
   if (tab_group->IsEmpty())
     group_model_->RemoveTabGroup(group.value());

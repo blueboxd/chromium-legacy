@@ -241,6 +241,15 @@ unsigned DnsSession::NumAvailableDohServers() {
   return count;
 }
 
+base::Time DnsSession::GetLastDohFailure(size_t server_index) {
+  return GetServerStats(server_index, true /* is_doh_server */)->last_failure;
+}
+
+int DnsSession::GetLastDohFailureCount(size_t server_index) {
+  return GetServerStats(server_index, true /* is_doh_server */)
+      ->last_failure_count;
+}
+
 DnsSession::ServerStats* DnsSession::GetServerStats(unsigned server_index,
                                                     bool is_doh_server) {
   DCHECK_GE(server_index, 0u);

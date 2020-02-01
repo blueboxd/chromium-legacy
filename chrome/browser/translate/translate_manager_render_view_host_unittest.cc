@@ -22,7 +22,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/translate_fake_page.h"
+#include "chrome/browser/translate/fake_translate_agent.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
@@ -247,19 +247,19 @@ class TranslateManagerRenderViewHostTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        ->RegisterPage(fake_page_.BindToNewPageRemote(), details,
+        ->RegisterPage(fake_agent_.BindToNewPageRemote(), details,
                        page_translatable);
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,
                                 const std::string& target_lang,
                                 translate::TranslateErrors::Type error) {
-    // Ensure fake_page_ Translate() call gets dispatched.
+    // Ensure fake_agent_ Translate() call gets dispatched.
     base::RunLoop().RunUntilIdle();
 
-    fake_page_.PageTranslated(false, source_lang, target_lang, error);
+    fake_agent_.PageTranslated(false, source_lang, target_lang, error);
 
-    // Ensure fake_page_ Translate() response callback gets dispatched.
+    // Ensure fake_agent_ Translate() response callback gets dispatched.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -273,27 +273,27 @@ class TranslateManagerRenderViewHostTest
                            std::string* target_lang) {
     base::RunLoop().RunUntilIdle();
 
-    if (!fake_page_.called_translate_)
+    if (!fake_agent_.called_translate_)
       return false;
-    EXPECT_TRUE(fake_page_.source_lang_);
-    EXPECT_TRUE(fake_page_.target_lang_);
+    EXPECT_TRUE(fake_agent_.source_lang_);
+    EXPECT_TRUE(fake_agent_.target_lang_);
 
     if (original_lang)
-      *original_lang = *fake_page_.source_lang_;
+      *original_lang = *fake_agent_.source_lang_;
     if (target_lang)
-      *target_lang = *fake_page_.target_lang_;
+      *target_lang = *fake_agent_.target_lang_;
 
     // Reset
-    fake_page_.called_translate_ = false;
-    fake_page_.source_lang_ = base::nullopt;
-    fake_page_.target_lang_ = base::nullopt;
+    fake_agent_.called_translate_ = false;
+    fake_agent_.source_lang_ = base::nullopt;
+    fake_agent_.target_lang_ = base::nullopt;
 
     return true;
   }
 
   bool IsTranslationReverted() {
     base::RunLoop().RunUntilIdle();
-    return fake_page_.called_revert_translation_;
+    return fake_agent_.called_revert_translation_;
   }
 
   InfoBarService* infobar_service() {
@@ -493,7 +493,7 @@ class TranslateManagerRenderViewHostTest
   std::set<infobars::InfoBarDelegate*> removed_infobars_;
 
   std::unique_ptr<MockTranslateBubbleFactory> bubble_factory_;
-  FakePageImpl fake_page_;
+  FakeTranslateAgent fake_agent_;
 
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       infobar_observer_;

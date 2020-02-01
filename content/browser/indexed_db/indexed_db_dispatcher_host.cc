@@ -196,8 +196,7 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
-    scoped_refptr<IndexedDBContextImpl> indexed_db_context,
-    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote)
+    scoped_refptr<IndexedDBContextImpl> indexed_db_context)
     : indexed_db_context_(std::move(indexed_db_context)),
       file_task_runner_(
           base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
@@ -205,20 +204,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       ipc_process_id_(ipc_process_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);
-  DCHECK(remote.is_valid());
-
-  // Bind the BlobStorageContext remote on the idb sequence.
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](IndexedDBDispatcherHost* host,
-             mojo::PendingRemote<storage::mojom::BlobStorageContext> remote) {
-            DCHECK_CALLED_ON_VALID_SEQUENCE(host->sequence_checker_);
-            host->mojo_blob_storage_context_.Bind(std::move(remote));
-          },
-          // As |this| is destroyed on the idb task runner, it is safe to
-          // pass it directly.
-          base::Unretained(this), std::move(remote)));
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
@@ -273,6 +258,18 @@ void IndexedDBDispatcherHost::AddTransactionBinding(
     mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   transaction_receivers_.Add(std::move(transaction), std::move(receiver));
+}
+
+storage::mojom::BlobStorageContext*
+IndexedDBDispatcherHost::mojo_blob_storage_context() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return indexed_db_context_->blob_storage_context();
+}
+
+storage::mojom::NativeFileSystemContext*
+IndexedDBDispatcherHost::native_file_system_context() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return indexed_db_context_->native_file_system_context();
 }
 
 void IndexedDBDispatcherHost::GetDatabaseInfo(

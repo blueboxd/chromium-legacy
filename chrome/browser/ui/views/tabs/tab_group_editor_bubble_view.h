@@ -55,6 +55,8 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   SkColor background_color() const { return color(); }
 
+  void OnBubbleClose();
+
   TabController* const tab_controller_;
   const tab_groups::TabGroupId group_;
 
@@ -102,6 +104,8 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   // Creates the set of tab group colors to display and returns the color that
   // is initially selected.
   SkColor InitColorSet();
+
+  base::string16 title_at_opening_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_

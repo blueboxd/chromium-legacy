@@ -14,8 +14,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-
-import java.net.URI;
+import org.chromium.url.URI;
 
 /**
  * PaymentHandlerToolbar coordinator, which owns the component overall, i.e., creates other objects

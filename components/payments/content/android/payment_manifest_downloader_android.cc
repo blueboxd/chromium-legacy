@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace payments {
 namespace {
@@ -81,6 +82,7 @@ void PaymentManifestDownloaderAndroid::DownloadPaymentMethodManifest(
     const base::android::JavaParamRef<jobject>& juri,
     const base::android::JavaParamRef<jobject>& jcallback) {
   downloader_.DownloadPaymentMethodManifest(
+      url::Origin(),  // TODO(rouslan): Use actual origin.
       GURL(base::android::ConvertJavaStringToUTF8(
           env, Java_PaymentManifestDownloader_getUriString(env, juri))),
       base::BindOnce(&DownloadCallback::OnPaymentMethodManifestDownload,
@@ -93,6 +95,7 @@ void PaymentManifestDownloaderAndroid::DownloadWebAppManifest(
     const base::android::JavaParamRef<jobject>& juri,
     const base::android::JavaParamRef<jobject>& jcallback) {
   downloader_.DownloadWebAppManifest(
+      url::Origin(),  // TODO(rouslan): Use actual origin.
       GURL(base::android::ConvertJavaStringToUTF8(
           env, Java_PaymentManifestDownloader_getUriString(env, juri))),
       base::BindOnce(&DownloadCallback::OnWebAppManifestDownload,

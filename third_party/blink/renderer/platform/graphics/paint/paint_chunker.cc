@@ -60,7 +60,7 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
     next_chunk_id_.emplace(item.GetId());
   }
 
-  size_t new_chunk_begin_index;
+  wtf_size_t new_chunk_begin_index;
   if (chunks_.IsEmpty()) {
     new_chunk_begin_index = 0;
   } else {

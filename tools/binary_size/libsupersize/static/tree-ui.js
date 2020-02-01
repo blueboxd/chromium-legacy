@@ -405,12 +405,16 @@ const newTreeElement = (() => {
   const _dataUrlInput = form.elements.namedItem('load_url');
   const _progress = new ProgressBar('progress');
 
+  /** @type {boolean} */
+  let _doneLoad = false;
+
   /**
    * Displays the given data as a tree view
    * @param {TreeProgress} message
    */
   function displayTree(message) {
     const {root, percent, diffMode, error} = message;
+    state.set('diff_mode', diffMode ? 'on' : null);
     /** @type {DocumentFragment | null} */
     let rootElement = null;
     if (root) {
@@ -421,7 +425,6 @@ const newTreeElement = (() => {
       link.click();
       link.tabIndex = 0;
     }
-    state.set('diff_mode', diffMode ? 'on' : null);
 
     // Double requestAnimationFrame ensures that the code inside executes in a
     // different frame than the above tree element creation.
@@ -440,6 +443,10 @@ const newTreeElement = (() => {
         }
 
         dom.replace(_symbolTree, rootElement);
+        if (!_doneLoad && percent === 1) {
+          _doneLoad = true;
+          console.log('Pro Tip: await worker.openNode("$FILE_PATH")')
+        }
       })
     );
   }

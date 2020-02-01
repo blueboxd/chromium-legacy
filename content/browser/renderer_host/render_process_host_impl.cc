@@ -1094,18 +1094,6 @@ void CopyFeatureSwitch(const base::CommandLine& src,
     dest->AppendSwitchASCII(switch_name, base::JoinString(features, ","));
 }
 
-std::set<int>& GetCurrentCorbPluginExceptions() {
-  static base::NoDestructor<std::set<int>> s_data;
-  return *s_data;
-}
-
-void OnNetworkServiceCrashForCorb() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  network::mojom::NetworkService* network_service = GetNetworkService();
-  for (int process_id : GetCurrentCorbPluginExceptions())
-    network_service->AddCorbExceptionForPlugin(process_id);
-}
-
 RenderProcessHostImpl::StoragePartitionServiceRequestHandler&
 GetStoragePartitionServiceRequestHandler() {
   static base::NoDestructor<
@@ -1129,44 +1117,81 @@ GetCodeCacheHostReceiverHandler() {
   return *instance;
 }
 
-// This is the entry point (i.e. this is called on the UI thread *before*
-// we post a task for RemoveCorbExceptionForPluginOnIOThread).
-void RemoveCorbExceptionForPluginOnUIThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  GetCurrentCorbPluginExceptions().erase(process_id);
-  GetNetworkService()->RemoveCorbExceptionForPlugin(process_id);
+// Keep track of plugin process IDs that require exceptions from CORB,
+// request_initiator_site_lock checks (for particular origins), or both.
+struct PluginExceptionsForNetworkService {
+  bool is_corb_disabled = false;
+  std::set<url::Origin> allowed_request_initiators;
+};
+std::map<int, PluginExceptionsForNetworkService>&
+GetPluginExceptionsForNetworkService() {
+  static base::NoDestructor<std::map<int, PluginExceptionsForNetworkService>>
+      s_data;
+  return *s_data;
 }
 
-void AddCorbExceptionForPluginOnUIThread(int process_id) {
+void OnNetworkServiceCrashRestorePluginExceptions() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  network::mojom::NetworkService* network_service = GetNetworkService();
+  for (auto it : GetPluginExceptionsForNetworkService()) {
+    const int process_id = it.first;
+    const PluginExceptionsForNetworkService& exceptions = it.second;
+
+    if (exceptions.is_corb_disabled)
+      network_service->AddCorbExceptionForPlugin(process_id);
+
+    for (const url::Origin& origin : exceptions.allowed_request_initiators)
+      network_service->AddAllowedRequestInitiatorForPlugin(process_id, origin);
+  }
+}
+
+void RemoveNetworkServicePluginExceptions(int process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GetPluginExceptionsForNetworkService().erase(process_id);
+  GetNetworkService()->RemoveSecurityExceptionsForPlugin(process_id);
+}
+
+bool PrepareToAddNewPluginExceptions(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* process = RenderProcessHostImpl::FromID(process_id);
   if (!process)
-    return;
+    return false;  // failure
 
-  process->CleanupCorbExceptionForPluginUponDestruction();
+  process->CleanupNetworkServicePluginExceptionsUponDestruction();
 
   static base::NoDestructor<
       std::unique_ptr<base::CallbackList<void()>::Subscription>>
       s_crash_handler_subscription;
   if (!*s_crash_handler_subscription) {
     *s_crash_handler_subscription = RegisterNetworkServiceCrashHandler(
-        base::BindRepeating(&OnNetworkServiceCrashForCorb));
+        base::BindRepeating(&OnNetworkServiceCrashRestorePluginExceptions));
   }
 
-  GetCurrentCorbPluginExceptions().insert(process_id);
+  return true;  // success
+}
+
+void AddCorbExceptionForPluginOnUIThread(int process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!PrepareToAddNewPluginExceptions(process_id))
+    return;
+
+  GetPluginExceptionsForNetworkService()[process_id].is_corb_disabled = true;
   GetNetworkService()->AddCorbExceptionForPlugin(process_id);
 }
 
-// This is the entry point (i.e. this is called on the IO thread *before*
-// we post a task for AddCorbExceptionForPluginOnUIThread).
-void AddCorbExceptionForPluginOnIOThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void AddAllowedRequestInitiatorForPluginOnUIThread(
+    int process_id,
+    const url::Origin& allowed_request_initiator) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!PrepareToAddNewPluginExceptions(process_id))
+    return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
+  GetPluginExceptionsForNetworkService()[process_id]
+      .allowed_request_initiators.insert(allowed_request_initiator);
+  GetNetworkService()->AddAllowedRequestInitiatorForPlugin(
+      process_id, allowed_request_initiator);
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -1499,8 +1524,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       indexed_db_factory_(
           new IndexedDBDispatcherHost(
               id_,
-              storage_partition_impl_->GetIndexedDBContext(),
-              ChromeBlobStorageContext::GetRemoteFor(browser_context)),
+              storage_partition_impl_->GetIndexedDBContext()),
           base::OnTaskRunnerDeleter(
               storage_partition_impl_->GetIndexedDBContext()->IDBTaskRunner())),
       channel_connected_(false),
@@ -1621,8 +1645,8 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
                    base::BindOnce(&RemoveShaderInfo, GetID()));
   }
 
-  if (cleanup_corb_exception_for_plugin_upon_destruction_)
-    RemoveCorbExceptionForPluginOnUIThread(GetID());
+  if (cleanup_network_service_plugin_exceptions_upon_destruction_)
+    RemoveNetworkServicePluginExceptions(GetID());
 
   // Do reporting here for the priority of the frames seen by the host.
   FramePrioritiesSeen report = FramePrioritiesSeen::kNoFramesSeen;
@@ -2076,12 +2100,27 @@ void RenderProcessHostImpl::DelayProcessShutdownForUnload(
 // static
 void RenderProcessHostImpl::AddCorbExceptionForPlugin(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  AddCorbExceptionForPluginOnIOThread(process_id);
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
 
-void RenderProcessHostImpl::CleanupCorbExceptionForPluginUponDestruction() {
+// static
+void RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin(
+    int process_id,
+    const url::Origin& allowed_request_initiator) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&AddAllowedRequestInitiatorForPluginOnUIThread,
+                                process_id, allowed_request_initiator));
+}
+
+void RenderProcessHostImpl::
+    CleanupNetworkServicePluginExceptionsUponDestruction() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cleanup_corb_exception_for_plugin_upon_destruction_ = true;
+  cleanup_network_service_plugin_exceptions_upon_destruction_ = true;
 }
 
 PeerConnectionTrackerHost*

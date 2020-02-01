@@ -522,7 +522,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       using_debug_device_(false),
       enable_accelerated_vpx_decode_(
           !workarounds.disable_accelerated_vpx_decode),
-      processing_config_changed_(false) {
+      processing_config_changed_(false),
+      use_empty_video_hdr_metadata_(workarounds.use_empty_video_hdr_metadata) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
@@ -2839,15 +2840,13 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
 
 void DXVAVideoDecodeAccelerator::SetDX11ProcessorHDRMetadataIfNeeded() {
   DCHECK(display_helper_);
-  // TODO: check workarounds.
 
-  // If we don't know the input metadata, then do nothing.
-  if (!config_.hdr_metadata)
-    return;
+  // If we don't know the input metadata, then we'll still send the
+  // monitor output.
 
-  // Similarly, do nothing without display metadata.
-  auto display_metadata = display_helper_->GetDisplayMetadata();
-  if (!display_metadata)
+  // Do nothing without display metadata.
+  auto dxgi_display_metadata = display_helper_->GetDisplayMetadata();
+  if (!dxgi_display_metadata)
     return;
 
   // If we can't get a VideoContext2, then just hope for the best.
@@ -2855,16 +2854,25 @@ void DXVAVideoDecodeAccelerator::SetDX11ProcessorHDRMetadataIfNeeded() {
   if (FAILED(video_context_.As(&video_context2)))
     return;
 
-  DXGI_HDR_METADATA_HDR10 stream_metadata =
-      DisplayHelper::HdrMetadataToDXGI(*config_.hdr_metadata);
+  // If we have stream metadata, then use it.  Otherwise, send in empty
+  // stream metadata.  For the Radeon 5700, at least, this seems to do
+  // something sane.  Not setting the metadata crashes intermittently.
+  if (config_.hdr_metadata || use_empty_video_hdr_metadata_) {
+    HDRMetadata stream_metadata;
+    if (config_.hdr_metadata)
+      stream_metadata = *config_.hdr_metadata;
 
-  video_context2->VideoProcessorSetStreamHDRMetaData(
-      d3d11_processor_.Get(), 0, DXGI_HDR_METADATA_TYPE_HDR10,
-      sizeof(stream_metadata), &stream_metadata);
+    DXGI_HDR_METADATA_HDR10 dxgi_stream_metadata =
+        DisplayHelper::HdrMetadataToDXGI(stream_metadata);
+
+    video_context2->VideoProcessorSetStreamHDRMetaData(
+        d3d11_processor_.Get(), 0, DXGI_HDR_METADATA_TYPE_HDR10,
+        sizeof(dxgi_stream_metadata), &dxgi_stream_metadata);
+  }
 
   video_context2->VideoProcessorSetOutputHDRMetaData(
       d3d11_processor_.Get(), DXGI_HDR_METADATA_TYPE_HDR10,
-      sizeof(*display_metadata), &(*display_metadata));
+      sizeof(*dxgi_display_metadata), &(*dxgi_display_metadata));
 }
 
 bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,

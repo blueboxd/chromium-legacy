@@ -336,22 +336,26 @@ TEST_F(LayoutTableCellTest, HasNonCollapsedBorderDecoration) {
 
   To<Element>(cell->GetNode())
       ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(cell->HasNonCollapsedBorderDecoration());
 
   To<Element>(cell->Table()->GetNode())
       ->setAttribute(html_names::kStyleAttr, "border-collapse: collapse");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(cell->HasNonCollapsedBorderDecoration());
 
   To<Element>(cell->GetNode())
       ->setAttribute(html_names::kStyleAttr, "border: 2px solid black");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(cell->HasNonCollapsedBorderDecoration());
 
   To<Element>(cell->Table()->GetNode())
       ->setAttribute(html_names::kStyleAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(cell->HasNonCollapsedBorderDecoration());
 }
 

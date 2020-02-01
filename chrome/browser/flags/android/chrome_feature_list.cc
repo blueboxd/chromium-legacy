@@ -100,6 +100,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidNightMode,
     &kAndroidNightModeCCT,
     &kAndroidNightModeForQ,
+    &kAndroidNightModeTabReparenting,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
@@ -277,6 +278,9 @@ const base::Feature kAndroidNightModeCCT{"AndroidNightModeCCT",
 
 const base::Feature kAndroidNightModeForQ{"AndroidNightModeForQ",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAndroidNightModeTabReparenting{
+    "AndroidNightModeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",

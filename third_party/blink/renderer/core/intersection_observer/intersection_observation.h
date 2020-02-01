@@ -40,6 +40,9 @@ class CORE_EXPORT IntersectionObservation final
     // the computation will run even if the previous run happened within the
     // delay parameter.
     kIgnoreDelay = 1 << 3,
+    // If this bit is set, we can skip tracking the sticky frame during
+    // UpdateViewportIntersectionsForSubtree.
+    kCanSkipStickyFrameTracking = 1 << 4,
   };
 
   IntersectionObservation(IntersectionObserver&, Element&);

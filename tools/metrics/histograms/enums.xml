@@ -26389,6 +26389,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3152" label="SameOriginIframeWindowConfirm"/>
   <int value="3153" label="SameOriginIframeWindowPrompt"/>
   <int value="3154" label="SameOriginIframeWindowPrint"/>
+  <int value="3155" label="LargeStickyAd"/>
+  <int value="3156" label="OverlayInterstitialAd"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33839,6 +33841,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="19" label="kEPUB"/>
   <int value="20" label="kICS"/>
   <int value="21" label="kSVG"/>
+  <int value="22" label="kTest"/>
 </enum>
 
 <enum name="InsecureDownloadSecurityStatus">
@@ -38747,6 +38750,7 @@ from previous Chrome versions.
   <int value="334802038" label="OfflinePreviews:disabled"/>
   <int value="335976733" label="NotificationStackingBarRedesign:enabled"/>
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
+  <int value="338662897" label="AndroidNightModeTabReparenting:disabled"/>
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="341851350" label="EnableDbusAndX11StatusIcons:enabled"/>
@@ -39048,6 +39052,7 @@ from previous Chrome versions.
   <int value="698809951" label="WebRtcHWVP8Encoding:enabled"/>
   <int value="699149897" label="ContentSuggestionsDebugLog:disabled"/>
   <int value="701766325" label="PerNavigationMojoInterface:enabled"/>
+  <int value="703469777" label="AndroidNightModeTabReparenting:enabled"/>
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
   <int value="705713283" label="EasyUnlockPromotions:disabled"/>
   <int value="709850261" label="disable-touch-editing"/>
@@ -39415,6 +39420,7 @@ from previous Chrome versions.
   <int value="1182356056" label="MacV2GPUSandbox:enabled"/>
   <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>
+  <int value="1184093076" label="WebRtcUseMinMaxVEADimensions:enabled"/>
   <int value="1184225265" label="AllowSyncXHRInPageDismissal:enabled"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1188109510" label="AssistantAudioEraser:enabled"/>
@@ -39433,7 +39439,6 @@ from previous Chrome versions.
   <int value="1203795051" label="PassiveMixedContentWarning:enabled"/>
   <int value="1203821857" label="Vulkan:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
-  <int value="1209221384" label="enable-experimental-accessibility-features"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>
   <int value="1211284676" label="V8NoTurbo:enabled"/>
   <int value="1211756417"
@@ -39728,6 +39733,7 @@ from previous Chrome versions.
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
+  <int value="1562855415" label="WebRtcUseMinMaxVEADimensions:disabled"/>
   <int value="1563255033" label="memlog-stack-mode"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
@@ -50697,6 +50703,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="2126196629" label="PPB_UDPSocket_Private;0.4"/>
 </enum>
 
+<enum name="PerformanceHintsObserverHintForURLResult">
+  <int value="0" label="Hint not found for URL"/>
+  <int value="1" label="Hint not yet processed"/>
+  <int value="2" label="Invalid URL"/>
+  <int value="3" label="Hint found for URL"/>
+</enum>
+
 <enum name="PerformanceMeasureParameterType">
   <obsolete>
     Deprecated as of June 2019.
@@ -55792,9 +55805,13 @@ Called by update_net_trust_anchors.py.-->
     Scheme excluded from request_initiator_site_lock checks. Since ~M80 this
     value can only be recorded during tests.
   </int>
-  <int value="6" label="ExcludedUniversalAccessPlugin">
-    Requests from a renderer processes that embeds an universal access plugin
-    (like Flash).
+  <int value="6" label="ExcludedCorbForPlugin">
+    Requests from a renderer process that embeds a plugin (e.g. Flash) that
+    needs to disable CORB and request_initiator_site_lock enforcement.
+  </int>
+  <int value="7" label="AllowedRequestInitiatorForPlugin">
+    Requests from a renderer process that embeds a plugin (e.g. PDF) that needs
+    to poke small, targeted holes in request_initiator_site_lock enforcement.
   </int>
 </enum>
 
@@ -62282,16 +62299,23 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Did not expect restored types but found some"/>
 </enum>
 
+<enum name="SyncBookmarkModelMetadataClientTagState">
+  <int value="0" label="At least one mismatch found"/>
+  <int value="1" label="All present do match but some are not present"/>
+  <int value="2" label="All present and matching"/>
+</enum>
+
 <enum name="SyncBookmarkModelMetadataCorruptionReason">
   <int value="0" label="No corruption"/>
   <int value="1" label="Entity missing server id"/>
   <int value="2" label="Tombstone has a bookmark id"/>
   <int value="3" label="Non-tombstone is missing a bookmark id"/>
-  <int value="4"
-      label="Number of bookmarks doesn't match number of metadata entities"/>
-  <int value="5"
-      label="Ids in the bookmarks model don't match the ids in the metadata
-             entities"/>
+  <int value="4" label="DEPRECATED_4"/>
+  <int value="5" label="DEPRECATED_5"/>
+  <int value="6" label="Duplicated server ids exist"/>
+  <int value="7" label="Bookmark id does not exist in model"/>
+  <int value="8" label="Bookmark in model is missing sync metadata"/>
+  <int value="9" label="Client tag hash does not match bookmark GUID"/>
 </enum>
 
 <enum name="SyncBookmarkModelSyncState">

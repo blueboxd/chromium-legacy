@@ -180,8 +180,10 @@ std::vector<TilesTestConfig> const kTestCases = {
     {LayerTreeTest::RENDERER_SOFTWARE, BITMAP},
     {LayerTreeTest::RENDERER_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_GL, GPU},
+#if defined(GL_ON_PLATFORM)
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+#endif
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_VK, GPU},
@@ -207,7 +209,9 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
 
 std::vector<TilesTestConfig> const kTestCasesMultiThread = {
     {LayerTreeTest::RENDERER_GL, ONE_COPY},
+#if defined(GL_ON_PLATFORM)
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
+#endif
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
 #endif
@@ -252,8 +256,10 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
     ::testing::Values(
-        TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH},
-        TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU_LOW_BIT_DEPTH}));
+#if defined(GL_ON_PLATFORM)
+        TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU_LOW_BIT_DEPTH},
+#endif
+        TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH}));
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
   use_partial_raster_ = true;

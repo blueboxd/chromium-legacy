@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
+#include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/common/content_export.h"
@@ -25,7 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/origin.h"
 
@@ -46,9 +47,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   // Only call the constructor from the UI thread.
   IndexedDBDispatcherHost(
       int ipc_process_id,
-      scoped_refptr<IndexedDBContextImpl> indexed_db_context,
-      mojo::PendingRemote<storage::mojom::BlobStorageContext>
-          blob_storage_context);
+      scoped_refptr<IndexedDBContextImpl> indexed_db_context);
 
   void AddReceiver(
       int render_process_id,
@@ -72,11 +71,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
-  mojo::Remote<storage::mojom::BlobStorageContext>&
-  mojo_blob_storage_context() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return mojo_blob_storage_context_;
-  }
+  storage::mojom::BlobStorageContext* mojo_blob_storage_context();
+  storage::mojom::NativeFileSystemContext* native_file_system_context();
   int ipc_process_id() const { return ipc_process_id_; }
 
   // Must be called on the IDB sequence.
@@ -142,7 +138,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   base::SequencedTaskRunner* IDBTaskRunner() const;
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  mojo::Remote<storage::mojom::BlobStorageContext> mojo_blob_storage_context_;
 
   // Shared task runner used to read blob files on.
   scoped_refptr<base::TaskRunner> file_task_runner_;

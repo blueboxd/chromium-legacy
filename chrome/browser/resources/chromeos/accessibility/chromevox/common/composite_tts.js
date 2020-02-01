@@ -64,12 +64,17 @@ CompositeTts = class {
     });
   }
 
-  /**
-   * @override
-   */
+  /** @override */
   addCapturingEventListener(listener) {
     this.ttsEngines_.forEach(function(engine) {
       engine.addCapturingEventListener(listener);
+    });
+  }
+
+  /** @override */
+  removeCapturingEventListener(listener) {
+    this.ttsEngines_.forEach(function(engine) {
+      engine.removeCapturingEventListener(listener);
     });
   }
 
@@ -86,7 +91,7 @@ CompositeTts = class {
    * @override
    */
   propertyToPercentage(property) {
-    for (var i = 0, engine; engine = this.ttsEngines_[i]; i++) {
+    for (let i = 0, engine; engine = this.ttsEngines_[i]; i++) {
       const value = engine.propertyToPercentage(property);
       if (value !== undefined) {
         return value;
@@ -99,7 +104,7 @@ CompositeTts = class {
    * @override
    */
   getDefaultProperty(property) {
-    for (var i = 0, engine; engine = this.ttsEngines_[i]; i++) {
+    for (let i = 0, engine; engine = this.ttsEngines_[i]; i++) {
       const value = engine.getDefaultProperty(property);
       if (value !== undefined) {
         return value;

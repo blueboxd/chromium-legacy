@@ -9,8 +9,7 @@ import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
-
-import java.net.URI;
+import org.chromium.url.URI;
 
 /** PaymentHandlerToolbar UI properties, which fully describe the state of the UI. */
 /* package */ class PaymentHandlerToolbarProperties {

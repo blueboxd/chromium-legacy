@@ -28,10 +28,10 @@
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForDialog) {
   ASSERT_TRUE(extension);
 
   // The test extension opens a dialog on installation.
-  app_modal::JavaScriptAppModalDialog* dialog =
+  javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(dialog);
 

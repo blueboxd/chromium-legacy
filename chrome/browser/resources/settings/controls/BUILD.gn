@@ -5,6 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -289,34 +290,23 @@ group("polymer3_elements") {
   ]
 }
 
-settings_controls_rewrites = [
-  "cr_slider.SliderTick|SliderTick",
-  "settings.ExtensionControlBrowserProxyImpl|ExtensionControlBrowserProxyImpl",
-  "Settings.PrefUtil.prefToString|prefToString",
-  "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
-]
-
 polymer_modulizer("controlled_button") {
   js_file = "controlled_button.js"
   html_file = "controlled_button.html"
   html_type = "dom-module"
-  auto_imports = [
-    "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
-    "ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.html|CrPolicyPrefBehavior",
-  ]
+  auto_imports = settings_auto_imports
 }
 
 polymer_modulizer("controlled_radio_button") {
   js_file = "controlled_radio_button.js"
   html_file = "controlled_radio_button.html"
   html_type = "dom-module"
-  auto_imports = [
-    "ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_behavior.html|CrRadioButtonBehavior",
-    "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
-    "ui/webui/resources/html/assert.html|assert",
-    "chrome/browser/resources/settings/prefs/pref_util.html|prefToString",
-  ]
-  namespace_rewrites = settings_controls_rewrites
+  auto_imports =
+      settings_auto_imports + [
+        "ui/webui/resources/html/assert.html|assert",
+        "chrome/browser/resources/settings/prefs/pref_util.html|prefToString",
+      ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("extension_controlled_indicator") {
@@ -327,7 +317,7 @@ polymer_modulizer("extension_controlled_indicator") {
     "chrome/browser/resources/settings/extension_control_browser_proxy.html|ExtensionControlBrowserProxyImpl",
     "ui/webui/resources/html/assert.html|assert",
   ]
-  namespace_rewrites = settings_controls_rewrites
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("password_prompt_dialog") {
@@ -340,44 +330,38 @@ polymer_modulizer("settings_checkbox") {
   js_file = "settings_checkbox.js"
   html_file = "settings_checkbox.html"
   html_type = "dom-module"
-  auto_imports = [ "chrome/browser/resources/settings/controls/settings_boolean_control_behavior.html|SettingsBooleanControlBehavior" ]
+  auto_imports = settings_auto_imports
 }
 
 polymer_modulizer("settings_dropdown_menu") {
   js_file = "settings_dropdown_menu.js"
   html_file = "settings_dropdown_menu.html"
   html_type = "dom-module"
-  auto_imports = [
-    "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
-    "chrome/browser/resources/settings/prefs/pref_util.html|stringToPrefValue, prefToString",
-    "ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.html|CrPolicyPrefBehavior",
-    "ui/webui/resources/html/assert.html|assert",
-  ]
-  namespace_rewrites = settings_controls_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/prefs/pref_util.html|stringToPrefValue, prefToString",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("settings_radio_group") {
   js_file = "settings_radio_group.js"
   html_file = "settings_radio_group.html"
   html_type = "dom-module"
-  auto_imports = [
-    "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
-    "chrome/browser/resources/settings/prefs/pref_util.html|stringToPrefValue, prefToString",
-  ]
-  namespace_rewrites = settings_controls_rewrites
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/prefs/pref_util.html|stringToPrefValue, prefToString" ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("settings_slider") {
   js_file = "settings_slider.js"
   html_file = "settings_slider.html"
   html_type = "dom-module"
-  auto_imports = [
-    "chrome/browser/resources/settings/i18n_setup.html|loadTimeData",
-    "ui/webui/resources/html/assert.html|assert",
-    "ui/webui/resources/cr_elements/cr_slider/cr_slider.html|SliderTick",
-    "ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.html|CrPolicyPrefBehavior",
-  ]
-  namespace_rewrites = settings_controls_rewrites
+  auto_imports =
+      settings_auto_imports + [
+        "ui/webui/resources/html/assert.html|assert",
+        "ui/webui/resources/cr_elements/cr_slider/cr_slider.html|SliderTick",
+      ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("settings_textarea") {
@@ -390,7 +374,7 @@ polymer_modulizer("settings_toggle_button") {
   js_file = "settings_toggle_button.js"
   html_file = "settings_toggle_button.html"
   html_type = "dom-module"
-  auto_imports = [ "chrome/browser/resources/settings/controls/settings_boolean_control_behavior.html|SettingsBooleanControlBehavior" ]
+  auto_imports = settings_auto_imports
 }
 
 js_modulizer("modulize") {

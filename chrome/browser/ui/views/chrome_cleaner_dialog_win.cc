@@ -66,6 +66,16 @@ ChromeCleanerDialog::ChromeCleanerDialog(
           this, l10n_util::GetStringUTF16(
                     IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
 
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                     base::Unretained(this), DialogInteractionResult::kAccept));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                     base::Unretained(this), DialogInteractionResult::kCancel));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                     base::Unretained(this), DialogInteractionResult::kClose));
+
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(
       layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
@@ -140,23 +150,6 @@ views::View* ChromeCleanerDialog::GetInitiallyFocusedView() {
 
 bool ChromeCleanerDialog::ShouldShowCloseButton() const {
   return false;
-}
-
-// DialogDelegate overrides.
-
-bool ChromeCleanerDialog::Accept() {
-  HandleDialogInteraction(DialogInteractionResult::kAccept);
-  return true;
-}
-
-bool ChromeCleanerDialog::Cancel() {
-  HandleDialogInteraction(DialogInteractionResult::kCancel);
-  return true;
-}
-
-bool ChromeCleanerDialog::Close() {
-  HandleDialogInteraction(DialogInteractionResult::kClose);
-  return true;
 }
 
 // View overrides.

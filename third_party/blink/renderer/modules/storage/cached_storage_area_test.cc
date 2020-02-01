@@ -55,13 +55,8 @@ class CachedStorageAreaTest : public testing::Test,
 
   bool IsCacheLoaded() { return cached_area_->map_.get(); }
 
-  bool IsIgnoringAllMutations() { return cached_area_->ignore_all_mutations_; }
-
-  void ResetCache() { cached_area_->Reset(); }
-
   bool IsIgnoringKeyMutations(const String& key) {
-    return cached_area_->ignore_key_mutations_.find(key) !=
-           cached_area_->ignore_key_mutations_.end();
+    return cached_area_->pending_mutations_by_key_.Contains(key);
   }
 
   static Vector<uint8_t> StringToUint8Vector(const String& input,
@@ -130,52 +125,45 @@ TEST_P(CachedStorageAreaTestWithParam, Basics) {
   EXPECT_EQ(0u, cached_area_->GetLength());
 
   mock_storage_area_.Flush();
-  EXPECT_EQ(1u, mock_storage_area_.observer_count());
+  EXPECT_EQ(2u, mock_storage_area_.observer_count());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, GetLength) {
-  // GetLength, we expect to see one call to load in the db.
+  // Expect GetLength to load the cache.
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_EQ(0u, cached_area_->GetLength());
   EXPECT_TRUE(IsCacheLoaded());
   EXPECT_TRUE(mock_storage_area_.observed_get_all());
-  EXPECT_EQ(1u, mock_storage_area_.pending_callbacks_count());
-  EXPECT_TRUE(IsIgnoringAllMutations());
-  mock_storage_area_.CompleteAllPendingCallbacks();
-  mock_storage_area_.Flush();
-  EXPECT_FALSE(IsIgnoringAllMutations());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, GetKey) {
-  // GetKey, expect the one call to load.
+  // Expect GetKey to load the cache.
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_TRUE(cached_area_->GetKey(2).IsNull());
   EXPECT_TRUE(IsCacheLoaded());
   EXPECT_TRUE(mock_storage_area_.observed_get_all());
-  EXPECT_EQ(1u, mock_storage_area_.pending_callbacks_count());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, GetItem) {
-  // GetItem, ditto.
+  // Expect GetItem to load the cache.
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
   EXPECT_TRUE(IsCacheLoaded());
   EXPECT_TRUE(mock_storage_area_.observed_get_all());
-  EXPECT_EQ(1u, mock_storage_area_.pending_callbacks_count());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, SetItem) {
-  // SetItem, we expect a call to load followed by a call to put in the db.
+  // Expect SetItem to load the cache and then generate a change event.
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
-  mock_storage_area_.Flush();
   EXPECT_TRUE(IsCacheLoaded());
   EXPECT_TRUE(mock_storage_area_.observed_get_all());
+
+  mock_storage_area_.Flush();
   EXPECT_TRUE(mock_storage_area_.observed_put());
   EXPECT_EQ(source_, mock_storage_area_.observed_source());
   EXPECT_EQ(KeyToUint8Vector(kKey), mock_storage_area_.observed_key());
   EXPECT_EQ(ValueToUint8Vector(kValue), mock_storage_area_.observed_value());
-  EXPECT_EQ(2u, mock_storage_area_.pending_callbacks_count());
 
   EXPECT_TRUE(source_area_->events.IsEmpty());
   if (IsSessionStorage()) {
@@ -202,10 +190,8 @@ TEST_P(CachedStorageAreaTestWithParam, Clear_AlreadyEmpty) {
   EXPECT_EQ(source_, mock_storage_area_.observed_source());
   if (IsSessionStorage()) {
     EXPECT_TRUE(mock_storage_area_.observed_get_all());
-    EXPECT_EQ(2u, mock_storage_area_.pending_callbacks_count());
   } else {
     EXPECT_FALSE(mock_storage_area_.observed_get_all());
-    EXPECT_EQ(1u, mock_storage_area_.pending_callbacks_count());
   }
 
   // Neither should have events since area was already empty.
@@ -226,10 +212,8 @@ TEST_P(CachedStorageAreaTestWithParam, Clear_WithData) {
   EXPECT_EQ(source_, mock_storage_area_.observed_source());
   if (IsSessionStorage()) {
     EXPECT_TRUE(mock_storage_area_.observed_get_all());
-    EXPECT_EQ(2u, mock_storage_area_.pending_callbacks_count());
   } else {
     EXPECT_FALSE(mock_storage_area_.observed_get_all());
-    EXPECT_EQ(1u, mock_storage_area_.pending_callbacks_count());
   }
 
   EXPECT_TRUE(source_area_->events.IsEmpty());
@@ -252,7 +236,6 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem_NothingToRemove) {
   EXPECT_TRUE(IsCacheLoaded());
   EXPECT_TRUE(mock_storage_area_.observed_get_all());
   EXPECT_FALSE(mock_storage_area_.observed_delete());
-  EXPECT_EQ(1u, mock_storage_area_.pending_callbacks_count());
 
   // Neither should have events since area was already empty.
   EXPECT_TRUE(source_area_->events.IsEmpty());
@@ -273,7 +256,6 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem) {
   EXPECT_TRUE(mock_storage_area_.observed_delete());
   EXPECT_EQ(source_, mock_storage_area_.observed_source());
   EXPECT_EQ(KeyToUint8Vector(kKey), mock_storage_area_.observed_key());
-  EXPECT_EQ(2u, mock_storage_area_.pending_callbacks_count());
 
   EXPECT_TRUE(source_area_->events.IsEmpty());
   if (IsSessionStorage()) {
@@ -294,7 +276,6 @@ TEST_P(CachedStorageAreaTestWithParam, BrowserDisconnect) {
                                   ValueToUint8Vector(kValue)));
   EXPECT_EQ(1u, cached_area_->GetLength());
   EXPECT_TRUE(IsCacheLoaded());
-  mock_storage_area_.CompleteAllPendingCallbacks();
   mock_storage_area_.ResetObservations();
 
   // Now disconnect the pipe from the browser, simulating situations where the
@@ -309,65 +290,6 @@ TEST_P(CachedStorageAreaTestWithParam, BrowserDisconnect) {
   cached_area_->RemoveItem(kKey, source_area_);
   EXPECT_EQ(0u, cached_area_->GetLength());
   EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
-
-  // TODO(mek): This should work for session storage too, but for some reason
-  // instead just hangs.
-  if (!IsSessionStorage()) {
-    // Even resetting the cache should still allow class to function properly.
-    ResetCache();
-    EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
-    EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
-    EXPECT_EQ(1u, cached_area_->GetLength());
-    EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
-  }
-}
-
-TEST_F(CachedStorageAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
-  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
-
-  EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
-  EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(IsIgnoringAllMutations());
-
-  // Before load completion, the mutation should be ignored.
-  observer->KeyAdded(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
-                     kRemoteSource);
-  EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
-
-  // Call the load completion callback.
-  mock_storage_area_.CompleteOnePendingCallback(true);
-  mock_storage_area_.Flush();
-  EXPECT_FALSE(IsIgnoringAllMutations());
-
-  // Verify that mutations are now applied.
-  observer->KeyAdded(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
-                     kRemoteSource);
-  EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
-}
-
-TEST_F(CachedStorageAreaTest, MutationsAreIgnoredUntilClearCompletion) {
-  cached_area_->Clear(source_area_);
-  mock_storage_area_.Flush();
-  EXPECT_TRUE(IsIgnoringAllMutations());
-  mock_storage_area_.CompleteOnePendingCallback(true);
-  mock_storage_area_.Flush();
-  EXPECT_FALSE(IsIgnoringAllMutations());
-
-  // Verify that calling Clear twice works as expected, the first
-  // completion callback should have been cancelled.
-  ResetCache();
-  cached_area_->Clear(source_area_);
-  mock_storage_area_.Flush();
-  EXPECT_TRUE(IsIgnoringAllMutations());
-  cached_area_->Clear(source_area_);
-  mock_storage_area_.Flush();
-  EXPECT_TRUE(IsIgnoringAllMutations());
-  mock_storage_area_.CompleteOnePendingCallback(true);
-  mock_storage_area_.Flush();
-  EXPECT_TRUE(IsIgnoringAllMutations());
-  mock_storage_area_.CompleteOnePendingCallback(true);
-  mock_storage_area_.Flush();
-  EXPECT_FALSE(IsIgnoringAllMutations());
 }
 
 TEST_F(CachedStorageAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
@@ -375,59 +297,58 @@ TEST_F(CachedStorageAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
 
   // SetItem
   EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
-  mock_storage_area_.CompleteOnePendingCallback(true);  // load completion
   mock_storage_area_.Flush();
-  EXPECT_FALSE(IsIgnoringAllMutations());
   EXPECT_TRUE(IsIgnoringKeyMutations(kKey));
-  observer->KeyDeleted(KeyToUint8Vector(kKey), {0}, kRemoteSource);
-  mock_storage_area_.Flush();
+  observer->KeyDeleted(KeyToUint8Vector(kKey), base::nullopt, kRemoteSource);
+  EXPECT_TRUE(IsIgnoringKeyMutations(kKey));
   EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
-  mock_storage_area_.CompleteOnePendingCallback(true);  // set completion
-  mock_storage_area_.Flush();
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       base::nullopt, source_);
   EXPECT_FALSE(IsIgnoringKeyMutations(kKey));
 
   // RemoveItem
   cached_area_->RemoveItem(kKey, source_area_);
   mock_storage_area_.Flush();
   EXPECT_TRUE(IsIgnoringKeyMutations(kKey));
-  mock_storage_area_.CompleteOnePendingCallback(true);  // remove completion
-  mock_storage_area_.Flush();
+  observer->KeyDeleted(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       source_);
   EXPECT_FALSE(IsIgnoringKeyMutations(kKey));
 
   // Multiple mutations to the same key.
   EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
   cached_area_->RemoveItem(kKey, source_area_);
-  mock_storage_area_.Flush();
   EXPECT_TRUE(IsIgnoringKeyMutations(kKey));
-  mock_storage_area_.CompleteOnePendingCallback(true);  // set completion
   mock_storage_area_.Flush();
-  EXPECT_TRUE(IsIgnoringKeyMutations(kKey));
-  mock_storage_area_.CompleteOnePendingCallback(true);  // remove completion
-  mock_storage_area_.Flush();
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       base::nullopt, source_);
+  observer->KeyDeleted(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       source_);
   EXPECT_FALSE(IsIgnoringKeyMutations(kKey));
 
-  // A failed set item operation should Reset the cache.
+  // A failed set item operation should reset the key's cached value.
   EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
   mock_storage_area_.Flush();
   EXPECT_TRUE(IsIgnoringKeyMutations(kKey));
-  mock_storage_area_.CompleteOnePendingCallback(false);
-  mock_storage_area_.Flush();
-  EXPECT_FALSE(IsCacheLoaded());
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
 }
 
 TEST_F(CachedStorageAreaTest, ChangeEvents) {
   mojom::blink::StorageAreaObserver* observer = cached_area_.get();
 
-  observer->KeyAdded(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
-                     source_);
+  cached_area_->SetItem(kKey, kValue, source_area_);
+  cached_area_->SetItem(kKey, kValue2, source_area_);
+  cached_area_->RemoveItem(kKey, source_area_);
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       base::nullopt, source_);
   observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue2),
                        ValueToUint8Vector(kValue), source_);
   observer->KeyDeleted(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue2),
                        source_);
 
-  observer->KeyAdded(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
-                     kRemoteSource);
-  observer->AllDeleted(kRemoteSource);
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       base::nullopt, kRemoteSource);
+  observer->AllDeleted(/*was_nonempty*/ true, kRemoteSource);
 
   // Source area should have ignored all but the last two events.
   ASSERT_EQ(2u, source_area_->events.size());
@@ -469,6 +390,92 @@ TEST_F(CachedStorageAreaTest, ChangeEvents) {
   EXPECT_TRUE(source_area2_->events[4].old_value.IsNull());
   EXPECT_TRUE(source_area2_->events[4].new_value.IsNull());
   EXPECT_EQ(kPageUrl2, source_area2_->events[4].url);
+}
+
+TEST_F(CachedStorageAreaTest, RevertOnChangeFailed) {
+  // Verifies that when local key changes fail, the cache is restored to an
+  // appropriate state.
+  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  cached_area_->SetItem(kKey, kValue, source_area_);
+  EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
+}
+
+TEST_F(CachedStorageAreaTest, RevertOnChangeFailedWithSubsequentChanges) {
+  // Failure of an operation observed while another subsequent operation is
+  // still queued. In this case, no revert should happen because the change that
+  // would be reverted has already been overwritten.
+  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  cached_area_->SetItem(kKey, kValue, source_area_);
+  EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
+  cached_area_->SetItem(kKey, kValue2, source_area_);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue2),
+                       base::nullopt, source_);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+}
+
+TEST_F(CachedStorageAreaTest, RevertOnConsecutiveChangeFailures) {
+  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  // If two operations fail in a row, the cache should revert to the original
+  // state before either |SetItem()|.
+  cached_area_->SetItem(kKey, kValue, source_area_);
+  cached_area_->SetItem(kKey, kValue2, source_area_);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  // Still caching |kValue2| because that operation is still pending.
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  // Now that the second operation also failed, the cache should revert to the
+  // value from before the first |SetItem()|, i.e. no value.
+  EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
+}
+
+TEST_F(CachedStorageAreaTest, RevertOnChangeFailedWithNonLocalChanges) {
+  // If a non-local mutation is observed while a local mutation is pending
+  // acknowledgement, and that local mutation ends up getting rejected, the
+  // cache should revert to a state reflecting the non-local change that was
+  // temporarily ignored.
+  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  cached_area_->SetItem(kKey, kValue, source_area_);
+  EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
+  // Should be ignored.
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue2),
+                       base::nullopt, kRemoteSource);
+  EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
+  // Now that we fail the pending |SetItem()|, the above remote change should be
+  // reflected.
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+}
+
+TEST_F(CachedStorageAreaTest, RevertOnChangeFailedAfterNonLocalClear) {
+  // If a non-local clear is observed while a local mutation is pending
+  // acknowledgement and that local mutation ends up getting rejected, the cache
+  // should revert the key to have no value, even if it had a value during the
+  // corresponding |SetItem()| call.
+  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  cached_area_->SetItem(kKey, kValue, source_area_);
+  EXPECT_EQ(kValue, cached_area_->GetItem(kKey));
+  cached_area_->SetItem(kKey, kValue2, source_area_);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+  observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
+                       base::nullopt, source_);
+  // We still have |kValue2| cached since its mutation is still pending.
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+
+  // Even after a non-local clear is observed, |kValue2| remains cached because
+  // pending local mutations are replayed over a non-local clear.
+  observer->AllDeleted(true, kRemoteSource);
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey));
+
+  // But if that pending mutation fails, we should "revert" to the cleared
+  // value, as that's what the backend would have.
+  observer->KeyChangeFailed(KeyToUint8Vector(kKey), source_);
+  EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
 }
 
 namespace {

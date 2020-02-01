@@ -783,6 +783,11 @@ double WebMediaPlayerMS::CurrentTime() const {
   return 0.0;
 }
 
+bool WebMediaPlayerMS::IsEnded() const {
+  // MediaStreams never end.
+  return false;
+}
+
 WebMediaPlayer::NetworkState WebMediaPlayerMS::GetNetworkState() const {
   DVLOG(2) << __func__ << ", state:" << network_state_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

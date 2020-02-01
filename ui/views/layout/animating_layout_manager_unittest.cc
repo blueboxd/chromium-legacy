@@ -165,6 +165,7 @@ class AnimatingLayoutManagerTest : public testing::Test {
 
   void TearDown() override { DestroyView(); }
 
+  const View* view() const { return view_; }
   View* view() { return view_; }
   TestView* child(size_t index) const { return children_[index]; }
   size_t num_children() const { return children_.size(); }
@@ -3537,7 +3538,10 @@ class AnimatingLayoutManagerFlexRuleTest : public AnimatingLayoutManagerTest {
   }
 
   FlexLayout* flex_layout() { return flex_layout_; }
-  FlexRule* flex_rule() { return &flex_rule_; }
+
+  gfx::Size RunFlexRule(const SizeBounds& bounds) const {
+    return flex_rule_.Run(view(), bounds);
+  }
 
   static const FlexSpecification kScaleToMinimumSnapToZero;
 
@@ -3557,8 +3561,7 @@ const FlexSpecification
 TEST_F(AnimatingLayoutManagerFlexRuleTest, ReturnsPreferredSize) {
   InitLayout(LayoutOrientation::kHorizontal, kScaleToMinimumSnapToZero,
              gfx::Size(5, 5), false);
-  EXPECT_EQ(flex_layout()->GetPreferredSize(view()),
-            flex_rule()->Run(view(), SizeBounds()));
+  EXPECT_EQ(flex_layout()->GetPreferredSize(view()), RunFlexRule(SizeBounds()));
 }
 
 TEST_F(AnimatingLayoutManagerFlexRuleTest,
@@ -3566,8 +3569,8 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest,
   InitLayout(LayoutOrientation::kVertical, kScaleToMinimumSnapToZero,
              gfx::Size(5, 5), true);
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size result = flex_rule()->Run(
-      view(), SizeBounds(preferred.width() + 5, base::nullopt));
+  const gfx::Size result =
+      RunFlexRule(SizeBounds(preferred.width() + 5, base::nullopt));
   EXPECT_EQ(preferred, result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3582,8 +3585,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest,
   const int height_for_width =
       flex_layout()->GetPreferredHeightForWidth(view(), width);
   DCHECK_GT(height_for_width, preferred.height());
-  const gfx::Size result =
-      flex_rule()->Run(view(), SizeBounds(width, base::nullopt));
+  const gfx::Size result = RunFlexRule(SizeBounds(width, base::nullopt));
   EXPECT_EQ(gfx::Size(width, height_for_width), result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3596,7 +3598,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalBounded_FlexToSize) {
   const gfx::Size actual(preferred.width() - 5, preferred.height());
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), preferred.width());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
+  const gfx::Size result = RunFlexRule(SizeBounds(actual));
   EXPECT_EQ(actual, result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3608,7 +3610,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalBounded_DropOut) {
   const gfx::Size actual(preferred.width() - 5, preferred.height());
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), actual.width());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
+  const gfx::Size result = RunFlexRule(SizeBounds(actual));
   EXPECT_EQ(layout.host_size, result);
   EXPECT_EQ(2U, GetVisibleChildCount(result));
 }
@@ -3621,7 +3623,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalBounded_FlexToSize) {
   const gfx::Size actual(preferred.width(), preferred.height() - 5);
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.height(), preferred.height());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
+  const gfx::Size result = RunFlexRule(SizeBounds(actual));
   EXPECT_EQ(actual, result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3633,7 +3635,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalBounded_DropOut) {
   const gfx::Size actual(preferred.width(), preferred.height() - 5);
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.height(), actual.height());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
+  const gfx::Size result = RunFlexRule(SizeBounds(actual));
   EXPECT_EQ(layout.host_size, result);
   EXPECT_EQ(2U, GetVisibleChildCount(result));
 }
@@ -3647,7 +3649,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalDoubleBounded_DropOut) {
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), preferred.width());
   DCHECK_LT(layout.host_size.height(), preferred.height());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
+  const gfx::Size result = RunFlexRule(SizeBounds(actual));
   EXPECT_EQ(layout.host_size, result);
   EXPECT_EQ(2U, GetVisibleChildCount(result));
 }
@@ -3661,7 +3663,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalDoubleBounded_DropOut) {
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), preferred.width());
   DCHECK_LT(layout.host_size.height(), preferred.height());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
+  const gfx::Size result = RunFlexRule(SizeBounds(actual));
   EXPECT_EQ(layout.host_size, result);
   EXPECT_EQ(2U, GetVisibleChildCount(result));
 }
@@ -3674,7 +3676,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalMinimumSize) {
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
   DCHECK_GT(preferred.width(), minimum.width());
   DCHECK_GT(preferred.height(), minimum.height());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(0, 0));
+  const gfx::Size result = RunFlexRule(SizeBounds(0, 0));
   EXPECT_EQ(minimum, result);
 }
 
@@ -3686,7 +3688,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalMinimumSize) {
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
   DCHECK_GT(preferred.width(), minimum.width());
   DCHECK_GT(preferred.height(), minimum.height());
-  const gfx::Size result = flex_rule()->Run(view(), SizeBounds(0, 0));
+  const gfx::Size result = RunFlexRule(SizeBounds(0, 0));
   EXPECT_EQ(minimum, result);
 }
 

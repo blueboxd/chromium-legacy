@@ -8,4 +8,6 @@
 interface ResizeObserverEntry {
     readonly attribute Element target;
     readonly attribute DOMRectReadOnly contentRect;
+    [RuntimeEnabled=ResizeObserverUpdates] readonly attribute ResizeObserverSize contentBoxSize;
+    [RuntimeEnabled=ResizeObserverUpdates] readonly attribute ResizeObserverSize borderBoxSize;
 };

@@ -388,7 +388,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node,
   // title changed but should be excluded from the index.
   if (node->is_url())
     titled_url_index_->Remove(node);
-  AsMutable(node)->SetTitle(title);
+  url_index_->SetTitle(AsMutable(node), title);
   if (node->is_url())
     titled_url_index_->Add(node);
 

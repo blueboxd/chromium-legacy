@@ -37,6 +37,9 @@
 
 namespace {
 
+const base::Feature kSigninReauthPrompt = {"SigninReauthPrompt",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
@@ -161,8 +164,16 @@ void SigninViewController::ShowReauthPrompt(
     Browser* browser,
     const CoreAccountId& account_id,
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback) {
-  // TODO(crbug.com/1045515): implement this.
-  std::move(reauth_callback).Run(signin::ReauthResult::kSuccess);
+  CloseModalSignin();
+
+  if (!base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
+    // Reauth is disabled - always return failure.
+    std::move(reauth_callback).Run(signin::ReauthResult::kDismissedByUser);
+    return;
+  }
+
+  delegate_ = SigninViewControllerDelegate::CreateReauthDelegate(
+      this, browser, account_id, std::move(reauth_callback));
 }
 
 bool SigninViewController::ShowsModalDialog() {

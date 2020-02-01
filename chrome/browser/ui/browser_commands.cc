@@ -850,6 +850,12 @@ void PinTab(Browser* browser) {
       TabStripModel::ContextMenuCommand::CommandTogglePinned);
 }
 
+void GroupTab(Browser* browser) {
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::ContextMenuCommand::CommandToggleGrouped);
+}
+
 void MuteSite(Browser* browser) {
   browser->tab_strip_model()->ExecuteContextMenuCommand(
       browser->tab_strip_model()->active_index(),
@@ -870,6 +876,14 @@ void PinKeyboardFocusedTab(Browser* browser) {
   browser->tab_strip_model()->ExecuteContextMenuCommand(
       *GetKeyboardFocusedTabIndex(browser),
       TabStripModel::ContextMenuCommand::CommandTogglePinned);
+}
+
+void GroupKeyboardFocusedTab(Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return;
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      *GetKeyboardFocusedTabIndex(browser),
+      TabStripModel::ContextMenuCommand::CommandToggleGrouped);
 }
 
 void DuplicateKeyboardFocusedTab(Browser* browser) {

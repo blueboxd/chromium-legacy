@@ -1306,10 +1306,8 @@ void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
                                     bool from_touch_gesture) {
   // We allow switching finger while dragging, but do not allow dragging two
   // or more items.
-  if (overview_session_->window_drag_controller() &&
-      overview_session_->window_drag_controller()->item()) {
+  if (overview_session_->IsAnyOverviewItemDragged())
     return;
-  }
 
   StartDrag();
   overview_session_->InitiateDrag(this, location_in_screen,

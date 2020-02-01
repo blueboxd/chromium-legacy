@@ -567,9 +567,6 @@ crbug.com/874695 virtual/gpu-rasterization/images/color-profile-mask-image-svg.h
 crbug.com/874695 virtual/gpu-rasterization/images/image-page-injected-script-crash.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/webp-color-profile-lossless.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer-filter.html [ Slow ]
-crbug.com/874695 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Slow ]
-crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-click.html [ Slow ]
-crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/touch-slider-no-js-touch-listener.html [ Slow ]
 crbug.com/874695 virtual/scroll_customization/fast/scroll-behavior/overscroll-behavior.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/new-window-redirect-history.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/slowmetaredirect-basic.html [ Slow ]
@@ -628,7 +625,6 @@ crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/r
 
 crbug.com/914981 [ Mac ] media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/audio-service/media/controls/overflow-menu-pointer-selection.html [ Slow ]
-crbug.com/914981 [ Mac ] virtual/mouseevent_fractional/fast/events/no-fake-mousemove.html [ Slow ]
 crbug.com/914981 [ Mac ] fast/events/no-fake-mousemove.html [ Slow ]
 
 crbug.com/951895 [ Mac Debug ] transforms/2d/transform-2d.html [ Slow ]

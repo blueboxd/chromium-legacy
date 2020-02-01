@@ -65,9 +65,11 @@ class FlakyTestsTest(CommandsTest):
         factory = FakeBotTestExpectationsFactory(self.fake_builders_list())
 
         lines = command._collect_expectation_lines(['foo-builder', 'bar-builder'], factory)
-        self.assertEqual(len(lines), 1)
-        self.assertEqual(lines[0].expectations, ['FAIL', 'TIMEOUT', 'PASS'])
-        self.assertEqual(lines[0].specifiers, ['Mac', 'Linux'])
+        self.assertEqual(len(lines), 2)
+        self.assertEqual(lines[0].results, set(['FAIL', 'PASS']))
+        self.assertEqual(set(lines[0].tags), set(['Linux']))
+        self.assertEqual(lines[1].results, set(['TIMEOUT', 'PASS']))
+        self.assertEqual(set(lines[1].tags), set(['Mac']))
 
     def test_integration(self):
         command = flaky_tests.FlakyTests()

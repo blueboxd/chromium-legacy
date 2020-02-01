@@ -209,6 +209,10 @@ class AuthenticatorRequestDialogModel {
   // UI instead.
   void HideDialogAndDispatchToNativeWindowsApi();
 
+  // Displays a resident-key warning if needed and then calls
+  // |HideDialogAndDispatchToNativeWindowsApi|.
+  void StartWinNativeApi();
+
   // StartPhonePairing triggers the display of a QR code for pairing a new
   // phone.
   void StartPhonePairing();
@@ -431,6 +435,10 @@ class AuthenticatorRequestDialogModel {
       bool cable_extension_provided,
       bool has_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
+
+  bool win_native_api_enabled() const {
+    return transport_availability_.has_win_native_api_authenticator;
+  }
 
   bool cable_extension_provided() const { return cable_extension_provided_; }
 

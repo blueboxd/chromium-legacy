@@ -44,6 +44,11 @@ export class BrowserProxy {
   clearTimeout(id) {
     window.clearTimeout(id);
   }
+
+  /** @return {number} */
+  random() {
+    return Math.random();
+  }
 }
 
 addSingletonGetter(BrowserProxy);

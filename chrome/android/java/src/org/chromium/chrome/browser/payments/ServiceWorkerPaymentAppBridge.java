@@ -35,8 +35,9 @@ import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.url.Origin;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,6 +87,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
     public void create(PaymentAppFactoryDelegate delegate) {
         PaymentHandlerFinder finder = new PaymentHandlerFinder(delegate);
         ServiceWorkerPaymentAppBridgeJni.get().getAllPaymentApps(
+                delegate.getParams().getPaymentRequestSecurityOrigin(),
                 delegate.getParams().getWebContents(),
                 delegate.getParams().getMethodData().values().toArray(
                         new PaymentMethodData[delegate.getParams().getMethodData().size()]),
@@ -652,8 +654,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
 
     @NativeMethods
     interface Natives {
-        void getAllPaymentApps(WebContents webContents, PaymentMethodData[] methodData,
-                boolean mayCrawlForInstallablePaymentApps, PaymentHandlerFinder callback);
+        void getAllPaymentApps(Origin merchantOrigin, WebContents webContents,
+                PaymentMethodData[] methodData, boolean mayCrawlForInstallablePaymentApps,
+                PaymentHandlerFinder callback);
         void hasServiceWorkerPaymentApps(HasServiceWorkerPaymentAppsCallback callback);
         void getServiceWorkerPaymentAppsInfo(GetServiceWorkerPaymentAppsInfoCallback callback);
         void invokePaymentApp(WebContents webContents, long registrationId,

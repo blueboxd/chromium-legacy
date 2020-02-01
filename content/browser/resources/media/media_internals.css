@@ -250,5 +250,6 @@ label.destructed-player {
   position: fixed;
   text-align: center;
   top: 10px;
-  width: 450px;
+  width: 550px;
+  z-index: 1;
 }

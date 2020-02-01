@@ -524,11 +524,11 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   FlushPendingTimelineRewind();
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    view->UpdateAllLifecyclePhases(DocumentUpdateReason::kOther);
+    view->UpdateAllLifecyclePhases(DocumentUpdateReason::kSVGImage);
     return view->GetPaintRecord();
   }
 
-  view->UpdateAllLifecyclePhasesExceptPaint();
+  view->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kSVGImage);
   PaintRecordBuilder builder(nullptr, nullptr, paint_controller_.get());
   view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase);
   return builder.EndRecording();
@@ -653,7 +653,8 @@ void SVGImage::ServiceAnimations(
   // but to preserve correct coherence of the cache of the output with
   // the needsRepaint bits of the PaintLayers in the image.
   LocalFrameView* frame_view = To<LocalFrame>(page_->MainFrame())->View();
-  frame_view->UpdateAllLifecyclePhasesExceptPaint();
+  frame_view->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kSVGImage);
 
   // We run UpdateAnimations after the paint phase, but per the above comment,
   // we don't want to run lifecycle through to paint for SVG images. Since we

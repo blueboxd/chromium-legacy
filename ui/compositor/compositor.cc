@@ -195,7 +195,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 
   if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
     settings.wait_for_all_pipeline_stages_before_draw = true;
-    settings.enable_latency_recovery = false;
+    settings.enable_impl_latency_recovery = false;
+    settings.enable_main_latency_recovery = false;
   }
 
   if (base::FeatureList::IsEnabled(

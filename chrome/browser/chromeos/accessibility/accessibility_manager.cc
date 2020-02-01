@@ -908,18 +908,6 @@ void AccessibilityManager::OnSwitchAccessChanged() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySwitchAccessEnabled);
 
-  // The Switch Access setting is behind a flag. Don't enable the feature
-  // even if the preference is enabled, if the flag isn't also set.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilitySwitchAccess)) {
-    if (enabled) {
-      LOG(WARNING) << "Switch Access enabled but experimental accessibility "
-                   << "Switch Access flag is not set.";
-    }
-    return;
-  }
-
   if (enabled) {
     if (IsSpokenFeedbackEnabled()) {
       LOG(ERROR) << "Enabling Switch Access with ChromeVox is not supported.";

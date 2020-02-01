@@ -39,11 +39,11 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
+import org.chromium.url.URI;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 

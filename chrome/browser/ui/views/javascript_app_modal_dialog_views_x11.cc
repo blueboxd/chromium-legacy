@@ -7,12 +7,12 @@
 #include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/javascript_app_modal_event_blocker_x11.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "ui/views/widget/widget.h"
 
 JavaScriptAppModalDialogViewsX11::JavaScriptAppModalDialogViewsX11(
-    app_modal::JavaScriptAppModalDialog* parent)
-    : app_modal::JavaScriptAppModalDialogViews(parent),
+    javascript_dialogs::AppModalDialogController* parent)
+    : javascript_dialogs::AppModalDialogViewViews(parent),
       popunder_preventer_(new PopunderPreventer(parent->web_contents())) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::JAVA_SCRIPT_APP_MODAL_X11);

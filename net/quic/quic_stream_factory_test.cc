@@ -248,6 +248,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
             base::Unretained(this))),
         failed_on_default_network_(false),
         quic_params_(context_.params()) {
+    FLAGS_quic_disable_http3_settings_grease_randomness = true;
     quic_params_->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency;
     context_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));

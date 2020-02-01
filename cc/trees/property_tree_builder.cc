@@ -292,7 +292,7 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   GetAnimationScales(mutator_host_, layer, &node->maximum_animation_scale,
                      &node->starting_animation_scale);
 
-  node->scroll_offset = layer->CurrentScrollOffset();
+  node->scroll_offset = layer->scroll_offset();
 
   node->needs_local_transform_update = true;
   transform_tree_.UpdateTransforms(node->id);
@@ -626,7 +626,7 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
 
     if (node.scrollable) {
       scroll_tree_.SetBaseScrollOffset(layer->element_id(),
-                                       layer->CurrentScrollOffset());
+                                       layer->scroll_offset());
     }
   }
 

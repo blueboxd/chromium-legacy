@@ -36,7 +36,7 @@ class IsolatedPrerenderFromStringURLLoader : public network::mojom::URLLoader {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client)>;
 
   IsolatedPrerenderFromStringURLLoader(
-      std::unique_ptr<PrefetchedResponseContainer> response,
+      std::unique_ptr<PrefetchedMainframeResponseContainer> response,
       const network::ResourceRequest& tentative_resource_request);
 
   ~IsolatedPrerenderFromStringURLLoader() override;

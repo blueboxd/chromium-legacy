@@ -291,6 +291,8 @@ target(link_target_type, "renderer") {
     "top_level_blame_context.h",
     "v8_value_converter_impl.cc",
     "v8_value_converter_impl.h",
+    "variations_render_thread_observer.cc",
+    "variations_render_thread_observer.h",
     "web_ui_extension.cc",
     "web_ui_extension.h",
     "web_ui_extension_data.cc",

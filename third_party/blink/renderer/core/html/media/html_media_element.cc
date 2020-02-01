@@ -3289,17 +3289,14 @@ void HTMLMediaElement::TimeChanged() {
   // 4.8.12.9 steps 12-14. Needed if no ReadyState change is associated with the
   // seek.
   if (seeking_ && ready_state_ >= kHaveCurrentData &&
-      !GetWebMediaPlayer()->Seeking())
+      !GetWebMediaPlayer()->Seeking()) {
     FinishSeek();
-
-  double now = CurrentPlaybackPosition();
-  double dur = duration();
+  }
 
   // When the current playback position reaches the end of the media resource
   // when the direction of playback is forwards, then the user agent must follow
   // these steps:
-  if (!std::isnan(dur) && dur && now >= dur &&
-      GetDirectionOfPlayback() == kForward) {
+  if (EndedPlayback(LoopCondition::kIgnored)) {
     // If the media element has a loop attribute specified
     if (Loop()) {
       //  then seek to the earliest possible position of the media resource and
@@ -3466,9 +3463,9 @@ bool HTMLMediaElement::CouldPlayIfEnoughData() const {
 }
 
 bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
-  double dur = duration();
   // If we have infinite duration, we'll never have played for long enough to
   // have ended playback.
+  const double dur = duration();
   if (std::isnan(dur) || dur == std::numeric_limits<double>::infinity())
     return false;
 
@@ -3479,20 +3476,13 @@ bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
   if (ready_state_ < kHaveMetadata)
     return false;
 
-  // and the current playback position is the end of the media resource and the
-  // direction of playback is forwards, Either the media element does not have a
-  // loop attribute specified,
-  double now = CurrentPlaybackPosition();
-
-  if (GetDirectionOfPlayback() == kForward) {
-    return dur > 0 && now >= dur &&
+  DCHECK_EQ(GetDirectionOfPlayback(), kForward);
+  if (auto* wmp = GetWebMediaPlayer()) {
+    return wmp->IsEnded() &&
            (loop_condition == LoopCondition::kIgnored || !Loop());
   }
 
-  // or the current playback position is the earliest possible position and the
-  // direction of playback is backwards
-  DCHECK_EQ(GetDirectionOfPlayback(), kBackward);
-  return now <= EarliestPossiblePosition();
+  return false;
 }
 
 bool HTMLMediaElement::StoppedDueToErrors() const {

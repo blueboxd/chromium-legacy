@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/app_modal/javascript_dialog_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/devtools_agent_host.h"

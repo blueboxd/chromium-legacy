@@ -508,9 +508,12 @@ void LocalStorageImpl::DeleteStorage(const url::Origin& origin,
   auto found = areas_.find(origin);
   if (found != areas_.end()) {
     // Renderer process expects |source| to always be two newline separated
-    // strings.
+    // strings. We don't bother passing an observer because this is a one-shot
+    // event and we only care about observing its completion, for which the
+    // reply alone is sufficient.
     found->second->storage_area()->DeleteAll(
-        "\n", base::BindOnce(&SuccessResponse, std::move(callback)));
+        "\n", /*new_observer=*/mojo::NullRemote(),
+        base::BindOnce(&SuccessResponse, std::move(callback)));
     found->second->storage_area()->ScheduleImmediateCommit();
   } else if (database_) {
     DeleteOrigins(

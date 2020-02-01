@@ -82,13 +82,13 @@ class FrameSequenceTrackerTest : public testing::Test {
       uint32_t frame_token = NextFrameToken();
       collection_.NotifySubmitFrame(frame_token, has_missing_content,
                                     viz::BeginFrameAck(args, true), args);
-      collection_.NotifyFrameEnd(args);
+      collection_.NotifyFrameEnd(args, args);
       return frame_token;
     } else {
       collection_.NotifyImplFrameCausedNoDamage(
           viz::BeginFrameAck(args, false));
       collection_.NotifyMainFrameCausedNoDamage(args);
-      collection_.NotifyFrameEnd(args);
+      collection_.NotifyFrameEnd(args, args);
     }
     return 0;
   }
@@ -189,6 +189,7 @@ class FrameSequenceTrackerTest : public testing::Test {
   void GenerateSequence(const char* str) {
     const uint64_t source_id = 1;
     uint64_t current_frame = 0;
+    viz::BeginFrameArgs last_activated_main_args;
     while (*str) {
       const char command = *str++;
       uint64_t sequence = 0, dummy = 0;
@@ -262,13 +263,15 @@ class FrameSequenceTrackerTest : public testing::Test {
           break;
         }
 
-        case 'e':
-          collection_.NotifyFrameEnd(CreateBeginFrameArgs(source_id, sequence));
+        case 'e': {
+          auto args = CreateBeginFrameArgs(source_id, sequence);
+          collection_.NotifyFrameEnd(args, last_activated_main_args);
           break;
+        }
 
         case 'E':
-          collection_.NotifyMainFrameProcessed(
-              CreateBeginFrameArgs(source_id, sequence));
+          last_activated_main_args = CreateBeginFrameArgs(source_id, sequence);
+          collection_.NotifyMainFrameProcessed(last_activated_main_args);
           break;
 
         case 'B':
@@ -316,6 +319,10 @@ class FrameSequenceTrackerTest : public testing::Test {
   }
   FrameSequenceMetrics::ThroughputData& MainThroughput() const {
     return tracker_->main_throughput();
+  }
+
+  void SetTerminationStatus(FrameSequenceTracker::TerminationStatus status) {
+    tracker_->termination_status_ = status;
   }
 
  protected:
@@ -496,7 +503,7 @@ TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
   // schedule this tracker to report its throughput.
   collection_.NotifyBeginImplFrame(args);
   collection_.NotifyImplFrameCausedNoDamage(viz::BeginFrameAck(args, false));
-  collection_.NotifyFrameEnd(args);
+  collection_.NotifyFrameEnd(args, args);
 
   EXPECT_EQ(NumberOfTrackers(), 1u);
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
@@ -508,7 +515,7 @@ TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
                               args.frame_time + TimeDeltaToReort());
   collection_.NotifyBeginImplFrame(args);
   collection_.NotifyImplFrameCausedNoDamage(viz::BeginFrameAck(args, false));
-  collection_.NotifyFrameEnd(args);
+  collection_.NotifyFrameEnd(args, args);
   EXPECT_EQ(NumberOfTrackers(), 1u);
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
 }
@@ -567,7 +574,7 @@ TEST_F(FrameSequenceTrackerTest, MainFrameNoDamageTracking) {
   collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
                                 viz::BeginFrameAck(second_args, true),
                                 first_args);
-  collection_.NotifyFrameEnd(second_args);
+  collection_.NotifyFrameEnd(second_args, second_args);
 
   // Start and submit the next frame, with no damage from main.
   auto args = CreateBeginFrameArgs(source, ++sequence);
@@ -575,7 +582,7 @@ TEST_F(FrameSequenceTrackerTest, MainFrameNoDamageTracking) {
   frame_token = NextFrameToken();
   collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args, true), first_args);
-  collection_.NotifyFrameEnd(args);
+  collection_.NotifyFrameEnd(args, args);
 
   // Now, submit a frame with damage from main from |second_args|.
   collection_.NotifyMainFrameProcessed(second_args);
@@ -584,7 +591,7 @@ TEST_F(FrameSequenceTrackerTest, MainFrameNoDamageTracking) {
   frame_token = NextFrameToken();
   collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args, true), second_args);
-  collection_.NotifyFrameEnd(args);
+  collection_.NotifyFrameEnd(args, args);
 }
 
 TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
@@ -715,7 +722,6 @@ TEST_F(FrameSequenceTrackerTest, BeginImplFrameBeforeTerminate) {
 }
 
 // b(2417)B(0,2417)E(2417)n(2417)N(2417,2417)
-
 TEST_F(FrameSequenceTrackerTest, SequenceNumberReset) {
   const char sequence[] =
       "b(6)B(0,6)n(6)e(6)Rb(1)B(0,1)N(1,1)n(1)e(1)b(2)B(1,2)n(2)e(2)";
@@ -732,6 +738,29 @@ TEST_F(FrameSequenceTrackerTest, MainThroughputWithHighLatency) {
   EXPECT_EQ(MainThroughput().frames_expected, 2u);
   EXPECT_EQ(MainThroughput().frames_produced, 1u);
 }
+
+#if DCHECK_IS_ON()
+// These two tests ensures that when present a frame, the frames_received is
+// the same as frames_processed. As long as there is no crash, the condition is
+// true.
+TEST_F(FrameSequenceTrackerTest, FramesProcessedMatch1) {
+  const char sequence[] = "b(1)n(1)e(1)b(2)s(2)e(2)b(3)n(3)";
+  GenerateSequence(sequence);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  SetTerminationStatus(
+      FrameSequenceTracker::TerminationStatus::kReadyForTermination);
+  GenerateSequence("P(2)");
+}
+
+TEST_F(FrameSequenceTrackerTest, FramesProcessedMatch2) {
+  const char sequence[] = "b(1)n(1)e(1)b(2)s(2)e(2)b(3)s(3)";
+  GenerateSequence(sequence);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  SetTerminationStatus(
+      FrameSequenceTracker::TerminationStatus::kReadyForTermination);
+  GenerateSequence("P(2)");
+}
+#endif
 
 TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage1) {
   const char sequence[] =

@@ -154,7 +154,7 @@ class PLATFORM_EXPORT DisplayItem {
   // later paint cycles when |client| may have been destroyed.
   DisplayItem(const DisplayItemClient& client,
               Type type,
-              size_t derived_size,
+              wtf_size_t derived_size,
               bool draws_content = false)
       : client_(&client),
         visual_rect_(client.VisualRect()),
@@ -213,7 +213,7 @@ class PLATFORM_EXPORT DisplayItem {
   // This is not sizeof(*this), because it needs to account for the size of
   // the derived class (i.e. runtime type). Derived classes are expected to
   // supply this to the DisplayItem constructor.
-  size_t DerivedSize() const { return derived_size_; }
+  wtf_size_t DerivedSize() const { return derived_size_; }
 
   // The fragment is part of the id, to uniquely identify display items in
   // different fragments for the same client and type.

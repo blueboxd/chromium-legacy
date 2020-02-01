@@ -54,11 +54,6 @@ class ChromeCleanerDialog
   views::View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
 
-  // views::DialogDelegate overrides.
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
-
   // views::View overrides.
   gfx::Size CalculatePreferredSize() const override;
 

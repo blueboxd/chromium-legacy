@@ -500,6 +500,7 @@ class CC_EXPORT LayerTreeImpl {
   void RemoveFromElementLayerList(ElementId element_id);
 
   void AddScrollableLayer(LayerImpl* layer);
+  void RemoveScrollableLayer(LayerImpl* layer);
 
   void SetSurfaceRanges(const base::flat_set<viz::SurfaceRange> surface_ranges);
   const base::flat_set<viz::SurfaceRange>& SurfaceRanges() const;

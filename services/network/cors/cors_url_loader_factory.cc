@@ -18,6 +18,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
@@ -31,28 +32,6 @@
 namespace network {
 
 namespace cors {
-
-namespace {
-
-InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
-    uint32_t process_id,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
-    const base::Optional<url::Origin>& request_initiator) {
-  if (process_id == mojom::kBrowserProcessId)
-    return InitiatorLockCompatibility::kBrowserProcess;
-
-  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
-      request_initiator_site_lock, request_initiator);
-
-  if (result == InitiatorLockCompatibility::kIncorrectLock &&
-      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
-    result = InitiatorLockCompatibility::kExcludedUniversalAccessPlugin;
-  }
-
-  return result;
-}
-
-}  // namespace
 
 class CorsURLLoaderFactory::FactoryOverride final {
  public:
@@ -223,6 +202,7 @@ void CorsURLLoaderFactory::Clone(
 
 void CorsURLLoaderFactory::ClearBindings() {
   receivers_.Clear();
+  DeleteIfNeeded();
 }
 
 void CorsURLLoaderFactory::DeleteIfNeeded() {
@@ -304,7 +284,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   switch (initiator_lock_compatibility) {
     case InitiatorLockCompatibility::kCompatibleLock:
     case InitiatorLockCompatibility::kBrowserProcess:
-    case InitiatorLockCompatibility::kExcludedUniversalAccessPlugin:
+    case InitiatorLockCompatibility::kExcludedCorbForPlugin:
+    case InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin:
       break;
 
     case InitiatorLockCompatibility::kNoLock:
@@ -324,9 +305,9 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
       //
-      // TODO(lukasza): https://crbug.com/1027173: Reintroduce NOTREACHED below
-      // after relaxing request initiator checks to account for requests issued
-      // by the PDF plugin.
+      // TODO(lukasza): https://crbug.com/920634: Reintroduce NOTREACHED below
+      // after fixing remaining mismatches that are exposed by existing tests
+      // (e.g. ContentScriptApiTest.ExecuteScriptFileSameSiteCookies).
       //
       // TODO(lukasza): https://crbug.com/920634: Report bad message and return
       // false below.
@@ -389,6 +370,32 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
   // be "follow".
   return true;
+}
+
+InitiatorLockCompatibility
+CorsURLLoaderFactory::VerifyRequestInitiatorLockWithPluginCheck(
+    uint32_t process_id,
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator) {
+  if (process_id == mojom::kBrowserProcessId)
+    return InitiatorLockCompatibility::kBrowserProcess;
+
+  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
+      request_initiator_site_lock, request_initiator);
+
+  if (result == InitiatorLockCompatibility::kIncorrectLock &&
+      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
+    result = InitiatorLockCompatibility::kExcludedCorbForPlugin;
+  }
+
+  if (result == InitiatorLockCompatibility::kIncorrectLock &&
+      request_initiator.has_value() &&
+      context_->network_service()->IsInitiatorAllowedForPlugin(
+          process_id, request_initiator.value())) {
+    result = InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin;
+  }
+
+  return result;
 }
 
 }  // namespace cors

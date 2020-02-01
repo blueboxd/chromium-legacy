@@ -45,6 +45,7 @@ class PaymentAppFactory {
     virtual PaymentRequestSpec* GetSpec() = 0;
     virtual const GURL& GetTopOrigin() = 0;
     virtual const GURL& GetFrameOrigin() = 0;
+    virtual const url::Origin& GetFrameSecurityOrigin() = 0;
     virtual const std::vector<autofill::AutofillProfile*>&
     GetBillingProfiles() = 0;
     virtual bool IsRequestedAutofillDataAvailable() = 0;

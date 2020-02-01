@@ -6,6 +6,15 @@
 #define WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UI_MANAGER_H_
 
 #include "components/safe_browsing/content/base_ui_manager.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
+
+namespace content {
+class WebContents;
+}
+
+namespace safe_browsing {
+class BaseBlockingPage;
+}
 
 namespace weblayer {
 
@@ -21,6 +30,11 @@ class SafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   ~SafeBrowsingUIManager() override;
 
  private:
+  safe_browsing::BaseBlockingPage* CreateBlockingPageForSubresource(
+      content::WebContents* contents,
+      const GURL& blocked_url,
+      const UnsafeResource& unsafe_resource) override;
+
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIManager);
 };
 

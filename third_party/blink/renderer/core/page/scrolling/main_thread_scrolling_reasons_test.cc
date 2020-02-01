@@ -61,11 +61,18 @@ class MainThreadScrollingReasonsTest : public testing::Test {
         WebString(base_url_), test::CoreTestDataPath(), WebString(file_name));
   }
 
-  uint32_t GetMainThreadScrollingReasons(const cc::Layer* layer) const {
+  const cc::ScrollNode* GetScrollNode(const cc::Layer* layer) const {
     return layer->layer_tree_host()
         ->property_trees()
-        ->scroll_tree.Node(layer->scroll_tree_index())
-        ->main_thread_scrolling_reasons;
+        ->scroll_tree.FindNodeFromElementId(layer->element_id());
+  }
+
+  bool IsScrollable(const cc::Layer* layer) const {
+    return GetScrollNode(layer)->scrollable;
+  }
+
+  uint32_t GetMainThreadScrollingReasons(const cc::Layer* layer) const {
+    return GetScrollNode(layer)->main_thread_scrolling_reasons;
   }
 
   uint32_t GetViewMainThreadScrollingReasons() const {
@@ -126,7 +133,7 @@ TEST_F(MainThreadScrollingReasonsTest,
   cc::Layer* cc_scroll_layer =
       inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(cc_scroll_layer);
-  ASSERT_TRUE(cc_scroll_layer->scrollable());
+  ASSERT_TRUE(IsScrollable(cc_scroll_layer));
   ASSERT_TRUE(
       GetMainThreadScrollingReasons(cc_scroll_layer) &
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
@@ -146,7 +153,7 @@ TEST_F(MainThreadScrollingReasonsTest,
   cc_scroll_layer =
       layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(cc_scroll_layer);
-  ASSERT_TRUE(cc_scroll_layer->scrollable());
+  ASSERT_TRUE(IsScrollable(cc_scroll_layer));
   ASSERT_FALSE(
       GetMainThreadScrollingReasons(cc_scroll_layer) &
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
@@ -167,7 +174,7 @@ TEST_F(MainThreadScrollingReasonsTest,
   cc_scroll_layer =
       layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(cc_scroll_layer);
-  ASSERT_TRUE(cc_scroll_layer->scrollable());
+  ASSERT_TRUE(IsScrollable(cc_scroll_layer));
   ASSERT_TRUE(
       GetMainThreadScrollingReasons(cc_scroll_layer) &
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
@@ -219,7 +226,7 @@ TEST_F(MainThreadScrollingReasonsTest, FastScrollingCanBeDisabledWithSetting) {
   // Main scrolling should also propagate to inner viewport layer.
   const cc::Layer* visual_viewport_scroll_layer =
       GetFrame()->GetPage()->GetVisualViewport().LayerForScrolling();
-  ASSERT_TRUE(visual_viewport_scroll_layer->scrollable());
+  ASSERT_TRUE(IsScrollable(visual_viewport_scroll_layer));
   EXPECT_TRUE(GetMainThreadScrollingReasons(visual_viewport_scroll_layer));
 }
 
@@ -251,7 +258,7 @@ TEST_F(MainThreadScrollingReasonsTest, FastScrollingByDefault) {
 
   const cc::Layer* visual_viewport_scroll_layer =
       GetFrame()->GetPage()->GetVisualViewport().LayerForScrolling();
-  ASSERT_TRUE(visual_viewport_scroll_layer->scrollable());
+  ASSERT_TRUE(IsScrollable(visual_viewport_scroll_layer));
   EXPECT_FALSE(GetMainThreadScrollingReasons(visual_viewport_scroll_layer));
 }
 

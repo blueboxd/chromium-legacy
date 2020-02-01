@@ -16,8 +16,8 @@ import time
 
 
 _SHUTDOWN_CMD = ['dm', 'poweroff']
-_ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
+_ATTACH_RETRY_SECONDS = 60
 
 # Amount of time to wait for Amber to complete package installation, as a
 # mitigation against hangs due to amber/network-related failures.
@@ -206,11 +206,12 @@ class Target(object):
   def _AssertIsStarted(self):
     assert self.IsStarted()
 
-  def _WaitUntilReady(self, retries=_ATTACH_MAX_RETRIES):
+  def _WaitUntilReady(self):
     logging.info('Connecting to Fuchsia using SSH.')
 
-    for retry in xrange(retries + 1):
-      host, port = self._GetEndpoint()
+    host, port = self._GetEndpoint()
+    end_time = time.time() + _ATTACH_RETRY_SECONDS
+    while time.time() < end_time:
       runner = remote_cmd.CommandRunner(self._GetSshConfigPath(), host, port)
       if runner.RunCommand(['true'], True) == 0:
         logging.info('Connected!')
@@ -262,4 +263,3 @@ class Target(object):
                                        timeout_secs=_INSTALL_TIMEOUT_SECS)
         if return_code != 0:
           raise Exception('Error while installing %s.' % install_package_name)
-

@@ -14,9 +14,12 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle_list.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -59,6 +62,20 @@ void ReportPossibleDesksSwitchStats(int active_desk_container_id_before_cycle) {
                              desks_util::kMaxNumberOfDesks);
 }
 
+bool IsAnyWindowDragged() {
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller->InOverviewSession() &&
+      overview_controller->overview_session()->IsAnyOverviewItemDragged()) {
+    return true;
+  }
+  for (aura::Window* window :
+       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
+    if (WindowState::Get(window)->is_dragged())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
@@ -70,10 +87,10 @@ WindowCycleController::~WindowCycleController() = default;
 
 // static
 bool WindowCycleController::CanCycle() {
-  // Prevent window cycling if the screen is locked or a modal dialog is open.
   return !Shell::Get()->session_controller()->IsScreenLocked() &&
          !Shell::IsSystemModalWindowOpen() &&
-         !Shell::Get()->screen_pinning_controller()->IsPinned();
+         !Shell::Get()->screen_pinning_controller()->IsPinned() &&
+         !IsAnyWindowDragged();
 }
 
 void WindowCycleController::HandleCycleWindow(Direction direction) {

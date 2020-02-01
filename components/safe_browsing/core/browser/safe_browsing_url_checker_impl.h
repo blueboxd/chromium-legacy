@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 namespace content {
+enum class ResourceType;
 class WebContents;
 }
 
@@ -28,6 +29,8 @@ class IdentityManager;
 }
 
 namespace safe_browsing {
+
+enum class ResourceType;
 
 class UrlCheckerDelegate;
 
@@ -201,7 +204,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   const net::HttpRequestHeaders headers_;
   const int load_flags_;
-  const content::ResourceType resource_type_;
+  const ResourceType resource_type_;
   const bool has_user_gesture_;
   base::RepeatingCallback<content::WebContents*()> web_contents_getter_;
   scoped_refptr<UrlCheckerDelegate> url_checker_delegate_;

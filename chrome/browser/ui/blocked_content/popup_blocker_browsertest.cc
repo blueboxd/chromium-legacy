@@ -39,11 +39,11 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/javascript_dialog_manager.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/switches.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -688,10 +688,10 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
 #endif
   bool ignored;
-  app_modal::JavaScriptDialogManager::GetInstance()->RunJavaScriptDialog(
+  javascript_dialogs::AppModalDialogManager::GetInstance()->RunJavaScriptDialog(
       tab, tab->GetMainFrame(), content::JAVASCRIPT_DIALOG_TYPE_ALERT,
       base::string16(), base::string16(), base::DoNothing(), &ignored);
-  app_modal::JavaScriptAppModalDialog* dialog =
+  javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(dialog);
 #if !defined(OS_MACOSX)
@@ -703,8 +703,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
 #if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
 #endif
-  app_modal::JavaScriptDialogManager::GetInstance()->HandleJavaScriptDialog(
-      tab, true, nullptr);
+  javascript_dialogs::AppModalDialogManager::GetInstance()
+      ->HandleJavaScriptDialog(tab, true, nullptr);
 #if !defined(OS_MACOSX)
   waiter.WaitForActivation();
 #endif

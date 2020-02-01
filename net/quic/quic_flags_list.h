@@ -399,3 +399,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_set_send_algorithm_noop_if_cc_type_unchanged,
     false)
+
+// If true, use predictable grease settings identifiers and values.
+QUIC_FLAG(bool, FLAGS_quic_disable_http3_settings_grease_randomness, false)

@@ -1506,7 +1506,7 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
 
     // When a node is a text node or line break, update its parent, because
     // its text is part of its hypertext.
-    const ui::AXNode* parent = changed_node->parent();
+    const ui::AXNode* parent = changed_node->GetUnignoredParent();
     if (!parent)
       continue;
 

@@ -538,6 +538,30 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
   owner->IntrinsicSizingInfoChanged();
 }
 
+void RemoteFrame::SetMainFrameViewportSize(
+    const IntSize& main_frame_viewport_size) {
+  DCHECK(IsMainFrame());
+  main_frame_viewport_size_ = main_frame_viewport_size;
+}
+
+IntSize RemoteFrame::GetMainFrameViewportSize() const {
+  if (!IsMainFrame())
+    return Tree().Top().GetMainFrameViewportSize();
+  return main_frame_viewport_size_;
+}
+
+void RemoteFrame::SetMainFrameScrollOffset(
+    const IntPoint& main_frame_scroll_offset) {
+  DCHECK(IsMainFrame());
+  main_frame_scroll_offset_ = main_frame_scroll_offset;
+}
+
+IntPoint RemoteFrame::GetMainFrameScrollOffset() const {
+  if (!IsMainFrame())
+    return Tree().Top().GetMainFrameScrollOffset();
+  return main_frame_scroll_offset_;
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

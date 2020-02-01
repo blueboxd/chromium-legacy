@@ -1,2 +1,2 @@
-beta = 'm80'
-stable = 'm79'
+beta = 'm81'
+stable = 'm80'

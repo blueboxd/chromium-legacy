@@ -56,6 +56,16 @@ ChooserDialogView::ChooserDialogView(
 
   DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
 
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&DeviceChooserContentView::Accept,
+                     base::Unretained(device_chooser_content_view_)));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&DeviceChooserContentView::Cancel,
+                     base::Unretained(device_chooser_content_view_)));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&DeviceChooserContentView::Close,
+                     base::Unretained(device_chooser_content_view_)));
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER);
 }
 
@@ -79,21 +89,6 @@ bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
 
 views::View* ChooserDialogView::GetInitiallyFocusedView() {
   return GetCancelButton();
-}
-
-bool ChooserDialogView::Accept() {
-  device_chooser_content_view_->Accept();
-  return true;
-}
-
-bool ChooserDialogView::Cancel() {
-  device_chooser_content_view_->Cancel();
-  return true;
-}
-
-bool ChooserDialogView::Close() {
-  device_chooser_content_view_->Close();
-  return true;
 }
 
 views::View* ChooserDialogView::GetContentsView() {

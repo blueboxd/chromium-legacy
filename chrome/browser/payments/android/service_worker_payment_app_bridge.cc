@@ -412,6 +412,7 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
 
 static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
     JNIEnv* env,
+    const JavaParamRef<jobject>& jorigin,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobjectArray>& jmethod_data,
     jboolean jmay_crawl_for_installable_payment_apps,
@@ -422,7 +423,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
       content::WebContents::FromJavaWebContents(jweb_contents);
 
   payments::ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
-      web_contents,
+      url::Origin::FromJavaObject(jorigin), web_contents,
       WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           ServiceAccessType::EXPLICIT_ACCESS),

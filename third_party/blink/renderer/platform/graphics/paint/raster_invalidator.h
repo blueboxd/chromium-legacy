@@ -85,7 +85,7 @@ class PLATFORM_EXPORT RasterInvalidator {
     // The index of the chunk in the PaintArtifact. It may be different from
     // the index of this PaintChunkInfo in paint_chunks_info_ when a subset of
     // the paint chunks is handled by the RasterInvalidator.
-    size_t index_in_paint_artifact;
+    wtf_size_t index_in_paint_artifact;
 
 #if DCHECK_IS_ON()
     PaintChunk::Id id;
@@ -102,9 +102,9 @@ class PLATFORM_EXPORT RasterInvalidator {
                                    const FloatSize& visual_rect_subpixel_offset,
                                    Vector<PaintChunkInfo>& new_chunks_info);
 
-  ALWAYS_INLINE const PaintChunk& GetOldChunk(size_t index) const;
-  ALWAYS_INLINE size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk,
-                                               size_t old_index) const;
+  ALWAYS_INLINE const PaintChunk& GetOldChunk(wtf_size_t index) const;
+  ALWAYS_INLINE wtf_size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk,
+                                                   wtf_size_t old_index) const;
 
   ALWAYS_INLINE void IncrementallyInvalidateChunk(
       const PaintChunkInfo& old_chunk_info,

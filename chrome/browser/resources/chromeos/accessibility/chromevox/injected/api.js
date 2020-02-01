@@ -78,7 +78,7 @@ function connect_() {
   channel.port1.onmessage = function(event) {
     if (event.data == DISCONNECT_MSG) {
       channel = null;
-      var event = document.createEvent('UIEvents');
+      const event = document.createEvent('UIEvents');
       event.initEvent('chromeVoxUnloaded', true, false);
       document.dispatchEvent(event);
       return;

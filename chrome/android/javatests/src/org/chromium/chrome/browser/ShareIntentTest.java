@@ -150,6 +150,13 @@ public class ShareIntentTest {
         public ObservableSupplier<ShareDelegate> getShareDelegateSupplier() {
             return mActivity.getShareDelegateSupplier();
         }
+
+        @Override
+        public Object getSystemService(String name) {
+            // Prevents a scenario where InputMethodManager#hideSoftInput()
+            // gets called before Activity#onCreate() gets called in this test.
+            return null;
+        }
     }
 
     @Test

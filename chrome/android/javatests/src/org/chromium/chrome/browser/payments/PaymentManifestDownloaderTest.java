@@ -25,8 +25,7 @@ import org.chromium.components.payments.PaymentManifestDownloader.ManifestDownlo
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
-
-import java.net.URI;
+import org.chromium.url.URI;
 
 /** An integration test for the payment manifest downloader. */
 @RunWith(ChromeJUnit4ClassRunner.class)

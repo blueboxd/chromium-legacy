@@ -12,9 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/app_modal_dialog_queue.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_queue.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
@@ -25,29 +25,29 @@ namespace extensions {
 
 namespace {
 
-void GetNextDialog(app_modal::NativeAppModalDialog** native_dialog) {
-  DCHECK(native_dialog);
-  *native_dialog = nullptr;
-  app_modal::JavaScriptAppModalDialog* dialog =
+void GetNextDialog(javascript_dialogs::AppModalDialogView** view) {
+  DCHECK(view);
+  *view = nullptr;
+  javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
-  *native_dialog = dialog->native_dialog();
-  ASSERT_TRUE(*native_dialog);
+  *view = dialog->view();
+  ASSERT_TRUE(*view);
 }
 
 void CloseDialog() {
-  app_modal::NativeAppModalDialog* dialog = nullptr;
+  javascript_dialogs::AppModalDialogView* dialog = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetNextDialog(&dialog));
   dialog->CloseAppModalDialog();
 }
 
 void AcceptDialog() {
-  app_modal::NativeAppModalDialog* dialog = nullptr;
+  javascript_dialogs::AppModalDialogView* dialog = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetNextDialog(&dialog));
   dialog->AcceptAppModalDialog();
 }
 
 void CancelDialog() {
-  app_modal::NativeAppModalDialog* dialog = nullptr;
+  javascript_dialogs::AppModalDialogView* dialog = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetNextDialog(&dialog));
   dialog->CancelAppModalDialog();
 }
@@ -109,8 +109,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertQueue) {
   }
 
   // All dialogs must be closed now.
-  app_modal::AppModalDialogQueue* queue =
-      app_modal::AppModalDialogQueue::GetInstance();
+  javascript_dialogs::AppModalDialogQueue* queue =
+      javascript_dialogs::AppModalDialogQueue::GetInstance();
   ASSERT_TRUE(queue);
   EXPECT_FALSE(queue->HasActiveDialog());
   EXPECT_EQ(0, queue->end() - queue->begin());
@@ -154,8 +154,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ConfirmQueue) {
     ASSERT_NO_FATAL_FAILURE(CancelDialog());
 
   // All dialogs must be closed now.
-  app_modal::AppModalDialogQueue* queue =
-      app_modal::AppModalDialogQueue::GetInstance();
+  javascript_dialogs::AppModalDialogQueue* queue =
+      javascript_dialogs::AppModalDialogQueue::GetInstance();
   ASSERT_TRUE(queue);
   EXPECT_FALSE(queue->HasActiveDialog());
   EXPECT_EQ(0, queue->end() - queue->begin());

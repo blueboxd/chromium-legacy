@@ -456,8 +456,6 @@ extern const base::Feature kTLS13HardeningForLocalAnchors;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTreatUnsafeDownloadsAsActive;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kTreatUnsafeDownloadsAsActiveParamName[];
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHeavyAdIntervention;

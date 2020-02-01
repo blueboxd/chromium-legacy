@@ -927,7 +927,8 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   auto* layer = ToLayoutBoxModelObject(object)->Layer();
   GetDocument().View()->SetTracksRasterInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "transform: scale(3)");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(layer->SelfNeedsRepaint());
   const auto* transform =
       object->FirstFragment().PaintProperties()->Transform();
@@ -963,7 +964,8 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeContainerOfFixedSizeSVG) {
 
   GetDocument().View()->SetTracksRasterInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "width: 200px; height: 200px");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   // We don't invalidate paint of the SVG rect.
   EXPECT_TRUE(static_cast<const DisplayItemClient*>(rect)->IsValid());
@@ -1115,7 +1117,8 @@ TEST_F(PaintInvalidatorCustomClientTest,
   ResetInvalidationRecorded();
 
   target->setAttribute(html_names::kStyleAttr, "opacity: 0.98");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(
       GetDocument().View()->GetLayoutView()->Layer()->DescendantNeedsRepaint());
   EXPECT_TRUE(InvalidationRecorded());
@@ -1123,7 +1126,8 @@ TEST_F(PaintInvalidatorCustomClientTest,
   ResetInvalidationRecorded();
   // Let PrePaintTreeWalk do something instead of no-op.
   GetDocument().View()->SetNeedsPaintPropertyUpdate();
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   // The layer DescendantNeedsRepaint flag is only cleared after paint.
   EXPECT_TRUE(
       GetDocument().View()->GetLayoutView()->Layer()->DescendantNeedsRepaint());

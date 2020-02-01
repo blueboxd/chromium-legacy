@@ -39,21 +39,7 @@ class ChromeCleanerRebootDialog : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
 
-  // views::DialogDelegate overrides.
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
-
  private:
-  enum class DialogInteractionResult {
-    kAccept,
-    kCancel,
-    kClose,
-    kClosedOnDestruction,
-  };
-
-  void HandleDialogInteraction(DialogInteractionResult result);
-
   gfx::Rect GetDialogBounds(Browser* browser) const;
 
   // The pointer will be set to nullptr once the controller has been notified of

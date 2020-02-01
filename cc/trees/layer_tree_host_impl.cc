@@ -2734,8 +2734,8 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   return true;
 }
 
-void LayerTreeHostImpl::DidFinishImplFrame() {
-  frame_trackers_.NotifyFrameEnd(current_begin_frame_tracker_.Current());
+void LayerTreeHostImpl::DidFinishImplFrame(const viz::BeginFrameArgs& args) {
+  frame_trackers_.NotifyFrameEnd(current_begin_frame_tracker_.Current(), args);
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
 }
@@ -4085,18 +4085,15 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   if (!closest_scroll_node)
     return false;
 
-  // If |first_scrolling_layer_or_scrollbar| is scrollable, it will
-  // create a scroll node. If this scroll node corresponds to first scrollable
-  // ancestor along the scroll tree for |layer_impl|, the hit test has not
-  // escaped to other areas of the scroll tree and is reliable.
-  if (first_scrolling_layer_or_scrollbar->scrollable()) {
+  // If |first_scrolling_layer_or_scrollbar| is not a scrollbar, it must be
+  // a scrollabe layer with a scroll node. If this scroll node corresponds to
+  // first scrollable ancestor along the scroll tree for |layer_impl|, the hit
+  // test has not escaped to other areas of the scroll tree and is reliable.
+  if (!first_scrolling_layer_or_scrollbar->is_scrollbar()) {
     return closest_scroll_node->id ==
            first_scrolling_layer_or_scrollbar->scroll_tree_index();
   }
 
-  // If |first_scrolling_layer_or_scrollbar| is not scrollable, it must be a
-  // scrollbar. It may hit the squashing layer at the same time.
-  DCHECK(first_scrolling_layer_or_scrollbar->is_scrollbar());
   return false;
 }
 

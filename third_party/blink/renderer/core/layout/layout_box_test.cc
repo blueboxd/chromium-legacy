@@ -1436,7 +1436,8 @@ TEST_P(LayoutBoxTest, HasNonCollapsedBorderDecoration) {
 
   To<Element>(div->GetNode())
       ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason ::kTest);
   EXPECT_TRUE(div->HasNonCollapsedBorderDecoration());
 }
 

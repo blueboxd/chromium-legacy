@@ -678,8 +678,10 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     }
 
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-    DCHECK(identity_manager->HasPrimaryAccount());
-    CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
+    // This class doesn't care about browser sync consent.
+    DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+    CoreAccountId account_id =
+        identity_manager->GetUnconsentedPrimaryAccountId();
     bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 
     // Record acceptance of ToS if it was shown to the user, otherwise simply

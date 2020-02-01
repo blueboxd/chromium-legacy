@@ -19,6 +19,10 @@ namespace extensions {
 class NtpOverriddenBubbleDelegate
     : public ExtensionMessageBubbleController::Delegate {
  public:
+  // Name of the preference that says whether the user has been notified about
+  // extension overriding the new tab page.
+  static const char kNtpBubbleAcknowledged[];
+
   explicit NtpOverriddenBubbleDelegate(Profile* profile);
   ~NtpOverriddenBubbleDelegate() override;
 

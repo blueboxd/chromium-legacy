@@ -113,6 +113,7 @@ group("mac_signing_tests") {
            "signing/model_test.py",
            "signing/modification_test.py",
            "signing/notarize_test.py",
+           "signing/parts_test.py",
            "signing/pipeline_test.py",
            "signing/run_mac_signing_tests.py",
            "signing/signing_test.py",

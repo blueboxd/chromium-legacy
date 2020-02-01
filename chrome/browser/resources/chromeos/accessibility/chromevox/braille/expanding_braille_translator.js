@@ -150,7 +150,7 @@ ExpandingBrailleTranslator = class {
           return adjustment + elem;
         }));
       }
-      for (var i = 0, chunk; chunk = chunks[i]; ++i) {
+      for (let i = 0, chunk; chunk = chunks[i]; ++i) {
         cells.set(new Uint8Array(chunk.cells), cellPos);
         appendAdjusted(textToBraille, chunk.textToBraille, cellPos);
         appendAdjusted(brailleToText, chunk.brailleToText, chunk.start);

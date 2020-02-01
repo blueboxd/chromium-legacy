@@ -213,16 +213,14 @@ void DebugRectHistory::SaveMainThreadScrollingReasonRects(
     LayerTreeImpl* tree_impl) {
   const auto& scroll_tree = tree_impl->property_trees()->scroll_tree;
   for (auto* layer : *tree_impl) {
-    if (layer->scrollable()) {
-      if (const auto* scroll_node =
-              scroll_tree.Node(layer->scroll_tree_index())) {
-        if (auto reasons = scroll_node->main_thread_scrolling_reasons) {
-          debug_rects_.push_back(DebugRect(
-              MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
-              MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
-                                                gfx::Rect(layer->bounds())),
-              TouchAction::kNone, reasons));
-        }
+    if (const auto* scroll_node =
+            scroll_tree.FindNodeFromElementId(layer->element_id())) {
+      if (auto reasons = scroll_node->main_thread_scrolling_reasons) {
+        debug_rects_.push_back(DebugRect(
+            MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
+            MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
+                                              gfx::Rect(layer->bounds())),
+            TouchAction::kNone, reasons));
       }
     }
   }

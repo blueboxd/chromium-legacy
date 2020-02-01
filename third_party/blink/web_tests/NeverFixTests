@@ -40,8 +40,6 @@ fast/harness/results.html [ Skip ]
 [ Linux ] editing/input/emacs-ctrl-o.html [ Skip ]
 [ Win ] fast/events/inputevents/inputevent-yank.html [ Skip ]
 [ Linux ] fast/events/inputevents/inputevent-yank.html [ Skip ]
-[ Win ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ Skip ]
-[ Linux ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ Skip ]
 
 # Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
 [ Mac ] editing/input/ctrl-up-down.html [ Skip ]
@@ -50,8 +48,6 @@ fast/harness/results.html [ Skip ]
 # this test will always fail.
 [ Linux ] fast/events/option-tab.html [ Skip ]
 [ Win ] fast/events/option-tab.html [ Skip ]
-[ Linux ] virtual/mouseevent_fractional/fast/events/option-tab.html [ Skip ]
-[ Win ] virtual/mouseevent_fractional/fast/events/option-tab.html [ Skip ]
 
 # This test only applies to overlay scrollbar platforms.
 [ Win ] fast/dom/partial-layout-overlay-scrollbars.html [ Skip ]
@@ -91,13 +87,6 @@ crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip 
 [ Mac ] fast/events/menu-key-context-menu-position.html [ Skip ]
 [ Mac ] fast/events/menu-key-context-menu-reveal-focus.html [ Skip ]
 [ Mac ] fast/events/menu-key-context-menu.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/context-menu-key-shift-f10-modifiers.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/context-menu-key-shift-f10-prevent-default.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/contextmenu-follows-focus.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-document.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-position.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-reveal-focus.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu.html [ Skip ]
 
 # Thumb snapping is not supported on Linux and Mac.
 [ Linux ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]

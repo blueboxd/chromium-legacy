@@ -5,6 +5,7 @@
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/browser/media_session.h"

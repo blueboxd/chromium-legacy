@@ -16,6 +16,7 @@
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_factory.h"
@@ -109,7 +110,8 @@ class DnsClientImpl : public DnsClient,
     insecure_enabled_ = enabled;
   }
 
-  bool FallbackFromSecureTransactionPreferred() const override {
+  bool FallbackFromSecureTransactionPreferred(
+      ResolveContext* context) const override {
     if (!CanUseSecureDnsTransactions())
       return true;
 
@@ -138,6 +140,8 @@ class DnsClientImpl : public DnsClient,
 
     return UpdateDnsConfig();
   }
+
+  DnsSession* GetCurrentSession() override { return session_.get(); }
 
   const DnsConfig* GetEffectiveConfig() const override {
     if (!session_)

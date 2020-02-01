@@ -512,7 +512,6 @@ class Browser : public TabStripModelObserver,
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(content::WebContents* contents,
                                   ui::PageTransition transition,
-                                  NavigateParams::WindowAction action,
                                   bool user_initiated);
 
   // Used to register a KeepAlive to affect the Chrome lifetime. The KeepAlive

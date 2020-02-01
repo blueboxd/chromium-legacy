@@ -1318,6 +1318,48 @@ TEST_F(TabStripModelTest, CommandTogglePinned) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
+// Tests IsContextMenuCommandEnabled and ExecuteContextMenuCommand with
+// CommandToggleGrouped.
+TEST_F(TabStripModelTest, CommandToggleGrouped) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  // Create three tabs, select the first two, and add the first to a group.
+  ASSERT_NO_FATAL_FAILURE(
+      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1"));
+  tab_groups::TabGroupId original_group = tabstrip.AddToNewGroup({0});
+  EXPECT_TRUE(tabstrip.GetTabGroupForTab(0).has_value());
+
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      0, TabStripModel::CommandToggleGrouped));
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      1, TabStripModel::CommandToggleGrouped));
+  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
+      2, TabStripModel::CommandToggleGrouped));
+
+  // Execute CommandToggleGrouped once. Expect both tabs to be in a new group,
+  // since they weren't already in the same group.
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleGrouped);
+  EXPECT_TRUE(tabstrip.GetTabGroupForTab(0).has_value());
+  EXPECT_EQ(tabstrip.GetTabGroupForTab(0), tabstrip.GetTabGroupForTab(1));
+  EXPECT_NE(tabstrip.GetTabGroupForTab(0), original_group);
+
+  // Execute CommandToggleGrouped again. Expect both tabs to be ungrouped, since
+  // they were in the same group.
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleGrouped);
+  EXPECT_FALSE(tabstrip.GetTabGroupForTab(0).has_value());
+  EXPECT_FALSE(tabstrip.GetTabGroupForTab(1).has_value());
+
+  // Execute CommandToggleGrouped again. Expect both tabs to be grouped again.
+  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandToggleGrouped);
+  EXPECT_TRUE(tabstrip.GetTabGroupForTab(0).has_value());
+  EXPECT_EQ(tabstrip.GetTabGroupForTab(0), tabstrip.GetTabGroupForTab(1));
+
+  tabstrip.CloseAllTabs();
+  EXPECT_TRUE(tabstrip.empty());
+}
+
 // Tests the following context menu commands:
 //  - Close Tab
 //  - Close Other Tabs

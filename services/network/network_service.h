@@ -153,7 +153,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void SetEncryptionKey(const std::string& encryption_key) override;
 #endif
   void AddCorbExceptionForPlugin(int32_t process_id) override;
-  void RemoveCorbExceptionForPlugin(int32_t process_id) override;
+  void AddAllowedRequestInitiatorForPlugin(
+      int32_t process_id,
+      const url::Origin& allowed_request_initiator) override;
+  void RemoveSecurityExceptionsForPlugin(int32_t process_id) override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
@@ -177,6 +180,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(int32_t process_id, const GURL& resource_url) const;
+
+  bool IsInitiatorAllowedForPlugin(int process_id,
+                                   const url::Origin& request_initiator);
 
   mojom::NetworkServiceClient* client() {
     return client_.is_bound() ? client_.get() : nullptr;
@@ -324,6 +330,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool split_auth_cache_by_network_isolation_key_ = false;
 
   std::unique_ptr<DelayedDohProbeActivator> doh_probe_activator_;
+
+  // Map from a renderer process id, to the set of plugin origins embedded by
+  // that renderer process (the renderer will proxy requests from PPAPI - such
+  // requests should have their initiator origin within the set stored here).
+  std::map<int, std::set<url::Origin>> plugin_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

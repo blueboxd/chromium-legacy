@@ -90,6 +90,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/variations_render_thread_observer.h"
 #include "content/renderer/worker/embedded_shared_worker_stub.h"
 #include "content/renderer/worker/worker_thread_registry.h"
 #include "device/gamepad/public/cpp/gamepads.h"
@@ -774,6 +775,9 @@ void RenderThreadImpl::Init() {
     compositing_mode_reporter_->AddCompositingModeWatcher(
         compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote());
   }
+
+  variations_observer_ = std::make_unique<VariationsRenderThreadObserver>();
+  AddObserver(variations_observer_.get());
 }
 
 RenderThreadImpl::~RenderThreadImpl() {

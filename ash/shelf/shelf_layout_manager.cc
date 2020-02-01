@@ -1075,13 +1075,6 @@ gfx::Rect ShelfLayoutManager::GetShelfBoundsInScreen() const {
   return target_bounds_.shelf_bounds;
 }
 
-gfx::Rect ShelfLayoutManager::GetNavigationBounds() const {
-  gfx::Vector2d nav_offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
-  gfx::Rect nav_bounds = target_bounds_.nav_bounds_in_shelf;
-  nav_bounds.Offset(nav_offset);
-  return nav_bounds;
-}
-
 gfx::Rect ShelfLayoutManager::GetHotseatBounds() const {
   gfx::Vector2d offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
   gfx::Rect hotseat_bounds = target_bounds_.hotseat_bounds_in_shelf;
@@ -1141,15 +1134,19 @@ void ShelfLayoutManager::OnCenterVisibilityChanged(
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return;
 
-  if (visibility != message_center::VISIBILITY_MESSAGE_CENTER ||
-      hotseat_state() != HotseatState::kExtended) {
-    return;
-  }
+  // Uses base::CancelableClosure to handle two edge cases: (1)
+  // ShelfLayoutManager is destructed before the callback runs. (2) The previous
+  // callback is still pending.
+  visibility_update_for_tray_callback_.Reset(base::BindOnce(
+      &ShelfLayoutManager::UpdateVisibilityStateForSystemTrayChange,
+      base::Unretained(this), visibility));
 
-  // Hides the hotseat when the hotseat is in kExtended mode and the system
-  // tray shows.
-  base::AutoReset<bool> reset(&should_hide_hotseat_, true);
-  UpdateVisibilityState();
+  // OnCenterVisibilityChanged is called when the visibility of system tray
+  // is set, which is before the tray bubble is created/destructed. Meanwhile,
+  // we rely on the state of tray bubble to calculate the auto-hide state.
+  // Use ThreadTaskRunnerHandle to specify that the task runs on the UI thread.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, visibility_update_for_tray_callback_.callback());
 }
 
 void ShelfLayoutManager::SuspendWorkAreaUpdate() {
@@ -1427,7 +1424,7 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
   dimmed_for_inactivity_ = dimmed;
   CalculateTargetBoundsAndUpdateWorkArea();
 
-  AnimateOpacity(shelf_widget_->navigation_widget(), target_bounds_.opacity,
+  AnimateOpacity(shelf_->navigation_widget(), target_bounds_.opacity,
                  kDimAnimationDuration, gfx::Tween::LINEAR);
 
   AnimateOpacity(shelf_widget_->hotseat_widget(),
@@ -1452,7 +1449,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
     }
   }
 
-  ShelfNavigationWidget* nav_widget = shelf_widget_->navigation_widget();
+  ShelfNavigationWidget* nav_widget = shelf_->navigation_widget();
   HotseatWidget* hotseat_widget = shelf_widget_->hotseat_widget();
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
@@ -1652,31 +1649,24 @@ void ShelfLayoutManager::CalculateTargetBounds(
   target_bounds_.status_bounds_in_screen =
       gfx::Rect(status_origin, status_size);
 
-  gfx::Point nav_origin = gfx::Point();
-  gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
+  shelf_->navigation_widget()->CalculateTargetBounds();
 
-  // Enlarge the widget to take up available space, this ensures events which
-  // are outside of the HomeButton bounds can be received.
-  if (!nav_size.IsEmpty())
-    nav_size.Enlarge(home_button_edge_spacing, home_button_edge_spacing);
-
-  if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL())
-    nav_origin.set_x(shelf_width - nav_size.width());
-  target_bounds_.nav_bounds_in_shelf = gfx::Rect(nav_origin, nav_size);
-
+  gfx::Rect nav_bounds_in_shelf =
+      shelf_->navigation_widget()->GetTargetBounds();
+  // Convert back into shelf coordinates.
+  nav_bounds_in_shelf.Offset(-shelf_origin.x(), -shelf_origin.y());
   gfx::Point hotseat_origin;
   int hotseat_width;
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
-    hotseat_width =
-        shelf_width - target_bounds_.nav_bounds_in_shelf.size().width() -
-        home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
-        status_size.width();
-    int hotseat_x = base::i18n::IsRTL()
-                        ? target_bounds_.nav_bounds_in_shelf.x() -
-                              home_button_edge_spacing - hotseat_width
-                        : target_bounds_.nav_bounds_in_shelf.right() +
-                              home_button_edge_spacing;
+    hotseat_width = shelf_width - nav_bounds_in_shelf.size().width() -
+                    home_button_edge_spacing -
+                    ShelfConfig::Get()->app_icon_group_margin() -
+                    status_size.width();
+    int hotseat_x =
+        base::i18n::IsRTL()
+            ? nav_bounds_in_shelf.x() - home_button_edge_spacing - hotseat_width
+            : nav_bounds_in_shelf.right() + home_button_edge_spacing;
     if (hotseat_target_state != HotseatState::kShown) {
       // Give the hotseat more space if it is shown outside of the shelf.
       hotseat_width = available_bounds.width();
@@ -1686,13 +1676,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
         gfx::Point(hotseat_x, CalculateHotseatYInShelf(hotseat_target_state));
     hotseat_height = ShelfConfig::Get()->hotseat_size();
   } else {
-    hotseat_origin = gfx::Point(0, target_bounds_.nav_bounds_in_shelf.bottom() +
-                                       home_button_edge_spacing);
+    hotseat_origin =
+        gfx::Point(0, nav_bounds_in_shelf.bottom() + home_button_edge_spacing);
     hotseat_width = shelf_width;
-    hotseat_height =
-        shelf_height - target_bounds_.nav_bounds_in_shelf.size().height() -
-        home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
-        status_size.height();
+    hotseat_height = shelf_height - nav_bounds_in_shelf.size().height() -
+                     home_button_edge_spacing -
+                     ShelfConfig::Get()->app_icon_group_margin() -
+                     status_size.height();
   }
   target_bounds_.hotseat_bounds_in_shelf =
       gfx::Rect(hotseat_origin, gfx::Size(hotseat_width, hotseat_height));
@@ -1717,21 +1707,18 @@ void ShelfLayoutManager::CalculateTargetBounds(
   const bool showing_login_shelf = !state.IsActiveSessionState();
   if (chromeos::switches::ShouldShowScrollableShelf() && !showing_login_shelf) {
     target_bounds_.shelf_bounds_in_shelf = shelf_->SelectValueForShelfAlignment(
-        gfx::Rect(target_bounds_.nav_bounds_in_shelf.right(), 0,
+        gfx::Rect(nav_bounds_in_shelf.right(), 0,
                   shelf_width - status_size.width() -
-                      target_bounds_.nav_bounds_in_shelf.width() -
-                      home_button_edge_spacing,
+                      nav_bounds_in_shelf.width() - home_button_edge_spacing,
                   target_bounds_.shelf_bounds.height()),
-        gfx::Rect(0, target_bounds_.nav_bounds_in_shelf.height(),
+        gfx::Rect(0, nav_bounds_in_shelf.height(),
                   target_bounds_.shelf_bounds.width(),
                   shelf_height - status_size.height() -
-                      target_bounds_.nav_bounds_in_shelf.height() -
-                      home_button_edge_spacing),
-        gfx::Rect(0, target_bounds_.nav_bounds_in_shelf.height(),
+                      nav_bounds_in_shelf.height() - home_button_edge_spacing),
+        gfx::Rect(0, nav_bounds_in_shelf.height(),
                   target_bounds_.shelf_bounds.width(),
                   shelf_height - status_size.height() -
-                      target_bounds_.nav_bounds_in_shelf.height() -
-                      home_button_edge_spacing));
+                      nav_bounds_in_shelf.height() - home_button_edge_spacing));
   } else {
     target_bounds_.shelf_bounds_in_shelf = shelf_->SelectValueForShelfAlignment(
         gfx::Rect(0, 0, shelf_width - status_size.width(),
@@ -1817,8 +1804,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     if (!IsHotseatEnabled()) {
       const int shelf_y = baseline + translate;
       target_bounds_.shelf_bounds.set_y(shelf_y);
-      target_bounds_.nav_bounds_in_shelf.set_y(
-          ShelfConfig::Get()->button_spacing());
+      shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
       target_bounds_.hotseat_bounds_in_shelf.set_y(0);
       target_bounds_.status_bounds_in_screen.set_y(shelf_y);
       return;
@@ -1867,8 +1853,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   const int shelf_x = baseline + translate;
   target_bounds_.shelf_bounds.set_x(baseline + translate);
-  target_bounds_.nav_bounds_in_shelf.set_x(
-      ShelfConfig::Get()->button_spacing());
+  shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
   target_bounds_.hotseat_bounds_in_shelf.set_x(0);
   target_bounds_.status_bounds_in_screen.set_x(shelf_x);
 }
@@ -1958,8 +1943,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_widget_->hotseat_widget()->IsShowingOverflowBubble())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_widget_->IsActive() ||
-      shelf_widget_->navigation_widget()->IsActive() ||
+  if (shelf_widget_->IsActive() || shelf_->navigation_widget()->IsActive() ||
       shelf_widget_->hotseat_widget()->IsActive() ||
       (shelf_widget_->status_area_widget() &&
        shelf_widget_->status_area_widget()->IsActive())) {
@@ -2069,7 +2053,7 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
     return false;
   const aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   const aura::Window* navigation_window =
-      shelf_widget_->navigation_widget()->GetNativeWindow();
+      shelf_->navigation_widget()->GetNativeWindow();
   const aura::Window* hotseat_window =
       shelf_widget_->hotseat_widget()->GetNativeWindow();
   const aura::Window* status_area_window =
@@ -2843,6 +2827,20 @@ void ShelfLayoutManager::MaybeCancelWindowDrag() {
 
 bool ShelfLayoutManager::IsWindowDragInProgress() const {
   return window_drag_controller_ && window_drag_controller_->drag_started();
+}
+
+void ShelfLayoutManager::UpdateVisibilityStateForSystemTrayChange(
+    message_center::Visibility visibility) {
+  base::Optional<base::AutoReset<bool>> reset;
+
+  // Hides the hotseat when the hotseat is in kExtended mode and the system tray
+  // shows.
+  if (visibility == message_center::Visibility::VISIBILITY_MESSAGE_CENTER &&
+      hotseat_state() == HotseatState::kExtended) {
+    reset.emplace(&should_hide_hotseat_, true);
+  }
+
+  UpdateVisibilityState();
 }
 
 }  // namespace ash

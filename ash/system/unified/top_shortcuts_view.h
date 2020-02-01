@@ -44,20 +44,15 @@ class TopShortcutButtonContainer : public views::View {
 
 // Top shortcuts view shown on the top of UnifiedSystemTrayView.
 class ASH_EXPORT TopShortcutsView : public views::View,
-                                    public views::ButtonListener,
-                                    public AccessibilityObserver {
+                                    public views::ButtonListener {
  public:
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
-  ~TopShortcutsView() override;
 
   // Change the expanded state. CollapseButton icon will rotate.
   void SetExpandedAmount(double expanded_amount);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // AccessibilityObserver:
-  void OnAccessibilityStatusChanged() override;
 
   // views::View
   const char* GetClassName() const override;

@@ -73,6 +73,7 @@ class AuthenticatorTransportSelectorSheetModel
   // TransportHoverListModel::Delegate:
   void OnTransportSelected(AuthenticatorTransport transport) override;
   void StartPhonePairing() override;
+  void StartWinNativeApi() override;
 
  private:
   // AuthenticatorSheetModelBase:

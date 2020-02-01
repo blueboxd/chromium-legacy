@@ -184,6 +184,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
             false /* key_server_entries_by_network_isolation_key */),
         host_resolver_(new MockCachingHostResolver()),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()) {
+    FLAGS_quic_disable_http3_settings_grease_randomness = true;
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));

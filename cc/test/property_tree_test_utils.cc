@@ -42,7 +42,8 @@ void SetupRootPropertiesInternal(LayerType* root) {
   // transform space.
   root_effect_node.transform_id = TransformTree::kRootNodeId;
 
-  auto& root_scroll_node = CreateScrollNode(root, ScrollTree::kRootNodeId);
+  auto& root_scroll_node =
+      CreateScrollNode(root, gfx::Size(), ScrollTree::kRootNodeId);
   DCHECK_EQ(root_scroll_node.id, ScrollTree::kSecondaryRootNodeId);
 }
 
@@ -135,7 +136,9 @@ EffectNode& CreateEffectNodeInternal(
 }
 
 template <typename LayerType>
-ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
+ScrollNode& CreateScrollNodeInternal(LayerType* layer,
+                                     const gfx::Size& scroll_container_bounds,
+                                     int parent_id) {
   auto* property_trees = GetPropertyTrees(layer);
   auto& scroll_tree = property_trees->scroll_tree;
   int id = scroll_tree.Insert(
@@ -147,9 +150,9 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
     property_trees->element_id_to_scroll_node_index[node->element_id] =
         node->id;
   }
-  node->container_bounds = layer->scroll_container_bounds();
   node->bounds = layer->bounds();
-  node->scrollable = layer->scrollable();
+  node->container_bounds = scroll_container_bounds;
+  node->scrollable = !scroll_container_bounds.IsEmpty();
   node->user_scrollable_horizontal = true;
   node->user_scrollable_vertical = true;
 
@@ -217,7 +220,8 @@ LayerTreeHost::ViewportPropertyIds SetupViewportProperties(
   CopyProperties(root, inner_viewport_scroll_layer);
   CreateTransformNode(inner_viewport_scroll_layer,
                       viewport_property_ids.page_scale_transform);
-  auto& inner_scroll = CreateScrollNode(inner_viewport_scroll_layer);
+  auto& inner_scroll =
+      CreateScrollNode(inner_viewport_scroll_layer, root->bounds());
   inner_scroll.scrolls_inner_viewport = true;
   inner_scroll.max_scroll_offset_affected_by_page_scale = true;
   viewport_property_ids.inner_scroll = inner_scroll.id;
@@ -230,7 +234,8 @@ LayerTreeHost::ViewportPropertyIds SetupViewportProperties(
 
   CopyProperties(inner_viewport_scroll_layer, outer_viewport_scroll_layer);
   CreateTransformNode(outer_viewport_scroll_layer);
-  auto& outer_scroll = CreateScrollNode(outer_viewport_scroll_layer);
+  auto& outer_scroll = CreateScrollNode(outer_viewport_scroll_layer,
+                                        inner_viewport_scroll_layer->bounds());
   outer_scroll.scrolls_outer_viewport = true;
   viewport_property_ids.outer_scroll = outer_scroll.id;
 
@@ -305,13 +310,20 @@ EffectNode& CreateEffectNode(PropertyTrees* property_trees,
                                          transform_id, clip_id);
 }
 
-ScrollNode& CreateScrollNode(Layer* layer, int parent_id) {
+ScrollNode& CreateScrollNode(Layer* layer,
+                             const gfx::Size& scroll_container_bounds,
+                             int parent_id) {
   DCHECK(layer->layer_tree_host()->IsUsingLayerLists());
-  return CreateScrollNodeInternal(layer, parent_id);
+  return CreateScrollNodeInternal(layer, scroll_container_bounds, parent_id);
 }
 
-ScrollNode& CreateScrollNode(LayerImpl* layer, int parent_id) {
-  return CreateScrollNodeInternal(layer, parent_id);
+ScrollNode& CreateScrollNode(LayerImpl* layer,
+                             const gfx::Size& scroll_container_bounds,
+                             int parent_id) {
+  auto& node =
+      CreateScrollNodeInternal(layer, scroll_container_bounds, parent_id);
+  layer->UpdateScrollable();
+  return node;
 }
 
 void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer) {
@@ -326,8 +338,21 @@ void SetupMaskProperties(LayerImpl* masked_layer,
 }
 
 void SetScrollOffset(Layer* layer, const gfx::ScrollOffset& scroll_offset) {
-  layer->SetScrollOffset(scroll_offset);
-  SetScrollOffsetInternal(layer, scroll_offset);
+  if (layer->layer_tree_host()->IsUsingLayerLists()) {
+    if (CurrentScrollOffset(layer) != scroll_offset)
+      layer->SetNeedsCommit();
+    SetScrollOffsetInternal(layer, scroll_offset);
+  } else {
+    layer->SetScrollOffset(scroll_offset);
+  }
+}
+
+void SetScrollOffsetFromImplSide(Layer* layer,
+                                 const gfx::ScrollOffset& scroll_offset) {
+  if (layer->layer_tree_host()->IsUsingLayerLists())
+    SetScrollOffsetInternal(layer, scroll_offset);
+  else
+    layer->SetScrollOffsetFromImplSide(scroll_offset);
 }
 
 void SetScrollOffset(LayerImpl* layer, const gfx::ScrollOffset& scroll_offset) {
@@ -345,9 +370,7 @@ void SetupViewport(Layer* root,
 
   scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
   inner_viewport_scroll_layer->SetBounds(outer_viewport_size);
-  inner_viewport_scroll_layer->SetScrollable(root->bounds());
   inner_viewport_scroll_layer->SetHitTestable(true);
-  outer_viewport_scroll_layer->SetScrollable(outer_viewport_size);
   outer_viewport_scroll_layer->SetHitTestable(true);
 
   root->AddChild(inner_viewport_scroll_layer);
@@ -382,7 +405,6 @@ void SetupViewport(LayerImpl* root,
   std::unique_ptr<LayerImpl> inner_viewport_scroll_layer =
       LayerImpl::Create(layer_tree_impl, 10000);
   inner_viewport_scroll_layer->SetBounds(outer_viewport_size);
-  inner_viewport_scroll_layer->SetScrollable(root->bounds());
   inner_viewport_scroll_layer->SetHitTestable(true);
   inner_viewport_scroll_layer->SetElementId(
       LayerIdToElementIdForTesting(inner_viewport_scroll_layer->id()));
@@ -391,7 +413,6 @@ void SetupViewport(LayerImpl* root,
       LayerImpl::Create(layer_tree_impl, 10001);
   outer_viewport_scroll_layer->SetBounds(content_size);
   outer_viewport_scroll_layer->SetDrawsContent(true);
-  outer_viewport_scroll_layer->SetScrollable(outer_viewport_size);
   outer_viewport_scroll_layer->SetHitTestable(true);
   outer_viewport_scroll_layer->SetElementId(
       LayerIdToElementIdForTesting(outer_viewport_scroll_layer->id()));
@@ -417,6 +438,34 @@ RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer) {
   if (auto* surface = effect_tree.GetRenderSurface(layer->effect_tree_index()))
     return surface;
   return effect_tree.GetRenderSurface(GetEffectNode(layer)->target_id);
+}
+
+gfx::ScrollOffset ScrollOffsetBase(const LayerImpl* layer) {
+  return GetPropertyTrees(layer)->scroll_tree.GetScrollOffsetBaseForTesting(
+      layer->element_id());
+}
+
+gfx::ScrollOffset ScrollDelta(const LayerImpl* layer) {
+  return GetPropertyTrees(layer)->scroll_tree.GetScrollOffsetDeltaForTesting(
+      layer->element_id());
+}
+
+gfx::ScrollOffset CurrentScrollOffset(const Layer* layer) {
+  auto result = GetPropertyTrees(layer)->scroll_tree.current_scroll_offset(
+      layer->element_id());
+  if (!layer->layer_tree_host()->IsUsingLayerLists())
+    DCHECK_EQ(layer->scroll_offset(), result);
+  return result;
+}
+
+gfx::ScrollOffset CurrentScrollOffset(const LayerImpl* layer) {
+  return GetPropertyTrees(layer)->scroll_tree.current_scroll_offset(
+      layer->element_id());
+}
+
+gfx::ScrollOffset MaxScrollOffset(const LayerImpl* layer) {
+  return GetPropertyTrees(layer)->scroll_tree.MaxScrollOffset(
+      layer->scroll_tree_index());
 }
 
 }  // namespace cc

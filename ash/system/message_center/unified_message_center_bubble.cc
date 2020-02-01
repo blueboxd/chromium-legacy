@@ -199,6 +199,10 @@ bool UnifiedMessageCenterBubble::IsMessageCenterVisible() {
   return !!bubble_widget_ && message_center_view_->GetVisible();
 }
 
+bool UnifiedMessageCenterBubble::IsMessageCenterCollapsed() {
+  return message_center_view_->collapsed();
+}
+
 TrayBackgroundView* UnifiedMessageCenterBubble::GetTray() const {
   return tray_;
 }

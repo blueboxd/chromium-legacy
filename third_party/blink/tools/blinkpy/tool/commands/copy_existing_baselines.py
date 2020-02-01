@@ -6,8 +6,8 @@ import logging
 
 from blinkpy.common.memoized import memoized
 from blinkpy.tool.commands.rebaseline import AbstractRebaseliningCommand
-from blinkpy.web_tests.models.test_expectations import SKIP
 from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.models.typ_types import ResultType
 
 _log = logging.getLogger(__name__)
 
@@ -56,8 +56,8 @@ class CopyExistingBaselines(AbstractRebaseliningCommand):
                 _log.debug('Existing baseline at %s, not copying over it.', new_baseline)
                 continue
 
-            full_expectations = TestExpectations(port, tests=[test_name], include_overrides=True)
-            if SKIP in full_expectations.get_expectations(test_name):
+            full_expectations = TestExpectations(port)
+            if ResultType.Skip in full_expectations.get_expectations(test_name).results:
                 _log.debug('%s is skipped on %s.', test_name, port.name())
                 continue
             if port.skipped_due_to_smoke_tests(test_name):

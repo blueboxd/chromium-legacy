@@ -80,6 +80,7 @@ public final class PageViewObserverTest {
     private TabObserver mTabObserver;
     private UserDataHost mUserDataHost;
     private UserDataHost mUserDataHostTab2;
+    private UserDataHost mDestroyedUserDataHost;
 
     @Before
     public void setUp() {
@@ -87,10 +88,14 @@ public final class PageViewObserverTest {
 
         mUserDataHost = new UserDataHost();
         mUserDataHostTab2 = new UserDataHost();
+        mDestroyedUserDataHost = new UserDataHost();
+        mDestroyedUserDataHost.destroy();
 
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrl();
         doReturn(mChromeActivity).when(mTab).getActivity();
+        doReturn(true).when(mTab).isInitialized();
+        doReturn(true).when(mTab2).isInitialized();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();
@@ -427,6 +432,16 @@ public final class PageViewObserverTest {
         doReturn(STARTING_URL).when(mTab).getUrl();
         didSelectTab(mTab, TabSelectionType.FROM_USER);
         verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+    }
+
+    @Test
+    public void eagerSuspension_destroyedTab() {
+        PageViewObserver observer = createPageViewObserver();
+        updateUrl(mTab, STARTING_URL);
+
+        doReturn(mDestroyedUserDataHost).when(mTab).getUserDataHost();
+        doReturn(false).when(mTab).isInitialized();
+        observer.notifySiteSuspensionChanged(STARTING_FQDN, true);
     }
 
     private PageViewObserver createPageViewObserver() {

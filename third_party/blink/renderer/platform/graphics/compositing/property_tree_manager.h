@@ -251,7 +251,7 @@ class PropertyTreeManager {
   }
 
   bool EffectStateMayBe2dAxisMisalignedToRenderSurface(EffectState&,
-                                                       size_t index);
+                                                       wtf_size_t index);
   bool CurrentEffectMayBe2dAxisMisalignedToRenderSurface();
   CcEffectType SyntheticEffectType(const ClipPaintPropertyNode&);
 

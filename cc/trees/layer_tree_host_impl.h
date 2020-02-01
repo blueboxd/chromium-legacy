@@ -565,7 +565,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       LayerTreeHost::PresentationTimeCallback callback);
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
-  virtual void DidFinishImplFrame();
+  virtual void DidFinishImplFrame(const viz::BeginFrameArgs& args);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack,
                           FrameSkippedReason reason);
   void DidModifyTilePriorities();

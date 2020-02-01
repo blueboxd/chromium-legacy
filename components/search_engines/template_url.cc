@@ -221,16 +221,20 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
     int contextual_cards_version,
-    const std::string& home_country,
+    std::string home_country,
     int64_t previous_event_id,
     int previous_event_results,
-    bool is_exact_search)
+    bool is_exact_search,
+    std::string source_lang,
+    std::string target_lang)
     : version(version),
       contextual_cards_version(contextual_cards_version),
       home_country(home_country),
       previous_event_id(previous_event_id),
       previous_event_results(previous_event_results),
-      is_exact_search(is_exact_search) {}
+      is_exact_search(is_exact_search),
+      source_lang(source_lang),
+      target_lang(target_lang) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -995,6 +999,10 @@ std::string TemplateURLRef::HandleReplacements(
         }
         if (params.is_exact_search)
           args.push_back("ctxsl_exact=1");
+        if (!params.source_lang.empty())
+          args.push_back("tlitesl=" + params.source_lang);
+        if (!params.target_lang.empty())
+          args.push_back("tlitetl=" + params.target_lang);
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
         break;

@@ -424,10 +424,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         "//chrome/android:monochrome_java",
       ]
 
-      if (webview_devui_show_icon) {
-        _deps += [ "//android_webview/nonembedded:monochrome_devui_launcher_icon_resources" ]
-      }
-
       if (_include_primary_support) {
         _deps += [
           "//android_webview:monochrome_webview_primary_abi_assets",

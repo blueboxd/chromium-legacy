@@ -5,11 +5,14 @@
 import 'chrome://new-tab-page/customize_themes.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
-import {assertStyle, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageCustomizeThemesTest', () => {
-  /** @type {TestProxy} */
+  /**
+   * @implements {BrowserProxy}
+   * @extends {TestBrowserProxy}
+   */
   let testProxy;
 
   /** @return {!CustomizeThemesElement} */
@@ -30,7 +33,10 @@ suite('NewTabPageCustomizeThemesTest', () => {
   setup(() => {
     PolymerTest.clearBody();
 
-    testProxy = new TestProxy();
+    testProxy = createTestProxy();
+    testProxy.handler.setResultFor('getChromeThemes', Promise.resolve({
+      chromeThemes: [],
+    }));
     BrowserProxy.instance_ = testProxy;
   });
 

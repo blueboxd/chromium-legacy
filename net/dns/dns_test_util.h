@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -22,7 +23,9 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/esni_content.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/socket/socket_test_util.h"
 
 namespace net {
 
@@ -199,7 +202,9 @@ std::string GenerateWellFormedEsniKeys(base::StringPiece custom_data = "");
 
 class AddressSorter;
 class DnsClient;
+class DnsSession;
 class IPAddress;
+class ResolveContext;
 class URLRequestContext;
 
 // Builds an address record for the given name and IP.
@@ -300,10 +305,10 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
       const NetLogWithSource&,
       bool secure,
       DnsConfig::SecureDnsMode secure_dns_mode,
-      URLRequestContext* url_request_context) override;
+      ResolveContext* resolve_context) override;
 
   std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
-      URLRequestContext* url_request_context) override;
+      ResolveContext* resolve_context) override;
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override;
 
@@ -340,10 +345,12 @@ class MockDnsClient : public DnsClient {
   bool CanUseSecureDnsTransactions() const override;
   bool CanUseInsecureDnsTransactions() const override;
   void SetInsecureEnabled(bool enabled) override;
-  bool FallbackFromSecureTransactionPreferred() const override;
+  bool FallbackFromSecureTransactionPreferred(
+      ResolveContext* resolve_context) const override;
   bool FallbackFromInsecureTransactionPreferred() const override;
   bool SetSystemConfig(base::Optional<DnsConfig> system_config) override;
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
+  DnsSession* GetCurrentSession() override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;
   DnsTransactionFactory* GetTransactionFactory() override;
@@ -379,6 +386,7 @@ class MockDnsClient : public DnsClient {
 
  private:
   base::Optional<DnsConfig> BuildEffectiveConfig();
+  scoped_refptr<DnsSession> BuildSession();
 
   bool insecure_enabled_ = false;
   int fallback_failures_ = 0;
@@ -386,7 +394,9 @@ class MockDnsClient : public DnsClient {
   bool ignore_system_config_changes_ = false;
   bool doh_server_available_ = true;
 
+  MockClientSocketFactory socket_factory_;
   base::Optional<DnsConfig> config_;
+  scoped_refptr<DnsSession> session_;
   DnsConfigOverrides overrides_;
   base::Optional<DnsConfig> effective_config_;
   std::unique_ptr<MockDnsTransactionFactory> factory_;

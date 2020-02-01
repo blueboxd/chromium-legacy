@@ -38,7 +38,7 @@ Tutorial = class {
       const earconElement = document.createElement('p');
       earconElement.innerText = Msgs.getMsg(msgid);
       earconElement.setAttribute('tabindex', 0);
-      var prevEarcon;
+      let prevEarcon;
       const playEarcon = function(earcon) {
         if (prevEarcon) {
           chrome.extension
@@ -157,7 +157,7 @@ Tutorial = class {
       if (msgid) {
         text = Msgs.getMsg(msgid);
       }
-      var element;
+      let element;
       if (pageElement.heading) {
         element = document.createElement('h2');
         element.setAttribute('tabindex', -1);

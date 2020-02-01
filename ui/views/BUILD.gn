@@ -1014,6 +1014,7 @@ jumbo_source_set("test_support") {
   }
   if (use_x11) {
     deps += [
+      "//ui/events/platform/x11",
       "//ui/events/x",
       "//ui/gfx/x",
     ]

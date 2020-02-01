@@ -561,7 +561,8 @@ TEST_P(PaintPropertyTreeUpdateTest, NoPaintPropertyUpdateOnBackgroundChange) {
 
   UpdateAllLifecyclePhasesForTest();
   div->setAttribute(html_names::kStyleAttr, "background-color: green");
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
 }
 
@@ -1685,7 +1686,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   target->SetStyle(std::move(style));
   EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   const auto* transform_node =
       target->FirstFragment().PaintProperties()->Transform();
@@ -1713,7 +1715,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   target->SetStyle(std::move(style));
   EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   ASSERT_EQ(transform_node,
             target->FirstFragment().PaintProperties()->Transform());
@@ -1732,7 +1735,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   target->SetStyle(std::move(style));
   EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   ASSERT_EQ(transform_node,
             target->FirstFragment().PaintProperties()->Transform());
@@ -1751,7 +1755,8 @@ TEST_P(PaintPropertyTreeUpdateTest, BackfaceVisibilityInvalidatesProperties) {
 
   auto* span = GetDocument().getElementById("span");
   span->setAttribute(html_names::kStyleAttr, "backface-visibility: hidden;");
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(span->GetLayoutObject()->NeedsPaintPropertyUpdate());
 }
 

@@ -52,7 +52,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
   };
 
   // Asks this test to process the next task immediately.
-  var flushNextTask = function() {
+  const flushNextTask = function() {
     const task = tasks.shift();
     if (!task) {
       return;
@@ -69,7 +69,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
 
   assertTrue(!tts.currentVoice);
 
-  var tasks = [
+  const tasks = [
     {testVoice: '', expectedVoice: constants.SYSTEM_VOICE},
 
     {

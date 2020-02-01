@@ -183,8 +183,9 @@ void RegistrationRequest::Start() {
   std::string body;
   BuildRequestBody(&body);
 
-  DVLOG(1) << "Performing registration for: " << request_info_.app_id();
-  DVLOG(1) << "Registration request: " << body;
+  // TODO(crbug.com/1043347): Change back to DVLOG when the bug is resolved.
+  VLOG(1) << "Performing registration for: " << request_info_.app_id();
+  VLOG(1) << "Registration request: " << body;
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   url_loader_->AttachStringForUpload(body, kRegistrationRequestContentType);

@@ -345,6 +345,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 #pragma mark - private
 
 - (void)locationBarSteadyViewTapped {
+  base::RecordAction(base::UserMetricsAction("MobileLocationBarTapped"));
   [self.delegate locationBarSteadyViewTapped];
 }
 

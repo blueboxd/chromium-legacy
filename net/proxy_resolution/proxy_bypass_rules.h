@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/base/scheme_host_port_matcher.h"
 #include "net/base/scheme_host_port_matcher_rule.h"
 #include "url/gurl.h"
 
@@ -32,8 +33,6 @@ namespace net {
 // MatchesImplicitRules() for details.
 class NET_EXPORT ProxyBypassRules {
  public:
-  typedef std::vector<std::unique_ptr<SchemeHostPortMatcherRule>> RuleList;
-
   // Note: This class supports copy constructor and assignment.
   ProxyBypassRules();
   ProxyBypassRules(const ProxyBypassRules& rhs);
@@ -45,7 +44,9 @@ class NET_EXPORT ProxyBypassRules {
   // Returns the current list of rules. The rules list contains pointers
   // which are owned by this class, callers should NOT keep references
   // or delete them.
-  const RuleList& rules() const { return rules_; }
+  const SchemeHostPortMatcher::RuleList& rules() const {
+    return matcher_.rules();
+  }
 
   // Replace rule on |index| in the internal RuleList.
   void ReplaceRule(size_t index,
@@ -125,7 +126,7 @@ class NET_EXPORT ProxyBypassRules {
   constexpr static char kBypassListDelimeter[] = ";";
 
  private:
-  RuleList rules_;
+  SchemeHostPortMatcher matcher_;
 };
 
 }  // namespace net

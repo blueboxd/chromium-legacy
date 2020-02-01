@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
@@ -74,8 +74,7 @@ class SessionStorageAreaImpl : public blink::mojom::StorageArea {
 
   // blink::mojom::StorageArea:
   void AddObserver(
-      mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer)
-      override;
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> observer) override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -85,15 +84,25 @@ class SessionStorageAreaImpl : public blink::mojom::StorageArea {
               const base::Optional<std::vector<uint8_t>>& client_old_value,
               const std::string& source,
               DeleteCallback callback) override;
-  void DeleteAll(const std::string& source,
-                 DeleteAllCallback callback) override;
+  void DeleteAll(
+      const std::string& source,
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+      DeleteAllCallback callback) override;
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
-  void GetAll(mojo::PendingAssociatedRemote<
-                  blink::mojom::StorageAreaGetAllCallback> complete_callback,
-              GetAllCallback callback) override;
+  void GetAll(
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+      GetAllCallback callback) override;
 
  private:
   void OnConnectionError();
+  void OnGetAllResult(
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+      GetAllCallback callback,
+      std::vector<blink::mojom::KeyValuePtr> entries);
+  void OnDeleteAllResult(
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+      DeleteAllCallback callback,
+      bool success);
 
   enum class NewMapType { FORKED, EMPTY_FROM_DELETE_ALL };
 
@@ -105,8 +114,10 @@ class SessionStorageAreaImpl : public blink::mojom::StorageArea {
   scoped_refptr<SessionStorageDataMap> shared_data_map_;
   RegisterNewAreaMap register_new_map_callback_;
 
-  mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
+  mojo::RemoteSet<blink::mojom::StorageAreaObserver> observers_;
   mojo::AssociatedReceiver<blink::mojom::StorageArea> receiver_{this};
+
+  base::WeakPtrFactory<SessionStorageAreaImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageAreaImpl);
 };

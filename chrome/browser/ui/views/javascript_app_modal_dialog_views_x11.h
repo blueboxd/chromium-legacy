@@ -8,17 +8,17 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/app_modal/views/javascript_app_modal_dialog_views.h"
+#include "components/javascript_dialogs/views/app_modal_dialog_view_views.h"
 
 class JavascriptAppModalEventBlockerX11;
 class PopunderPreventer;
 
-// JavaScriptAppModalDialog implmentation for linux desktop.
+// AppModalDialogView implementation for linux desktop.
 class JavaScriptAppModalDialogViewsX11
-    : public app_modal::JavaScriptAppModalDialogViews {
+    : public javascript_dialogs::AppModalDialogViewViews {
  public:
   explicit JavaScriptAppModalDialogViewsX11(
-      app_modal::JavaScriptAppModalDialog* parent);
+      javascript_dialogs::AppModalDialogController* parent);
   ~JavaScriptAppModalDialogViewsX11() override;
 
   // JavaScriptAppModalDialogViews:

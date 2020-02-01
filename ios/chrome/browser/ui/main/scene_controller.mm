@@ -352,9 +352,8 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
     baseViewController:(UIViewController*)baseViewController {
   if (!self.signinInteractionCoordinator) {
     Browser* mainBrowser = self.mainInterface.browser;
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowser:mainBrowser
-             dispatcher:self.mainController.mainBVC.dispatcher];
+    self.signinInteractionCoordinator =
+        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
   }
 
   switch (command.operation) {
@@ -378,9 +377,8 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
   Browser* mainBrowser = self.mainInterface.browser;
-  self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-      initWithBrowser:mainBrowser
-           dispatcher:self.mainController.mainBVC.dispatcher];
+  self.signinInteractionCoordinator =
+      [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
   [self.signinInteractionCoordinator
       showAdvancedSigninSettingsWithPresentingViewController:
           baseViewController];
@@ -390,9 +388,8 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
   Browser* mainBrowser = self.mainInterface.browser;
   if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowser:mainBrowser
-             dispatcher:self.mainController.mainBVC.dispatcher];
+    self.signinInteractionCoordinator =
+        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
   }
 
   [self.signinInteractionCoordinator

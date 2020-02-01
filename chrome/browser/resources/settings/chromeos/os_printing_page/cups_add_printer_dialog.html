@@ -140,14 +140,16 @@
           <cr-searchable-drop-down id="manufacturerDropdown"
               items="[[manufacturerList]]"
               label="$i18n{printerManufacturer}"
-              value="{{activePrinter.ppdManufacturer}}">
+              value="{{activePrinter.ppdManufacturer}}"
+              invalid="{{isManufacturerInvalid_}}">
           </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down id="modelDropdown"
               items="[[modelList]]"
               label="$i18n{printerModel}"
-              value="{{activePrinter.ppdModel}}">
+              value="{{activePrinter.ppdModel}}"
+              invalid="{{isModelInvalid_}}">
           </cr-searchable-drop-down>
         </div>
         <div id="ppdLabel" class="cr-form-field-label">
@@ -180,7 +182,9 @@
               disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
                                           activePrinter.ppdModel,
                                           activePrinter.printerPPDPath,
-                                          addPrinterInProgress_)]]"
+                                          addPrinterInProgress_,
+                                          isManufacturerInvalid_,
+                                          isModelInvalid_)]]"
               on-click="addPrinter_">
             $i18n{addPrinterButtonText}
           </cr-button>

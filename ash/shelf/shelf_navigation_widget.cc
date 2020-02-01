@@ -411,14 +411,28 @@ void ShelfNavigationWidget::OnShelfConfigUpdated() {
 }
 
 void ShelfNavigationWidget::CalculateTargetBounds() {
-  // TODO(manucornet): Move target bounds calculations from the shelf layout
-  // manager.
+  const int home_button_edge_spacing =
+      ShelfConfig::Get()->home_button_edge_spacing();
+  const gfx::Point shelf_origin =
+      shelf_->shelf_widget()->GetTargetBounds().origin();
+
+  gfx::Point nav_origin = gfx::Point(shelf_origin.x(), shelf_origin.y());
+  gfx::Size nav_size = GetIdealSize();
+
+  // Enlarge the widget to take up available space, this ensures events which
+  // are outside of the HomeButton bounds can be received.
+  if (!nav_size.IsEmpty())
+    nav_size.Enlarge(home_button_edge_spacing, home_button_edge_spacing);
+
+  if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL()) {
+    nav_origin.set_x(shelf_->shelf_widget()->GetTargetBounds().size().width() -
+                     nav_size.width());
+  }
+  target_bounds_ = gfx::Rect(nav_origin, nav_size);
 }
 
 gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
-  // TODO(manucornet): Store these locally and do not depend on the layout
-  // manager.
-  return shelf_->shelf_layout_manager()->GetNavigationBounds();
+  return target_bounds_;
 }
 
 void ShelfNavigationWidget::UpdateLayout(bool animate) {
@@ -449,7 +463,7 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   nav_animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  SetBounds(shelf_->shelf_layout_manager()->GetNavigationBounds());
+  SetBounds(target_bounds_);
 
   views::View* const back_button = delegate_->back_button();
   UpdateButtonVisibility(back_button, back_button_shown, animate);
@@ -467,6 +481,20 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   back_button->SetBoundsRect(GetFirstButtonBounds());
 
   delegate_->UpdateOpaqueBackground();
+}
+
+void ShelfNavigationWidget::UpdateTargetBoundsForGesture() {
+  const gfx::Point shelf_origin =
+      shelf_->shelf_widget()->GetTargetBounds().origin();
+  if (shelf_->IsHorizontalAlignment()) {
+    if (!IsTabletMode() || !chromeos::switches::ShouldShowShelfHotseat()) {
+      target_bounds_.set_y(shelf_origin.y() +
+                           ShelfConfig::Get()->button_spacing());
+    }
+  } else {
+    target_bounds_.set_x(shelf_origin.x() +
+                         ShelfConfig::Get()->button_spacing());
+  }
 }
 
 void ShelfNavigationWidget::UpdateButtonVisibility(views::View* button,

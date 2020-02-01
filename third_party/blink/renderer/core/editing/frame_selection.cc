@@ -969,7 +969,7 @@ PhysicalRect FrameSelection::AbsoluteUnclippedBounds() const {
   if (!view || !layout_view)
     return PhysicalRect();
 
-  view->UpdateLifecycleToLayoutClean();
+  view->UpdateLifecycleToLayoutClean(DocumentUpdateReason::kSelection);
   return PhysicalRect(layout_selection_->AbsoluteSelectionBounds());
 }
 
@@ -1010,7 +1010,8 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   DCHECK(start.AnchorNode()->GetLayoutObject());
   // This function is needed to make sure that ComputeRectToScroll below has the
   // sticky offset info available before the computation.
-  GetDocument().EnsurePaintLocationDataValidForNode(start.AnchorNode());
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      start.AnchorNode(), DocumentUpdateReason::kSelection);
   PhysicalRect selection_rect(ComputeRectToScroll(reveal_extent_option));
   if (selection_rect == PhysicalRect() ||
       !start.AnchorNode()->GetLayoutObject()->EnclosingBox())

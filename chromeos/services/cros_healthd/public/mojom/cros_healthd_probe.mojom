@@ -27,6 +27,15 @@ enum ProbeCategoryEnum {
   kTimezone,
 };
 
+// Information related to a Smart Battery, as defined in
+// http://sbs-forum.org/specs/sbdat110.pdf.
+struct SmartBatteryInfo {
+  // Manufacture date converted to yyyy-mm-dd format.
+  string manufacture_date;
+  // Temperature in 0.1K.
+  uint64 temperature;
+};
+
 // Information related to the main battery.
 struct BatteryInfo {
   // TODO(https://crbug.com/979245): Update "smart" cycle count.
@@ -43,17 +52,13 @@ struct BatteryInfo {
   double charge_full;
   // Desired minimum output voltage (V)
   double voltage_min_design;
-  // Smart Manufacture Date is defined in
-  // http://sbs-forum.org/specs/sbdat110.pdf. The value is calculated by
-  // ((year-1980) * 512 + month * 32 + day).
-  int64 manufacture_date_smart;
-  // Temperature in 0.1°K as Smart Battery Temperature defined in
-  // http://sbs-forum.org/specs/sbdat110.pdf
-  uint64 temperature_smart;
   // Model name.
   string model_name;
   // Current battery charge (Ah)
   double charge_now;
+  // Information related to a Smart Battery. Included when the main battery is a
+  // Smart Battery.
+  SmartBatteryInfo? smart_battery_info;
 };
 
 // Information related to a specific non-removable block device.

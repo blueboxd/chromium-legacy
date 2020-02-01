@@ -93,7 +93,7 @@ namespace arc {
 
 class FakeAuthInstance : public mojom::AuthInstance {
  public:
-  FakeAuthInstance() {}
+  FakeAuthInstance() = default;
   ~FakeAuthInstance() override = default;
 
   // mojom::AuthInstance:
@@ -311,8 +311,9 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     identity_test_env->SetAutomaticIssueOfAccessTokens(true);
     if (user_type != user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
       // Identity service doesn't have a primary account for Active Directory
-      // sessions.
-      identity_test_env->MakePrimaryAccountAvailable(kFakeUserName);
+      // sessions. Use "unconsented" because ARC doesn't care about browser
+      // sync consent.
+      identity_test_env->MakeUnconsentedPrimaryAccountAvailable(kFakeUserName);
     }
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);

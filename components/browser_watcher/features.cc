@@ -11,8 +11,4 @@ const base::Feature kExtendedCrashReportingFeature{
 
 const char kInMemoryOnlyParam[] = "in_memory_only";
 
-const char kInitFlushParam[] = "init_flush";
-
-const char kCollectPostmortemParam[] = "collect_postmortem";
-
 }  // namespace browser_watcher

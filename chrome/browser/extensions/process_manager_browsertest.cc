@@ -28,8 +28,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_dialog_manager.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -1751,8 +1751,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppAlerts) {
   EXPECT_EQ(hosted_app_url, tab->GetLastCommittedURL());
   ProcessManager* pm = ProcessManager::Get(profile());
   EXPECT_EQ(extension, pm->GetExtensionForWebContents(tab));
-  app_modal::JavaScriptDialogManager* js_dialog_manager =
-      app_modal::JavaScriptDialogManager::GetInstance();
+  javascript_dialogs::AppModalDialogManager* js_dialog_manager =
+      javascript_dialogs::AppModalDialogManager::GetInstance();
   base::string16 hosted_app_title = base::ASCIIToUTF16("hosted_app");
   EXPECT_EQ(hosted_app_title, js_dialog_manager->GetTitle(
                                   tab, tab->GetLastCommittedURL().GetOrigin()));

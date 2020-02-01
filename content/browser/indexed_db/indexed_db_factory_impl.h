@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
+#include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -54,11 +55,9 @@ class CONTENT_EXPORT IndexedDBFactoryImpl
     : public IndexedDBFactory,
       base::trace_event::MemoryDumpProvider {
  public:
-  IndexedDBFactoryImpl(
-      IndexedDBContextImpl* context,
-      IndexedDBClassFactory* indexed_db_class_factory,
-      base::Clock* clock,
-      storage::mojom::BlobStorageContext* blob_storage_context);
+  IndexedDBFactoryImpl(IndexedDBContextImpl* context,
+                       IndexedDBClassFactory* indexed_db_class_factory,
+                       base::Clock* clock);
   ~IndexedDBFactoryImpl() override;
 
   // content::IndexedDBFactory overrides:
@@ -153,6 +152,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
+      storage::mojom::NativeFileSystemContext* native_file_system_context,
       IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
       IndexedDBBackingStore::ReportOutstandingBlobsCallback
           report_outstanding_blobs,
@@ -225,9 +225,6 @@ class CONTENT_EXPORT IndexedDBFactoryImpl
   base::Clock* const clock_;
   base::Time earliest_sweep_;
 
-  // Raw pointer is safe because the binding is owned by the
-  // IndexedDBContextImpl.
-  storage::mojom::BlobStorageContext* blob_storage_context_;
   base::flat_map<url::Origin, std::unique_ptr<IndexedDBOriginState>>
       factories_per_origin_;
 

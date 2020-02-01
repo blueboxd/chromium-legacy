@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/translate_fake_page.h"
+#include "chrome/browser/translate/fake_translate_agent.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -55,7 +55,7 @@ class TranslateManagerRenderViewHostAndroidTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        ->RegisterPage(fake_page_.BindToNewPageRemote(), details,
+        ->RegisterPage(fake_agent_.BindToNewPageRemote(), details,
                        page_translatable);
   }
 
@@ -117,7 +117,7 @@ class TranslateManagerRenderViewHostAndroidTest
   // WARNING: the pointers point to deleted objects, use only for comparison.
   std::set<infobars::InfoBarDelegate*> removed_infobars_;
 
-  FakePageImpl fake_page_;
+  FakeTranslateAgent fake_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostAndroidTest);
 };

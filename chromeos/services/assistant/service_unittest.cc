@@ -40,7 +40,7 @@ namespace assistant {
 
 namespace {
 constexpr base::TimeDelta kDefaultTokenExpirationDelay =
-    base::TimeDelta::FromMilliseconds(1000);
+    base::TimeDelta::FromMilliseconds(60000);
 }  // namespace
 
 class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
@@ -193,13 +193,6 @@ class AssistantServiceTest : public testing::Test {
     service_->SetAssistantManagerServiceForTesting(
         std::make_unique<FakeAssistantManagerServiceImpl>());
 
-    mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-        base::Time::Now(), base::TimeTicks::Now());
-    auto mock_timer = std::make_unique<base::OneShotTimer>(
-        mock_task_runner_->GetMockTickClock());
-    mock_timer->SetTaskRunner(mock_task_runner_);
-    service_->SetTimerForTesting(std::move(mock_timer));
-
     service_->SetIdentityAccessorForTesting(
         fake_identity_accessor_.CreatePendingRemoteAndBind());
 
@@ -231,14 +224,13 @@ class AssistantServiceTest : public testing::Test {
 
   FakeAssistantClient* client() { return &fake_assistant_client_; }
 
-  base::TestMockTimeTaskRunner* mock_task_runner() {
-    return mock_task_runner_.get();
-  }
+  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
   ash::AmbientModeState* ambient_mode_state() { return &ambient_mode_state_; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<Service> service_;
@@ -254,9 +246,6 @@ class AssistantServiceTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
-  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-  std::unique_ptr<base::OneShotTimer> mock_timer_;
-
   ash::AmbientModeState ambient_mode_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantServiceTest);
@@ -264,14 +253,12 @@ class AssistantServiceTest : public testing::Test {
 
 TEST_F(AssistantServiceTest, RefreshTokenAfterExpire) {
   auto current_count = identity_accessor()->get_access_token_count();
-  mock_task_runner()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
 
   // Before token expire, should not request new token.
   EXPECT_EQ(identity_accessor()->get_access_token_count(), current_count);
 
-  mock_task_runner()->FastForwardBy(kDefaultTokenExpirationDelay);
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay);
 
   // After token expire, should request once.
   EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
@@ -280,19 +267,16 @@ TEST_F(AssistantServiceTest, RefreshTokenAfterExpire) {
 TEST_F(AssistantServiceTest, RetryRefreshTokenAfterFailure) {
   auto current_count = identity_accessor()->get_access_token_count();
   identity_accessor()->SetShouldFail(true);
-  mock_task_runner()->FastForwardBy(kDefaultTokenExpirationDelay);
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay);
 
   // Token request failed.
   EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
 
-  base::RunLoop().RunUntilIdle();
-
   // Token request automatically retry.
   identity_accessor()->SetShouldFail(false);
-  // The failure delay has jitter so fast forward a bit more.
-  mock_task_runner()->FastForwardBy(kDefaultTokenExpirationDelay * 2);
-  base::RunLoop().RunUntilIdle();
+  // The failure delay has jitter so fast forward a bit more, but before
+  // the returned token would expire again.
+  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
 
   EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
 }
@@ -328,8 +312,7 @@ TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::STARTING);
 
-  mock_task_runner()->FastForwardBy(kUpdateAssistantManagerDelay);
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(kUpdateAssistantManagerDelay);
 
   // No change of state because it is still starting.
   EXPECT_EQ(assistant_manager()->GetState(),
@@ -337,8 +320,7 @@ TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
 
   assistant_manager()->FinishStart();
 
-  mock_task_runner()->FastForwardBy(kUpdateAssistantManagerDelay);
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(kUpdateAssistantManagerDelay);
 
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::STOPPED);

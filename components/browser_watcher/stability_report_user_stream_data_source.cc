@@ -24,7 +24,6 @@
 #include "components/browser_watcher/activity_tracker_annotation.h"
 #include "components/browser_watcher/minidump_user_streams.h"
 #include "components/browser_watcher/stability_metrics.h"
-#include "components/browser_watcher/stability_paths.h"
 #include "components/browser_watcher/stability_report_extractor.h"
 #include "third_party/crashpad/crashpad/minidump/minidump_user_extension_stream_data_source.h"
 #include "third_party/crashpad/crashpad/snapshot/annotation_snapshot.h"
@@ -48,18 +47,6 @@ UniqueMallocPtr UncheckedAllocate(size_t size) {
     return UniqueMallocPtr();
 
   return UniqueMallocPtr(raw_ptr);
-}
-
-base::FilePath GetStabilityFileName(
-    const base::FilePath& user_data_dir,
-    crashpad::ProcessSnapshot* process_snapshot) {
-  DCHECK(process_snapshot);
-
-  timeval creation_time = {};
-  process_snapshot->ProcessStartTime(&creation_time);
-
-  return GetStabilityFileForProcess(process_snapshot->ProcessID(),
-                                    creation_time, user_data_dir);
 }
 
 // A PersistentMemoryAllocator subclass that can take ownership of a buffer
@@ -132,18 +119,6 @@ bool CollectStabilityReport(
 
   LogCollectOnCrashEvent(CollectOnCrashEvent::kReportExtractionSuccess);
 
-  return true;
-}
-
-bool CollectPersistentReport(const base::FilePath& path,
-                             StabilityReport* report) {
-  std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer =
-      base::debug::GlobalActivityAnalyzer::CreateWithFile(path);
-
-  if (!CollectStabilityReport(std::move(global_analyzer), report))
-    return false;
-
-  MarkStabilityFileDeletedOnCrash(path);
   return true;
 }
 
@@ -290,31 +265,18 @@ StabilityReportUserStreamDataSource::ProduceStreamData(
   DCHECK(process_snapshot);
   LogCollectOnCrashEvent(CollectOnCrashEvent::kCollectAttempt);
 
-  // See whether there is a persistent stability file.
   StabilityReport report;
+
+  // See whether there's an activity tracking report beacon in the process'
+  // annotations.
+  std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer =
+      MaybeGetInMemoryActivityAnalyzer(process_snapshot);
   bool collected_report = false;
-  if (!user_data_dir_.empty()) {
-    LogCollectOnCrashEvent(CollectOnCrashEvent::kUserDataDirNotEmpty);
+  if (global_analyzer) {
+    LogCollectOnCrashEvent(CollectOnCrashEvent::kInMemoryAnnotationExists);
 
-    base::FilePath stability_file =
-        GetStabilityFileName(user_data_dir_, process_snapshot);
-    if (PathExists(stability_file)) {
-      LogCollectOnCrashEvent(CollectOnCrashEvent::kPathExists);
-
-      collected_report = CollectPersistentReport(stability_file, &report);
-    }
-  }
-  // If there isn't a persistent report, see whether there's a non-persistent
-  // report beacon in the process' annotations.
-  if (!collected_report) {
-    std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer =
-        MaybeGetInMemoryActivityAnalyzer(process_snapshot);
-    if (global_analyzer) {
-      LogCollectOnCrashEvent(CollectOnCrashEvent::kInMemoryAnnotationExists);
-
-      collected_report =
-          CollectStabilityReport(std::move(global_analyzer), &report);
-    }
+    collected_report =
+        CollectStabilityReport(std::move(global_analyzer), &report);
   }
 
   CollectSystemPerformanceMetrics(&report);

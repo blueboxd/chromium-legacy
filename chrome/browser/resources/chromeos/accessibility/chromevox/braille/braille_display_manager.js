@@ -150,7 +150,7 @@ BrailleDisplayManager = class {
 
       // Convert image to black and white by thresholding the luminance for
       // all opaque (non-transparent) pixels.
-      for (var i = 0; i < data.length; i += 4) {
+      for (let i = 0; i < data.length; i += 4) {
         const red = data[i];
         const green = data[i + 1];
         const blue = data[i + 2];
@@ -168,7 +168,7 @@ BrailleDisplayManager = class {
       // cells.
       const brailleBuf = new ArrayBuffer(rows * columns);
       const view = new Uint8Array(brailleBuf);
-      for (var i = 0; i < rows; i++) {
+      for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
           // Index in braille array
           const brailleIndex = i * columns + j;

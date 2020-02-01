@@ -76,6 +76,11 @@ void CastComponent::StartComponent() {
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
 
+  if (application_config_.has_force_content_dimensions()) {
+    frame()->ForceContentDimensions(std::make_unique<fuchsia::ui::gfx::vec2>(
+        application_config_.force_content_dimensions()));
+  }
+
   application_controller_ = std::make_unique<ApplicationControllerImpl>(
       frame(), agent_manager_->ConnectToAgentService<
                    chromium::cast::ApplicationControllerReceiver>(

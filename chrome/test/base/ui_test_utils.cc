@@ -40,13 +40,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/find_result_waiter.h"
-#include "components/app_modal/app_modal_dialog_queue.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/download/public/common/download_item.h"
 #include "components/find_in_page/find_notification_details.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -107,12 +107,12 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   return new_browser;
 }
 
-class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
+class AppModalDialogWaiter : public javascript_dialogs::AppModalDialogObserver {
  public:
-  AppModalDialogWaiter() : dialog_(nullptr) {}
-  ~AppModalDialogWaiter() override {}
+  AppModalDialogWaiter() = default;
+  ~AppModalDialogWaiter() override = default;
 
-  app_modal::JavaScriptAppModalDialog* Wait() {
+  javascript_dialogs::AppModalDialogController* Wait() {
     if (dialog_)
       return dialog_;
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -122,7 +122,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
   // AppModalDialogObserver:
-  void Notify(app_modal::JavaScriptAppModalDialog* dialog) override {
+  void Notify(javascript_dialogs::AppModalDialogController* dialog) override {
     DCHECK(!dialog_);
     dialog_ = dialog;
     CheckForHangMonitorDisabling(dialog);
@@ -131,7 +131,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
   static void CheckForHangMonitorDisabling(
-      app_modal::JavaScriptAppModalDialog* dialog) {
+      javascript_dialogs::AppModalDialogController* dialog) {
     // If a test waits for a beforeunload dialog but hasn't disabled the
     // beforeunload hang timer before triggering it, there will be a race
     // between the dialog and the timer and the test will be flaky. We can't
@@ -155,7 +155,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
  private:
-  app_modal::JavaScriptAppModalDialog* dialog_;
+  javascript_dialogs::AppModalDialogController* dialog_ = nullptr;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
@@ -406,9 +406,8 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
   return true;
 }
 
-app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog() {
-  app_modal::AppModalDialogQueue* dialog_queue =
-      app_modal::AppModalDialogQueue::GetInstance();
+javascript_dialogs::AppModalDialogController* WaitForAppModalDialog() {
+  auto* dialog_queue = javascript_dialogs::AppModalDialogQueue::GetInstance();
   if (dialog_queue->HasActiveDialog()) {
     AppModalDialogWaiter::CheckForHangMonitorDisabling(
         dialog_queue->active_dialog());

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -19,6 +20,7 @@ class ResizeObserverController;
 class ResizeObserverEntry;
 class ResizeObservation;
 class V8ResizeObserverCallback;
+class ResizeObserverOptions;
 
 // ResizeObserver represents ResizeObserver javascript api:
 // https://github.com/WICG/ResizeObserver/
@@ -47,6 +49,7 @@ class CORE_EXPORT ResizeObserver final
   ~ResizeObserver() override = default;
 
   // API methods
+  void observe(Element*, const ResizeObserverOptions* options);
   void observe(Element*);
   void unobserve(Element*);
   void disconnect();
@@ -59,12 +62,16 @@ class CORE_EXPORT ResizeObserver final
   void ElementSizeChanged();
   bool HasElementSizeChanged() { return element_size_changed_; }
 
+  ResizeObserverBoxOptions ParseBoxOptions(const String& box_options);
+
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
   void Trace(blink::Visitor*) override;
 
  private:
+  void observeInternal(Element* target, ResizeObserverBoxOptions box_option);
+
   using ObservationList = HeapLinkedHashSet<WeakMember<ResizeObservation>>;
 
   // Either of |callback_| and |delegate_| should be non-null.

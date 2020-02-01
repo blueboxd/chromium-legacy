@@ -37,6 +37,7 @@
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/util.h"
+#include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
@@ -434,9 +435,10 @@ std::unique_ptr<ContextHostResolver> CreateFuzzedContextHostResolver(
     bool enable_caching) {
   auto manager = std::make_unique<FuzzedHostResolverManager>(options, net_log,
                                                              data_provider);
-  return std::make_unique<ContextHostResolver>(
-      std::move(manager),
-      enable_caching ? HostCache::CreateDefaultCache() : nullptr);
+  auto resolve_context = std::make_unique<ResolveContext>(
+      nullptr /* url_request_context */, enable_caching);
+  return std::make_unique<ContextHostResolver>(std::move(manager),
+                                               std::move(resolve_context));
 }
 
 }  // namespace net

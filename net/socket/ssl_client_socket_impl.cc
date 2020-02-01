@@ -1275,6 +1275,7 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
       result != ERR_CERT_KNOWN_INTERCEPTION_BLOCKED &&
+      result != ERR_SSL_OBSOLETE_VERSION &&
       context_->transport_security_state()->ShouldSSLErrorsBeFatal(
           host_and_port_.host());
 

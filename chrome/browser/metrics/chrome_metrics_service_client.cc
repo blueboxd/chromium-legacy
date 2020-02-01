@@ -60,7 +60,6 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_watcher/stability_paths.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
@@ -537,14 +536,6 @@ void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
           g_environment_for_crash_reporter.Get().data()),
       g_environment_for_crash_reporter.Get().size());
 #endif  // OS_WIN || OS_MACOSX || OS_ANDROID
-}
-
-void ChromeMetricsServiceClient::OnLogCleanShutdown() {
-#if defined(OS_WIN)
-  base::FilePath user_data_dir;
-  if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-    browser_watcher::MarkOwnStabilityFileDeleted(user_data_dir);
-#endif  // OS_WIN
 }
 
 void ChromeMetricsServiceClient::CollectFinalMetricsForLog(

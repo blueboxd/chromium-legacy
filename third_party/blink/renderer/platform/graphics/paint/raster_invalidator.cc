@@ -48,7 +48,7 @@ void RasterInvalidator::SetTracksRasterInvalidations(bool should_track) {
   }
 }
 
-const PaintChunk& RasterInvalidator::GetOldChunk(size_t index) const {
+const PaintChunk& RasterInvalidator::GetOldChunk(wtf_size_t index) const {
   DCHECK(old_paint_artifact_);
   const auto& old_chunk_info = old_paint_chunks_info_[index];
   const auto& old_chunk =
@@ -60,13 +60,14 @@ const PaintChunk& RasterInvalidator::GetOldChunk(size_t index) const {
   return old_chunk;
 }
 
-size_t RasterInvalidator::MatchNewChunkToOldChunk(const PaintChunk& new_chunk,
-                                                  size_t old_index) const {
-  for (size_t i = old_index; i < old_paint_chunks_info_.size(); i++) {
+wtf_size_t RasterInvalidator::MatchNewChunkToOldChunk(
+    const PaintChunk& new_chunk,
+    wtf_size_t old_index) const {
+  for (wtf_size_t i = old_index; i < old_paint_chunks_info_.size(); i++) {
     if (new_chunk.Matches(GetOldChunk(i)))
       return i;
   }
-  for (size_t i = 0; i < old_index; i++) {
+  for (wtf_size_t i = 0; i < old_index; i++) {
     if (new_chunk.Matches(GetOldChunk(i)))
       return i;
   }
@@ -179,8 +180,8 @@ void RasterInvalidator::GenerateRasterInvalidations(
                             visual_rect_subpixel_offset);
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(old_paint_chunks_info_.size());
-  size_t old_index = 0;
-  size_t max_matched_old_index = 0;
+  wtf_size_t old_index = 0;
+  wtf_size_t max_matched_old_index = 0;
   for (auto it = new_chunks.begin(); it != new_chunks.end(); ++it) {
     const auto& new_chunk = *it;
     if (ShouldSkipForRasterInvalidation(new_paint_artifact, new_chunk))
@@ -200,7 +201,7 @@ void RasterInvalidator::GenerateRasterInvalidations(
       continue;
     }
 
-    size_t matched_old_index = MatchNewChunkToOldChunk(new_chunk, old_index);
+    auto matched_old_index = MatchNewChunkToOldChunk(new_chunk, old_index);
     if (matched_old_index == kNotFound) {
       // The new chunk doesn't match any old chunk.
       AddRasterInvalidation(new_chunk_info.bounds_in_layer, new_chunk.id.client,
@@ -265,7 +266,7 @@ void RasterInvalidator::GenerateRasterInvalidations(
   }
 
   // Invalidate remaining unmatched (disappeared or uncacheable) old chunks.
-  for (size_t i = 0; i < old_paint_chunks_info_.size(); ++i) {
+  for (wtf_size_t i = 0; i < old_paint_chunks_info_.size(); ++i) {
     if (old_chunks_matched[i])
       continue;
 

@@ -143,6 +143,26 @@ void NativeWidgetMac::WindowDestroyed() {
     delete this;
 }
 
+void NativeWidgetMac::OnWindowKeyStatusChanged(
+    bool is_key,
+    bool is_content_first_responder) {
+  Widget* widget = GetWidget();
+  if (!widget->OnNativeWidgetActivationChanged(is_key))
+    return;
+  // The contentView is the BridgedContentView hosting the views::RootView. The
+  // focus manager will already know if a native subview has focus.
+  if (!is_content_first_responder)
+    return;
+
+  if (is_key) {
+    widget->OnNativeFocus();
+    widget->GetFocusManager()->RestoreFocusedView();
+  } else {
+    widget->OnNativeBlur();
+    widget->GetFocusManager()->StoreFocusedView(true);
+  }
+}
+
 int32_t NativeWidgetMac::SheetOffsetY() {
   return 0;
 }

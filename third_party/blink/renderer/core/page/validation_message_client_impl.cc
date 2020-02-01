@@ -87,7 +87,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));
   overlay_delegate_->CreatePage(*overlay_);
   bool success =
-      target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+      target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+          DocumentUpdateReason::kOverlay);
   ValidationMessageVisibilityChanged(anchor);
 
   // The lifecycle update should always succeed, because this is not inside

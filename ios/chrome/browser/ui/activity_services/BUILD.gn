@@ -66,6 +66,7 @@ source_set("coordinator") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services/requirements",

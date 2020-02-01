@@ -848,6 +848,7 @@ java_prebuilt("com_android_tools_build_jetifier_jetifier_processor_java") {
     "//third_party/ow2_asm:asm_java",
     "//third_party/ow2_asm:asm_util_java",
   ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1769,6 +1770,7 @@ java_prebuilt("com_android_tools_build_jetifier_jetifier_core_java") {
     ":org_jetbrains_kotlin_kotlin_stdlib_java",
     "//third_party/gson:gson_java",
   ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

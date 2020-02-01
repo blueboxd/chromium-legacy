@@ -1547,14 +1547,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(dom_distiller::kReaderMode)},
 #endif  // !defined(OS_ANDROID)
-    {"enable-webrtc-hw-h264-encoding",
-     flag_descriptions::kWebrtcHwH264EncodingName,
-     flag_descriptions::kWebrtcHwH264EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWH264Encoding)},
-    {"enable-webrtc-hw-vp8-encoding",
-     flag_descriptions::kWebrtcHwVP8EncodingName,
-     flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP8Encoding)},
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",
      flag_descriptions::kWebrtcPipeWireCapturerName,
@@ -1584,6 +1576,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kWebRtcHideLocalIpsWithMdns)},
+    {"enable-webrtc-use-min-max-vea-dimensions",
+     flag_descriptions::kWebrtcUseMinMaxVEADimensionsName,
+     flag_descriptions::kWebrtcUseMinMaxVEADimensionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcUseMinMaxVEADimensions)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
@@ -2532,12 +2528,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAndroidNightMode,
                                     kAndroidNightModeFeatureVariations,
                                     "AndroidNightMode")},
+    {"enable-android-night-mode-tab-reparenting",
+     flag_descriptions::kAndroidNightModeTabReparentingName,
+     flag_descriptions::kAndroidNightModeTabReparentingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidNightModeTabReparenting)},
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
-    {"enable-experimental-accessibility-features",
-     flag_descriptions::kExperimentalAccessibilityFeaturesName,
-     flag_descriptions::kExperimentalAccessibilityFeaturesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(::switches::kEnableExperimentalAccessibilityFeatures)},
     {"enable-experimental-accessibility-language-detection",
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionName,
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionDescription,
@@ -3795,11 +3791,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableMediaSessionIntegration)},
 
-    {"enable-assistant-launcher-ui",
-     flag_descriptions::kEnableAssistantLauncherUIName,
-     flag_descriptions::kEnableAssistantLauncherUIDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantLauncherUI)},
-
     {"enable-quick-answers", flag_descriptions::kEnableQuickAnswersName,
      flag_descriptions::kEnableQuickAnswersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswers)},
@@ -4056,11 +4047,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-    {"enable-webrtc-hw-vp9-encoding",
-     flag_descriptions::kWebrtcHwVP9EncodingName,
-     flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP9Encoding)},
 
 #if defined(OS_ANDROID)
     {"mobile-identity-consistency",

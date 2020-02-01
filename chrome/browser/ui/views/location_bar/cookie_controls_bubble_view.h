@@ -60,13 +60,12 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
-  bool Accept() override;
-  bool Close() override;
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
 
   void ShowCookiesLinkClicked();
   void NotWorkingLinkClicked();
+  void OnDialogAccepted();
 
   CookieControlsController* controller_ = nullptr;
 

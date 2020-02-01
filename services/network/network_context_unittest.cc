@@ -73,6 +73,7 @@
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/resolve_context.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -3214,8 +3215,10 @@ class TestResolverFactory : public net::HostResolver::Factory {
       base::StringPiece host_mapping_rules,
       bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
+    auto resolve_context = std::make_unique<net::ResolveContext>(
+        nullptr /* url_request_context */, nullptr /* host_cache */);
     auto resolver = std::make_unique<net::ContextHostResolver>(
-        manager, nullptr /* host_cache */);
+        manager, std::move(resolve_context));
     resolvers_.push_back(resolver.get());
     return resolver;
   }
@@ -6487,6 +6490,28 @@ TEST_F(NetworkContextTest, HSTSPolicyBypassList) {
   EXPECT_FALSE(transport_security_state->ShouldUpgradeToSSL("example"));
   // But the policy shouldn't apply to subdomains.
   EXPECT_TRUE(transport_security_state->ShouldUpgradeToSSL("sub.example"));
+}
+
+TEST_F(NetworkContextTest, FactoriesDeletedWhenBindingsCleared) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto loader_params = mojom::URLLoaderFactoryParams::New();
+  loader_params->process_id = 1;
+  mojo::Remote<mojom::URLLoaderFactory> remote1;
+  network_context->CreateURLLoaderFactory(remote1.BindNewPipeAndPassReceiver(),
+                                          std::move(loader_params));
+
+  loader_params = mojom::URLLoaderFactoryParams::New();
+  loader_params->process_id = 1;
+  mojo::Remote<mojom::URLLoaderFactory> remote2;
+  network_context->CreateURLLoaderFactory(remote2.BindNewPipeAndPassReceiver(),
+                                          std::move(loader_params));
+
+  // We should have at least 2 loader factories.
+  EXPECT_GT(network_context->num_url_loader_factories_for_testing(), 1u);
+  network_context->ResetURLLoaderFactories();
+  EXPECT_EQ(network_context->num_url_loader_factories_for_testing(), 0u);
 }
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)

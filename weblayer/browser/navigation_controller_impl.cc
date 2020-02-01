@@ -21,6 +21,8 @@
 
 #if defined(OS_ANDROID)
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 #endif
 
 namespace weblayer {
@@ -33,42 +35,37 @@ NavigationControllerImpl::~NavigationControllerImpl() = default;
 #if defined(OS_ANDROID)
 void NavigationControllerImpl::SetNavigationControllerImpl(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_controller) {
-  java_controller_.Reset(env, java_controller);
+    const JavaParamRef<jobject>& java_controller) {
+  java_controller_ = java_controller;
 }
 
-void NavigationControllerImpl::GoToIndex(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    int index) {
+void NavigationControllerImpl::GoToIndex(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj,
+                                         int index) {
   return GoToIndex(index);
 }
 
-void NavigationControllerImpl::Navigate(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& url) {
+void NavigationControllerImpl::Navigate(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        const JavaParamRef<jstring>& url) {
   Navigate(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
 }
 
-base::android::ScopedJavaLocalRef<jstring>
+ScopedJavaLocalRef<jstring>
 NavigationControllerImpl::GetNavigationEntryDisplayUri(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& obj,
     int index) {
-  return base::android::ScopedJavaLocalRef<jstring>(
-      base::android::ConvertUTF8ToJavaString(
-          env, GetNavigationEntryDisplayURL(index).spec()));
+  return ScopedJavaLocalRef<jstring>(base::android::ConvertUTF8ToJavaString(
+      env, GetNavigationEntryDisplayURL(index).spec()));
 }
 
-base::android::ScopedJavaLocalRef<jstring>
-NavigationControllerImpl::GetNavigationEntryTitle(
+ScopedJavaLocalRef<jstring> NavigationControllerImpl::GetNavigationEntryTitle(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& obj,
     int index) {
-  return base::android::ScopedJavaLocalRef<jstring>(
-      base::android::ConvertUTF8ToJavaString(env,
-                                             GetNavigationEntryTitle(index)));
+  return ScopedJavaLocalRef<jstring>(base::android::ConvertUTF8ToJavaString(
+      env, GetNavigationEntryTitle(index)));
 }
 #endif
 

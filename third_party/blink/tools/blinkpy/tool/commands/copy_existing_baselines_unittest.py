@@ -99,7 +99,9 @@ class TestCopyExistingBaselines(BaseTestCase):
             'original test-win-win10 result')
         self._write(
             port.path_to_generic_test_expectations_file(),
-            ('[ Win ] failures/expected/image.html [ Failure ]\n'
+            ('# tags: [ Win Linux ]\n'
+             '# results: [ Failure Skip ]\n'
+             '[ Win ] failures/expected/image.html [ Failure ]\n'
              '[ Linux ] failures/expected/image.html [ Skip ]\n'))
 
         self.command.execute(self.options(port_name='test-win-win10', test='failures/expected/image.html'), [], self.tool)

@@ -1648,7 +1648,8 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
 
     LayoutObject* layout_object = GetLayoutObject();
     if (layout_object) {
-      layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint();
+      layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+          DocumentUpdateReason::kScroll);
 
       if (Page* page = GetDocument().GetPage()) {
         page->GetAutoscrollController().StartAutoscrollForSelection(

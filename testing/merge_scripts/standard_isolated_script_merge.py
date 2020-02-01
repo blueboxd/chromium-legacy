@@ -20,7 +20,7 @@ def StandardIsolatedScriptMerge(output_json, summary_json, jsons_to_merge):
       written.
     jsons_to_merge: A list of paths to JSON files that should be merged.
   """
-  # summary.json is produced by swarming.py itself. We are mostly interested
+  # summary.json is produced by swarming client itself. We are mostly interested
   # in the number of shards.
   try:
     with open(summary_json) as f:
@@ -28,7 +28,7 @@ def StandardIsolatedScriptMerge(output_json, summary_json, jsons_to_merge):
   except (IOError, ValueError):
     print >> sys.stderr, (
         'summary.json is missing or can not be read',
-        'Something is seriously wrong with swarming_client/ or the bot.')
+        'Something is seriously wrong with swarming client or the bot.')
     return 1
 
   missing_shards = []

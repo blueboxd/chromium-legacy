@@ -5,6 +5,7 @@
 #ifndef NET_BASE_SCHEME_HOST_PORT_MATCHER_RULE_H_
 #define NET_BASE_SCHEME_HOST_PORT_MATCHER_RULE_H_
 
+#include <memory>
 #include <string>
 
 #include "net/base/ip_address.h"
@@ -24,6 +25,14 @@ class NET_EXPORT SchemeHostPortMatcherRule {
       delete;
 
   virtual ~SchemeHostPortMatcherRule() = default;
+
+  // Creates a SchemeHostPortMatcherRule by best-effort parsing the string. If
+  // it can't parse, returns a nullptr. It only parses all the rule types in
+  // this header file. Types with other serializations will need to be handled
+  // by the caller.
+  static std::unique_ptr<SchemeHostPortMatcherRule> FromUntrimmedRawString(
+      const std::string& raw_untrimmed);
+
   // Evaluates the rule against |url|.
   virtual SchemeHostPortMatcherResult Evaluate(const GURL& url) const = 0;
   // Returns a string representation of this rule. The returned string will not

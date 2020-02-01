@@ -54,6 +54,13 @@ void UrlIndex::SetUrl(BookmarkNode* node, const GURL& url) {
   AddImpl(node);
 }
 
+void UrlIndex::SetTitle(BookmarkNode* node, const base::string16& title) {
+  // Acquiring the lock is necessary to avoid races with
+  // UrlIndex::GetBookmarks().
+  base::AutoLock url_lock(url_lock_);
+  node->SetTitle(title);
+}
+
 void UrlIndex::GetNodesWithIconUrl(const GURL& icon_url,
                                    std::set<const BookmarkNode*>* nodes) {
   base::AutoLock url_lock(url_lock_);

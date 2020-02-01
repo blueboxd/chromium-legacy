@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
-#include "components/app_modal/javascript_dialog_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -24,8 +24,8 @@
 
 namespace {
 
-app_modal::JavaScriptDialogManager* AppModalDialogManager() {
-  return app_modal::JavaScriptDialogManager::GetInstance();
+javascript_dialogs::AppModalDialogManager* AppModalDialogManager() {
+  return javascript_dialogs::AppModalDialogManager::GetInstance();
 }
 
 // The relationship between origins in displayed dialogs.

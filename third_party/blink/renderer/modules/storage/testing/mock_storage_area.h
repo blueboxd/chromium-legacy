@@ -29,27 +29,24 @@ class MockStorageArea : public mojom::blink::StorageArea {
 
   // StorageArea implementation:
   void AddObserver(
-      mojo::PendingAssociatedRemote<mojom::blink::StorageAreaObserver> observer)
-      override;
-
+      mojo::PendingRemote<mojom::blink::StorageAreaObserver> observer) override;
   void Put(const Vector<uint8_t>& key,
            const Vector<uint8_t>& value,
            const base::Optional<Vector<uint8_t>>& client_old_value,
            const String& source,
            PutCallback callback) override;
-
   void Delete(const Vector<uint8_t>& key,
               const base::Optional<Vector<uint8_t>>& client_old_value,
               const String& source,
               DeleteCallback callback) override;
-
-  void DeleteAll(const String& source, DeleteAllCallback callback) override;
-
+  void DeleteAll(
+      const String& source,
+      mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer,
+      DeleteAllCallback callback) override;
   void Get(const Vector<uint8_t>& key, GetCallback callback) override;
-
-  void GetAll(mojo::PendingAssociatedRemote<
-                  mojom::blink::StorageAreaGetAllCallback> complete_callback,
-              GetAllCallback callback) override;
+  void GetAll(
+      mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer,
+      GetAllCallback callback) override;
 
   // Methods and members for use by test fixtures.
   bool HasBindings() {
@@ -66,17 +63,6 @@ class MockStorageArea : public mojom::blink::StorageArea {
     observed_source_ = String();
   }
 
-  void CompleteAllPendingCallbacks() {
-    while (!pending_callbacks_.empty())
-      CompleteOnePendingCallback(true);
-  }
-
-  void CompleteOnePendingCallback(bool success) {
-    ASSERT_TRUE(!pending_callbacks_.empty());
-    std::move(pending_callbacks_.front()).Run(success);
-    pending_callbacks_.pop_front();
-  }
-
   void Flush() {
     receivers_.FlushForTesting();
     associated_receivers_.FlushForTesting();
@@ -86,8 +72,6 @@ class MockStorageArea : public mojom::blink::StorageArea {
     receivers_.Clear();
     associated_receivers_.Clear();
   }
-
-  size_t pending_callbacks_count() const { return pending_callbacks_.size(); }
 
   bool observed_get_all() const { return observed_get_all_; }
   bool observed_put() const { return observed_put_; }
@@ -103,7 +87,6 @@ class MockStorageArea : public mojom::blink::StorageArea {
   }
 
  private:
-  Deque<ResultCallback> pending_callbacks_;
   bool observed_get_all_ = false;
   bool observed_put_ = false;
   bool observed_delete_ = false;

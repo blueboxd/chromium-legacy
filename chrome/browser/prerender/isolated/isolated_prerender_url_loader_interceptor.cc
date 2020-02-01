@@ -35,6 +35,9 @@ bool ShouldInterceptRequestForPrerender(
 
   // TODO(crbug.com/1023486): Add other triggering checks.
 
+  // TODO(robertogden): Bail GetStoragePartitionForSite(url) !=
+  // GetDefaultStoragePartitionForSite().
+
   content::WebContents* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (!web_contents)

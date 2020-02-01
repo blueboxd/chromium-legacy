@@ -7,15 +7,17 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-import {assertFocus, keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
-import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+import {assertFocus, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedFocusTest', () => {
   /** @type {!MostVisitedElement} */
   let mostVisited;
 
-  /** @type {TestProxy} */
+  /**
+   * @implements {BrowserProxy}
+   * @extends {TestBrowserProxy}
+   */
   let testProxy;
 
   /**
@@ -62,7 +64,7 @@ suite('NewTabPageMostVisitedFocusTest', () => {
   setup(() => {
     PolymerTest.clearBody();
 
-    testProxy = new TestProxy();
+    testProxy = createTestProxy();
     BrowserProxy.instance_ = testProxy;
 
     mostVisited = document.createElement('ntp-most-visited');

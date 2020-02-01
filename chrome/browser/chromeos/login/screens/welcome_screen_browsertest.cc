@@ -28,7 +28,6 @@
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 
 namespace chromeos {
@@ -163,20 +162,6 @@ class WelcomeScreenSystemDevModeBrowserTest : public WelcomeScreenBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
-  }
-};
-
-class WelcomeScreenWithExperimentalAccessibilityFeaturesTest
-    : public WelcomeScreenBrowserTest {
- public:
-  WelcomeScreenWithExperimentalAccessibilityFeaturesTest() = default;
-  ~WelcomeScreenWithExperimentalAccessibilityFeaturesTest() override = default;
-
-  // WelcomeScreenBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilityFeatures);
-    WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -377,10 +362,19 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yDockedMagnifierDisabled) {
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
+                       WelcomeScreenAccessibilityDockedMagnifier) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ExpectHiddenPath({"connect", "dockedMagnifierOobeOption"});
+  test::OobeJS().TapOnPath(
+      {"connect", "welcomeScreen", "accessibilitySettingsButton"});
+
+  ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+  ToggleAccessibilityFeature("accessibility-docked-magnifier", true);
+  ASSERT_TRUE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+
+  ToggleAccessibilityFeature("accessibility-docked-magnifier", false);
+  ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, PRE_SelectedLanguage) {
@@ -404,21 +398,6 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, DISABLED_SelectedLanguage) {
   EXPECT_EQ(g_browser_process->local_state()->GetString(
                 language::prefs::kApplicationLocale),
             locale);
-}
-
-IN_PROC_BROWSER_TEST_F(WelcomeScreenWithExperimentalAccessibilityFeaturesTest,
-                       A11yDockedMagnifierEnabled) {
-  welcome_screen_->Show();
-  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().TapOnPath(
-      {"connect", "welcomeScreen", "accessibilitySettingsButton"});
-
-  ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
-  ToggleAccessibilityFeature("dockedMagnifierOobeOption", true);
-  ASSERT_TRUE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
-
-  ToggleAccessibilityFeature("dockedMagnifierOobeOption", false);
-  ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yVirtualKeyboard) {

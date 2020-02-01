@@ -77,7 +77,6 @@
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/expired_histograms_array.h"
-#include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
@@ -103,7 +102,7 @@
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_app_modal_dialog_factory.h"
+#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1221,7 +1220,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
   javascript_dialog_extensions_client::InstallClient();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-  InstallChromeJavaScriptNativeAppModalDialogFactory();
+  InstallChromeJavaScriptAppModalDialogViewFactory();
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {

@@ -917,6 +917,11 @@
     "owners": [ "twellington", "tedchoc" ],
     "expiry_milestone": 80
   },
+    {
+    "name": "enable-android-night-mode-tab-reparenting",
+    "owners": [ "twellington", "tedchoc", "wylieb" ],
+    "expiry_milestone": 83
+  },
   {
     "name": "enable-android-spellchecker",
     "owners": [ "timvolodine" ],
@@ -1303,11 +1308,6 @@
     "name": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
     "owners": [ "akihiroota", "dmazzoni", "dtseng", "//ui/accessibility/OWNERS"],
     "expiry_milestone": 82
-  },
-  {
-    "name": "enable-experimental-accessibility-features",
-    "owners": [ "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 79
   },
   {
     "name": "enable-experimental-accessibility-language-detection",
@@ -2149,6 +2149,11 @@
     "name": "enable-webrtc-stun-origin",
     "owners": [ "qingsi", "jeroendb" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-webrtc-use-min-max-vea-dimensions",
+    "owners": [ "mcasas", "chromeos-gfx-video@google.com" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-winrt-geolocation-implementation",

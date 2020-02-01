@@ -55,6 +55,8 @@ android_library("java") {
     "org/chromium/weblayer/TabListCallback.java",
     "org/chromium/weblayer/ThreadCheck.java",
     "org/chromium/weblayer/UnsupportedVersionException.java",
+    "org/chromium/weblayer/UrlBarController.java",
+    "org/chromium/weblayer/UrlBarOptions.java",
     "org/chromium/weblayer/WebLayer.java",
     "org/chromium/weblayer/WebLayerFileProvider.java",
     _version_constants_java_file,

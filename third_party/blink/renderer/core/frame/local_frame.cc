@@ -39,6 +39,7 @@
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
@@ -86,6 +87,7 @@
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -1355,10 +1357,18 @@ void LocalFrame::SetViewportIntersectionFromParent(
     Client()->OnMainFrameDocumentIntersectionChanged(
         intersection_state.main_frame_document_intersection);
   }
+
+  bool can_skip_sticky_frame_tracking =
+      intersection_state.can_skip_sticky_frame_tracking ||
+      !base::FeatureList::IsEnabled(
+          features::kForceExtraRenderingToTrackStickyFrame);
+
   // We only schedule an update if the viewport intersection or occlusion state
-  // has changed; neither the viewport offset nor the compositing bounds will
-  // affect IntersectionObserver.
+  // has changed, or if we cannot skip sticky frame tracking; neither the
+  // viewport offset nor the compositing bounds will affect
+  // IntersectionObserver.
   bool needs_update =
+      !can_skip_sticky_frame_tracking ||
       intersection_state_.viewport_intersection !=
           intersection_state.viewport_intersection ||
       intersection_state_.occlusion_state != intersection_state.occlusion_state;
@@ -1369,6 +1379,22 @@ void LocalFrame::SetViewportIntersectionFromParent(
       frame_view->ScheduleAnimation();
     }
   }
+  Tree().Top().SetMainFrameViewportSize(
+      intersection_state.main_frame_viewport_size);
+  Tree().Top().SetMainFrameScrollOffset(
+      IntPoint(intersection_state.main_frame_scroll_offset));
+}
+
+IntSize LocalFrame::GetMainFrameViewportSize() const {
+  if (!IsMainFrame())
+    return Tree().Top().GetMainFrameViewportSize();
+  return View()->GetScrollableArea()->VisibleContentRect().Size();
+}
+
+IntPoint LocalFrame::GetMainFrameScrollOffset() const {
+  if (!IsMainFrame())
+    return Tree().Top().GetMainFrameScrollOffset();
+  return FlooredIntPoint(View()->GetScrollableArea()->GetScrollOffset());
 }
 
 FrameOcclusionState LocalFrame::GetOcclusionState() const {

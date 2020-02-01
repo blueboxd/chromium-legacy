@@ -215,6 +215,10 @@ class OmniboxEditModel {
       WindowOpenDisposition disposition,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
+  // Executes the |pedal| associated with given match.
+  void ExecutePedal(const AutocompleteMatch& match,
+                    base::TimeTicks match_selection_timestamp);
+
   // Asks the browser to load |match|. |index| is only used for logging, and
   // can be kNoMatch if the popup was closed, or if none of the suggestions
   // in the popup were used (in the unusual no-default-match case). In that

@@ -2517,6 +2517,8 @@ enum WebFeature {
   kSameOriginIframeWindowConfirm = 3152,
   kSameOriginIframeWindowPrompt = 3153,
   kSameOriginIframeWindowPrint = 3154,
+  kLargeStickyAd = 3155,
+  kOverlayInterstitialAd = 3156,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

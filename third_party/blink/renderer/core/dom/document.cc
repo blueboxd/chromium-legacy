@@ -2768,7 +2768,9 @@ scoped_refptr<const ComputedStyle> Document::StyleForPage(int page_index) {
   return EnsureStyleResolver().StyleForPage(page_index);
 }
 
-void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
+void Document::EnsurePaintLocationDataValidForNode(
+    const Node* node,
+    DocumentUpdateReason reason) {
   DCHECK(node);
   if (!node->InActiveDocument())
     return;
@@ -2788,9 +2790,9 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
     bool success = false;
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       // In CAP, compositing inputs are cleaned as part of PrePaint.
-      success = View()->UpdateAllLifecyclePhasesExceptPaint();
+      success = View()->UpdateAllLifecyclePhasesExceptPaint(reason);
     } else {
-      success = View()->UpdateLifecycleToCompositingInputsClean();
+      success = View()->UpdateLifecycleToCompositingInputsClean(reason);
     }
     // The lifecycle update should always succeed, because forced lifecycles
     // from script are never throttled.
@@ -5046,7 +5048,8 @@ bool Document::SetFocusedElement(Element* new_focused_element,
       return false;
     }
     CancelFocusAppearanceUpdate();
-    EnsurePaintLocationDataValidForNode(focused_element_);
+    EnsurePaintLocationDataValidForNode(focused_element_,
+                                        DocumentUpdateReason::kFocus);
     focused_element_->UpdateFocusAppearanceWithOptions(
         params.selection_behavior, params.options);
 
@@ -6403,9 +6406,6 @@ void Document::FinishedParsing() {
 
   // Parser should have picked up all preloads by now
   fetcher_->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
-
-  if (IsPrefetchOnly())
-    WebPrerenderingSupport::Current()->PrefetchFinished();
 }
 
 void Document::ElementDataCacheClearTimerFired(TimerBase*) {

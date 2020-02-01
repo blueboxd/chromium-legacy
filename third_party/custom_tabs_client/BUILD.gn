@@ -18,6 +18,7 @@ android_resources("custom_tabs_support_resources") {
 }
 
 android_apk("custom_tabs_client_example_apk") {
+  skip_jetify = true
   sources = [
     "src/Application/src/main/java/org/chromium/customtabsclient/BottomBarManager.java",
     "src/Application/src/main/java/org/chromium/customtabsclient/BrowserActionsReceiver.java",

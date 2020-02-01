@@ -70,6 +70,11 @@ MockDrmDevice::CrtcProperties::CrtcProperties() = default;
 MockDrmDevice::CrtcProperties::CrtcProperties(const CrtcProperties&) = default;
 MockDrmDevice::CrtcProperties::~CrtcProperties() = default;
 
+MockDrmDevice::ConnectorProperties::ConnectorProperties() = default;
+MockDrmDevice::ConnectorProperties::ConnectorProperties(
+    const ConnectorProperties&) = default;
+MockDrmDevice::ConnectorProperties::~ConnectorProperties() = default;
+
 MockDrmDevice::PlaneProperties::PlaneProperties() = default;
 MockDrmDevice::PlaneProperties::PlaneProperties(const PlaneProperties&) =
     default;
@@ -125,15 +130,18 @@ ScopedDrmPropertyBlobPtr MockDrmDevice::AllocateInFormatsBlob(
 
 void MockDrmDevice::InitializeState(
     const std::vector<CrtcProperties>& crtc_properties,
+    const std::vector<ConnectorProperties>& connector_properties,
     const std::vector<PlaneProperties>& plane_properties,
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {
-  CHECK(InitializeStateWithResult(crtc_properties, plane_properties,
-                                  property_names, use_atomic));
+  CHECK(InitializeStateWithResult(crtc_properties, connector_properties,
+                                  plane_properties, property_names,
+                                  use_atomic));
 }
 
 bool MockDrmDevice::InitializeStateWithResult(
     const std::vector<CrtcProperties>& crtc_properties,
+    const std::vector<ConnectorProperties>& connector_properties,
     const std::vector<PlaneProperties>& plane_properties,
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {

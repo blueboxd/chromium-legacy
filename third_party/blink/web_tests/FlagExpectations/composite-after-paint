@@ -19,7 +19,6 @@ virtual/stable/* [ Skip ]
 # For now we track the failures of the base tests of the following virtual suites.
 virtual/exotic-color-space/images/* [ Skip ]
 virtual/gpu-rasterization/images/* [ Skip ]
-virtual/mouseevent_fractional/fast/events/touch/* [ Skip ]
 virtual/scroll_customization/fast/events/touch/* [ Skip ]
 virtual/threaded/printing/* [ Skip ]
 virtual/threaded/http/tests/devtools/tracing/* [ Skip ]

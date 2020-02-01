@@ -9,11 +9,6 @@
 
 namespace switches {
 
-// Shows additional checkboxes in Settings to enable Chrome OS accessibility
-// features that haven't launched yet.
-const char kEnableExperimentalAccessibilityFeatures[] =
-    "enable-experimental-accessibility-features";
-
 // Shows additional automatic click features that haven't launched yet.
 const char kEnableExperimentalAccessibilityAutoclick[] =
     "enable-experimental-accessibility-autoclick";

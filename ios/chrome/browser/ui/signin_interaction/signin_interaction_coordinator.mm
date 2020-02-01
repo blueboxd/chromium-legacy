@@ -6,6 +6,7 @@
 
 #import "base/ios/block_types.h"
 #include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -27,11 +28,6 @@
 // The controller managed by this coordinator.
 @property(nonatomic, strong) SigninInteractionController* controller;
 
-// The dispatcher to which commands should be sent.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
-        dispatcher;
-
 // The UIViewController upon which UI should be presented.
 @property(nonatomic, strong) UIViewController* presentingViewController;
 
@@ -49,16 +45,9 @@
 
 @implementation SigninInteractionCoordinator
 
-- (instancetype)
-    initWithBrowser:(Browser*)browser
-         dispatcher:
-             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
-                 dispatcher {
+- (instancetype)initWithBrowser:(Browser*)browser {
   DCHECK(browser);
   self = [super initWithBaseViewController:nil browser:browser];
-  if (self) {
-    _dispatcher = dispatcher;
-  }
   return self;
 }
 
@@ -232,12 +221,16 @@
   self.presentingViewController = presentingViewController;
   self.topViewController = presentingViewController;
 
-  self.controller =
-      [[SigninInteractionController alloc] initWithBrowser:self.browser
-                                      presentationProvider:self
-                                               accessPoint:accessPoint
-                                               promoAction:promoAction
-                                                dispatcher:self.dispatcher];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.controller = [[SigninInteractionController alloc]
+           initWithBrowser:self.browser
+      presentationProvider:self
+               accessPoint:accessPoint
+               promoAction:promoAction
+                dispatcher:static_cast<
+                               id<ApplicationCommands, BrowsingDataCommands>>(
+                               self.browser->GetCommandDispatcher())];
 }
 
 // Returns a callback that clears the state of the coordinator and runs
@@ -274,7 +267,6 @@
           initWithBaseViewController:self.presentingViewController
                              browser:self.browser];
   self.advancedSigninSettingsCoordinator.delegate = self;
-  self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
   [self.advancedSigninSettingsCoordinator start];
 }
 

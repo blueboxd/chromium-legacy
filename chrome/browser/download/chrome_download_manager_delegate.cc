@@ -783,7 +783,7 @@ void ChromeDownloadManagerDelegate::GetMixedContentStatus(
     const base::FilePath& virtual_path,
     const GetMixedContentStatusCallback& callback) {
   DCHECK(download);
-  callback.Run(GetMixedContentStatusForDownload(virtual_path, *download));
+  callback.Run(GetMixedContentStatusForDownload(virtual_path, download));
 }
 
 void ChromeDownloadManagerDelegate::NotifyExtensions(

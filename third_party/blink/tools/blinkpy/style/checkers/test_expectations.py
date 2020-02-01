@@ -32,7 +32,7 @@ import logging
 
 from blinkpy.style.checkers.common import TabChecker
 from blinkpy.common.host import Host
-from blinkpy.web_tests.models.test_expectations import TestExpectationParser
+from blinkpy.web_tests.models.typ_types import TestExpectations
 
 
 class TestExpectationsChecker(object):
@@ -55,13 +55,10 @@ class TestExpectationsChecker(object):
         log.setLevel(logging.CRITICAL)
 
     def check_test_expectations(self, expectations_str, tests=None):
-        parser = TestExpectationParser(self._port_obj, tests, is_lint_mode=True)
-        expectations = parser.parse('expectations', expectations_str)
-
-        level = 5
-        for expectation_line in expectations:
-            for warning in expectation_line.warnings:
-                self._handle_style_error(expectation_line.line_numbers, 'test/expectations', level, warning)
+        expectations = TestExpectations()
+        ret, errors = expectations.parse_tagged_list(expectations_str)
+        if ret:
+            self._handle_style_error(message=errors)
 
     def check_tabs(self, lines):
         self._tab_checker.check(lines)

@@ -25,16 +25,16 @@ DisplayItemList::ItemsInPaintChunk(const PaintChunk& paint_chunk) const {
 #if DCHECK_IS_ON()
 
 std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
-    size_t begin_index,
-    size_t end_index,
+    wtf_size_t begin_index,
+    wtf_size_t end_index,
     JsonFlags flags) const {
   auto json_array = std::make_unique<JSONArray>();
   AppendSubsequenceAsJSON(begin_index, end_index, flags, *json_array);
   return json_array;
 }
 
-void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
-                                              size_t end_index,
+void DisplayItemList::AppendSubsequenceAsJSON(wtf_size_t begin_index,
+                                              wtf_size_t end_index,
                                               JsonFlags flags,
                                               JSONArray& json_array) const {
   if (flags & kCompact) {
@@ -42,12 +42,12 @@ void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
         << "kCompact cannot show paint records";
     DCHECK(!(flags & kShowOnlyDisplayItemTypes))
         << "kCompact cannot show display item types";
-    for (size_t i = begin_index; i < end_index; ++i) {
+    for (auto i = begin_index; i < end_index; ++i) {
       const auto& item = (*this)[i];
       json_array.PushString(item.GetId().ToString());
     }
   } else {
-    for (size_t i = begin_index; i < end_index; ++i) {
+    for (auto i = begin_index; i < end_index; ++i) {
       auto json = std::make_unique<JSONObject>();
 
       const auto& item = (*this)[i];

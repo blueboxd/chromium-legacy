@@ -695,9 +695,6 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
     host_impl_->mutator_host()->RegisterElementId(element_id,
                                                   GetElementTypeForAnimation());
   }
-
-  if (layer->scrollable())
-    AddScrollableLayer(layer);
 }
 
 void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
@@ -718,7 +715,6 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
 
 void LayerTreeImpl::AddScrollableLayer(LayerImpl* layer) {
   DCHECK(layer);
-  DCHECK(layer->scrollable());
 
   if (!layer->element_id())
     return;
@@ -726,6 +722,15 @@ void LayerTreeImpl::AddScrollableLayer(LayerImpl* layer) {
   DCHECK(!element_id_to_scrollable_layer_.count(layer->element_id()));
   element_id_to_scrollable_layer_.insert(
       std::make_pair(layer->element_id(), layer));
+}
+
+void LayerTreeImpl::RemoveScrollableLayer(LayerImpl* layer) {
+  DCHECK(layer);
+
+  if (!layer->element_id())
+    return;
+
+  element_id_to_scrollable_layer_.erase(layer->element_id());
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,
@@ -2168,13 +2173,6 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-struct HitTestScrollingLayerOrScrollbarFunctor {
-  bool operator()(LayerImpl* layer) const {
-    return layer->HitTestable() &&
-           (layer->scrollable() || layer->is_scrollbar());
-  }
-};
-
 LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   if (layer_list_.empty())
@@ -2182,8 +2180,15 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
 
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_[0].get();
+  auto HitTestScrollingLayerOrScrollbarFunctor =
+      [this](const LayerImpl* layer) {
+        return layer->HitTestable() &&
+               (layer->is_scrollbar() ||
+                (property_trees()->scroll_tree.FindNodeFromElementId(
+                    layer->element_id())));
+      };
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           HitTestScrollingLayerOrScrollbarFunctor(), &state);
+                           HitTestScrollingLayerOrScrollbarFunctor, &state);
   return state.closest_match;
 }
 

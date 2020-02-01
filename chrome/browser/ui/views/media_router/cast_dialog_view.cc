@@ -143,10 +143,6 @@ base::string16 CastDialogView::GetWindowTitle() const {
   }
 }
 
-bool CastDialogView::Close() {
-  return Cancel();
-}
-
 void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
   if (model.media_sinks().empty()) {
     scroll_position_ = 0;

@@ -96,21 +96,23 @@
 #define IDC_ROUTE_MEDIA                 35011
 #define IDC_WINDOW_MUTE_SITE            35012
 #define IDC_WINDOW_PIN_TAB              35013
-#define IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE 35014
-#define IDC_SEND_TAB_TO_SELF            35015
-#define IDC_FOCUS_THIS_TAB              35016
-#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF 35017
-#define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35018
-#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
-#define IDC_QRCODE_GENERATOR            35020
-#define IDC_WINDOW_CLOSE_TABS_TO_RIGHT  35021
-#define IDC_WINDOW_CLOSE_OTHER_TABS     35022
+#define IDC_WINDOW_GROUP_TAB            35014
+#define IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE 35015
+#define IDC_SEND_TAB_TO_SELF            35016
+#define IDC_FOCUS_THIS_TAB              35017
+#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF 35018
+#define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
+#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35020
+#define IDC_QRCODE_GENERATOR            35021
+#define IDC_WINDOW_CLOSE_TABS_TO_RIGHT  35022
+#define IDC_WINDOW_CLOSE_OTHER_TABS     35023
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
 #define IDC_MUTE_TARGET_SITE            35050
 #define IDC_PIN_TARGET_TAB              35051
-#define IDC_DUPLICATE_TARGET_TAB        35052
+#define IDC_GROUP_TARGET_TAB            35052
+#define IDC_DUPLICATE_TARGET_TAB        35053
 
 // Clipboard commands
 #define IDC_CUT                         36000

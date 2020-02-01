@@ -23,7 +23,7 @@ export function skColorToRgb(skColor) {
 /**
  * Converts a string of the form "#rrggbb" to an SkColor object.
  * @param {string} hexColor The color string.
- * @return {skia.mojom.SkColor} The SkColor object,
+ * @return {!skia.mojom.SkColor} The SkColor object,
  */
 export function hexColorToSkColor(hexColor) {
   if (!/^#[0-9a-f]{6}$/.test(hexColor)) {

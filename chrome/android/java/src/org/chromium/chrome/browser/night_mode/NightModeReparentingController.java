@@ -9,7 +9,6 @@ import android.util.SparseArray;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
@@ -21,8 +20,7 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 
 // TODO(wylieb): Write unittests for this class.
 /** Controls the reparenting of tabs when the theme is swapped. */
-public class NightModeReparentingController
-        implements StartStopWithNativeObserver, NightModeStateProvider.Observer {
+public class NightModeReparentingController implements NightModeStateProvider.Observer {
     /** Provides data to {@link NightModeReparentingController} facilitate reparenting tabs. */
     public interface Delegate {
         /** The current ActivityTabProvider which is used to get the current Tab. */
@@ -42,8 +40,7 @@ public class NightModeReparentingController
         mReparentingDelegate = reparentingDelegate;
     }
 
-    @Override
-    public void onStartWithNative() {
+    public void onNativeInitialized() {
         // Iterate through the params stored in AsyncTabParams and find the tabs stored by
         // #onNightModeStateChanged. Reparent the background tabs and store the foreground tab
         // to be reparented last.
@@ -93,9 +90,6 @@ public class NightModeReparentingController
             AsyncTabParamsManager.remove(params.getTabToReparent().getId());
         });
     }
-
-    @Override
-    public void onStopWithNative() {}
 
     @Override
     public void onNightModeStateChanged() {

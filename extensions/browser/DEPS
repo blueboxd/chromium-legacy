@@ -45,7 +45,7 @@ include_rules = [
 
 specific_include_rules = {
   ".*(test|test_util)\.(cc|h)$": [
-    "+components/app_modal",
+    "+components/javascript_dialogs",
     "+components/user_prefs",
 
     "+storage/browser/test",

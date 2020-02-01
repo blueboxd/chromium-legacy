@@ -516,6 +516,7 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/UiThreadTaskTraitsImplTest.java",
     "junit/src/org/chromium/content/browser/accessibility/BrowserAccessibilityStateTest.java",
     "junit/src/org/chromium/content/browser/androidoverlay/DialogOverlayCoreTest.java",
+    "junit/src/org/chromium/content/browser/input/InputMethodManagerWrapperImplTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
     "junit/src/org/chromium/content/browser/input/TextInputStateTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionFactoryTest.java",

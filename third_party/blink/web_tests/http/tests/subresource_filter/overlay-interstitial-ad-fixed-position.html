@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+if (window.testRunner) {
+  // Inject a subresource filter to mark 'overlay-interstitial-ad-testharness.js' as a would be disallowed resource.
+  testRunner.setDisallowedSubresourcePathSuffixes(["overlay-interstitial-ad-testharness.js"], false /* block_subresources */);
+}
+
+async_test(t => {
+  let ad_script = document.createElement("script");
+  ad_script.async = false;
+  ad_script.src = "resources/overlay-interstitial-ad-testharness.js";
+  ad_script.onload = t.step_func(() => {
+    createInterstitialAdFrameFixedFrame();
+    verifyInterstitialUseCounterAfter1500ms(t, true);
+  });
+  document.body.appendChild(ad_script);
+}, "Test UseCounter for overlay-interstitial-ad when the frame itself has fixed position.");
+
+</script>
+</body>
+</html>

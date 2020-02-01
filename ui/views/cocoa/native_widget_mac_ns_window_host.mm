@@ -1021,25 +1021,14 @@ void NativeWidgetMacNSWindowHost::OnWindowKeyStatusChanged(
     bool is_key,
     bool is_content_first_responder,
     bool full_keyboard_access_enabled) {
+  // Explicitly set the keyboard accessibility state on regaining key
+  // window status.
+  if (is_key && is_content_first_responder)
+    SetKeyboardAccessible(full_keyboard_access_enabled);
   accessibility_focus_overrider_.SetWindowIsKey(is_key);
   is_window_key_ = is_key;
-  Widget* widget = native_widget_mac_->GetWidget();
-  if (!widget->OnNativeWidgetActivationChanged(is_key))
-    return;
-  // The contentView is the BridgedContentView hosting the views::RootView. The
-  // focus manager will already know if a native subview has focus.
-  if (is_content_first_responder) {
-    if (is_key) {
-      widget->OnNativeFocus();
-      // Explicitly set the keyboard accessibility state on regaining key
-      // window status.
-      SetKeyboardAccessible(full_keyboard_access_enabled);
-      widget->GetFocusManager()->RestoreFocusedView();
-    } else {
-      widget->OnNativeBlur();
-      widget->GetFocusManager()->StoreFocusedView(true);
-    }
-  }
+  native_widget_mac_->OnWindowKeyStatusChanged(is_key,
+                                               is_content_first_responder);
 }
 
 void NativeWidgetMacNSWindowHost::OnWindowStateRestorationDataChanged(

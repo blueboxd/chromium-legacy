@@ -252,6 +252,9 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_document_intersection)
   IPC_STRUCT_TRAITS_MEMBER(compositor_visible_rect)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_state)
+  IPC_STRUCT_TRAITS_MEMBER(main_frame_viewport_size)
+  IPC_STRUCT_TRAITS_MEMBER(main_frame_scroll_offset)
+  IPC_STRUCT_TRAITS_MEMBER(can_skip_sticky_frame_tracking)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
@@ -932,6 +935,9 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_Unload_ACK)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
                     viz::FrameSinkId /* frame_sink_id */,
                     content::FrameVisualProperties)
+
+// Notifies the browser that a frame is determined to be large and sticky.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_NotifyFrameIsLargeSticky)
 
 // Sent by a parent frame to notify its child about the state of the child's
 // intersection with the parent's viewport, primarily for use by the

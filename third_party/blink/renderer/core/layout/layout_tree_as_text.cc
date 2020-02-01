@@ -899,7 +899,8 @@ String ExternalRepresentation(LocalFrame* frame,
                               LayoutAsTextBehavior behavior,
                               const PaintLayer* marked_layer) {
   if (!(behavior & kLayoutAsTextDontUpdateLayout)) {
-    bool success = frame->View()->UpdateAllLifecyclePhasesExceptPaint();
+    bool success = frame->View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kTest);
     DCHECK(success);
   };
 

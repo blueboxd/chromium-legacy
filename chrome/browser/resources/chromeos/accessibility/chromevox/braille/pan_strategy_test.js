@@ -197,7 +197,7 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedSetContent', function() {
   // When first word is bigger than column size. (Don't wrap word)
   let textContent = 'ABCDE';
   let translatedContent = createArrayBuffer('11234');
-  var mapping = [0, 1, 2, 3, 4];
+  let mapping = [0, 1, 2, 3, 4];
   panner.setDisplaySize(1, 4);
   panner.setContent(textContent, translatedContent, mapping, 0);
   let expectedBufferValue = translatedContent;
@@ -209,7 +209,7 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedSetContent', function() {
   // (We expect space to be removed on next line)
   textContent = 'ABCDE FGHI';
   translatedContent = createArrayBuffer('11234 6789');
-  var mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   panner.setDisplaySize(1, 5);
   panner.setContent(textContent, translatedContent, mapping, 0);
   expectedBufferValue = createArrayBuffer('112346789');

@@ -145,6 +145,8 @@ class ToolbarActionsModelUnitTest
   // Initialize the ExtensionService, ToolbarActionsModel, and ExtensionSystem.
   void Init();
 
+  void InitToolbarModelAndObserver();
+
   void TearDown() override;
 
   // Adds or removes the given |extension| and verify success.
@@ -225,6 +227,10 @@ class ToolbarActionsModelUnitTest
 
 void ToolbarActionsModelUnitTest::Init() {
   InitializeEmptyExtensionService();
+  InitToolbarModelAndObserver();
+}
+
+void ToolbarActionsModelUnitTest::InitToolbarModelAndObserver() {
   toolbar_model_ =
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
@@ -1482,4 +1488,48 @@ TEST_F(ToolbarActionsModelUnitTest, ChangesToPinnedOrderSavedInExtensionPrefs) {
       extension_prefs->GetPinnedExtensions(),
       testing::ElementsAre(browser_action_a()->id(), browser_action_c()->id(),
                            browser_action_b()->id()));
+}
+
+TEST_F(ToolbarActionsModelUnitTest,
+       VisibleExtensionsMigrateToPinnedExtensions) {
+  InitializeEmptyExtensionService();
+
+  // Add the three browser action extensions.
+  ASSERT_TRUE(AddBrowserActionExtensions());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+  // Initialization of the toolbar model triggers migration of the visible
+  // extensions to pinned extensions.
+  InitToolbarModelAndObserver();
+
+  // Verify that the extensions that were visible are now the pinned extensions.
+  extensions::ExtensionPrefs* const extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_THAT(
+      extension_prefs->GetPinnedExtensions(),
+      testing::ElementsAre(browser_action_a()->id(), browser_action_b()->id(),
+                           browser_action_c()->id()));
+}
+
+TEST_F(ToolbarActionsModelUnitTest,
+       VisibleExtensionsOfConstrainedToolbarMigrateToPinnedExtensions) {
+  InitializeEmptyExtensionService();
+
+  profile()->GetPrefs()->SetInteger(extensions::pref_names::kToolbarSize, 2);
+  // Add the three browser action extensions.
+  ASSERT_TRUE(AddBrowserActionExtensions());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+  // Initialization of the toolbar model triggers migration of the visible
+  // extensions to pinned extensions.
+  InitToolbarModelAndObserver();
+
+  // Verify that the extensions that were visible are now the pinned extensions.
+  extensions::ExtensionPrefs* const extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_THAT(
+      extension_prefs->GetPinnedExtensions(),
+      testing::ElementsAre(browser_action_a()->id(), browser_action_b()->id()));
 }

@@ -1194,8 +1194,14 @@ public class SafeBrowsingTest {
     @Feature({"AndroidWebView"})
     public void testSafeBrowsingClickReportErrorLink() throws Throwable {
         // Only phishing interstitials have the report-error-link
-        loadInterstitialAndClickLink(PHISHING_HTML_PATH, "report-error-link",
-                appendLocale("https://www.google.com/safebrowsing/report_error/"));
+        final String reportErrorUrl =
+                Uri.parse("https://safebrowsing.google.com/safebrowsing/report_error/")
+                        .buildUpon()
+                        .appendQueryParameter(
+                                "url", mTestServer.getURL(PHISHING_HTML_PATH).toString())
+                        .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
+                        .toString();
+        loadInterstitialAndClickLink(PHISHING_HTML_PATH, "report-error-link", reportErrorUrl);
     }
 
     private String appendLocale(String url) throws Exception {

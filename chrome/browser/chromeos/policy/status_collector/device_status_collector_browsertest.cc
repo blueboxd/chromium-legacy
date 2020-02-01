@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -103,6 +104,54 @@ using chromeos::disks::DiskMountManager;
 namespace em = enterprise_management;
 
 namespace {
+
+// Test values for cros_healthd:
+// Battery test values:
+constexpr int kFakeBatteryCycleCount = 3;
+constexpr int kExpectedBatteryVoltageNow = 12574;  // (mV)
+constexpr double kFakeBatteryVoltageNow =
+    kExpectedBatteryVoltageNow / 1000.0;  // (V)
+constexpr char kFakeBatteryVendor[] = "fake_battery_vendor";
+constexpr char kFakeBatterySerial[] = "fake_battery_serial";
+constexpr int kExpectedBatteryChargeFullDesign = 5275;  // (mAh)
+constexpr double kFakeBatteryChargeFullDesign =
+    kExpectedBatteryChargeFullDesign / 1000.0;    // (Ah)
+constexpr int kExpectedBatteryChargeFull = 5292;  // (mAh)
+constexpr double kFakeBatteryChargeFull =
+    kExpectedBatteryChargeFull / 1000.0;                 // (Ah)
+constexpr int kExpectedBatteryVoltageMinDesign = 11550;  // (mV)
+constexpr double kFakeBatteryVoltageMinDesign =
+    kExpectedBatteryVoltageMinDesign / 1000.0;  // (V)
+constexpr char kFakeSmartBatteryManufactureDate[] = "2018-08-06";
+constexpr int kFakeSmartBatteryTemperature = 3004;
+constexpr char kFakeBatteryModel[] = "fake_battery_model";
+constexpr int kExpectedBatteryChargeNow = 5281;  // (mAh)
+constexpr double kFakeBatteryChargeNow =
+    kExpectedBatteryChargeNow / 1000.0;  // (Ah)
+// Cached VPD test values:
+constexpr char kFakeSkuNumber[] = "fake_sku_number";
+// CPU test values:
+constexpr char kFakeModelName[] = "fake_cpu_model_name";
+constexpr chromeos::cros_healthd::mojom::CpuArchitectureEnum
+    kFakeMojoArchitecture =
+        chromeos::cros_healthd::mojom::CpuArchitectureEnum::kX86_64;
+constexpr em::CpuInfo::Architecture kFakeProtoArchitecture =
+    em::CpuInfo::X86_64;
+constexpr uint32_t kFakeMaxClockSpeed = 3400000;
+// CPU Temperature test values:
+constexpr char kFakeCpuLabel[] = "fake_cpu_label";
+constexpr int kFakeCpuTemp = 91832;
+constexpr int kFakeCpuTimestamp = 912;
+// Storage test values:
+constexpr char kFakeStoragePath[] = "fake_storage_path";
+constexpr int kFakeStorageSize = 123;
+constexpr char kFakeStorageType[] = "fake_storage_type";
+constexpr uint8_t kFakeStorageManfid = 2;
+constexpr char kFakeStorageName[] = "fake_storage_name";
+constexpr int kFakeStorageSerial = 789;
+// Timezone test values:
+constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
+constexpr char kTimezoneRegion[] = "America/Denver";
 
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
@@ -375,30 +424,47 @@ void GetEmptyCrosHealthdData(
 }
 
 void GetFakeCrosHealthdData(
-    const chromeos::cros_healthd::mojom::BatteryInfo& battery_info,
-    const chromeos::cros_healthd::mojom::CachedVpdInfo& cached_vpd_info,
-    const chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo&
-        storage_info,
-    const chromeos::cros_healthd::mojom::CpuInfo& cpu_info,
-    const chromeos::cros_healthd::mojom::TimezoneInfo& timezone_info,
-    const em::CPUTempInfo& cpu_sample,
-    const em::BatterySample& battery_sample,
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  // Create fake TelemetryInfo.
+  chromeos::cros_healthd::mojom::SmartBatteryInfo smart_battery_info(
+      kFakeSmartBatteryManufactureDate, kFakeSmartBatteryTemperature);
+  chromeos::cros_healthd::mojom::BatteryInfo battery_info(
+      kFakeBatteryCycleCount, kFakeBatteryVoltageNow, kFakeBatteryVendor,
+      kFakeBatterySerial, kFakeBatteryChargeFullDesign, kFakeBatteryChargeFull,
+      kFakeBatteryVoltageMinDesign, kFakeBatteryModel, kFakeBatteryChargeNow,
+      smart_battery_info.Clone());
+  chromeos::cros_healthd::mojom::CachedVpdInfo cached_vpd_info(kFakeSkuNumber);
+  chromeos::cros_healthd::mojom::CpuInfo cpu_info(
+      kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed);
+  std::vector<chromeos::cros_healthd::mojom::CpuInfoPtr> cpu_vector;
+  cpu_vector.push_back(cpu_info.Clone());
+  chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo storage_info(
+      kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
+      kFakeStorageName, kFakeStorageSerial);
   std::vector<chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>
       storage_vector;
   storage_vector.push_back(storage_info.Clone());
   base::Optional<std::vector<
       chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>
       block_device_info(std::move(storage_vector));
-  std::vector<chromeos::cros_healthd::mojom::CpuInfoPtr> cpu_vector;
-  cpu_vector.push_back(cpu_info.Clone());
+  chromeos::cros_healthd::mojom::TimezoneInfo timezone_info(kPosixTimezone,
+                                                            kTimezoneRegion);
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
       cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone());
 
+  // Create fake SampledData.
+  em::CPUTempInfo fake_cpu_temp_sample;
+  fake_cpu_temp_sample.set_cpu_label(kFakeCpuLabel);
+  fake_cpu_temp_sample.set_cpu_temp(kFakeCpuTemp);
+  fake_cpu_temp_sample.set_timestamp(kFakeCpuTimestamp);
+  em::BatterySample fake_battery_sample;
+  fake_battery_sample.set_voltage(kExpectedBatteryVoltageNow);
+  fake_battery_sample.set_remaining_capacity(kExpectedBatteryChargeNow);
+  fake_battery_sample.set_temperature(kFakeSmartBatteryTemperature);
   auto sample = std::make_unique<policy::SampledData>();
-  sample->cpu_samples[cpu_sample.cpu_label()] = cpu_sample;
-  sample->battery_samples[battery_info.model_name] = battery_sample;
+  sample->cpu_samples[fake_cpu_temp_sample.cpu_label()] = fake_cpu_temp_sample;
+  sample->battery_samples[battery_info.model_name] = fake_battery_sample;
   base::circular_deque<std::unique_ptr<policy::SampledData>> samples;
   samples.push_back(std::move(sample));
 
@@ -2426,86 +2492,9 @@ TEST_F(DeviceStatusCollectorTest, TestGraphicsStatus) {
 TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   // Create a fake response from cros_healthd and populate it with some
   // arbitrary values.
-
-  // Cached VPD test values.
-  constexpr char kFakeSkuNumber[] = "fake_sku_number";
-
-  // Storage test values.
-  constexpr char kFakeStoragePath[] = "fake_storage_path";
-  constexpr int kFakeStorageSize = 123;
-  constexpr char kFakeStorageType[] = "fake_storage_type";
-  constexpr uint8_t kFakeStorageManfid = 2;
-  constexpr char kFakeStorageName[] = "fake_storage_name";
-  constexpr int kFakeStorageSerial = 789;
-
-  // Battery test values.
-  constexpr int kFakeCycleCount = 3;
-  constexpr int kExpectedVoltageNow = 12574;                        // (mV)
-  constexpr double kFakeVoltageNow = kExpectedVoltageNow / 1000.0;  // (V)
-  constexpr char kFakeBatteryVendor[] = "fake_battery_vendor";
-  constexpr char kFakeBatterySerial[] = "fake_battery_serial";
-  constexpr int kExpectedChargeFullDesign = 5275;  // (mAh)
-  constexpr double kFakeChargeFullDesign =
-      kExpectedChargeFullDesign / 1000.0;                           // (Ah)
-  constexpr int kExpectedChargeFull = 5292;                         // (mAh)
-  constexpr double kFakeChargeFull = kExpectedChargeFull / 1000.0;  // (Ah)
-  constexpr int kExpectedVoltageMinDesign = 11550;                  // (mV)
-  constexpr double kFakeVoltageMinDesign =
-      kExpectedVoltageMinDesign / 1000.0;  // (V)
-  constexpr int kFakeManufactureDateSmart = 19718;
-  constexpr int kFakeTemperatureSmart = 3004;
-  constexpr char kFakeBatteryModel[] = "fake_battery_model";
-  constexpr int kExpectedChargeNow = 5281;                        // (mAh)
-  constexpr double kFakeChargeNow = kExpectedChargeNow / 1000.0;  // (Ah)
-
-  // CPU test values.
-  constexpr char kFakeModelName[] = "fake_cpu_model_name";
-  constexpr chromeos::cros_healthd::mojom::CpuArchitectureEnum
-      kFakeMojoArchitecture =
-          chromeos::cros_healthd::mojom::CpuArchitectureEnum::kX86_64;
-  constexpr em::CpuInfo::Architecture kFakeProtoArchitecture =
-      em::CpuInfo::X86_64;
-  constexpr uint32_t kFakeMaxClockSpeed = 3400000;
-
-  // CPU Temperature test values.
-  constexpr char kFakeCpuLabel[] = "fake_cpu_label";
-  constexpr int kFakeCpuTemp = 91832;
-  constexpr int kFakeCpuTimestamp = 912;
-
-  // Timezone test values.
-  constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
-  constexpr char kTimezoneRegion[] = "America/Denver";
-
-  chromeos::cros_healthd::mojom::BatteryInfo battery_info(
-      kFakeCycleCount, kFakeVoltageNow, kFakeBatteryVendor, kFakeBatterySerial,
-      kFakeChargeFullDesign, kFakeChargeFull, kFakeVoltageMinDesign,
-      kFakeManufactureDateSmart, kFakeTemperatureSmart, kFakeBatteryModel,
-      kFakeChargeNow);
-  chromeos::cros_healthd::mojom::CachedVpdInfo cached_vpd_info(kFakeSkuNumber);
-  chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo storage_info(
-      kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
-      kFakeStorageName, kFakeStorageSerial);
-  chromeos::cros_healthd::mojom::CpuInfo cpu_info(
-      kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed);
-  chromeos::cros_healthd::mojom::TimezoneInfo timezone_info(kPosixTimezone,
-                                                            kTimezoneRegion);
-
-  // Create a fake sample to test with.
-  em::CPUTempInfo fake_cpu_temp_sample;
-  fake_cpu_temp_sample.set_cpu_label(kFakeCpuLabel);
-  fake_cpu_temp_sample.set_cpu_temp(kFakeCpuTemp);
-  fake_cpu_temp_sample.set_timestamp(kFakeCpuTimestamp);
-  em::BatterySample fake_battery_sample;
-  // Convert from V to mV.
-  fake_battery_sample.set_voltage(kExpectedVoltageNow);
-  // Convert from Ah to mAh.
-  fake_battery_sample.set_remaining_capacity(kExpectedChargeNow);
-  fake_battery_sample.set_temperature(kFakeTemperatureSmart);
-
   auto options = CreateEmptyDeviceStatusCollectorOptions();
-  options->cros_healthd_data_fetcher = base::BindRepeating(
-      &GetFakeCrosHealthdData, battery_info, cached_vpd_info, storage_info,
-      cpu_info, timezone_info, fake_cpu_temp_sample, fake_battery_sample);
+  options->cros_healthd_data_fetcher =
+      base::BindRepeating(&GetFakeCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
   // If kReportDeviceCpuInfo, kReportDevicePowerStatus, and
@@ -2547,18 +2536,18 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   const auto& battery = device_status_.power_status().batteries(0);
   EXPECT_EQ(battery.serial(), kFakeBatterySerial);
   EXPECT_EQ(battery.manufacturer(), kFakeBatteryVendor);
-  EXPECT_EQ(battery.design_capacity(), kExpectedChargeFullDesign);
-  EXPECT_EQ(battery.full_charge_capacity(), kExpectedChargeFull);
-  EXPECT_EQ(battery.cycle_count(), kFakeCycleCount);
-  EXPECT_EQ(battery.design_min_voltage(), kExpectedVoltageMinDesign);
-  EXPECT_EQ(battery.manufacture_date(), "2018-08-06");
+  EXPECT_EQ(battery.design_capacity(), kExpectedBatteryChargeFullDesign);
+  EXPECT_EQ(battery.full_charge_capacity(), kExpectedBatteryChargeFull);
+  EXPECT_EQ(battery.cycle_count(), kFakeBatteryCycleCount);
+  EXPECT_EQ(battery.design_min_voltage(), kExpectedBatteryVoltageMinDesign);
+  EXPECT_EQ(battery.manufacture_date(), kFakeSmartBatteryManufactureDate);
 
   // Verify the battery sample data.
   ASSERT_EQ(battery.samples_size(), 1);
   const auto& battery_sample = battery.samples(0);
-  EXPECT_EQ(battery_sample.voltage(), kExpectedVoltageNow);
-  EXPECT_EQ(battery_sample.remaining_capacity(), kExpectedChargeNow);
-  EXPECT_EQ(battery_sample.temperature(), kFakeTemperatureSmart);
+  EXPECT_EQ(battery_sample.voltage(), kExpectedBatteryVoltageNow);
+  EXPECT_EQ(battery_sample.remaining_capacity(), kExpectedBatteryChargeNow);
+  EXPECT_EQ(battery_sample.temperature(), kFakeSmartBatteryTemperature);
 
   // Verify the storage data.
   ASSERT_TRUE(device_status_.has_storage_status());

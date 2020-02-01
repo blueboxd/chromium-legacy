@@ -466,7 +466,7 @@ Output = class {
 
     let encounteredNonWhitespace = false;
     for (let i = 0; i < this.speechBuffer_.length; i++) {
-      var buff = this.speechBuffer_[i];
+      const buff = this.speechBuffer_[i];
       const text = buff.toString();
 
       // Consider empty strings as non-whitespace; they often have earcons
@@ -480,7 +480,7 @@ Output = class {
         continue;
       }
 
-      var speechProps = {};
+      let speechProps = {};
       const speechPropsInstance = /** @type {Output.SpeechProperties} */ (
           buff.getSpanInstanceOf(Output.SpeechProperties));
 
@@ -523,7 +523,7 @@ Output = class {
 
     // Braille.
     if (this.brailleBuffer_.length) {
-      var buff = this.mergeBraille_(this.brailleBuffer_);
+      const buff = this.mergeBraille_(this.brailleBuffer_);
       const selSpan = buff.getSpanInstanceOf(Output.SelectionSpan);
       let startIndex = -1, endIndex = -1;
       if (selSpan) {
@@ -838,7 +838,7 @@ Output = class {
             }
 
             let count = 0;
-            for (var i = 0, child; child = node.parent.children[i]; i++) {
+            for (let i = 0, child; child = node.parent.children[i]; i++) {
               if (roles.has(child.role)) {
                 count++;
               }
@@ -850,7 +850,7 @@ Output = class {
             ruleStr.writeTokenWithValue(token, String(count));
           }
         } else if (token == 'restriction') {
-          var msg = Output.RESTRICTION_STATE_MAP[node.restriction];
+          const msg = Output.RESTRICTION_STATE_MAP[node.restriction];
           if (msg) {
             ruleStr.writeToken(token);
             this.format_({
@@ -861,7 +861,7 @@ Output = class {
             });
           }
         } else if (token == 'checked') {
-          var msg = Output.CHECKED_STATE_MAP[node.checked];
+          const msg = Output.CHECKED_STATE_MAP[node.checked];
           if (msg) {
             ruleStr.writeToken(token);
             this.format_({
@@ -872,7 +872,7 @@ Output = class {
             });
           }
         } else if (token == 'pressed') {
-          var msg = Output.PRESSED_STATE_MAP[node.checked];
+          const msg = Output.PRESSED_STATE_MAP[node.checked];
           if (msg) {
             ruleStr.writeToken(token);
             this.format_({
@@ -975,7 +975,7 @@ Output = class {
             speechProps.properties['relativePitch'] = -0.3;
           }
           options.annotation.push(token);
-          var msg = node.role;
+          let msg = node.role;
           const info = Output.ROLE_INFO_[node.role];
           if (node.roleDescription) {
             msg = node.roleDescription;
@@ -997,7 +997,7 @@ Output = class {
             return;
           }
           options.annotation.push(token);
-          var msgId = Output.INPUT_TYPE_MESSAGE_IDS_[node.inputType] ||
+          let msgId = Output.INPUT_TYPE_MESSAGE_IDS_[node.inputType] ||
               'input_type_text';
           if (this.formatOptions_.braille) {
             msgId = msgId + '_brl';
@@ -1006,7 +1006,7 @@ Output = class {
           ruleStr.writeTokenWithValue(token, Msgs.getMsg(msgId));
         } else if (
             token == 'tableCellRowIndex' || token == 'tableCellColumnIndex') {
-          var value = node[token];
+          let value = node[token];
           if (value == undefined) {
             return;
           }
@@ -1016,7 +1016,7 @@ Output = class {
           ruleStr.writeTokenWithValue(token, value);
         } else if (token == 'cellIndexText') {
           if (node.htmlAttributes['aria-coltext']) {
-            var value = node.htmlAttributes['aria-coltext'];
+            let value = node.htmlAttributes['aria-coltext'];
             let row = node;
             while (row && row.role != RoleType.ROW) {
               row = row.parent;
@@ -1055,10 +1055,10 @@ Output = class {
               return;
             }
 
-            var headers = node.tableCellColumnHeaders;
+            const headers = node.tableCellColumnHeaders;
             if (headers) {
-              for (var i = 0; i < headers.length; i++) {
-                var header = headers[i].name;
+              for (let i = 0; i < headers.length; i++) {
+                const header = headers[i].name;
                 if (header) {
                   this.append_(buff, header, options);
                   ruleStr.writeTokenWithValue(token, header);
@@ -1066,10 +1066,10 @@ Output = class {
               }
             }
           } else if (relationName == 'tableCellRowHeaders') {
-            var headers = node.tableCellRowHeaders;
+            const headers = node.tableCellRowHeaders;
             if (headers) {
-              for (var i = 0; i < headers.length; i++) {
-                var header = headers[i].name;
+              for (let i = 0; i < headers.length; i++) {
+                const header = headers[i].name;
                 if (header) {
                   this.append_(buff, header, options);
                   ruleStr.writeTokenWithValue(token, header);
@@ -1118,7 +1118,7 @@ Output = class {
           ruleStr.writeTokenWithValue(token, finalOutput);
         } else if (node[token] !== undefined) {
           options.annotation.push(token);
-          var value = node[token];
+          let value = node[token];
           if (typeof value == 'number') {
             value = String(value);
           }
@@ -1137,10 +1137,10 @@ Output = class {
                 new Output.EarconAction(resolvedInfo.earconId),
                 node.location || undefined);
           }
-          var msgId = this.formatOptions_.braille ?
+          const msgId = this.formatOptions_.braille ?
               resolvedInfo.msgId + '_brl' :
               resolvedInfo.msgId;
-          var msg = Msgs.getMsg(msgId);
+          const msg = Msgs.getMsg(msgId);
           this.append_(buff, msg, options);
           ruleStr.writeTokenWithValue(token, msg);
         } else if (token == 'posInSet') {
@@ -1164,8 +1164,8 @@ Output = class {
           // Custom functions.
           if (token == 'if') {
             ruleStr.writeToken(token);
-            var cond = tree.firstChild;
-            var attrib = cond.value.slice(1);
+            const cond = tree.firstChild;
+            const attrib = cond.value.slice(1);
             if (Output.isTruthy(node, attrib)) {
               ruleStr.write(attrib + '==true => ');
               this.format_({
@@ -1185,8 +1185,8 @@ Output = class {
             }
           } else if (token == 'nif') {
             ruleStr.writeToken(token);
-            var cond = tree.firstChild;
-            var attrib = cond.value.slice(1);
+            const cond = tree.firstChild;
+            const attrib = cond.value.slice(1);
             if (Output.isFalsey(node, attrib)) {
               ruleStr.write(attrib + '==false => ');
               this.format_({
@@ -1237,14 +1237,14 @@ Output = class {
           }
           return prev + lookup;
         }.bind(this), '');
-        var msgId = token;
+        const msgId = token;
         let msgArgs = [];
         ruleStr.write(token + '{');
         if (!isPluralized) {
           let curArg = tree.firstChild;
           while (curArg) {
             if (curArg.value[0] != '$') {
-              var errorMsg = 'Unexpected value: ' + curArg.value;
+              const errorMsg = 'Unexpected value: ' + curArg.value;
               ruleStr.writeError(errorMsg);
               console.error(errorMsg);
               return;
@@ -1264,7 +1264,7 @@ Output = class {
             curArg = curArg.nextSibling;
           }
         }
-        var msg = Msgs.getMsg(msgId, msgArgs);
+        let msg = Msgs.getMsg(msgId, msgArgs);
         try {
           if (this.formatOptions_.braille) {
             msg = Msgs.getMsg(msgId + '_brl', msgArgs) || msg;
@@ -1273,7 +1273,7 @@ Output = class {
         }
 
         if (!msg) {
-          var errorMsg = 'Could not get message ' + msgId;
+          const errorMsg = 'Could not get message ' + msgId;
           ruleStr.writeError(errorMsg);
           console.error(errorMsg);
           return;
@@ -1282,13 +1282,13 @@ Output = class {
         if (isPluralized) {
           const arg = tree.firstChild;
           if (!arg || arg.nextSibling) {
-            var errorMsg = 'Pluralized messages take exactly one argument';
+            const errorMsg = 'Pluralized messages take exactly one argument';
             ruleStr.writeError(errorMsg);
             console.error(errorMsg);
             return;
           }
           if (arg.value[0] != '$') {
-            var errorMsg = 'Unexpected value: ' + arg.value;
+            const errorMsg = 'Unexpected value: ' + arg.value;
             ruleStr.writeError(errorMsg);
             console.error(errorMsg);
             return;
@@ -1317,7 +1317,7 @@ Output = class {
             return;
           }
 
-          var value = tree.firstChild.value;
+          let value = tree.firstChild.value;
 
           // Currently, speech params take either attributes or floats.
           let float = 0;
@@ -1448,7 +1448,7 @@ Output = class {
     function byContextFirst(ancestors) {
       let contextFirst = [];
       let rest = [];
-      for (i = 0; i < ancestors.length - 1; i++) {
+      for (let i = 0; i < ancestors.length - 1; i++) {
         const node = ancestors[i];
         // Discard ancestors of deepest window.
         if (node.role == RoleType.WINDOW) {
@@ -1477,12 +1477,12 @@ Output = class {
 
     // Hash the roles we've entered.
     const enteredRoleSet = {};
-    for (var j = uniqueAncestors.length - 1, hashNode;
+    for (let j = uniqueAncestors.length - 1, hashNode;
          (hashNode = uniqueAncestors[j]); j--) {
       enteredRoleSet[hashNode.role] = true;
     }
 
-    for (var i = 0, formatPrevNode; (formatPrevNode = prevUniqueAncestors[i]);
+    for (let i = 0, formatPrevNode; (formatPrevNode = prevUniqueAncestors[i]);
          i++) {
       // This prevents very repetitive announcements.
       if (enteredRoleSet[formatPrevNode.role] ||
@@ -1491,7 +1491,8 @@ Output = class {
         continue;
       }
 
-      var parentRole = (Output.ROLE_INFO_[formatPrevNode.role] || {}).inherits;
+      const parentRole =
+          (Output.ROLE_INFO_[formatPrevNode.role] || {}).inherits;
       rule.role = (eventBlock[formatPrevNode.role] || {}).leave !== undefined ?
           formatPrevNode.role :
           (eventBlock[parentRole] || {}).leave !== undefined ? parentRole :
@@ -1513,9 +1514,9 @@ Output = class {
     // Customize for braille node annotations.
     const originalBuff = buff;
     const enterRole = {};
-    for (var j = uniqueAncestors.length - 1, formatNode;
+    for (let j = uniqueAncestors.length - 1, formatNode;
          (formatNode = uniqueAncestors[j]); j--) {
-      var parentRole = (Output.ROLE_INFO_[formatNode.role] || {}).inherits;
+      const parentRole = (Output.ROLE_INFO_[formatNode.role] || {}).inherits;
       rule.role = (eventBlock[formatNode.role] || {}).enter !== undefined ?
           formatNode.role :
           (eventBlock[parentRole] || {}).enter !== undefined ? parentRole :

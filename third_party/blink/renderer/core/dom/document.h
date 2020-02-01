@@ -38,6 +38,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
@@ -568,7 +569,8 @@ class CORE_EXPORT Document : public ContainerNode,
   //
   // Due to this you should only call this if you definitely need valid location
   // data, otherwise use one of the |UpdateStyleAndLayout...| methods above.
-  void EnsurePaintLocationDataValidForNode(const Node*);
+  void EnsurePaintLocationDataValidForNode(const Node*,
+                                           DocumentUpdateReason reason);
 
   // Returns true if page box (margin boxes and page borders) is visible.
   bool IsPageBoxVisible(int page_index);

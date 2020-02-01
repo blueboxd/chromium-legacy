@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
+#include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -323,6 +324,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
+  FocusTabAfterNavigationHelper::CreateForWebContents(web_contents);
   FormInteractionTabHelper::CreateForWebContents(web_contents);
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
   IntentPickerTabHelper::CreateForWebContents(web_contents);

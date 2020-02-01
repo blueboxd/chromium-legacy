@@ -158,7 +158,7 @@ class ConversionContext {
                                                          *current_transform_);
   }
 
-  void AppendRestore(size_t n) {
+  void AppendRestore(wtf_size_t n) {
     cc_list_.StartPaint();
     while (n--)
       cc_list_.push<cc::RestoreOp>();
@@ -382,7 +382,7 @@ void ConversionContext::SwitchToClip(
   DCHECK(pending_clips.size());
   auto pending_combined_clip_rect = pending_clips.back()->ClipRect();
   const auto* lowest_combined_clip_node = pending_clips.back();
-  for (size_t i = pending_clips.size() - 1; i--;) {
+  for (auto i = pending_clips.size() - 1; i--;) {
     const auto* sub_clip = pending_clips[i];
     if (CombineClip(*sub_clip, pending_combined_clip_rect)) {
       // Continue to combine.
@@ -493,7 +493,7 @@ void ConversionContext::SwitchToEffect(
   }
 
   // Step 3: Now apply the list of effects in top-down order.
-  for (size_t i = pending_effects.size(); i--;) {
+  for (auto i = pending_effects.size(); i--;) {
     const EffectPaintPropertyNode* sub_effect = pending_effects[i];
 #if DCHECK_IS_ON()
     if (!has_pre_cap_effect_hierarchy_issue)

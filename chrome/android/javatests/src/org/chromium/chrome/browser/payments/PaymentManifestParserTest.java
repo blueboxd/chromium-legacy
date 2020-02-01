@@ -24,8 +24,7 @@ import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallb
 import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-
-import java.net.URI;
+import org.chromium.url.URI;
 
 /** An integration test for the payment manifest parser. */
 @RunWith(ChromeJUnit4ClassRunner.class)

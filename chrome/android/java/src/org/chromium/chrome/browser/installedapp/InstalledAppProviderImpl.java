@@ -27,10 +27,10 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.url.URI;
 import org.chromium.url.mojom.Url;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 /**
@@ -388,12 +388,11 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     }
 
     private static boolean statementTargetMatches(URI frameUrl, URI assetUrl) {
-        if (assetUrl.getScheme() == null || assetUrl.getAuthority() == null) {
-            return false;
-        }
+        if (assetUrl.getScheme() == null || assetUrl.getHost() == null) return false;
 
         return assetUrl.getScheme().equals(frameUrl.getScheme())
-                && assetUrl.getAuthority().equals(frameUrl.getAuthority());
+                && assetUrl.getHost().equals(frameUrl.getHost())
+                && assetUrl.getPort().equals(frameUrl.getPort());
     }
 
     /**

@@ -43,7 +43,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

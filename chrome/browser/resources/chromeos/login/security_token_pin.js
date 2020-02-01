@@ -28,7 +28,7 @@ Polymer({
 
     /**
      * The i18n string ID containing the error label to be shown to the user.
-     * Is undefined when there's no error label.
+     * Is null when there's no error label.
      * @private
      */
     errorLabelId_: {
@@ -89,15 +89,15 @@ Polymer({
   /**
    * Returns the i18n string ID for the current error label.
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
-   * @return {string|undefined}
+   * @return {string|null}
    * @private
    */
   computeErrorLabelId_(parameters) {
     if (!parameters)
-      return;
+      return null;
     switch (parameters.errorLabel) {
       case OobeTypes.SecurityTokenPinDialogErrorType.NONE:
-        return;
+        return null;
       case OobeTypes.SecurityTokenPinDialogErrorType.UNKNOWN:
         return 'securityTokenPinDialogUnknownError';
       case OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PIN:
@@ -194,17 +194,6 @@ Polymer({
   },
 
   /**
-   * Returns a string for a11y whether there is an error.
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
-   * @param {boolean} userEdited
-   * @return {string}
-   * @private
-   */
-  isAriaInvalid_(parameters, userEdited) {
-    return this.isErrorLabelVisible_(parameters, userEdited) ? 'true' : 'false';
-  },
-
-  /**
    * Returns whether the PIN attempts left count should be shown.
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
    * @return {boolean}
@@ -230,20 +219,26 @@ Polymer({
    * Returns the label to be used for the PIN input field.
    * @param {string} locale
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
-   * @param {string} errorLabelId
+   * @param {string|null} errorLabelId
    * @param {boolean} userEdited
    * @return {string}
    * @private
    */
   getLabel_(locale, parameters, errorLabelId, userEdited) {
     if (!this.isLabelVisible_(parameters, userEdited)) {
+      // Neither error nor the number of left attempts are to be displayed.
       return '';
     }
     if (!this.isErrorLabelVisible_(parameters, userEdited) &&
         this.isAttemptsLeftVisible_(parameters)) {
+      // There's no error, but the number of left attempts has to be displayed.
       return this.i18n(
           'securityTokenPinDialogAttemptsLeft', parameters.attemptsLeft);
     }
+    // If we get here, |parameters| must be defined, and |parameters.errorLabel|
+    // != NONE, so |errorLabelId| will be defined.
+    assert(errorLabelId);
+    // Format the error and, if present, the number of left attempts.
     if (parameters && !parameters.enableUserInput) {
       return this.i18n(errorLabelId);
     }

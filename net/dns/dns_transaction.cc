@@ -48,6 +48,7 @@
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/resolve_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -854,10 +855,9 @@ const net::BackoffEntry::Policy kProbeBackoffPolicy = {
 class DnsOverHttpsProbeRunner : public DnsProbeRunner {
  public:
   DnsOverHttpsProbeRunner(base::WeakPtr<DnsSession> session,
-                          URLRequestContext* context)
+                          ResolveContext* context)
       : session_(std::move(session)), context_(context) {
     DCHECK(session_);
-    DCHECK(context_);
     DCHECK(!session_->config().dns_over_https_servers.empty());
 
     DNSDomainFromDot(kDoHProbeHostname, &formatted_probe_hostname_);
@@ -946,11 +946,11 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         probe_stats->backoff_entry->GetTimeUntilRelease());
 
     unsigned attempt_number = probe_stats->probe_attempts.size();
-    ConstructDnsHTTPAttempt(session_.get(), doh_server_index,
-                            formatted_probe_hostname_, dns_protocol::kTypeA,
-                            nullptr /* opt_rdata */,
-                            &probe_stats->probe_attempts, context_,
-                            RequestPriority::DEFAULT_PRIORITY);
+    ConstructDnsHTTPAttempt(
+        session_.get(), doh_server_index, formatted_probe_hostname_,
+        dns_protocol::kTypeA, nullptr /* opt_rdata */,
+        &probe_stats->probe_attempts, context_->url_request_context(),
+        RequestPriority::DEFAULT_PRIORITY);
 
     probe_stats->probe_attempts.back()->Start(base::BindOnce(
         &DnsOverHttpsProbeRunner::ProbeComplete, weak_ptr_factory_.GetWeakPtr(),
@@ -1001,7 +1001,8 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
 
   bool started_ = false;
   base::WeakPtr<DnsSession> session_;
-  URLRequestContext* const context_;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* const context_;
   std::string formatted_probe_hostname_;
 
   // List of ProbeStats, one for each DoH server, indexed by the DoH server
@@ -1030,7 +1031,7 @@ class DnsTransactionImpl : public DnsTransaction,
                      const OptRecordRdata* opt_rdata,
                      bool secure,
                      DnsConfig::SecureDnsMode secure_dns_mode,
-                     URLRequestContext* url_request_context)
+                     ResolveContext* resolve_context)
       : session_(session),
         hostname_(hostname),
         qtype_(qtype),
@@ -1044,7 +1045,7 @@ class DnsTransactionImpl : public DnsTransaction,
         doh_attempts_(0),
         had_tcp_attempt_(false),
         first_server_index_(0),
-        url_request_context_(url_request_context),
+        resolve_context_(resolve_context),
         request_priority_(DEFAULT_PRIORITY) {
     DCHECK(session_.get());
     DCHECK(!hostname_.empty());
@@ -1236,7 +1237,6 @@ class DnsTransactionImpl : public DnsTransaction,
 
   AttemptResult MakeHTTPAttempt() {
     DCHECK(secure_);
-    DCHECK(url_request_context_);
 
     // doh_attempts_ counts the number of attempts made via HTTPS. To
     // get a server index cap that by the number of DoH servers we
@@ -1250,9 +1250,9 @@ class DnsTransactionImpl : public DnsTransaction,
       return AttemptResult(ERR_BLOCKED_BY_CLIENT, nullptr);
 
     unsigned attempt_number = attempts_.size();
-    ConstructDnsHTTPAttempt(session_.get(), doh_server_index, qnames_.front(),
-                            qtype_, opt_rdata_, &attempts_,
-                            url_request_context_, request_priority_);
+    ConstructDnsHTTPAttempt(
+        session_.get(), doh_server_index, qnames_.front(), qtype_, opt_rdata_,
+        &attempts_, resolve_context_->url_request_context(), request_priority_);
     ++doh_attempts_;
     ++attempts_count_;
     int rv = attempts_.back()->Start(base::BindOnce(
@@ -1480,7 +1480,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
   base::OneShotTimer timer_;
 
-  URLRequestContext* url_request_context_;
+  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
+  ResolveContext* resolve_context_;
   RequestPriority request_priority_;
 
   THREAD_CHECKER(thread_checker_);
@@ -1505,16 +1506,16 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
       const NetLogWithSource& net_log,
       bool secure,
       DnsConfig::SecureDnsMode secure_dns_mode,
-      URLRequestContext* url_request_context) override {
+      ResolveContext* resolve_context) override {
     return std::make_unique<DnsTransactionImpl>(
         session_.get(), hostname, qtype, std::move(callback), net_log,
-        opt_rdata_.get(), secure, secure_dns_mode, url_request_context);
+        opt_rdata_.get(), secure, secure_dns_mode, resolve_context);
   }
 
   std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
-      URLRequestContext* url_request_context) override {
+      ResolveContext* resolve_context) override {
     return std::make_unique<DnsOverHttpsProbeRunner>(session_->GetWeakPtr(),
-                                                     url_request_context);
+                                                     resolve_context);
   }
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override {

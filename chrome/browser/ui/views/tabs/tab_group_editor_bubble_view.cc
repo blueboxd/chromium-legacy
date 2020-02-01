@@ -80,8 +80,12 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
-  const auto* layout_provider = ChromeLayoutProvider::Get();
   const base::string16 title = tab_controller_->GetGroupTitle(group_);
+  title_at_opening_ = title;
+  DialogDelegate::set_close_callback(base::BindOnce(
+      &TabGroupEditorBubbleView::OnBubbleClose, base::Unretained(this)));
+
+  const auto* layout_provider = ChromeLayoutProvider::Get();
   const int horizontal_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   const int vertical_menu_spacing = layout_provider->GetDistanceMetric(
@@ -231,6 +235,13 @@ void TabGroupEditorBubbleView::UpdateGroup() {
   tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
                                           updated_color);
   tab_controller_->SetVisualDataForGroup(group_, new_data);
+}
+
+void TabGroupEditorBubbleView::OnBubbleClose() {
+  if (title_at_opening_ != title_field_->GetText()) {
+    base::RecordAction(
+        base::UserMetricsAction("TabGroups_TabGroupBubble_NameChanged"));
+  }
 }
 
 void TabGroupEditorBubbleView::TitleFieldController::ContentsChanged(

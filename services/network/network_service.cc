@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -643,9 +644,33 @@ void NetworkService::AddCorbExceptionForPlugin(int32_t process_id) {
   CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
 }
 
-void NetworkService::RemoveCorbExceptionForPlugin(int32_t process_id) {
+void NetworkService::AddAllowedRequestInitiatorForPlugin(
+    int32_t process_id,
+    const url::Origin& allowed_request_initiator) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
+  std::map<int, std::set<url::Origin>>& map = plugin_origins_;
+  map[process_id].insert(allowed_request_initiator);
+}
+
+void NetworkService::RemoveSecurityExceptionsForPlugin(int32_t process_id) {
+  DCHECK_NE(mojom::kBrowserProcessId, process_id);
+
   CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
+
+  std::map<int, std::set<url::Origin>>& map = plugin_origins_;
+  map.erase(process_id);
+}
+
+bool NetworkService::IsInitiatorAllowedForPlugin(
+    int process_id,
+    const url::Origin& request_initiator) {
+  const std::map<int, std::set<url::Origin>>& map = plugin_origins_;
+  const auto it = map.find(process_id);
+  if (it == map.end())
+    return false;
+
+  const std::set<url::Origin>& allowed_origins = it->second;
+  return base::Contains(allowed_origins, request_initiator);
 }
 
 void NetworkService::OnMemoryPressure(

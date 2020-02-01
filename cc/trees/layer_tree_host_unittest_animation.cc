@@ -804,10 +804,10 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
         break;
       }
       default:
-        EXPECT_GE(scroll_layer_->CurrentScrollOffset().x(), 10);
-        EXPECT_GE(scroll_layer_->CurrentScrollOffset().y(), 20);
-        if (scroll_layer_->CurrentScrollOffset().x() > 10 &&
-            scroll_layer_->CurrentScrollOffset().y() > 20)
+        EXPECT_GE(scroll_layer_->scroll_offset().x(), 10);
+        EXPECT_GE(scroll_layer_->scroll_offset().y(), 20);
+        if (scroll_layer_->scroll_offset().x() > 10 &&
+            scroll_layer_->scroll_offset().y() > 20)
           EndTest();
     }
   }
@@ -1099,12 +1099,12 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_EQ(scroll_layer_->CurrentScrollOffset().x(), 100);
-        EXPECT_EQ(scroll_layer_->CurrentScrollOffset().y(), 200);
+        EXPECT_EQ(scroll_layer_->scroll_offset().x(), 100);
+        EXPECT_EQ(scroll_layer_->scroll_offset().y(), 200);
         break;
       case 1: {
-        EXPECT_GE(scroll_layer_->CurrentScrollOffset().x(), 100);
-        EXPECT_GE(scroll_layer_->CurrentScrollOffset().y(), 200);
+        EXPECT_GE(scroll_layer_->scroll_offset().x(), 100);
+        EXPECT_GE(scroll_layer_->scroll_offset().y(), 200);
         KeyframeModel* keyframe_model =
             animation_child_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
         animation_child_->RemoveKeyframeModel(keyframe_model->id());
@@ -1112,7 +1112,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
         break;
       }
       default:
-        EXPECT_EQ(final_postion_, scroll_layer_->CurrentScrollOffset());
+        EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
     }
   }
 
@@ -1132,7 +1132,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
       return;
     LayerImpl* scroll_layer_impl =
         host_impl->pending_tree()->LayerById(scroll_layer_->id());
-    EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
+    EXPECT_EQ(final_postion_, CurrentScrollOffset(scroll_layer_impl));
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
@@ -1140,12 +1140,12 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
       return;
     LayerImpl* scroll_layer_impl =
         host_impl->active_tree()->LayerById(scroll_layer_->id());
-    EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
+    EXPECT_EQ(final_postion_, CurrentScrollOffset(scroll_layer_impl));
     EndTest();
   }
 
   void AfterTest() override {
-    EXPECT_EQ(final_postion_, scroll_layer_->CurrentScrollOffset());
+    EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
   }
 
  private:
@@ -1172,7 +1172,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
 
     // Block activation until the running animation has a chance to produce a
     // scroll delta.
-    gfx::Vector2dF scroll_delta = ScrollDelta(scroll_layer_impl);
+    gfx::ScrollOffset scroll_delta = ScrollDelta(scroll_layer_impl);
     if (scroll_delta.x() > 0.f || scroll_delta.y() > 0.f)
       return false;
 
@@ -1226,8 +1226,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationCompletion
         animation_child_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_EQ(scroll_layer_->CurrentScrollOffset().x(), 100);
-        EXPECT_EQ(scroll_layer_->CurrentScrollOffset().y(), 200);
+        EXPECT_EQ(scroll_layer_->scroll_offset().x(), 100);
+        EXPECT_EQ(scroll_layer_->scroll_offset().y(), 200);
         EXPECT_EQ(KeyframeModel::RunState::WAITING_FOR_TARGET_AVAILABILITY,
                   keyframe_model->run_state());
         break;
@@ -1275,7 +1275,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationCompletion
                            TargetProperty::SCROLL_OFFSET));
 
     // The scroll should have been completed.
-    EXPECT_EQ(final_position_, scroll_layer_->CurrentScrollOffset());
+    EXPECT_EQ(final_position_, scroll_layer_->scroll_offset());
   }
 
  private:
@@ -2179,16 +2179,14 @@ class ImplSideInvalidationWithoutCommitTestScroll
       return;
     EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
     LayerImpl* layer_impl = host_impl->active_tree()->LayerById(layer_->id());
-    EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(10.f, 20.f),
-                        layer_impl->CurrentScrollOffset());
+    EXPECT_EQ(gfx::ScrollOffset(10.f, 20.f), CurrentScrollOffset(layer_impl));
   }
 
   void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
     ASSERT_TRUE(did_request_impl_side_invalidation_);
     EXPECT_EQ(0, host_impl->sync_tree()->source_frame_number());
     LayerImpl* layer_impl = host_impl->pending_tree()->LayerById(layer_->id());
-    EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(500.f, 550.f),
-                        layer_impl->CurrentScrollOffset());
+    EXPECT_EQ(gfx::ScrollOffset(500.f, 550.f), CurrentScrollOffset(layer_impl));
     LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::
         DidInvalidateContentOnImplSide(host_impl);
   }

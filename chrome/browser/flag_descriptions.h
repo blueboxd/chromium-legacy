@@ -206,9 +206,6 @@ extern const char kEnablePasswordsAccountStorageDescription[];
 extern const char kEnablePasswordsAccountStorageSavingUiName[];
 extern const char kEnablePasswordsAccountStorageSavingUiDescription[];
 
-extern const char kExperimentalAccessibilityFeaturesName[];
-extern const char kExperimentalAccessibilityFeaturesDescription[];
-
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
@@ -1219,15 +1216,6 @@ extern const char kWebrtcHwDecodingDescription[];
 extern const char kWebrtcHwEncodingName[];
 extern const char kWebrtcHwEncodingDescription[];
 
-extern const char kWebrtcHwH264EncodingName[];
-extern const char kWebrtcHwH264EncodingDescription[];
-
-extern const char kWebrtcHwVP8EncodingName[];
-extern const char kWebrtcHwVP8EncodingDescription[];
-
-extern const char kWebrtcHwVP9EncodingName[];
-extern const char kWebrtcHwVP9EncodingDescription[];
-
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
 
@@ -1239,6 +1227,9 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
+
+extern const char kWebrtcUseMinMaxVEADimensionsName[];
+extern const char kWebrtcUseMinMaxVEADimensionsDescription[];
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];
@@ -1555,6 +1546,9 @@ extern const char kInlineUpdateFlowDescription[];
 
 extern const char kAndroidNightModeName[];
 extern const char kAndroidNightModeDescription[];
+
+extern const char kAndroidNightModeTabReparentingName[];
+extern const char kAndroidNightModeTabReparentingDescription[];
 
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 

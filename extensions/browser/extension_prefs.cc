@@ -751,6 +751,14 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
   return g_run_alerts_in_first_run_for_testing;  // Note: normally false.
 }
 
+bool ExtensionPrefs::IsPinnedExtensionsMigrationComplete() {
+  return prefs_->GetBoolean(pref_names::kPinnedExtensionsMigrationComplete);
+}
+
+void ExtensionPrefs::MarkPinnedExtensionsMigrationComplete() {
+  prefs_->SetBoolean(pref_names::kPinnedExtensionsMigrationComplete, true);
+}
+
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
     const std::string& extension_id) const {
   return HasDisableReason(extension_id,
@@ -1920,6 +1928,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kPinnedExtensions,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(pref_names::kToolbarSize, -1);
+  registry->RegisterBooleanPref(pref_names::kPinnedExtensionsMigrationComplete,
+                                false);
   registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);

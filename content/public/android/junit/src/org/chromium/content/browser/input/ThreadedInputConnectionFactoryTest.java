@@ -134,7 +134,7 @@ public class ThreadedInputConnectionFactoryTest {
         mImeAdapter = Mockito.mock(ImeAdapterImpl.class);
         mInputMethodManager = Mockito.mock(InputMethodManager.class);
 
-        mFactory = new TestFactory(new InputMethodManagerWrapperImpl(mContext));
+        mFactory = new TestFactory(new InputMethodManagerWrapperImpl(mContext, null, null));
         mFactory.onWindowFocusChanged(true);
         mImeHandler = mFactory.getHandler();
         mImeShadowLooper = (ShadowLooper) Shadow.extract(mImeHandler.getLooper());

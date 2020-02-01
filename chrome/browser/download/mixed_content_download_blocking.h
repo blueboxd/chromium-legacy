@@ -78,7 +78,8 @@ enum class InsecureDownloadExtensions {
   kEPUB = 19,
   kICS = 20,
   kSVG = 21,
-  kMaxValue = kSVG,
+  kTest = 22,  // Test extensions, e.g. .silently_blocked.
+  kMaxValue = kTest,
 };
 
 struct ExtensionMapping {
@@ -99,6 +100,7 @@ static const ExtensionMapping kExtensionsToEnum[] = {
     {"webp", InsecureDownloadExtensions::kImage},
 
     {"gz", InsecureDownloadExtensions::kArchive},
+    {"gzip", InsecureDownloadExtensions::kArchive},
     {"zip", InsecureDownloadExtensions::kArchive},
     {"bz2", InsecureDownloadExtensions::kArchive},
     {"7z", InsecureDownloadExtensions::kArchive},
@@ -184,6 +186,10 @@ static const ExtensionMapping kExtensionsToEnum[] = {
     {"epub", InsecureDownloadExtensions::kEPUB},
     {"ics", InsecureDownloadExtensions::kICS},
     {"svg", InsecureDownloadExtensions::kSVG},
+
+    {"silently_blocked_for_testing", InsecureDownloadExtensions::kTest},
+    {"warn_for_testing", InsecureDownloadExtensions::kTest},
+    {"dont_warn_for_testing", InsecureDownloadExtensions::kTest},
 };
 
 // Convenience function to assemble a histogram name for download blocking.
@@ -202,6 +208,6 @@ inline std::string GetDLBlockingHistogramName(const std::string& initiator,
 // |item| saved to |path|.  Controlled by kTreatUnsafeDownloadsAsActive.
 download::DownloadItem::MixedContentStatus GetMixedContentStatusForDownload(
     const base::FilePath& path,
-    const download::DownloadItem& item);
+    const download::DownloadItem* item);
 
 #endif  // CHROME_BROWSER_DOWNLOAD_MIXED_CONTENT_DOWNLOAD_BLOCKING_H_

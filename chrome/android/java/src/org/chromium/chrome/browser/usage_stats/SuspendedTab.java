@@ -48,7 +48,12 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         return suspendedTab != null && suspendedTab.isShowing();
     }
 
+    /**
+     * @return The SuspendedTab instance for the given Tab object. This can never return null, but
+     *         is not safe to call if the tab has been destroyed.
+     */
     public static SuspendedTab from(Tab tab) {
+        assert tab.isInitialized();
         SuspendedTab suspendedTab = get(tab);
         if (suspendedTab == null) {
             suspendedTab = tab.getUserDataHost().setUserData(USER_DATA_KEY, new SuspendedTab(tab));

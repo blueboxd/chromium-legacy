@@ -518,7 +518,13 @@ void NetworkContext::CreateURLLoaderFactory(
 }
 
 void NetworkContext::ResetURLLoaderFactories() {
+  // Move all factories to a temporary vector so ClearBindings() does not
+  // invalidate the iterator if the factory gets deleted.
+  std::vector<cors::CorsURLLoaderFactory*> factories;
+  factories.reserve(url_loader_factories_.size());
   for (const auto& factory : url_loader_factories_)
+    factories.push_back(factory.get());
+  for (auto* factory : factories)
     factory->ClearBindings();
 }
 

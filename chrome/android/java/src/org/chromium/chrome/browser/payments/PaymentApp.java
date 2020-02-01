@@ -9,8 +9,8 @@ import androidx.annotation.Nullable;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

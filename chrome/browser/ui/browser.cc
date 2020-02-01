@@ -1007,7 +1007,6 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
                                          ui::PageTransition transition,
-                                         NavigateParams::WindowAction action,
                                          bool user_initiated) {
   tab_strip_model_->TabNavigating(contents, transition);
 
@@ -1030,26 +1029,6 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   // the throbber will show the default favicon for a split second when
   // navigating away from the new tab page.
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
-
-  // Figure out if the navigating contents can take focus (potentially taking it
-  // away from other, currently-focused UI element like the omnibox).
-  // Specifically, user-initiated navigations can give focus to the tab;
-  // renderer-initiated navigations usually don't, unless the NTP triggers them
-  // (in which case they're treated similarly to a user-initiated navigation).
-  //
-  // TODO(lukasza): https://crbug.com/1034999: Try to avoid special-casing
-  // kChromeUINewTabURL below and covering it via IsNTPOrRelatedURL instead.
-  const GURL& current_url = contents->GetLastCommittedURL();
-  bool contents_can_take_focus =
-      user_initiated || current_url == GURL(chrome::kChromeUINewTabURL) ||
-      search::IsNTPOrRelatedURL(
-          current_url,
-          Profile::FromBrowserContext(contents->GetBrowserContext()));
-
-  if (contents_can_take_focus && contents_is_selected &&
-      (window()->IsActive() || action == NavigateParams::SHOW_WINDOW)) {
-    contents->SetInitialFocus();
-  }
 }
 
 void Browser::RegisterKeepAlive() {
@@ -1681,7 +1660,7 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
 
   // This should be based on the pending entry if there is one, so that
   // back/forward navigations to the NTP are handled.  The visible entry can't
-  // be used here, since back/forward navigations are not treated as  visible
+  // be used here, since back/forward navigations are not treated as visible
   // entries to avoid URL spoofs.
   content::NavigationEntry* entry =
       source->GetController().GetPendingEntry()

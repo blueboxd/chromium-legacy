@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import contextlib
 from datetime import date
 import json
 import logging
@@ -40,16 +39,6 @@ else:
 
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
 SKIA_GOLD_CORPUS = SKIA_GOLD_INSTANCE
-
-
-@contextlib.contextmanager
-def RunInChromiumSrc():
-  old_cwd = os.getcwd()
-  os.chdir(path_util.GetChromiumSrcDir())
-  try:
-    yield
-  finally:
-    os.chdir(old_cwd)
 
 
 # This is mainly used to determine if we need to run a subprocess through the
@@ -556,19 +545,16 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     # Use the --local-run value if it's been set.
     elif cls.GetParsedCommandLineOptions().local_run is not None:
       cls._local_run = cls.GetParsedCommandLineOptions().local_run
-    # Look for the presence of a git repo as a heuristic to determine whether
-    # we're running on a workstation or a bot.
-    else:
-      with RunInChromiumSrc():
-        try:
-          subprocess.check_output(['git', 'status'], shell=IsWin())
-          logging.warning(
+    # Look for the presence of the SWARMING_SERVER environment variable as a
+    # heuristic to determine whether we're running on a workstation or a bot.
+    # This should always be set on swarming, but would be strange to be set on
+    # a workstation.
+    cls._local_run = 'SWARMING_SERVER' not in os.environ
+    if cls._local_run:
+      logging.warning(
               'Automatically determined that test is running on a workstation')
-          cls._local_run = True
-        except subprocess.CalledProcessError:
-          logging.warning(
-              'Automatically determined that test is running on a bot')
-          cls._local_run = False
+    else:
+      logging.warning('Automatically determined that test is running on a bot')
     return cls._local_run
 
   @classmethod
@@ -582,15 +568,16 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       cls._build_revision = cls.GetParsedCommandLineOptions().build_revision
     # Try to determine what revision we're on using git.
     else:
-      with RunInChromiumSrc():
-        try:
-          cls._build_revision = subprocess.check_output(
-              ['git', 'rev-parse', 'origin/master'], shell=IsWin()).strip()
-          logging.warning('Automatically determined build revision to be %s',
-              cls._build_revision)
-        except subprocess.CalledProcessError:
-          raise Exception('--build-revision not passed, and unable to '
-                          'determine revision using git')
+      try:
+        cls._build_revision = subprocess.check_output(
+            ['git', 'rev-parse', 'origin/master'],
+            shell=IsWin(),
+            cwd=path_util.GetChromiumSrcDir()).strip()
+        logging.warning('Automatically determined build revision to be %s',
+            cls._build_revision)
+      except subprocess.CalledProcessError:
+        raise Exception('--build-revision not passed, and unable to '
+                        'determine revision using git')
     return cls._build_revision
 
   @classmethod

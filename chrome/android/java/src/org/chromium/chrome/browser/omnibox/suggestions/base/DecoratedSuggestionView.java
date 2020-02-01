@@ -35,7 +35,6 @@ class DecoratedSuggestionView<T extends View> extends SimpleHorizontalLayoutView
 
         mSuggestionIcon = new RoundedCornerImageView(getContext());
         mSuggestionIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        mSuggestionIcon.setEnabled(false);
 
         mSuggestionIcon.setLayoutParams(new LayoutParams(
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_icon_area_size),

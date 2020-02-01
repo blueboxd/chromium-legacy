@@ -11,7 +11,7 @@ The pipeline module orchestrates the entire signing process, which includes:
 
 import os.path
 
-from . import commands, model, modification, notarize, signing
+from . import commands, model, modification, notarize, parts, signing
 
 
 def _customize_and_sign_chrome(paths, dist_config, dest_dir, signed_frameworks):
@@ -74,13 +74,13 @@ def _customize_and_sign_chrome(paths, dist_config, dest_dir, signed_frameworks):
                         actual_framework_change_count,
                         signed_framework_change_count))
 
-        signing.sign_chrome(paths, dist_config, sign_framework=False)
+        parts.sign_chrome(paths, dist_config, sign_framework=False)
     else:
         unsigned_framework_path = os.path.join(paths.work,
                                                'modified_unsigned_framework')
         commands.copy_dir_overwrite_and_count_changes(
             work_dir_framework_path, unsigned_framework_path, dry_run=False)
-        signing.sign_chrome(paths, dist_config, sign_framework=True)
+        parts.sign_chrome(paths, dist_config, sign_framework=True)
         actual_framework_change_count = commands.copy_dir_overwrite_and_count_changes(
             work_dir_framework_path, unsigned_framework_path, dry_run=True)
         if signed_frameworks is not None:
@@ -101,11 +101,10 @@ def _staple_chrome(paths, dist_config):
         paths: A |model.Paths| object.
         dist_config: A |config.CodeSignConfig| for the customized product.
     """
-    parts = signing.get_parts(dist_config)
     # Only staple the signed, bundled executables.
     part_paths = [
         part.path
-        for part in parts.values()
+        for part in parts.get_parts(dist_config).values()
         # TODO(https://crbug.com/979725): Reinstate .xpc bundle stapling once
         # the signing environment is on a macOS release that supports
         # Xcode 10.2 or newer.
@@ -382,7 +381,7 @@ def _package_installer_tools(paths, config):
     """
     DIFF_TOOLS = 'diff_tools'
 
-    tools_to_sign = signing.get_installer_tools(config)
+    tools_to_sign = parts.get_installer_tools(config)
     chrome_tools = (
         'keystone_install.sh',) if config.is_chrome_branded() else ()
     other_tools = (
@@ -430,7 +429,7 @@ def _intermediate_work_dir_name(dist_config):
     return dist_config.packaging_basename
 
 
-def sign_all(orig_paths,
+def sign_chrome(orig_paths,
              config,
              disable_packaging=False,
              do_notarization=True,

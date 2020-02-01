@@ -844,11 +844,6 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   // value, then the layer can early out without needing a full commit.
   if (auto* inner_scroll = property_trees()->scroll_tree.Node(
           viewport_property_ids_.inner_scroll)) {
-    if (auto* inner_scroll_layer = LayerByElementId(inner_scroll->element_id)) {
-      inner_scroll_layer->SetScrollOffsetFromImplSide(
-          inner_scroll_layer->CurrentScrollOffset() +
-          inner_viewport_scroll_delta);
-    }
     if (IsUsingLayerLists()) {
       auto& scroll_tree = property_trees()->scroll_tree;
       scroll_tree.NotifyDidScroll(
@@ -856,6 +851,10 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
           scroll_tree.current_scroll_offset(inner_scroll->element_id) +
               inner_viewport_scroll_delta,
           info.inner_viewport_scroll.snap_target_element_ids);
+    } else if (auto* inner_scroll_layer =
+                   LayerByElementId(inner_scroll->element_id)) {
+      inner_scroll_layer->SetScrollOffsetFromImplSide(
+          inner_scroll_layer->scroll_offset() + inner_viewport_scroll_delta);
     }
   }
 
@@ -904,11 +903,6 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   if (root_layer_) {
     auto& scroll_tree = property_trees()->scroll_tree;
     for (auto& scroll : info->scrolls) {
-      if (Layer* layer = LayerByElementId(scroll.element_id)) {
-        layer->SetScrollOffsetFromImplSide(layer->CurrentScrollOffset() +
-                                           scroll.scroll_delta);
-        SetNeedsUpdateLayers();
-      }
       if (IsUsingLayerLists()) {
         TRACE_EVENT_INSTANT2(
             "cc", "NotifyDidScroll", TRACE_EVENT_SCOPE_THREAD, "cur_y",
@@ -919,6 +913,10 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
             scroll_tree.current_scroll_offset(scroll.element_id) +
                 scroll.scroll_delta,
             scroll.snap_target_element_ids);
+      } else if (Layer* layer = LayerByElementId(scroll.element_id)) {
+        layer->SetScrollOffsetFromImplSide(layer->scroll_offset() +
+                                           scroll.scroll_delta);
+        SetNeedsUpdateLayers();
       }
     }
     for (auto& scrollbar : info->scrollbars) {
@@ -1080,13 +1078,15 @@ void LayerTreeHost::RegisterViewportPropertyIds(
 Layer* LayerTreeHost::InnerViewportScrollLayerForTesting() const {
   auto* scroll_node =
       property_trees()->scroll_tree.Node(viewport_property_ids_.inner_scroll);
-  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
+  return scroll_node ? LayerByElementIdForTesting(scroll_node->element_id)
+                     : nullptr;
 }
 
 Layer* LayerTreeHost::OuterViewportScrollLayerForTesting() const {
   auto* scroll_node =
       property_trees()->scroll_tree.Node(viewport_property_ids_.outer_scroll);
-  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
+  return scroll_node ? LayerByElementIdForTesting(scroll_node->element_id)
+                     : nullptr;
 }
 
 void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
@@ -1571,7 +1571,18 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetDebugState(debug_state_);
 }
 
+Layer* LayerTreeHost::LayerByElementIdForTesting(ElementId element_id) const {
+  if (!IsUsingLayerLists())
+    return LayerByElementId(element_id);
+
+  for (auto* layer : *this)
+    if (layer->element_id() == element_id)
+      return layer;
+  return nullptr;
+}
+
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
+  DCHECK(!IsUsingLayerLists());
   auto iter = element_layers_map_.find(element_id);
   return iter != element_layers_map_.end() ? iter->second : nullptr;
 }
@@ -1579,23 +1590,15 @@ Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
 void LayerTreeHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type,
                                     Layer* layer) {
-  // When using layer lists only scrollable layers should be registered.
-  DCHECK(!IsUsingLayerLists() || layer->inputs_.scrollable);
+  DCHECK(!IsUsingLayerLists());
   element_layers_map_[element_id] = layer;
-
-  // Animation ElementIds are unregistered by |SetActiveRegisteredElementIds|
-  // when using layer lists.
-  if (!IsUsingLayerLists())
-    mutator_host_->RegisterElementId(element_id, list_type);
+  mutator_host_->RegisterElementId(element_id, list_type);
 }
 
 void LayerTreeHost::UnregisterElement(ElementId element_id,
                                       ElementListType list_type) {
-  // Animation ElementIds are unregistered by |SetActiveRegisteredElementIds|
-  // when using layer lists.
-  if (!IsUsingLayerLists())
-    mutator_host_->UnregisterElementId(element_id, list_type);
-
+  DCHECK(!IsUsingLayerLists());
+  mutator_host_->UnregisterElementId(element_id, list_type);
   element_layers_map_.erase(element_id);
 }
 

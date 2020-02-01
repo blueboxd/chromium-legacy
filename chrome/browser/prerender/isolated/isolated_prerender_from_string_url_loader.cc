@@ -17,7 +17,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 IsolatedPrerenderFromStringURLLoader::IsolatedPrerenderFromStringURLLoader(
-    std::unique_ptr<PrefetchedResponseContainer> response,
+    std::unique_ptr<PrefetchedMainframeResponseContainer> response,
     const network::ResourceRequest& tentative_resource_request)
     : head_(response->TakeHead()),
       body_buffer_(

@@ -11,21 +11,22 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/app_modal/native_app_modal_dialog.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/remote_cocoa/app_shim/alert.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class PopunderPreventer;
 
-namespace app_modal {
-class JavaScriptAppModalDialog;
+namespace javascript_dialogs {
+class AppModalDialogController;
 }
 
-class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
+class JavaScriptAppModalDialogCocoa
+    : public javascript_dialogs::AppModalDialogView {
  public:
   explicit JavaScriptAppModalDialogCocoa(
-      app_modal::JavaScriptAppModalDialog* dialog);
+      javascript_dialogs::AppModalDialogController* controller);
 
   // Overridden from NativeAppModalDialog:
   void ShowAppModalDialog() override;
@@ -34,10 +35,6 @@ class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
   void AcceptAppModalDialog() override;
   void CancelAppModalDialog() override;
   bool IsShowing() const override;
-
-  app_modal::JavaScriptAppModalDialog* dialog() const {
-    return dialog_.get();
-  }
 
  private:
   ~JavaScriptAppModalDialogCocoa() override;
@@ -57,7 +54,7 @@ class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
   // Mojo interface to the NSAlert.
   mojo::Remote<remote_cocoa::mojom::AlertBridge> alert_bridge_;
 
-  std::unique_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
+  std::unique_ptr<javascript_dialogs::AppModalDialogController> controller_;
   std::unique_ptr<PopunderPreventer> popunder_preventer_;
 
   int num_buttons_ = 0;

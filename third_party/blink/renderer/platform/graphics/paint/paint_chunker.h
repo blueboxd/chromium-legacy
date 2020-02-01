@@ -50,7 +50,7 @@ class PLATFORM_EXPORT PaintChunker final {
   }
   PaintChunk& LastChunk() { return chunks_.back(); }
 
-  PaintChunk& FindChunkByDisplayItemIndex(size_t index) {
+  PaintChunk& FindChunkByDisplayItemIndex(wtf_size_t index) {
     auto* chunk = FindChunkInVectorByDisplayItemIndex(chunks_, index);
     DCHECK(chunk != chunks_.end());
     return *chunk;
@@ -61,8 +61,8 @@ class PLATFORM_EXPORT PaintChunker final {
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
-  size_t ChunkIndex(const PaintChunk& chunk) const {
-    size_t index = &chunk - &chunks_.front();
+  wtf_size_t ChunkIndex(const PaintChunk& chunk) const {
+    auto index = static_cast<wtf_size_t>(&chunk - &chunks_.front());
     DCHECK_LT(index, chunks_.size());
     return index;
   }

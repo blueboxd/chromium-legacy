@@ -69,7 +69,7 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
         return false;
       }
 
-      var command = BrailleCommandData.getCommand(evt.brailleDots);
+      const command = BrailleCommandData.getCommand(evt.brailleDots);
       if (command) {
         if (BrailleCommandHandler.onEditCommand_(command)) {
           CommandHandler.onCommand(command);
@@ -92,7 +92,7 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
   let selectionSpan = null;
   const selSpans = text.getSpansInstanceOf(Output.SelectionSpan);
   const nodeSpans = text.getSpansInstanceOf(Output.NodeSpan);
-  for (var i = 0, selSpan; selSpan = selSpans[i]; i++) {
+  for (let i = 0, selSpan; selSpan = selSpans[i]; i++) {
     if (text.getSpanStart(selSpan) <= position &&
         position < text.getSpanEnd(selSpan)) {
       selectionSpan = selSpan;
@@ -101,7 +101,7 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
   }
 
   let interval;
-  for (var j = 0, nodeSpan; nodeSpan = nodeSpans[j]; j++) {
+  for (let j = 0, nodeSpan; nodeSpan = nodeSpans[j]; j++) {
     const intervals = text.getSpanIntervals(nodeSpan);
     const tempInterval = intervals.find(function(innerInterval) {
       return innerInterval.start <= position && position <= innerInterval.end;
@@ -133,8 +133,8 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
   }
 
   if (actionNode.state.richlyEditable) {
-    var start = interval ? interval.start : text.getSpanStart(selectionSpan);
-    var targetPosition = position - start + offset;
+    const start = interval ? interval.start : text.getSpanStart(selectionSpan);
+    const targetPosition = position - start + offset;
     chrome.automation.setDocumentSelection({
       anchorObject: actionNode,
       anchorOffset: targetPosition,
@@ -142,8 +142,8 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
       focusOffset: targetPosition
     });
   } else {
-    var start = text.getSpanStart(selectionSpan);
-    var targetPosition = position - start + offset;
+    const start = text.getSpanStart(selectionSpan);
+    const targetPosition = position - start + offset;
     actionNode.setSelection(targetPosition, targetPosition);
   }
 };

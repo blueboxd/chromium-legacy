@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -26,6 +27,12 @@ namespace sync_bookmarks {
 
 namespace {
 
+constexpr int kNumPermanentNodes = 3;
+
+const char kBookmarkBarId[] = "bookmark_bar_id";
+const char kMobileBookmarksId[] = "synced_bookmarks_id";
+const char kOtherBookmarksId[] = "other_bookmarks_id";
+
 // Redefinition of |enum CorruptionReason| in synced_bookmark_tracker.cc to be
 // used in tests.
 enum class ExpectedCorruptionReason {
@@ -33,9 +40,13 @@ enum class ExpectedCorruptionReason {
   MISSING_SERVER_ID = 1,
   BOOKMARK_ID_IN_TOMBSTONE = 2,
   MISSING_BOOKMARK_ID = 3,
-  COUNT_MISMATCH = 4,
-  IDS_MISMATCH = 5,
-  kMaxValue = IDS_MISMATCH
+  DEPRECATED_COUNT_MISMATCH = 4,
+  DEPRECATED_IDS_MISMATCH = 5,
+  DUPLICATED_SERVER_ID = 6,
+  UNKNOWN_BOOKMARK_ID = 7,
+  UNTRACKED_BOOKMARK = 8,
+  BOOKMARK_GUID_MISMATCH = 9,
+  kMaxValue = BOOKMARK_GUID_MISMATCH
 };
 
 sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
@@ -46,18 +57,45 @@ sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
   return specifics;
 }
 
-std::unique_ptr<sync_pb::EntityMetadata> CreateEntityMetadata(
-    const std::string& server_id,
-    bool is_deleted) {
-  auto metadata = std::make_unique<sync_pb::EntityMetadata>();
-  metadata->set_server_id(server_id);
-  metadata->set_is_deleted(is_deleted);
-  return metadata;
+sync_pb::BookmarkMetadata CreateNodeMetadata(int64_t node_id,
+                                             const std::string& server_id) {
+  sync_pb::BookmarkMetadata bookmark_metadata;
+  bookmark_metadata.set_id(node_id);
+  bookmark_metadata.mutable_metadata()->set_server_id(server_id);
+  return bookmark_metadata;
+}
+
+sync_pb::BookmarkMetadata CreateTombstoneMetadata(
+    const std::string& server_id) {
+  sync_pb::BookmarkMetadata bookmark_metadata;
+  bookmark_metadata.mutable_metadata()->set_server_id(server_id);
+  bookmark_metadata.mutable_metadata()->set_is_deleted(true);
+  return bookmark_metadata;
+}
+
+sync_pb::BookmarkModelMetadata CreateMetadataForPermanentNodes(
+    const bookmarks::BookmarkModel* bookmark_model) {
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(bookmark_model->bookmark_bar_node()->id(),
+                         /*server_id=*/kBookmarkBarId);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(bookmark_model->mobile_node()->id(),
+                         /*server_id=*/kMobileBookmarksId);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(bookmark_model->other_node()->id(),
+                         /*server_id=*/kOtherBookmarksId);
+
+  CHECK_EQ(kNumPermanentNodes, model_metadata.bookmarks_metadata_size());
+  return model_metadata;
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const std::string kTitle = "Title";
   const GURL kUrl("http://www.foo.com");
@@ -72,10 +110,10 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
 
   bookmarks::BookmarkNode node(kId, base::GenerateGUID(), kUrl);
-  tracker.Add(kSyncId, &node, kServerVersion, kCreationTime,
-              unique_position.ToProto(), specifics);
+  tracker->Add(kSyncId, &node, kServerVersion, kCreationTime,
+               unique_position.ToProto(), specifics);
   const SyncedBookmarkTracker::Entity* entity =
-      tracker.GetEntityForSyncId(kSyncId);
+      tracker->GetEntityForSyncId(kSyncId);
   ASSERT_THAT(entity, NotNull());
   EXPECT_THAT(entity->bookmark_node(), Eq(&node));
   EXPECT_THAT(entity->metadata()->server_id(), Eq(kSyncId));
@@ -90,12 +128,13 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
   *data.specifics.mutable_bookmark() = specifics.bookmark();
   data.unique_position = unique_position.ToProto();
   EXPECT_TRUE(entity->MatchesDataIgnoringParent(data));
-  EXPECT_THAT(tracker.GetEntityForSyncId("unknown id"), IsNull());
+  EXPECT_THAT(tracker->GetEntityForSyncId("unknown id"), IsNull());
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldReturnNullForDisassociatedNodes) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const int64_t kId = 1;
   const int64_t kServerVersion = 1000;
@@ -105,16 +144,17 @@ TEST(SyncedBookmarkTrackerTest, ShouldReturnNullForDisassociatedNodes) {
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(kId, base::GenerateGUID(), GURL());
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
-              unique_position, specifics);
-  ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
-  tracker.Remove(kSyncId);
-  EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
+  tracker->Add(kSyncId, &node, kServerVersion, kModificationTime,
+               unique_position, specifics);
+  ASSERT_THAT(tracker->GetEntityForSyncId(kSyncId), NotNull());
+  tracker->Remove(kSyncId);
+  EXPECT_THAT(tracker->GetEntityForSyncId(kSyncId), IsNull());
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldBuildBookmarkModelMetadata) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const std::string kTitle = "Title";
   const GURL kUrl("http://www.foo.com");
@@ -129,11 +169,11 @@ TEST(SyncedBookmarkTrackerTest, ShouldBuildBookmarkModelMetadata) {
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
 
   bookmarks::BookmarkNode node(kId, base::GenerateGUID(), kUrl);
-  tracker.Add(kSyncId, &node, kServerVersion, kCreationTime,
-              unique_position.ToProto(), specifics);
+  tracker->Add(kSyncId, &node, kServerVersion, kCreationTime,
+               unique_position.ToProto(), specifics);
 
   sync_pb::BookmarkModelMetadata bookmark_model_metadata =
-      tracker.BuildBookmarkModelMetadata();
+      tracker->BuildBookmarkModelMetadata();
 
   ASSERT_THAT(bookmark_model_metadata.bookmarks_metadata().size(), Eq(1));
   EXPECT_THAT(
@@ -143,8 +183,9 @@ TEST(SyncedBookmarkTrackerTest, ShouldBuildBookmarkModelMetadata) {
 
 TEST(SyncedBookmarkTrackerTest,
      ShouldRequireCommitRequestWhenSequenceNumberIsIncremented) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const int64_t kId = 1;
   const int64_t kServerVersion = 1000;
@@ -154,19 +195,20 @@ TEST(SyncedBookmarkTrackerTest,
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(kId, base::GenerateGUID(), GURL());
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
-              unique_position, specifics);
+  tracker->Add(kSyncId, &node, kServerVersion, kModificationTime,
+               unique_position, specifics);
 
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
-  tracker.IncrementSequenceNumber(kSyncId);
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(false));
+  tracker->IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(true));
   // TODO(crbug.com/516866): Test HasLocalChanges after submitting commit
   // request in a separate test probably.
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldAckSequenceNumber) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const int64_t kId = 1;
   const int64_t kServerVersion = 1000;
@@ -176,29 +218,30 @@ TEST(SyncedBookmarkTrackerTest, ShouldAckSequenceNumber) {
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(kId, base::GenerateGUID(), GURL());
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
-              unique_position, specifics);
+  tracker->Add(kSyncId, &node, kServerVersion, kModificationTime,
+               unique_position, specifics);
 
   // Test simple scenario of ack'ing an incrememented sequence number.
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
-  tracker.IncrementSequenceNumber(kSyncId);
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
-  tracker.AckSequenceNumber(kSyncId);
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(false));
+  tracker->IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(true));
+  tracker->AckSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(false));
 
-  // Test ack'ing of a mutliple times incremented sequence number.
-  tracker.IncrementSequenceNumber(kSyncId);
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
-  tracker.IncrementSequenceNumber(kSyncId);
-  tracker.IncrementSequenceNumber(kSyncId);
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
-  tracker.AckSequenceNumber(kSyncId);
-  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
+  // Test ack'ing of a multiple times incremented sequence number.
+  tracker->IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(true));
+  tracker->IncrementSequenceNumber(kSyncId);
+  tracker->IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(true));
+  tracker->AckSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker->HasLocalChanges(), Eq(false));
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldUpdateUponCommitResponseWithNewId) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const std::string kNewSyncId = "NEW_SYNC_ID";
   const int64_t kId = 1;
@@ -210,17 +253,17 @@ TEST(SyncedBookmarkTrackerTest, ShouldUpdateUponCommitResponseWithNewId) {
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(kId, base::GenerateGUID(), GURL());
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
-              unique_position, specifics);
-  ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
+  tracker->Add(kSyncId, &node, kServerVersion, kModificationTime,
+               unique_position, specifics);
+  ASSERT_THAT(tracker->GetEntityForSyncId(kSyncId), NotNull());
   // Receive a commit response with a changed id.
-  tracker.UpdateUponCommitResponse(
+  tracker->UpdateUponCommitResponse(
       kSyncId, kNewSyncId, /*acked_sequence_number=*/1, kNewServerVersion);
   // Old id shouldn't be there.
-  EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
+  EXPECT_THAT(tracker->GetEntityForSyncId(kSyncId), IsNull());
 
   const SyncedBookmarkTracker::Entity* entity =
-      tracker.GetEntityForSyncId(kNewSyncId);
+      tracker->GetEntityForSyncId(kNewSyncId);
   ASSERT_THAT(entity, NotNull());
   EXPECT_THAT(entity->metadata()->server_id(), Eq(kNewSyncId));
   EXPECT_THAT(entity->bookmark_node(), Eq(&node));
@@ -228,8 +271,9 @@ TEST(SyncedBookmarkTrackerTest, ShouldUpdateUponCommitResponseWithNewId) {
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldUpdateId) {
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
   const std::string kSyncId = "SYNC_ID";
   const std::string kNewSyncId = "NEW_SYNC_ID";
   const int64_t kServerVersion = 1000;
@@ -240,17 +284,17 @@ TEST(SyncedBookmarkTrackerTest, ShouldUpdateId) {
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(/*id=*/1, base::GenerateGUID(), GURL());
   // Track a sync entity.
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
-              unique_position, specifics);
+  tracker->Add(kSyncId, &node, kServerVersion, kModificationTime,
+               unique_position, specifics);
 
-  ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
+  ASSERT_THAT(tracker->GetEntityForSyncId(kSyncId), NotNull());
   // Update the sync id.
-  tracker.UpdateSyncForLocalCreationIfNeeded(kSyncId, kNewSyncId);
+  tracker->UpdateSyncForLocalCreationIfNeeded(kSyncId, kNewSyncId);
   // Old id shouldn't be there.
-  EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
+  EXPECT_THAT(tracker->GetEntityForSyncId(kSyncId), IsNull());
 
   const SyncedBookmarkTracker::Entity* entity =
-      tracker.GetEntityForSyncId(kNewSyncId);
+      tracker->GetEntityForSyncId(kNewSyncId);
   ASSERT_THAT(entity, NotNull());
   EXPECT_THAT(entity->metadata()->server_id(), Eq(kNewSyncId));
   EXPECT_THAT(entity->bookmark_node(), Eq(&node));
@@ -269,40 +313,53 @@ TEST(SyncedBookmarkTrackerTest,
   const std::string kId3 = "id3";
   const std::string kId4 = "id4";
 
-  const GURL kUrl("http://www.foo.com");
-  bookmarks::BookmarkNode node0(/*id=*/0, base::GenerateGUID(), kUrl);
-  bookmarks::BookmarkNode node1(/*id=*/1, base::GenerateGUID(), kUrl);
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+  const bookmarks::BookmarkNode* node1 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node1"));
 
-  std::vector<NodeMetadataPair> node_metadata_pairs;
-  node_metadata_pairs.emplace_back(
-      &node0, CreateEntityMetadata(/*server_id=*/kId0, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      &node1, CreateEntityMetadata(/*server_id=*/kId1, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      nullptr, CreateEntityMetadata(/*server_id=*/kId2, /*is_deleted=*/true));
-  node_metadata_pairs.emplace_back(
-      nullptr, CreateEntityMetadata(/*server_id=*/kId3, /*is_deleted=*/true));
-  node_metadata_pairs.emplace_back(
-      nullptr, CreateEntityMetadata(/*server_id=*/kId4, /*is_deleted=*/true));
+  sync_pb::BookmarkModelMetadata initial_model_metadata =
+      CreateMetadataForPermanentNodes(bookmark_model.get());
 
-  SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node0->id(), /*server_id=*/kId0);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node1->id(), /*server_id=*/kId1);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateTombstoneMetadata(/*server_id=*/kId2);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateTombstoneMetadata(/*server_id=*/kId3);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateTombstoneMetadata(/*server_id=*/kId4);
 
-  sync_pb::BookmarkModelMetadata bookmark_model_metadata =
-      tracker.BuildBookmarkModelMetadata();
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+          bookmark_model.get(), std::move(initial_model_metadata));
+  ASSERT_THAT(tracker, NotNull());
+
+  const sync_pb::BookmarkModelMetadata output_model_metadata =
+      tracker->BuildBookmarkModelMetadata();
 
   // Tombstones should be the last 3 entries in the metadata and in the same
   // order as given to the constructor.
-  ASSERT_THAT(bookmark_model_metadata.bookmarks_metadata().size(), Eq(5));
-  EXPECT_THAT(
-      bookmark_model_metadata.bookmarks_metadata(2).metadata().server_id(),
-      Eq(kId2));
-  EXPECT_THAT(
-      bookmark_model_metadata.bookmarks_metadata(3).metadata().server_id(),
-      Eq(kId3));
-  EXPECT_THAT(
-      bookmark_model_metadata.bookmarks_metadata(4).metadata().server_id(),
-      Eq(kId4));
+  ASSERT_THAT(output_model_metadata.bookmarks_metadata().size(),
+              Eq(kNumPermanentNodes + 5));
+  EXPECT_THAT(output_model_metadata.bookmarks_metadata(kNumPermanentNodes + 2)
+                  .metadata()
+                  .server_id(),
+              Eq(kId2));
+  EXPECT_THAT(output_model_metadata.bookmarks_metadata(kNumPermanentNodes + 3)
+                  .metadata()
+                  .server_id(),
+              Eq(kId3));
+  EXPECT_THAT(output_model_metadata.bookmarks_metadata(kNumPermanentNodes + 4)
+                  .metadata()
+                  .server_id(),
+              Eq(kId4));
 }
 
 TEST(SyncedBookmarkTrackerTest,
@@ -314,48 +371,64 @@ TEST(SyncedBookmarkTrackerTest,
   const std::string kId3 = "id3";
   const std::string kId4 = "id4";
 
-  const GURL kUrl("http://www.foo.com");
-  bookmarks::BookmarkNode node0(/*id=*/0, base::GenerateGUID(), kUrl);
-  bookmarks::BookmarkNode node1(/*id=*/1, base::GenerateGUID(), kUrl);
-  bookmarks::BookmarkNode node2(/*id=*/2, base::GenerateGUID(), kUrl);
-  bookmarks::BookmarkNode node3(/*id=*/3, base::GenerateGUID(), kUrl);
-  bookmarks::BookmarkNode node4(/*id=*/4, base::GenerateGUID(), kUrl);
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+  const bookmarks::BookmarkNode* node1 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node1"));
+  const bookmarks::BookmarkNode* node2 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node2"));
+  const bookmarks::BookmarkNode* node3 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node3"));
+  const bookmarks::BookmarkNode* node4 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node4"));
 
-  std::vector<NodeMetadataPair> node_metadata_pairs;
-  node_metadata_pairs.emplace_back(
-      &node0, CreateEntityMetadata(/*server_id=*/kId0, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      &node1, CreateEntityMetadata(/*server_id=*/kId1, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      &node2, CreateEntityMetadata(/*server_id=*/kId2, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      &node3, CreateEntityMetadata(/*server_id=*/kId3, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      &node4, CreateEntityMetadata(/*server_id=*/kId4, /*is_deleted=*/false));
+  sync_pb::BookmarkModelMetadata initial_model_metadata =
+      CreateMetadataForPermanentNodes(bookmark_model.get());
 
-  SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node0->id(), /*server_id=*/kId0);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node1->id(), /*server_id=*/kId1);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node2->id(), /*server_id=*/kId2);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node3->id(), /*server_id=*/kId3);
+  *initial_model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node4->id(), /*server_id=*/kId4);
+
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+          bookmark_model.get(), std::move(initial_model_metadata));
+  ASSERT_THAT(tracker, NotNull());
 
   // Mark entities deleted in that order kId2, kId4, kId1
-  tracker.MarkDeleted(kId2);
-  tracker.MarkDeleted(kId4);
-  tracker.MarkDeleted(kId1);
+  tracker->MarkDeleted(kId2);
+  tracker->MarkDeleted(kId4);
+  tracker->MarkDeleted(kId1);
 
-  sync_pb::BookmarkModelMetadata bookmark_model_metadata =
-      tracker.BuildBookmarkModelMetadata();
+  const sync_pb::BookmarkModelMetadata output_model_metadata =
+      tracker->BuildBookmarkModelMetadata();
 
   // Tombstones should be the last 3 entries in the metadata and in the same as
   // calling MarkDeleted().
-  ASSERT_THAT(bookmark_model_metadata.bookmarks_metadata().size(), Eq(5));
-  EXPECT_THAT(
-      bookmark_model_metadata.bookmarks_metadata(2).metadata().server_id(),
-      Eq(kId2));
-  EXPECT_THAT(
-      bookmark_model_metadata.bookmarks_metadata(3).metadata().server_id(),
-      Eq(kId4));
-  EXPECT_THAT(
-      bookmark_model_metadata.bookmarks_metadata(4).metadata().server_id(),
-      Eq(kId1));
+  ASSERT_THAT(output_model_metadata.bookmarks_metadata().size(),
+              Eq(kNumPermanentNodes + 5));
+  EXPECT_THAT(output_model_metadata.bookmarks_metadata(kNumPermanentNodes + 2)
+                  .metadata()
+                  .server_id(),
+              Eq(kId2));
+  EXPECT_THAT(output_model_metadata.bookmarks_metadata(kNumPermanentNodes + 3)
+                  .metadata()
+                  .server_id(),
+              Eq(kId4));
+  EXPECT_THAT(output_model_metadata.bookmarks_metadata(kNumPermanentNodes + 4)
+                  .metadata()
+                  .server_id(),
+              Eq(kId1));
 }
 
 TEST(SyncedBookmarkTrackerTest,
@@ -387,29 +460,33 @@ TEST(SyncedBookmarkTrackerTest,
   const std::string kId3 = "id3";
 
   // Prepare the metadata with shuffled order.
-  std::vector<NodeMetadataPair> node_metadata_pairs;
-  node_metadata_pairs.emplace_back(
-      node1, CreateEntityMetadata(/*server_id=*/kId1, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      nullptr, CreateEntityMetadata(/*server_id=*/kId3, /*is_deleted=*/true));
-  node_metadata_pairs.emplace_back(
-      node2, CreateEntityMetadata(/*server_id=*/kId2, /*is_deleted=*/false));
-  node_metadata_pairs.emplace_back(
-      node0, CreateEntityMetadata(/*server_id=*/kId0, /*is_deleted=*/false));
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(bookmark_model.get());
 
-  SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node1->id(), /*server_id=*/kId1);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateTombstoneMetadata(/*server_id=*/kId3);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node2->id(), /*server_id=*/kId2);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node0->id(), /*server_id=*/kId0);
+
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+          bookmark_model.get(), std::move(model_metadata));
+  ASSERT_THAT(tracker, NotNull());
 
   // Mark the entities that they have local changes. (in shuffled order just to
   // verify the tracker doesn't simply maintain the order of updates similar to
   // with deletions).
-  tracker.IncrementSequenceNumber(kId3);
-  tracker.IncrementSequenceNumber(kId1);
-  tracker.IncrementSequenceNumber(kId2);
-  tracker.IncrementSequenceNumber(kId0);
+  tracker->IncrementSequenceNumber(kId3);
+  tracker->IncrementSequenceNumber(kId1);
+  tracker->IncrementSequenceNumber(kId2);
+  tracker->IncrementSequenceNumber(kId0);
 
   std::vector<const SyncedBookmarkTracker::Entity*> entities_with_local_change =
-      tracker.GetEntitiesWithLocalChanges(kMaxEntries);
+      tracker->GetEntitiesWithLocalChanges(kMaxEntries);
 
   ASSERT_THAT(entities_with_local_change.size(), Eq(4U));
   // Verify updates are in parent before child order node0 --> node1 --> node2.
@@ -428,37 +505,23 @@ TEST(SyncedBookmarkTrackerTest, ShouldMatchModelAndMetadata) {
   const bookmarks::BookmarkNode* node = model->AddFolder(
       /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
 
-  sync_pb::BookmarkModelMetadata model_metadata;
-  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
-  // Add entries for all the permanent nodes. TestBookmarkClient creates all the
-  // 3 permanent nodes.
-  sync_pb::BookmarkMetadata* bookmark_metadata =
-      model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
-
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->other_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
-
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->mobile_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
 
   // Add entry for the managed node.
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(node->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("NodeId");
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node->id(), /*server_id=*/"NodeId");
 
   // Add a tombstone entry.
-  sync_pb::BookmarkMetadata* tombstone =
-      model_metadata.add_bookmarks_metadata();
-  tombstone->mutable_metadata()->set_server_id("tombstoneId");
-  tombstone->mutable_metadata()->set_is_deleted(true);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateTombstoneMetadata(/*server_id=*/"tombstoneId");
 
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              NotNull());
+
   histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::NO_CORRUPTION, /*count=*/1);
@@ -471,89 +534,197 @@ TEST(SyncedBookmarkTrackerTest,
 
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+
   // Add entries for all the permanent nodes except for the Mobile bookmarks
   // folder.
-  sync_pb::BookmarkMetadata* bookmark_metadata =
-      model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
-
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->other_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(model->bookmark_bar_node()->id(),
+                         /*server_id=*/kBookmarkBarId);
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(model->other_node()->id(),
+                         /*server_id=*/kOtherBookmarksId);
 
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
   histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
-      /*sample=*/ExpectedCorruptionReason::COUNT_MISMATCH, /*count=*/1);
+      /*sample=*/ExpectedCorruptionReason::UNTRACKED_BOOKMARK, /*count=*/1);
 }
 
-TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
+TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfMissingServerId) {
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
 
-  sync_pb::BookmarkModelMetadata model_metadata;
-  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
-  // Add entries for 3 permanent nodes only. TestBookmarkClient creates all the
-  // 4 permanent nodes.
-  sync_pb::BookmarkMetadata* bookmark_metadata =
-      model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
 
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->mobile_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
+  // Remove a server ID to a permanent node.
+  model_metadata.mutable_bookmarks_metadata(0)
+      ->mutable_metadata()
+      ->clear_server_id();
 
   base::HistogramTester histogram_tester;
-  // The entry for the Other bookmarks is missing.
-  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
-  histogram_tester.ExpectBucketCount(
-      "Sync.BookmarksModelMetadataCorruptionReason",
-      /*sample=*/ExpectedCorruptionReason::COUNT_MISMATCH, /*count=*/1);
 
-  // The entry for the Other bookmarks is missing a server id.
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->other_node()->id());
-  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::MISSING_SERVER_ID, /*count=*/1);
+}
 
-  // The entry for the Other bookmarks is missing a node id.
-  bookmark_metadata->clear_id();
-  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
-  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
-  histogram_tester.ExpectBucketCount(
+TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfMissingLocalBookmarkId) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+
+  const bookmarks::BookmarkNode* node = model->AddFolder(
+      /*parent=*/model->bookmark_bar_node(), /*index=*/0,
+      base::UTF8ToUTF16("node"));
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node->id(), /*server_id=*/"serverid");
+
+  // Remove the local bookmark ID.
+  model_metadata.mutable_bookmarks_metadata()->rbegin()->clear_id();
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
+  histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::MISSING_BOOKMARK_ID, /*count=*/1);
+}
 
-  // The entry for the Other bookmarks is having a wrong node id.
-  bookmark_metadata->set_id(model->other_node()->id() + 1000);
-  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
-  histogram_tester.ExpectBucketCount(
-      "Sync.BookmarksModelMetadataCorruptionReason",
-      /*sample=*/ExpectedCorruptionReason::IDS_MISMATCH, /*count=*/1);
+TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfTombstoneHasBookmarkId) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
 
-  // A tombstone shouldn't have a node id.
-  sync_pb::BookmarkMetadata* tombstone =
-      model_metadata.add_bookmarks_metadata();
-  tombstone->mutable_metadata()->set_server_id("tombstoneId");
-  tombstone->mutable_metadata()->set_is_deleted(true);
-  tombstone->set_id(10);
-  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
-  histogram_tester.ExpectBucketCount(
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+
+  *model_metadata.add_bookmarks_metadata() =
+      CreateTombstoneMetadata(/*server_id=*/"serverid");
+
+  // Add a node ID to the tombstone.
+  model_metadata.mutable_bookmarks_metadata()->rbegin()->set_id(1234);
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
+  histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::BOOKMARK_ID_IN_TOMBSTONE,
       /*count=*/1);
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfUnknownLocalBookmarkId) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+
+  const bookmarks::BookmarkNode* node = model->AddFolder(
+      /*parent=*/model->bookmark_bar_node(), /*index=*/0,
+      base::UTF8ToUTF16("node"));
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(node->id(), /*server_id=*/"serverid");
+
+  // Set an arbitrary local node ID that won't match anything in BookmarkModel.
+  model_metadata.mutable_bookmarks_metadata()->rbegin()->set_id(123456);
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarksModelMetadataCorruptionReason",
+      /*sample=*/ExpectedCorruptionReason::UNKNOWN_BOOKMARK_ID,
+      /*count=*/1);
+}
+
+TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndMetadataIfGuidMismatch) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      kInvalidateBookmarkSyncMetadataIfMismatchingGuid);
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+  sync_pb::BookmarkMetadata* node0_metadata =
+      model_metadata.add_bookmarks_metadata();
+  *node0_metadata = CreateNodeMetadata(node0->id(), /*server_id=*/"id0");
+
+  // Set a mismatching client tag hash.
+  node0_metadata->mutable_metadata()->set_client_tag_hash("corrupthash");
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarksModelMetadataCorruptionReason",
+      /*sample=*/ExpectedCorruptionReason::BOOKMARK_GUID_MISMATCH, /*count=*/1);
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldMatchModelAndMetadataDespiteGuidMismatch) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndDisableFeature(
+      kInvalidateBookmarkSyncMetadataIfMismatchingGuid);
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+  sync_pb::BookmarkMetadata* node0_metadata =
+      model_metadata.add_bookmarks_metadata();
+  *node0_metadata = CreateNodeMetadata(node0->id(), /*server_id=*/"id0");
+
+  // Set a mismatching client tag hash.
+  node0_metadata->mutable_metadata()->set_client_tag_hash("corrupthash");
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              NotNull());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarkModelMetadataClientTagState",
+      /*sample=*/0, /*count=*/1);
 }
 
 TEST(SyncedBookmarkTrackerTest,
@@ -573,26 +744,15 @@ TEST(SyncedBookmarkTrackerTest,
   ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId),
               Eq(managed_node));
 
-  sync_pb::BookmarkModelMetadata model_metadata;
-  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
   // Add entries for all the permanent nodes. TestBookmarkClient creates all the
   // 3 permanent nodes.
-  sync_pb::BookmarkMetadata* bookmark_metadata =
-      model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
-
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->other_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
-
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->mobile_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
 
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
-      model.get(), model_metadata));
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              NotNull());
   histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::NO_CORRUPTION, /*count=*/1);

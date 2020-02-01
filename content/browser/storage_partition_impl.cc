@@ -1320,11 +1320,25 @@ void StoragePartitionImpl::Initialize() {
   idle_manager_ = std::make_unique<IdleManager>();
   lock_manager_ = std::make_unique<LockManager>();
 
+  scoped_refptr<ChromeBlobStorageContext> blob_context =
+      ChromeBlobStorageContext::GetFor(browser_context_);
+
+  native_file_system_manager_ =
+      base::MakeRefCounted<NativeFileSystemManagerImpl>(
+          filesystem_context_, blob_context,
+          browser_context_->GetNativeFileSystemPermissionContext(),
+          browser_context_->IsOffTheRecord());
+
+  mojo::PendingRemote<storage::mojom::NativeFileSystemContext>
+      native_file_system_context;
+  native_file_system_manager_->BindInternalsReceiver(
+      native_file_system_context.InitWithNewPipeAndPassReceiver());
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
   indexed_db_context_ = new IndexedDBContextImpl(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),
+      std::move(native_file_system_context),
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       /*task_runner=*/nullptr);
 
@@ -1378,9 +1392,6 @@ void StoragePartitionImpl::Initialize() {
   bluetooth_allowed_devices_map_ =
       std::make_unique<BluetoothAllowedDevicesMap>();
 
-  scoped_refptr<ChromeBlobStorageContext> blob_context =
-      ChromeBlobStorageContext::GetFor(browser_context_);
-
   url_loader_factory_getter_ = new URLLoaderFactoryGetter();
   url_loader_factory_getter_->Initialize(this);
 
@@ -1401,12 +1412,6 @@ void StoragePartitionImpl::Initialize() {
   // browser tests rely on CookieStoreManager's well-defined behavior when
   // restoring the state fails.
   cookie_store_context_->Initialize(service_worker_context_, base::DoNothing());
-
-  native_file_system_manager_ =
-      base::MakeRefCounted<NativeFileSystemManagerImpl>(
-          filesystem_context_, blob_context,
-          browser_context_->GetNativeFileSystemPermissionContext(),
-          browser_context_->IsOffTheRecord());
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&

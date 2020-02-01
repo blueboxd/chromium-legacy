@@ -23,6 +23,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/plugin_list.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -191,20 +192,47 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     return nullptr;
   }
 
-  // Flash has its own flavour of CORS, so CORB needs to allow all responses
-  // and rely on Flash to enforce same-origin policy.  See also
-  // https://crbug.com/874515 and https://crbug.com/816318#c5.
-  //
-  // Note that ppapi::PERMISSION_FLASH is present not only in the Flash plugin.
-  // This permission is also present in plugins added from the cmdline and so
-  // will be also present for "PPAPI Tests" plugin used for
-  // OutOfProcessPPAPITest.URLLoaderTrusted and related tests.
-  //
-  // TODO(lukasza, laforge): https://crbug.com/702995: Remove the code below
-  // once Flash support is removed from Chromium (probably around 2020 - see
-  // https://www.chromium.org/flash-roadmap).
-  if (info->permissions & ppapi::PERMISSION_FLASH)
+  if (info->permissions & ppapi::PERMISSION_FLASH) {
+    // Flash has its own flavour of CORS, so CORB needs to allow all responses
+    // and rely on Flash to enforce same-origin policy.  See also
+    // https://crbug.com/874515 and https://crbug.com/816318#c5.
+    //
+    // Note that ppapi::PERMISSION_FLASH is present not only in the Flash
+    // plugin. This permission is also present in plugins added from the cmdline
+    // and so will be also present for "PPAPI Tests" plugin used for
+    // OutOfProcessPPAPITest.URLLoaderTrusted and related tests.
+    //
+    // TODO(lukasza, laforge): https://crbug.com/702995: Remove the code below
+    // once Flash support is removed from Chromium (probably around 2020 - see
+    // https://www.chromium.org/flash-roadmap).
     RenderProcessHostImpl::AddCorbExceptionForPlugin(render_process_id);
+  } else if (info->permissions & ppapi::PERMISSION_PDF) {
+    // We want to limit ability to bypass |request_initiator_site_lock| to
+    // trustworthy renderers.  PDF plugin is okay, because it is always hosted
+    // by the PDF extension (mhjfbmdgcfjbbpaeojofohoefgiehjai) or
+    // chrome://print, both of which we assume are trustworthy (the extension
+    // process can also host other extensions, but this is okay).
+    //
+    // The CHECKs below help verify that |render_process_id| does not host
+    // web-controlled content.  This is a defense-in-depth for verifying that
+    // ShouldAllowPluginCreation called above is doing the right thing.
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    GURL renderer_lock = policy->GetOriginLock(render_process_id);
+    CHECK(!renderer_lock.SchemeIsHTTPOrHTTPS());
+    CHECK(embedder_origin.scheme() != url::kHttpScheme);
+    CHECK(embedder_origin.scheme() != url::kHttpsScheme);
+    CHECK(!embedder_origin.opaque());
+
+    // In some scenarios, the PDF plugin can issue fetch requests that will need
+    // to be proxied by |render_process_id| - such proxying needs to bypass
+    // CORB. See also https://crbug.com/1027173.
+    //
+    // TODO(lukasza, kmoon): https://crbug.com/702993: Remove the code here once
+    // PDF support doesn't depend on PPAPI anymore.
+    DCHECK(origin_lock.has_value());
+    RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin(
+        render_process_id, origin_lock.value());
+  }
 
   PpapiPluginProcessHost* plugin_host =
       FindPpapiPluginProcess(plugin_path, profile_data_directory, origin_lock);

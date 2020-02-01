@@ -28,8 +28,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
@@ -1764,9 +1764,9 @@ void TestRecipeReplayer::NavigateAwayAndDismissBeforeUnloadDialog() {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
-  app_modal::JavaScriptAppModalDialog* alert =
+  javascript_dialogs::AppModalDialogController* alert =
       ui_test_utils::WaitForAppModalDialog();
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 }
 
 bool TestRecipeReplayer::HasChromeStoredCredential(

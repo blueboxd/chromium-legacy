@@ -291,3 +291,6 @@ ChromeVoxPrefs.loggingPrefs = {
   EARCON: 'enableEarconLogging',
   EVENT: 'enableEventStreamLogging',
 };
+
+/** @type {!ChromeVoxPrefs} */
+ChromeVoxPrefs.instance = new ChromeVoxPrefs();

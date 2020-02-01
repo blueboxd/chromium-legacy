@@ -253,6 +253,9 @@
         ],
       },
     },
+    'remove_from': [
+      'Fuchsia x64', # https://crbug.com/1046552
+    ],
   },
   'checkbins': {
     'remove_from': [

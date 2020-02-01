@@ -11,11 +11,8 @@
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/google_url_loader_throttle.h"
-#include "chrome/common/prerender.mojom.h"
-#include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
@@ -43,14 +40,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
-
-mojo::PendingRemote<chrome::mojom::PrerenderCanceler> GetPrerenderCanceler(
-    content::RenderFrame* render_frame) {
-  mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler;
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      canceler.InitWithNewPipeAndPassReceiver());
-  return canceler;
-}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 std::unique_ptr<extensions::ExtensionThrottleManager>
@@ -181,28 +170,10 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 
   if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
       !is_frame_resource) {
-    content::RenderFrame* render_frame =
-        content::RenderFrame::FromRoutingID(render_frame_id);
-    auto* prerender_helper =
-        render_frame ? prerender::PrerenderHelper::Get(
-                           render_frame->GetRenderView()->GetMainRenderFrame())
-                     : nullptr;
-    if (prerender_helper) {
-      auto throttle = std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-          prerender_helper->prerender_mode(),
-          prerender_helper->histogram_prefix(),
-          GetPrerenderCanceler(render_frame));
-      prerender_helper->AddThrottle(throttle->AsWeakPtr());
-      if (prerender_helper->prerender_mode() == prerender::PREFETCH_ONLY) {
-        auto* prerender_dispatcher =
-            chrome_content_renderer_client_->prerender_dispatcher();
-        prerender_dispatcher->IncrementPrefetchCount();
-        throttle->set_destruction_closure(base::BindOnce(
-            &prerender::PrerenderDispatcher::DecrementPrefetchCount,
-            base::Unretained(prerender_dispatcher)));
-      }
+    auto throttle =
+        prerender::PrerenderHelper::MaybeCreateThrottle(render_frame_id);
+    if (throttle)
       throttles.push_back(std::move(throttle));
-    }
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -20,9 +20,9 @@ import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
+import org.chromium.url.URI;
 import org.chromium.url.mojom.Url;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -203,7 +203,7 @@ public class InstalledAppProviderTest {
 
         private static AssetManager createAssetManager() {
             try {
-                return (AssetManager) AssetManager.class.getConstructor().newInstance();
+                return AssetManager.class.getConstructor().newInstance();
             } catch (Exception e) {
                 return null;
             }
@@ -246,21 +246,17 @@ public class InstalledAppProviderTest {
         private URI mFrameUrl;
         private boolean mIncognito;
 
-        public FakeFrameUrlDelegate(String frameUrl) {
+        public FakeFrameUrlDelegate(String frameUrl) throws URISyntaxException {
             setFrameUrl(frameUrl);
         }
 
-        public void setFrameUrl(String frameUrl) {
+        public void setFrameUrl(String frameUrl) throws URISyntaxException {
             if (frameUrl == null) {
                 mFrameUrl = null;
                 return;
             }
 
-            try {
-                mFrameUrl = new URI(frameUrl);
-            } catch (URISyntaxException e) {
-                throw new AssertionError(e);
-            }
+            mFrameUrl = new URI(frameUrl);
         }
 
         @Override
@@ -358,7 +354,7 @@ public class InstalledAppProviderTest {
     private InstalledAppProviderTest() {}
 
     @CalledByNative
-    public void setUp() {
+    public void setUp() throws URISyntaxException {
         mFakePackageManager = new FakePackageManager();
         mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
         mFakeInstantAppsHandler = new FakeInstantAppsHandler();
@@ -374,7 +370,11 @@ public class InstalledAppProviderTest {
         setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
         RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
 
-        mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_SCHEME);
+        try {
+            mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_SCHEME);
+        } catch (URISyntaxException e) {
+            mFrameUrlDelegate.setFrameUrl(null);
+        }
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
 
         mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_HOST);

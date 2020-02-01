@@ -124,6 +124,13 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
 
   const SharedWorkerInstance& instance() const { return instance_; }
 
+  const base::UnguessableToken& dev_tools_token() const {
+    DCHECK(started_);
+    return dev_tools_token_;
+  }
+
+  bool started() const { return started_; }
+
   // Signals the remote worker to terminate and returns the mojo::Remote
   // instance so the caller can be notified when the connection is lost. Should
   // be called right before deleting this instance.
@@ -220,6 +227,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
   std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
+
+  base::UnguessableToken dev_tools_token_;
 
   // Indicates if Start() was invoked on this instance.
   bool started_ = false;

@@ -213,7 +213,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
       override {}
 
-  void CleanupCorbExceptionForPluginUponDestruction() override;
+  void CleanupNetworkServicePluginExceptionsUponDestruction() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

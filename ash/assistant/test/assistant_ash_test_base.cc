@@ -12,7 +12,6 @@
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
@@ -63,9 +62,6 @@ AssistantAshTestBase::AssistantAshTestBase()
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
 void AssistantAshTestBase::SetUp() {
-  scoped_feature_list_.InitAndEnableFeature(
-      app_list_features::kEnableAssistantLauncherUI);
-
   AshTestBase::SetUp();
 
   // Make the display big enough to hold the app list.
@@ -93,7 +89,6 @@ void AssistantAshTestBase::TearDown() {
   widgets_.clear();
   DisableKeyboard();
   AshTestBase::TearDown();
-  scoped_feature_list_.Reset();
 }
 
 void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {

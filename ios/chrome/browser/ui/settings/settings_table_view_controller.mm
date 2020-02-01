@@ -923,7 +923,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
           initWithBaseViewController:self.navigationController
                              browser:_browser
                                 mode:GoogleServicesSettingsModeSettings];
-  _googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   _googleServicesSettingsCoordinator.navigationController =
       self.navigationController;
   _googleServicesSettingsCoordinator.delegate = self;
@@ -1056,8 +1055,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   DCHECK(![self.signinInteractionCoordinator isActive]);
   if (!self.signinInteractionCoordinator) {
     self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser
-                                                   dispatcher:self.dispatcher];
+        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser];
   }
 
   __weak SettingsTableViewController* weakSelf = self;

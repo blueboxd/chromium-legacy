@@ -358,7 +358,7 @@ Panel = class {
         let brailleText;
         let gestureText;
         if (eventSource == EventSourceType.TOUCH_GESTURE) {
-          for (var i = 0, gesture; gesture = gestures[i]; i++) {
+          for (let i = 0, gesture; gesture = gestures[i]; i++) {
             const data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
             if (data && data.command == command) {
               gestureText = Msgs.getMsg(data.msgId);
@@ -430,7 +430,7 @@ Panel = class {
     ];
 
     const node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
-    for (var i = 0; i < roleListMenuMapping.length; ++i) {
+    for (let i = 0; i < roleListMenuMapping.length; ++i) {
       const menuTitle = roleListMenuMapping[i].menuTitle;
       const predicate = roleListMenuMapping[i].predicate;
       // Create node menus asynchronously (because it may require searching a
@@ -441,7 +441,7 @@ Panel = class {
     }
 
     if (node.standardActions) {
-      for (var i = 0; i < node.standardActions.length; i++) {
+      for (let i = 0; i < node.standardActions.length; i++) {
         const standardAction = node.standardActions[i];
         const actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
         if (!actionMsg) {
@@ -456,7 +456,7 @@ Panel = class {
     }
 
     if (node.customActions) {
-      for (var i = 0; i < node.customActions.length; i++) {
+      for (let i = 0; i < node.customActions.length; i++) {
         const customAction = node.customActions[i];
         actionsMenu.addMenuItem(
             customAction.description, '' /* menuItemShortcut */,
@@ -468,7 +468,7 @@ Panel = class {
     // Activate either the specified menu or the search menu.
     // Search menu can be null, since it is hidden behind a flag.
     let selectedMenu = Panel.searchMenu || Panel.menus_[0];
-    for (var i = 0; i < Panel.menus_.length; i++) {
+    for (let i = 0; i < Panel.menus_.length; i++) {
       if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
         selectedMenu = Panel.menus_[i];
       }
@@ -560,11 +560,11 @@ Panel = class {
 
     // Clear the tables.
     let rowCount = Panel.brailleTableElement_.rows.length;
-    for (var i = 0; i < rowCount; i++) {
+    for (let i = 0; i < rowCount; i++) {
       Panel.brailleTableElement_.deleteRow(0);
     }
     rowCount = Panel.brailleTableElement2_.rows.length;
-    for (var i = 0; i < rowCount; i++) {
+    for (let i = 0; i < rowCount; i++) {
       Panel.brailleTableElement2_.deleteRow(0);
     }
 
@@ -573,7 +573,7 @@ Panel = class {
     rowCount = 0;
     // Number of cells already written in this row.
     let cellCount = cols;
-    for (var i = 0; i < groups.length; i++) {
+    for (let i = 0; i < groups.length; i++) {
       if (cellCount == cols) {
         cellCount = 0;
         // Check if we reached the limit on the number of rows we can have.
@@ -948,7 +948,7 @@ Panel = class {
       // Watch for a blur on the panel.
       const pendingCallback = Panel.pendingCallback_;
       Panel.pendingCallback_ = null;
-      var onFocus = function(evt) {
+      const onFocus = function(evt) {
         if (evt.target.docUrl == location.href) {
           return;
         }

@@ -34,6 +34,16 @@ class MockDrmDevice : public DrmDevice {
     std::vector<DrmDevice::Property> properties;
   };
 
+  struct ConnectorProperties {
+    ConnectorProperties();
+    ConnectorProperties(const ConnectorProperties&);
+    ~ConnectorProperties();
+
+    uint32_t id;
+
+    std::vector<DrmDevice::Property> properties;
+  };
+
   struct PlaneProperties {
     PlaneProperties();
     PlaneProperties(const PlaneProperties&);
@@ -90,12 +100,15 @@ class MockDrmDevice : public DrmDevice {
 
   void set_connector_type(uint32_t type) { connector_type_ = type; }
 
-  void InitializeState(const std::vector<CrtcProperties>& crtc_properties,
-                       const std::vector<PlaneProperties>& plane_properties,
-                       const std::map<uint32_t, std::string>& property_names,
-                       bool use_atomic);
+  void InitializeState(
+      const std::vector<CrtcProperties>& crtc_properties,
+      const std::vector<ConnectorProperties>& connector_properties,
+      const std::vector<PlaneProperties>& plane_properties,
+      const std::map<uint32_t, std::string>& property_names,
+      bool use_atomic);
   bool InitializeStateWithResult(
       const std::vector<CrtcProperties>& crtc_properties,
+      const std::vector<ConnectorProperties>& connector_properties,
       const std::vector<PlaneProperties>& plane_properties,
       const std::map<uint32_t, std::string>& property_names,
       bool use_atomic);
@@ -212,7 +225,7 @@ class MockDrmDevice : public DrmDevice {
   base::queue<PageFlipCallback> callbacks_;
 
   std::vector<CrtcProperties> crtc_properties_;
-
+  std::vector<ConnectorProperties> connector_properties_;
   std::vector<PlaneProperties> plane_properties_;
 
   std::map<uint32_t, std::string> property_names_;

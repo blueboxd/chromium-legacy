@@ -1180,6 +1180,8 @@ void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
 #endif
 
 ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) {
+  if (!id)
+    return nullptr;
   auto iterator = property_trees()->element_id_to_scroll_node_index.find(id);
   if (iterator == property_trees()->element_id_to_scroll_node_index.end())
     return nullptr;
@@ -1188,6 +1190,8 @@ ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) {
 }
 
 const ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) const {
+  if (!id)
+    return nullptr;
   auto iterator = property_trees()->element_id_to_scroll_node_index.find(id);
   if (iterator == property_trees()->element_id_to_scroll_node_index.end())
     return nullptr;
@@ -2144,6 +2148,8 @@ ClipRectData* PropertyTrees::FetchClipRectFromCache(int clip_id,
 }
 
 bool PropertyTrees::HasElement(ElementId element_id) const {
+  if (!element_id)
+    return false;
   return element_id_to_effect_node_index.contains(element_id) ||
          element_id_to_scroll_node_index.contains(element_id) ||
          element_id_to_transform_node_index.contains(element_id);

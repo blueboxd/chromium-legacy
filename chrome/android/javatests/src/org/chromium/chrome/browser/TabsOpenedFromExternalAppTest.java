@@ -67,7 +67,7 @@ public class TabsOpenedFromExternalAppTest {
 
     private static final String EXTERNAL_APP_1_ID = "app1";
     private static final String EXTERNAL_APP_2_ID = "app2";
-    private static final String ANDROID_APP_REFERRER = "android-app://com.my.great.great.app";
+    private static final String ANDROID_APP_REFERRER = "android-app://com.my.great.great.app/";
     private static final String HTTPS_REFERRER = "https://chromium.org/";
     private static final String HTTPS_REFERRER_WITH_PATH = "https://chromium.org/path1/path2";
 

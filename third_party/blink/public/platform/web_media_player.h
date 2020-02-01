@@ -190,6 +190,7 @@ class WebMediaPlayer {
   virtual bool Seeking() const = 0;
   virtual double Duration() const = 0;
   virtual double CurrentTime() const = 0;
+  virtual bool IsEnded() const = 0;
 
   virtual bool PausedWhenHidden() const { return false; }
 

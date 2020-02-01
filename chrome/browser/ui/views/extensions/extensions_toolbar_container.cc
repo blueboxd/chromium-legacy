@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
@@ -46,6 +47,7 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
   extensions_button_->EnableCanvasFlippingForRTLUI(false);
   extensions_button_->SetProperty(views::kFlexBehaviorKey,
                                   views::FlexSpecification());
+  extensions_button_->SetID(VIEW_ID_EXTENSIONS_MENU_BUTTON);
   AddMainButton(extensions_button_);
   target_layout_manager()
       ->SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse)

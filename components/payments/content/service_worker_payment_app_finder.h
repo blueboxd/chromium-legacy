@@ -30,6 +30,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace payments {
 
 class PaymentManifestDownloader;
@@ -51,6 +55,10 @@ class ServiceWorkerPaymentAppFinder {
   // |requested_method_data|, verifies these apps are allowed to handle these
   // payment methods, and filters them by their capabilities.
   //
+  // |merchant_origin| should be the origin of the iframe that created the
+  // PaymentRequest object. It is used by security features like
+  // 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  //
   // The payment apps will be returned through |callback|. After |callback| has
   // been invoked, it's safe to show the apps in UI for user to select one of
   // these apps for payment.
@@ -61,6 +69,7 @@ class ServiceWorkerPaymentAppFinder {
   //
   // The method should be called on the UI thread.
   void GetAllPaymentApps(
+      const url::Origin& merchant_origin,
       content::WebContents* web_contents,
       scoped_refptr<PaymentManifestWebDataService> cache,
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,

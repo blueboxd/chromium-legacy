@@ -333,7 +333,7 @@ PanelNodeMenu = class extends PanelMenu {
      */
     findMoreNodes_() {
       while (this.walker_.next().node) {
-        var node = this.walker_.node;
+        const node = this.walker_.node;
         if (node == this.node_) {
           this.selectNext_ = true;
         }

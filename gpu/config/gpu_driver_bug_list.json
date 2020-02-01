@@ -3543,6 +3543,18 @@
         "GL_EXT_memory_object_fd",
         "GL_EXT_semaphore_fd"
       ]
+    },
+    {
+      "id": 332,
+      "cr_bugs": [1045586],
+      "description": "Send empty video hdr metadata due to crashes on AMD",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "use_empty_video_hdr_metadata"
+      ]
     }
   ]
 }

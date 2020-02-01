@@ -152,9 +152,8 @@ void SharedWorkerHost::Start(
 
   // Register with DevTools.
   bool pause_on_start;
-  base::UnguessableToken devtools_worker_token;
   devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(
-      this, &pause_on_start, &devtools_worker_token);
+      this, &pause_on_start, &dev_tools_token_);
 
   auto renderer_preferences = blink::mojom::RendererPreferences::New();
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
@@ -204,7 +203,7 @@ void SharedWorkerHost::Start(
   factory_.Bind(std::move(factory));
   factory_->CreateSharedWorker(
       std::move(info), GetContentClient()->browser()->GetUserAgent(),
-      pause_on_start, devtools_worker_token, std::move(renderer_preferences),
+      pause_on_start, dev_tools_token_, std::move(renderer_preferences),
       std::move(preference_watcher_receiver), std::move(content_settings),
       service_worker_handle_->TakeProviderInfo(),
       appcache_handle_
@@ -236,7 +235,7 @@ void SharedWorkerHost::Start(
   // Notify the service that the worker was started and that some clients were
   // already connected.
   service_->NotifyWorkerStarted(instance_, worker_process_host_->GetID(),
-                                devtools_worker_token);
+                                dev_tools_token_);
   for (const auto& client : clients_) {
     service_->NotifyClientAdded(instance_, client.render_frame_host_id);
   }

@@ -181,12 +181,10 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             quota_manager_->proxy(),
             base::DefaultClock::GetInstance(),
             ChromeBlobStorageContext::GetRemoteFor(&browser_context_),
+            /*native_file_system_context=*/mojo::NullRemote(),
             base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
             nullptr)),
-        host_(new IndexedDBDispatcherHost(
-                  kFakeProcessId,
-                  context_impl_,
-                  ChromeBlobStorageContext::GetRemoteFor(&browser_context_)),
+        host_(new IndexedDBDispatcherHost(kFakeProcessId, context_impl_),
               base::OnTaskRunnerDeleter(context_impl_->IDBTaskRunner())) {}
 
   void TearDown() override {

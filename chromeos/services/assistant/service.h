@@ -90,8 +90,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void SetIdentityAccessorForTesting(
       mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor);
 
-  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
-
   void SetAssistantManagerServiceForTesting(
       std::unique_ptr<AssistantManagerService> assistant_manager_service);
 

@@ -41,21 +41,21 @@ class PLATFORM_EXPORT ContiguousContainerBase {
   DISALLOW_NEW();
 
  protected:
-  explicit ContiguousContainerBase(size_t max_object_size);
+  explicit ContiguousContainerBase(wtf_size_t max_object_size);
   ContiguousContainerBase(ContiguousContainerBase&&);
   ~ContiguousContainerBase();
 
   ContiguousContainerBase& operator=(ContiguousContainerBase&&);
 
-  size_t size() const { return elements_.size(); }
+  wtf_size_t size() const { return elements_.size(); }
   bool IsEmpty() const { return !size(); }
-  size_t CapacityInBytes() const;
-  size_t UsedCapacityInBytes() const;
-  size_t MemoryUsageInBytes() const;
+  wtf_size_t CapacityInBytes() const;
+  wtf_size_t UsedCapacityInBytes() const;
+  wtf_size_t MemoryUsageInBytes() const;
 
   // These do not invoke constructors or destructors.
-  void ReserveInitialCapacity(size_t, const char* type_name);
-  void* Allocate(size_t object_size, const char* type_name);
+  void ReserveInitialCapacity(wtf_size_t, const char* type_name);
+  void* Allocate(wtf_size_t object_size, const char* type_name);
   void RemoveLast();
   void Clear();
   void Swap(ContiguousContainerBase&);
@@ -69,11 +69,11 @@ class PLATFORM_EXPORT ContiguousContainerBase {
  private:
   class Buffer;
 
-  Buffer* AllocateNewBufferForNextAllocation(size_t, const char* type_name);
+  Buffer* AllocateNewBufferForNextAllocation(wtf_size_t, const char* type_name);
 
   Vector<std::unique_ptr<Buffer>> buffers_;
   unsigned end_index_;
-  size_t max_object_size_;
+  wtf_size_t max_object_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ContiguousContainerBase);
 };
@@ -138,10 +138,10 @@ class ContiguousContainer : public ContiguousContainerBase {
 
   using value_type = BaseElementType;
 
-  explicit ContiguousContainer(size_t max_object_size)
+  explicit ContiguousContainer(wtf_size_t max_object_size)
       : ContiguousContainerBase(Align(max_object_size)) {}
 
-  ContiguousContainer(size_t max_object_size, size_t initial_size_bytes)
+  ContiguousContainer(wtf_size_t max_object_size, wtf_size_t initial_size_bytes)
       : ContiguousContainer(max_object_size) {
     ReserveInitialCapacity(std::max(max_object_size, initial_size_bytes),
                            WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
@@ -190,8 +190,8 @@ class ContiguousContainer : public ContiguousContainerBase {
   const BaseElementType& First() const { return *begin(); }
   BaseElementType& Last() { return *rbegin(); }
   const BaseElementType& Last() const { return *rbegin(); }
-  BaseElementType& operator[](size_t index) { return *(begin() + index); }
-  const BaseElementType& operator[](size_t index) const {
+  BaseElementType& operator[](wtf_size_t index) { return *(begin() + index); }
+  const BaseElementType& operator[](wtf_size_t index) const {
     return *(begin() + index);
   }
 
@@ -226,7 +226,7 @@ class ContiguousContainer : public ContiguousContainerBase {
 
   // Appends a new element using memcpy, then default-constructs a base
   // element in its place. Use with care.
-  BaseElementType& AppendByMoving(BaseElementType& item, size_t size) {
+  BaseElementType& AppendByMoving(BaseElementType& item, wtf_size_t size) {
     DCHECK_GE(size, sizeof(BaseElementType));
     void* new_item = AlignedAllocate(size);
     memcpy(new_item, static_cast<void*>(&item), size);
@@ -235,15 +235,15 @@ class ContiguousContainer : public ContiguousContainerBase {
   }
 
  private:
-  void* AlignedAllocate(size_t size) {
+  void* AlignedAllocate(wtf_size_t size) {
     void* result = ContiguousContainerBase::Allocate(
         Align(size), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
     DCHECK_EQ(reinterpret_cast<intptr_t>(result) & (alignment - 1), 0u);
     return result;
   }
 
-  static size_t Align(size_t size) {
-    size_t aligned_size = alignment * ((size + alignment - 1) / alignment);
+  static wtf_size_t Align(wtf_size_t size) {
+    wtf_size_t aligned_size = alignment * ((size + alignment - 1) / alignment);
     DCHECK_EQ(aligned_size % alignment, 0u);
     DCHECK_GE(aligned_size, size);
     DCHECK_LT(aligned_size, size + alignment);

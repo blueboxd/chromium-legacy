@@ -778,9 +778,6 @@
       status: {"ChromeOS": "stable"},
     },
     {
-      name: "FractionalMouseEvent",
-    },
-    {
       name: "FractionalScrollOffsets",
       status: "experimental",
     },
@@ -1400,6 +1397,7 @@
     },
     {
       name: "ReducedReferrerGranularity",
+      status: "experimental",
     },
     {
       name: "RemotePlayback",

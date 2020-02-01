@@ -1141,7 +1141,8 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
   if (!frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
     return nullptr;
 
-  frame.View()->UpdateAllLifecyclePhasesExceptPaint();
+  frame.View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kDragImage);
   DCHECK(frame.GetDocument()->IsActive());
 
   FloatRect painting_rect = ClippedSelection(frame);

@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
@@ -86,10 +87,10 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
 
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-    content::ResourceType resource_type) {
+    ResourceType resource_type) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Requested",
                             resource_type);
-  return resource_type == content::ResourceType::kMainFrame;
+  return resource_type == ResourceType::kMainFrame;
 }
 
 }  // namespace safe_browsing

@@ -2772,6 +2772,7 @@ if (enable_java_templates) {
                                "native_lib_placeholders",
                                "no_build_hooks",
                                "processor_args_javac",
+                               "skip_jetify",
                                "secondary_abi_loadable_modules",
                                "secondary_native_lib_placeholders",
                                "sources",
@@ -3452,6 +3453,7 @@ if (enable_java_templates) {
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
+                               "skip_jetify",
                                "shared_libraries",
                                "shared_resources",
                                "shared_resources_whitelist_locales",
@@ -4248,6 +4250,7 @@ if (enable_java_templates) {
       "jar_excluded_patterns",
       "jar_included_patterns",
       "requires_android",
+      "skip_jetify",
       "testonly",
     ]
 
@@ -4279,7 +4282,6 @@ if (enable_java_templates) {
                                  "deps",
                                  "input_jars_paths",
                                  "proguard_configs",
-                                 "skip_jetify",
                                ])
         if (!defined(deps)) {
           deps = []

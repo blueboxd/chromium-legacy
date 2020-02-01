@@ -30,7 +30,6 @@ namespace storage {
 
 namespace {
 
-using test::GetAllCallback;
 using test::MakeGetAllCallback;
 using test::MakeSuccessCallback;
 using CacheMode = StorageAreaImpl::CacheMode;
@@ -141,9 +140,9 @@ class StorageAreaImplTest : public testing::Test,
                             public blink::mojom::StorageAreaObserver {
  public:
   struct Observation {
-    enum { kAdd, kChange, kDelete, kDeleteAll, kSendOldValue } type;
+    enum { kChange, kChangeFailed, kDelete, kDeleteAll, kSendOldValue } type;
     std::string key;
-    std::string old_value;
+    base::Optional<std::string> old_value;
     std::string new_value;
     std::string source;
     bool should_send_old_value;
@@ -169,7 +168,7 @@ class StorageAreaImplTest : public testing::Test,
 
     storage_area_->Bind(storage_area_remote_.BindNewPipeAndPassReceiver());
     storage_area_remote_->AddObserver(
-        observer_receiver_.BindNewEndpointAndPassRemote());
+        observer_receiver_.BindNewPipeAndPassRemote());
   }
 
   ~StorageAreaImplTest() override { task_environment_.RunUntilIdle(); }
@@ -280,7 +279,7 @@ class StorageAreaImplTest : public testing::Test,
   std::string GetSyncStrUsingGetAll(StorageAreaImpl* area_impl,
                                     const std::string& key) {
     std::vector<blink::mojom::KeyValuePtr> data;
-    bool success = test::GetAllSyncOnDedicatedPipe(area_impl, &data);
+    bool success = test::GetAllSync(area_impl, &data);
 
     if (!success)
       return "";
@@ -331,35 +330,41 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<uint8_t> test_value2_bytes_ = ToBytes(test_value2_);
 
  private:
-  // LevelDBObserver:
-  void KeyAdded(const std::vector<uint8_t>& key,
-                const std::vector<uint8_t>& value,
-                const std::string& source) override {
-    observations_.push_back(
-        {Observation::kAdd, ToString(key), "", ToString(value), source, false});
-  }
+  // blink::mojom::StorageAreaObserver:
   void KeyChanged(const std::vector<uint8_t>& key,
                   const std::vector<uint8_t>& new_value,
-                  const std::vector<uint8_t>& old_value,
+                  const base::Optional<std::vector<uint8_t>>& old_value,
                   const std::string& source) override {
+    base::Optional<std::string> optional_old_value;
+    if (old_value)
+      optional_old_value = ToString(*old_value);
     observations_.push_back({Observation::kChange, ToString(key),
-                             ToString(old_value), ToString(new_value), source,
+                             optional_old_value, ToString(new_value), source,
                              false});
   }
-  void KeyDeleted(const std::vector<uint8_t>& key,
-                  const std::vector<uint8_t>& old_value,
-                  const std::string& source) override {
-    observations_.push_back({Observation::kDelete, ToString(key),
-                             ToString(old_value), "", source, false});
+  void KeyChangeFailed(const std::vector<uint8_t>& key,
+                       const std::string& source) override {
+    observations_.push_back(
+        {Observation::kChangeFailed, ToString(key), "", "", source, false});
   }
-  void AllDeleted(const std::string& source) override {
+  void KeyDeleted(const std::vector<uint8_t>& key,
+                  const base::Optional<std::vector<uint8_t>>& old_value,
+                  const std::string& source) override {
+    base::Optional<std::string> optional_old_value;
+    if (old_value)
+      optional_old_value = ToString(*old_value);
+    observations_.push_back({Observation::kDelete, ToString(key),
+                             optional_old_value, "", source, false});
+  }
+  void AllDeleted(bool was_nonempty, const std::string& source) override {
     observations_.push_back(
         {Observation::kDeleteAll, "", "", "", source, false});
   }
   void ShouldSendOldValueOnMutations(bool value) override {
-    if (should_record_send_old_value_observations_)
+    if (should_record_send_old_value_observations_) {
       observations_.push_back(
           {Observation::kSendOldValue, "", "", "", "", value});
+    }
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -367,8 +372,7 @@ class StorageAreaImplTest : public testing::Test,
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
   mojo::Remote<blink::mojom::StorageArea> storage_area_remote_;
-  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver>
-      observer_receiver_{this};
+  mojo::Receiver<blink::mojom::StorageAreaObserver> observer_receiver_{this};
   std::vector<Observation> observations_;
   bool should_record_send_old_value_observations_ = false;
 };
@@ -402,7 +406,7 @@ TEST_F(StorageAreaImplTest, NoDataCallsOnMapLoaded) {
   auto area = std::make_unique<StorageAreaImpl>(database(), test_copy_prefix2_,
                                                 delegate(), options);
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSyncOnDedicatedPipe(area.get(), &data));
+  EXPECT_TRUE(test::GetAllSync(area.get(), &data));
   EXPECT_TRUE(data.empty());
   EXPECT_EQ(1, delegate()->map_load_count());
 }
@@ -527,28 +531,34 @@ TEST_P(StorageAreaImplParamTest, PutObservations) {
 
   EXPECT_TRUE(PutSync(ToBytes(key), ToBytes(value1), base::nullopt, source1));
   ASSERT_EQ(1u, observations().size());
-  EXPECT_EQ(Observation::kAdd, observations()[0].type);
+  EXPECT_EQ(Observation::kChange, observations()[0].type);
   EXPECT_EQ(key, observations()[0].key);
   EXPECT_EQ(value1, observations()[0].new_value);
+  EXPECT_EQ(base::nullopt, observations()[0].old_value);
   EXPECT_EQ(source1, observations()[0].source);
 
   EXPECT_TRUE(PutSync(ToBytes(key), ToBytes(value2), ToBytes(value1), source2));
   ASSERT_EQ(2u, observations().size());
   EXPECT_EQ(Observation::kChange, observations()[1].type);
   EXPECT_EQ(key, observations()[1].key);
-  EXPECT_EQ(value1, observations()[1].old_value);
+  EXPECT_EQ(value1, *observations()[1].old_value);
   EXPECT_EQ(value2, observations()[1].new_value);
   EXPECT_EQ(source2, observations()[1].source);
 
-  // Same put should not cause another observation.
+  // Same put should cause another observation.
   EXPECT_TRUE(PutSync(ToBytes(key), ToBytes(value2), ToBytes(value2), source2));
-  ASSERT_EQ(2u, observations().size());
+  ASSERT_EQ(3u, observations().size());
+  EXPECT_EQ(Observation::kChange, observations()[2].type);
+  EXPECT_EQ(key, observations()[2].key);
+  EXPECT_EQ(value2, *observations()[2].old_value);
+  EXPECT_EQ(value2, observations()[2].new_value);
+  EXPECT_EQ(source2, observations()[2].source);
 }
 
 TEST_P(StorageAreaImplParamTest, DeleteNonExistingKey) {
   storage_area_impl()->SetCacheModeForTesting(GetParam());
   EXPECT_TRUE(DeleteSync(ToBytes("doesn't exist"), std::vector<uint8_t>()));
-  EXPECT_EQ(0u, observations().size());
+  EXPECT_EQ(1u, observations().size());
 }
 
 TEST_P(StorageAreaImplParamTest, DeleteExistingKey) {
@@ -561,7 +571,7 @@ TEST_P(StorageAreaImplParamTest, DeleteExistingKey) {
   ASSERT_EQ(1u, observations().size());
   EXPECT_EQ(Observation::kDelete, observations()[0].type);
   EXPECT_EQ(key, observations()[0].key);
-  EXPECT_EQ(value, observations()[0].old_value);
+  EXPECT_EQ(value, *observations()[0].old_value);
   EXPECT_EQ(test_source_, observations()[0].source);
 
   EXPECT_TRUE(HasDatabaseEntry(test_prefix_ + key));
@@ -590,9 +600,11 @@ TEST_P(StorageAreaImplParamTest, DeleteAllWithoutLoadedMap) {
   EXPECT_FALSE(HasDatabaseEntry(test_prefix_ + key));
   EXPECT_TRUE(HasDatabaseEntry(dummy_key));
 
-  // Deleting all again should still work, but not cause an observation.
+  // Deleting all again should still work, and still cause an observation.
   EXPECT_TRUE(DeleteAllSync());
-  ASSERT_EQ(1u, observations().size());
+  ASSERT_EQ(2u, observations().size());
+  EXPECT_EQ(Observation::kDeleteAll, observations()[1].type);
+  EXPECT_EQ(test_source_, observations()[1].source);
 
   // And now we've deleted all, writing something the quota size should work.
   EXPECT_TRUE(PutSync(std::vector<uint8_t>(kTestSizeLimit, 'b'),
@@ -647,7 +659,9 @@ TEST_P(StorageAreaImplParamTest, DeleteAllWithoutLoadedEmptyMap) {
   ClearDatabase();
 
   EXPECT_TRUE(DeleteAllSync());
-  ASSERT_EQ(0u, observations().size());
+  ASSERT_EQ(1u, observations().size());
+  EXPECT_EQ(Observation::kDeleteAll, observations()[0].type);
+  EXPECT_EQ(test_source_, observations()[0].source);
 }
 
 TEST_F(StorageAreaImplParamTest, PutOverQuotaLargeValue) {
@@ -904,9 +918,7 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
   ASSERT_TRUE(PutSync(key, value2, value));
   EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
 
-  bool get_all_success = false;
   std::vector<blink::mojom::KeyValuePtr> data;
-  bool result = false;
 
   base::RunLoop loop;
   bool put_result1 = false;
@@ -918,9 +930,10 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
         key, value, value2, test_source_,
         MakeSuccessCallback(barrier.AddClosure(), &put_result1));
 
-    storage_area()->GetAll(
-        GetAllCallback::CreateAndBind(&result, barrier.AddClosure()),
-        MakeGetAllCallback(&get_all_success, &data));
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> unused_observer;
+    ignore_result(unused_observer.InitWithNewPipeAndPassReceiver());
+    storage_area()->GetAll(std::move(unused_observer),
+                           MakeGetAllCallback(barrier.AddClosure(), &data));
     storage_area()->Put(
         key, value2, value, test_source_,
         MakeSuccessCallback(barrier.AddClosure(), &put_result2));
@@ -933,7 +946,6 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
 
   loop.Run();
 
-  EXPECT_TRUE(result);
   EXPECT_TRUE(put_result1);
 
   EXPECT_EQ(2u, data.size());
@@ -942,8 +954,6 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
       << ToString(data[1]->value) << " vs expected " << test_value1_;
   EXPECT_TRUE(data[0]->Equals(blink::mojom::KeyValue(key, value)))
       << ToString(data[0]->value) << " vs expected " << ToString(value);
-
-  EXPECT_TRUE(get_all_success);
 
   // The last "put" isn't committed yet.
   EXPECT_EQ("foo", GetDatabaseEntry(test_prefix_ + test_key2_));
@@ -977,8 +987,6 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
 
   bool put_success = false;
   std::vector<blink::mojom::KeyValuePtr> data;
-  bool get_all_success = false;
-  bool get_all_callback_success = false;
   bool delete_success = false;
   {
     BarrierBuilder barrier(loop.QuitClosure());
@@ -993,9 +1001,11 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
         upgrade_loop.QuitClosure());
     upgrade_loop.Run();
 
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> unused_observer;
+    ignore_result(unused_observer.InitWithNewPipeAndPassReceiver());
     storage_area()->GetAll(
-        GetAllCallback::CreateAndBind(&get_all_success, barrier.AddClosure()),
-        MakeGetAllCallback(&get_all_callback_success, &data));
+        std::move(unused_observer),
+        MakeGetAllCallback(upgrade_loop.QuitClosure(), &data));
 
     // This Delete() should not affect the value returned by GetAll().
     storage_area()->Delete(
@@ -1011,9 +1021,7 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
   EXPECT_TRUE(data[0]->Equals(blink::mojom::KeyValue(key, value)))
       << ToString(data[0]->value) << " vs expected " << ToString(value2);
 
-  EXPECT_TRUE(get_all_callback_success);
   EXPECT_TRUE(put_success);
-  EXPECT_TRUE(get_all_success);
   EXPECT_TRUE(delete_success);
 
   // GetAll shouldn't trigger a commit before it runs now because the value
@@ -1085,6 +1093,7 @@ TEST_F(StorageAreaImplTest, SetCacheModeConsistent) {
 }
 
 TEST_F(StorageAreaImplTest, SendOldValueObservations) {
+  ASSERT_EQ(0u, observations().size());
   should_record_send_old_value_observations(true);
   storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   // Flush tasks on mojo thread to observe callback.
@@ -1094,11 +1103,11 @@ TEST_F(StorageAreaImplTest, SendOldValueObservations) {
   // Flush tasks on mojo thread to observe callback.
   EXPECT_TRUE(DeleteSync(ToBytes("doesn't exist"), base::nullopt));
 
-  ASSERT_EQ(2u, observations().size());
+  ASSERT_EQ(4u, observations().size());
   EXPECT_EQ(Observation::kSendOldValue, observations()[0].type);
   EXPECT_FALSE(observations()[0].should_send_old_value);
-  EXPECT_EQ(Observation::kSendOldValue, observations()[1].type);
-  EXPECT_TRUE(observations()[1].should_send_old_value);
+  EXPECT_EQ(Observation::kSendOldValue, observations()[2].type);
+  EXPECT_TRUE(observations()[2].should_send_old_value);
 }
 
 TEST_P(StorageAreaImplParamTest, PrefixForking) {
@@ -1288,7 +1297,7 @@ TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
         state.val2 = base::nullopt;
         successes.push_back(false);
         areas[i]->DeleteAll(
-            test_source_,
+            test_source_, mojo::NullRemote(),
             MakeSuccessCallback(barrier.AddClosure(), &successes.back()));
       }
       if (i % 2 == 0 && forks + 1 < kTotalAreas) {

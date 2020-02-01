@@ -266,8 +266,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeReusingLayers) {
                           host_->pending_tree());
 
   // We have to push properties to pick up the destruction list pointer.
-  TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
-                                        host_->pending_tree());
+  TreeSynchronizer::PushLayerProperties(host_.get(), host_->pending_tree());
 
   // Add a new layer to the Layer side
   layer_tree_root->children()[0]->AddChild(
@@ -633,7 +632,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   // the pending base and active base must be the same at this stage.
   scoped_refptr<SyncedScrollOffset> scroll_layer_offset =
       new SyncedScrollOffset;
-  scroll_layer_offset->PushMainToPending(scroll_layer->CurrentScrollOffset());
+  scroll_layer_offset->PushMainToPending(scroll_layer->scroll_offset());
   scroll_layer_offset->PushPendingToActive();
   EXPECT_TRUE(AreScrollOffsetsEqual(
       scroll_layer_offset.get(),
@@ -644,7 +643,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   scoped_refptr<SyncedScrollOffset> transient_scroll_layer_offset =
       new SyncedScrollOffset;
   transient_scroll_layer_offset->PushMainToPending(
-      transient_scroll_layer->CurrentScrollOffset());
+      transient_scroll_layer->scroll_offset());
   transient_scroll_layer_offset->PushPendingToActive();
   EXPECT_TRUE(
       AreScrollOffsetsEqual(transient_scroll_layer_offset.get(),
@@ -668,7 +667,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
                                   base::flat_set<ElementId>());
   host_->proxy()->SetNeedsCommit();
   host_->ApplyScrollAndScale(scroll_info.get());
-  EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->CurrentScrollOffset());
+  EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->scroll_offset());
   scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 100));
 
   // More update to ScrollOffset active delta: gfx::ScrollOffset(20, 20)

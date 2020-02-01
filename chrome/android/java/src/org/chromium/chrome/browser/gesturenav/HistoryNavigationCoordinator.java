@@ -148,7 +148,10 @@ public class HistoryNavigationCoordinator implements InsetObserverView.WindowIns
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             return true;
         } else {
-            assert mCompositorViewHolder.isAttachedToWindow();
+            // Preserve the previous enabled status if queried when the view is in detached state.
+            if (mCompositorViewHolder == null || !mCompositorViewHolder.isAttachedToWindow()) {
+                return mEnabled;
+            }
             Insets insets = mCompositorViewHolder.getRootWindowInsets().getSystemGestureInsets();
             return insets.left == 0 && insets.right == 0;
         }

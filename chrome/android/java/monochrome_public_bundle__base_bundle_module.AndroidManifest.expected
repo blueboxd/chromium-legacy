@@ -1050,6 +1050,19 @@
     </activity>
     <activity-alias
         android:enabled="false"
+        android:exported="true"
+        android:icon="@drawable/icon_webview"
+        android:label="WebView
+        DevTools"
+        android:name="org.chromium.android_webview.devui.MonochromeLauncherActivity"
+        android:targetActivity="org.chromium.android_webview.devui.MainActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
+        android:enabled="false"
         android:name="org.chromium.android_webview.devui.DeveloperModeState"
         android:process=":webview_apk"
         android:targetActivity="org.chromium.android_webview.devui.MainActivity"/>

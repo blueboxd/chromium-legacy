@@ -33,9 +33,11 @@ std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_GL, GPU},
     {LayerTreeTest::RENDERER_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+#if defined(GL_ON_PLATFORM)
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
+#endif
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, GPU},
 #endif
@@ -877,9 +879,11 @@ MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, kForceShaders},
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY},
                    kUseAntialiasing | kForceShaders},
+#if defined(GL_ON_PLATFORM)
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
                    kUseAntialiasing},
+#endif
 #if defined(ENABLE_CC_VULKAN_TESTS)
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY},

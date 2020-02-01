@@ -36,7 +36,7 @@ NavigationImpl::~NavigationImpl() {
 void NavigationImpl::SetJavaNavigation(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& java_navigation) {
-  java_navigation_.Reset(env, java_navigation);
+  java_navigation_ = java_navigation;
 }
 
 ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(

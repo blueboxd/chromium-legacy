@@ -855,13 +855,13 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
 TEST_P(PaintControllerTest, CachedSubsequenceContainingFragments) {
   GraphicsContext context(GetPaintController());
   FakeDisplayItemClient root("root");
-  constexpr size_t kFragmentCount = 3;
+  constexpr wtf_size_t kFragmentCount = 3;
   FakeDisplayItemClient container("container");
 
   // The first paint.
   auto paint_container = [this, &context, &container]() {
     SubsequenceRecorder r(context, container);
-    for (size_t i = 0; i < kFragmentCount; ++i) {
+    for (wtf_size_t i = 0; i < kFragmentCount; ++i) {
       ScopedDisplayItemFragment scoped_fragment(context, i);
       ScopedPaintChunkProperties content_chunk_properties(
           GetPaintController(), DefaultPaintChunkProperties(), container,

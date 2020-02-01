@@ -84,6 +84,29 @@ CredentialLeakDialogView::CredentialLeakDialogView(
                                    controller_->GetAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    controller_->GetCancelButtonLabel());
+
+  using ControllerClosureFn = void (CredentialLeakDialogController::*)(void);
+  auto close_callback = [](CredentialLeakDialogController** controller,
+                           ControllerClosureFn fn) {
+    // Null out the controller pointer stored in the parent object, to avoid any
+    // further calls to the controller and inhibit recursive closes that would
+    // otherwise happen in ControllerGone(), and invoke the provided method on
+    // the controller.
+    //
+    // Note that when this lambda gets bound it closes over &controller_, not
+    // controller_ itself!
+    (std::exchange(*controller, nullptr)->*(fn))();
+  };
+
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(close_callback, base::Unretained(&controller_),
+                     &CredentialLeakDialogController::OnAcceptDialog));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(close_callback, base::Unretained(&controller_),
+                     &CredentialLeakDialogController::OnCancelDialog));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(close_callback, base::Unretained(&controller_),
+                     &CredentialLeakDialogController::OnCloseDialog));
 }
 
 CredentialLeakDialogView::~CredentialLeakDialogView() = default;
@@ -95,8 +118,12 @@ void CredentialLeakDialogView::ShowCredentialLeakPrompt() {
 
 void CredentialLeakDialogView::ControllerGone() {
   // Widget::Close() synchronously calls Close() on this instance, which resets
-  // the |controller_|.
-  GetWidget()->Close();
+  // the |controller_|. The null check for |controller_| here is to avoid
+  // reentry into Close() - |controller_| might have been nulled out by the
+  // closure callbacks already, in which case the dialog is already closing. See
+  // the definition of |close_callback| in the constructor.
+  if (controller_)
+    GetWidget()->Close();
 }
 
 ui::ModalType CredentialLeakDialogView::GetModalType() const {
@@ -108,33 +135,6 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-bool CredentialLeakDialogView::Cancel() {
-  if (controller_)
-    // Since OnCancelDialog() synchronously invokes Close() on this instance, we
-    // need to clear the |controller_| before to avoid notifying the controller
-    // twice.
-    std::exchange(controller_, nullptr)->OnCancelDialog();
-  return true;
-}
-
-bool CredentialLeakDialogView::Accept() {
-  if (controller_)
-    // Since OnAcceptDialog() synchronously invokes Close() on this instance, we
-    // need to clear the |controller_| before to avoid notifying the controller
-    // twice.
-    std::exchange(controller_, nullptr)->OnAcceptDialog();
-  return true;
-}
-
-bool CredentialLeakDialogView::Close() {
-  if (controller_)
-    // Since OnCloseDialog() synchronously invokes Close() on this instance, we
-    // need to clear the |controller_| before to avoid notifying the controller
-    // twice.
-    std::exchange(controller_, nullptr)->OnCloseDialog();
-  return true;
 }
 
 int CredentialLeakDialogView::GetDialogButtons() const {

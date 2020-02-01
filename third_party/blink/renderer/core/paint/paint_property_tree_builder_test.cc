@@ -5306,7 +5306,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
 
   opacity_element->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(crbug.com/900241): Without CompositeAfterPaint, we create effect and
@@ -5370,7 +5371,8 @@ TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
   Element* clip = GetDocument().getElementById("clip");
   ASSERT_TRUE(clip);
   clip->remove();
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   {
     const auto* rect = GetLayoutObjectByElementId("rect");
@@ -5391,7 +5393,8 @@ TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
   // Remove scrolling from the root.
   Element* force_scroll_element = GetDocument().getElementById("forceScroll");
   force_scroll_element->setAttribute(html_names::kStyleAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   // Always create scroll translation for layout view even the document does
   // not scroll (not enough content).
   EXPECT_TRUE(DocScrollTranslation());
@@ -5501,7 +5504,8 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipHitTestChangeDoesNotCauseFullRepaint) {
   EXPECT_FALSE(child_layer->SelfNeedsRepaint());
 
   GetDocument().body()->setAttribute(html_names::kClassAttr, "noscrollbars");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(child_layer->SelfNeedsRepaint());
 }
 
@@ -6074,7 +6078,8 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {
 
   auto* div = GetDocument().getElementById("div");
   div->setAttribute(html_names::kClassAttr, "transluscent");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(
       ToLayoutBox(div->GetLayoutObject())->Layer()->SelfNeedsRepaint());
 
@@ -6281,7 +6286,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
   Element* element = GetDocument().getElementById("element");
   element->setAttribute(html_names::kStyleAttr, "opacity: 0.9");
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.9f);
   EXPECT_FLOAT_EQ(cc_effect->opacity, 0.9f);
   EXPECT_TRUE(cc_effect->effect_changed);
@@ -6345,7 +6351,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
   EXPECT_FLOAT_EQ(current_scroll_offset.y(), 0);
 
   GetDocument().getElementById("element")->setScrollTop(10.);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   EXPECT_FLOAT_SIZE_EQ(FloatSize(0, -10),
                        properties->ScrollTranslation()->Translation2D());
@@ -6389,7 +6396,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   Element* outer = GetDocument().getElementById("outer");
   outer->setAttribute(html_names::kStyleAttr, "transform: translateY(10px)");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
 
   EXPECT_TRUE(
       GetDocument().View()->GetPaintArtifactCompositor()->NeedsUpdate());

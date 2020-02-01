@@ -321,6 +321,7 @@ class QuicNetworkTransactionTest
         auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         http_server_properties_(std::make_unique<HttpServerProperties>()),
         ssl_data_(ASYNC, OK) {
+    FLAGS_quic_disable_http3_settings_grease_randomness = true;
     request_.method = "GET";
     std::string url("https://");
     url.append(kDefaultServerHostName);
@@ -2668,7 +2669,7 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                         "No recent network activity."));
+                         "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // Add successful TCP data so that TCP job will succeed.
@@ -2777,7 +2778,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                         "No recent network activity."));
+                         "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // Add successful TCP data so that TCP job will succeed.
@@ -2915,7 +2916,7 @@ TEST_P(QuicNetworkTransactionTest,
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                         "No recent network activity."));
+                         "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // Add successful TCP data so that TCP job will succeed.
@@ -3043,7 +3044,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                         "No recent network activity."));
+                         "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // Add hanging TCP data so that TCP job will never succeeded.
@@ -3191,7 +3192,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                           "No recent network activity."));
+                           "No recent network activity after 4s. Timeout:4s"));
   } else {
     // Settings were sent in the request packet so there is only 1 packet to
     // retransmit.
@@ -3214,7 +3215,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                           "No recent network activity."));
+                           "No recent network activity after 4s. Timeout:4s"));
   }
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -3674,7 +3675,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                           "No recent network activity."));
+                           "No recent network activity after 4s. Timeout:4s"));
   } else {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
@@ -3695,7 +3696,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                           "No recent network activity."));
+                           "No recent network activity after 4s. Timeout:4s"));
   }
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -7422,7 +7423,9 @@ class QuicNetworkTransactionWithDestinationTest
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
-        ssl_data_(ASYNC, OK) {}
+        ssl_data_(ASYNC, OK) {
+    FLAGS_quic_disable_http3_settings_grease_randomness = true;
+  }
 
   void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
@@ -7621,6 +7624,7 @@ class QuicNetworkTransactionWithDestinationTest
         version_.transport_version, n);
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   quic::ParsedQuicVersionVector supported_versions_;

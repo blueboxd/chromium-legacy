@@ -466,6 +466,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   size_t NumOpenQuicTransports() const;
 
+  size_t num_url_loader_factories_for_testing() const {
+    return url_loader_factories_.size();
+  }
+
  private:
   URLRequestContextOwner MakeURLRequestContext();
 

@@ -488,7 +488,8 @@ MockFeedback = class {
      * @private
      */
     static matchAndConsume_(text, props, pending) {
-      for (var i = 0, candidate; candidate = pending[i]; ++i) {
+      let i, candidate;
+      for (i = 0; candidate = pending[i]; ++i) {
         let candidateText = candidate.text;
         if (typeof (candidateText) != 'string') {
           candidateText = candidateText.toString();

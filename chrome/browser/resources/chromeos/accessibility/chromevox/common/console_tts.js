@@ -56,6 +56,9 @@ ConsoleTts = class {
   addCapturingEventListener(listener) {}
 
   /** @override */
+  removeCapturingEventListener(listener) {}
+
+  /** @override */
   increaseOrDecreaseProperty() {}
 
   /** @override */

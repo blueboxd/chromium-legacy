@@ -24,7 +24,7 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
   // in KeyEvent::ApplyLayout() which makes it possible for CrOS/Linux, for
   // example, to support host system keyboard layouts.
 #if defined(USE_OZONE)
-  auto event = std::make_unique<KeyEvent>(event_type, key_code, event_flags);
+  return std::make_unique<KeyEvent>(event_type, key_code, event_flags);
 #else
   DomCode dom_code = CodeFromXEvent(&xev);
   DomKey dom_key = GetDomKeyFromXEvent(&xev);
@@ -32,11 +32,20 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
   ValidateEventTimeClock(&timestamp);
   auto event = std::make_unique<KeyEvent>(event_type, key_code, dom_code,
                                           event_flags, dom_key, timestamp);
-#endif
 
   DCHECK(event);
   event->SetProperties(GetEventPropertiesFromXEvent(event_type, xev));
+  event->InitializeNative();
   return event;
+#endif
+}
+
+void SetEventSourceDeviceId(MouseEvent* event, const XEvent& xev) {
+  DCHECK(event);
+  if (xev.type == GenericEvent) {
+    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+    event->set_source_device_id(xiev->sourceid);
+  }
 }
 
 std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
@@ -56,6 +65,9 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
       details);
 
   DCHECK(event);
+  SetEventSourceDeviceId(event.get(), xev);
+  event->SetProperties(GetEventPropertiesFromXEvent(type, xev));
+  event->InitializeNative();
   return event;
 }
 
@@ -69,6 +81,7 @@ std::unique_ptr<MouseWheelEvent> CreateMouseWheelEvent(const XEvent& xev) {
       EventFlagsFromXEvent(xev), button_flags);
 
   DCHECK(event);
+  event->InitializeNative();
   return event;
 }
 
@@ -79,7 +92,6 @@ std::unique_ptr<TouchEvent> CreateTouchEvent(EventType type,
       GetTouchPointerDetailsFromXEvent(xev));
 
   DCHECK(event);
-
   // Touch events don't usually have |root_location| set differently than
   // |location|, since there is a touch device to display association, but this
   // doesn't happen in Ozone X11.
@@ -106,7 +118,12 @@ std::unique_ptr<ScrollEvent> CreateScrollEvent(EventType type,
       y_offset_ordinal, finger_count);
 
   DCHECK(event);
-  return event;
+  // We need to filter zero scroll offset here. Because MouseWheelEventQueue
+  // assumes we'll never get a zero scroll offset event and we need delta to
+  // determine which element to scroll on phaseBegan.
+  return (event->x_offset() != 0.0 || event->y_offset() != 0.0)
+             ? std::move(event)
+             : nullptr;
 }
 
 // Translates XI2 XEvent into a ui::Event.
@@ -120,6 +137,8 @@ std::unique_ptr<ui::Event> TranslateFromXI2Event(const XEvent& xev) {
     case ET_MOUSE_RELEASED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
+    case ET_MOUSE_ENTERED:
+    case ET_MOUSE_EXITED:
       return CreateMouseEvent(event_type, xev);
     case ET_MOUSEWHEEL:
       return CreateMouseWheelEvent(xev);
@@ -145,6 +164,7 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
   switch (xev.type) {
     case LeaveNotify:
     case EnterNotify:
+    case MotionNotify:
       return CreateMouseEvent(event_type, xev);
     case KeyPress:
     case KeyRelease:
@@ -176,7 +196,16 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
 
 // Translates a XEvent into a ui::Event.
 std::unique_ptr<Event> BuildEventFromXEvent(const XEvent& xev) {
-  return TranslateFromXEvent(xev);
+  auto event = TranslateFromXEvent(xev);
+  if (event) {
+#if defined(USE_X11)
+    // TODO(crbug.com/965991): Remove once PlatformEvent migration is done.
+    ui::ComputeEventLatencyOS(const_cast<XEvent*>(&xev));
+#else
+    ui::ComputeEventLatencyOS(event.get());
+#endif
+  }
+  return event;
 }
 
 // Convenience function that translates XEvent into ui::KeyEvent
@@ -230,15 +259,18 @@ Event::Properties GetEventPropertiesFromXEvent(EventType type,
     // IBus-gtk specific flags
     uint8_t ibus_flags = (xev.xkey.state >> kPropertyKeyboardIBusFlagOffset) &
                          kPropertyKeyboardIBusFlagMask;
-    properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
+    if (ibus_flags)
+      properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
 
   } else if (type == ET_MOUSE_EXITED) {
     // NotifyVirtual events are created for intermediate windows that the
     // pointer crosses through. These occur when middle clicking.
     // Change these into mouse move events.
     bool crossing_intermediate_window = xev.xcrossing.detail == NotifyVirtual;
-    properties.emplace(kPropertyMouseCrossedIntermediateWindow,
-                       crossing_intermediate_window);
+    if (crossing_intermediate_window) {
+      properties.emplace(kPropertyMouseCrossedIntermediateWindow,
+                         crossing_intermediate_window);
+    }
   }
   return properties;
 }

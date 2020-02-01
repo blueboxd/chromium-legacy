@@ -822,9 +822,14 @@ void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::Status status,
 bool AudioRendererImpl::HandleDecodedBuffer_Locked(
     scoped_refptr<AudioBuffer> buffer) {
   lock_.AssertAcquired();
+  bool should_render_end_of_stream = false;
   if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
     algorithm_->MarkEndOfStream();
+
+    // We received no audio to play before EOS, so enter the ended state.
+    if (first_packet_timestamp_ == kNoTimestamp)
+      should_render_end_of_stream = true;
   } else {
     if (buffer->IsBitstreamFormat() && state_ == kPlaying) {
       if (IsBeforeStartTime(*buffer))
@@ -891,6 +896,13 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
       if (received_end_of_stream_ || algorithm_->IsQueueAdequateForPlayback()) {
         if (buffering_state_ == BUFFERING_HAVE_NOTHING)
           SetBufferingState_Locked(BUFFERING_HAVE_ENOUGH);
+        // This must be done after SetBufferingState_Locked() to ensure the
+        // proper state transitions for higher levels.
+        if (should_render_end_of_stream) {
+          task_runner_->PostTask(
+              FROM_HERE, base::BindOnce(&AudioRendererImpl::OnPlaybackEnded,
+                                        weak_factory_.GetWeakPtr()));
+        }
         return false;
       }
       return true;

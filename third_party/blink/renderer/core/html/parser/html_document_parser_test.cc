@@ -37,12 +37,6 @@ class MockWebPrerenderingSupport : public WebPrerenderingSupport {
   void Add(const WebPrerender&) override {}
   void Cancel(const WebPrerender&) override {}
   void Abandon(const WebPrerender&) override {}
-  void PrefetchFinished() override { prefetch_finished_ = true; }
-
-  bool IsPrefetchFinished() const { return prefetch_finished_; }
-
- private:
-  bool prefetch_finished_ = false;
 };
 
 class HTMLDocumentParserTest : public PageTestBase {
@@ -59,10 +53,6 @@ class HTMLDocumentParserTest : public PageTestBase {
         BuildTextResourceDecoderFor(&document, "text/html", g_null_atom));
     parser->SetDecoder(std::move(decoder));
     return parser;
-  }
-
-  bool PrefetchFinishedCleanly() {
-    return prerendering_support_.IsPrefetchFinished();
   }
 
  private:
@@ -90,7 +80,6 @@ TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
   // DCHECK).
   static_cast<DocumentParser*>(parser)->Finish();
   EXPECT_EQ(HTMLTokenizer::kDataState, parser->Tokenizer()->GetState());
-  EXPECT_TRUE(PrefetchFinishedCleanly());
 }
 
 TEST_F(HTMLDocumentParserTest, AppendNoPrefetch) {

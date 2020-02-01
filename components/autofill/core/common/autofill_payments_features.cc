@@ -103,13 +103,7 @@ const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
 // name in the offer-to-save bubble if it was not detected or was conflicting
 // during the checkout flow and the user is NOT a Google Payments customer.
 const base::Feature kAutofillUpstreamEditableCardholderName{
-  "AutofillUpstreamEditableCardholderName",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "AutofillUpstreamEditableCardholderName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillUpstreamEditableExpirationDate{
   "AutofillUpstreamEditableExpirationDate",

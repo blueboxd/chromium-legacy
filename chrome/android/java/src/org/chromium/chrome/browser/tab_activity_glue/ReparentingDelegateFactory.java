@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tab_activity_glue;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.night_mode.NightModeReparentingController;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -19,21 +18,22 @@ public class ReparentingDelegateFactory {
      *         dependencies for {@link ReparentingTask} to reparent a Tab.
      */
     public static ReparentingTask.Delegate createReparentingTaskDelegate(
-            final ChromeActivity chromeActivity) {
+            final CompositorViewHolder compositorViewHolder, final WindowAndroid windowAndroid,
+            TabDelegateFactory tabDelegateFactory) {
         return new ReparentingTask.Delegate() {
             @Override
             public CompositorViewHolder getCompositorViewHolder() {
-                return chromeActivity.getCompositorViewHolder();
+                return compositorViewHolder;
             }
 
             @Override
             public WindowAndroid getWindowAndroid() {
-                return chromeActivity.getWindowAndroid();
+                return windowAndroid;
             }
 
             @Override
             public TabDelegateFactory getTabDelegateFactory() {
-                return chromeActivity.getTabDelegateFactory();
+                return tabDelegateFactory;
             }
         };
     }
@@ -43,16 +43,17 @@ public class ReparentingDelegateFactory {
      *         supplies dependencies to {@link NightModeReparentingController}.
      */
     public static NightModeReparentingController.Delegate
-    createNightModeReparentingControllerDelegate(final ChromeActivity chromeActivity) {
+    createNightModeReparentingControllerDelegate(final ActivityTabProvider activityTabProvider,
+            final TabModelSelector tabModelSelector) {
         return new NightModeReparentingController.Delegate() {
             @Override
             public ActivityTabProvider getActivityTabProvider() {
-                return chromeActivity.getActivityTabProvider();
+                return activityTabProvider;
             }
 
             @Override
             public TabModelSelector getTabModelSelector() {
-                return chromeActivity.getTabModelSelector();
+                return tabModelSelector;
             }
         };
     }

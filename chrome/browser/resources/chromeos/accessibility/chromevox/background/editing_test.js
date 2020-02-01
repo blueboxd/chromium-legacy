@@ -105,8 +105,8 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
            setSelection function is called, so poll for the actual change. -->
 
       <script>
-        var timer;
-        var input = document.getElementById('input');
+        let timer;
+        let input = document.getElementById('input');
         function poll(e) {
           if (input.selectionStart == 0) {
             return;
@@ -144,10 +144,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
     </div>
     <button id="go">Go</button>
     <script>
-      var dir = 'forward';
-      var line = 0;
+      let dir = 'forward';
+      let line = 0;
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', dir, 'line');
         if (dir == 'forward') {
           line++;
@@ -198,10 +198,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
     <button id="go">Go</button>
 
     <script>
-      var dir = 'forward';
-      var char = 0;
+      let dir = 'forward';
+      let char = 0;
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', dir, 'character');
         if (dir == 'forward') {
           char++;
@@ -286,7 +286,7 @@ TEST_F(
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', 'forward', 'character');
       }, true);
     </script>
@@ -453,7 +453,7 @@ TEST_F(
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', 'forward', 'character');
       }, true);
     </script>
@@ -498,7 +498,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', 'forward', 'character');
       }, true);
     </script>
@@ -540,7 +540,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
     <button id="go">Go</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', 'forward', 'character');
       }, true);
     </script>
@@ -587,7 +587,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('extend', 'forward', 'character');
       }, true);
     </script>
@@ -625,15 +625,15 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
     </p>
     <button id="go">Go</button>
     <script>
-      var dir = 'forward';
-      var moveCount = 0;
+      let dir = 'forward';
+      let moveCount = 0;
       document.getElementById('go').addEventListener('click', function() {
         moveCount++;
         if (moveCount == 9) {
           dir = 'backward';
         }
 
-        var sel = getSelection();
+        let sel = getSelection();
 
         sel.modify('move', dir, 'character');
       }, true);
@@ -705,7 +705,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
       33333 line<br>
     </p>
     <script>
-      var commands = [
+      let commands = [
         ['extend', 'forward', 'character'],
         ['extend', 'forward', 'character'],
 
@@ -727,7 +727,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
         ['extend', 'forward', 'line'],
       ];
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify.apply(sel, commands.shift());
       }, true);
     </script>
@@ -1113,8 +1113,7 @@ TEST_F('ChromeVoxEditingTest', 'IsValidLine', function() {
   `,
       function(root) {
         // Each word is on its own line, but parented by a static text.
-        var text, endText;
-        [text, endText] = root.findAll({role: RoleType.STATIC_TEXT});
+        const [text, endText] = root.findAll({role: RoleType.STATIC_TEXT});
 
         // The EditableLine object automatically adjusts to surround the line no
         // matter what the input is.
@@ -1155,15 +1154,15 @@ TEST_F('ChromeVoxEditingTest', 'TelTrimsWhitespace', function() {
     <div id="go"></div>
     <input id="input" type="tel"></input>
     <script>
-      var data = [
+      let data = [
         '6               ',
         '60              ',
         '601             ',
         '60              '
       ];
-      var go = document.getElementById('go');
-      var input = document.getElementById('input');
-      var index = 0;
+      let go = document.getElementById('go');
+      let input = document.getElementById('input');
+      let index = 0;
       go.addEventListener('click', function() {
         input.value = data[index];
         index++;
@@ -1272,7 +1271,7 @@ TEST_F('ChromeVoxEditingTest', 'GrammarErrors', function() {
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var sel = getSelection();
+        let sel = getSelection();
         sel.modify('move', 'forward', 'character');
       }, true);
     </script>

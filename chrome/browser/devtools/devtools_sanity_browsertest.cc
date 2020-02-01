@@ -53,14 +53,14 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -109,8 +109,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
-using app_modal::JavaScriptAppModalDialog;
-using app_modal::NativeAppModalDialog;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostObserver;
@@ -118,6 +116,7 @@ using content::NavigationController;
 using content::RenderFrameHost;
 using content::WebContents;
 using extensions::Extension;
+using javascript_dialogs::AppModalDialogView;
 
 namespace {
 
@@ -394,20 +393,21 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
   }
 
   void AcceptModalDialog() {
-    NativeAppModalDialog* native_dialog = GetDialog();
-    native_dialog->AcceptAppModalDialog();
+    AppModalDialogView* view = GetDialog();
+    view->AcceptAppModalDialog();
   }
 
   void CancelModalDialog() {
-    NativeAppModalDialog* native_dialog = GetDialog();
-    native_dialog->CancelAppModalDialog();
+    AppModalDialogView* view = GetDialog();
+    view->CancelAppModalDialog();
   }
 
-  NativeAppModalDialog* GetDialog() {
-    JavaScriptAppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
-    NativeAppModalDialog* native_dialog = dialog->native_dialog();
-    EXPECT_TRUE(native_dialog);
-    return native_dialog;
+  AppModalDialogView* GetDialog() {
+    javascript_dialogs::AppModalDialogController* dialog =
+        ui_test_utils::WaitForAppModalDialog();
+    AppModalDialogView* view = dialog->view();
+    EXPECT_TRUE(view);
+    return view;
   }
 };
 

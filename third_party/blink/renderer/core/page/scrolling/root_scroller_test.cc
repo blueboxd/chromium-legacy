@@ -877,7 +877,8 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   // Put the local main frame into Layout clean and have the non-main local
   // root do a complete lifecycle update.
   helper_.LocalMainFrame()->GetFrameView()->SetNeedsLayout();
-  helper_.LocalMainFrame()->GetFrameView()->UpdateLifecycleToLayoutClean();
+  helper_.LocalMainFrame()->GetFrameView()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   UpdateAllLifecyclePhases(non_main_local_root->GetFrameView());
   UpdateAllLifecyclePhases(helper_.LocalMainFrame()->GetFrameView());
 

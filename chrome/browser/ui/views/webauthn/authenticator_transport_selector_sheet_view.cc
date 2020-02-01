@@ -20,10 +20,12 @@ AuthenticatorTransportSelectorSheetView::
 std::unique_ptr<views::View>
 AuthenticatorTransportSelectorSheetView::BuildStepSpecificContent() {
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    auto* const dialog_model = model()->dialog_model();
     return std::make_unique<HoverListView>(
         std::make_unique<TransportHoverListModel2>(
-            model()->dialog_model()->available_transports(),
-            model()->dialog_model()->cable_extension_provided(), model()));
+            dialog_model->available_transports(),
+            dialog_model->cable_extension_provided(),
+            dialog_model->win_native_api_enabled(), model()));
   }
 
   return std::make_unique<HoverListView>(

@@ -362,11 +362,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
-
-        mNightModeReparentingController = new NightModeReparentingController(
-                ReparentingDelegateFactory.createNightModeReparentingControllerDelegate(this),
-                ReparentingDelegateFactory.createReparentingTaskDelegate(this));
-        getLifecycleDispatcher().register(mNightModeReparentingController);
     }
 
     protected RootUiCoordinator createRootUiCoordinator() {
@@ -1366,6 +1361,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
             mEphemeralTabCoordinator =
                     new EphemeralTabCoordinator(this, getBottomSheetController());
+        }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_TAB_REPARENTING)) {
+            mNightModeReparentingController = new NightModeReparentingController(
+                    ReparentingDelegateFactory.createNightModeReparentingControllerDelegate(
+                            getActivityTabProvider(), getTabModelSelector()),
+                    ReparentingDelegateFactory.createReparentingTaskDelegate(
+                            getCompositorViewHolder(), getWindowAndroid(),
+                            getTabDelegateFactory()));
+            mNightModeReparentingController.onNativeInitialized();
         }
     }
 

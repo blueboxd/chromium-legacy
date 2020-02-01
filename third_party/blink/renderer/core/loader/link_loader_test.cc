@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -587,7 +588,10 @@ TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
     EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
               network::mojom::RedirectMode::kFollow);
     EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
-              network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
+              RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()
+                  ? network::mojom::ReferrerPolicy::
+                        kNoReferrerWhenDowngradeOriginWhenCrossOrigin
+                  : network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
   }
 
   platform_->GetURLLoaderMockFactory()->UnregisterAllURLsAndClearMemoryCache();

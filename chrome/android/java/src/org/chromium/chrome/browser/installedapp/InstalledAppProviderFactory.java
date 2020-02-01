@@ -8,8 +8,8 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.services.service_manager.InterfaceFactory;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 /** Factory to create instances of the InstalledAppProvider Mojo service. */

@@ -160,6 +160,7 @@ template("test") {
 
       if (_use_raw_android_executable) {
         executable_dist_dir = "$root_out_dir/$_dist_target"
+        data_deps = [ ":$_exec_target" ]
       } else {
         apk_target = ":$_apk_target"
         incremental_apk = incremental_install

@@ -89,6 +89,16 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
                                    error_->GetBubbleViewAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    error_->GetBubbleViewCancelButtonLabel());
+
+  // Note that error is already a WeakPtr, so these callbacks will simply do
+  // nothing if they are invoked after its destruction.
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &GlobalErrorWithStandardBubble::BubbleViewAcceptButtonPressed, error,
+      base::Unretained(browser_)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &GlobalErrorWithStandardBubble::BubbleViewCancelButtonPressed, error,
+      base::Unretained(browser_)));
+
   if (!error_->GetBubbleViewDetailsButtonLabel().empty()) {
     DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
         this, error_->GetBubbleViewDetailsButtonLabel()));
@@ -175,23 +185,6 @@ void GlobalErrorBubbleView::OnDialogInitialized() {
         ok_button, base::BindOnce(&GlobalErrorBubbleView::SizeToContents,
                                   base::Unretained(this)));
   }
-}
-
-bool GlobalErrorBubbleView::Cancel() {
-  if (error_)
-    error_->BubbleViewCancelButtonPressed(browser_);
-  return true;
-}
-
-bool GlobalErrorBubbleView::Accept() {
-  if (error_)
-    error_->BubbleViewAcceptButtonPressed(browser_);
-  return true;
-}
-
-bool GlobalErrorBubbleView::Close() {
-  // Don't fall through to either Cancel() or Accept().
-  return true;
 }
 
 void GlobalErrorBubbleView::CloseBubbleView() {

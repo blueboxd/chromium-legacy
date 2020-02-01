@@ -26,8 +26,8 @@ avd_name: "android_28_google_apis_x86"
 
 avd_settings {
   screen {
-    density: 160
-    height: 800
-    width: 480
+    density: 480
+    height: 1920
+    width: 1080
   }
 }

@@ -66,6 +66,7 @@ PaymentRequestState::PaymentRequestState(
     content::WebContents* web_contents,
     const GURL& top_level_origin,
     const GURL& frame_origin,
+    const url::Origin& frame_security_origin,
     PaymentRequestSpec* spec,
     Delegate* delegate,
     const std::string& app_locale,
@@ -76,6 +77,7 @@ PaymentRequestState::PaymentRequestState(
     : web_contents_(web_contents),
       top_origin_(top_level_origin),
       frame_origin_(frame_origin),
+      frame_security_origin_(frame_security_origin),
       app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
@@ -118,6 +120,10 @@ const GURL& PaymentRequestState::GetTopOrigin() {
 
 const GURL& PaymentRequestState::GetFrameOrigin() {
   return frame_origin_;
+}
+
+const url::Origin& PaymentRequestState::GetFrameSecurityOrigin() {
+  return frame_security_origin_;
 }
 
 const std::vector<autofill::AutofillProfile*>&

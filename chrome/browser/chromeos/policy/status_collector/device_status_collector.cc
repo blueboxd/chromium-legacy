@@ -145,6 +145,9 @@ const char kFirmwareNotParsed[] = "FirmwareNotParsed";
 // File to look for firmware number in.
 const char kPathFirmware[] = "/var/log/bios_info.txt";
 
+// O°C in deciKelvin.
+const unsigned int kZeroCInDeciKelvin = 2731;
+
 // Helper function (invoked via blocking pool) to fetch information about
 // mounted disks.
 std::vector<em::VolumeInfo> GetVolumeInfo(
@@ -792,18 +795,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       // Convert V to mV:
       battery_info_out->set_design_min_voltage(
           std::lround(battery_info->voltage_min_design * 1000));
-      if (battery_info->manufacture_date_smart > 0) {
-        // manufacture_date in (((year-1980) * 16 + month) * 32 + day) format.
-        int remainder = battery_info->manufacture_date_smart;
-        int day = remainder % 32;
-        remainder /= 32;
-        int month = remainder % 16;
-        remainder /= 16;
-        int year = remainder + 1980;
-        // set manufacture_date in yyyy-mm-dd format.
-        battery_info_out->set_manufacture_date(
-            base::StringPrintf("%04d-%02d-%02d", year, month, day));
-      }
+      const auto& smart_info = battery_info->smart_battery_info;
+      if (!smart_info.is_null())
+        battery_info_out->set_manufacture_date(smart_info->manufacture_date);
       const auto& cpu_info = probe_result->cpu_info;
       if (cpu_info.has_value()) {
         for (const auto& cpu : cpu_info.value()) {
@@ -1287,7 +1281,11 @@ void DeviceStatusCollector::SampleProbeData(
     battery_sample.set_remaining_capacity(
         std::lround(battery->charge_now * 1000));
     // Convert 0.1 Kelvin to Celsius:
-    battery_sample.set_temperature((battery->temperature_smart - 2731) / 10);
+    const auto& smart_info = battery->smart_battery_info;
+    if (!smart_info.is_null()) {
+      battery_sample.set_temperature(
+          (smart_info->temperature - kZeroCInDeciKelvin) / 10);
+    }
     sample->battery_samples[battery->model_name] = battery_sample;
   }
 

@@ -5,7 +5,9 @@
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 
 #include "base/logging.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -31,7 +33,9 @@ MediaHistoryKeyedServiceFactory::GetInstance() {
 MediaHistoryKeyedServiceFactory::MediaHistoryKeyedServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "MediaHistoryKeyedService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HistoryServiceFactory::GetInstance());
+}
 
 MediaHistoryKeyedServiceFactory::~MediaHistoryKeyedServiceFactory() = default;
 
@@ -44,7 +48,7 @@ KeyedService* MediaHistoryKeyedServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   DCHECK(!context->IsOffTheRecord());
 
-  return new MediaHistoryKeyedService(context);
+  return new MediaHistoryKeyedService(Profile::FromBrowserContext(context));
 }
 
 }  // namespace media_history

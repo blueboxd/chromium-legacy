@@ -954,7 +954,8 @@ void SingleThreadProxy::ScheduledActionPerformImplSideInvalidation() {
 }
 
 void SingleThreadProxy::DidFinishImplFrame() {
-  host_impl_->DidFinishImplFrame();
+  host_impl_->DidFinishImplFrame(
+      scheduler_on_impl_thread_->last_activate_origin_frame_args());
 #if DCHECK_IS_ON()
   DCHECK(inside_impl_frame_)
       << "DidFinishImplFrame called while not inside an impl frame!";

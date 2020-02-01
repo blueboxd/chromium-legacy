@@ -26,6 +26,10 @@ inline void SetHttp2FlagImpl(bool* f, bool v) {
 #define SetHttp2ReloadableFlagImpl(flag, value) \
   SetHttp2FlagImpl(&HTTP2_RELOADABLE_FLAG(flag), value)
 
+#define HTTP2_CODE_COUNT_N_IMPL(flag, instance, total) \
+  do {                                                 \
+  } while (0)
+
 }  // namespace http2
 
 #endif  // NET_HTTP2_PLATFORM_IMPL_HTTP2_FLAGS_IMPL_H_

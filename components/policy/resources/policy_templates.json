@@ -15676,13 +15676,14 @@
           'caption': '''Authentication based on client certificates''',
         },
       ],
-      'supported_on': ['chrome_os:68-'],
+      'supported_on': [],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
       },
       'example_value': 0,
       'id': 438,
+      'future': True,
       'caption': '''SAML login authentication type''',
       'tags': ['system-security'],
       'desc': '''Configures the type of authentication for SAML logins.

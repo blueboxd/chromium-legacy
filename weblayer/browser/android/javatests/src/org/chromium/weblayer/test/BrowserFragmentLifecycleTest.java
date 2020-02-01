@@ -51,6 +51,41 @@ public class BrowserFragmentLifecycleTest {
         mActivityTestRule.navigateAndWait(tab, url, false);
     }
 
+    @Test
+    @SmallTest
+    public void restoreAfterRecreate() throws InterruptedException {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
+
+        String url = "data:text,foo";
+        mActivityTestRule.navigateAndWait(tab, url, false);
+
+        mActivityTestRule.recreateActivity();
+
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        CountDownLatch latch = new CountDownLatch(1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab restoredTab = newActivity.getTab();
+            // It's possible the NavigationController hasn't loaded yet, handle either scenario.
+            NavigationController navigationController = restoredTab.getNavigationController();
+            if (navigationController.getNavigationListSize() == 1
+                    && navigationController.getNavigationEntryDisplayUri(0).equals(
+                            Uri.parse(url))) {
+                latch.countDown();
+                return;
+            }
+            navigationController.registerNavigationCallback(new NavigationCallback() {
+                @Override
+                public void onNavigationCompleted(@NonNull Navigation navigation) {
+                    if (navigation.getUri().equals(Uri.parse(url))) {
+                        latch.countDown();
+                    }
+                }
+            });
+        });
+        latch.await();
+    }
+
     // https://crbug.com/1021041
     @Test
     @SmallTest

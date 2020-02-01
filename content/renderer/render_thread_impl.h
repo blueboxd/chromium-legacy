@@ -105,6 +105,7 @@ class LowMemoryModeController;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
+class VariationsRenderThreadObserver;
 
 #if defined(OS_ANDROID)
 class StreamTextureFactory;
@@ -611,6 +612,8 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
   std::unique_ptr<viz::Gpu> gpu_;
+
+  std::unique_ptr<VariationsRenderThreadObserver> variations_observer_;
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;

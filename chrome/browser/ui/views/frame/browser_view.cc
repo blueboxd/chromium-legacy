@@ -131,10 +131,10 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/app_modal/app_modal_dialog_queue.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_queue.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -1924,10 +1924,10 @@ bool BrowserView::CanMinimize() const {
 }
 
 bool BrowserView::CanActivate() const {
-  app_modal::AppModalDialogQueue* queue =
-      app_modal::AppModalDialogQueue::GetInstance();
-  if (!queue->active_dialog() || !queue->active_dialog()->native_dialog() ||
-      !queue->active_dialog()->native_dialog()->IsShowing()) {
+  javascript_dialogs::AppModalDialogQueue* queue =
+      javascript_dialogs::AppModalDialogQueue::GetInstance();
+  if (!queue->active_dialog() || !queue->active_dialog()->view() ||
+      !queue->active_dialog()->view()->IsShowing()) {
     return true;
   }
 
@@ -3157,8 +3157,8 @@ bool BrowserView::DoCutCopyPasteForWebContents(
 
 void BrowserView::ActivateAppModalDialog() const {
   // If another browser is app modal, flash and activate the modal browser.
-  app_modal::JavaScriptAppModalDialog* active_dialog =
-      app_modal::AppModalDialogQueue::GetInstance()->active_dialog();
+  javascript_dialogs::AppModalDialogController* active_dialog =
+      javascript_dialogs::AppModalDialogQueue::GetInstance()->active_dialog();
   if (!active_dialog)
     return;
 
@@ -3169,7 +3169,7 @@ void BrowserView::ActivateAppModalDialog() const {
     modal_browser->window()->Activate();
   }
 
-  app_modal::AppModalDialogQueue::GetInstance()->ActivateModalDialog();
+  javascript_dialogs::AppModalDialogQueue::GetInstance()->ActivateModalDialog();
 }
 
 bool BrowserView::FindCommandIdForAccelerator(

@@ -260,16 +260,6 @@ TEST_PPAPI_NACL(TraceEvent)
 
 TEST_PPAPI_NACL(InputEvent)
 
-// Flaky on Linux and Windows. http://crbug.com/135403
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_ImeInputEvent DISABLED_ImeInputEvent
-#else
-#define MAYBE_ImeInputEvent ImeInputEvent
-#endif
-
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_ImeInputEvent)
-TEST_PPAPI_NACL(MAYBE_ImeInputEvent)
-
 // Graphics2D_Dev isn't supported in NaCl, only test the other interfaces
 // TODO(jhorwich) Enable when Graphics2D_Dev interfaces are proxied in NaCl.
 TEST_PPAPI_NACL(Graphics2D_InvalidResource)

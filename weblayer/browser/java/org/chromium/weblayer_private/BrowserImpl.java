@@ -23,6 +23,7 @@ import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
@@ -35,9 +36,17 @@ import java.util.List;
 @JNINamespace("weblayer")
 public class BrowserImpl extends IBrowser.Stub {
     private static final ObserverList<Observer> sLifecycleObservers = new ObserverList<Observer>();
+    private final ObserverList<VisibleSecurityStateObserver> mVisibleSecurityStateObservers =
+            new ObserverList<VisibleSecurityStateObserver>();
 
+    // Key used to save the crypto key in instance state.
     public static final String SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY =
             "SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY";
+
+    // Key used to save the minimal persistence state in instance state. Only used if a persistence
+    // id was not specified.
+    public static final String SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY =
+            "SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY";
 
     private long mNativeBrowser;
     private final ProfileImpl mProfile;
@@ -46,6 +55,16 @@ public class BrowserImpl extends IBrowser.Stub {
     private IBrowserClient mClient;
     private LocaleChangedBroadcastReceiver mLocaleReceiver;
     private boolean mInDestroy;
+    private final UrlBarControllerImpl mUrlBarController;
+
+    // Created in the constructor from saved state and used in setClient().
+    private PersistenceInfo mPersistenceInfo;
+
+    private static final class PersistenceInfo {
+        String mPersistenceId;
+        byte[] mCryptoKey;
+        byte[] mMinimalPersistenceState;
+    };
 
     /**
      * Observer interface that can be implemented to observe when the first
@@ -65,13 +84,36 @@ public class BrowserImpl extends IBrowser.Stub {
         sLifecycleObservers.removeObserver(observer);
     }
 
-    public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState) {
+    /**
+     * Allows observing of visible security state of the active tab.
+     */
+    public static interface VisibleSecurityStateObserver {
+        public void onVisibleSecurityStateOfActiveTabChanged();
+    }
+    public void addVisibleSecurityStateObserver(VisibleSecurityStateObserver observer) {
+        mVisibleSecurityStateObservers.addObserver(observer);
+    }
+    public void removeVisibleSecurityStateObserver(VisibleSecurityStateObserver observer) {
+        mVisibleSecurityStateObservers.removeObserver(observer);
+    }
+
+    public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState,
+            Context context, FragmentWindowAndroid windowAndroid) {
         mProfile = profile;
-        byte[] cryptoKey = savedInstanceState != null
+
+        mPersistenceInfo = new PersistenceInfo();
+        mPersistenceInfo.mPersistenceId = persistenceId;
+        mPersistenceInfo.mCryptoKey = savedInstanceState != null
                 ? savedInstanceState.getByteArray(SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY)
                 : null;
-        mNativeBrowser = BrowserImplJni.get().createBrowser(
-                profile.getNativeProfile(), persistenceId, cryptoKey, this);
+        mPersistenceInfo.mMinimalPersistenceState =
+                (savedInstanceState != null && (persistenceId == null || persistenceId.isEmpty()))
+                ? savedInstanceState.getByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY)
+                : null;
+
+        createAttachmentState(context, windowAndroid);
+        mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
+        mUrlBarController = new UrlBarControllerImpl(this);
 
         for (Observer observer : sLifecycleObservers) {
             observer.onBrowserCreated();
@@ -87,22 +129,18 @@ public class BrowserImpl extends IBrowser.Stub {
         return mViewController.getContentView();
     }
 
-    public void onFragmentAttached(Context context, FragmentWindowAndroid windowAndroid) {
-        assert mWindowAndroid == null;
+    // Called from constructor and onFragmentAttached() to configure state needed when attached.
+    private void createAttachmentState(Context context, FragmentWindowAndroid windowAndroid) {
         assert mViewController == null;
+        assert mWindowAndroid == null;
         mWindowAndroid = windowAndroid;
         mViewController = new BrowserViewController(context, windowAndroid);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(context);
+    }
 
-        if (getTabs().size() > 0) {
-            updateAllTabs();
-            mViewController.setActiveTab(getActiveTab());
-        } else if (BrowserImplJni.get().getPersistenceId(mNativeBrowser, this).isEmpty()) {
-            TabImpl tab = new TabImpl(mProfile, windowAndroid);
-            addTab(tab);
-            boolean set_active_result = setActiveTab(tab);
-            assert set_active_result;
-        } // else case is session restore, which will asynchronously create tabs.
+    public void onFragmentAttached(Context context, FragmentWindowAndroid windowAndroid) {
+        createAttachmentState(context, windowAndroid);
+        updateAllTabsAndSetActive();
     }
 
     public void onFragmentDetached() {
@@ -111,13 +149,17 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public void onSaveInstanceState(Bundle outState) {
-        if (mProfile.isIncognito()
-                && !BrowserImplJni.get().getPersistenceId(mNativeBrowser, this).isEmpty()) {
+        boolean hasPersistenceId =
+                !BrowserImplJni.get().getPersistenceId(mNativeBrowser, this).isEmpty();
+        if (mProfile.isIncognito() && hasPersistenceId) {
             // Trigger a save now as saving may generate a new crypto key. This doesn't actually
             // save synchronously, rather triggers a save on a background task runner.
             BrowserImplJni.get().saveSessionServiceIfNecessary(mNativeBrowser, this);
             outState.putByteArray(SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY,
                     BrowserImplJni.get().getSessionServiceCryptoKey(mNativeBrowser, this));
+        } else if (!hasPersistenceId) {
+            outState.putByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY,
+                    BrowserImplJni.get().getMinimalPersistenceState(mNativeBrowser, this));
         }
     }
 
@@ -217,6 +259,13 @@ public class BrowserImpl extends IBrowser.Stub {
         // destroyed, or switching to a different fragment.
     }
 
+    @CalledByNative
+    private void onVisibleSecurityStateOfActiveTabChanged() {
+        for (VisibleSecurityStateObserver observer : mVisibleSecurityStateObservers) {
+            observer.onVisibleSecurityStateOfActiveTabChanged();
+        }
+    }
+
     @Override
     public boolean setActiveTab(ITab controller) {
         StrictModeWorkaround.apply();
@@ -247,6 +296,26 @@ public class BrowserImpl extends IBrowser.Stub {
     public void setClient(IBrowserClient client) {
         StrictModeWorkaround.apply();
         mClient = client;
+
+        // This function is called from the client once everything has been setup (meaning all the
+        // client classes have been created and AIDL interfaces established in both directions).
+        // This function is called immediately after the constructor of BrowserImpl from the client.
+        assert mPersistenceInfo != null;
+        PersistenceInfo persistenceInfo = mPersistenceInfo;
+        mPersistenceInfo = null;
+        BrowserImplJni.get().restoreStateIfNecessary(mNativeBrowser, this,
+                persistenceInfo.mPersistenceId, persistenceInfo.mCryptoKey,
+                persistenceInfo.mMinimalPersistenceState);
+
+        if (getTabs().size() > 0) {
+            updateAllTabsAndSetActive();
+        } else if (persistenceInfo.mPersistenceId == null
+                || persistenceInfo.mPersistenceId.isEmpty()) {
+            TabImpl tab = new TabImpl(mProfile, mWindowAndroid);
+            addTab(tab);
+            boolean set_active_result = setActiveTab(tab);
+            assert set_active_result;
+        } // else case is session restore, which will asynchronously create tabs.
     }
 
     @Override
@@ -260,6 +329,12 @@ public class BrowserImpl extends IBrowser.Stub {
     private void destroyTabImpl(TabImpl tab) {
         BrowserImplJni.get().removeTab(mNativeBrowser, this, tab.getNativeTab());
         tab.destroy();
+    }
+
+    @Override
+    public IUrlBarController getUrlBarController() {
+        StrictModeWorkaround.apply();
+        return mUrlBarController;
     }
 
     public View getFragmentView() {
@@ -278,6 +353,7 @@ public class BrowserImpl extends IBrowser.Stub {
             observer.onBrowserDestroyed();
         }
         BrowserImplJni.get().deleteBrowser(mNativeBrowser);
+        mUrlBarController.destroy();
     }
 
     private void destroyAttachmentState() {
@@ -293,6 +369,15 @@ public class BrowserImpl extends IBrowser.Stub {
             mWindowAndroid.destroy();
             mWindowAndroid = null;
         }
+
+        mVisibleSecurityStateObservers.clear();
+    }
+
+    private void updateAllTabsAndSetActive() {
+        if (getTabs().size() > 0) {
+            updateAllTabs();
+            mViewController.setActiveTab(getActiveTab());
+        }
     }
 
     private void updateAllTabs() {
@@ -303,8 +388,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @NativeMethods
     interface Natives {
-        long createBrowser(long profile, String persistenceId, byte[] persistenceCryptoKey,
-                BrowserImpl caller);
+        long createBrowser(long profile, BrowserImpl caller);
         void deleteBrowser(long browser);
         void addTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
         void removeTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
@@ -316,5 +400,7 @@ public class BrowserImpl extends IBrowser.Stub {
         void saveSessionServiceIfNecessary(long nativeBrowserImpl, BrowserImpl browser);
         byte[] getSessionServiceCryptoKey(long nativeBrowserImpl, BrowserImpl browser);
         byte[] getMinimalPersistenceState(long nativeBrowserImpl, BrowserImpl browser);
+        void restoreStateIfNecessary(long nativeBrowserImpl, BrowserImpl browser,
+                String persistenceId, byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
     }
 }

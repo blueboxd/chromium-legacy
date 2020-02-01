@@ -31,7 +31,7 @@ struct MediaPosition;
 
 namespace sql {
 class Database;
-}
+}  // namespace sql
 
 namespace media_history {
 
@@ -78,8 +78,17 @@ class MediaHistoryStore {
       const media_session::MediaMetadata& metadata,
       const base::Optional<media_session::MediaPosition>& position);
 
+  scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
+
+ protected:
+  friend class MediaHistoryKeyedService;
+
+  void EraseDatabaseAndCreateNew();
+
  private:
   scoped_refptr<MediaHistoryStoreInternal> db_;
+
+  Profile* const profile_;
 };
 
 }  // namespace media_history

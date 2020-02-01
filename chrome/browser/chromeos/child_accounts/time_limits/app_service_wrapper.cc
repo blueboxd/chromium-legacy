@@ -40,12 +40,13 @@ AppId AppIdFromAppUpdate(const apps::AppUpdate& update) {
 // Gets AppId from |update|.
 AppId AppIdFromInstanceUpdate(const apps::InstanceUpdate& update,
                               apps::AppRegistryCache* app_cache) {
-  base::Optional<AppId> app_id;
+  AppId app_id(apps::mojom::AppType::kUnknown, update.AppId());
+
   app_cache->ForOneApp(update.AppId(),
                        [&app_id](const apps::AppUpdate& update) {
                          app_id = AppIdFromAppUpdate(update);
                        });
-  return app_id.value();
+  return app_id;
 }
 
 // Gets app service id from |app_id|.

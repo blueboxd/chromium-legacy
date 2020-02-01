@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ui/settings/block_popups_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -123,6 +124,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _blockPopupsDetailItem.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   _blockPopupsDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  _blockPopupsDetailItem.accessibilityIdentifier = kSettingsBlockPopupsCellId;
   return _blockPopupsDetailItem;
 }
 
@@ -140,6 +142,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _composeEmailDetailItem.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   _composeEmailDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  _composeEmailDetailItem.accessibilityIdentifier = kSettingsDefaultAppsCellId;
   return _composeEmailDetailItem;
 }
 

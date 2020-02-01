@@ -506,7 +506,7 @@ bool HTMLVideoElement::PrepareVideoFrameForWebGL(
     gpu::gles2::GLES2Interface* gl,
     GLenum target,
     GLuint texture,
-    bool already_uploaded_id,
+    int already_uploaded_id,
     WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
   if (!GetWebMediaPlayer())
     return false;

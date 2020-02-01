@@ -58,14 +58,14 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
       range.start.node.role == RoleType.MENU_ITEM &&
       (range.start.node.root.docUrl.indexOf(chrome.extension.getURL('')) == 0 ||
        range.start.node.root.role == RoleType.DESKTOP)) {
-    var key = commandData.keyOverride;
+    const key = commandData.keyOverride;
     BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
     return;
   }
 
   const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
   if (textEditHandler && commandData.keyOverride) {
-    var key = commandData.keyOverride;
+    const key = commandData.keyOverride;
     if (!key.multiline ||
         ((!key.skipStart || !textEditHandler.isSelectionOnFirstLine()) &&
          (!key.skipEnd || !textEditHandler.isSelectionOnLastLine()))) {

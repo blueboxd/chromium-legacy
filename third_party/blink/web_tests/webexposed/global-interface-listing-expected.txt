@@ -6634,6 +6634,8 @@ interface ResizeObserver
     method unobserve
 interface ResizeObserverEntry
     attribute @@toStringTag
+    getter borderBoxSize
+    getter contentBoxSize
     getter contentRect
     getter target
     method constructor

@@ -791,6 +791,14 @@ cc_test("cc_unittests") {
     "//third_party/mesa_headers",
   ]
 
+  defines = []
+
+  # TODO(crbug.com/1047032): Enable SKIA renderers on emulators with Swiftshader
+  # support.
+  if (!is_fuchsia) {
+    defines += [ "GL_ON_PLATFORM" ]
+  }
+
   if (enable_vulkan) {
     deps += [
       "//gpu/vulkan:test_support",
@@ -801,7 +809,7 @@ cc_test("cc_unittests") {
     # CFI issue: https://crbug.com/967819
     # LSAN issue: https://crbug.com/971325
     if (use_x11 && !is_cfi && !is_lsan) {
-      defines = [ "ENABLE_CC_VULKAN_TESTS" ]
+      defines += [ "ENABLE_CC_VULKAN_TESTS" ]
     }
   }
 }

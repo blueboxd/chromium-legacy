@@ -137,7 +137,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       ->setAttribute(html_names::kStyleAttr,
                      "position: absolute; width: 100px; height: 100px; "
                      "background-color: green");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(PaintWithoutCommit());
   EXPECT_EQ(6, NumCachedNewItems());
 
@@ -207,7 +208,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
   const DisplayItemClient& content3 =
       *GetDisplayItemClientFromElementId("content3");
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   Paint(IntRect(0, 0, 400, 300));
 
   const auto& background_display_item_client = ViewScrollingBackgroundClient();
@@ -226,7 +228,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
                           IsSameId(&container3, kBackgroundType),
                           IsSameId(&content3, kBackgroundType)));
 
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(PaintWithoutCommit(IntRect(0, 100, 300, 1000)));
 
   // Container1 becomes partly in the interest rect, but uses cached subsequence
@@ -262,12 +265,14 @@ TEST_P(PaintLayerPainterTest,
   InvalidateAll(RootPaintController());
 
   // |target| will be fully painted.
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   Paint(IntRect(0, 0, 400, 300));
 
   // |target| will be partially painted. Should not trigger under-invalidation
   // checking DCHECKs.
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   Paint(IntRect(0, 100, 300, 1000));
 }
 
@@ -285,7 +290,8 @@ TEST_P(PaintLayerPainterTest,
           height: 100px; background-color: green'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   // PaintResult of all subsequences will be MayBeClippedByCullRect.
   Paint(IntRect(0, 0, 50, 300));
 
@@ -311,7 +317,8 @@ TEST_P(PaintLayerPainterTest,
       ->setAttribute(html_names::kStyleAttr,
                      "position: absolute; width: 100px; height: 100px; "
                      "background-color: green");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(PaintWithoutCommit(IntRect(0, 0, 50, 300)));
   EXPECT_EQ(4, NumCachedNewItems());
 
@@ -375,7 +382,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   // subsequence.
   GetDocument().getElementById("change")->setAttribute(html_names::kStyleAttr,
                                                        "display: block");
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_FALSE(target_layer->SelfNeedsRepaint());
   EXPECT_TRUE(PaintWithoutCommit());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -413,7 +421,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   GetLayoutView().GetScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 3000),
       mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   // Scrolling doesn't set SelfNeedsRepaint flag. Change of paint dirty rect of
   // a partially painted layer will trigger repaint.
   EXPECT_FALSE(target_layer->SelfNeedsRepaint());
@@ -504,7 +513,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   // same layer has outline.
   To<HTMLElement>(outline_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_with_outline);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_FALSE(non_self_painting_layer.NeedsPaintPhaseDescendantOutlines());
   Paint();
@@ -559,7 +569,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
   // has float.
   To<HTMLElement>(float_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_with_float);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseFloat());
   EXPECT_FALSE(non_self_painting_layer.NeedsPaintPhaseFloat());
   Paint();
@@ -675,7 +686,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   // on the same layer has Background.
   To<HTMLElement>(background_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_with_background);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
   EXPECT_FALSE(
       non_self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());

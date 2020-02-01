@@ -51,14 +51,18 @@ std::unique_ptr<SessionStorageAreaImpl> SessionStorageAreaImpl::Clone(
 void SessionStorageAreaImpl::NotifyObserversAllDeleted() {
   for (auto& observer : observers_) {
     // Renderer process expects |source| to always be two newline separated
-    // strings.
-    observer->AllDeleted("\n");
+    // strings. Note that we don't bother checking if storage was actually
+    // empty since that might require loading the map where we otherwise
+    // wouldn't need to. A side-effect is that browser-initiated storage removal
+    // may result in a redundant "clear" StorageEvent on an already-empty
+    // StorageArea.
+    observer->AllDeleted(/*was_nonempty=*/true, "\n");
   };
 }
 
 // blink::mojom::StorageArea:
 void SessionStorageAreaImpl::AddObserver(
-    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer) {
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> observer) {
   observers_.Add(std::move(observer));
 }
 
@@ -89,16 +93,24 @@ void SessionStorageAreaImpl::Delete(
                                            std::move(callback));
 }
 
-void SessionStorageAreaImpl::DeleteAll(const std::string& source,
-                                       DeleteAllCallback callback) {
+void SessionStorageAreaImpl::DeleteAll(
+    const std::string& source,
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+    DeleteAllCallback callback) {
   // Note: This can be called by the Clear Browsing Data flow, and thus doesn't
   // have to be bound.
   if (shared_data_map_->map_data()->ReferenceCount() > 1) {
     CreateNewMap(NewMapType::EMPTY_FROM_DELETE_ALL, source);
+    if (new_observer)
+      AddObserver(std::move(new_observer));
     std::move(callback).Run(true);
     return;
   }
-  shared_data_map_->storage_area()->DeleteAll(source, std::move(callback));
+  shared_data_map_->storage_area()->DeleteAll(
+      source, /*new_observer=*/mojo::NullRemote(),
+      base::BindOnce(&SessionStorageAreaImpl::OnDeleteAllResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(new_observer),
+                     std::move(callback)));
 }
 
 void SessionStorageAreaImpl::Get(const std::vector<uint8_t>& key,
@@ -109,13 +121,15 @@ void SessionStorageAreaImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void SessionStorageAreaImpl::GetAll(
-    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
-        complete_callback,
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
     GetAllCallback callback) {
   DCHECK(IsBound());
   DCHECK_NE(0, shared_data_map_->map_data()->ReferenceCount());
-  shared_data_map_->storage_area()->GetAll(std::move(complete_callback),
-                                           std::move(callback));
+  shared_data_map_->storage_area()->GetAll(
+      /*new_observer=*/mojo::NullRemote(),
+      base::BindOnce(&SessionStorageAreaImpl::OnGetAllResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(new_observer),
+                     std::move(callback)));
 }
 
 // Note: this can be called after invalidation of the |namespace_entry_|.
@@ -126,6 +140,24 @@ void SessionStorageAreaImpl::OnConnectionError() {
   // destructor to know if |RemoveBindingReference| was already called.
   if (receiver_.is_bound())
     receiver_.reset();
+}
+
+void SessionStorageAreaImpl::OnGetAllResult(
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+    GetAllCallback callback,
+    std::vector<blink::mojom::KeyValuePtr> entries) {
+  std::move(callback).Run(std::move(entries));
+  if (new_observer)
+    AddObserver(std::move(new_observer));
+}
+
+void SessionStorageAreaImpl::OnDeleteAllResult(
+    mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+    DeleteAllCallback callback,
+    bool was_nonempty) {
+  std::move(callback).Run(true);
+  if (new_observer)
+    AddObserver(std::move(new_observer));
 }
 
 void SessionStorageAreaImpl::CreateNewMap(

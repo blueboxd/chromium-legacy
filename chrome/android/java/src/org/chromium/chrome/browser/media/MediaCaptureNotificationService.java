@@ -8,7 +8,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.IntDef;
@@ -29,6 +28,8 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.content_public.browser.WebContents;
@@ -55,7 +56,6 @@ public class MediaCaptureNotificationService extends Service {
     private static final String NOTIFICATION_MEDIA_TYPE_EXTRA = "NotificationMediaType";
     private static final String NOTIFICATION_MEDIA_URL_EXTRA = "NotificationMediaUrl";
 
-    private static final String WEBRTC_NOTIFICATION_IDS = "WebRTCNotificationIds";
     private static final String TAG = "MediaCapture";
 
     @IntDef({MediaType.NO_MEDIA, MediaType.AUDIO_AND_VIDEO, MediaType.VIDEO_ONLY,
@@ -69,14 +69,14 @@ public class MediaCaptureNotificationService extends Service {
     }
 
     private NotificationManagerProxy mNotificationManager;
-    private SharedPreferences mSharedPreferences;
+    private SharedPreferencesManager mSharedPreferences;
     private final SparseIntArray mNotifications = new SparseIntArray();
 
     @Override
     public void onCreate() {
         mNotificationManager =
                 new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
-        mSharedPreferences = ContextUtils.getAppSharedPreferences();
+        mSharedPreferences = SharedPreferencesManager.getInstance();
         super.onCreate();
     }
 
@@ -129,16 +129,14 @@ public class MediaCaptureNotificationService extends Service {
      * after a browser crash which caused old notifications to exist).
      */
     private void cancelPreviousWebRtcNotifications() {
-        Set<String> notificationIds =
-                mSharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
+        Set<String> notificationIds = mSharedPreferences.readStringSet(
+                ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds == null) return;
         Iterator<String> iterator = notificationIds.iterator();
         while (iterator.hasNext()) {
             mNotificationManager.cancel(NOTIFICATION_NAMESPACE, Integer.parseInt(iterator.next()));
         }
-        SharedPreferences.Editor sharedPreferenceEditor = mSharedPreferences.edit();
-        sharedPreferenceEditor.remove(MediaCaptureNotificationService.WEBRTC_NOTIFICATION_IDS);
-        sharedPreferenceEditor.apply();
+        mSharedPreferences.removeKey(ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS);
     }
 
     /**
@@ -320,18 +318,16 @@ public class MediaCaptureNotificationService extends Service {
      * @param remove Boolean describing if the notification was added or removed.
      */
     private void updateSharedPreferencesEntry(int notificationId, boolean remove) {
-        Set<String> notificationIds =
-                new HashSet<String>(mSharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS,
-                        new HashSet<String>()));
+        Set<String> notificationIds = new HashSet<>(mSharedPreferences.readStringSet(
+                ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS, new HashSet<>()));
         if (remove && !notificationIds.isEmpty()
                 && notificationIds.contains(String.valueOf(notificationId))) {
             notificationIds.remove(String.valueOf(notificationId));
         } else if (!remove) {
             notificationIds.add(String.valueOf(notificationId));
         }
-        SharedPreferences.Editor sharedPreferenceEditor =  mSharedPreferences.edit();
-        sharedPreferenceEditor.putStringSet(WEBRTC_NOTIFICATION_IDS, notificationIds);
-        sharedPreferenceEditor.apply();
+        mSharedPreferences.writeStringSet(
+                ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS, notificationIds);
     }
 
     @Override
@@ -380,10 +376,9 @@ public class MediaCaptureNotificationService extends Service {
     private static boolean shouldStartService(
             Context context, @MediaType int mediaType, int tabId) {
         if (mediaType != MediaType.NO_MEDIA) return true;
-        SharedPreferences sharedPreferences =
-                ContextUtils.getAppSharedPreferences();
-        Set<String> notificationIds =
-                sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
+        SharedPreferencesManager sharedPreferences = SharedPreferencesManager.getInstance();
+        Set<String> notificationIds = sharedPreferences.readStringSet(
+                ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds != null
                 && !notificationIds.isEmpty()
                 && notificationIds.contains(String.valueOf(tabId))) {
@@ -427,10 +422,9 @@ public class MediaCaptureNotificationService extends Service {
      * Clear any previous media notifications.
      */
     public static void clearMediaNotifications() {
-        SharedPreferences sharedPreferences =
-                ContextUtils.getAppSharedPreferences();
-        Set<String> notificationIds =
-                sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
+        SharedPreferencesManager sharedPreferences = SharedPreferencesManager.getInstance();
+        Set<String> notificationIds = sharedPreferences.readStringSet(
+                ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds == null || notificationIds.isEmpty()) return;
 
         Context context = ContextUtils.getApplicationContext();

@@ -502,7 +502,7 @@ public class VrShell extends GvrLayout
 
         // Use application context here to avoid leaking the activity context.
         imeAdapter.setInputMethodManagerWrapper(ImeAdapter.createDefaultInputMethodManagerWrapper(
-                mActivity.getApplicationContext()));
+                mActivity.getApplicationContext(), mContentVrWindowAndroid, null));
         mInputMethodManagerWrapper = null;
     }
 

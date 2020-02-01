@@ -134,9 +134,8 @@ bool PositionsInTrackerMatchModel(const bookmarks::BookmarkNode* node,
 std::unique_ptr<SyncedBookmarkTracker> Merge(
     syncer::UpdateResponseDataList updates,
     bookmarks::BookmarkModel* bookmark_model) {
-  auto tracker = std::make_unique<SyncedBookmarkTracker>(
-      std::vector<NodeMetadataPair>(),
-      std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
   BookmarkModelMerger(std::move(updates), bookmark_model, &favicon_service,
                       tracker.get())
@@ -482,8 +481,8 @@ TEST(BookmarkModelMergerTest, ShouldMergeFaviconsForRemoteNodesOnly) {
   //  |- title 2
   //  |- title 1
 
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
 
   // Favicon should be set for the remote node.
@@ -492,7 +491,7 @@ TEST(BookmarkModelMergerTest, ShouldMergeFaviconsForRemoteNodesOnly) {
   EXPECT_CALL(favicon_service, MergeFavicon(kUrl2, _, _, _, _));
 
   BookmarkModelMerger(std::move(updates), bookmark_model.get(),
-                      &favicon_service, &tracker)
+                      &favicon_service, tracker.get())
       .Merge();
 }
 
@@ -574,17 +573,17 @@ TEST(BookmarkModelMergerTest,
       /*url=*/std::string(),
       /*is_folder=*/true, /*unique_position=*/pos));
 
-  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
-                                std::make_unique<sync_pb::ModelTypeState>());
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
   BookmarkModelMerger(std::move(updates), bookmark_model.get(),
-                      &favicon_service, &tracker)
+                      &favicon_service, tracker.get())
       .Merge();
 
   // Both titles should have matched against each other and only node is in the
   // model and the tracker.
   EXPECT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
+  EXPECT_THAT(tracker->TrackedEntitiesCountForTest(), Eq(2U));
 }
 
 TEST(BookmarkModelMergerTest, ShouldMergeAndUseRemoteGUID) {

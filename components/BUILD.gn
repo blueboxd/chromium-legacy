@@ -214,7 +214,6 @@ test("components_unittests") {
     ]
   } else {  # !iOS
     deps += [
-      "//components/app_modal:unit_tests",
       "//components/autofill/content/browser:unit_tests",
       "//components/autofill/content/renderer:unit_tests",
       "//components/autofill/core/common/mojom:unit_tests",
@@ -234,6 +233,7 @@ test("components_unittests") {
       "//components/gcm_driver/instance_id:unit_tests",
       "//components/history/content/browser:unit_tests",
       "//components/invalidation/impl:unit_tests",
+      "//components/javascript_dialogs:unit_tests",
       "//components/keyed_service/content:unit_tests",
       "//components/language/content/browser:unit_tests",
       "//components/link_header_util:unit_tests",

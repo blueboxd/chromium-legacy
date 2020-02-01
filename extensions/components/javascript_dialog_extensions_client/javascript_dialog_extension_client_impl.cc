@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "components/app_modal/javascript_dialog_extensions_client.h"
-#include "components/app_modal/javascript_dialog_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
+#include "components/javascript_dialogs/extensions_client.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -34,10 +34,10 @@ const Extension* GetExtensionForWebContents(
 }
 
 class JavaScriptDialogExtensionsClientImpl
-    : public app_modal::JavaScriptDialogExtensionsClient {
+    : public javascript_dialogs::ExtensionsClient {
  public:
-  JavaScriptDialogExtensionsClientImpl() {}
-  ~JavaScriptDialogExtensionsClientImpl() override {}
+  JavaScriptDialogExtensionsClientImpl() = default;
+  ~JavaScriptDialogExtensionsClientImpl() override = default;
 
   // JavaScriptDialogExtensionsClient:
   void OnDialogOpened(content::WebContents* web_contents) override {
@@ -84,9 +84,8 @@ class JavaScriptDialogExtensionsClientImpl
 }  // namespace
 
 void InstallClient() {
-  app_modal::JavaScriptDialogManager::GetInstance()->
-      SetExtensionsClient(
-          base::WrapUnique(new JavaScriptDialogExtensionsClientImpl));
+  javascript_dialogs::AppModalDialogManager::GetInstance()->SetExtensionsClient(
+      base::WrapUnique(new JavaScriptDialogExtensionsClientImpl));
 }
 
 }  // namespace javascript_dialog_extensions_client

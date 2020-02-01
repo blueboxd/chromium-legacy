@@ -326,7 +326,8 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
 
   EXPECT_TRUE(IsValidDisplayItemClient(target));
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   EXPECT_EQ(PhysicalRect(), target->PartialInvalidationLocalRect());
   EXPECT_EQ(IntRect(18, 18, 80, 80), target->PartialInvalidationVisualRect());
   EXPECT_FALSE(IsValidDisplayItemClient(target));
@@ -334,7 +335,8 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   target->InvalidatePaintRectangle(PhysicalRect(30, 30, 50, 80));
   EXPECT_EQ(PhysicalRect(30, 30, 50, 80),
             target->PartialInvalidationLocalRect());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   // PartialInvalidationVisualRect should accumulate until painting.
   EXPECT_EQ(IntRect(18, 18, 80, 100), target->PartialInvalidationVisualRect());
 

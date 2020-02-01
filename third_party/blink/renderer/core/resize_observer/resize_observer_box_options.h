@@ -5,7 +5,6 @@ namespace blink {
 enum class ResizeObserverBoxOptions {
   BorderBox,
   ContentBox,
-  DevicePixelContentBox
 };
 }
 

@@ -74,15 +74,12 @@ class GpuMojoMediaClient : public MojoMediaClient {
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   // Indirectly owned by GpuChildThread.
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+  base::Optional<SupportedVideoDecoderConfigs> cros_supported_configs_;
 #endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   CdmProxyFactoryCB cdm_proxy_factory_cb_;
 #if defined(OS_WIN)
   base::Optional<SupportedVideoDecoderConfigs> d3d11_supported_configs_;
 #endif  // defined(OS_WIN)
-
-#if defined(OS_CHROMEOS)
-  base::Optional<SupportedVideoDecoderConfigs> cros_supported_configs_;
-#endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);
 };

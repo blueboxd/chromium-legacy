@@ -77,11 +77,9 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
   // For WebGL last-uploaded-frame-metadata API.
   WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
   int already_uploaded_id = HTMLVideoElement::kNoAlreadyUploadedFrame;
-  WebMediaPlayer::VideoFrameUploadMetadata* frame_metadata_ptr =
-      &frame_metadata;
-  if (RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled()) {
+  auto* frame_metadata_ptr = &frame_metadata;
+  if (RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled())
     already_uploaded_id = texture->GetLastUploadedVideoFrameId();
-  }
 
 #if defined(OS_ANDROID)
   // TODO(crbug.com/776222): support extension on Android
@@ -102,19 +100,25 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
     return nullptr;
   }
 
-  if (frame_metadata_ptr) {
-    current_frame_metadata_ = VideoFrameMetadata::Create();
-    current_frame_metadata_->setPresentationTime(
-        frame_metadata_ptr->timestamp.InMicrosecondsF());
-    current_frame_metadata_->setExpectedPresentationTime(
-        frame_metadata_ptr->expected_timestamp.InMicrosecondsF());
-    current_frame_metadata_->setWidth(frame_metadata_ptr->visible_rect.width());
-    current_frame_metadata_->setHeight(
-        frame_metadata_ptr->visible_rect.height());
-    current_frame_metadata_->setPresentationTimestamp(
-        frame_metadata_ptr->timestamp.InSecondsF());
-  }
+  if (RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled())
+    texture->UpdateLastUploadedFrame(frame_metadata);
 
+  if (!current_frame_metadata_)
+    current_frame_metadata_ = VideoFrameMetadata::Create();
+
+  // TODO(crbug.com/776222): These should be read from the VideoFrameCompositor
+  // when the VideoFrame is retrieved in WebMediaPlayerImpl. These fields are
+  // not currently saved in VideoFrameCompositor, so VFC::ProcessNewFrame()
+  // would need to save the current time as well as the presentation time.
+  current_frame_metadata_->setPresentationTime(
+      frame_metadata_ptr->timestamp.InMicrosecondsF());
+  current_frame_metadata_->setExpectedPresentationTime(
+      frame_metadata_ptr->expected_timestamp.InMicrosecondsF());
+
+  current_frame_metadata_->setWidth(frame_metadata_ptr->visible_rect.width());
+  current_frame_metadata_->setHeight(frame_metadata_ptr->visible_rect.height());
+  current_frame_metadata_->setPresentationTimestamp(
+      frame_metadata_ptr->timestamp.InSecondsF());
   return current_frame_metadata_;
 }
 

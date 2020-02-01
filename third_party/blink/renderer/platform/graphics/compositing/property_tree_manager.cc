@@ -759,7 +759,7 @@ static bool IsNodeOnAncestorChain(const ClipPaintPropertyNode& find,
 
 bool PropertyTreeManager::EffectStateMayBe2dAxisMisalignedToRenderSurface(
     EffectState& state,
-    size_t index) {
+    wtf_size_t index) {
   if (state.may_be_2d_axis_misaligned_to_render_surface ==
       EffectState::kUnknown) {
     // The root effect has render surface, so it's always kAligned.
@@ -949,7 +949,7 @@ PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   if (pending_clips.IsEmpty())
     return backdrop_effect_state;
 
-  for (size_t i = pending_clips.size(); i--;) {
+  for (auto i = pending_clips.size(); i--;) {
     const auto& pending_clip = pending_clips[i];
 
     // For a non-trivial clip, the synthetic effect is an isolation to enclose

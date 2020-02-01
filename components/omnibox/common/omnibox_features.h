@@ -68,6 +68,7 @@ extern const base::Feature kConfirmOmniboxSuggestionRemovals;
 extern const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows;
 extern const base::Feature kOmniboxSuggestionButtonRow;
 extern const base::Feature kTabKeyCanEscapeOmniboxPopup;
+extern const base::Feature kWebUIOmniboxPopup;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).

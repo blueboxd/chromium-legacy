@@ -209,7 +209,7 @@ void VideoFrameSubmitter::OnBeginFrame(
 
   base::ScopedClosureRunner end_frame(
       base::BindOnce(&cc::FrameSequenceTrackerCollection::NotifyFrameEnd,
-                     base::Unretained(&frame_trackers_), args));
+                     base::Unretained(&frame_trackers_), args, args));
 
   // Don't call UpdateCurrentFrame() for MISSED BeginFrames. Also don't call it
   // after StopRendering() has been called (forbidden by API contract).

@@ -210,10 +210,6 @@ void Service::SetIdentityAccessorForTesting(
   identity_accessor_.Bind(std::move(identity_accessor));
 }
 
-void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
-  token_refresh_timer_ = std::move(timer);
-}
-
 void Service::SetAssistantManagerServiceForTesting(
     std::unique_ptr<AssistantManagerService> assistant_manager_service) {
   DCHECK(assistant_manager_service_ == nullptr);

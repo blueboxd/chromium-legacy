@@ -6,20 +6,28 @@ import 'chrome://new-tab-page/customize_shortcuts.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
-import {assertStyle, keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
-import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+import {createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 
 suite('NewTabPageCustomizeShortcutsTest', () => {
   /** @type {!CustomizeShortcutsElement} */
   let customizeShortcuts;
 
-  /** @type {TestProxy} */
+  /**
+   * @implements {BrowserProxy}
+   * @extends {TestBrowserProxy}
+   */
   let testProxy;
 
   setup(() => {
     PolymerTest.clearBody();
 
-    testProxy = new TestProxy();
+    testProxy = createTestProxy();
+    testProxy.handler.setResultFor('addMostVisitedTile', Promise.resolve({
+      success: true,
+    }));
+    testProxy.handler.setResultFor('updateMostVisitedTile', Promise.resolve({
+      success: true,
+    }));
     BrowserProxy.instance_ = testProxy;
 
     customizeShortcuts = document.createElement('ntp-customize-shortcuts');

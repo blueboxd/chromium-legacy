@@ -138,20 +138,20 @@ KbExplorer = class {
         msgArgs.push(/** @type {number} */ (evt.displayPosition + 1));
         break;
       case BrailleKeyCommand.CHORD:
-        var dots = evt.brailleDots;
+        const dots = evt.brailleDots;
         if (!dots) {
           return;
         }
 
         // First, check for the dots mapping to a key code.
-        var keyCode = BrailleKeyEvent.brailleChordsToStandardKeyCode[dots];
+        const keyCode = BrailleKeyEvent.brailleChordsToStandardKeyCode[dots];
         if (keyCode) {
           text = keyCode;
           break;
         }
 
         // Next, check for the modifier mappings.
-        var mods = BrailleKeyEvent.brailleDotsToModifiers[dots];
+        const mods = BrailleKeyEvent.brailleDotsToModifiers[dots];
         if (mods) {
           const outputs = [];
           for (const mod in mods) {
@@ -168,24 +168,25 @@ KbExplorer = class {
           break;
         }
 
-        var command = BrailleCommandData.getCommand(dots);
+        const command = BrailleCommandData.getCommand(dots);
         if (command && KbExplorer.onCommand(command)) {
           return;
         }
         text = BrailleCommandData.makeShortcutText(dots, true);
         break;
-      case BrailleKeyCommand.DOTS:
-        var dots = evt.brailleDots;
+      case BrailleKeyCommand.DOTS: {
+        const dots = evt.brailleDots;
         if (!dots) {
           return;
         }
-        var cells = new ArrayBuffer(1);
-        var view = new Uint8Array(cells);
+        const cells = new ArrayBuffer(1);
+        const view = new Uint8Array(cells);
         view[0] = dots;
         KbExplorer.currentBrailleTranslator_.backTranslate(
             cells, function(res) {
               KbExplorer.output(res);
             }.bind(this));
+      }
         return;
       case BrailleKeyCommand.STANDARD_KEY:
         break;

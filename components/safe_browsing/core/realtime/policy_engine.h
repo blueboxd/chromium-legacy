@@ -6,13 +6,14 @@
 #define COMPONENTS_SAFE_BROWSING_CORE_REALTIME_POLICY_ENGINE_H_
 
 #include "build/build_config.h"
-#include "content/public/common/resource_type.h"
 
 namespace content {
 class BrowserContext;
 }
 
 namespace safe_browsing {
+
+enum class ResourceType;
 
 #if defined(OS_ANDROID)
 // A parameter controlled by finch experiment.
@@ -31,7 +32,7 @@ class RealTimePolicyEngine {
 
   // Return true if full URL lookups are enabled for |resource_type|.
   static bool CanPerformFullURLLookupForResourceType(
-      content::ResourceType resource_type);
+      ResourceType resource_type);
 
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled for the profile represented by

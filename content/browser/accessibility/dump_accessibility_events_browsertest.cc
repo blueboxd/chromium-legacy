@@ -505,6 +505,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCSSFlexTextUpdate) {
+  RunEventTest(FILE_PATH_LITERAL("css-flex-text-update.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsCSSVisibility) {
   RunEventTest(FILE_PATH_LITERAL("css-visibility.html"));
 }

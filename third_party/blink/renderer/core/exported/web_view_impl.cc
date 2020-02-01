@@ -1009,7 +1009,7 @@ void WebViewImpl::EnableTapHighlightAtPoint(
   Node* touch_node = BestTapNode(targeted_tap_event);
   GetPage()->GetLinkHighlight().SetTapHighlight(touch_node);
   UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
-                  DocumentUpdateReason::kOther);
+                  DocumentUpdateReason::kTapHighlight);
 }
 
 void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
@@ -1365,7 +1365,7 @@ void WebViewImpl::ResizeViewWhileAnchored(cc::BrowserControlsParams params) {
   // for rotation anchoring, and to make sure that no lifecycle states are
   // stale if this WebView is embedded in another one.
   UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
-                  DocumentUpdateReason::kOther);
+                  DocumentUpdateReason::kSizeChange);
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
@@ -2918,7 +2918,8 @@ void WebViewImpl::SetBaseBackgroundColorOverride(SkColor color) {
     MainFrameImpl()
         ->GetFrame()
         ->View()
-        ->UpdateLifecycleToCompositingCleanPlusScrolling();
+        ->UpdateLifecycleToCompositingCleanPlusScrolling(
+            DocumentUpdateReason::kBaseColor);
   }
   UpdateBaseBackgroundColor();
 }
@@ -2934,7 +2935,8 @@ void WebViewImpl::ClearBaseBackgroundColorOverride() {
     MainFrameImpl()
         ->GetFrame()
         ->View()
-        ->UpdateLifecycleToCompositingCleanPlusScrolling();
+        ->UpdateLifecycleToCompositingCleanPlusScrolling(
+            DocumentUpdateReason::kBaseColor);
   }
   UpdateBaseBackgroundColor();
 }

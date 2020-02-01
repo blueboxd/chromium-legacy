@@ -662,8 +662,7 @@ void Navigate(NavigateParams* params) {
        params->disposition == WindowOpenDisposition::CURRENT_TAB)) {
     // The navigation occurred in the source tab.
     params->browser->UpdateUIForNavigationInTab(
-        contents_to_navigate_or_insert, params->transition,
-        params->window_action, user_initiated);
+        contents_to_navigate_or_insert, params->transition, user_initiated);
   } else if (singleton_index == -1) {
     // If some non-default value is set for the index, we should tell the
     // TabStripModel to respect it.

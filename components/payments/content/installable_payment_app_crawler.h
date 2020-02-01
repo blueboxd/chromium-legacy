@@ -21,6 +21,7 @@
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -39,10 +40,15 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>,
       const std::string& error_message)>;
 
+  // |merchant_origin| should be the origin of the iframe that created the
+  // PaymentRequest object. It is used by security features like
+  // 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  //
   // The owner of InstallablePaymentAppCrawler owns |downloader|, |parser| and
   // |cache|. They should live until |finished_using_resources| parameter to
   // Start() method is called.
-  InstallablePaymentAppCrawler(content::WebContents* web_contents,
+  InstallablePaymentAppCrawler(const url::Origin& merchant_origin,
+                               content::WebContents* web_contents,
                                PaymentManifestDownloader* downloader,
                                PaymentManifestParser* parser,
                                PaymentManifestWebDataService* cache);
@@ -100,6 +106,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
   void SetFirstError(const std::string& error_message);
 
   DeveloperConsoleLogger log_;
+  const url::Origin merchant_origin_;
   PaymentManifestDownloader* downloader_;
   PaymentManifestParser* parser_;
   FinishedCrawlingCallback callback_;

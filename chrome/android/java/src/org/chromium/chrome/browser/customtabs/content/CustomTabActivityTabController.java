@@ -325,7 +325,9 @@ public class CustomTabActivityTabController
             TabReparentingParams params =
                     (TabReparentingParams) AsyncTabParamsManager.remove(tab.getId());
             mReparentingTaskProvider.get(tab).finish(
-                    ReparentingDelegateFactory.createReparentingTaskDelegate(mActivity),
+                    ReparentingDelegateFactory.createReparentingTaskDelegate(
+                            mActivity.getCompositorViewHolder(), mActivity.getWindowAndroid(),
+                            mActivity.getTabDelegateFactory()),
                     (params == null ? null : params.getFinalizeCallback()));
         }
 

@@ -17,14 +17,6 @@ extern const base::Feature kExtendedCrashReportingFeature;
 // activity in-memory only.
 extern const char kInMemoryOnlyParam[];
 
-// Name of an experiment parameter that controls whether to perform an initial
-// flush.
-extern const char kInitFlushParam[];
-
-// Name of an experiment parameter that controls whether to collect postmortem
-// reports.
-extern const char kCollectPostmortemParam[];
-
 }  // namespace browser_watcher
 
 #endif  // COMPONENTS_BROWSER_WATCHER_FEATURES_H_

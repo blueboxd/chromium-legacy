@@ -7,9 +7,11 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
+#include "content/browser/native_file_system/native_file_system.pb.h"
 #include "content/browser/native_file_system/native_file_system_directory_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
@@ -21,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "net/base/escape.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
@@ -148,6 +151,13 @@ void NativeFileSystemManagerImpl::BindReceiver(
   receivers_.Add(this, std::move(receiver), binding_context);
 }
 
+void NativeFileSystemManagerImpl::BindInternalsReceiver(
+    mojo::PendingReceiver<storage::mojom::NativeFileSystemContext> receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  internals_receivers_.Add(this, std::move(receiver));
+}
+
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
     GetSandboxedFileSystemCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -261,6 +271,163 @@ void NativeFileSystemManagerImpl::GetDirectoryHandleFromToken(
                          DidResolveTransferTokenForDirectoryHandle,
                      weak_factory_.GetWeakPtr(), receivers_.current_context(),
                      std::move(directory_handle_receiver)));
+}
+
+void NativeFileSystemManagerImpl::SerializeHandle(
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+    SerializeHandleCallback callback) {
+  ResolveTransferToken(
+      std::move(token),
+      base::BindOnce(&NativeFileSystemManagerImpl::DidResolveForSerializeHandle,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+namespace {
+
+std::string SerializePath(const base::FilePath& path) {
+  auto path_bytes = base::as_bytes(base::make_span(path.value()));
+  return std::string(path_bytes.begin(), path_bytes.end());
+}
+
+base::FilePath DeserializePath(const std::string& bytes) {
+  base::FilePath::StringType s;
+  s.resize(bytes.size() / sizeof(base::FilePath::CharType));
+  std::memcpy(&s[0], bytes.data(), s.size() * sizeof(base::FilePath::CharType));
+  return base::FilePath(s);
+}
+
+}  // namespace
+
+void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
+    SerializeHandleCallback callback,
+    NativeFileSystemTransferTokenImpl* resolved_token) {
+  if (!resolved_token) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  NativeFileSystemHandleData data;
+  data.set_handle_type(
+      resolved_token->type() ==
+              NativeFileSystemTransferTokenImpl::HandleType::kFile
+          ? NativeFileSystemHandleData::kFile
+          : NativeFileSystemHandleData::kDirectory);
+
+  switch (resolved_token->url().type()) {
+    case storage::kFileSystemTypeNativeLocal: {
+      DCHECK_EQ(resolved_token->url().mount_type(),
+                storage::kFileSystemTypeIsolated);
+      base::FilePath root_path;
+      storage::IsolatedContext::GetInstance()->GetRegisteredPath(
+          resolved_token->shared_handle_state().file_system.id(), &root_path);
+      data.mutable_native()->set_root_path(SerializePath(root_path));
+
+      base::FilePath relative_path;
+      // We want |relative_path| to be the path of the file or directory
+      // relative to |root_path|. FilePath::AppendRelativePath gets us that,
+      // but fails if the path we're looking for is equal to the |root_path|.
+      // So special case that case (in which case relative path would be empty
+      // anyway).
+      if (root_path != resolved_token->url().path()) {
+        bool relative_path_result = root_path.AppendRelativePath(
+            resolved_token->url().path(), &relative_path);
+        DCHECK(relative_path_result);
+      }
+      data.mutable_native()->set_relative_path(SerializePath(relative_path));
+      break;
+    }
+    case storage::kFileSystemTypeTemporary: {
+      base::FilePath virtual_path = resolved_token->url().virtual_path();
+      data.mutable_sandboxed()->set_virtual_path(SerializePath(virtual_path));
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+
+  std::string value;
+  bool success = data.SerializeToString(&value);
+  DCHECK(success);
+  std::vector<uint8_t> result(value.begin(), value.end());
+  std::move(callback).Run(result);
+}
+
+void NativeFileSystemManagerImpl::DeserializeHandle(
+    const url::Origin& origin,
+    const std::vector<uint8_t>& bits,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token) {
+  DCHECK(!bits.empty());
+
+  std::string bits_as_string(bits.begin(), bits.end());
+  NativeFileSystemHandleData data;
+  if (!data.ParseFromString(bits_as_string)) {
+    // Drop |token|, and directly return.
+    return;
+  }
+
+  switch (data.data_case()) {
+    case NativeFileSystemHandleData::kSandboxed: {
+      base::FilePath virtual_path =
+          DeserializePath(data.sandboxed().virtual_path());
+      storage::FileSystemURL url = context()->CreateCrackedFileSystemURL(
+          origin.GetURL(), storage::kFileSystemTypeTemporary, virtual_path);
+
+      auto permission_grant =
+          base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+              PermissionStatus::GRANTED);
+      CreateTransferTokenImpl(
+          url, SharedHandleState(permission_grant, permission_grant, {}),
+          data.handle_type() == NativeFileSystemHandleData::kDirectory,
+          std::move(token));
+      break;
+    }
+    case NativeFileSystemHandleData::kNative: {
+      base::FilePath root_path = DeserializePath(data.native().root_path());
+      base::FilePath relative_path =
+          DeserializePath(data.native().relative_path());
+
+      auto root = CreateFileSystemURLFromPath(origin, root_path);
+      storage::FileSystemURL child = context()->CreateCrackedFileSystemURL(
+          origin.GetURL(), root.url.mount_type(),
+          root.url.virtual_path().Append(relative_path));
+
+      const bool is_directory =
+          data.handle_type() == NativeFileSystemHandleData::kDirectory;
+
+      scoped_refptr<NativeFileSystemPermissionGrant> read_grant, write_grant;
+      if (permission_context_) {
+        const bool permission_is_directory =
+            is_directory || !relative_path.empty();
+        read_grant = permission_context_->GetReadPermissionGrant(
+            origin, root_path, permission_is_directory,
+            /*process_id=*/ChildProcessHost::kInvalidUniqueID,
+            /*frame_id=*/MSG_ROUTING_NONE,
+            NativeFileSystemPermissionContext::UserAction::kLoadFromStorage);
+        write_grant = permission_context_->GetWritePermissionGrant(
+            origin, root_path, permission_is_directory,
+            /*process_id=*/ChildProcessHost::kInvalidUniqueID,
+            /*frame_id=*/MSG_ROUTING_NONE,
+            NativeFileSystemPermissionContext::UserAction::kLoadFromStorage);
+      } else {
+        // Auto-deny all grants if no permission context is available,
+        // unless Experimental Web Platform features are enabled.
+        // This happens for example in content_shell.
+        read_grant = write_grant =
+            base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+                base::CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kEnableExperimentalWebPlatformFeatures)
+                    ? PermissionStatus::GRANTED
+                    : PermissionStatus::DENIED);
+      }
+
+      CreateTransferTokenImpl(
+          child, SharedHandleState(read_grant, write_grant, root.file_system),
+          is_directory, std::move(token));
+      break;
+    }
+    case NativeFileSystemHandleData::DATA_NOT_SET:
+      NOTREACHED();
+  }
 }
 
 blink::mojom::NativeFileSystemEntryPtr

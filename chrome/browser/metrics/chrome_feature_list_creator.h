@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -96,8 +95,6 @@ class ChromeFeatureListCreator {
 
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
-
-  scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
   std::unique_ptr<ChromeBrowserFieldTrials> browser_field_trials_;
 

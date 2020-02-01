@@ -41,12 +41,9 @@ class LayerTreeHostScrollbarsPixelTest
 
 class PaintedScrollbar : public FakeScrollbar {
  public:
-  explicit PaintedScrollbar(const gfx::Size& size)
-      : FakeScrollbar(/*paint*/ true,
-                      /*has_thumb*/ false,
-                      HORIZONTAL,
-                      /*is_left_side_vertical_scrollbar*/ false,
-                      /*is_overlay*/ false) {
+  explicit PaintedScrollbar(const gfx::Size& size) {
+    set_should_paint(true);
+    set_has_thumb(false);
     set_track_rect(gfx::Rect(size));
   }
 
@@ -210,12 +207,11 @@ class LayerTreeHostOverlayScrollbarsPixelTest
 
 class PaintedOverlayScrollbar : public FakeScrollbar {
  public:
-  PaintedOverlayScrollbar()
-      : FakeScrollbar(/*paint*/ true,
-                      /*has_thumb*/ true,
-                      VERTICAL,
-                      /*is_left_side_vertical_scrollbar*/ false,
-                      /*is_overlay*/ true) {
+  PaintedOverlayScrollbar() {
+    set_should_paint(true);
+    set_has_thumb(true);
+    set_orientation(VERTICAL);
+    set_is_overlay(true);
     set_thumb_size(gfx::Size(15, 50));
     set_track_rect(gfx::Rect(0, 0, 15, 400));
   }

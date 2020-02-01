@@ -36,11 +36,6 @@ class MomentumScrollJankTracker {
   // kExptectedMomentumEventsPerFrame.
   uint32_t jank_count_ = 0;
 
-  // |ordering_jank_count_| specifically addresses https://crbug.com/952930.
-  // Counts cases where we coalesce input very close to processing it,
-  // indicating an unstable ordering of begin frame wrt. input delivery.
-  uint32_t ordering_jank_count_ = 0;
-
   // The number of events processed during a gesture.
   uint32_t total_event_count_ = 0;
 

@@ -88,16 +88,4 @@ TEST_F(AssistantWebContainerViewTest, CloseWindowByKeyEvent) {
   ASSERT_FALSE(view());
 }
 
-TEST_F(AssistantWebContainerViewTest, NoCaptionBarInAssistantWebView) {
-  // Show Assistant Settings UI.
-  OpenAssistantSettings();
-  AssistantWebContainerView* container_view = view();
-  ASSERT_TRUE(container_view);
-
-  // AssistantWebContainerView's widget should have its own caption buttons in
-  // the ash frame view. Therefore the AssistantWebView should not have the
-  // caption bar.
-  ASSERT_FALSE(container_view->GetCaptionBarForTesting());
-}
-
 }  // namespace ash

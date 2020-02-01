@@ -1082,10 +1082,6 @@ gfx::Rect ShelfLayoutManager::GetHotseatBounds() const {
   return hotseat_bounds;
 }
 
-gfx::Rect ShelfLayoutManager::GetStatusAreaBoundsInScreen() const {
-  return target_bounds_.status_bounds_in_screen;
-}
-
 float ShelfLayoutManager::GetOpacity() const {
   return target_bounds_.opacity;
 }
@@ -1631,26 +1627,11 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height),
       shelf_widget_->GetNativeWindow());
 
-  gfx::Size status_size(
-      shelf_widget_->status_area_widget()->GetWindowBoundsInScreen().size());
-  if (shelf_->IsHorizontalAlignment())
-    status_size.set_height(shelf_size);
-  else
-    status_size.set_width(shelf_size);
-
-  gfx::Point status_origin = shelf_->SelectValueForShelfAlignment(
-      gfx::Point(0, 0),
-      gfx::Point(shelf_width - status_size.width(),
-                 shelf_height - status_size.height()),
-      gfx::Point(0, shelf_height - status_size.height()));
-  if (shelf_->IsHorizontalAlignment() && !base::i18n::IsRTL())
-    status_origin.set_x(shelf_width - status_size.width());
-  status_origin.Offset(shelf_origin.x(), shelf_origin.y());
-  target_bounds_.status_bounds_in_screen =
-      gfx::Rect(status_origin, status_size);
-
+  shelf_->status_area_widget()->CalculateTargetBounds();
   shelf_->navigation_widget()->CalculateTargetBounds();
 
+  const gfx::Size status_size =
+      shelf_->status_area_widget()->GetTargetBounds().size();
   gfx::Rect nav_bounds_in_shelf =
       shelf_->navigation_widget()->GetTargetBounds();
   // Convert back into shelf coordinates.
@@ -1802,11 +1783,10 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   if (horizontal) {
     if (!IsHotseatEnabled()) {
-      const int shelf_y = baseline + translate;
-      target_bounds_.shelf_bounds.set_y(shelf_y);
+      target_bounds_.shelf_bounds.set_y(baseline + translate);
       shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
       target_bounds_.hotseat_bounds_in_shelf.set_y(0);
-      target_bounds_.status_bounds_in_screen.set_y(shelf_y);
+      shelf_->status_area_widget()->UpdateTargetBoundsForGesture();
       return;
     }
 
@@ -1851,11 +1831,10 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     return;
   }
 
-  const int shelf_x = baseline + translate;
   target_bounds_.shelf_bounds.set_x(baseline + translate);
   shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
   target_bounds_.hotseat_bounds_in_shelf.set_x(0);
-  target_bounds_.status_bounds_in_screen.set_x(shelf_x);
+  shelf_->status_area_widget()->UpdateTargetBoundsForGesture();
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {

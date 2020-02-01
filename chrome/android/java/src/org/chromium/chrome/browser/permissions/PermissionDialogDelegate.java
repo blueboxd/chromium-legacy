@@ -30,9 +30,6 @@ public class PermissionDialogDelegate {
     /** The icon to display in the dialog. */
     private int mDrawableId;
 
-    /** Title text that can be shown in the dialog. */
-    private String mTitleText;
-
     /** Text shown in the dialog. */
     private String mMessageText;
 
@@ -55,10 +52,6 @@ public class PermissionDialogDelegate {
 
     public int getDrawableId() {
         return mDrawableId;
-    }
-
-    public String getTitleText() {
-        return mTitleText;
     }
 
     public String getMessageText() {
@@ -115,30 +108,28 @@ public class PermissionDialogDelegate {
      * @param tab                   The tab to create the dialog for.
      * @param contentSettingsTypes  The content settings types requested by this dialog.
      * @param iconResourceId        The id of the icon to display in the dialog.
-     * @param title                 The title to display in the dialog. This is the permission type.
      * @param message               The message to display in the dialog.
      * @param primaryTextButton     The text to display on the primary button.
      * @param secondaryTextButton   The text to display on the primary button.
      */
     @CalledByNative
     private static PermissionDialogDelegate create(long nativeDelegatePtr, Tab tab,
-            int[] contentSettingsTypes, int enumeratedIconId, String title, String message,
+            int[] contentSettingsTypes, int enumeratedIconId, String message,
             String primaryButtonText, String secondaryButtonText) {
         return new PermissionDialogDelegate(nativeDelegatePtr, tab, contentSettingsTypes,
-                enumeratedIconId, title, message, primaryButtonText, secondaryButtonText);
+                enumeratedIconId, message, primaryButtonText, secondaryButtonText);
     }
 
     /**
      * Upon construction, this class takes ownership of the passed in native delegate.
      */
     private PermissionDialogDelegate(long nativeDelegatePtr, Tab tab, int[] contentSettingsTypes,
-            int enumeratedIconId, String title, String message, String primaryButtonText,
+            int enumeratedIconId, String message, String primaryButtonText,
             String secondaryButtonText) {
         mNativeDelegatePtr = nativeDelegatePtr;
         mTab = tab;
         mContentSettingsTypes = contentSettingsTypes;
         mDrawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-        mTitleText = title;
         mMessageText = message;
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;

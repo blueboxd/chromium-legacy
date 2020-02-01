@@ -60,7 +60,6 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
       env, reinterpret_cast<uintptr_t>(this), tab->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types),
       ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
-      ConvertUTF16ToJavaString(env, permission_prompt_->GetTitleText()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
       primaryButtonText, secondaryButtonText));
 }

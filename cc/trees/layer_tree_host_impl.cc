@@ -3695,29 +3695,27 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
-  LayerImpl* layer =
-      active_tree_->ScrollableLayerByElementId(scroll_node->element_id);
-
-  // If an associated scrolling layer is not found, the scroll node must not
-  // support impl-scrolling. The root, secondary root, and inner viewports are
-  // all exceptions to this and may not have a layer because it is not required
-  // for hit testing.
-  if (!layer && scroll_node->id != ScrollTree::kRootNodeId &&
-      scroll_node->id != ScrollTree::kSecondaryRootNodeId &&
-      !scroll_node->scrolls_inner_viewport) {
-    TRACE_EVENT0("cc",
-                 "LayerImpl::tryScroll: Failed due to no scrolling layer");
-    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNonFastScrollableRegion;
-    return scroll_status;
-  }
-
   if (!scroll_node->scrollable) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
     scroll_status.thread = InputHandler::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollable;
+    return scroll_status;
+  }
+
+  // If an associated scrolling layer is not found, the scroll node must not
+  // support impl-scrolling. The root, secondary root, and inner viewports are
+  // all exceptions to this and may not have a layer because it is not required
+  // for hit testing.
+  if (scroll_node->id != ScrollTree::kRootNodeId &&
+      scroll_node->id != ScrollTree::kSecondaryRootNodeId &&
+      !scroll_node->scrolls_inner_viewport &&
+      !active_tree_->LayerByElementId(scroll_node->element_id)) {
+    TRACE_EVENT0("cc",
+                 "LayerImpl::tryScroll: Failed due to no scrolling layer");
+    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNonFastScrollableRegion;
     return scroll_status;
   }
 
@@ -3793,7 +3791,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     // scroll_tree_index instead.
     int scroll_tree_index = layer_impl->scroll_tree_index();
     if (layer_impl->ToScrollbarLayer()) {
-      LayerImpl* owner_scroll_layer = active_tree_->ScrollableLayerByElementId(
+      LayerImpl* owner_scroll_layer = active_tree_->LayerByElementId(
           layer_impl->ToScrollbarLayer()->scroll_element_id());
       scroll_tree_index = owner_scroll_layer->scroll_tree_index();
     }

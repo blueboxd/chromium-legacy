@@ -326,11 +326,6 @@ void SimulateKeyPressWithoutChar(WebContents* web_contents,
                                  bool alt,
                                  bool command);
 
-// Simulates typing |value| into a focused text field.
-void SimulateUserInput(WebContents* web_contents, const std::string& value);
-
-void FocusElementByID(WebContents* web_contents, const std::string& id);
-
 // Reset touch action for the embedder of a BrowserPluginGuest.
 void ResetTouchAction(RenderWidgetHost* host);
 

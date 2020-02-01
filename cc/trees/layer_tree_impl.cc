@@ -709,28 +709,6 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
     host_impl_->mutator_host()->UnregisterElementId(
         element_id, GetElementTypeForAnimation());
   }
-
-  element_id_to_scrollable_layer_.erase(element_id);
-}
-
-void LayerTreeImpl::AddScrollableLayer(LayerImpl* layer) {
-  DCHECK(layer);
-
-  if (!layer->element_id())
-    return;
-
-  DCHECK(!element_id_to_scrollable_layer_.count(layer->element_id()));
-  element_id_to_scrollable_layer_.insert(
-      std::make_pair(layer->element_id(), layer));
-}
-
-void LayerTreeImpl::RemoveScrollableLayer(LayerImpl* layer) {
-  DCHECK(layer);
-
-  if (!layer->element_id())
-    return;
-
-  element_id_to_scrollable_layer_.erase(layer->element_id());
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,
@@ -1485,12 +1463,6 @@ LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
   if (it == rend())
     return nullptr;
   return *it;
-}
-
-LayerImpl* LayerTreeImpl::ScrollableLayerByElementId(
-    ElementId element_id) const {
-  auto iter = element_id_to_scrollable_layer_.find(element_id);
-  return iter != element_id_to_scrollable_layer_.end() ? iter->second : nullptr;
 }
 
 void LayerTreeImpl::SetSurfaceRanges(

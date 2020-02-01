@@ -236,4 +236,9 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   return UIResourceBitmap(skbitmap);
 }
 
+ScrollbarLayerBase::ScrollbarLayerType
+PaintedScrollbarLayer::ScrollbarLayerTypeForTesting() const {
+  return kPainted;
+}
+
 }  // namespace cc

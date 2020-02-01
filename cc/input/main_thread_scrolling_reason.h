@@ -22,8 +22,9 @@ namespace cc {
 // [MainThread/Compositor]CanSetScrollReasons function is also updated.
 struct CC_EXPORT MainThreadScrollingReason {
   enum : uint32_t {
-    // Non-transient scrolling reasons.
     kNotScrollingOnMain = 0,
+
+    // Non-transient scrolling reasons.
     kHasBackgroundAttachmentFixedObjects = 1 << 0,
     kHasNonLayerViewportConstrainedObjects = 1 << 1,
     kThreadedScrollingDisabled = 1 << 2,

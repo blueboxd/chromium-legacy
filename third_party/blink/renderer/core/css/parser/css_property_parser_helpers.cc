@@ -190,8 +190,9 @@ class MathFunctionParser {
   STACK_ALLOCATED();
 
  public:
-  explicit MathFunctionParser(CSSParserTokenRange& range,
-                              ValueRange value_range = kValueRangeAll)
+  MathFunctionParser(CSSParserTokenRange& range,
+                     const CSSParserContext* context,
+                     ValueRange value_range)
       : source_range_(range), range_(range) {
     const CSSParserToken& token = range.Peek();
     switch (token.FunctionId()) {
@@ -200,26 +201,37 @@ class MathFunctionParser {
         calc_value_ = CSSMathFunctionValue::Create(
             CSSMathExpressionNode::ParseCalc(ConsumeFunction(range_)),
             value_range);
-        return;
+        break;
       case CSSValueID::kMin:
         calc_value_ = CSSMathFunctionValue::Create(
             CSSMathExpressionNode::ParseMin(ConsumeFunction(range_)),
             value_range);
-        return;
+        break;
       case CSSValueID::kMax:
         calc_value_ = CSSMathFunctionValue::Create(
             CSSMathExpressionNode::ParseMax(ConsumeFunction(range_)),
             value_range);
-        return;
+        break;
       case CSSValueID::kClamp:
         calc_value_ = CSSMathFunctionValue::Create(
             CSSMathExpressionNode::ParseClamp(ConsumeFunction(range_)),
             value_range);
-        return;
+        break;
       default:
         break;
     }
+    if (context && calc_value_ && calc_value_->HasComparisons())
+      context->Count(WebFeature::kCSSComparisonFunctions);
   }
+
+  explicit MathFunctionParser(CSSParserTokenRange& range)
+      : MathFunctionParser(range, nullptr, kValueRangeAll) {}
+  explicit MathFunctionParser(CSSParserTokenRange& range,
+                              ValueRange value_range)
+      : MathFunctionParser(range, nullptr, value_range) {}
+  explicit MathFunctionParser(CSSParserTokenRange& range,
+                              const CSSParserContext& context)
+      : MathFunctionParser(range, &context, kValueRangeAll) {}
 
   const CSSMathFunctionValue* Value() const { return calc_value_; }
   CSSMathFunctionValue* ConsumeValue() {
@@ -554,7 +566,7 @@ CSSPrimitiveValue* ConsumeAngle(
     return CSSNumericLiteralValue::Create(
         0, CSSPrimitiveValue::UnitType::kDegrees);
   }
-  MathFunctionParser math_parser(range, kValueRangeAll);
+  MathFunctionParser math_parser(range, context, kValueRangeAll);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
     if (calculation->Category() != kCalcAngle)
       return nullptr;
@@ -1344,7 +1356,7 @@ static CSSPrimitiveValue* ConsumeGradientAngleOrPercent(
   }
   if (token.GetType() == kPercentageToken)
     return ConsumePercent(range, value_range);
-  MathFunctionParser math_parser(range, value_range);
+  MathFunctionParser math_parser(range, &context, value_range);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
     CalculationCategory category = calculation->Category();
     // TODO(fs): Add and support kCalcPercentAngle?

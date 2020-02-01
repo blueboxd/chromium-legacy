@@ -122,7 +122,6 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/latency/latency_info.h"
 #include "ui/resources/grit/webui_resources.h"
 
@@ -1194,27 +1193,6 @@ void SimulateKeyPressWithoutChar(WebContents* web_contents,
                                  bool command) {
   SimulateKeyPressImpl(web_contents, key, code, key_code, control, shift, alt,
                        command, /*send_char=*/false);
-}
-
-void SimulateUserInput(WebContents* web_contents, const std::string& value) {
-  for (auto character : value) {
-    auto input_msg_watcher = std::make_unique<content::InputMsgWatcher>(
-        web_contents->GetRenderViewHost()->GetWidget(),
-        blink::WebInputEvent::kChar);
-    ui::DomKey dom_key = ui::DomKey::FromCharacter(character);
-    ui::DomCode dom_code =
-        ui::KeycodeConverter::NativeKeycodeToDomCode(dom_key);
-    SimulateKeyPress(web_contents, dom_key, dom_code,
-                     DomCodeToUsLayoutKeyboardCode(dom_code), false, false,
-                     false, false);
-    ASSERT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, input_msg_watcher->WaitForAck());
-  }
-}
-
-void FocusElementByID(WebContents* web_contents, const std::string& id) {
-  constexpr char focus_js[] = "document.getElementById('%s').focus()";
-  const std::string focus_string_js = base::StringPrintf(focus_js, id.c_str());
-  ASSERT_TRUE(content::ExecuteScript(web_contents, focus_string_js));
 }
 
 ScopedSimulateModifierKeyPress::ScopedSimulateModifierKeyPress(

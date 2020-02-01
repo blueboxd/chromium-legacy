@@ -64,16 +64,12 @@ gfx::Size AssistantWebContainerView::CalculatePreferredSize() const {
   return gfx::Size(width, height - non_client_frame_view_height);
 }
 
-void AssistantWebContainerView::OnBackButtonPressed() {
-  assistant_web_view_->OnCaptionButtonPressed(AssistantButtonId::kBack);
+bool AssistantWebContainerView::GoBack() {
+  return assistant_web_view_->GoBack();
 }
 
 void AssistantWebContainerView::OpenUrl(const GURL& url) {
   assistant_web_view_->OpenUrl(url);
-}
-
-views::View* AssistantWebContainerView::GetCaptionBarForTesting() {
-  return assistant_web_view_->caption_bar_for_testing();
 }
 
 void AssistantWebContainerView::InitLayout() {

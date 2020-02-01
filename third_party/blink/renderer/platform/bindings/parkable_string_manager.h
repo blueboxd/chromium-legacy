@@ -67,6 +67,8 @@ class PLATFORM_EXPORT ParkableStringManager {
   // Public for testing.
   constexpr static int kAgingIntervalInSeconds = 2;
 
+  static const char* kAllocatorDumpName;
+
  private:
   friend class ParkableString;
   friend class ParkableStringImpl;

@@ -27,6 +27,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
+#include "cc/base/features.h"
 #include "cc/base/switches.h"
 #include "cc/input/touch_action.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
@@ -3133,17 +3134,16 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   settings.disallow_non_exact_resource_reuse = true;
 #endif
 
+  settings.enable_impl_latency_recovery =
+      features::IsImplLatencyRecoveryEnabled();
+  settings.enable_main_latency_recovery =
+      features::IsMainLatencyRecoveryEnabled();
+
   if (cmd.HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
     settings.wait_for_all_pipeline_stages_before_draw = true;
     settings.enable_impl_latency_recovery = false;
     settings.enable_main_latency_recovery = false;
   }
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android. Disable
-  // in viz mode for now, with plan to disable more widely once viz launches.
-  settings.enable_impl_latency_recovery = false;
-  settings.enable_main_latency_recovery = false;
-#endif
 
   settings.enable_image_animation_resync =
       !cmd.HasSwitch(switches::kDisableImageAnimationResync);

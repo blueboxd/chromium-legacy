@@ -34,6 +34,8 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSInk[] = "Ink";
   constexpr char kCUPSBrotherMonoColor[] = "BRMonoColor";
   constexpr char kCUPSBrotherPrintQuality[] = "BRPrintQuality";
+  constexpr char kCUPSSharpARCMode[] = "ARCMode";
+  constexpr char kCUPSXeroxXRXColor[] = "XRXColor";
 #else
   constexpr char kCUPSColorMode[] = "cups-ColorMode";
   constexpr char kCUPSColorModel[] = "cups-ColorModel";
@@ -42,6 +44,8 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSInk[] = "cups-Ink";
   constexpr char kCUPSBrotherMonoColor[] = "cups-BRMonoColor";
   constexpr char kCUPSBrotherPrintQuality[] = "cups-BRPrintQuality";
+  constexpr char kCUPSSharpARCMode[] = "cups-ARCMode";
+  constexpr char kCUPSXeroxXRXColor[] = "cups-XRXColor";
 #endif  // defined(OS_MACOSX)
 
   color_setting_name->assign(kCUPSColorModel);
@@ -139,6 +143,22 @@ void GetColorModelForMode(int color_mode,
       color_setting_name->assign(kCUPSInk);
       color_value->assign(kMono);
       break;
+    case SHARP_ARCMODE_CMCOLOR:
+      color_setting_name->assign(kCUPSSharpARCMode);
+      color_value->assign(kSharpCMColor);
+      break;
+    case SHARP_ARCMODE_CMBW:
+      color_setting_name->assign(kCUPSSharpARCMode);
+      color_value->assign(kSharpCMBW);
+      break;
+    case XEROX_XRXCOLOR_AUTOMATIC:
+      color_setting_name->assign(kCUPSXeroxXRXColor);
+      color_value->assign(kXeroxAutomatic);
+      break;
+    case XEROX_XRXCOLOR_BW:
+      color_setting_name->assign(kCUPSXeroxXRXColor);
+      color_value->assign(kXeroxBW);
+      break;
     default:
       color_value->assign(kGrayscale);
       break;
@@ -147,7 +167,13 @@ void GetColorModelForMode(int color_mode,
 #endif  // defined(USE_CUPS)
 
 base::Optional<bool> IsColorModelSelected(int color_mode) {
-  switch (color_mode) {
+  if (color_mode <= UNKNOWN_COLOR_MODEL || color_mode > COLOR_MODEL_LAST) {
+    NOTREACHED();
+    return base::nullopt;
+  }
+
+  ColorModel color_model = static_cast<ColorModel>(color_mode);
+  switch (color_model) {
     case COLOR:
     case CMYK:
     case CMY:
@@ -163,6 +189,9 @@ base::Optional<bool> IsColorModelSelected(int color_mode) {
     case PROCESSCOLORMODEL_RGB:
     case BROTHER_CUPS_COLOR:
     case BROTHER_BRSCRIPT3_COLOR:
+    case EPSON_INK_COLOR:
+    case SHARP_ARCMODE_CMCOLOR:
+    case XEROX_XRXCOLOR_AUTOMATIC:
       return true;
     case GRAY:
     case BLACK:
@@ -173,8 +202,13 @@ base::Optional<bool> IsColorModelSelected(int color_mode) {
     case PROCESSCOLORMODEL_GREYSCALE:
     case BROTHER_CUPS_MONO:
     case BROTHER_BRSCRIPT3_BLACK:
+    case EPSON_INK_MONO:
+    case SHARP_ARCMODE_CMBW:
+    case XEROX_XRXCOLOR_BW:
       return false;
-    default:
+    case UNKNOWN_COLOR_MODEL:
+      // The default case is excluded from this switch statement to ensure that
+      // all ColorModel values are determinantly handled.
       NOTREACHED();
       return base::nullopt;
   }

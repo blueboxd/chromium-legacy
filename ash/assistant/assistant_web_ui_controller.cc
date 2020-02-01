@@ -10,7 +10,6 @@
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/events/event_observer.h"
 #include "ui/views/event_monitor.h"
@@ -70,7 +69,6 @@ class AssistantWebContainerEventObserver : public ui::EventObserver {
 AssistantWebUiController::AssistantWebUiController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  DCHECK(chromeos::assistant::features::IsAssistantWebContainerEnabled());
   assistant_controller_->AddObserver(this);
 }
 
@@ -121,7 +119,7 @@ void AssistantWebUiController::CloseUi() {
 
 void AssistantWebUiController::OnBackButtonPressed() {
   DCHECK(web_container_view_);
-  web_container_view_->OnBackButtonPressed();
+  web_container_view_->GoBack();
 }
 
 AssistantWebContainerView* AssistantWebUiController::GetViewForTest() {

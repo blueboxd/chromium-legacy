@@ -9,7 +9,6 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/base/assistant_button.h"
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
 #include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"

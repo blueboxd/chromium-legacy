@@ -660,6 +660,34 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(savings))));
 }
 
+TEST_F(ParkableStringTest, MemoryFootprintForDump) {
+  size_t memory_footprint;
+  ParkableString parkable1(MakeLargeString('a').ReleaseImpl());
+  ParkableString parkable2(MakeLargeString('b').ReleaseImpl());
+  ParkableString parkable3(String("short string, not parkable").ReleaseImpl());
+
+  WaitForDelayedParking();
+  parkable1.ToString();
+
+  // Compressed and uncompressed data.
+  memory_footprint = sizeof(ParkableStringImpl) +
+                     sizeof(ParkableStringImpl::SecureDigest) +
+                     parkable1.Impl()->compressed_size() +
+                     parkable1.Impl()->CharactersSizeInBytes();
+  EXPECT_EQ(memory_footprint, parkable1.Impl()->MemoryFootprintForDump());
+
+  // Compressed uncompressed data only.
+  memory_footprint = sizeof(ParkableStringImpl) +
+                     sizeof(ParkableStringImpl::SecureDigest) +
+                     parkable2.Impl()->compressed_size();
+  EXPECT_EQ(memory_footprint, parkable2.Impl()->MemoryFootprintForDump());
+
+  // Short string, no digest.
+  memory_footprint =
+      sizeof(ParkableStringImpl) + parkable3.Impl()->CharactersSizeInBytes();
+  EXPECT_EQ(memory_footprint, parkable3.Impl()->MemoryFootprintForDump());
+}
+
 TEST_F(ParkableStringTest, CompressionDisabled) {
   base::test::ScopedFeatureList features;
   features.InitAndDisableFeature(kCompressParkableStrings);

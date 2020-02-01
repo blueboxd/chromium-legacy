@@ -143,8 +143,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       is_generation_popup_possibly_visible_(false),
       is_user_gesture_required_(true),
       is_secure_context_required_(false),
-      form_tracker_(render_frame),
-      field_data_manager_(password_autofill_agent->GetFieldDataManager()) {
+      form_tracker_(render_frame) {
   render_frame->GetWebFrame()->SetAutofillClient(this);
   password_autofill_agent->SetAutofillAgent(this);
   AddFormObserver(this);
@@ -286,7 +285,7 @@ void AutofillAgent::FireHostSubmitEvents(const WebFormElement& form,
                                          bool known_success,
                                          SubmissionSource source) {
   FormData form_data;
-  if (!form_util::ExtractFormData(form, *field_data_manager_.get(), &form_data))
+  if (!form_util::ExtractFormData(form, &form_data))
     return;
 
   FireHostSubmitEvents(form_data, known_success, source);
@@ -1073,8 +1072,7 @@ void AutofillAgent::RemoveFormObserver(Observer* observer) {
 
 bool AutofillAgent::GetSubmittedForm(FormData* form) {
   if (!last_interacted_form_.IsNull()) {
-    if (form_util::ExtractFormData(last_interacted_form_,
-                                   *field_data_manager_.get(), form)) {
+    if (form_util::ExtractFormData(last_interacted_form_, form)) {
       return true;
     } else if (provisionally_saved_form_) {
       *form = *provisionally_saved_form_;
@@ -1108,7 +1106,6 @@ void AutofillAgent::UpdateLastInteractedForm(blink::WebFormElement form) {
   last_interacted_form_ = form;
   provisionally_saved_form_ = std::make_unique<FormData>();
   if (!form_util::ExtractFormData(last_interacted_form_,
-                                  *field_data_manager_.get(),
                                   provisionally_saved_form_.get())) {
     provisionally_saved_form_.reset();
   }

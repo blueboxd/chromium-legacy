@@ -22,6 +22,7 @@
 #include "ash/assistant/assistant_suggestions_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/assistant_view_delegate_impl.h"
+#include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
@@ -151,7 +152,7 @@ class ASH_EXPORT AssistantController
   AssistantUiController* ui_controller() { return &assistant_ui_controller_; }
 
   AssistantWebUiController* web_ui_controller() {
-    return assistant_web_ui_controller_.get();
+    return &assistant_web_ui_controller_;
   }
 
   AssistantViewDelegate* view_delegate() { return &view_delegate_; }
@@ -211,7 +212,7 @@ class ASH_EXPORT AssistantController
   AssistantSetupController assistant_setup_controller_{this};
   AssistantSuggestionsController assistant_suggestions_controller_{this};
   AssistantUiController assistant_ui_controller_{this};
-  std::unique_ptr<AssistantWebUiController> assistant_web_ui_controller_;
+  AssistantWebUiController assistant_web_ui_controller_{this};
 
   AssistantViewDelegateImpl view_delegate_{this};
 

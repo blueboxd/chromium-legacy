@@ -30,12 +30,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
 
-  void OnBackButtonPressed();
+  // Invoke to navigate back in the embedded WebContents' navigation stack. If
+  // backwards navigation is not possible, returns |false|. Otherwise |true| to
+  // indicate success.
+  bool GoBack();
 
   // Invoke to open the specified |url|.
   void OpenUrl(const GURL& url);
-
-  views::View* GetCaptionBarForTesting();
 
  private:
   void InitLayout();

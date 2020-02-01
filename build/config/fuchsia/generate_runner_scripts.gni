@@ -100,7 +100,7 @@ template("fuchsia_package_runner") {
       "${boot_image_root}/qemu/zircon-a.zbi",
     ]
 
-    if (checkout_aemu) {
+    if (host_cpu == "x64" && (host_os == "linux" || host_os == "mac")) {
       data += [ "${aemu_root}/" ]
     }
 

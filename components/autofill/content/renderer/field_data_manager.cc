@@ -12,6 +12,8 @@ namespace autofill {
 
 FieldDataManager::FieldDataManager() = default;
 
+FieldDataManager::~FieldDataManager() = default;
+
 void FieldDataManager::ClearData() {
   field_value_and_properties_map_.clear();
 }
@@ -83,7 +85,5 @@ bool FieldDataManager::DidUserType(uint32_t id) const {
   return HasFieldData(id) &&
          (GetFieldPropertiesMask(id) & FieldPropertiesFlags::USER_TYPED);
 }
-
-FieldDataManager::~FieldDataManager() = default;
 
 }  // namespace autofill

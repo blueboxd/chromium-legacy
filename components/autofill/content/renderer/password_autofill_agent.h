@@ -250,10 +250,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
 
-  const scoped_refptr<FieldDataManager> GetFieldDataManager() {
-    return field_data_manager_;
-  }
-
  private:
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {
@@ -487,7 +483,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // changes them.
   // 2) Field properties mask, i.e. whether the field was autofilled, modified
   // by user, etc. (see FieldPropertiesMask).
-  const scoped_refptr<FieldDataManager> field_data_manager_;
+  FieldDataManager field_data_manager_;
 
   PasswordValueGatekeeper gatekeeper_;
 

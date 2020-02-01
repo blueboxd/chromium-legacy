@@ -88,6 +88,8 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   String CustomCSSText() const;
   bool Equals(const CSSMathFunctionValue& other) const;
 
+  bool HasComparisons() const { return expression_->HasComparisons(); }
+
   void TraceAfterDispatch(blink::Visitor* visitor);
 
  private:

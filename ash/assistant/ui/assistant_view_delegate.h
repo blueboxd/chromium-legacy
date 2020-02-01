@@ -16,16 +16,11 @@
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/ui/assistant_mini_view.h"
-#include "ash/assistant/ui/caption_bar.h"
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
-#include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
 #include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -46,9 +41,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
 
   // Invoked when the dialog plate contents have been committed.
   virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
-
-  // Invoked when the mini view is pressed.
-  virtual void OnMiniViewPressed() {}
 
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
@@ -116,9 +108,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;
   virtual void RemoveUiModelObserver(AssistantUiModelObserver* observer) = 0;
 
-  // Gets the caption bar delegate associated with the view delegate.
-  virtual CaptionBarDelegate* GetCaptionBarDelegate() = 0;
-
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
@@ -143,9 +132,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Invoked when the dialog plate contents have been committed.
   virtual void OnDialogPlateContentsCommitted(const std::string& text) = 0;
-
-  // Invoked when the mini view is pressed.
-  virtual void OnMiniViewPressed() = 0;
 
   // Invoked when an in-Assistant notification button is pressed.
   virtual void OnNotificationButtonPressed(const std::string& notification_id,

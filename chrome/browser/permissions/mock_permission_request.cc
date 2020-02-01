@@ -94,9 +94,6 @@ permissions::PermissionRequest::IconId MockPermissionRequest::GetIconId()
 }
 
 #if defined(OS_ANDROID)
-base::string16 MockPermissionRequest::GetTitleText() const {
-  return text_;
-}
 base::string16 MockPermissionRequest::GetMessageText() const {
   return text_;
 }

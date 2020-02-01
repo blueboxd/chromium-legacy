@@ -190,10 +190,6 @@ bool IsVoiceMatchDisabled() {
   return base::FeatureList::IsEnabled(kDisableVoiceMatch);
 }
 
-bool IsAssistantWebContainerEnabled() {
-  return app_list_features::IsAssistantLauncherUIEnabled();
-}
-
 }  // namespace features
 }  // namespace assistant
 }  // namespace chromeos

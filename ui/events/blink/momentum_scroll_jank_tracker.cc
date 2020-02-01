@@ -24,13 +24,9 @@ MomentumScrollJankTracker::~MomentumScrollJankTracker() {
   uint32_t rounding_factor = total_event_count_ - 1;
   uint32_t jank_percentage =
       (jank_count_ * 100 + rounding_factor) / total_event_count_;
-  uint32_t ordering_jank_percentage =
-      (ordering_jank_count_ * 100 + rounding_factor) / total_event_count_;
 
   base::UmaHistogramPercentage("Renderer4.MomentumScrollJankPercentage",
                                jank_percentage);
-  base::UmaHistogramPercentage("Renderer4.MomentumScrollOrderingJankPercentage",
-                               ordering_jank_percentage);
 }
 
 void MomentumScrollJankTracker::OnDispatchedInputEvent(
@@ -61,18 +57,6 @@ void MomentumScrollJankTracker::OnDispatchedInputEvent(
 
   jank_count_ +=
       event_with_callback->coalesced_count() - kExpectedMomentumEventsPerFrame;
-
-  // To isolate the case where we are processing events ~every frame but
-  // still experiencing jank due unstable ordering of event delivery wrt.
-  // begin frame, check if this event has been coalesced exactly once more
-  // than expected and if that coalescing happened within kRecentEventCutoff.
-  bool one_extra_event = event_with_callback->coalesced_count() ==
-                         kExpectedMomentumEventsPerFrame + 1;
-  bool coalesced_recently =
-      (now - event_with_callback->last_coalesced_timestamp()) <
-      kRecentEventCutoff;
-  if (one_extra_event && coalesced_recently)
-    ordering_jank_count_++;
 }
 
 }  // namespace ui

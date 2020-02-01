@@ -116,7 +116,7 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
   audio_consumer_.events().OnEndOfStream = [this]() { OnEndOfStream(); };
   RequestAudioConsumerStatus();
 
-  InitializeStreamSync(stream->audio_decoder_config());
+  InitializeStreamSink(stream->audio_decoder_config());
 
   // DecryptingDemuxerStream handles both encrypted and clear streams, so
   // initialize it long as we have cdm_context.
@@ -137,10 +137,12 @@ void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
   std::move(init_cb_).Run(PIPELINE_OK);
 }
 
-void FuchsiaAudioRenderer::InitializeStreamSync(
+void FuchsiaAudioRenderer::InitializeStreamSink(
     const AudioDecoderConfig& config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!stream_sink_);
+  DCHECK(stream_sink_buffers_.empty());
+  DCHECK_EQ(num_pending_packets_, 0U);
 
   // Allocate input buffers for the StreamSink.
   stream_sink_buffers_.resize(kNumBuffers);
@@ -423,8 +425,9 @@ void FuchsiaAudioRenderer::ScheduleReadDemuxerStream() {
     // appease static thread annotations checker.
   }
 
-  if (read_timer_.IsRunning() || demuxer_stream_->IsReadPending() ||
-      at_end_of_stream || num_pending_packets_ >= stream_sink_buffers_.size()) {
+  if (!demuxer_stream_ || read_timer_.IsRunning() ||
+      demuxer_stream_->IsReadPending() || at_end_of_stream ||
+      num_pending_packets_ >= stream_sink_buffers_.size()) {
     return;
   }
 
@@ -465,7 +468,10 @@ void FuchsiaAudioRenderer::OnDemuxerStreamReadDone(
       OnError(PIPELINE_ERROR_READ);
     } else if (read_status == DemuxerStream::kConfigChanged) {
       stream_sink_.Unbind();
-      InitializeStreamSync(demuxer_stream_->audio_decoder_config());
+      stream_sink_buffers_.clear();
+      num_pending_packets_ = 0;
+
+      InitializeStreamSink(demuxer_stream_->audio_decoder_config());
       ScheduleReadDemuxerStream();
     } else {
       DCHECK_EQ(read_status, DemuxerStream::kAborted);

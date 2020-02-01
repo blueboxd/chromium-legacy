@@ -22,6 +22,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/base/features.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -192,6 +193,11 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
+
+  settings.enable_impl_latency_recovery =
+      features::IsImplLatencyRecoveryEnabled();
+  settings.enable_main_latency_recovery =
+      features::IsMainLatencyRecoveryEnabled();
 
   if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
     settings.wait_for_all_pipeline_stages_before_draw = true;

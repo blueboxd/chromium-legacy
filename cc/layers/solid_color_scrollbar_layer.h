@@ -30,7 +30,12 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerBase {
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;
   bool HitTestable() const override;
 
- protected:
+  int thumb_thickness() const { return thumb_thickness_; }
+  int track_start() const { return track_start_; }
+
+  ScrollbarLayerType ScrollbarLayerTypeForTesting() const override;
+
+ private:
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,
                            int thumb_thickness,
                            int track_start,

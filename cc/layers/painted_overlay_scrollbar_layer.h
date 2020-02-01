@@ -30,6 +30,8 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
+  ScrollbarLayerType ScrollbarLayerTypeForTesting() const override;
+
  protected:
   explicit PaintedOverlayScrollbarLayer(scoped_refptr<Scrollbar> scrollbar);
   ~PaintedOverlayScrollbarLayer() override;

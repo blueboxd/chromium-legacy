@@ -35,12 +35,12 @@ enum class AssistantVisibility {
 // Entries should not be renumbered and numeric values should never be reused.
 // Only append to this enum is allowed if more buttons will be added.
 enum class AssistantButtonId {
-  kBack = 1,
-  kClose = 2,
-  kMinimize = 3,
+  kBackDeprecated = 1,
+  kCloseDeprecated = 2,
+  kMinimizeDeprecated = 3,
   kKeyboardInputToggle = 4,
   kVoiceInputToggle = 5,
-  kSettings = 6,
+  kSettingsDeprecated = 6,
   kBackInLauncherDeprecated = 7,
   kMaxValue = kBackInLauncherDeprecated
 };

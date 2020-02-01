@@ -179,4 +179,9 @@ bool PaintedOverlayScrollbarLayer::PaintTickmarks() {
   return true;
 }
 
+ScrollbarLayerBase::ScrollbarLayerType
+PaintedOverlayScrollbarLayer::ScrollbarLayerTypeForTesting() const {
+  return kPaintedOverlay;
+}
+
 }  // namespace cc

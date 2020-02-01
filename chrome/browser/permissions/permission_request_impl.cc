@@ -100,49 +100,6 @@ permissions::PermissionRequest::IconId PermissionRequestImpl::GetIconId()
 }
 
 #if defined(OS_ANDROID)
-base::string16 PermissionRequestImpl::GetTitleText() const {
-  int message_id;
-  switch (content_settings_type_) {
-    case ContentSettingsType::GEOLOCATION:
-      message_id = IDS_GEOLOCATION_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::NOTIFICATIONS:
-      message_id = IDS_NOTIFICATIONS_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::MIDI_SYSEX:
-      message_id = IDS_MIDI_SYSEX_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
-      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::MEDIASTREAM_MIC:
-      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::MEDIASTREAM_CAMERA:
-      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::ACCESSIBILITY_EVENTS:
-      message_id = IDS_ACCESSIBILITY_EVENTS_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::CLIPBOARD_READ_WRITE:
-      message_id = IDS_CLIPBOARD_PERMISSION_TITLE;
-      break;
-    case ContentSettingsType::NFC:
-      message_id = IDS_NFC_PERMISSION_TITLE;
-      break;
-    // TODO(andypaicu): GetTitleText is no longer used, but we have to return
-    // something at present to avoid crashing. This both avoids the crash and
-    // avoids adding an unused string.
-    case ContentSettingsType::VR:
-    case ContentSettingsType::AR:
-      return base::string16();
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-  return l10n_util::GetStringUTF16(message_id);
-}
-
 base::string16 PermissionRequestImpl::GetMessageText() const {
   int message_id;
   switch (content_settings_type_) {
@@ -201,7 +158,7 @@ base::string16 PermissionRequestImpl::GetQuietTitleText() const {
   }
 
   NOTREACHED();
-  return GetTitleText();
+  return base::string16();
 }
 
 base::string16 PermissionRequestImpl::GetQuietMessageText() const {

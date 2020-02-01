@@ -16,7 +16,6 @@ namespace ash {
 
 class AssistantMainView;
 class AssistantViewDelegate;
-class AssistantWebView;
 class ContentsView;
 class ViewShadow;
 
@@ -59,8 +58,6 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   views::View* GetLastFocusableView() override;
 
   // AssistantUiModelObserver:
-  void OnUiModeChanged(AssistantUiMode ui_mode,
-                       bool due_to_interaction) override;
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
       AssistantVisibility old_visibility,
@@ -73,11 +70,10 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 
   AssistantViewDelegate* const assistant_view_delegate_;
-  ContentsView* contents_view_;
+  ContentsView* const contents_view_;
 
-  // Owned by the views hierarchy.
+  // Owned by the view hierarchy.
   AssistantMainView* assistant_main_view_ = nullptr;
-  AssistantWebView* assistant_web_view_ = nullptr;
 
   int min_height_dip_;
 

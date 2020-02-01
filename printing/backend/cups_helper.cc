@@ -60,6 +60,16 @@ constexpr char kHpGrayscalePrint[] = "GrayscalePrint";
 constexpr char kSamsungColorTrue[] = "True";
 constexpr char kSamsungColorFalse[] = "False";
 
+// Sharp printer specific options.
+constexpr char kSharpARCMode[] = "ARCMode";
+constexpr char kSharpCMColor[] = "CMColor";
+constexpr char kSharpCMBW[] = "CMBW";
+
+// Xerox printer specific options.
+constexpr char kXeroxXRXColor[] = "XRXColor";
+constexpr char kXeroxAutomatic[] = "Automatic";
+constexpr char kXeroxBW[] = "BW";
+
 void ParseLpOptions(const base::FilePath& filepath,
                     base::StringPiece printer_name,
                     int* num_options,
@@ -397,6 +407,62 @@ bool GetEpsonInkSettings(ppd_file_t* ppd,
   return true;
 }
 
+bool GetSharpARCModeSettings(ppd_file_t* ppd,
+                             ColorModel* color_model_for_black,
+                             ColorModel* color_model_for_color,
+                             bool* color_is_default) {
+  // Sharp printers use "ARCMode" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kSharpARCMode);
+  if (!color_mode_option)
+    return false;
+
+  if (ppdFindChoice(color_mode_option, kSharpCMColor))
+    *color_model_for_color = SHARP_ARCMODE_CMCOLOR;
+  if (ppdFindChoice(color_mode_option, kSharpCMBW))
+    *color_model_for_black = SHARP_ARCMODE_CMBW;
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kSharpARCMode);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    // Many Sharp printers use "CMAuto" as the default color mode.
+    *color_is_default =
+        !EqualsCaseInsensitiveASCII(mode_choice->choice, kSharpCMBW);
+  }
+  return true;
+}
+
+bool GetXeroxColorSettings(ppd_file_t* ppd,
+                           ColorModel* color_model_for_black,
+                           ColorModel* color_model_for_color,
+                           bool* color_is_default) {
+  // Some Xerox printers use "XRXColor" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kXeroxXRXColor);
+  if (!color_mode_option)
+    return false;
+
+  if (ppdFindChoice(color_mode_option, kXeroxAutomatic))
+    *color_model_for_color = XEROX_XRXCOLOR_AUTOMATIC;
+  if (ppdFindChoice(color_mode_option, kXeroxBW))
+    *color_model_for_black = XEROX_XRXCOLOR_BW;
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kXeroxXRXColor);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    // Many Xerox printers use "Automatic" as the default color mode.
+    *color_is_default =
+        !EqualsCaseInsensitiveASCII(mode_choice->choice, kXeroxBW);
+  }
+  return true;
+}
+
 bool GetProcessColorModelSettings(ppd_file_t* ppd,
                                   ColorModel* color_model_for_black,
                                   ColorModel* color_model_for_color,
@@ -445,6 +511,8 @@ bool GetColorModelSettings(ppd_file_t* ppd,
          GetHPColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetBrotherColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetEpsonInkSettings(ppd, cm_black, cm_color, is_color) ||
+         GetSharpARCModeSettings(ppd, cm_black, cm_color, is_color) ||
+         GetXeroxColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);
 }
 

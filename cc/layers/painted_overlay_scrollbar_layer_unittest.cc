@@ -17,7 +17,11 @@ namespace {
 
 class MockScrollbar : public FakeScrollbar {
  public:
-  MockScrollbar() : FakeScrollbar(true, true, true) {}
+  MockScrollbar() {
+    set_should_paint(true);
+    set_has_thumb(true);
+    set_is_overlay(true);
+  }
 
   void PaintPart(PaintCanvas*, ScrollbarPart part, const gfx::Rect&) override {
     if (part == TRACK_BUTTONS_TICKMARKS)

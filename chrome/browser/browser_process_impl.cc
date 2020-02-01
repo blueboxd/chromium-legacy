@@ -811,6 +811,10 @@ IntranetRedirectDetector* BrowserProcessImpl::intranet_redirect_detector() {
 }
 
 const std::string& BrowserProcessImpl::GetApplicationLocale() {
+#if !defined(OS_CHROMEOS)
+  // TODO(crbug.com/1033644): Remove #if.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#endif
   DCHECK(!locale_.empty());
   return locale_;
 }

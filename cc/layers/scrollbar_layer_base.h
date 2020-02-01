@@ -22,6 +22,13 @@ class CC_EXPORT ScrollbarLayerBase : public Layer {
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
+  enum ScrollbarLayerType {
+    kSolidColor,
+    kPainted,
+    kPaintedOverlay,
+  };
+  virtual ScrollbarLayerType ScrollbarLayerTypeForTesting() const = 0;
+
  protected:
   ScrollbarLayerBase(ScrollbarOrientation orientation,
                      bool is_left_side_vertical_scrollbar);

@@ -606,6 +606,22 @@ void ParkableStringImpl::CompressInBackground(
   RecordStatistics(size, timer.Elapsed(), ParkingAction::kParked);
 }
 
+size_t ParkableStringImpl::MemoryFootprintForDump() const {
+  AssertOnValidThread();
+  size_t size = sizeof(ParkableStringImpl);
+
+  if (!is_parked())
+    size += string_.CharactersSizeInBytes();
+
+  if (compressed_)
+    size += compressed_->size();
+
+  if (digest_)
+    size += sizeof(SecureDigest);
+
+  return size;
+}
+
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {
   if (!impl) {
     impl_ = nullptr;
@@ -634,14 +650,16 @@ void ParkableString::Unlock() const {
 
 void ParkableString::OnMemoryDump(WebProcessMemoryDump* pmd,
                                   const String& name) const {
-  // Parkable strings are reported by ParkableStringManager.
-  if (!impl_ || may_be_parked())
+  if (!impl_)
     return;
 
   auto* dump = pmd->CreateMemoryAllocatorDump(name);
-  dump->AddScalar("size", "bytes", CharactersSizeInBytes());
-  pmd->AddSuballocation(dump->Guid(),
-                        String(WTF::Partitions::kAllocatedObjectPoolName));
+  dump->AddScalar("size", "bytes", impl_->MemoryFootprintForDump());
+
+  const char* parent_allocation =
+      may_be_parked() ? ParkableStringManager::kAllocatorDumpName
+                      : WTF::Partitions::kAllocatedObjectPoolName;
+  pmd->AddSuballocation(dump->Guid(), parent_allocation);
 }
 
 bool ParkableString::Is8Bit() const {

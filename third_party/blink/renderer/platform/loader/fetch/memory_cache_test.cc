@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -126,13 +125,7 @@ TEST_F(MemoryCacheTest, CapacityAccounting) {
   EXPECT_EQ(kTotalCapacity, GetMemoryCache()->Capacity());
 }
 
-// TODO(crbug.com/850788): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_VeryLargeResourceAccounting DISABLED_VeryLargeResourceAccounting
-#else
-#define MAYBE_VeryLargeResourceAccounting VeryLargeResourceAccounting
-#endif
-TEST_F(MemoryCacheTest, MAYBE_VeryLargeResourceAccounting) {
+TEST_F(MemoryCacheTest, VeryLargeResourceAccounting) {
   const size_t kSizeMax = ~static_cast<size_t>(0);
   const size_t kTotalCapacity = kSizeMax / 4;
   const size_t kResourceSize1 = kSizeMax / 16;
@@ -140,7 +133,12 @@ TEST_F(MemoryCacheTest, MAYBE_VeryLargeResourceAccounting) {
   GetMemoryCache()->SetCapacity(kTotalCapacity);
   Persistent<MockResourceClient> client =
       MakeGarbageCollected<MockResourceClient>();
-  FetchParameters params(ResourceRequest("data:text/html,"));
+  // Here and below, use an image MIME type. This is because on Android
+  // non-image MIME types trigger a query to Java to check which video codecs
+  // are supported. This fails in tests. The solution is either to use an image
+  // type, or disable the tests on Android.
+  // crbug.com/850788.
+  FetchParameters params(ResourceRequest("data:image/jpeg,"));
   FakeDecodedResource* cached_resource =
       FakeDecodedResource::Fetch(params, fetcher_, client);
   cached_resource->FakeEncodedSize(kResourceSize1);
@@ -200,14 +198,14 @@ static void TestResourcePruningLater(ResourceFetcher* fetcher,
   EXPECT_EQ(0u, GetMemoryCache()->size());
 
   const char kData[6] = "abcde";
-  FetchParameters params1(ResourceRequest("data:text/html,resource1"));
+  FetchParameters params1(ResourceRequest("data:image/jpeg,resource1"));
   Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, nullptr);
   GetMemoryCache()->Remove(resource1);
   if (!identifier1.IsEmpty())
     resource1->SetCacheIdentifier(identifier1);
   resource1->AppendData(kData, 3u);
   resource1->FinishForTest();
-  FetchParameters params2(ResourceRequest("data:text/html,resource2"));
+  FetchParameters params2(ResourceRequest("data:image/jpeg,resource2"));
   Persistent<MockResourceClient> client =
       MakeGarbageCollected<MockResourceClient>();
   Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client);
@@ -230,25 +228,11 @@ static void TestResourcePruningLater(ResourceFetcher* fetcher,
 }
 
 // Verified that when ordering a prune in a runLoop task, the prune is deferred.
-// TODO(crbug.com/850788): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_ResourcePruningLater_Basic DISABLED_ResourcePruningLater_Basic
-#else
-#define MAYBE_ResourcePruningLater_Basic ResourcePruningLater_Basic
-#endif
-TEST_F(MemoryCacheTest, MAYBE_ResourcePruningLater_Basic) {
+TEST_F(MemoryCacheTest, ResourcePruningLater_Basic) {
   TestResourcePruningLater(fetcher_, "", "");
 }
 
-// TODO(crbug.com/850788): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_ResourcePruningLater_MultipleResourceMaps \
-  DISABLED_ResourcePruningLater_MultipleResourceMaps
-#else
-#define MAYBE_ResourcePruningLater_MultipleResourceMaps \
-  ResourcePruningLater_MultipleResourceMaps
-#endif
-TEST_F(MemoryCacheTest, MAYBE_ResourcePruningLater_MultipleResourceMaps) {
+TEST_F(MemoryCacheTest, ResourcePruningLater_MultipleResourceMaps) {
   {
     TestResourcePruningLater(fetcher_, "foo", "");
     GetMemoryCache()->EvictResources();
@@ -272,9 +256,9 @@ static void TestClientRemoval(ResourceFetcher* fetcher,
       MakeGarbageCollected<MockResourceClient>();
   Persistent<MockResourceClient> client2 =
       MakeGarbageCollected<MockResourceClient>();
-  FetchParameters params1(ResourceRequest("data:text/html,foo"));
+  FetchParameters params1(ResourceRequest("data:image/jpeg,foo"));
   Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, client1);
-  FetchParameters params2(ResourceRequest("data:text/html,bar"));
+  FetchParameters params2(ResourceRequest("data:image/jpeg,bar"));
   Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client2);
   resource1->AppendData(kData, 4u);
   resource2->AppendData(kData, 4u);
@@ -327,25 +311,11 @@ static void TestClientRemoval(ResourceFetcher* fetcher,
   EXPECT_EQ(0u, GetMemoryCache()->size());
 }
 
-// TODO(crbug.com/850788): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_ClientRemoval_Basic DISABLED_ClientRemoval_Basic
-#else
-#define MAYBE_ClientRemoval_Basic ClientRemoval_Basic
-#endif
-TEST_F(MemoryCacheTest, MAYBE_ClientRemoval_Basic) {
+TEST_F(MemoryCacheTest, ClientRemoval_Basic) {
   TestClientRemoval(fetcher_, "", "");
 }
 
-// TODO(crbug.com/850788): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_ClientRemoval_MultipleResourceMaps \
-  DISABLED_ClientRemoval_MultipleResourceMaps
-#else
-#define MAYBE_ClientRemoval_MultipleResourceMaps \
-  ClientRemoval_MultipleResourceMaps
-#endif
-TEST_F(MemoryCacheTest, MAYBE_ClientRemoval_MultipleResourceMaps) {
+TEST_F(MemoryCacheTest, ClientRemoval_MultipleResourceMaps) {
   {
     TestClientRemoval(fetcher_, "foo", "");
     GetMemoryCache()->EvictResources();

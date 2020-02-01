@@ -2652,8 +2652,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   DeliverInputForBeginFrame();
 
   // Enqueue three updates, they will be coalesced and count as two janks.
-  // These will not count as an ordering jank, as there are more than 2
-  // coalesced events.
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(16);
@@ -2663,8 +2661,8 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   AdvanceClock(1);
   DeliverInputForBeginFrame();
 
-  // Enqueue two updates, they will be coalesced and count as one jank and one
-  // ordering jank (https://crbug.com/952930).
+  // Enqueue two updates, they will be coalesced and count as one jank
+  // (https://crbug.com/952930).
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(16);
@@ -2672,8 +2670,8 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   AdvanceClock(1);
   DeliverInputForBeginFrame();
 
-  // Enqueue two updates, they will be coalesced and count as one jank and one
-  // ordering jank (https://crbug.com/952930).
+  // Enqueue two updates, they will be coalesced and count as one
+  // jank(https://crbug.com/952930).
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(16);
@@ -2689,8 +2687,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       4, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Renderer4.MomentumScrollOrderingJankPercentage", 2, 1);
 }
 
 TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankMultipleGestures) {
@@ -2712,8 +2708,8 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankMultipleGestures) {
     HandleScrollUpdate(true /* is_momentum */);
     DeliverInputForBeginFrame();
 
-    // Enqueue two updates, they will be coalesced and count as one jank and one
-    // ordering jank (https://crbug.com/952930).
+    // Enqueue two updates, they will be coalesced and count as one jank
+    // (https://crbug.com/952930).
     AdvanceClock(16);
     HandleScrollUpdate(true /* is_momentum */);
     AdvanceClock(16);
@@ -2729,8 +2725,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankMultipleGestures) {
 
     histogram_tester.ExpectUniqueSample(
         "Renderer4.MomentumScrollJankPercentage", 1, i + 1);
-    histogram_tester.ExpectUniqueSample(
-        "Renderer4.MomentumScrollOrderingJankPercentage", 1, i + 1);
   }
 }
 
@@ -2752,8 +2746,8 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankRounding) {
   HandleScrollUpdate(true /* is_momentum */);
   DeliverInputForBeginFrame();
 
-  // Enqueue two updates, they will be coalesced and count as one jank and one
-  // ordering jank (https://crbug.com/952930).
+  // Enqueue two updates, they will be coalesced and count as one jank
+  // (https://crbug.com/952930).
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(16);
@@ -2770,8 +2764,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankRounding) {
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Renderer4.MomentumScrollOrderingJankPercentage", 1, 1);
 }
 
 TEST_F(InputHandlerProxyMomentumScrollJankTest, TestSimpleNoJank) {
@@ -2809,8 +2801,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestSimpleNoJank) {
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Renderer4.MomentumScrollOrderingJankPercentage", 0, 1);
 }
 
 TEST_F(InputHandlerProxyMomentumScrollJankTest, TestFirstGestureNoJank) {
@@ -2840,8 +2830,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestFirstGestureNoJank) {
 
   histogram_tester.ExpectTotalCount("Renderer4.MomentumScrollJankPercentage",
                                     0);
-  histogram_tester.ExpectTotalCount(
-      "Renderer4.MomentumScrollOrderingJankPercentage", 0);
 }
 
 TEST_F(InputHandlerProxyMomentumScrollJankTest, TestNonMomentumNoJank) {
@@ -2877,47 +2865,6 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestNonMomentumNoJank) {
 
   histogram_tester.ExpectTotalCount("Renderer4.MomentumScrollJankPercentage",
                                     0);
-  histogram_tester.ExpectTotalCount(
-      "Renderer4.MomentumScrollOrderingJankPercentage", 0);
-}
-
-TEST_F(InputHandlerProxyMomentumScrollJankTest, TestLongDelayNoOrderingJank) {
-  cc::InputHandlerScrollResult scroll_result_did_scroll;
-  scroll_result_did_scroll.did_scroll = true;
-  EXPECT_CALL(
-      mock_input_handler_,
-      ScrollUpdate(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0)),
-                   _))
-      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
-
-  base::HistogramTester histogram_tester;
-  HandleScrollBegin();
-
-  // Flush one update, the first update is always ignored.
-  AdvanceClock(16);
-  HandleScrollUpdate(true /* is_momentum */);
-  DeliverInputForBeginFrame();
-
-  // Enqueue two updates, they will be coalesced but won't count as ordering
-  // jank due to the long delay.
-  AdvanceClock(16);
-  HandleScrollUpdate(true /* is_momentum */);
-  AdvanceClock(16);
-  HandleScrollUpdate(true /* is_momentum */);
-  AdvanceClock(3);  // 3ms delay prevents counting as ordering jank
-                    // (https://crbug.com/952930).
-  DeliverInputForBeginFrame();
-
-  // Add 98 non-janky events, bringing us to a total of 100 events.
-  AddNonJankyEvents(98);
-
-  HandleScrollEnd();
-  DeliverInputForBeginFrame();
-
-  histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
-                                      1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Renderer4.MomentumScrollOrderingJankPercentage", 0, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(AnimateInput,

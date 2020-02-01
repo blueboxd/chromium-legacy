@@ -32,8 +32,6 @@ enum AssistantViewID {
   kQueryView,
   kSuggestionContainer,
   kUiElementContainer,
-
-  kWebView,
 };
 
 }  // namespace ash

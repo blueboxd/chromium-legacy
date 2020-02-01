@@ -24,9 +24,13 @@ scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
     bool is_left_side_vertical_scrollbar,
     bool is_overlay,
     ElementId scrolling_element_id) {
-  auto fake_scrollbar = base::MakeRefCounted<FakeScrollbar>(
-      paint_during_update, has_thumb, orientation,
-      is_left_side_vertical_scrollbar, is_overlay);
+  auto fake_scrollbar = base::MakeRefCounted<FakeScrollbar>();
+  fake_scrollbar->set_should_paint(paint_during_update);
+  fake_scrollbar->set_has_thumb(has_thumb);
+  fake_scrollbar->set_orientation(orientation);
+  fake_scrollbar->set_is_left_side_vertical_scrollbar(
+      is_left_side_vertical_scrollbar);
+  fake_scrollbar->set_is_overlay(is_overlay);
   return base::WrapRefCounted(new FakePaintedScrollbarLayer(
       std::move(fake_scrollbar), scrolling_element_id));
 }

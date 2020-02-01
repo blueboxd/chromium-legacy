@@ -126,6 +126,8 @@ class PLATFORM_EXPORT ParkableStringImpl final
     return digest_.get();
   }
 
+  size_t MemoryFootprintForDump() const;
+
  private:
   enum class State : uint8_t;
   enum class Status : uint8_t;

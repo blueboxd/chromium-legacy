@@ -249,10 +249,8 @@ class ASH_EXPORT ShelfLayoutManager
   // coordinates.
   int CalculateHotseatYInShelf(HotseatState hotseat_target_state) const;
 
-  // Getters for bounds and opacity of the various sub-components.
   gfx::Rect GetShelfBoundsInScreen() const;
   gfx::Rect GetHotseatBounds() const;
-  gfx::Rect GetStatusAreaBoundsInScreen() const;
   float GetOpacity() const;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -287,7 +285,6 @@ class ASH_EXPORT ShelfLayoutManager
     gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
     gfx::Rect shelf_bounds_in_shelf;    // Bounds of the shelf minus status area
     gfx::Rect hotseat_bounds_in_shelf;  // Bounds of the hotseat within shelf
-    gfx::Rect status_bounds_in_screen;  // Bounds of status area within screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
   };
 

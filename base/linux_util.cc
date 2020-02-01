@@ -20,6 +20,7 @@
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/process/launch.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,51 +33,6 @@
 namespace base {
 
 namespace {
-
-// Not needed for OS_CHROMEOS.
-#if defined(OS_LINUX)
-enum LinuxDistroState {
-  STATE_DID_NOT_CHECK  = 0,
-  STATE_CHECK_STARTED  = 1,
-  STATE_CHECK_FINISHED = 2,
-};
-
-// Helper class for GetLinuxDistro().
-class LinuxDistroHelper {
- public:
-  // Retrieves the Singleton.
-  static LinuxDistroHelper* GetInstance() {
-    return Singleton<LinuxDistroHelper>::get();
-  }
-
-  // The simple state machine goes from:
-  // STATE_DID_NOT_CHECK -> STATE_CHECK_STARTED -> STATE_CHECK_FINISHED.
-  LinuxDistroHelper() : state_(STATE_DID_NOT_CHECK) {}
-  ~LinuxDistroHelper() = default;
-
-  // Retrieve the current state, if we're in STATE_DID_NOT_CHECK,
-  // we automatically move to STATE_CHECK_STARTED so nobody else will
-  // do the check.
-  LinuxDistroState State() {
-    AutoLock scoped_lock(lock_);
-    if (STATE_DID_NOT_CHECK == state_) {
-      state_ = STATE_CHECK_STARTED;
-      return STATE_DID_NOT_CHECK;
-    }
-    return state_;
-  }
-
-  // Indicate the check finished, move to STATE_CHECK_FINISHED.
-  void CheckFinished() {
-    AutoLock scoped_lock(lock_);
-    DCHECK_EQ(STATE_CHECK_STARTED, state_);
-    state_ = STATE_CHECK_FINISHED;
-  }
-
- private:
-  Lock lock_;
-  LinuxDistroState state_;
-};
 
 #if !defined(OS_CHROMEOS)
 std::string GetKeyValueFromOSReleaseFile(const std::string& input,
@@ -121,16 +77,18 @@ bool ReadDistroFromOSReleaseFile(const char* file) {
 }
 
 // https://www.freedesktop.org/software/systemd/man/os-release.html
-void GetDistroNameFromOSRelease() {
-  static const char* const kFilesToCheck[] = {"/etc/os-release",
-                                              "/usr/lib/os-release"};
-  for (const char* file : kFilesToCheck) {
-    if (ReadDistroFromOSReleaseFile(file))
-      return;
+class DistroNameGetter {
+ public:
+  DistroNameGetter() {
+    static const char* const kFilesToCheck[] = {"/etc/os-release",
+                                                "/usr/lib/os-release"};
+    for (const char* file : kFilesToCheck) {
+      if (ReadDistroFromOSReleaseFile(file))
+        return;
+    }
   }
-}
-#endif  // if !defined(OS_CHROMEOS)
-#endif  // if defined(OS_LINUX)
+};
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -144,7 +102,7 @@ char g_linux_distro[kDistroSize] =
     "CrOS";
 #elif defined(OS_ANDROID)
     "Android";
-#else  // if defined(OS_LINUX)
+#else
     "Unknown";
 #endif
 
@@ -156,33 +114,20 @@ char g_linux_distro[kDistroSize] =
 BASE_EXPORT std::string GetKeyValueFromOSReleaseFileForTesting(
     const std::string& input,
     const char* key) {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   return GetKeyValueFromOSReleaseFile(input, key);
 #else
   return "";
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 }
 
 std::string GetLinuxDistro() {
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  return g_linux_distro;
-#elif defined(OS_LINUX)
-  LinuxDistroHelper* distro_state_singleton = LinuxDistroHelper::GetInstance();
-  LinuxDistroState state = distro_state_singleton->State();
-  if (STATE_CHECK_FINISHED == state)
-    return g_linux_distro;
-  if (STATE_CHECK_STARTED == state)
-    return "Unknown"; // Don't wait for other thread to finish.
-  DCHECK_EQ(state, STATE_DID_NOT_CHECK);
+#if !defined(OS_CHROMEOS)
   // We do this check only once per process. If it fails, there's
   // little reason to believe it will work if we attempt to run it again.
-  GetDistroNameFromOSRelease();
-  distro_state_singleton->CheckFinished();
-  return g_linux_distro;
-#else
-  NOTIMPLEMENTED();
-  return "Unknown";
+  static base::NoDestructor<DistroNameGetter> distro_name_getter;
 #endif
+  return g_linux_distro;
 }
 
 void SetLinuxDistro(const std::string& distro) {

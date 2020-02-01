@@ -136,6 +136,8 @@ class CORE_EXPORT CSSMathExpressionNode
   bool IsNestedCalc() const { return is_nested_calc_; }
   void SetIsNestedCalc() { is_nested_calc_ = true; }
 
+  bool HasComparisons() const { return has_comparisons_; }
+
 #if DCHECK_IS_ON()
   // There's a subtle issue in comparing two percentages, e.g., min(10%, 20%).
   // It doesn't always resolve into 10%, because the reference value may be
@@ -147,14 +149,19 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
-  CSSMathExpressionNode(CalculationCategory category, bool is_integer)
-      : category_(category), is_integer_(is_integer) {
+  CSSMathExpressionNode(CalculationCategory category,
+                        bool is_integer,
+                        bool has_comparisons)
+      : category_(category),
+        is_integer_(is_integer),
+        has_comparisons_(has_comparisons) {
     DCHECK_NE(category, kCalcOther);
   }
 
   CalculationCategory category_;
   bool is_integer_;
   bool is_nested_calc_ = false;
+  bool has_comparisons_;
 };
 
 class CORE_EXPORT CSSMathExpressionNumericLiteral final

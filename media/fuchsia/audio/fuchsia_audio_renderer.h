@@ -80,7 +80,7 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
 
   // Initializes |stream_sink_|. Called during initialization and every time
   // configuration changes.
-  void InitializeStreamSync(const AudioDecoderConfig& config);
+  void InitializeStreamSink(const AudioDecoderConfig& config);
 
   // Callback for DecryptingDemuxerStream::Initialize().
   void OnDecryptorInitialized(PipelineStatus status);

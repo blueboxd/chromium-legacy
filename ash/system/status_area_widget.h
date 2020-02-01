@@ -65,7 +65,10 @@ class ASH_EXPORT StatusAreaWidget : public ShelfComponent,
 
   // ShelfComponent:
   void CalculateTargetBounds() override;
+  gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
+
+  void UpdateTargetBoundsForGesture();
 
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);
@@ -164,6 +167,8 @@ class ASH_EXPORT StatusAreaWidget : public ShelfComponent,
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 
   CollapseState collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
+
+  gfx::Rect target_bounds_;
 
   Shelf* shelf_;
 

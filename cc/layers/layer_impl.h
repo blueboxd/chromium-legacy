@@ -467,10 +467,16 @@ class CC_EXPORT LayerImpl {
 
   gfx::Vector2dF offset_to_transform_parent_;
 
-  // These fields are copies of |container_bounds| and |scrollable| fields in
-  // ScrollNode, and are updated in UpdateScrollable(). The copy is for change
-  // detection only.
+  // These fields are copies of |container_bounds|, |bounds| and |scrollable|
+  // fields in the associated ScrollNode, and are updated in UpdateScrollable().
+  // The copy is for change detection only.
+  // TODO(wangxianzhu): Actually we only need scroll_container_bounds_ in
+  // pre-CompositeAfterPaint where the scroll node is associated with the
+  // scrolling contents layer, and only need scroll_contents_bounds_ in
+  // CompositeAfterPaint where the scroll node is associated with the scroll
+  // container layer. Remove scroll_container_bounds_ when we launch CAP.
   gfx::Size scroll_container_bounds_;
+  gfx::Size scroll_contents_bounds_;
   bool scrollable_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.

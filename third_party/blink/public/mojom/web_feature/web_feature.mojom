@@ -2426,6 +2426,8 @@ enum WebFeature {
   kDecompressionStreamConstructor = 3061,
   kV8RTCRtpReceiver_PlayoutDelayHint_AttributeGetter = 3062,
   kV8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter = 3063,
+  // The above items are available in M79 branch.
+
   kV8RegExpExecCalledOnSlowRegExp = 3064,
   kV8RegExpReplaceCalledOnSlowRegExp = 3065,
   kHasMarkerPseudoElement = 3066,
@@ -2478,6 +2480,8 @@ enum WebFeature {
   kNonWebbyMixedContent = 3113,
   kV8SharedArrayBufferConstructed = 3114,
   kScrollSnapCausesScrollOnInitialLayout = 3115,
+  // The above items are available in M80 branch.
+
   kClientHintsUAMobile = 3116,
   kV8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter = 3117,
   kLongTaskBufferFull = 3118,
@@ -2517,8 +2521,11 @@ enum WebFeature {
   kSameOriginIframeWindowConfirm = 3152,
   kSameOriginIframeWindowPrompt = 3153,
   kSameOriginIframeWindowPrint = 3154,
+  // The above items are available in M81 branch.
+
   kLargeStickyAd = 3155,
   kOverlayInterstitialAd = 3156,
+  kCSSComparisonFunctions = 3157,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

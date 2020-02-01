@@ -332,14 +332,22 @@ class IdlCompiler(object):
                     new_ir_headers.extend(to_be_merged_headers)
 
     def _process_interface_inheritances(self):
-        def is_own_member(member):
-            return 'Unforgeable' in member.extended_attributes
-
-        def create_inheritance_stack(obj, table):
+        def create_inheritance_chain(obj, table):
             if obj.inherited is None:
                 return [obj]
-            return [obj] + create_inheritance_stack(
+            return [obj] + create_inheritance_chain(
                 table[obj.inherited.identifier], table)
+
+        inherited_ext_attrs = (
+            # (IDL extended attribute to be inherited,
+            #  CodeGeneratorInfoMutable's set function)
+            ("ActiveScriptWrappable", "set_is_active_script_wrappable"),
+            ("LegacyUnenumerableNamedProperties",
+             "set_is_legacy_unenumerable_named_properties"),
+        )
+
+        def is_own_member(member):
+            return "Unforgeable" in member.extended_attributes
 
         old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
 
@@ -348,9 +356,16 @@ class IdlCompiler(object):
         for old_interface in old_interfaces.itervalues():
             new_interface = make_copy(old_interface)
             self._ir_map.add(new_interface)
-            inheritance_stack = create_inheritance_stack(
+            inheritance_chain = create_inheritance_chain(
                 old_interface, old_interfaces)
-            for interface in inheritance_stack[1:]:
+
+            for interface in inheritance_chain:
+                for ext_attr, set_func in inherited_ext_attrs:
+                    if ext_attr in interface.extended_attributes:
+                        getattr(new_interface.code_generator_info,
+                                set_func)(True)
+
+            for interface in inheritance_chain[1:]:
                 new_interface.attributes.extend([
                     make_copy(attribute) for attribute in interface.attributes
                     if is_own_member(attribute)

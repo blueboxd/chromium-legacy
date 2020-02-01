@@ -21,10 +21,11 @@ namespace {
 
 class MockScrollbar : public FakeScrollbar {
  public:
-  MockScrollbar()
-      : FakeScrollbar(/*paint*/ true,
-                      /*has_thumb*/ true,
-                      /*is_overlay*/ false) {}
+  MockScrollbar() {
+    set_should_paint(true);
+    set_has_thumb(true);
+    set_is_overlay(false);
+  }
   MOCK_METHOD3(PaintPart,
                void(PaintCanvas* canvas,
                     ScrollbarPart part,

@@ -186,8 +186,29 @@ void StatusAreaWidget::UpdateCollapseState() {
 }
 
 void StatusAreaWidget::CalculateTargetBounds() {
-  // TODO(manucornet): Move target bounds calculations from the shelf layout
-  // manager.
+  gfx::Size status_size(status_area_widget_delegate_->size());
+  const gfx::Size shelf_size = shelf_->shelf_widget()->GetTargetBounds().size();
+  const gfx::Point shelf_origin =
+      shelf_->shelf_widget()->GetTargetBounds().origin();
+
+  if (shelf_->IsHorizontalAlignment())
+    status_size.set_height(shelf_size.height());
+  else
+    status_size.set_width(shelf_size.width());
+
+  gfx::Point status_origin = shelf_->SelectValueForShelfAlignment(
+      gfx::Point(0, 0),
+      gfx::Point(shelf_size.width() - status_size.width(),
+                 shelf_size.height() - status_size.height()),
+      gfx::Point(0, shelf_size.height() - status_size.height()));
+  if (shelf_->IsHorizontalAlignment() && !base::i18n::IsRTL())
+    status_origin.set_x(shelf_size.width() - status_size.width());
+  status_origin.Offset(shelf_origin.x(), shelf_origin.y());
+  target_bounds_ = gfx::Rect(status_origin, status_size);
+}
+
+gfx::Rect StatusAreaWidget::GetTargetBounds() const {
+  return target_bounds_;
 }
 
 void StatusAreaWidget::UpdateLayout(bool animate) {
@@ -202,7 +223,22 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  SetBounds(layout_manager->GetStatusAreaBoundsInScreen());
+  SetBounds(target_bounds_);
+}
+
+void StatusAreaWidget::UpdateTargetBoundsForGesture() {
+  const gfx::Point shelf_origin =
+      shelf_->shelf_widget()->GetTargetBounds().origin();
+  if (shelf_->IsHorizontalAlignment()) {
+    const bool tablet_mode =
+        Shell::Get()->tablet_mode_controller() &&
+        Shell::Get()->tablet_mode_controller()->InTabletMode();
+    if (!tablet_mode || !chromeos::switches::ShouldShowShelfHotseat()) {
+      target_bounds_.set_y(shelf_origin.y());
+    }
+  } else {
+    target_bounds_.set_x(shelf_origin.x());
+  }
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {

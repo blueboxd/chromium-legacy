@@ -72,9 +72,7 @@ GURL StripAuthAndParams(const GURL& gurl);
 
 // Extract FormData from the form element and return whether the operation was
 // successful.
-bool ExtractFormData(const blink::WebFormElement& form_element,
-                     const FieldDataManager& field_data_manager,
-                     FormData* data);
+bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
 
 // Helper function to check if a form with renderer id |form_renderer_id| exists
 // in |frame| and is visible.

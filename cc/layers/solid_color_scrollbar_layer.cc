@@ -61,4 +61,9 @@ bool SolidColorScrollbarLayer::HitTestable() const {
   return false;
 }
 
+ScrollbarLayerBase::ScrollbarLayerType
+SolidColorScrollbarLayer::ScrollbarLayerTypeForTesting() const {
+  return kSolidColor;
+}
+
 }  // namespace cc

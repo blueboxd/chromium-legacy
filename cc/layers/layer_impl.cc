@@ -306,24 +306,20 @@ void LayerImpl::UpdateScrollable() {
   const auto* scroll_node = GetScrollTree().FindNodeFromElementId(element_id());
   bool was_scrollable = scrollable_;
   scrollable_ = scroll_node && scroll_node->scrollable;
-  if (was_scrollable == scrollable_ &&
-      (!scrollable_ ||
-       scroll_container_bounds_ == scroll_node->container_bounds)) {
-    return;
+  if (was_scrollable == scrollable_) {
+    if (!scrollable_)
+      return;
+    if (scroll_container_bounds_ == scroll_node->container_bounds &&
+        scroll_contents_bounds_ == scroll_node->bounds)
+      return;
   }
 
   scroll_container_bounds_ =
       scrollable_ ? scroll_node->container_bounds : gfx::Size();
+  scroll_contents_bounds_ = scrollable_ ? scroll_node->bounds : gfx::Size();
 
   // Scrollbar positions depend on the bounds.
   layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
-
-  if (was_scrollable != scrollable_) {
-    if (scrollable_)
-      layer_tree_impl()->AddScrollableLayer(this);
-    else
-      layer_tree_impl()->RemoveScrollableLayer(this);
-  }
 
   if (layer_tree_impl()->settings().scrollbar_animator ==
       LayerTreeSettings::AURA_OVERLAY) {

@@ -615,7 +615,6 @@ component("ash") {
     "shelf/shelf_button_delegate.h",
     "shelf/shelf_button_pressed_metric_tracker.cc",
     "shelf/shelf_button_pressed_metric_tracker.h",
-    "shelf/shelf_component.cc",
     "shelf/shelf_component.h",
     "shelf/shelf_config.cc",
     "shelf/shelf_container_view.cc",

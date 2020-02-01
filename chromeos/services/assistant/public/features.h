@@ -139,9 +139,6 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsVoiceMatchDisabled();
 
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsAssistantWebContainerEnabled();
-
 }  // namespace features
 }  // namespace assistant
 }  // namespace chromeos

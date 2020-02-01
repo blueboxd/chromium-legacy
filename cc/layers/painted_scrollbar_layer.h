@@ -32,6 +32,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
     return internal_content_bounds_;
   }
 
+  ScrollbarLayerType ScrollbarLayerTypeForTesting() const override;
+
  protected:
   explicit PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar);
   ~PaintedScrollbarLayer() override;

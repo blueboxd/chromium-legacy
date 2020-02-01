@@ -82,11 +82,6 @@ class PerDeviceProvisioningPermissionRequest
     return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
   }
 
-  base::string16 GetTitleText() const final {
-    return l10n_util::GetStringUTF16(
-        IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_TITLE);
-  }
-
   base::string16 GetMessageText() const final {
     // Note that the string is specific to per-device provisioning.
     return l10n_util::GetStringFUTF16(

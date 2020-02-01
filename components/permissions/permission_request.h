@@ -93,9 +93,6 @@ class PermissionRequest {
   virtual IconId GetIconId() const = 0;
 
 #if defined(OS_ANDROID)
-  // Returns the title of this permission as text.
-  virtual base::string16 GetTitleText() const = 0;
-
   // Returns the full prompt text for this permission. This is currently only
   // used on Android.
   virtual base::string16 GetMessageText() const = 0;

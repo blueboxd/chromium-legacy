@@ -2695,7 +2695,7 @@ WrapperTypeInfo ${class_name}::wrapper_type_info_{{
                         "WrapperTypeInfo::kObjectClassId")
     active_script_wrappable_inheritance = (
         "WrapperTypeInfo::kInheritFromActiveScriptWrappable"
-        if "ActiveScriptWrappable" in class_like.extended_attributes else
+        if class_like.code_generator_info.is_active_script_wrappable else
         "WrapperTypeInfo::kNotInheritFromActiveScriptWrappable")
     text = _format(
         pattern,
@@ -2713,7 +2713,7 @@ WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     blink_wrapper_type_info_def = TextNode(
         _format(pattern, blink_class=blink_class))
 
-    if "ActiveScriptWrappable" in class_like.extended_attributes:
+    if class_like.code_generator_info.is_active_script_wrappable:
         pattern = """\
 // [ActiveScriptWrappable]
 static_assert(

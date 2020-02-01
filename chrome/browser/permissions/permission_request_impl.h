@@ -33,7 +33,6 @@ class PermissionRequestImpl : public permissions::PermissionRequest {
   // permissions::PermissionRequest:
   IconId GetIconId() const override;
 #if defined(OS_ANDROID)
-  base::string16 GetTitleText() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetQuietTitleText() const override;
   base::string16 GetQuietMessageText() const override;

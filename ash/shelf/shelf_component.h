@@ -20,7 +20,7 @@ class ASH_EXPORT ShelfComponent {
   virtual void CalculateTargetBounds() = 0;
 
   // Returns this component's current target bounds, in screen coordinates.
-  virtual gfx::Rect GetTargetBounds() const;
+  virtual gfx::Rect GetTargetBounds() const = 0;
 
   // Updates the component's layout and bounds to match the most recently
   // calculated target bounds. The change should be animated if |animate| is

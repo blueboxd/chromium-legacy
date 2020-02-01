@@ -99,6 +99,7 @@ crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrol
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
 # checking failed.
+paint/invalidation/compositing/pointer-events-composited-scrolling.html [ Failure ]
 paint/invalidation/compositing/should-invoke-deferred-compositing.html [ Failure ]
 paint/invalidation/scroll/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ Failure ]
 paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure ]
@@ -109,6 +110,8 @@ paint/invalidation/compositing/clipping-should-not-repaint-composited-descendant
 paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
 paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
+paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
+paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
 
 # Should not decomposite effects for composited elements.
 crbug.com/765003 paint/invalidation/compositing/should-not-repaint-composited-filter.html [ Failure ]
@@ -133,14 +136,6 @@ css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Pass Timeout ]
 
 virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
-
-crbug.com/931486 paint/invalidation/compositing/pointer-events-composited-scrolling.html [ Failure ]
-crbug.com/931486 paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/fixed-and-absolute-position-scrolled.html [ Failure ]
-crbug.com/931486 scrollbars/overlay-scrollbars-within-overflow-scroll.html [ Failure ]
-crbug.com/931486 scrollbars/reconstruct-coordinated-scrollbar.html [ Failure ]
-crbug.com/931486 virtual/prefer_compositing_to_lcd_text/scrollbars/reconstruct-coordinated-scrollbar.html [ Failure ]
 
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides

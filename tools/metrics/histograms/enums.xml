@@ -26391,6 +26391,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3154" label="SameOriginIframeWindowPrint"/>
   <int value="3155" label="LargeStickyAd"/>
   <int value="3156" label="OverlayInterstitialAd"/>
+  <int value="3157" label="CSSComparisonFunctions"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

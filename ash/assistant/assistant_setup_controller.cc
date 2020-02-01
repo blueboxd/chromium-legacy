@@ -73,13 +73,10 @@ void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
     assistant_setup->StartAssistantOptInFlow(
         type, base::BindOnce(&AssistantSetupController::OnOptInFlowFinished,
                              weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    assistant_setup->StartAssistantOptInFlow(type, base::DoNothing());
+    return;
   }
 
-  // Assistant UI should be hidden while the user onboards.
-  assistant_controller_->ui_controller()->HideUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kSetup);
+  assistant_setup->StartAssistantOptInFlow(type, base::DoNothing());
 }
 
 void AssistantSetupController::OnOptInFlowFinished(bool completed) {

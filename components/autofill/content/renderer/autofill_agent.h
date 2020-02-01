@@ -42,7 +42,6 @@ namespace autofill {
 struct FormData;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
-class FieldDataManager;
 
 // AutofillAgent deals with Autofill related communications between WebKit and
 // the browser.  There is one AutofillAgent per RenderFrame.
@@ -374,8 +373,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Will be set when accessibility mode changes, depending on what the new mode
   // is.
   bool is_screen_reader_enabled_ = false;
-
-  const scoped_refptr<FieldDataManager> field_data_manager_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 

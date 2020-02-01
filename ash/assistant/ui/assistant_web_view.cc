@@ -7,16 +7,12 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/assistant_web_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer.h"
@@ -35,19 +31,10 @@ AssistantWebView::AssistantWebView(
     AssistantWebViewDelegate* web_container_view_delegate)
     : assistant_view_delegate_(assistant_view_delegate),
       web_container_view_delegate_(web_container_view_delegate) {
-  SetID(AssistantViewID::kWebView);
   InitLayout();
-
-  // |AssistantWebView| has its own separate container when Assistant web
-  // container is enabled. The container will handle its own lifecycle.
-  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    assistant_view_delegate_->AddUiModelObserver(this);
 }
 
-AssistantWebView::~AssistantWebView() {
-  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    assistant_view_delegate_->RemoveUiModelObserver(this);
-}
+AssistantWebView::~AssistantWebView() = default;
 
 const char* AssistantWebView::GetClassName() const {
   return "AssistantWebView";
@@ -58,19 +45,7 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 }
 
 int AssistantWebView::GetHeightForWidth(int width) const {
-  // The Assistant web container has fixed height.
-  if (chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    return INT_MAX;
-
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    return kMaxHeightEmbeddedDip;
-
-  // |height| <= |kMaxHeightDip|.
-  // |height| should not exceed the height of the usable work area.
-  const gfx::Rect usable_work_area =
-      assistant_view_delegate_->GetUiModel()->usable_work_area();
-
-  return std::min(kMaxHeightDip, usable_work_area.height());
+  return INT_MAX;
 }
 
 void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
@@ -84,53 +59,18 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
 void AssistantWebView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-
-  // Will use ash caption buttons when Assistant web container is enabled.
-  if (chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    return;
-
-  // Caption bar.
-  caption_bar_ = new CaptionBar();
-  caption_bar_->set_delegate(this);
-  caption_bar_->SetButtonVisible(AssistantButtonId::kMinimize, false);
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    caption_bar_->SetButtonVisible(AssistantButtonId::kClose, false);
-  AddChildView(caption_bar_);
-}
-
-bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
-  // We need special handling of the back button. When possible, the back button
-  // should navigate backwards in the WebContents' history stack. If we can't go
-  // back, control is returned to the primary caption button delegate.
-  if (id == AssistantButtonId::kBack && contents_view_ &&
-      contents_view_->GoBack()) {
-    return true;
-  }
-
-  // For all other buttons we defer to our primary caption button delegate.
-  return assistant_view_delegate_->GetCaptionBarDelegate()
-      ->OnCaptionButtonPressed(id);
 }
 
 void AssistantWebView::DidStopLoading() {
   // We should only respond to the |DidStopLoading| event the first time, to add
   // the view for contents to our view hierarchy and perform other one-time view
   // initializations.
-  if (contents_view_initialized_)
+  if (contents_view_->parent())
     return;
 
-  contents_view_initialized_ = true;
-
-  UpdateContentSize();
+  contents_view_->SetPreferredSize(GetPreferredSize());
   AddChildView(contents_view_.get());
   SetFocusBehavior(FocusBehavior::ALWAYS);
-
-  // We need to clip the corners of our WebContents to match our container.
-  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-    contents_view_->GetNativeView()->layer()->SetRoundedCornerRadius(
-        {/*top_left=*/0, /*top_right=*/0, /*bottom_right=*/kCornerRadiusDip,
-         /*bottom_left=*/kCornerRadiusDip});
-  }
 }
 
 void AssistantWebView::DidSuppressNavigation(const GURL& url,
@@ -154,27 +94,13 @@ void AssistantWebView::DidSuppressNavigation(const GURL& url,
 }
 
 void AssistantWebView::DidChangeCanGoBack(bool can_go_back) {
-  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    return;
-
   DCHECK(web_container_view_delegate_);
   web_container_view_delegate_->UpdateBackButtonVisibility(GetWidget(),
                                                            can_go_back);
 }
 
-void AssistantWebView::OnUiVisibilityChanged(
-    AssistantVisibility new_visibility,
-    AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
-  // When Assistant web container is enabled, |assistant_web_view| has its own
-  // container and this method should not be called on it.
-  DCHECK(!chromeos::assistant::features::IsAssistantWebContainerEnabled());
-
-  // When the Assistant UI is closed we need to clear the |contents_| in order
-  // to free the memory.
-  if (new_visibility == AssistantVisibility::kClosed)
-    RemoveContents();
+bool AssistantWebView::GoBack() {
+  return contents_view_ && contents_view_->GoBack();
 }
 
 void AssistantWebView::OpenUrl(const GURL& url) {
@@ -198,13 +124,6 @@ void AssistantWebView::OpenUrl(const GURL& url) {
   contents_view_->Navigate(url);
 }
 
-void AssistantWebView::OnUsableWorkAreaChanged(
-    const gfx::Rect& usable_work_area) {
-  DCHECK(!chromeos::assistant::features::IsAssistantWebContainerEnabled());
-
-  UpdateContentSize();
-}
-
 void AssistantWebView::RemoveContents() {
   if (!contents_view_)
     return;
@@ -215,23 +134,6 @@ void AssistantWebView::RemoveContents() {
 
   contents_view_->RemoveObserver(this);
   contents_view_.reset();
-
-  contents_view_initialized_ = false;
-}
-
-void AssistantWebView::UpdateContentSize() {
-  if (!contents_view_ || !contents_view_initialized_)
-    return;
-
-  if (chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-    contents_view_->SetPreferredSize(GetPreferredSize());
-    return;
-  }
-
-  const gfx::Size preferred_size = gfx::Size(
-      kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip) -
-                              caption_bar_->GetPreferredSize().height());
-  contents_view_->SetPreferredSize(preferred_size);
 }
 
 }  // namespace ash

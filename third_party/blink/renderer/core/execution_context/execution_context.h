@@ -350,6 +350,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void AddConsoleMessageImpl(ConsoleMessage*,
                                      bool discard_duplicates) = 0;
 
+  // Temporary method to record when the result of calling IsFeatureEnabled
+  // would change under the proposal in https://crbug.com/937131.
+  void FeaturePolicyPotentialBehaviourChangeObserved(
+      mojom::blink::FeaturePolicyFeature feature) const;
+
   v8::Isolate* const isolate_;
 
   SecurityContext security_context_;
@@ -388,6 +393,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   Vector<bool> parsed_feature_policies_;
 
   SecureContextMode secure_context_mode_;
+
+  // Tracks which feature policy features have been logged in this execution
+  // context as to the FeaturePolicyProposalWouldChangeBehaviour
+  // histogram, in order not to overcount.
+  mutable Vector<bool> feature_policy_behaviour_change_counted_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
 };

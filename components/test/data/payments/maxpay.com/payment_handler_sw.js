@@ -17,8 +17,11 @@ self.addEventListener('message', (evt) => {
   if (evt.data === 'confirm') {
     paymentRequestResponder({methodName, details: {status: 'success'}});
     return;
-  } else if (evt.data === 'cancel') {
+  } else if (evt.data === 'fail') {
     paymentRequestResponder({methodName, details: {status: 'fail'}});
+    return;
+  } else if (evt.data === 'cancel') {
+    paymentRequestResponder({methodName, details: {status: 'unknown'}});
     return;
   } else if (evt.data === 'app_is_ready') {
     paymentRequestEvent.changePaymentMethod(methodName, {
@@ -31,8 +34,20 @@ self.addEventListener('message', (evt) => {
 self.addEventListener('paymentrequest', (evt) => {
   paymentRequestEvent = evt;
   methodName = evt.methodData[0].supportedMethods;
+  url = evt.methodData[0].data.url;
   evt.respondWith(new Promise((responder) => {
     paymentRequestResponder = responder;
-    evt.openWindow('./payment_handler_window.html');
+    const errorString = 'open_window_failed';
+    evt.openWindow(url).then((result) => {
+      if (!result) {
+        paymentRequestEvent.changePaymentMethod(methodName, {
+          status: errorString,
+        });
+      }
+    }).catch((error) => {
+      paymentRequestEvent.changePaymentMethod(methodName, {
+        status: errorString,
+      });
+    });
   }));
 });

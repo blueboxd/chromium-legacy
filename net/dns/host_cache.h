@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/clamped_math.h"
@@ -404,12 +403,6 @@ class NET_EXPORT HostCache {
   void EvictOneEntry(base::TimeTicks now);
   // Helper to insert an Entry into the cache.
   void AddEntry(const Key& key, Entry&& entry);
-
-  // TODO(https://crbug.com/1042354):  Remove these, all callsites, and all VLOG
-  // calls in the cc file once
-  // NetworkContextConfigurationBrowserTest.DnsCacheIsolation has been fixed.
-  void Log(const base::Location& location, const Key& key);
-  std::string KeyToString(const Key& key);
 
   // Map from hostname (presumably in lowercase canonicalized format) to
   // a resolved result entry.

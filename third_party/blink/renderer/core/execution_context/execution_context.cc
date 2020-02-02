@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -332,6 +333,20 @@ bool ExecutionContext::FeaturePolicyFeatureObserved(
   return false;
 }
 
+void ExecutionContext::FeaturePolicyPotentialBehaviourChangeObserved(
+    mojom::blink::FeaturePolicyFeature feature) const {
+  size_t feature_index = static_cast<size_t>(feature);
+  if (feature_policy_behaviour_change_counted_.size() == 0) {
+    feature_policy_behaviour_change_counted_.resize(
+        static_cast<size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) + 1);
+  } else if (feature_policy_behaviour_change_counted_[feature_index]) {
+    return;
+  }
+  feature_policy_behaviour_change_counted_[feature_index] = true;
+  UMA_HISTOGRAM_ENUMERATION(
+      "Blink.UseCounter.FeaturePolicy.ProposalWouldChangeBehaviour", feature);
+}
+
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     ReportOptions report_on_failure,
@@ -363,6 +378,21 @@ bool ExecutionContext::IsFeatureEnabled(
   base::Optional<mojom::FeaturePolicyDisposition> disposition;
   bool enabled = GetSecurityContext().IsFeatureEnabled(feature, threshold_value,
                                                        &disposition);
+
+  if (enabled) {
+    // Report if the proposed header semantics change would have affected the
+    // outcome. (https://crbug.com/937131)
+    const FeaturePolicy* policy = GetSecurityContext().GetFeaturePolicy();
+    url::Origin origin = GetSecurityOrigin()->ToUrlOrigin();
+    if (policy->GetProposedFeatureValueForOrigin(feature, origin) <
+        threshold_value) {
+      // Count that there was a change in this page load.
+      const_cast<ExecutionContext*>(this)->CountUse(
+          WebFeature::kFeaturePolicyProposalWouldChangeBehaviour);
+      // Record the specific feature whose behaviour was changed.
+      FeaturePolicyPotentialBehaviourChangeObserved(feature);
+    }
+  }
 
   if (disposition && report_on_failure == ReportOptions::kReportOnFailure)
     ReportFeaturePolicyViolation(feature, *disposition, message, source_file);

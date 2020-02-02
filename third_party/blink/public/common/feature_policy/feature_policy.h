@@ -233,6 +233,10 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   PolicyValue GetFeatureValueForOrigin(mojom::FeaturePolicyFeature feature,
                                        const url::Origin& origin) const;
 
+  PolicyValue GetProposedFeatureValueForOrigin(
+      mojom::FeaturePolicyFeature feature,
+      const url::Origin& origin) const;
+
   // Returns the allowlist of a given feature by this policy.
   const Allowlist GetAllowlistForFeature(
       mojom::FeaturePolicyFeature feature) const;
@@ -279,6 +283,11 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.
   FeatureState inherited_policies_;
+
+  // Temporary member to support metrics. These are the values which would be
+  // stored in |inherited_policies_| under the proposal in
+  // https://crbug.com/937131.
+  FeatureState proposed_inherited_policies_;
 
   const FeatureList& feature_list_;
 

@@ -1139,13 +1139,13 @@ public class PaymentRequestImpl
 
     private void onMicrotransactionUiErroredAndClosed() {
         closeClient();
-        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        closeUIAndDestroyNativeObjects();
     }
 
     private void onMicrotransactionUiCompletedAndClosed() {
         if (mClient != null) mClient.onComplete();
         closeClient();
-        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        closeUIAndDestroyNativeObjects();
     }
 
     private static Map<String, PaymentMethodData> getValidatedMethodData(
@@ -2160,7 +2160,7 @@ public class PaymentRequestImpl
         Log.d(TAG, debugMessage);
         if (mClient != null) mClient.onError(reason, debugMessage);
         closeClient();
-        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        closeUIAndDestroyNativeObjects();
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
@@ -2185,7 +2185,7 @@ public class PaymentRequestImpl
         if (abortSucceeded) {
             closeClient();
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
-            closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+            closeUIAndDestroyNativeObjects();
         } else {
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceUnableToAbort();
         }
@@ -2234,7 +2234,7 @@ public class PaymentRequestImpl
             mNativeObserverForTest.onCompleteCalled();
         }
 
-        closeUIAndDestroyNativeObjects(/*immediateClose=*/PaymentComplete.FAIL != result);
+        closeUIAndDestroyNativeObjects();
     }
 
     @Override
@@ -2483,7 +2483,7 @@ public class PaymentRequestImpl
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
         if (sObserverForTest != null) sObserverForTest.onRendererClosedMojoConnection();
-        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        closeUIAndDestroyNativeObjects();
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
@@ -2495,7 +2495,7 @@ public class PaymentRequestImpl
         if (mClient == null) return;
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
-        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        closeUIAndDestroyNativeObjects();
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
@@ -2921,16 +2921,8 @@ public class PaymentRequestImpl
      * Closes the UI and destroys native objects. If the client is still connected, then it's
      * notified of UI hiding. This PaymentRequestImpl object can't be reused after this function is
      * called.
-     *
-     * @param immediateClose If true, then UI immediately closes. If false, the UI shows the error
-     *                       message "There was an error processing your order." This message
-     *                       implies that the merchant attempted to process the order, failed, and
-     *                       called complete("fail") to notify the user. Therefore, this parameter
-     *                       may be "false" only when called from
-     *                       {@link PaymentRequestImpl#complete(int)}. All other callers should
-     *                       always pass "true."
      */
-    private void closeUIAndDestroyNativeObjects(boolean immediateClose) {
+    private void closeUIAndDestroyNativeObjects() {
         ensureHideAndResetPaymentHandlerUi();
         if (mMicrotransactionUi != null) {
             mMicrotransactionUi.hide();
@@ -2938,13 +2930,12 @@ public class PaymentRequestImpl
         }
 
         if (mUI != null) {
-            mUI.close(immediateClose, () -> {
-                if (mClient != null) {
-                    if (sObserverForTest != null) sObserverForTest.onCompleteReplied();
-                    mClient.onComplete();
-                }
-                closeClient();
-            });
+            mUI.close();
+            if (mClient != null) {
+                if (sObserverForTest != null) sObserverForTest.onCompleteReplied();
+                mClient.onComplete();
+            }
+            closeClient();
             mUI = null;
             mPaymentUisShowStateReconciler.onPaymentRequestUiClosed();
         }

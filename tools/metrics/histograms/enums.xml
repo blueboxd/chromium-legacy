@@ -26392,6 +26392,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3155" label="LargeStickyAd"/>
   <int value="3156" label="OverlayInterstitialAd"/>
   <int value="3157" label="CSSComparisonFunctions"/>
+  <int value="3158" label="FeaturePolicyProposalWouldChangeBehaviour"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

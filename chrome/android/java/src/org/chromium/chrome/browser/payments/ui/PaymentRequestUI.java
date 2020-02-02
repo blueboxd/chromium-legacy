@@ -292,7 +292,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final EditorDialog mEditorDialog;
     private final EditorDialog mCardEditorDialog;
     private final ViewGroup mRequestView;
-    private final PaymentRequestUiErrorView mErrorView;
     private final Callback<PaymentInformation> mUpdateSectionsCallback;
     private final ShippingStrings mShippingStrings;
 
@@ -359,10 +358,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mShowDataSource = showDataSource;
         mAnimatorTranslation = mContext.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
-
-        mErrorView = (PaymentRequestUiErrorView) LayoutInflater.from(mContext).inflate(
-                R.layout.payment_request_error, null);
-        mErrorView.initialize(title, origin, securityLevel);
 
         mReadyToPayNotifierForTest = new NotifierForTest(new Runnable() {
             @Override
@@ -594,32 +589,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * Does not call Client.onDismissed().
      *
      * Should not be called multiple times.
-     *
-     * @param shouldCloseImmediately If true, this function will immediately dismiss the dialog
-     *        without describing the error.
-     * @param callback The callback to notify of finished animations.
      */
-    public void close(boolean shouldCloseImmediately, final Runnable callback) {
+    public void close() {
         mIsClientClosing = true;
 
-        Runnable dismissRunnable = new Runnable() {
-            @Override
-            public void run() {
-                dismissDialog(false);
-                if (callback != null) callback.run();
-            }
-        };
-
-        if (shouldCloseImmediately) {
-            // The shouldCloseImmediately boolean is true when the merchant calls
-            // instrumentResponse.complete("success") or instrumentResponse.complete("")
-            // in JavaScript.
-            dismissRunnable.run();
-        } else {
-            // Show the error dialog.
-            mDialog.showOverlay(mErrorView);
-            mErrorView.setDismissRunnable(dismissRunnable);
-        }
+        dismissDialog(false);
 
         if (sPaymentRequestObserverForTest != null) {
             sPaymentRequestObserverForTest.onPaymentRequestResultReady(this);
@@ -644,7 +618,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void setTitleBitmap(Bitmap bitmap) {
         ((PaymentRequestHeader) mRequestView.findViewById(R.id.header)).setTitleBitmap(bitmap);
-        mErrorView.setBitmap(bitmap);
     }
 
     /**

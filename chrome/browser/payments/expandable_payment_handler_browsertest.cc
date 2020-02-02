@@ -18,7 +18,8 @@ namespace {
 class ExpandablePaymentHandlerBrowserTest : public PlatformBrowserTest {
  public:
   ExpandablePaymentHandlerBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        http_server_(net::EmbeddedTestServer::TYPE_HTTP) {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{chrome::android::kScrollToExpandPaymentHandler},
         /*disabled_features=*/{});
@@ -36,8 +37,15 @@ class ExpandablePaymentHandlerBrowserTest : public PlatformBrowserTest {
     ASSERT_TRUE(content::NavigateToURL(
         GetActiveWebContents(),
         https_server_.GetURL("/maxpay.com/merchant.html")));
+    http_server_.ServeFilesFromSourceDirectory(
+        "components/test/data/payments/");
+    ASSERT_TRUE(http_server_.Start());
     test_controller_.SetUpOnMainThread();
     PlatformBrowserTest::SetUpOnMainThread();
+  }
+
+  GURL GetHttpPageUrl() {
+    return http_server_.GetURL("/maxpay.com/merchant.html");
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -48,14 +56,18 @@ class ExpandablePaymentHandlerBrowserTest : public PlatformBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
+  net::EmbeddedTestServer http_server_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Make sure merchants can confirm the payment.
 IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, ConfirmPayment) {
   std::string expected = "success";
   EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
-  EXPECT_EQ("app_is_ready", content::EvalJs(GetActiveWebContents(),
-                                            "launchAndWaitUntilReady()"));
+  EXPECT_EQ("app_is_ready",
+            content::EvalJs(
+                GetActiveWebContents(),
+                "launchAndWaitUntilReady('./payment_handler_window.html')"));
 
   DCHECK(test_controller_.GetPaymentHandlerWebContents());
   EXPECT_EQ("confirmed",
@@ -64,16 +76,47 @@ IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, ConfirmPayment) {
   EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "getResult()"));
 }
 
+// Make sure merchants can cancel the payment.
 IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, CancelPayment) {
   std::string expected = "success";
   EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
-  EXPECT_EQ("app_is_ready", content::EvalJs(GetActiveWebContents(),
-                                            "launchAndWaitUntilReady()"));
+  EXPECT_EQ("app_is_ready",
+            content::EvalJs(
+                GetActiveWebContents(),
+                "launchAndWaitUntilReady('./payment_handler_window.html')"));
 
   DCHECK(test_controller_.GetPaymentHandlerWebContents());
   EXPECT_EQ("canceled",
             content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
                             "cancel()"));
+  EXPECT_EQ("unknown", content::EvalJs(GetActiveWebContents(), "getResult()"));
+}
+
+// Make sure merchants can fail the payment.
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, PaymentFailed) {
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ("app_is_ready",
+            content::EvalJs(
+                GetActiveWebContents(),
+                "launchAndWaitUntilReady('./payment_handler_window.html')"));
+
+  DCHECK(test_controller_.GetPaymentHandlerWebContents());
+  EXPECT_EQ("failed",
+            content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
+                            "fail()"));
+  EXPECT_EQ("fail", content::EvalJs(GetActiveWebContents(), "getResult()"));
+}
+
+// Make sure payment apps served from an http connection are rejected.
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest,
+                       OpenWindowRejectHttp) {
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ("open_window_failed",
+            content::EvalJs(
+                GetActiveWebContents(),
+                "launchAndWaitUntilReady('" + GetHttpPageUrl().spec() + "')"));
 }
 }  // namespace
 }  // namespace payments

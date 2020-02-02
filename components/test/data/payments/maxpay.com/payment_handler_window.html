@@ -10,6 +10,7 @@ found in the LICENSE file.
 <body>
   <button onclick="confirm()">confirm</button>
   <button onclick="cancel()">cancel</button>
+  <button onclick="fail()">fail</button>
   <div>Messages:</div>
   <pre id="log"></pre>
 </body>
@@ -29,6 +30,12 @@ function confirm() {
   navigator.serviceWorker.controller.postMessage('confirm');
   updateLogView('confirm is invoked.');
   return 'confirmed';
+}
+
+function fail() {
+  navigator.serviceWorker.controller.postMessage('fail');
+  updateLogView('fail is invoked.');
+  return 'failed';
 }
 
 function cancel() {

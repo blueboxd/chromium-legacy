@@ -54,13 +54,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
     public void testFail() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
-        // Wait for the error message overlay.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buyFail", mPaymentRequestTestRule.getResultReady());
-
-        // Dismiss the error message overlay.
-        mPaymentRequestTestRule.clickErrorOverlayAndWait(
-                R.id.ok_button, mPaymentRequestTestRule.getCompleteReplied());
 
         mPaymentRequestTestRule.expectResultContains(new String[] {"Transaction failed"});
     }

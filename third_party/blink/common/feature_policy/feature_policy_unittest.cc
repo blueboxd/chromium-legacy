@@ -83,6 +83,11 @@ class FeaturePolicyTest : public testing::Test {
            policy->inherited_policies_.end();
   }
 
+  bool ProposedPolicyValue(const FeaturePolicy& policy,
+                           mojom::FeaturePolicyFeature feature) {
+    return policy.proposed_inherited_policies_.at(feature).BoolValue();
+  }
+
   url::Origin origin_a_ = url::Origin::Create(GURL("https://example.com/"));
   url::Origin origin_b_ = url::Origin::Create(GURL("https://example.net/"));
   url::Origin origin_c_ = url::Origin::Create(GURL("https://example.org/"));
@@ -1871,6 +1876,354 @@ TEST_F(FeaturePolicyTest, TestParameterizedSandboxPolicy) {
       policy4->IsFeatureEnabled(kParameterizedDecDoubleFeature, double_value));
   EXPECT_TRUE(policy4->IsFeatureEnabledForOrigin(kParameterizedDecDoubleFeature,
                                                  origin_a_, double_value));
+}
+
+// Tests for proposed algorithm change. These tests construct policies in
+// various embedding scenarios, and verify that the proposed value for "should
+// feature be allowed in the child frame" matches what we expect. The points
+// where this differs from the current feature policy algorithm are called out
+// specifically.
+// See https://crbug.com/937131 for additional context.
+
+TEST_F(FeaturePolicyTest, ProposedTestImplicitPolicy) {
+  // +-----------------+
+  // |(1)Origin A      |
+  // |No Policy        |
+  // | +-------------+ |
+  // | |(2)Origin A  | |
+  // | |No Policy    | |
+  // | +-------------+ |
+  // | +-------------+ |
+  // | |(3)Origin B  | |
+  // | |No Policy    | |
+  // | +-------------+ |
+  // +-----------------+
+  // With no policy specified at all, Default-on and Default-self features
+  // should be enabled at the top-level, and in a same-origin child frame.
+  // Default-self features should be disabled in a cross-origin child frame.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy1, kDefaultOnFeature));
+  EXPECT_TRUE(ProposedPolicyValue(*policy1, kDefaultSelfFeature));
+
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentPolicy(policy1.get(), origin_a_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy2, kDefaultOnFeature));
+  EXPECT_TRUE(ProposedPolicyValue(*policy2, kDefaultSelfFeature));
+
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentPolicy(policy1.get(), origin_b_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy3, kDefaultOnFeature));
+  EXPECT_FALSE(ProposedPolicyValue(*policy3, kDefaultSelfFeature));
+}
+
+TEST_F(FeaturePolicyTest, ProposedTestCompletelyBlockedPolicy) {
+  // +------------------------------------+
+  // |(1)Origin A                         |
+  // |Feature-Policy: default-self 'none' |
+  // | +--------------+  +--------------+ |
+  // | |(2)Origin A   |  |(3)Origin B   | |
+  // | |No Policy     |  |No Policy     | |
+  // | +--------------+  +--------------+ |
+  // | <allow="default-self *">           |
+  // | +--------------+                   |
+  // | |(4)Origin B   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // | <allow="default-self OriginB">     |
+  // | +--------------+                   |
+  // | |(5)Origin B   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // | <allow="default-self OriginB">     |
+  // | +--------------+                   |
+  // | |(6)Origin C   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // +------------------------------------+
+  // When a feature is disabled in the parent frame, it should be disabled in
+  // all child frames, regardless of any declared frame policies.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy(
+      {{{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, min_value,
+         min_value}}});
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentPolicy(policy1.get(), origin_a_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy2, kDefaultSelfFeature));
+
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentPolicy(policy1.get(), origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy3, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy4 = {
+      {{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, max_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy4 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy4, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy4, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy5 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_b_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy5 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy5, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy5, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy6 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_c_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy6 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy6, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy6, kDefaultSelfFeature));
+}
+
+TEST_F(FeaturePolicyTest, ProposedTestDisallowedCrossOriginChildPolicy) {
+  // +------------------------------------+
+  // |(1)Origin A                         |
+  // |Feature-Policy: default-self 'self' |
+  // | +--------------+  +--------------+ |
+  // | |(2)Origin A   |  |(3)Origin B   | |
+  // | |No Policy     |  |No Policy     | |
+  // | +--------------+  +--------------+ |
+  // | <allow="default-self *">           |
+  // | +--------------+                   |
+  // | |(4)Origin B   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // | <allow="default-self OriginB">     |
+  // | +--------------+                   |
+  // | |(5)Origin B   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // | <allow="default-self OriginB">     |
+  // | +--------------+                   |
+  // | |(6)Origin C   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // +------------------------------------+
+  // When a feature is not explicitly enabled for an origin, it should be
+  // disabled in any frame at that origin, regardless of the declared frame
+  // policy. (This is different from the current algorithm, in the case where
+  // the frame policy declares that the feature should be allowed.)
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy(
+      {{{kDefaultSelfFeature,
+         std::map<url::Origin, PolicyValue>{{origin_a_, max_value}}, min_value,
+         min_value}}});
+
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentPolicy(policy1.get(), origin_a_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy2, kDefaultSelfFeature));
+
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentPolicy(policy1.get(), origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy3, kDefaultSelfFeature));
+
+  // This is a critical change from the existing semantics.
+  ParsedFeaturePolicy frame_policy4 = {
+      {{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, max_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy4 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy4, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy4, kDefaultSelfFeature));
+
+  // This is a critical change from the existing semantics.
+  ParsedFeaturePolicy frame_policy5 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_b_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy5 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy5, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy5, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy6 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_c_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy6 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy6, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy6, kDefaultSelfFeature));
+}
+
+TEST_F(FeaturePolicyTest, ProposedTestAllowedCrossOriginChildPolicy) {
+  // +-----------------------------------------------+
+  // |(1)Origin A                                    |
+  // |Feature-Policy: default-self 'self' OriginB;   |
+  // | +--------------+  +--------------+            |
+  // | |(2)Origin A   |  |(3)Origin B   |            |
+  // | |No Policy     |  |No Policy     |            |
+  // | +--------------+  +--------------+            |
+  // | <allow="default-self *">                      |
+  // | +--------------+                              |
+  // | |(4)Origin B   |                              |
+  // | |No Policy     |                              |
+  // | +--------------+                              |
+  // | <allow="default-self OriginB">                |
+  // | +--------------+                              |
+  // | |(5)Origin B   |                              |
+  // | |No Policy     |                              |
+  // | +--------------+                              |
+  // | <allow="default-self OriginB">                |
+  // | +--------------+                              |
+  // | |(6)Origin C   |                              |
+  // | |No Policy     |                              |
+  // | +--------------+                              |
+  // +-----------------------------------------------+
+  // When a feature is explicitly enabled for an origin by the header in the
+  // parent document, it still requires that the frame policy also grant it to
+  // that frame in order to be enabled in the child. (This is different from the
+  // current algorithm, in the case where the frame policy does not mention the
+  // feature explicitly.)
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy(
+      {{{kDefaultSelfFeature,
+         std::map<url::Origin, PolicyValue>{{origin_a_, max_value},
+                                            {origin_b_, max_value}},
+         min_value, min_value}}});
+
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentPolicy(policy1.get(), origin_a_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy2, kDefaultSelfFeature));
+
+  // This is a critical change from the existing semantics.
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentPolicy(policy1.get(), origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy3, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy4 = {
+      {{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, max_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy4 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy4, origin_b_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy4, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy5 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_b_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy5 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy5, origin_b_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy5, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy6 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_c_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy6 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy6, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy6, kDefaultSelfFeature));
+}
+
+TEST_F(FeaturePolicyTest, ProposedTestAllAllowedCrossOriginChildPolicy) {
+  // +------------------------------------+
+  // |(1)Origin A                         |
+  // |Feature-Policy: default-self *      |
+  // | +--------------+  +--------------+ |
+  // | |(2)Origin A   |  |(3)Origin B   | |
+  // | |No Policy     |  |No Policy     | |
+  // | +--------------+  +--------------+ |
+  // | <allow="default-self *">           |
+  // | +--------------+                   |
+  // | |(4)Origin B   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // | <allow="default-self OriginB">     |
+  // | +--------------+                   |
+  // | |(5)Origin B   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // | <allow="default-self OriginB">     |
+  // | +--------------+                   |
+  // | |(6)Origin C   |                   |
+  // | |No Policy     |                   |
+  // | +--------------+                   |
+  // +------------------------------------+
+  // When a feature is explicitly enabled for all origins by the header in the
+  // parent document, it still requires that the frame policy also grant it to
+  // that frame in order to be enabled in the child. (This is different from the
+  // current algorithm, in the case where the frame policy does not mention the
+  // feature explicitly.)
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy(
+      {{{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, max_value,
+         min_value}}});
+
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentPolicy(policy1.get(), origin_a_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy2, kDefaultSelfFeature));
+
+  // This is a critical change from the existing semantics.
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentPolicy(policy1.get(), origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy3, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy4 = {
+      {{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, max_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy4 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy4, origin_b_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy4, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy5 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_b_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy5 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy5, origin_b_);
+  EXPECT_TRUE(ProposedPolicyValue(*policy5, kDefaultSelfFeature));
+
+  ParsedFeaturePolicy frame_policy6 = {
+      {{kDefaultSelfFeature,
+        std::map<url::Origin, PolicyValue>{{origin_c_, max_value}}, min_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy6 =
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy6, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy6, kDefaultSelfFeature));
+}
+
+TEST_F(FeaturePolicyTest, ProposedTestNestedPolicyPropagates) {
+  // +-----------------------------------------------+
+  // |(1)Origin A                                    |
+  // |Feature-Policy: default-self 'self' OriginB;   |
+  // | +--------------------------------+            |
+  // | |(2)Origin B                     |            |
+  // | |No Policy                       |            |
+  // | | <allow="default-self *">       |            |
+  // | | +--------------+               |            |
+  // | | |(3)Origin B   |               |            |
+  // | | |No Policy     |               |            |
+  // | | +--------------+               |            |
+  // | +--------------------------------+            |
+  // +-----------------------------------------------+
+  // Ensures that a proposed policy change will propagate down the frame tree.
+  // This is important so that we can tell when a change has happened, even if
+  // the feature is tested in a different one than where the
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy(
+      {{{kDefaultSelfFeature,
+         std::map<url::Origin, PolicyValue>{{origin_a_, max_value},
+                                            {origin_b_, max_value}},
+         min_value, min_value}}});
+
+  // This is where the change first occurs.
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentPolicy(policy1.get(), origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy2, kDefaultSelfFeature));
+
+  // The proposed value in frame 2 should affect the proposed value in frame 3.
+  ParsedFeaturePolicy frame_policy3 = {
+      {{kDefaultSelfFeature, std::map<url::Origin, PolicyValue>{}, max_value,
+        min_value}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy2.get(), frame_policy3, origin_b_);
+  EXPECT_FALSE(ProposedPolicyValue(*policy3, kDefaultSelfFeature));
 }
 
 }  // namespace blink

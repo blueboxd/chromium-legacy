@@ -2819,11 +2819,6 @@ HostResolverManager::CreateRequest(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!invalidation_in_progress_);
 
-  // TODO(https://crbug.com/1042354):  Remove once
-  // NetworkContextConfigurationBrowserTest.DnsCacheIsolation has been fixed.
-  DVLOG(4) << "HostResolverManager::CreateRequest: host_cache=" << host_cache
-           << ", host=" << host.ToString();
-
   // ResolveContexts must register (via RegisterResolveContext()) before use to
   // ensure cached data is invalidated on network and configuration changes.
   DCHECK(registered_contexts_.HasObserver(resolve_context));

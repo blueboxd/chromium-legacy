@@ -329,18 +329,6 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         helper.waitForCallback(callCount);
     }
 
-    /** Clicks on an element in the error overlay. */
-    protected void clickErrorOverlayAndWait(int resourceId, CallbackHelper helper)
-            throws TimeoutException {
-        int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            // Error overlay always allows clicks and is not taken into account in
-            // isAcceptingUserInput().
-            mUI.getDialogForTest().findViewById(resourceId).performClick();
-        });
-        helper.waitForCallback(callCount);
-    }
-
     /** Clicks on an element in the "Order summary" section of the payments UI. */
     protected void clickInOrderSummaryAndWait(CallbackHelper helper) throws TimeoutException {
         int callCount = helper.getCallCount();

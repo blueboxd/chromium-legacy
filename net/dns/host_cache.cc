@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/ip_endpoint.h"
@@ -327,10 +326,6 @@ bool HostCache::Entry::IsStale(base::TimeTicks now, int network_changes) const {
   stale.expired_by = now - expires_;
   stale.network_changes = network_changes - network_changes_;
   stale.stale_hits = stale_hits_;
-  DVLOG(4) << "  HostCache::Entry::IsStale: " << stale.is_stale()
-           << ", expired_by=" << stale.expired_by.InMilliseconds()
-           << ", network_changes=" << network_changes << "/" << network_changes_
-           << ", stale_hits=" << stale_hits_;
   return stale.is_stale();
 }
 
@@ -464,27 +459,18 @@ HostCache::~HostCache() {
 
 const std::pair<const HostCache::Key, HostCache::Entry>*
 HostCache::Lookup(const Key& key, base::TimeTicks now, bool ignore_secure) {
-  Log(FROM_HERE, key);
-
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (caching_is_disabled()) {
-    DVLOG(4) << "  Caching Disabled";
+  if (caching_is_disabled())
     return nullptr;
-  }
 
   auto* result = LookupInternalIgnoringFields(key, now, ignore_secure);
-  if (!result) {
-    DVLOG(4) << "  Entry not found";
+  if (!result)
     return nullptr;
-  }
 
   auto* entry = &result->second;
-  if (entry->IsStale(now, network_changes_)) {
-    DVLOG(4) << "  Entry is stale";
+  if (entry->IsStale(now, network_changes_))
     return nullptr;
-  }
 
-  DVLOG(4) << "  Entry found";
   entry->CountHit(/* hit_is_stale= */ false);
   return result;
 }
@@ -494,29 +480,17 @@ const std::pair<const HostCache::Key, HostCache::Entry>* HostCache::LookupStale(
     base::TimeTicks now,
     HostCache::EntryStaleness* stale_out,
     bool ignore_secure) {
-  Log(FROM_HERE, key);
-
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (caching_is_disabled()) {
-    DVLOG(4) << "  Caching Disabled";
+  if (caching_is_disabled())
     return nullptr;
-  }
 
   auto* result = LookupInternalIgnoringFields(key, now, ignore_secure);
-  if (!result) {
-    DVLOG(4) << "  Entry not found";
+  if (!result)
     return nullptr;
-  }
 
   auto* entry = &result->second;
   bool is_stale = entry->IsStale(now, network_changes_);
   entry->CountHit(/* hit_is_stale= */ is_stale);
-
-  if (is_stale) {
-    DVLOG(4) << "  Returning stale hit";
-  } else {
-    DVLOG(4) << "  Returning fresh hit";
-  }
 
   if (stale_out)
     entry->GetStaleness(now, network_changes_, stale_out);
@@ -589,14 +563,10 @@ void HostCache::Set(const Key& key,
                     const Entry& entry,
                     base::TimeTicks now,
                     base::TimeDelta ttl) {
-  Log(FROM_HERE, key);
-
   TRACE_EVENT0(NetTracingCategory(), "HostCache::Set");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (caching_is_disabled()) {
-    DVLOG(4) << "  Not setting, caching is disabled.";
+  if (caching_is_disabled())
     return;
-  }
 
   bool result_changed = false;
   auto it = entries_.find(key);
@@ -689,8 +659,6 @@ void HostCache::set_persistence_delegate(PersistenceDelegate* delegate) {
 void HostCache::clear() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  DVLOG(4) << "HostCache::clear:  host_cache=" << this << ", size=" << size();
-
   // Don't bother scheduling a write if there's nothing to clear.
   if (size() == 0)
     return;
@@ -703,9 +671,6 @@ void HostCache::clear() {
 void HostCache::ClearForHosts(
     const base::Callback<bool(const std::string&)>& host_filter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  DVLOG(4) << "HostCache::ClearForHosts:  host_cache=" << this
-           << ", size=" << size();
 
   if (host_filter.is_null()) {
     clear();
@@ -723,8 +688,6 @@ void HostCache::ClearForHosts(
 
     it = next_it;
   }
-
-  DVLOG(4) << "  ClearForHosts complete: size=" << size();
 
   if (delegate_ && changed)
     delegate_->ScheduleWrite();
@@ -950,7 +913,6 @@ void HostCache::EvictOneEntry(base::TimeTicks now) {
     }
   }
 
-  DVLOG(4) << "  Evicting: " << KeyToString(oldest_it->first);
   entries_.erase(oldest_it);
 }
 
@@ -982,19 +944,6 @@ const HostCache::Key* HostCache::GetMatchingKey(
     *source_out = cache_result->second.source();
 
   return &cache_result->first;
-}
-
-void HostCache::Log(const base::Location& location, const Key& key) {
-  DVLOG(4) << "HostCache::" << location.function_name()
-           << ": host_cache=" << this << ", key=" << KeyToString(key)
-           << ", num_entries=" << entries_.size();
-}
-
-std::string HostCache::KeyToString(const HostCache::Key& key) {
-  return base::StringPrintf("(%s,%i,%X,%i,%s)", key.hostname.c_str(),
-                            key.dns_query_type, key.host_resolver_flags,
-                            key.host_resolver_source,
-                            key.network_isolation_key.ToDebugString().c_str());
 }
 
 }  // namespace net

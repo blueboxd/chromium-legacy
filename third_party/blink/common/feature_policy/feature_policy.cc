@@ -134,6 +134,7 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateWithOpenerPolicy(
   std::unique_ptr<FeaturePolicy> new_policy =
       base::WrapUnique(new FeaturePolicy(origin, GetDefaultFeatureList()));
   new_policy->inherited_policies_ = inherited_policies;
+  new_policy->proposed_inherited_policies_ = inherited_policies;
   return new_policy;
 }
 
@@ -186,6 +187,28 @@ PolicyValue FeaturePolicy::GetFeatureValueForOrigin(
       (default_policy.first == FeaturePolicy::FeatureDefault::EnableForSelf &&
        !origin_.IsSameOriginWith(origin)))
     return PolicyValue::CreateMinPolicyValue(default_policy.second);
+  return inherited_value;
+}
+
+// Temporary code to support metrics: (https://crbug.com/937131)
+// This method implements a proposed algorithm change to feature policy in which
+// the default allowlist for a feature if not specified in the header, is always
+// '*', but where the header allowlist *must* allow the nested frame origin in
+// order to delegate use of the feature to that frame.
+PolicyValue FeaturePolicy::GetProposedFeatureValueForOrigin(
+    mojom::FeaturePolicyFeature feature,
+    const url::Origin& origin) const {
+  DCHECK(base::Contains(feature_list_, feature));
+  DCHECK(base::Contains(proposed_inherited_policies_, feature));
+
+  auto inherited_value = proposed_inherited_policies_.at(feature);
+  auto allowlist = allowlists_.find(feature);
+  if (allowlist != allowlists_.end()) {
+    auto specified_value = allowlist->second->GetValueForOrigin(origin);
+    return PolicyValue::Combine(inherited_value, specified_value);
+  }
+
+  // If no allowlist is specified, return default feature value.
   return inherited_value;
 }
 
@@ -266,9 +289,36 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
       // If no parent policy, set inherited policy to max value.
       new_policy->inherited_policies_[feature.first] =
           PolicyValue::CreateMaxPolicyValue(feature.second.second);
+      // Temporary code to support metrics (https://crbug.com/937131)
+      new_policy->proposed_inherited_policies_[feature.first] =
+          PolicyValue::CreateMaxPolicyValue(feature.second.second);
+      // End of temporary metrics code
     } else {
       new_policy->inherited_policies_[feature.first] =
           parent_policy->GetFeatureValueForOrigin(feature.first, origin);
+
+      // Temporary code to support metrics (https://crbug.com/937131)
+      new_policy->proposed_inherited_policies_[feature.first] =
+          PolicyValue::Combine(parent_policy->GetProposedFeatureValueForOrigin(
+                                   feature.first, parent_policy->origin_),
+                               parent_policy->GetProposedFeatureValueForOrigin(
+                                   feature.first, origin));
+      // For features which currently use 'self' default allowlist, set the
+      // proposed inherited policy to "allow self" if the container policy does
+      // not mention this feature at all.
+      if (feature.second.first ==
+          FeaturePolicy::FeatureDefault::EnableForSelf) {
+        bool found_in_container_policy = std::any_of(
+            container_policy.begin(), container_policy.end(),
+            [&](const auto& decl) { return decl.feature == feature.first; });
+        if (!found_in_container_policy) {
+          new_policy->proposed_inherited_policies_[feature.first].Combine(
+              origin.IsSameOriginWith(parent_policy->origin_)
+                  ? PolicyValue::CreateMaxPolicyValue(feature.second.second)
+                  : PolicyValue::CreateMinPolicyValue(feature.second.second));
+        }
+      }
+      // End of temporary metrics code
     }
   }
   if (!container_policy.empty())
@@ -291,6 +341,20 @@ void FeaturePolicy::AddContainerPolicy(
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        container_policy) {
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
+
+    // Temporary code to support metrics: (https://crbug.com/937131)
+    // Compute the proposed new inherited value, where the parent *must* allow
+    // the feature in the child frame, but where the default header value if not
+    // specified is '*'.
+    auto proposed_inherited_policy = proposed_inherited_policies_.find(feature);
+    if (proposed_inherited_policy != proposed_inherited_policies_.end()) {
+      PolicyValue& proposed_inherited_value = proposed_inherited_policy->second;
+      proposed_inherited_value.Combine(
+          AllowlistFromDeclaration(parsed_declaration, feature_list_)
+              ->GetValueForOrigin(origin_));
+    }
+    // End of metrics code
+
     // Do not allow setting a container policy for a feature which is not in the
     // feature list.
     auto inherited_policy = inherited_policies_.find(feature);

@@ -169,7 +169,7 @@ select:-internal-list-box {
 }
 
 select:-internal-list-box:enabled option:hover:enabled {
-  background-color: #f3f3f3;
+  background-color: initial;
 }
 
 /* option selected */

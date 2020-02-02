@@ -76,40 +76,47 @@ async function uninstall() { // eslint-disable-line no-unused-vars
 
 /**
  * Launches the payment handler and waits until its window is ready.
+ * @param {string} url - open a specified url in payment handler window.
  * @return {Promise<string>} - the message about the launch result.
  */
-function launchAndWaitUntilReady() { // eslint-disable-line no-unused-vars
+function launchAndWaitUntilReady( // eslint-disable-line no-unused-vars
+    url = './payment_handler_window.html') {
   let appReadyResolver;
   appReadyPromise = new Promise((r) => {
     appReadyResolver = r;
   });
   try {
-    const request = new PaymentRequest([{supportedMethods: methodName}], {
-      total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
-    });
+    const request = new PaymentRequest(
+      [{supportedMethods: methodName, data: {url}}],
+        {total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}}});
     request.onpaymentmethodchange = (event) => {
       appReadyResolver(event.methodDetails.status);
     };
     resultPromise = request.show();
-    updateLogView('payment handler is shown.');
+    updateLogView('launched and waiting until app gets ready.');
   } catch (e) {
     appReadyResolver(e.message);
   }
   return appReadyPromise;
 }
+
 /**
  * Gets the result of the PaymentRequest.show() from launchAndWaitUntilReady().
+ * Precondition: called only when launchAndWaitUntilReady() returns
+ * 'app_is_ready'.
  * @return {Promise<string>} - the payment handler's response to the
  * 'paymentrequest' event.
  */
 async function getResult() { // eslint-disable-line no-unused-vars
   try {
     const response = await resultPromise;
-    updateLogView(response.details.status);
-    await response.complete(response.details.status);
-    return response.details.status;
+    const result = response.details.status;
+    updateLogView(result);
+    await response.complete(result);
+    return result;
   } catch (e) {
-   return e.message;
+    updateLogView(e.message);
+    return e.message;
   }
 }
 

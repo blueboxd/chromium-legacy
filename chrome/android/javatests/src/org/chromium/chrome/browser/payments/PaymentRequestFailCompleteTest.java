@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -63,15 +62,6 @@ public class PaymentRequestFailCompleteTest implements MainActivityStartCallback
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 ModalDialogProperties.ButtonType.POSITIVE,
                 mPaymentRequestTestRule.getResultReady());
-
-        // Dismiss the error message overlay.
-        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mPaymentRequestTestRule.getPaymentRequestUI()
-                                   .getDialogForTest()
-                                   .findViewById(R.id.ok_button)
-                                   .performClick());
-        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
         mPaymentRequestTestRule.expectResultContains(new String[] {"Transaction failed"});
     }

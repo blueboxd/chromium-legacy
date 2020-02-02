@@ -1119,32 +1119,14 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   }
 }
 
-// TODO(https://crbug.com/1042354): Temporary code to enanle vlogging while
-// investigating why DnsCacheIsolation test is failing. Remove this test fixture
-// and all logging added with it once the test has been fixed.
-class NetworkContextConfigurationDiskCacheIsolationBrowserTest
-    : public NetworkContextConfigurationBrowserTest {
- public:
-  NetworkContextConfigurationDiskCacheIsolationBrowserTest() = default;
-  ~NetworkContextConfigurationDiskCacheIsolationBrowserTest() override =
-      default;
-
-  // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII("vmodule",
-                                    "host_cache=4,host_resolver_manager=4");
-  }
-};
-
 // Make sure that NetworkContexts have separate DNS caches.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDiskCacheIsolationBrowserTest,
-                       DnsCacheIsolation) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       DISABLED_DnsCacheIsolation) {
   net::NetworkIsolationKey network_isolation_key =
       net::NetworkIsolationKey::CreateTransient();
   net::HostPortPair host_port_pair(kHostname, 0);
   // Resolve |host_port_pair|, which should succeed and put it in the
   // NetworkContext's cache.
-  LOG(WARNING) << "Main lookup: " << host_port_pair.ToString();
   network::DnsLookupResult result =
       network::BlockingDnsLookup(network_context(), host_port_pair,
                                  nullptr /* params */, network_isolation_key);
@@ -1157,8 +1139,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDiskCacheIsolationBrowserTest,
   // context, and make sure no result is returned.
   ForEachOtherContext(
       base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
-        LOG(WARNING) << "Cache-only lookup with another context: "
-                     << host_port_pair.ToString();
         network::mojom::ResolveHostParametersPtr params =
             network::mojom::ResolveHostParameters::New();
         // Cache only lookup.
@@ -1172,8 +1152,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDiskCacheIsolationBrowserTest,
       }));
   // Do a cache-only lookup using the original network context, which should
   // return the same result it initially did.
-  LOG(WARNING) << "Cache-only lookup with original context: "
-               << host_port_pair.ToString();
   network::mojom::ResolveHostParametersPtr params =
       network::mojom::ResolveHostParameters::New();
   // Cache only lookup.
@@ -2344,8 +2322,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
       ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile)))
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
-INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
-    NetworkContextConfigurationDiskCacheIsolationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFixedPortBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(

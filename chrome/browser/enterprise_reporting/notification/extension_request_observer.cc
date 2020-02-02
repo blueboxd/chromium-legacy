@@ -4,6 +4,7 @@
 
 #include "chrome/browser/enterprise_reporting/notification/extension_request_observer.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -20,9 +21,12 @@ ExtensionRequestObserver::ExtensionRequestObserver(Profile* profile)
 }
 
 ExtensionRequestObserver::~ExtensionRequestObserver() {
-  extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
-      ->RemoveObserver(this);
-  CloseAllNotifications();
+  // If Profile is still available during shutdown
+  if (g_browser_process->profile_manager()) {
+    extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
+        ->RemoveObserver(this);
+    CloseAllNotifications();
+  }
 }
 
 void ExtensionRequestObserver::OnExtensionManagementSettingsChanged() {

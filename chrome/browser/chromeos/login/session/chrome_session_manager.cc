@@ -152,39 +152,13 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
     ProfileHelper::Get()->ProfileStartup(user_profile);
 
-    lock_screen_apps::StateController::Get()->SetPrimaryProfile(user_profile);
-
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
-      // App install logs are uploaded via the user's communication channel with
-      // the management server. This channel exists for regular users only.
-      // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
-      // self-destructs on logout.
-      policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
-    }
-    arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
-
-    crostini::CrostiniManager* crostini_manager =
-        crostini::CrostiniManager::GetForProfile(user_profile);
-    if (crostini_manager)
-      crostini_manager->MaybeUpgradeCrostini();
-
-    g_browser_process->platform_part()->InitializePrimaryProfileServices(
-        user_profile);
+    user_session_mgr->InitializePrimaryProfileServices(user_profile, user);
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
-      ChildStatusReportingServiceFactory::GetForBrowserContext(user_profile);
-      ChildUserServiceFactory::GetForBrowserContext(user_profile);
-      ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
+      user_session_mgr->InitializeChildUserServices(user_profile);
     }
 
-    // Send the PROFILE_PREPARED notification and call SessionStarted()
-    // so that the Launcher and other Profile dependent classes are created.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-        content::NotificationService::AllSources(),
-        content::Details<Profile>(user_profile));
-    session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
-        ProfileHelper::Get()->GetUserByProfile(user_profile)->GetAccountId());
+    user_session_mgr->NotifyUserProfileLoaded(user_profile, user);
 
     // This call will set session state to SESSION_STATE_ACTIVE (same one).
     session_manager::SessionManager::Get()->SessionStarted();
@@ -203,9 +177,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     UserSessionManager::GetInstance()->RestoreAuthenticationSession(
         user_profile);
 
-    TetherService* tether_service = TetherService::Get(user_profile);
-    if (tether_service)
-      tether_service->StartTetherIfPossible();
+    UserSessionManager::GetInstance()->StartTetherServiceIfPossible(
+        user_profile);
 
     // Associates AppListClient with the current active profile.
     AppListClientImpl::GetInstance()->UpdateProfile();

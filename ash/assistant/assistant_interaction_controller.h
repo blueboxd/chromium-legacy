@@ -149,7 +149,7 @@ class AssistantInteractionController
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 
-  ash::InputModality GetDefaultInputModality() const;
+  InputModality GetDefaultInputModality() const;
 
   AssistantVisibility GetVisibility() const;
   bool IsVisible() const;

@@ -238,9 +238,6 @@ void AssistantInteractionController::OnDeepLinkReceived(
 
 void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode,
                                                      bool due_to_interaction) {
-  if (ui_mode == AssistantUiMode::kMiniUi)
-    return;
-
   switch (model_.input_modality()) {
     case InputModality::kStylus:
       // When the Assistant is not in mini state there should not be an active
@@ -256,16 +253,8 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode,
       if (!due_to_interaction)
         model_.SetInputModality(GetDefaultInputModality());
       break;
-    case InputModality::kVoice:
-      // When transitioning to web UI we abort any in progress voice query. We
-      // do this to prevent Assistant from listening to the user while we
-      // navigate away from the main stage.
-      if (ui_mode == AssistantUiMode::kWebUi &&
-          model_.pending_query().type() == AssistantQueryType::kVoice) {
-        StopActiveInteraction(false);
-      }
-      break;
     case InputModality::kKeyboard:
+    case InputModality::kVoice:
       // No action necessary.
       break;
   }
@@ -989,12 +978,8 @@ void AssistantInteractionController::StopActiveInteraction(
   model_.ClearPendingResponse();
 }
 
-ash::InputModality AssistantInteractionController::GetDefaultInputModality()
-    const {
-  if (IsPreferVoice())
-    return ash::InputModality::kVoice;
-  else
-    return ash::InputModality::kKeyboard;
+InputModality AssistantInteractionController::GetDefaultInputModality() const {
+  return IsPreferVoice() ? InputModality::kVoice : InputModality::kKeyboard;
 }
 
 AssistantVisibility AssistantInteractionController::GetVisibility() const {

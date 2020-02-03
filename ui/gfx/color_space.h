@@ -235,6 +235,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   size_t GetHash() const;
   std::string ToString() const;
 
+  bool IsWide() const;
+
   // Returns true if the transfer function is an HDR one (SMPTE 2084, HLG, etc).
   bool IsHDR() const;
 

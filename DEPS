@@ -180,7 +180,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a4dcd39d521d14c4b1cac020812e44ee04a7f244',
+  'v8_revision': '2b9bdb1d1f242f58351766d4b341e29c8cd1690c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -951,6 +951,9 @@ deps = {
   'src/third_party/emoji-segmenter/src':
     Var('chromium_git') + '/external/github.com/google/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
 
+  'src/third_party/libgav1/src':
+    Var('chromium_git') + '/codecs/libgav1.git' + '@' + '16e312f5066806284b080665545aef1fa51818a4',
+
   # Chrome OS touchpad gestures library.
   'src/third_party/gestures/gestures': {
       'url': Var('chromium_git') + '/chromiumos/platform/gestures.git' + '@' + '74f55100df966280d305d5d5ada824605f875839',
@@ -1563,7 +1566,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@79b9bdba83eea4429bd15d289170d3691caf7936',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9c4f7c3fc916cbb57a98b240a89bfb6dd7d85eae',
     'condition': 'checkout_src_internal',
   },
 

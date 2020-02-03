@@ -327,8 +327,13 @@ MixedContentStatus GetMixedContentStatusForDownload(
     const download::DownloadItem* item) {
   MixedContentDownloadData data(path, item);
 
-  if (!data.is_mixed_content_ ||
-      !base::FeatureList::IsEnabled(features::kTreatUnsafeDownloadsAsActive)) {
+  if (!data.is_mixed_content_) {
+    return MixedContentStatus::SAFE;
+  }
+
+  // As of M81, print a console message even if no other blocking is enabled.
+  if (!base::FeatureList::IsEnabled(features::kTreatUnsafeDownloadsAsActive)) {
+    PrintConsoleMessage(data, false);
     return MixedContentStatus::SAFE;
   }
 

@@ -7530,6 +7530,68 @@ TEST_F(HttpCacheTest, RangeGET_CacheReadError) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
+// Tests that range requests with no-store get correct content-length
+// (https://crbug.com/700197).
+TEST_F(HttpCacheTest, RangeGET_NoStore) {
+  MockHttpCache cache;
+
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  std::string response_headers = base::StrCat(
+      {kRangeGET_TransactionOK.response_headers, "Cache-Control: no-store\n"});
+  transaction.response_headers = response_headers.c_str();
+  AddMockTransaction(&transaction);
+
+  std::string headers;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests a 304 setting no-store on existing 206 entry.
+TEST_F(HttpCacheTest, RangeGET_NoStore304) {
+  MockHttpCache cache;
+
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  std::string response_headers = base::StrCat(
+      {kRangeGET_TransactionOK.response_headers, "Cache-Control: max-age=0\n"});
+  transaction.response_headers = response_headers.c_str();
+  AddMockTransaction(&transaction);
+
+  std::string headers;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  response_headers = base::StrCat(
+      {kRangeGET_TransactionOK.response_headers, "Cache-Control: no-store\n"});
+  transaction.response_headers = response_headers.c_str();
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+  Verify206Response(headers, 40, 49);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Fetch again, this one should be from newly created cache entry, due to
+  // earlier no-store.
+  transaction.response_headers = kRangeGET_TransactionOK.response_headers;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+  Verify206Response(headers, 40, 49);
+
+  RemoveMockTransaction(&transaction);
+}
+
 // Tests that we can cache range requests and fetch random blocks from the
 // cache and the network, with synchronous responses.
 TEST_F(HttpCacheTest, RangeGET_SyncOK) {

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
@@ -100,8 +101,24 @@ void RecordAuthenticationMethod(AuthMethod method) {
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.AuthenticationMethod", method);
 }
 
-std::unique_ptr<TempFileManager> CreateTempFileManager() {
-  return std::make_unique<TempFileManager>();
+base::ScopedFD MakeFdWithContents(const std::string& contents) {
+  const size_t content_size = contents.size();
+
+  base::ScopedFD read_fd, write_fd;
+  if (!base::CreatePipe(&read_fd, &write_fd, true /* non_blocking */)) {
+    LOG(ERROR) << "Unable to create pipe";
+    return {};
+  }
+  bool success =
+      base::WriteFileDescriptor(write_fd.get(),
+                                reinterpret_cast<const char*>(&content_size),
+                                sizeof(content_size)) &&
+      base::WriteFileDescriptor(write_fd.get(), contents.data(), content_size);
+  if (!success) {
+    PLOG(ERROR) << "Unable to write contents to pipe";
+    return {};
+  }
+  return read_fd;
 }
 
 }  // namespace
@@ -139,7 +156,7 @@ SmbService::SmbService(Profile* profile,
     return;
   }
 
-  SetupTempFileManagerAndCompleteSetup();
+  CompleteSetup();
 }
 
 SmbService::~SmbService() {
@@ -164,8 +181,6 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                        bool should_open_file_manager_after_mount,
                        bool save_credentials,
                        MountResponse callback) {
-  DCHECK(temp_file_manager_);
-
   CallMount(options, share_path, username, password, use_kerberos,
             should_open_file_manager_after_mount, save_credentials,
             std::move(callback));
@@ -203,15 +218,12 @@ void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
 void SmbService::UpdateCredentials(int32_t mount_id,
                                    const std::string& username,
                                    const std::string& password) {
-  DCHECK(temp_file_manager_);
-
   std::string parsed_username = username;
   std::string workgroup;
   ParseUserName(username, &parsed_username, &workgroup);
 
   GetSmbProviderClient()->UpdateMountCredentials(
-      mount_id, workgroup, parsed_username,
-      temp_file_manager_->WritePasswordToFile(password),
+      mount_id, workgroup, parsed_username, MakeFdWithContents(password),
       base::BindOnce(&SmbService::OnUpdateCredentialsResponse, AsWeakPtr(),
                      mount_id));
 }
@@ -365,8 +377,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     smb_mount_options.save_password = save_credentials && !use_kerberos;
     smb_mount_options.account_hash = user->username_hash();
     GetSmbProviderClient()->Mount(
-        mount_path, smb_mount_options,
-        temp_file_manager_->WritePasswordToFile(password),
+        mount_path, smb_mount_options, MakeFdWithContents(password),
         base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                        base::Passed(&callback), options, share_path,
                        use_kerberos, should_open_file_manager_after_mount,
@@ -580,8 +591,7 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
       !username.empty() && !is_kerberos_chromad;
   smb_mount_options.account_hash = user->username_hash();
   GetSmbProviderClient()->Mount(
-      mount_path, smb_mount_options,
-      temp_file_manager_->WritePasswordToFile("" /* password */),
+      mount_path, smb_mount_options, MakeFdWithContents(""),
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
 }
@@ -612,8 +622,7 @@ void SmbService::Premount(const base::FilePath& share_path) {
   smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
   smb_mount_options.skip_connect = true;
   GetSmbProviderClient()->Mount(
-      share_path, smb_mount_options,
-      temp_file_manager_->WritePasswordToFile("" /* password */),
+      share_path, smb_mount_options, MakeFdWithContents(""),
       base::BindOnce(&SmbService::OnPremountResponse, AsWeakPtr(), share_path));
 }
 
@@ -677,33 +686,15 @@ void SmbService::OnUpdateKerberosCredentialsResponse(bool success) {
   LOG_IF(ERROR, !success) << "Update Kerberos credentials failed.";
 }
 
-void SmbService::SetupTempFileManagerAndCompleteSetup() {
-  // CreateTempFileManager() has to be called on a separate thread since it
-  // contains a call that requires a blockable thread.
-  base::TaskTraits task_traits = {base::ThreadPool(), base::MayBlock(),
-                                  base::TaskPriority::USER_BLOCKING,
-                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-  auto task = base::BindOnce(&CreateTempFileManager);
-  auto reply = base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr());
-
-  base::PostTaskAndReplyWithResult(FROM_HERE, task_traits, std::move(task),
-                                   std::move(reply));
-}
-
 void SmbService::OnSetupKerberosResponse(bool success) {
   if (!success) {
     LOG(ERROR) << "SmbService: Kerberos setup failed.";
   }
 
-  SetupTempFileManagerAndCompleteSetup();
+  CompleteSetup();
 }
 
-void SmbService::CompleteSetup(
-    std::unique_ptr<TempFileManager> temp_file_manager) {
-  DCHECK(temp_file_manager);
-  DCHECK(!temp_file_manager_);
-
-  temp_file_manager_ = std::move(temp_file_manager);
+void SmbService::CompleteSetup() {
   share_finder_ = std::make_unique<SmbShareFinder>(GetSmbProviderClient());
   RegisterHostLocators();
 
@@ -724,7 +715,7 @@ void SmbService::CompleteSetup(
 
 void SmbService::OnSetupCompleteForTesting(base::OnceClosure callback) {
   DCHECK(!setup_complete_callback_);
-  if (temp_file_manager_) {
+  if (share_finder_) {
     std::move(callback).Run();
     return;
   }

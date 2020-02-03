@@ -991,11 +991,11 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
 
     EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, url));
     EXPECT_TRUE(p->CanRedirectToURL(url));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, other_url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, other_url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, other_url));
     EXPECT_TRUE(p->CanRedirectToURL(other_url));
 
@@ -1005,7 +1005,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
     EXPECT_TRUE(p->CanCommitURL(kRendererID, url));
     EXPECT_TRUE(p->CanRedirectToURL(url));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, other_url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, other_url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, other_url));
     EXPECT_TRUE(p->CanRedirectToURL(other_url));
 
@@ -1030,11 +1030,11 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
 
     EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, url));
     EXPECT_TRUE(p->CanRedirectToURL(url));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, other_url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, other_url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, other_url));
     EXPECT_TRUE(p->CanRedirectToURL(other_url));
 
@@ -1044,7 +1044,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
     EXPECT_TRUE(p->CanCommitURL(kRendererID, url));
     EXPECT_TRUE(p->CanRedirectToURL(url));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, other_url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, other_url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, other_url));
     EXPECT_TRUE(p->CanRedirectToURL(other_url));
 
@@ -1070,11 +1070,11 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
 
     EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, url));
     EXPECT_TRUE(p->CanRedirectToURL(url));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, other_url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, other_url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, other_url));
     EXPECT_TRUE(p->CanRedirectToURL(other_url));
 
@@ -1084,7 +1084,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
     EXPECT_TRUE(p->CanCommitURL(kRendererID, url));
     EXPECT_TRUE(p->CanRedirectToURL(url));
 
-    EXPECT_TRUE(p->CanRequestURL(kRendererID, other_url));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, other_url));
     EXPECT_FALSE(p->CanCommitURL(kRendererID, other_url));
     EXPECT_TRUE(p->CanRedirectToURL(other_url));
 

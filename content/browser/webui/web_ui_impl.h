@@ -51,6 +51,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void OverrideTitle(const base::string16& title) override;
   int GetBindings() override;
   void SetBindings(int bindings) override;
+  const std::vector<std::string>& GetRequestableSchemes();
+  void AddRequestableScheme(const char* scheme);
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
                                const MessageCallback& callback) override;
@@ -103,6 +105,9 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   base::string16 overridden_title_;  // Defaults to empty string.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
+
+  // The URL schemes that can be requested by this document.
+  std::vector<std::string> requestable_schemes_;
 
   // The WebUIMessageHandlers we own.
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;

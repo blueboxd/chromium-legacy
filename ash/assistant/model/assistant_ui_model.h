@@ -19,9 +19,6 @@ class AssistantUiModelObserver;
 enum class AssistantUiMode {
   kAmbientUi,
   kLauncherEmbeddedUi,
-  kMainUi,
-  kMiniUi,
-  kWebUi,
 };
 
 // Enumeration of Assistant visibility states.
@@ -93,10 +90,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
       base::Optional<AssistantExitPoint> exit_point);
   void NotifyUsableWorkAreaChanged();
 
-  AssistantUiMode ui_mode_;
-
+  AssistantUiMode ui_mode_ = AssistantUiMode::kLauncherEmbeddedUi;
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
-
   AssistantEntryPoint entry_point_ = AssistantEntryPoint::kUnspecified;
 
   base::ObserverList<AssistantUiModelObserver> observers_;

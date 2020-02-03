@@ -5971,6 +5971,12 @@ bool RenderFrameHostImpl::CreateWebUI(const GURL& dest_url,
 
   web_ui_type_ = new_web_ui_type;
 
+  // WebUIs need the ability to request certain schemes.
+  for (const auto& scheme : web_ui_->GetRequestableSchemes()) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestScheme(
+        GetProcess()->GetID(), scheme);
+  }
+
   // Since this is new WebUI instance, this RenderFrameHostImpl should not
   // have had any bindings. Verify that and grant the required bindings.
   DCHECK_EQ(0, GetEnabledBindings());

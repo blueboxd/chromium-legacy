@@ -221,11 +221,7 @@ void AssistantUiController::UpdateUiMode(
   // If a UI mode is provided, we will use it in lieu of updating UI mode on the
   // basis of interaction/widget visibility state.
   if (ui_mode.has_value()) {
-    AssistantUiMode mode = ui_mode.value();
-    // TODO(wutao): Behavior is not defined.
-    if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
-      DCHECK_NE(AssistantUiMode::kMiniUi, mode);
-    model_.SetUiMode(mode, due_to_interaction);
+    model_.SetUiMode(ui_mode.value(), due_to_interaction);
     return;
   }
 

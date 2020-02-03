@@ -14,8 +14,7 @@
 
 namespace content {
 
-TestWebUI::TestWebUI() : web_contents_(nullptr) {
-}
+TestWebUI::TestWebUI() : web_contents_(nullptr) {}
 
 TestWebUI::~TestWebUI() {
   ClearTrackedCalls();

@@ -3118,6 +3118,9 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(
   if ((response.headers->HasHeaderValue("cache-control", "no-store")) ||
       IsCertStatusError(response.ssl_info.cert_status) ||
       ShouldDisableCaching(response.headers.get())) {
+    if (partial_)
+      partial_->FixResponseHeaders(response_.headers.get(), true);
+
     bool stopped = StopCachingImpl(false);
     DCHECK(stopped);
     if (net_log_.IsCapturing())

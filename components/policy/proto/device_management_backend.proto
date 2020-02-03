@@ -1032,6 +1032,15 @@ message GraphicsStatus {
 
 // Status of a crash report.
 message CrashReportInfo {
+  // The status options should align with crash_reporter::ReportUploadState.
+  enum CrashReportUploadStatus {
+    UPLOAD_STATUS_UNKNOWN = 0;
+    UPLOAD_STATUS_NOT_UPLOADED = 1;
+    UPLOAD_STATUS_PENDING = 2;
+    UPLOAD_STATUS_PENDING_USER_REQUESTED = 3;
+    UPLOAD_STATUS_UPLOADED = 4;
+  }
+
   // ID as provided by chrome://crashes.
   optional string remote_id = 1;
 
@@ -1041,6 +1050,9 @@ message CrashReportInfo {
 
   // Human readable string that identifies what caused the crash.
   optional string cause = 3;
+
+  // The upload status of crash report.
+  optional CrashReportUploadStatus upload_status = 4;
 }
 
 // Report device level status.

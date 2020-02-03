@@ -4434,6 +4434,17 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
   auto test_content_color_usage_aggregation =
       [this](gfx::ContentColorUsage content_color_usage, bool is_wide,
              bool is_hdr) {
+        gfx::DisplayColorSpaces display_color_spaces;
+        display_color_spaces.srgb = gfx::ColorSpace::CreateSRGB();
+        display_color_spaces.wcg_opaque = gfx::ColorSpace::CreateDisplayP3D65();
+        display_color_spaces.wcg_transparent =
+            gfx::ColorSpace::CreateDisplayP3D65();
+        display_color_spaces.hdr_opaque = gfx::ColorSpace::CreateHDR10();
+        display_color_spaces.hdr_transparent =
+            gfx::ColorSpace::CreateSCRGBLinear();
+
+        aggregator_.SetDisplayColorSpaces(display_color_spaces);
+
         std::vector<Quad> child_quads = {
             Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
         std::vector<Pass> child_passes = {
@@ -4461,6 +4472,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
         std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
 
         CompositorFrame root_frame = MakeEmptyCompositorFrame();
+        root_frame.metadata.content_color_usage = content_color_usage;
         AddPasses(&root_frame.render_pass_list, root_passes,
                   &root_frame.metadata.referenced_surfaces);
 
@@ -4474,8 +4486,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
 
         // Make sure the root render pass has a color space that matches
         // expected generalization.
-        // TODO(cblume): Can we add an gfx::ColorSpace::IsWide()?
-        // ASSERT_EQ(is_wide, aggregated_pass_list[0]->color_space.IsWide());
+        ASSERT_EQ(aggregated_frame.metadata.content_color_usage,
+                  content_color_usage);
+        ASSERT_EQ(is_wide, aggregated_pass_list[0]->color_space.IsWide());
         ASSERT_EQ(is_hdr, aggregated_pass_list[0]->color_space.IsHDR());
       };
 
@@ -4483,9 +4496,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
                                        false);
   test_content_color_usage_aggregation(gfx::ContentColorUsage::kWideColorGamut,
                                        true, false);
-  // TODO(cblume/ccameron): Once HDR is supported, enable this test
-  // test_content_color_usage_aggregation(
-  //    gfx::ContentColorUsage::kHDR, true, true);
+  test_content_color_usage_aggregation(gfx::ContentColorUsage::kHDR, true,
+                                       true);
 }
 
 // Tests that has_damage_from_contributing_content is aggregated correctly from

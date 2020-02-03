@@ -123,9 +123,6 @@ void AssistantPageView::RequestFocus() {
         assistant_main_view_->RequestFocus();
       break;
     case AssistantUiMode::kAmbientUi:
-    case AssistantUiMode::kMainUi:
-    case AssistantUiMode::kMiniUi:
-    case AssistantUiMode::kWebUi:
       NOTREACHED();
       break;
   }
@@ -254,9 +251,6 @@ int AssistantPageView::GetChildViewHeightForWidth(int width) const {
           height = assistant_main_view_->GetHeightForWidth(width);
         break;
       case AssistantUiMode::kAmbientUi:
-      case AssistantUiMode::kMainUi:
-      case AssistantUiMode::kMiniUi:
-      case AssistantUiMode::kWebUi:
         NOTREACHED();
         break;
     }

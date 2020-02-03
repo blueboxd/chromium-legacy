@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -42,6 +43,7 @@ using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::Ne;
 using ::testing::WithArg;
+using ::testing::WithArgs;
 
 namespace chromeos {
 namespace smb_client {
@@ -51,6 +53,7 @@ namespace {
 const file_system_provider::ProviderId kProviderId =
     file_system_provider::ProviderId::CreateFromNativeId("smb");
 constexpr char kTestUser[] = "foobar";
+constexpr char kTestPassword[] = "my_secret_password";
 constexpr char kTestDomain[] = "EXAMPLE.COM";
 constexpr char kSharePath[] = "\\\\server\\foobar";
 constexpr char kMountPath[] = "smb://server/foobar";
@@ -73,6 +76,23 @@ class MockSmbProviderClient : public chromeos::FakeSmbProviderClient {
                void(const std::string& account_id,
                     SmbProviderClient::SetupKerberosCallback callback));
 };
+
+// Gets a password from |password_fd|. The data has to be in the format of
+// "{password_length}{password}".
+std::string GetPassword(const base::ScopedFD& password_fd) {
+  size_t password_length = 0;
+
+  // Read sizeof(password_length) bytes from the file to get the length.
+  EXPECT_TRUE(base::ReadFromFD(password_fd.get(),
+                               reinterpret_cast<char*>(&password_length),
+                               sizeof(password_length)));
+
+  // Read the password into the buffer.
+  std::string password(password_length, 'a');
+  EXPECT_TRUE(
+      base::ReadFromFD(password_fd.get(), &password[0], password_length));
+  return password;
+}
 
 }  // namespace
 
@@ -233,12 +253,14 @@ TEST_F(SmbServiceTest, Mount) {
                 Field(&SmbProviderClient::MountOptions::save_password, false)),
           _, _))
       .WillOnce(
-          WithArg<3>(Invoke([](SmbProviderClient::MountCallback callback) {
+          WithArgs<2, 3>(Invoke([](base::ScopedFD password_fd,
+                                   SmbProviderClient::MountCallback callback) {
+            EXPECT_EQ(kTestPassword, GetPassword(password_fd));
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
           })));
 
   smb_service_->Mount(
-      {}, base::FilePath(kSharePath), kTestUser, "password",
+      {}, base::FilePath(kSharePath), kTestUser, kTestPassword,
       false /* use_chromad_kerberos */,
       false /* should_open_file_manager_after_mount */,
       false /* save_credentials */,
@@ -278,12 +300,14 @@ TEST_F(SmbServiceTest, MountSaveCredentials) {
                 Field(&SmbProviderClient::MountOptions::account_hash, Ne(""))),
           _, _))
       .WillOnce(
-          WithArg<3>(Invoke([](SmbProviderClient::MountCallback callback) {
+          WithArgs<2, 3>(Invoke([](base::ScopedFD password_fd,
+                                   SmbProviderClient::MountCallback callback) {
+            EXPECT_EQ(kTestPassword, GetPassword(password_fd));
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
           })));
 
   smb_service_->Mount(
-      {}, base::FilePath(kSharePath), kTestUser, "password",
+      {}, base::FilePath(kSharePath), kTestUser, kTestPassword,
       false /* use_chromad_kerberos */,
       false /* should_open_file_manager_after_mount */,
       true /* save_credentials */,
@@ -326,8 +350,11 @@ TEST_F(SmbServiceTest, Remount) {
                   Field(&SmbProviderClient::MountOptions::restore_password,
                         false)),
             _, _))
-      .WillOnce(WithArg<3>(
-          Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
+      .WillOnce(WithArgs<2, 3>(
+          Invoke([&run_loop](base::ScopedFD password_fd,
+                             SmbProviderClient::MountCallback callback) {
+            // Should have a valid password_fd containing an empty password.
+            EXPECT_EQ("", GetPassword(password_fd));
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
           })));

@@ -1675,21 +1675,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   profile->OnLogin();
 
-  // Send the notification before creating the browser so additional objects
-  // that need the profile (e.g. the launcher) can be created first.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-      content::NotificationService::AllSources(),
-      content::Details<Profile>(profile));
-
-  // Initialize various services only for primary user.
-  // TODO(https://crbug.com/977489): There's a lot of code duplication with
-  // StartUserSession in chrome_session_manager.cc, which is (only!) run for
-  // session starts after crashes. This needs to be refactored.
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
-      user->GetAccountId());
+  NotifyUserProfileLoaded(profile, user);
 
   // Initialize various services only for primary user.
   if (user_manager->GetPrimaryUser() == user) {
@@ -1697,28 +1685,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCerts(profile);
     InitializeCRLSetFetcher(user);
     InitializeCertificateTransparencyComponents(user);
-    lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
-
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
-      // App install logs are uploaded via the user's communication channel with
-      // the management server. This channel exists for regular users only.
-      // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
-      // self-destructs on logout.
-      policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
-    }
-    arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
-
-    crostini::CrostiniManager* crostini_manager =
-        crostini::CrostiniManager::GetForProfile(profile);
-    if (crostini_manager)
-      crostini_manager->MaybeUpgradeCrostini();
-
-    g_browser_process->platform_part()->InitializePrimaryProfileServices(
-        profile);
-
-    TetherService* tether_service = TetherService::Get(profile);
-    if (tether_service)
-      tether_service->StartTetherIfPossible();
+    InitializePrimaryProfileServices(profile, user);
+    StartTetherServiceIfPossible(profile);
 
     // PrefService is ready, check whether we need to force a VPN connection.
     always_on_vpn_manager_ =
@@ -1797,12 +1765,6 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile, browser_launched);
-}
-
-void UserSessionManager::InitializeChildUserServices(Profile* profile) {
-  ChildStatusReportingServiceFactory::GetForBrowserContext(profile);
-  ChildUserServiceFactory::GetForBrowserContext(profile);
-  ScreenTimeControllerFactory::GetForBrowserContext(profile);
 }
 
 void UserSessionManager::ActivateWizard(OobeScreenId screen) {
@@ -2030,6 +1992,52 @@ void UserSessionManager::InitializeCertificateTransparencyComponents(
         ProfileHelper::GetProfilePathByUserIdHash(username_hash);
     component_updater::DeleteLegacySTHSet(path);
   }
+}
+
+void UserSessionManager::InitializeChildUserServices(Profile* profile) {
+  ChildStatusReportingServiceFactory::GetForBrowserContext(profile);
+  ChildUserServiceFactory::GetForBrowserContext(profile);
+  ScreenTimeControllerFactory::GetForBrowserContext(profile);
+}
+
+void UserSessionManager::InitializePrimaryProfileServices(
+    Profile* profile,
+    const user_manager::User* user) {
+  lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
+
+  if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+    // App install logs are uploaded via the user's communication channel with
+    // the management server. This channel exists for regular users only.
+    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
+    // self-destructs on logout.
+    policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
+  }
+  arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
+
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(profile);
+  if (crostini_manager)
+    crostini_manager->MaybeUpgradeCrostini();
+
+  g_browser_process->platform_part()->InitializePrimaryProfileServices(profile);
+}
+
+void UserSessionManager::NotifyUserProfileLoaded(
+    Profile* profile,
+    const user_manager::User* user) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources(),
+      content::Details<Profile>(profile));
+
+  session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+      user->GetAccountId());
+}
+
+void UserSessionManager::StartTetherServiceIfPossible(Profile* profile) {
+  TetherService* tether_service = TetherService::Get(profile);
+  if (tether_service)
+    tether_service->StartTetherIfPossible();
 }
 
 void UserSessionManager::OnRestoreActiveSessions(

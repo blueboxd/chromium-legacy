@@ -441,6 +441,7 @@ check_targets = [
   "//third_party/libdrm/*",
   "//third_party/libevdev/*",
   "//third_party/libexif/*",
+  "//third_party/libgav1/*",
   "//third_party/libjingle/*",
 
   # "//third_party/libjingle_xmpp/*",  # 30ish errors

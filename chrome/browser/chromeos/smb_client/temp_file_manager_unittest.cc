@@ -21,25 +21,6 @@ int64_t GetCurrentOffset(int32_t fd) {
   return lseek(fd, 0, SEEK_CUR);
 }
 
-// Gets a password from |password_fd|. The data has to be in the format of
-// "{password_length}{password}".
-std::string GetPassword(const base::ScopedFD& password_fd) {
-  size_t password_length = 0;
-
-  // Read sizeof(password_length) bytes from the file to get the length.
-  EXPECT_TRUE(base::ReadFromFD(password_fd.get(),
-                               reinterpret_cast<char*>(&password_length),
-                               sizeof(password_length)));
-
-  // Read the password into the buffer.
-  char password_buffer[password_length + 1];
-  EXPECT_TRUE(
-      base::ReadFromFD(password_fd.get(), password_buffer, password_length));
-
-  password_buffer[password_length] = '\0';
-  return std::string(password_buffer);
-}
-
 }  // namespace
 
 class TempFileManagerTest : public testing::Test {
@@ -111,26 +92,6 @@ TEST_F(TempFileManagerTest, WriteFileSucceeds) {
   EXPECT_TRUE(base::ReadFromFD(fd.get(), reinterpret_cast<char*>(actual.data()),
                                actual.size()));
   EXPECT_EQ(expected, actual);
-}
-
-// CreatePassword should return a valid FD even with an empty password.
-TEST_F(TempFileManagerTest, WritePasswordToFileIsValidWithEmptyPassword) {
-  const std::string password;
-  TempFileManager file_manager;
-
-  base::ScopedFD fd = file_manager.WritePasswordToFile(password);
-  EXPECT_TRUE(fd.is_valid());
-  EXPECT_EQ(password, GetPassword(fd));
-}
-
-// The password should be readable from the file.
-TEST_F(TempFileManagerTest, WritePasswordToFileIsValidWithPassword) {
-  const std::string password = "testing123";
-  TempFileManager file_manager;
-
-  base::ScopedFD fd = file_manager.WritePasswordToFile(password);
-  EXPECT_TRUE(fd.is_valid());
-  EXPECT_EQ(password, GetPassword(fd));
 }
 
 }  // namespace smb_client

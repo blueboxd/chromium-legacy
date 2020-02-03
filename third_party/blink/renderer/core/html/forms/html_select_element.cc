@@ -368,9 +368,9 @@ void HTMLSelectElement::OptionElementChildrenChanged(
     const HTMLOptionElement& option) {
   SetNeedsValidityCheck();
 
+  if (option.Selected() && UsesMenuList())
+    UpdateMenuListLabel(UpdateFromElement());
   if (GetLayoutObject()) {
-    if (option.Selected() && UsesMenuList())
-      UpdateFromElement();
     if (AXObjectCache* cache =
             GetLayoutObject()->GetDocument().ExistingAXObjectCache())
       cache->ChildrenChanged(this);
@@ -916,10 +916,9 @@ void HTMLSelectElement::SetSuggestedOption(HTMLOptionElement* option) {
     return;
   suggested_option_ = option;
 
-  if (GetLayoutObject()) {
-    UpdateFromElement();
+  UpdateMenuListLabel(UpdateFromElement());
+  if (GetLayoutObject())
     ScrollToOption(option);
-  }
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
 }
@@ -1093,7 +1092,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   }
 
   // For the menu list case, this is what makes the selected element appear.
-  UpdateFromElement();
+  UpdateMenuListLabel(UpdateFromElement());
   // PopupMenu::UpdateFromElement() posts an O(N) task.
   if (PopupIsVisible() && should_update_popup)
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
@@ -2010,6 +2009,7 @@ void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
   if (UsesMenuList()) {
     root.insertBefore(MakeGarbageCollected<MenuListInnerElement>(GetDocument()),
                       root.firstChild());
+    UpdateMenuListLabel(UpdateFromElement());
   }
 }
 
@@ -2077,7 +2077,7 @@ void HTMLSelectElement::PopupDidHide() {
 
 void HTMLSelectElement::SetIndexToSelectOnCancel(int list_index) {
   index_to_select_on_cancel_ = list_index;
-  UpdateFromElement();
+  UpdateMenuListLabel(UpdateFromElement());
 }
 
 HTMLOptionElement* HTMLSelectElement::OptionToBeShown() const {
@@ -2291,12 +2291,9 @@ void HTMLSelectElement::ChangeRendering() {
   }
 }
 
-void HTMLSelectElement::UpdateFromElement() {
+String HTMLSelectElement::UpdateFromElement() {
   if (!UsesMenuList())
-    return;
-  auto* layout_object = GetLayoutObject();
-  if (!layout_object)
-    return;
+    return String();
 
   HTMLOptionElement* option = OptionToBeShown();
   String text = g_empty_string;
@@ -2330,9 +2327,18 @@ void HTMLSelectElement::UpdateFromElement() {
     }
   }
 
-  ToLayoutMenuList(layout_object)->SetText(text.StripWhiteSpace());
-  layout_object->UpdateFromElement();
-  DidUpdateMenuListActiveOption(option);
+  String stripped = text.StripWhiteSpace();
+  if (auto* layout_object = GetLayoutObject()) {
+    ToLayoutMenuList(layout_object)->SetText(stripped);
+    layout_object->UpdateFromElement();
+    DidUpdateMenuListActiveOption(option);
+  }
+  return stripped;
+}
+
+void HTMLSelectElement::UpdateMenuListLabel(const String& label) {
+  if (UsesMenuList())
+    InnerElement().setTextContent(label);
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {

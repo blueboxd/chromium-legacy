@@ -265,6 +265,26 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
   return true;
 }
 
+bool ColorSpace::IsWide() const {
+  // These HDR transfer functions are always wide
+  if (transfer_ == TransferID::IEC61966_2_1_HDR ||
+      transfer_ == TransferID::LINEAR_HDR ||
+      transfer_ == TransferID::CUSTOM_HDR)
+    return true;
+
+  if (primaries_ == PrimaryID::BT2020 ||
+      primaries_ == PrimaryID::SMPTEST431_2 ||
+      primaries_ == PrimaryID::SMPTEST432_1 ||
+      primaries_ == PrimaryID::ADOBE_RGB ||
+      primaries_ == PrimaryID::WIDE_GAMUT_COLOR_SPIN ||
+      // TODO(cblume/ccameron): Compute if the custom primaries actually are
+      // wide. For now, assume so.
+      primaries_ == PrimaryID::CUSTOM)
+    return true;
+
+  return false;
+}
+
 bool ColorSpace::IsHDR() const {
   return transfer_ == TransferID::SMPTEST2084 ||
          transfer_ == TransferID::ARIB_STD_B67 ||

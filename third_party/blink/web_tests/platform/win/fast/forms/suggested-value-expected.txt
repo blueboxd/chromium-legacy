@@ -82,6 +82,7 @@ instead of "initial value".
 |       "inserted value"
 |   <shadow:root>
 |     <div>
+|       "initial value"
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"

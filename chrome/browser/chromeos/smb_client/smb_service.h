@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/smb_client/smb_share_finder.h"
 #include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
 #include "chrome/browser/chromeos/smb_client/smbfs_share.h"
-#include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -135,8 +134,7 @@ class SmbService : public KeyedService,
  private:
   friend class SmbServiceTest;
 
-  // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
-  // before this is called.
+  // Calls SmbProviderClient::Mount().
   void CallMount(const file_system_provider::MountOptions& options,
                  const base::FilePath& share_path,
                  const std::string& username,
@@ -190,8 +188,7 @@ class SmbService : public KeyedService,
                          smbprovider::ErrorType error,
                          int32_t mount_id);
 
-  // Calls SmbProviderClient::Premount(). |temp_file_manager_| must be
-  // initialized before this is called.
+  // Calls SmbProviderClient::Premount().
   void Premount(const base::FilePath& share_path);
 
   // Handles the response from attempting to premount a share configured via
@@ -200,12 +197,9 @@ class SmbService : public KeyedService,
                           smbprovider::ErrorType error,
                           int32_t mount_id);
 
-  // Sets up |temp_file_manager_|. Calls CompleteSetup().
-  void SetupTempFileManagerAndCompleteSetup();
-
   // Completes SmbService setup including ShareFinder initialization and
-  // remounting shares. Called by SetupTempFileManagerAndCompleteSetup().
-  void CompleteSetup(std::unique_ptr<TempFileManager> temp_file_manager);
+  // remounting shares.
+  void CompleteSetup();
 
   // Handles the response from attempting to setup Kerberos.
   void OnSetupKerberosResponse(bool success);
@@ -303,7 +297,6 @@ class SmbService : public KeyedService,
   const file_system_provider::ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<base::TickClock> tick_clock_;
-  std::unique_ptr<TempFileManager> temp_file_manager_;
   std::unique_ptr<SmbShareFinder> share_finder_;
   // |mount_id| -> |reply|. Stored callbacks to run after updating credential.
   std::map<int32_t, base::OnceClosure> update_credential_replies_;

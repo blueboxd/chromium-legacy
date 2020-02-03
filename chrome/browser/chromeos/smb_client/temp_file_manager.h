@@ -30,11 +30,6 @@ class TempFileManager {
   // descriptor which will be invalid on failure.
   base::ScopedFD CreateTempFile(const std::vector<uint8_t>& data);
 
-  // Writes |password| into a file with the format of
-  // "{password_length}{password}". Returns a file descriptor of the file
-  // containing the password.
-  base::ScopedFD WritePasswordToFile(const std::string& password);
-
  private:
   // Creates a temporary file in temp_dir_ path. This also calls unlink() on the
   // created file. Returns a file descriptor which will be invalid on failure.

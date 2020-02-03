@@ -211,6 +211,9 @@ class QuickViewController {
             this.changeSingleSelectModeSelection_();
           }
           break;
+        case 'Delete':
+          this.deleteSelectedEntry_();
+          break;
       }
     }
   }

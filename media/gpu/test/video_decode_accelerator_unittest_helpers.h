@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
@@ -36,7 +37,7 @@ class EncodedDataHelper {
   // Compute and return the next fragment to be sent to the decoder, starting
   // from the current position in the stream, and advance the current position
   // to after the returned fragment.
-  std::string GetBytesForNextData();
+  scoped_refptr<DecoderBuffer> GetNextBuffer();
   static bool HasConfigInfo(const uint8_t* data,
                             size_t size,
                             VideoCodecProfile profile);
@@ -49,9 +50,9 @@ class EncodedDataHelper {
 
  private:
   // For h.264.
-  std::string GetBytesForNextFragment();
+  scoped_refptr<DecoderBuffer> GetNextFragment();
   // For VP8/9.
-  std::string GetBytesForNextFrame();
+  scoped_refptr<DecoderBuffer> GetNextFrame();
 
   // Helpers for GetBytesForNextFragment above.
   size_t GetBytesForNextNALU(size_t pos);

@@ -2,6 +2,8 @@
 
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -22,17 +24,50 @@
       .list-item > div {
         flex: 1;
       }
+
+      cr-radio-button[name='sync-everything'] > .secondary {
+        border-bottom: var(--cr-separator-line);
+        padding-bottom: var(--cr-section-vertical-padding);
+      }
+
+      cr-radio-button[name='customize-sync'] {
+        padding-top: var(--cr-section-vertical-padding);
+      }
     </style>
-    <div class="settings-box first">
-      <div id="syncEverythingCheckboxLabel" class="start">
-        $i18n{syncEverythingCheckboxLabel}
+
+    <template is="dom-if" if="[[!syncSetupFriendlySettings_]]">
+      <div class="settings-box first">
+        <div id="syncEverythingCheckboxLabel" class="start">
+          $i18n{syncEverythingCheckboxLabel}
+        </div>
+        <cr-toggle id="syncAllDataTypesControl"
+            checked="{{syncPrefs.syncAllDataTypes}}"
+            on-change="onSyncAllDataTypesChanged_"
+            aria-labelledby="syncEverythingCheckboxLabel">
+        </cr-toggle>
       </div>
-      <cr-toggle id="syncAllDataTypesControl"
-          checked="{{syncPrefs.syncAllDataTypes}}"
-          on-change="onSyncAllDataTypesChanged_"
-          aria-labelledby="syncEverythingCheckboxLabel">
-      </cr-toggle>
-    </div>
+    </template>
+
+    <template is="dom-if" if="[[syncSetupFriendlySettings_]]">
+      <div id="sync-data-radio" class="settings-box first">
+        <cr-radio-group
+            selected="[[selectedSyncDataRadio_(syncPrefs)]]"
+            on-selected-changed="onSyncDataRadioSelectionChanged_">
+          <cr-radio-button name="sync-everything">
+            $i18n{syncEverythingCheckboxLabel}
+            <div class="secondary">$i18n{syncEverythingHint}</div>
+          </cr-radio-button>
+          <cr-radio-button name="customize-sync">
+            $i18n{customizeSyncLabel}
+            <div class="secondary">$i18n{customizeSyncHint}</div>
+          </cr-radio-button>
+        </cr-radio-group>
+      </div>
+
+      <div class="settings-box first">
+        <h2 class="cr-title-text start">$i18n{syncData}</h2>
+      </div>
+    </template>
 
     <div class="list-frame" id="sync-data-types">
       <div class="list-item" hidden="[[!syncPrefs.appsRegistered]]">

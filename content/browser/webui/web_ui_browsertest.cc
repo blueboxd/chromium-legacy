@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -311,6 +312,120 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, UntrustedSchemeLoads) {
   EXPECT_TRUE(NavigateToURL(web_contents, untrusted_url));
   EXPECT_EQ(base::ASCIIToUTF16("Title Of Awesomeness"),
             web_contents->GetTitle());
+}
+
+class WebUIRequestSchemesTest : public ContentBrowserTest {
+ public:
+  WebUIRequestSchemesTest() {
+    WebUIControllerFactory::RegisterFactory(&factory_);
+  }
+
+  ~WebUIRequestSchemesTest() override {
+    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+  }
+
+  WebUIRequestSchemesTest(const WebUIRequestSchemesTest&) = delete;
+
+  WebUIRequestSchemesTest& operator=(const WebUIRequestSchemesTest&) = delete;
+
+  TestWebUIControllerFactory* factory() { return &factory_; }
+
+ private:
+  TestWebUIControllerFactory factory_;
+};
+
+// Verify that by default WebUI's child process security policy can request
+// default schemes such as chrome.
+//
+// ChildProcessSecurityPolicy::CanRequestURL() always returns true for the
+// following schemes, but in practice there are other checks that stop WebUIs
+// from accessing these schemes.
+IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest, DefaultSchemesCanBeRequested) {
+  auto* web_contents = shell()->web_contents();
+
+  std::string host_and_path = "test-host/title2.html";
+  const GURL chrome_url(GetWebUIURL(host_and_path));
+  GURL url;
+
+  std::vector<std::string> requestable_schemes = {
+      // WebSafe Schemes:
+      "feed", url::kHttpScheme, url::kHttpsScheme, url::kFtpScheme,
+      url::kDataScheme, url::kWsScheme, url::kWssScheme,
+      // Default added as requestable schemes:
+      url::kFileScheme, kChromeUIScheme};
+
+  std::vector<std::string> unrequestable_schemes = {
+      kChromeDevToolsScheme, url::kBlobScheme, kChromeUIUntrustedScheme,
+      base::StrCat({url::kFileSystemScheme, ":", kChromeUIUntrustedScheme})};
+
+  ASSERT_TRUE(NavigateToURL(web_contents, chrome_url));
+
+  for (const auto& requestable_scheme : requestable_schemes) {
+    url = GURL(base::StrCat(
+        {requestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
+    EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+  }
+
+  for (const auto& unrequestable_scheme : unrequestable_schemes) {
+    url = GURL(base::StrCat(
+        {unrequestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
+    EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+  }
+}
+
+// Verify that we can successfully allow non-default URL schemes to
+// be requested by the WebUI's child process security policy.
+IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest,
+                       AllowAdditionalSchemesToBeRequested) {
+  auto* web_contents = shell()->web_contents();
+
+  std::string host_and_path = "test-host/title2.html";
+  GURL url;
+
+  // All URLs with a web safe scheme, or with a scheme not
+  // handled by ContentBrowserClient are requestable. All other schemes are
+  // not requestable.
+  std::vector<std::string> requestable_schemes = {
+      // WebSafe schemes:
+      "feed",
+      url::kHttpScheme,
+      url::kHttpsScheme,
+      url::kFtpScheme,
+      url::kDataScheme,
+      url::kWsScheme,
+      url::kWssScheme,
+      // Default added as requestable schemes:
+      "file",
+      kChromeUIScheme,
+      // Schemes given requestable access:
+      kChromeUIUntrustedScheme,
+      base::StrCat({url::kFileSystemScheme, ":", kChromeUIUntrustedScheme}),
+  };
+  std::vector<std::string> unrequestable_schemes = {
+      kChromeDevToolsScheme, url::kBlobScheme,
+      base::StrCat({url::kFileSystemScheme, ":", kChromeDevToolsScheme})};
+
+  const GURL chrome_ui_url = GetWebUIURL(base::StrCat(
+      {host_and_path, "?requestableSchemes=", kChromeUIUntrustedScheme, ",",
+       url::kWsScheme}));
+
+  ASSERT_TRUE(NavigateToURL(web_contents, chrome_ui_url));
+
+  for (const auto& requestable_scheme : requestable_schemes) {
+    url = GURL(base::StrCat(
+        {requestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
+    EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+  }
+
+  for (const auto& unrequestable_scheme : unrequestable_schemes) {
+    url = GURL(base::StrCat(
+        {unrequestable_scheme, url::kStandardSchemeSeparator, host_and_path}));
+    EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+        web_contents->GetMainFrame()->GetProcess()->GetID(), url));
+  }
 }
 
 }  // namespace content

@@ -233,6 +233,21 @@ class UserSessionManager
   void InitializeCertificateTransparencyComponents(
       const user_manager::User* user);
 
+  // Initialize child user profile services that depend on the policy.
+  void InitializeChildUserServices(Profile* profile);
+
+  // Initialize all services that need the primary profile.
+  void InitializePrimaryProfileServices(Profile* profile,
+                                        const user_manager::User* user);
+
+  // Send the notification before creating the browser so additional objects
+  // that need the profile (e.g. the launcher) can be created first.
+  void NotifyUserProfileLoaded(Profile* profile,
+                               const user_manager::User* user);
+
+  // Start the Tether service if it is ready.
+  void StartTetherServiceIfPossible(Profile* profile);
+
   // Invoked when the user is logging in for the first time, or is logging in to
   // an ephemeral session type, such as guest or a public session.
   void SetFirstLoginPrefs(Profile* profile,
@@ -440,9 +455,6 @@ class UserSessionManager
   // Launch browser or proceed to alternative login flow. Should be called after
   // profile is ready.
   void InitializeBrowser(Profile* profile);
-
-  // Initialize child user profile services that depend on the policy.
-  void InitializeChildUserServices(Profile* profile);
 
   // Starts out-of-box flow with the specified screen.
   void ActivateWizard(OobeScreenId screen);

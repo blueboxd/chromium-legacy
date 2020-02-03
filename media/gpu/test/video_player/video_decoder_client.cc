@@ -289,16 +289,16 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
     return;
   }
 
-  std::string fragment_bytes = encoded_data_helper_->GetBytesForNextData();
-  size_t fragment_size = fragment_bytes.size();
-  if (fragment_size == 0) {
-    LOG(ERROR) << "Stream fragment has size 0";
+  scoped_refptr<DecoderBuffer> bitstream_buffer =
+      encoded_data_helper_->GetNextBuffer();
+  if (!bitstream_buffer) {
+    LOG(ERROR) << "Failed to get next video stream data";
     return;
   }
-
-  scoped_refptr<DecoderBuffer> bitstream_buffer = DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8_t*>(fragment_bytes.data()), fragment_size);
   bitstream_buffer->set_timestamp(base::TimeTicks::Now().since_origin());
+  bool has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
+      bitstream_buffer->data(), bitstream_buffer->data_size(),
+      video_->Profile());
 
   VideoDecoder::DecodeCB decode_cb = base::BindOnce(
       CallbackThunk<decltype(&VideoDecoderClient::DecodeDoneTask),
@@ -310,11 +310,8 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
   num_outstanding_decode_requests_++;
 
   // Throw event when we encounter a config info in a H.264 stream.
-  if (media::test::EncodedDataHelper::HasConfigInfo(
-          reinterpret_cast<const uint8_t*>(fragment_bytes.data()),
-          fragment_size, video_->Profile())) {
+  if (has_config_info)
     FireEvent(VideoPlayerEvent::kConfigInfo);
-  }
 }
 
 void VideoDecoderClient::FlushTask() {

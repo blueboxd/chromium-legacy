@@ -83,6 +83,7 @@ base::string16 WebUI::GetJavascriptCall(
 
 WebUIImpl::WebUIImpl(WebContentsImpl* contents)
     : bindings_(BINDINGS_POLICY_WEB_UI),
+      requestable_schemes_({kChromeUIScheme, url::kFileScheme}),
       web_contents_(contents),
       web_contents_observer_(new MainFrameNavigationObserver(this, contents)) {
   DCHECK(contents);
@@ -172,6 +173,14 @@ int WebUIImpl::GetBindings() {
 
 void WebUIImpl::SetBindings(int bindings) {
   bindings_ = bindings;
+}
+
+const std::vector<std::string>& WebUIImpl::GetRequestableSchemes() {
+  return requestable_schemes_;
+}
+
+void WebUIImpl::AddRequestableScheme(const char* scheme) {
+  requestable_schemes_.push_back(scheme);
 }
 
 WebUIController* WebUIImpl::GetController() {

@@ -117,7 +117,12 @@ void SetFormFieldValueAction::InternalProcessAction(
           return;
         }
         if (!delegate_->GetUserData()->has_additional_value(
-                keypress.client_memory_key())) {
+                keypress.client_memory_key()) ||
+            delegate_->GetUserData()
+                    ->additional_value(keypress.client_memory_key())
+                    ->strings()
+                    .values()
+                    .size() != 1) {
           VLOG(1) << "SetFormFieldValueAction: requested key '"
                   << keypress.client_memory_key()
                   << "' not available in client memory";
@@ -125,8 +130,10 @@ void SetFormFieldValueAction::InternalProcessAction(
           return;
         }
         field_inputs_.emplace_back(
-            /* value = */ *delegate_->GetUserData()->additional_value(
-                keypress.client_memory_key()));
+            /* value = */ delegate_->GetUserData()
+                ->additional_value(keypress.client_memory_key())
+                ->strings()
+                .values(0));
         break;
       case SetFormFieldValueProto_KeyPress::kGeneratePassword:
         if (keypress.generate_password().memory_key().empty()) {
@@ -332,8 +339,9 @@ void SetFormFieldValueAction::StoreGeneratedPasswordToUserData(
     UserData* user_data,
     UserData::FieldChange* field_change) {
   DCHECK(user_data);
-
-  user_data->additional_values_[memory_key] = generated_password;
+  ValueProto value;
+  value.mutable_strings()->add_values(generated_password);
+  user_data->additional_values_[memory_key] = value;
 }
 
 void SetFormFieldValueAction::EndAction(const ClientStatus& status) {

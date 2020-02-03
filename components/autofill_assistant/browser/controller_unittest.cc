@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
@@ -1616,14 +1617,21 @@ TEST_F(ControllerTest, SetShippingAddress) {
 
 TEST_F(ControllerTest, SetAdditionalValues) {
   auto options = std::make_unique<MockCollectUserDataOptions>();
+  ValueProto value1;
+  value1.mutable_strings()->add_values("123456789");
 
   base::OnceCallback<void(UserData*, UserData::FieldChange*)> callback =
-      base::BindOnce([](UserData* user_data, UserData::FieldChange* change) {
-        user_data->additional_values_["key1"] = "123456789";
-        user_data->additional_values_["key2"] = "";
-        user_data->additional_values_["key3"] = "";
-        *change = UserData::FieldChange::ADDITIONAL_VALUES;
-      });
+      base::BindLambdaForTesting(
+          [&](UserData* user_data, UserData::FieldChange* change) {
+            ValueProto value2;
+            value2.mutable_strings()->add_values("");
+            ValueProto value3;
+            value3.mutable_strings()->add_values("");
+            user_data->additional_values_["key1"] = value1;
+            user_data->additional_values_["key2"] = value2;
+            user_data->additional_values_["key3"] = value3;
+            *change = UserData::FieldChange::ADDITIONAL_VALUES;
+          });
 
   controller_->WriteUserData(std::move(callback));
 
@@ -1637,15 +1645,19 @@ TEST_F(ControllerTest, SetAdditionalValues) {
       mock_observer_,
       OnUserDataChanged(Not(nullptr), UserData::FieldChange::ADDITIONAL_VALUES))
       .Times(2);
-  controller_->SetAdditionalValue("key2", "value2");
-  controller_->SetAdditionalValue("key3", "value3");
-  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key1"),
-            "123456789");
-  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key2"),
-            "value2");
-  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key3"),
-            "value3");
-  EXPECT_DCHECK_DEATH(controller_->SetAdditionalValue("key4", "someValue"));
+  ValueProto value4;
+  value4.mutable_strings()->add_values("value2");
+  ValueProto value5;
+  value5.mutable_strings()->add_values("value3");
+  controller_->SetAdditionalValue("key2", value4);
+  controller_->SetAdditionalValue("key3", value5);
+  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key1"), value1);
+  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key2"), value4);
+  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key3"), value5);
+
+  ValueProto value6;
+  value6.mutable_strings()->add_values("someValue");
+  EXPECT_DCHECK_DEATH(controller_->SetAdditionalValue("key4", value6));
 }
 
 TEST_F(ControllerTest, SetOverlayColors) {

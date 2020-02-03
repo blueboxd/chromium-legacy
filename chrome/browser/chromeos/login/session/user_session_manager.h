@@ -248,6 +248,12 @@ class UserSessionManager
   // Start the Tether service if it is ready.
   void StartTetherServiceIfPossible(Profile* profile);
 
+  // Show various notifications if applicable.
+  void ShowNotificationsIfNeeded(Profile* profile);
+
+  // Launch various setting pages (or dialogs) if applicable.
+  void MaybeLaunchSettings(Profile* profile);
+
   // Invoked when the user is logging in for the first time, or is logging in to
   // an ephemeral session type, such as guest or a public session.
   void SetFirstLoginPrefs(Profile* profile,

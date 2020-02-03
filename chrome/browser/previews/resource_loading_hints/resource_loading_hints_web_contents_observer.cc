@@ -121,9 +121,9 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
   for (const std::string& hint : hints)
     hints_ptr->subresources_to_block.push_back(hint);
 
-    auto hints_receiver_associated =
-        GetResourceLoadingHintsReceiver(navigation_handle);
-    hints_receiver_associated->SetResourceLoadingHints(std::move(hints_ptr));
+  auto hints_receiver_associated =
+      GetResourceLoadingHintsReceiver(navigation_handle);
+  hints_receiver_associated->SetResourceLoadingHints(std::move(hints_ptr));
 }
 
 const std::vector<std::string> ResourceLoadingHintsWebContentsObserver::

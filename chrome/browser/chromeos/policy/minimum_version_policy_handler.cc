@@ -6,18 +6,72 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/version.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
 
+using MinimumVersionRequirement =
+    policy::MinimumVersionPolicyHandler::MinimumVersionRequirement;
+
 namespace policy {
+
+namespace {
+
+constexpr char kChromeVersion[] = "chrome_version";
+constexpr char kWarningPeriod[] = "warning_period";
+constexpr char KEolWarningPeriod[] = "eol_warning_period";
+
+}  // namespace
+
+MinimumVersionRequirement::MinimumVersionRequirement(
+    const base::Version version,
+    const base::TimeDelta warning,
+    const base::TimeDelta eol_warning)
+    : minimum_version_(version),
+      warning_time_(warning),
+      eol_warning_time_(eol_warning) {}
+
+std::unique_ptr<MinimumVersionRequirement>
+MinimumVersionRequirement::CreateInstanceIfValid(
+    const base::DictionaryValue* dict) {
+  const std::string* version = dict->FindStringPath(kChromeVersion);
+  if (!version)
+    return nullptr;
+  base::Version minimum_version(*version);
+  if (!minimum_version.IsValid())
+    return nullptr;
+  auto warning = dict->FindIntPath(kWarningPeriod);
+  base::TimeDelta warning_time =
+      base::TimeDelta::FromDays(warning.has_value() ? warning.value() : 0);
+  auto eol_warning = dict->FindIntPath(KEolWarningPeriod);
+  base::TimeDelta eol_warning_time = base::TimeDelta::FromDays(
+      eol_warning.has_value() ? eol_warning.value() : 0);
+  return std::make_unique<MinimumVersionRequirement>(
+      minimum_version, warning_time, eol_warning_time);
+  return nullptr;
+}
+
+int MinimumVersionRequirement::Compare(
+    const MinimumVersionRequirement* other) const {
+  const int version_compare = version().CompareTo(other->version());
+  if (version_compare != 0)
+    return version_compare;
+  if (warning() != other->warning())
+    return (warning() > other->warning() ? 1 : -1);
+  if (eol_warning() != other->eol_warning())
+    return (eol_warning() > other->eol_warning() ? 1 : -1);
+  return 0;
+}
 
 MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
     chromeos::CrosSettings* cros_settings)
     : cros_settings_(cros_settings) {
   policy_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kMinimumRequiredChromeVersion,
+      chromeos::kMinimumChromeVersionEnforced,
       base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
                  weak_factory_.GetWeakPtr()));
   // Fire it once so we're sure we get an invocation on startup.
@@ -34,20 +88,9 @@ void MinimumVersionPolicyHandler::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// static
-bool MinimumVersionPolicyHandler::AreRequirementsSatisfied(
-    const std::string& min_chrome_version_string) {
-  if (min_chrome_version_string.empty())
-    return true;
-
-  const base::Version required_version(min_chrome_version_string);
-  if (!required_version.IsValid()) {
-    LOG(ERROR) << "Version supplied by policy is not a valid version "
-               << required_version;
-    return true;
-  }
-
-  return version_info::GetVersion().CompareTo(required_version) >= 0;
+bool MinimumVersionPolicyHandler::CurrentVersionSatisfies(
+    const MinimumVersionRequirement& requirement) const {
+  return version_info::GetVersion().CompareTo(requirement.version()) >= 0;
 }
 
 void MinimumVersionPolicyHandler::NotifyMinimumVersionStateChanged() {
@@ -55,19 +98,76 @@ void MinimumVersionPolicyHandler::NotifyMinimumVersionStateChanged() {
     observer.OnMinimumVersionStateChanged();
 }
 
+bool MinimumVersionPolicyHandler::IsPolicyApplicable() {
+  bool device_managed = g_browser_process->platform_part()
+                            ->browser_policy_connector_chromeos()
+                            ->IsEnterpriseManaged();
+  bool is_kiosk = user_manager::UserManager::IsInitialized() &&
+                  user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp();
+  return device_managed && !is_kiosk;
+}
+
 void MinimumVersionPolicyHandler::OnPolicyChanged() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
           base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
                      weak_factory_.GetWeakPtr()));
-  if (status != chromeos::CrosSettingsProvider::TRUSTED)
+  if (status != chromeos::CrosSettingsProvider::TRUSTED ||
+      !IsPolicyApplicable())
     return;
+  const base::ListValue* entries;
+  std::vector<std::unique_ptr<MinimumVersionRequirement>> configs;
+  if (!cros_settings_->GetList(chromeos::kMinimumChromeVersionEnforced,
+                               &entries) ||
+      !entries->GetSize()) {
+    // Reset and notify if policy is not set or set to empty list.
+    Reset();
+    NotifyMinimumVersionStateChanged();
+    return;
+  }
+  for (const auto& item : entries->GetList()) {
+    const base::DictionaryValue* dict;
+    if (item.GetAsDictionary(&dict)) {
+      std::unique_ptr<MinimumVersionRequirement> instance =
+          MinimumVersionRequirement::CreateInstanceIfValid(dict);
+      if (instance)
+        configs.push_back(std::move(instance));
+    }
+  }
+  // select the strongest config whose requirements are not satisfied by the
+  // current version. The strongest config is chosen as the one whose minimum
+  // required version is greater and closest to the current version. In case of
+  // conflict. preference is given to the one with lesser warning time or eol
+  // warning time.
+  int strongest_config_idx = -1;
+  std::vector<std::unique_ptr<MinimumVersionRequirement>>
+      update_required_configs;
+  for (unsigned int i = 0; i < configs.size(); i++) {
+    MinimumVersionRequirement* item = configs[i].get();
+    if (!CurrentVersionSatisfies(*item) &&
+        (strongest_config_idx == -1 ||
+         item->Compare(configs[strongest_config_idx].get()) < 0))
+      strongest_config_idx = i;
+  }
+  if (strongest_config_idx != -1) {
+    // update is required if at least one config exists whose requirements are
+    // not satisfied by the current version.
+    std::unique_ptr<MinimumVersionRequirement> strongest_config =
+        std::move(configs[strongest_config_idx]);
+    if (!state_ || state_->Compare(strongest_config.get()) != 0) {
+      state_ = std::move(strongest_config);
+      requirements_met_ = false;
+      NotifyMinimumVersionStateChanged();
+    }
+  } else {
+    Reset();
+    NotifyMinimumVersionStateChanged();
+  }
+}
 
-  std::string min_chrome_version_string;
-  cros_settings_->GetString(chromeos::kMinimumRequiredChromeVersion,
-                            &min_chrome_version_string);
-  requirements_met_ = AreRequirementsSatisfied(min_chrome_version_string);
-  NotifyMinimumVersionStateChanged();
+void MinimumVersionPolicyHandler::Reset() {
+  state_.reset();
+  requirements_met_ = true;
 }
 
 }  // namespace policy

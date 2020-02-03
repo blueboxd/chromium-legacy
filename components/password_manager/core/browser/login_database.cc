@@ -829,7 +829,8 @@ bool LoginDatabase::Init() {
     }
   }
 
-  if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory) ||
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck) ||
       base::FeatureList::IsEnabled(
           safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords)) {
     if (!compromised_credentials_table_.CreateTableIfNecessary()) {

@@ -61,7 +61,7 @@ class MediaStreamVideoTrackTest
       MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*sink, OnVideoFrame())
+    EXPECT_CALL(*sink, OnVideoFrame)
         .WillOnce(RunClosure(std::move(quit_closure)));
     mock_source()->DeliverVideoFrame(std::move(frame));
     run_loop.Run();
@@ -71,9 +71,9 @@ class MediaStreamVideoTrackTest
                                        MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*sink, OnEncodedVideoFrame).WillOnce(Invoke([&] {
-      std::move(quit_closure).Run();
-    }));
+    EXPECT_CALL(*sink, OnEncodedVideoFrame)
+        .WillOnce(
+            Invoke([&](base::TimeTicks) { std::move(quit_closure).Run(); }));
     mock_source()->DeliverEncodedVideoFrame(frame);
     run_loop.Run();
   }
@@ -324,8 +324,7 @@ TEST_F(MediaStreamVideoTrackTest, CheckTrackRequestsFrame) {
   MockMediaStreamVideoSink sink;
   base::RunLoop run_loop;
   base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(sink, OnVideoFrame())
-      .WillOnce(RunClosure(std::move(quit_closure)));
+  EXPECT_CALL(sink, OnVideoFrame).WillOnce(RunClosure(std::move(quit_closure)));
   sink.ConnectToTrack(track);
   run_loop.Run();
   EXPECT_EQ(1, sink.number_of_frames());
@@ -471,7 +470,7 @@ TEST_F(MediaStreamVideoTrackEncodedTest, TransferOneEncodedVideoFrame) {
   sink.ConnectEncodedToTrack(track);
   base::RunLoop run_loop;
   base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(sink, OnEncodedVideoFrame).WillOnce(Invoke([&] {
+  EXPECT_CALL(sink, OnEncodedVideoFrame).WillOnce(Invoke([&](base::TimeTicks) {
     std::move(quit_closure).Run();
   }));
   mock_source()->DeliverEncodedVideoFrame(

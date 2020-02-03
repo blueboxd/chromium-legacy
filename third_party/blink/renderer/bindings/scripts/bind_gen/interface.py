@@ -860,9 +860,7 @@ def _make_overload_dispatcher_per_arg_size(cg_context, items):
             _format("{}::HasInstance(${isolate}, {value})", v8_bridge_name))
 
     is_typedef_name = lambda t, name: t.is_typedef and t.identifier == name
-    func_like_a = find(
-        lambda t, u: is_typedef_name(t.unwrap(typedef=False),
-                                     "ArrayBufferView"))
+    func_like_a = find(lambda t, u: u.is_array_buffer_view)
     func_like_b = find(
         lambda t, u: is_typedef_name(t.unwrap(typedef=False), "BufferSource"))
     if func_like_a or func_like_b:
@@ -3188,5 +3186,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Element")
+    interface = web_idl_database.find("Blob")
     generate_interface(interface)

@@ -271,7 +271,7 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
   frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
   CompositeFrame();
   EXPECT_TRUE(frame_document->View()->CanThrottleRendering());
-  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+  EXPECT_EQ(DocumentLifecycle::kPaintClean,
             frame_document->Lifecycle().GetState());
 
   // Mutating the throttled frame followed by a beginFrame will not result in
@@ -283,22 +283,22 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
   CompositeFrame();
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
 
     // A hit test will not force a complete lifecycle update.
     WebView().HitTestResultAt(gfx::Point());
-    EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
   } else {
     // TODO(chrishtr): fix this test by manually resetting to
     // kVisualUpdatePending before call to CompositeFrame.
-    EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
 
     // A hit test will not force a complete lifecycle update.
     WebView().HitTestResultAt(gfx::Point());
-    EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
   }
 }

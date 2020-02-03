@@ -376,7 +376,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
 // removed from the compromised credentials table.
 TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
   CompromisedCredentials compromised_credentials(
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
@@ -419,7 +419,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
 // removed from the compromised credentials table.
 TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
   CompromisedCredentials compromised_credentials(
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
@@ -461,7 +461,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
 // corresponding row is removed from the compromised credentials table.
 TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginAdded) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
   CompromisedCredentials compromised_credentials(
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
@@ -1387,7 +1387,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
 
 TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
   CompromisedCredentials compromised_credentials(
       "https://example.com/", base::ASCIIToUTF16("username"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
@@ -1421,7 +1421,7 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
 
 TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
   CompromisedCredentials compromised_credentials1(
       "https://example1.com/", base::ASCIIToUTF16("username1"),
       base::Time::FromTimeT(100), CompromiseType::kLeaked);

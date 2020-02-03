@@ -380,16 +380,28 @@ void DeprecateSameSiteCookies(int process_id,
     if (excluded_cookie.status.ShouldWarn()) {
       if (excluded_cookie.status.HasWarningReason(
               net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT))
+                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
         samesite_treated_as_lax_cookies = true;
+        root_frame_host->AddInspectorIssue(
+            blink::mojom::InspectorIssueCode::
+                kSameSiteCookiesSameSiteNoneMissingForThirdParty);
+      }
+
       if (excluded_cookie.status.HasWarningReason(
               net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE))
+                  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
         samesite_treated_as_lax_cookies = true;
+      }
+
       if (excluded_cookie.status.HasWarningReason(
               net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INSECURE))
+                  WARN_SAMESITE_NONE_INSECURE)) {
         samesite_none_insecure_cookies = true;
+
+        root_frame_host->AddInspectorIssue(
+            blink::mojom::InspectorIssueCode::
+                kSameSiteCookiesSameSiteNoneWithoutSecure);
+      }
     }
 
     if (emit_messages) {

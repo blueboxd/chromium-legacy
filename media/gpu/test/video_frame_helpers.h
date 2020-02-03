@@ -91,14 +91,6 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image);
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
     VideoPixelFormat pixel_format,
     const gfx::Size& size);
-
-// Compare each byte of two VideoFrames, |frame1| and |frame2|, allowing the
-// error up to |tolerance|. Return number of bytes a difference of which is more
-// than |tolerance|.
-size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
-                                  const VideoFrame& frame2,
-                                  uint8_t tolerance);
-
 }  // namespace test
 }  // namespace media
 

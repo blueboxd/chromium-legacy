@@ -4,8 +4,6 @@
 
 import("//third_party/blink/renderer/config.gni")
 
-visibility = [ "//third_party/blink/renderer/bindings/*" ]
-
 # CAUTION: static_idl_files_in_modules is used only by a new V8 bindings
 # generator, which is under development.  You have to update
 # modules/modules_idl_files.gni in addition to this list.

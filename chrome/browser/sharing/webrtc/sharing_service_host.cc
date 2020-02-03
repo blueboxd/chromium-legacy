@@ -11,6 +11,7 @@
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "chrome/browser/sharing/webrtc/sharing_webrtc_connection_host.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
+#include "components/sync_device_info/device_info_util.h"
 #include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
@@ -91,6 +92,7 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
       /*signin_scoped_device_id=*/std::string(),
       /*hardware_info=*/base::SysInfo::HardwareInfo(),
       /*last_updated_timestamp=*/base::Time(),
+      syncer::DeviceInfoUtil::GetPulseInterval(),
       /*send_tab_to_self_receiving_enabled=*/true,
       syncer::DeviceInfo::SharingInfo(GetVapidTargetInfo(fcm_configuration),
                                       GetSenderIdTargetInfo(fcm_configuration),

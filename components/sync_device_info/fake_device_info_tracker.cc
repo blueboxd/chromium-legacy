@@ -17,6 +17,7 @@ std::unique_ptr<syncer::DeviceInfo> CloneDeviceInfo(
       device_info.chrome_version(), device_info.sync_user_agent(),
       device_info.device_type(), device_info.signin_scoped_device_id(),
       device_info.hardware_info(), device_info.last_updated_timestamp(),
+      device_info.pulse_interval(),
       device_info.send_tab_to_self_receiving_enabled(),
       device_info.sharing_info());
 }

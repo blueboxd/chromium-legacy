@@ -162,7 +162,7 @@ inline void V8SetReturnValue(const CallbackInfo& callback_info,
   }
   if (DOMDataStore::SetReturnValue(callback_info.GetReturnValue(), impl))
     return;
-  v8::Local<v8::Object> wrapper =
+  v8::Local<v8::Value> wrapper =
       impl->Wrap(callback_info.GetIsolate(), creation_context);
   V8SetReturnValue(callback_info, wrapper);
 }
@@ -184,7 +184,7 @@ inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
   if (DOMDataStore::SetReturnValueForMainWorld(callback_info.GetReturnValue(),
                                                impl))
     return;
-  v8::Local<v8::Object> wrapper =
+  v8::Local<v8::Value> wrapper =
       impl->Wrap(callback_info.GetIsolate(), callback_info.Holder());
   V8SetReturnValue(callback_info, wrapper);
 }
@@ -200,7 +200,7 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
   if (DOMDataStore::SetReturnValueFast(callback_info.GetReturnValue(), impl,
                                        callback_info.Holder(), wrappable))
     return;
-  v8::Local<v8::Object> wrapper =
+  v8::Local<v8::Value> wrapper =
       impl->Wrap(callback_info.GetIsolate(), callback_info.Holder());
   V8SetReturnValue(callback_info, wrapper);
 }

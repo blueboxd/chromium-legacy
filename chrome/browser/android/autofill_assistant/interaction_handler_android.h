@@ -31,8 +31,10 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   // Each interaction callback has exactly one free |ValueProto| parameter.
   using InteractionCallback = base::RepeatingCallback<void(const ValueProto&)>;
 
-  // Constructor. |event_handler| must outlive this instance.
-  explicit InteractionHandlerAndroid(EventHandler* event_handler);
+  // Constructor. |event_handler| and |jcontext| must outlive this instance.
+  InteractionHandlerAndroid(
+      EventHandler* event_handler,
+      base::android::ScopedJavaLocalRef<jobject> jcontext);
   ~InteractionHandlerAndroid() override;
 
   void StartListening();
@@ -61,6 +63,7 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
       interactions_;
 
   EventHandler* event_handler_ = nullptr;
+  base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
   bool is_listening_ = false;
   DISALLOW_COPY_AND_ASSIGN(InteractionHandlerAndroid);
 };

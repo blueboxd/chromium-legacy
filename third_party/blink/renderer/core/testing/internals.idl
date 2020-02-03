@@ -163,6 +163,8 @@
 
     [RaisesException] boolean executeCommand(Document document, DOMString name, DOMString value);
 
+    void triggerTestInspectorIssue(Document document);
+
     DOMString htmlNamespace();
     sequence<DOMString> htmlTags();
     DOMString svgNamespace();

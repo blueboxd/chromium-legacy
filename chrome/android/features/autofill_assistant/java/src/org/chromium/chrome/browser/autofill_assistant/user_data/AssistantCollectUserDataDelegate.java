@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -48,7 +49,7 @@ public interface AssistantCollectUserDataDelegate {
     void onDateTimeRangeEndTimeSlotChanged(@Nullable Integer index);
 
     /** The value of a key/value pair has changed. */
-    void onKeyValueChanged(String key, String value);
+    void onKeyValueChanged(String key, AssistantValue value);
 
     /** The focus on a text field has been lost */
     void onTextFocusLost();

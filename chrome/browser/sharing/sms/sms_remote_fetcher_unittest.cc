@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -41,16 +42,6 @@ MockSharingService* CreateSharingService(content::BrowserContext* context) {
 
 url::Origin GetOriginForURL(const std::string url) {
   return url::Origin::Create(GURL(url));
-}
-
-std::unique_ptr<syncer::DeviceInfo> CreateDevice() {
-  return std::make_unique<syncer::DeviceInfo>(
-      "guid1", "name", "chrome_version", "user_agent",
-      sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-      base::SysInfo::HardwareInfo(),
-      /*last_updated_timestamp=*/base::Time::Now(),
-      /*send_tab_to_self_receiving_enabled=*/false,
-      /*sharing_info=*/base::nullopt);
 }
 
 TEST(SmsRemoteFetcherTest, DisabledByDefault) {
@@ -105,7 +96,7 @@ TEST(SmsRemoteFetcherTest, OneDevice) {
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
 
-  devices.push_back(CreateDevice());
+  devices.push_back(CreateFakeDeviceInfo("guid", "name"));
 
   EXPECT_CALL(*service, GetDeviceCandidates(_))
       .WillOnce(Return(ByMove(std::move(devices))));
@@ -144,7 +135,7 @@ TEST(SmsRemoteFetcherTest, OneDeviceTimesOut) {
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
 
-  devices.push_back(CreateDevice());
+  devices.push_back(CreateFakeDeviceInfo("guid", "name"));
 
   EXPECT_CALL(*service, GetDeviceCandidates(_))
       .WillOnce(Return(ByMove(std::move(devices))));

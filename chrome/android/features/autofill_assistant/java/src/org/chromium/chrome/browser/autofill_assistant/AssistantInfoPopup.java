@@ -46,6 +46,7 @@ public class AssistantInfoPopup {
         return mText;
     }
 
+    @CalledByNative
     public void show(Context context) {
         AlertDialog.Builder builder = new UiUtils
                                               .CompatibleAlertDialogBuilder(context,

@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -192,13 +193,7 @@ TEST_F(SharingSyncPreferenceTest, GetLocalSharingInfoFromProvider) {
 
 TEST_F(SharingSyncPreferenceTest, GetFCMChannelFromProvider) {
   std::unique_ptr<syncer::DeviceInfo> fake_device_info =
-      std::make_unique<syncer::DeviceInfo>(
-          kDeviceGuid, kDeviceName, "chrome_version", "user_agent",
-          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
-          base::SysInfo::HardwareInfo(),
-          /*last_updated_timestamp=*/base::Time::Now(),
-          /*send_tab_to_self_receiving_enabled=*/false,
-          /*sharing_info=*/base::nullopt);
+      CreateFakeDeviceInfo(kDeviceGuid, kDeviceName);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
       fake_device_info.get());
   EXPECT_FALSE(sharing_sync_preference_.GetFCMChannel(kDeviceGuid));

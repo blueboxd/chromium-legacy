@@ -953,23 +953,22 @@ void TestHelper::SetupProgramSuccessExpectations(
       if (ProgramManager::HasBuiltInPrefix(info.name))
         continue;
 
-        static const GLenum kPropsArray[] = {GL_LOCATION, GL_TYPE,
-                                             GL_ARRAY_SIZE};
-        static const size_t kPropsSize = base::size(kPropsArray);
-        EXPECT_CALL(
-            *gl, GetProgramResourceiv(
-                     service_id, GL_FRAGMENT_INPUT_NV, ii, kPropsSize,
-                     _ /*testing::ElementsAreArray(kPropsArray, kPropsSize)*/,
-                     kPropsSize, _, _))
-            .WillOnce(testing::Invoke([info](GLuint, GLenum, GLuint, GLsizei,
-                                             const GLenum*, GLsizei,
-                                             GLsizei* length, GLint* params) {
-              *length = kPropsSize;
-              params[0] = info.real_location;
-              params[1] = info.type;
-              params[2] = info.size;
-            }))
-            .RetiresOnSaturation();
+      static const GLenum kPropsArray[] = {GL_LOCATION, GL_TYPE, GL_ARRAY_SIZE};
+      static const size_t kPropsSize = base::size(kPropsArray);
+      EXPECT_CALL(*gl,
+                  GetProgramResourceiv(
+                      service_id, GL_FRAGMENT_INPUT_NV, ii, kPropsSize,
+                      _ /*testing::ElementsAreArray(kPropsArray, kPropsSize)*/,
+                      kPropsSize, _, _))
+          .WillOnce(testing::Invoke([info](GLuint, GLenum, GLuint, GLsizei,
+                                           const GLenum*, GLsizei,
+                                           GLsizei* length, GLint* params) {
+            *length = kPropsSize;
+            params[0] = info.real_location;
+            params[1] = info.type;
+            params[2] = info.size;
+          }))
+          .RetiresOnSaturation();
       }
   }
   if (feature_info->gl_version_info().is_es3_capable &&

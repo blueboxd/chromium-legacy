@@ -35,9 +35,6 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
 
   static const LayoutObject* FindSymbolMarkerLayoutText(const LayoutObject*);
 
-  // Find the LayoutNGListItem from a marker.
-  static LayoutNGListItem* FromMarkerOrMarkerContent(const LayoutObject&);
-
   const char* GetName() const override { return "LayoutNGListItem"; }
 
  private:

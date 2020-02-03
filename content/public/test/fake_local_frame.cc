@@ -34,6 +34,8 @@ void FakeLocalFrame::AddMessageToConsole(
     const std::string& message,
     bool discard_duplicates) {}
 
+void FakeLocalFrame::AddInspectorIssue(blink::mojom::InspectorIssueCode code) {}
+
 void FakeLocalFrame::CheckCompleted() {}
 
 void FakeLocalFrame::Collapse(bool collapsed) {}

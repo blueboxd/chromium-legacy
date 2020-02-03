@@ -114,9 +114,9 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // Builds the suggestions used to show or update the autofill popup.
   std::vector<autofill::Suggestion> BuildSuggestions(
-      ShowAllPasswords show_all_passwords,
+      const base::string16& username_filter,
       ForPasswordField for_password_field,
-      const base::string16& typed_username,
+      ShowAllPasswords show_all_passwords,
       OffersGeneration for_generation,
       ShowPasswordSuggestions show_password_suggestions);
 

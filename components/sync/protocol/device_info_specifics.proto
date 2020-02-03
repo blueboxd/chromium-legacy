@@ -65,6 +65,12 @@ message DeviceInfoSpecifics {
 
   // Name of device manufacturer.
   optional string manufacturer = 12;
+
+  // The interval in minutes with which |last_updated_timestamp| is updated to
+  // the sync servers if online and while sync is actively running (e.g.
+  // excludes backgrounded apps on Android). Introduced in M81. The legacy
+  // default was 1 day.
+  optional int32 pulse_interval_in_minutes = 13;
 }
 
 // Feature specific information about the device that is running a sync-enabled

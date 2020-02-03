@@ -224,6 +224,8 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/touch_list.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
@@ -6939,6 +6941,16 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
   }
 
   frame_->Console().AddMessage(console_message, discard_duplicates);
+}
+
+void Document::AddInspectorIssue(InspectorIssue* issue) {
+  Page* page = GetPage();
+
+  if (!page) {
+    return;
+  }
+
+  page->GetInspectorIssueStorage().AddInspectorIssue(this, issue);
 }
 
 void Document::AddToTopLayer(Element* element, const Element* before) {

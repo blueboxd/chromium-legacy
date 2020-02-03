@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
@@ -31,6 +32,12 @@
 namespace chromeos {
 
 namespace {
+
+constexpr char kUpdateRequiredScreen[] = "update-required-card";
+constexpr char kUpdateRequiredDialog[] = "update-required-dialog";
+constexpr char kUpdateRequiredUpdateButton[] = "update-button";
+constexpr char kUpdateRequiredUpdatingDialog[] = "update-process-dialog";
+constexpr char kUpdateRequiredEolDialog[] = "eol-dialog";
 
 chromeos::OobeUI* GetOobeUI() {
   auto* host = chromeos::LoginDisplayHost::default_host();
@@ -94,6 +101,13 @@ class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
     clock_->SetNow(utc_time);
   }
 
+  void SetUpdateEngineStatus(update_engine::Operation operation) {
+    update_engine::StatusResult status;
+    status.set_current_operation(operation);
+    fake_update_engine_client_->set_default_status(status);
+    fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  }
+
  protected:
   std::unique_ptr<UpdateRequiredScreen> update_required_screen_;
   // Error screen - owned by OobeUI.
@@ -102,11 +116,61 @@ class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
   FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;  // Unowned.
   // Version updater - owned by |update_required_screen_|.
   VersionUpdater* version_updater_ = nullptr;
+  // For testing captive portal
+  NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
   base::SimpleTestTickClock tick_clock_;
   // Clock to set current time for testing EOL.
   std::unique_ptr<base::SimpleTestClock> clock_;
 };
+
+IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestCaptivePortal) {
+  network_portal_detector_.SimulateDefaultNetworkState(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
+
+  update_required_screen_->SetErrorMessageDelayForTesting(
+      base::TimeDelta::FromMilliseconds(10));
+  update_required_screen_->Show();
+
+  OobeScreenWaiter update_screen_waiter(UpdateRequiredView::kScreenId);
+  update_screen_waiter.set_assert_next_screen();
+  update_screen_waiter.Wait();
+
+  test::OobeJS().ExpectVisible(kUpdateRequiredScreen);
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kUpdateRequiredDialog});
+
+  // Click update button to trigger the update process.
+  test::OobeJS().ClickOnPath(
+      {kUpdateRequiredScreen, kUpdateRequiredUpdateButton});
+
+  // If the network is a captive portal network, error message is shown with a
+  // delay.
+  OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
+  error_screen_waiter.set_assert_next_screen();
+  error_screen_waiter.Wait();
+
+  EXPECT_EQ(UpdateRequiredView::kScreenId.AsId(),
+            error_screen_->GetParentScreen());
+  test::OobeJS().ExpectVisible("error-message");
+  test::OobeJS().ExpectVisible("error-message-md");
+  test::OobeJS().ExpectHasClass("ui-state-update", {"error-message"});
+  test::OobeJS().ExpectHasClass("error-state-portal", {"error-message"});
+
+  // If network goes back online, the error screen should be hidden and update
+  // process should start.
+  network_portal_detector_.SimulateDefaultNetworkState(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  EXPECT_EQ(OobeScreen::SCREEN_UNKNOWN.AsId(),
+            error_screen_->GetParentScreen());
+
+  SetUpdateEngineStatus(update_engine::Operation::CHECKING_FOR_UPDATE);
+  SetUpdateEngineStatus(update_engine::Operation::UPDATE_AVAILABLE);
+
+  test::OobeJS().ExpectVisible(kUpdateRequiredScreen);
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kUpdateRequiredUpdatingDialog});
+}
 
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReached) {
   SetEolDateUTC("1 January 2019");
@@ -117,10 +181,11 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReached) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("update-required-card");
-  test::OobeJS().ExpectVisiblePath({"update-required-card", "eol-dialog"});
+  test::OobeJS().ExpectVisible(kUpdateRequiredScreen);
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kUpdateRequiredEolDialog});
   test::OobeJS().ExpectHiddenPath(
-      {"update-required-card", "update-required-error-dialog"});
+      {kUpdateRequiredScreen, kUpdateRequiredDialog});
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolNotReached) {
@@ -132,10 +197,11 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolNotReached) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("update-required-card");
-  test::OobeJS().ExpectHiddenPath({"update-required-card", "eol-dialog"});
+  test::OobeJS().ExpectVisible(kUpdateRequiredScreen);
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateRequiredEolDialog});
   test::OobeJS().ExpectVisiblePath(
-      {"update-required-card", "update-required-error-dialog"});
+      {kUpdateRequiredScreen, kUpdateRequiredDialog});
 }
 
 }  // namespace chromeos

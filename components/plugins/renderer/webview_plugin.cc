@@ -209,7 +209,7 @@ void WebViewPlugin::UpdateFocus(bool focused,
 
 blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
-    WebCursorInfo& cursor) {
+    WebCursorInfo* cursor) {
   const blink::WebInputEvent& event = coalesced_event.Event();
   // For tap events, don't handle them. They will be converted to
   // mouse events later and passed to here.
@@ -229,12 +229,12 @@ blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
     }
     return blink::WebInputEventResult::kHandledSuppressed;
   }
-  current_cursor_ = cursor;
+  current_cursor_ = *cursor;
   DCHECK(web_view()->MainFrameWidget());
   blink::WebInputEventResult handled =
       web_view()->MainFrameWidget()->HandleInputEvent(
           blink::WebCoalescedInputEvent(event));
-  cursor = current_cursor_;
+  *cursor = current_cursor_;
 
   return handled;
 }

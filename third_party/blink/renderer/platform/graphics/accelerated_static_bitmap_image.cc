@@ -142,12 +142,12 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   if (!IsValid())
     return PaintImage();
 
-    CreateImageFromMailboxIfNeeded();
+  CreateImageFromMailboxIfNeeded();
 
-    return CreatePaintImageBuilder()
-        .set_image(skia_texture_holder_->GetSkImage(), paint_image_content_id_)
-        .set_completion_state(PaintImage::CompletionState::DONE)
-        .TakePaintImage();
+  return CreatePaintImageBuilder()
+      .set_image(skia_texture_holder_->GetSkImage(), paint_image_content_id_)
+      .set_completion_state(PaintImage::CompletionState::DONE)
+      .TakePaintImage();
 }
 
 void AcceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,

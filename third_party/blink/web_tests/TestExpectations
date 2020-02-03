@@ -5145,7 +5145,6 @@ crbug.com/882756 [ Debug ] external/wpt/requestidlecallback/cancel-invoked.html 
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Pass Failure ]
 
 # Sheriff 2018-07-31
-crbug.com/869364 external/wpt/IndexedDB/parallel-cursors-upgrade.html [ Pass Timeout ]
 crbug.com/869364 http/tests/devtools/console/console-correct-suggestions.js [ Pass Timeout ]
 
 # Sheriff 2018-08-01
@@ -6331,7 +6330,7 @@ crbug.com/1044430 [ Release ] http/tests/devtools/elements/elements-panel-styles
 crbug.com/1044433 [ Release ] http/tests/devtools/editor/text-editor-search-replace.js [ Pass Timeout ]
 crbug.com/1044454 [ Release ] http/tests/devtools/changes/changes-highlighter.js [ Pass Timeout ]
 crbug.com/1044459 [ Release ] http/tests/devtools/elements/edit/set-outer-html-for-xhtml.js [ Pass Timeout ]
-crbug.com/1044505 [ Release ] http/tests/devtools/tracing-session-id.js [ Pass Timeout ]
+crbug.com/1044505 http/tests/devtools/tracing-session-id.js [ Pass Failure Timeout ]
 crbug.com/1044506 [ Release Win ] http/tests/devtools/tracing-model-storage.js [ Pass Timeout ]
 crbug.com/1044506 [ Release Mac ] http/tests/devtools/tracing-model-storage.js [ Pass Timeout ]
 crbug.com/1044516 [ Release ] http/tests/devtools/elements/edit/undo-set-outer-html-2.js [ Pass Timeout ]
@@ -6435,10 +6434,7 @@ crbug.com/1041851 [ Mac ] external/wpt/bluetooth/idl/idlharness.tentative.https.
 crbug.com/1041851 [ Win10 ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
 crbug.com/1045346 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash Pass Timeout ]
 
-# COOP window name issue.
-crbug.com/1018655 external/wpt/html/cross-origin-opener-policy/blob-popup.https.html [ Failure ]
-
-# COOP random timeout failure.
+# COOP timeout failure.
 crbug.com/1046698 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]
 
 # Sheriff 2020-01-29
@@ -6458,3 +6454,8 @@ crbug.com/1047126 [ Mac10.14 ] external/wpt/css/css-color/color-initial-canvaste
 
 # Sheriff 2020-01-31
 crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
+
+# Sheriff 2020-02-03
+crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
+crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/main-frame-scrollLeft.html [ Pass Failure ]
+crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/subframe-interrupted-scroll.html [ Pass Failure ]

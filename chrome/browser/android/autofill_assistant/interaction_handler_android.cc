@@ -25,6 +25,16 @@ void SetValue(base::WeakPtr<UserModel> user_model,
   user_model->SetValue(identifier, value);
 }
 
+void ShowInfoPopup(const InfoPopupProto& proto,
+                   base::android::ScopedJavaGlobalRef<jobject> jcontext,
+                   const ValueProto& ignored) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto jcontext_local = base::android::ScopedJavaLocalRef<jobject>(jcontext);
+  ui_controller_android_utils::ShowJavaInfoPopup(
+      env, ui_controller_android_utils::CreateJavaInfoPopup(env, proto),
+      jcontext_local);
+}
+
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
     JNIEnv* env,
@@ -60,8 +70,10 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
 }
 
 base::Optional<InteractionHandlerAndroid::InteractionCallback>
-CreateInteractionCallbackFromProto(const CallbackProto& proto,
-                                   UserModel* user_model) {
+CreateInteractionCallbackFromProto(
+    const CallbackProto& proto,
+    UserModel* user_model,
+    base::android::ScopedJavaGlobalRef<jobject> jcontext) {
   switch (proto.kind_case()) {
     case CallbackProto::kSetValue:
       if (proto.set_value().model_identifier().empty()) {
@@ -72,6 +84,11 @@ CreateInteractionCallbackFromProto(const CallbackProto& proto,
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&SetValue, user_model->GetWeakPtr(),
                               proto.set_value().model_identifier()));
+    case CallbackProto::kShowInfoPopup: {
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&ShowInfoPopup,
+                              proto.show_info_popup().info_popup(), jcontext));
+    }
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
@@ -81,8 +98,13 @@ CreateInteractionCallbackFromProto(const CallbackProto& proto,
 }  // namespace
 
 InteractionHandlerAndroid::InteractionHandlerAndroid(
-    EventHandler* event_handler)
-    : event_handler_(event_handler) {}
+    EventHandler* event_handler,
+    base::android::ScopedJavaLocalRef<jobject> jcontext)
+    : event_handler_(event_handler) {
+  DCHECK(jcontext);
+  jcontext_ = base::android::ScopedJavaGlobalRef<jobject>(jcontext);
+}
+
 InteractionHandlerAndroid::~InteractionHandlerAndroid() {
   event_handler_->RemoveObserver(this);
 }
@@ -117,8 +139,8 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     }
 
     for (const auto& callback_proto : interaction_proto.callbacks()) {
-      auto callback =
-          CreateInteractionCallbackFromProto(callback_proto, user_model);
+      auto callback = CreateInteractionCallbackFromProto(callback_proto,
+                                                         user_model, jcontext_);
       if (!callback) {
         VLOG(1) << "Invalid callback for interaction";
         return false;

@@ -78,7 +78,7 @@ void CompromisedCredentialsTable::Init(sql::Database* db) {
       base::FeatureList::IsEnabled(
           safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
   if (password_protection_show_domains_for_saved_password_is_on ||
-      base::FeatureList::IsEnabled(password_manager::features::kLeakHistory))
+      base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck))
     db_ = db;
 }
 

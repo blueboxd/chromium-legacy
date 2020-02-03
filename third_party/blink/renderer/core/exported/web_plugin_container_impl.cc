@@ -811,7 +811,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   WebCursorInfo cursor_info;
   if (web_plugin_ && web_plugin_->HandleInputEvent(
                          WebCoalescedInputEvent(transformed_event),
-                         cursor_info) != WebInputEventResult::kNotHandled)
+                         &cursor_info) != WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 
   // A windowless plugin can change the cursor in response to a mouse move
@@ -869,7 +869,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
 
   WebCursorInfo cursor_info;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    cursor_info) !=
+                                    &cursor_info) !=
       WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }
@@ -892,7 +892,7 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
 
   WebCursorInfo cursor_info;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    cursor_info) !=
+                                    &cursor_info) !=
       WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
   }
@@ -996,7 +996,7 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent& event) {
           TransformCoalescedTouchEvent(*event.NativeEvent());
 
       WebCursorInfo cursor_info;
-      if (web_plugin_->HandleInputEvent(transformed_event, cursor_info) !=
+      if (web_plugin_->HandleInputEvent(transformed_event, &cursor_info) !=
           WebInputEventResult::kNotHandled)
         event.SetDefaultHandled();
       // FIXME: Can a plugin change the cursor from a touch-event callback?
@@ -1027,7 +1027,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
 
   WebCursorInfo cursor_info;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    cursor_info) !=
+                                    &cursor_info) !=
       WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
     return;
@@ -1044,7 +1044,7 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
 
   WebCursorInfo cursor_info;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    cursor_info) !=
+                                    &cursor_info) !=
       WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }

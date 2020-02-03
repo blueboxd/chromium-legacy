@@ -152,23 +152,23 @@ class SmbServiceTest : public testing::Test {
 
   void ExpectInvalidUrl(const std::string& url) {
     SmbMountResult result = SmbMountResult::SUCCESS;
-    smb_service_->CallMount({} /* options */, base::FilePath(url),
-                            "" /* username */, "" /* password */,
-                            false /* use_chromad_kerberos */,
-                            false /* should_open_file_manager_after_mount */,
-                            false /* save_credentials */,
-                            base::BindOnce(&SaveMountResult, &result));
+    smb_service_->Mount({} /* options */, base::FilePath(url),
+                        "" /* username */, "" /* password */,
+                        false /* use_chromad_kerberos */,
+                        false /* should_open_file_manager_after_mount */,
+                        false /* save_credentials */,
+                        base::BindOnce(&SaveMountResult, &result));
     EXPECT_EQ(result, SmbMountResult::INVALID_URL);
   }
 
   void ExpectInvalidSsoUrl(const std::string& url) {
     SmbMountResult result = SmbMountResult::SUCCESS;
-    smb_service_->CallMount({} /* options */, base::FilePath(url),
-                            "" /* username */, "" /* password */,
-                            true /* use_chromad_kerberos */,
-                            false /* should_open_file_manager_after_mount */,
-                            false /* save_credentials */,
-                            base::BindOnce(&SaveMountResult, &result));
+    smb_service_->Mount({} /* options */, base::FilePath(url),
+                        "" /* username */, "" /* password */,
+                        true /* use_chromad_kerberos */,
+                        false /* should_open_file_manager_after_mount */,
+                        false /* save_credentials */,
+                        base::BindOnce(&SaveMountResult, &result));
     EXPECT_EQ(result, SmbMountResult::INVALID_SSO_URL);
   }
 

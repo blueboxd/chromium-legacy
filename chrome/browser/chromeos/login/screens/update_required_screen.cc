@@ -11,14 +11,18 @@
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace {
 constexpr char kUserActionSelectNetworkButtonClicked[] = "select-network";
@@ -45,6 +49,7 @@ UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
       version_updater_(std::make_unique<VersionUpdater>(this)),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()),
       clock_(base::DefaultClock::GetInstance()) {
+  error_message_delay_ = kDelayErrorMessage;
   if (view_)
     view_->Bind(this);
 }
@@ -64,6 +69,11 @@ void UpdateRequiredScreen::Show() {
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(false);
   RefreshNetworkState();
   SubscribeNetworkNotification();
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  view_->SetEnterpriseAndDeviceName(connector->GetEnterpriseDisplayDomain(),
+                                    ui::GetChromeOSDeviceName());
 
   is_shown_ = true;
 
@@ -85,7 +95,7 @@ void UpdateRequiredScreen::OnGetEolInfo(
   if (!info.eol_date.is_null() && info.eol_date <= clock_->Now()) {
     EnsureScreenIsShown();
     if (view_)
-      view_->SetUIState(UpdateRequiredView::EOL);
+      view_->SetUIState(UpdateRequiredView::EOL_REACHED);
   }
 }
 
@@ -199,7 +209,6 @@ void UpdateRequiredScreen::ShowErrorMessage() {
   error_message_timer_.Stop();
 
   is_shown_ = false;
-
   connect_request_subscription_ = error_screen_->RegisterConnectRequestCallback(
       base::BindRepeating(&UpdateRequiredScreen::OnConnectRequested,
                           weak_factory_.GetWeakPtr()));
@@ -228,9 +237,13 @@ void UpdateRequiredScreen::UpdateErrorMessage(
 void UpdateRequiredScreen::DelayErrorMessage() {
   if (error_message_timer_.IsRunning())
     return;
-
-  error_message_timer_.Start(FROM_HERE, kDelayErrorMessage, this,
+  error_message_timer_.Start(FROM_HERE, error_message_delay_, this,
                              &UpdateRequiredScreen::ShowErrorMessage);
+}
+
+void UpdateRequiredScreen::SetErrorMessageDelayForTesting(
+    const base::TimeDelta& delay) {
+  error_message_delay_ = delay;
 }
 
 void UpdateRequiredScreen::UpdateInfoChanged(

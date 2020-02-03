@@ -33,15 +33,15 @@ UpdateRequiredScreenHandler::~UpdateRequiredScreenHandler() {
 
 void UpdateRequiredScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("updateRequiredMessage",
-               IDS_UPDATE_REQUIRED_LOGIN_SCREEN_MESSAGE);
+  builder->Add("updateRequiredTitle", IDS_UPDATE_REQUIRED_SCREEN_TITLE);
+  builder->Add("updateRequiredMessage", IDS_UPDATE_REQUIRED_SCREEN_MESSAGE);
   builder->Add("errorMessage",
                IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR);
-  builder->Add("eolMessage",
-               ui::SubstituteChromeOSDeviceType(IDS_EOL_NOTIFICATION_EOL));
-  builder->Add("selectNetworkButtonCaption", IDS_APP_START_CONFIGURE_NETWORK);
-  builder->Add("updateButtonCaption",
-               IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES);
+  builder->Add("eolTitle", IDS_UPDATE_REQUIRED_SCREEN_EOL_TITLE);
+  builder->Add("eolMessage", IDS_UPDATE_REQUIRED_SCREEN_EOL_MESSAGE);
+  builder->Add("selectNetworkButtonCaption",
+               IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS);
+  builder->Add("updateButtonCaption", IDS_UPDATE_REQUIRED_SCREEN_START_UPDATE);
   builder->Add("rebootNeededMessage", IDS_UPDATE_COMPLETED);
 
   builder->Add("checkingForUpdatesTitle", IDS_CHECKING_FOR_UPDATES);
@@ -59,11 +59,13 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
       "updateOverCellularPromptTitle",
       ui::SubstituteChromeOSDeviceType(IDS_UPDATE_OVER_CELLULAR_PROMPT_TITLE));
   builder->Add("updateOverCellularPromptMessage",
-               IDS_UPDATE_OVER_CELLULAR_PROMPT_MESSAGE);
+               IDS_UPDATE_REQUIRED_SCREEN_METERED_MESSAGE);
   builder->Add("AcceptUpdateOverCellularButton",
-               IDS_OFFERS_CONSENT_INFOBAR_ENABLE_BUTTON);
+               IDS_UPDATE_REQUIRED_SCREEN_ALLOW_METERED);
   builder->Add("RejectUpdateOverCellularButton",
                IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON);
+  builder->Add("noNetworkMessage",
+               IDS_UPDATE_REQUIRED_SCREEN_NO_NETWORK_MESSAGE);
 }
 
 void UpdateRequiredScreenHandler::Initialize() {
@@ -71,6 +73,13 @@ void UpdateRequiredScreenHandler::Initialize() {
     Show();
     show_on_init_ = false;
   }
+}
+
+void UpdateRequiredScreenHandler::SetEnterpriseAndDeviceName(
+    const std::string& enterpriseDomain,
+    const base::string16& deviceName) {
+  CallJS("login.UpdateRequiredScreen.setEnterpriseAndDeviceName",
+         enterpriseDomain, deviceName);
 }
 
 void UpdateRequiredScreenHandler::Show() {

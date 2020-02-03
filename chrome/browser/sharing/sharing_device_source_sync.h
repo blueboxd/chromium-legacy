@@ -59,7 +59,6 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> FilterDeviceCandidates(
       std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
-      const base::Time min_updated_time,
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
   syncer::SyncService* sync_service_;

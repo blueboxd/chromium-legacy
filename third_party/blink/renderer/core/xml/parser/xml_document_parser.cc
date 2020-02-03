@@ -1663,6 +1663,25 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   return Context()->wellFormed || !xmlCtxtGetLastError(Context());
 }
 
+void XMLDocumentParser::DidAddPendingParserBlockingStylesheet() {
+  DCHECK(IsParsing());
+  if (!context_)
+    return;
+  PauseParsing();
+  waiting_for_stylesheets_ = true;
+}
+
+void XMLDocumentParser::DidLoadAllPendingParserBlockingStylesheets() {
+  waiting_for_stylesheets_ = false;
+}
+
+void XMLDocumentParser::ExecuteScriptsWaitingForResources() {
+  if (!IsWaitingForScripts() && !waiting_for_stylesheets_ && parser_paused_ &&
+      IsParsing()) {
+    ResumeParsing();
+  }
+}
+
 // --------------------------------
 
 struct AttributeParseState {

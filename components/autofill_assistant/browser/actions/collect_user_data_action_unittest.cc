@@ -491,7 +491,7 @@ TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
 
   autofill::CreditCard credit_card(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetCreditCardInfo(&credit_card, "Marion Mitchell",
-                                    "4111 1111 1111 1111", "01", "2020",
+                                    "4111 1111 1111 1111", "01", "2050",
                                     billing_profile.guid());
 
   ON_CALL(mock_action_delegate_, CollectUserData(_))
@@ -628,7 +628,7 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
       std::make_unique<autofill::CreditCard>(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetCreditCardInfo(user_data.selected_card_.get(),
                                     "Marion Mitchell", "4111 1111 1111 1111",
-                                    "01", "2020",
+                                    "01", "2050",
                                     /* billing_address_id = */ "");
   EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
@@ -976,7 +976,9 @@ TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
       .WillByDefault(
           Invoke([this](CollectUserDataOptions* collect_user_data_options) {
             user_data_.succeed_ = true;
-            user_data_.additional_values_["key2"] = "modified";
+            ValueProto value;
+            value.mutable_strings()->add_values("modified");
+            user_data_.additional_values_["key2"] = value;
             std::move(collect_user_data_options->confirm_callback)
                 .Run(&user_data_, &user_model_);
           }));
@@ -1014,11 +1016,18 @@ TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
           Property(
               &ProcessedActionProto::collect_user_data_result,
               Property(&CollectUserDataResultProto::set_text_input_memory_keys,
-                       UnorderedElementsAre("key1", "key2")))))));
+                       UnorderedElementsAre("key1", "key2", "key3")))))));
   action.ProcessAction(callback_.Get());
-  EXPECT_EQ(*user_data_.additional_value("key1"), "initial");
-  EXPECT_EQ(*user_data_.additional_value("key2"), "modified");
-  EXPECT_EQ(*user_data_.additional_value("key3"), "");
+
+  ValueProto value1;
+  value1.mutable_strings()->add_values("initial");
+  ValueProto value2;
+  value2.mutable_strings()->add_values("modified");
+  ValueProto value3;
+  value3.mutable_strings()->add_values("");
+  EXPECT_EQ(*user_data_.additional_value("key1"), value1);
+  EXPECT_EQ(*user_data_.additional_value("key2"), value2);
+  EXPECT_EQ(*user_data_.additional_value("key3"), value3);
 }
 
 TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
@@ -1053,7 +1062,7 @@ TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
                 base::GenerateGUID(), kFakeUrl);
             autofill::test::SetCreditCardInfo(
                 user_data_.selected_card_.get(), "Marion Mitchell",
-                "4111 1111 1111 1111", "01", "2020",
+                "4111 1111 1111 1111", "01", "2050",
                 user_data_.selected_addresses_["billing_address"]->guid());
 
             std::move(collect_user_data_options->confirm_callback)
@@ -1086,9 +1095,15 @@ TEST_F(CollectUserDataActionTest, InvalidBasicCardNetworks) {
 TEST_F(CollectUserDataActionTest, OverwriteExistingUserData) {
   // Set previous user data state.
   user_data_.terms_and_conditions_ = ACCEPTED;
-  user_data_.additional_values_["key1"] = "val1";
-  user_data_.additional_values_["key2"] = "val2";
-  user_data_.additional_values_["key3"] = "val3";
+  ValueProto value1;
+  value1.mutable_strings()->add_values("val1");
+  ValueProto value2;
+  value2.mutable_strings()->add_values("val2");
+  ValueProto value3;
+  value3.mutable_strings()->add_values("val3");
+  user_data_.additional_values_["key1"] = value1;
+  user_data_.additional_values_["key2"] = value2;
+  user_data_.additional_values_["key3"] = value3;
 
   // Set options.
   ActionProto action_proto;
@@ -1125,9 +1140,11 @@ TEST_F(CollectUserDataActionTest, OverwriteExistingUserData) {
   action.ProcessAction(callback_.Get());
 
   EXPECT_EQ(user_data_.terms_and_conditions_, NOT_SELECTED);
-  EXPECT_EQ(user_data_.additional_values_["key1"], "initial");
-  EXPECT_EQ(user_data_.additional_values_["key2"], "initial");
-  EXPECT_EQ(user_data_.additional_values_["key3"], "val3");
+  EXPECT_EQ(user_data_.additional_values_["key1"].strings().values(0),
+            "initial");
+  EXPECT_EQ(user_data_.additional_values_["key2"].strings().values(0),
+            "initial");
+  EXPECT_EQ(user_data_.additional_values_["key3"].strings().values(0), "val3");
 }
 
 TEST_F(CollectUserDataActionTest, AttachesProfiles) {

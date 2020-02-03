@@ -21,6 +21,10 @@ Polymer({
 
     estimatedTimeLeftVisible: {type: Boolean, value: false},
 
+    enterpriseDomain: {type: String, value: ''},
+
+    deviceName: {type: String, value: ''},
+
     /**
      * Message "3 minutes left".
      */

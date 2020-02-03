@@ -34,7 +34,7 @@ class CompromisedCredentialsTableTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    feature_list_.InitWithFeatures({password_manager::features::kLeakHistory},
+    feature_list_.InitWithFeatures({password_manager::features::kPasswordCheck},
                                    {});
     ReloadDatabase();
   }
@@ -87,12 +87,12 @@ TEST_F(CompromisedCredentialsTableTest, DatabaseIsAccessible) {
   feature_list_.Reset();
   feature_list_.InitWithFeatures(
       {safe_browsing::kPasswordProtectionForSignedInUsers},
-      {password_manager::features::kLeakHistory});
+      {password_manager::features::kPasswordCheck});
   CheckDatabaseAccessibility();
 
   feature_list_.Reset();
   feature_list_.InitWithFeatures(
-      {password_manager::features::kLeakHistory},
+      {password_manager::features::kPasswordCheck},
       {safe_browsing::kPasswordProtectionForSignedInUsers});
   CheckDatabaseAccessibility();
 }
@@ -102,7 +102,7 @@ TEST_F(CompromisedCredentialsTableTest, ExperimentOff) {
   // accessible.
   feature_list_.Reset();
   feature_list_.InitWithFeatures({},
-                                 {password_manager::features::kLeakHistory});
+                                 {password_manager::features::kPasswordCheck});
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
   EXPECT_THAT(db()->GetRows(test_data().signon_realm, test_data().username),
               ElementsAre());

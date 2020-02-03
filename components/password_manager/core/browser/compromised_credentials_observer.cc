@@ -33,7 +33,7 @@ void CompromisedCredentialsObserver::OnLoginsChanged(
       base::FeatureList::IsEnabled(
           safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
   if (!password_protection_show_domains_for_saved_password_is_on &&
-      !base::FeatureList::IsEnabled(password_manager::features::kLeakHistory))
+      !base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck))
     return;
 
   // If the change is an UPDATE and the password did not change, there is

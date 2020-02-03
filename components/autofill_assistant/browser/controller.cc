@@ -1189,7 +1189,7 @@ void Controller::SetDateTimeRangeEndTimeSlot(
 }
 
 void Controller::SetAdditionalValue(const std::string& client_memory_key,
-                                    const std::string& value) {
+                                    const ValueProto& value) {
   if (!user_data_)
     return;
   auto it = user_data_->additional_values_.find(client_memory_key);
@@ -1197,7 +1197,7 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
     NOTREACHED() << client_memory_key << " not found";
     return;
   }
-  it->second.assign(value);
+  it->second = value;
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
                                UserData::FieldChange::ADDITIONAL_VALUES);

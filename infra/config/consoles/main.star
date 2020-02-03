@@ -195,6 +195,11 @@ luci.console_view(
             short_name = 'tst',
         ),
         luci.console_view_entry(
+            builder = 'ci/Network Service Linux',
+            category = 'chromium.linux|release',
+            short_name = 'nsl',
+        ),
+        luci.console_view_entry(
             builder = 'ci/linux-gcc-rel',
             category = 'chromium.linux|release',
             short_name = 'gcc',

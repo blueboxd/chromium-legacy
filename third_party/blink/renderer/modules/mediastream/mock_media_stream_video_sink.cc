@@ -37,13 +37,13 @@ void MockMediaStreamVideoSink::DeliverVideoFrame(
   format_ = frame->format();
   frame_size_ = frame->natural_size();
   last_frame_ = std::move(frame);
-  OnVideoFrame();
+  OnVideoFrame(estimated_capture_time);
 }
 
 void MockMediaStreamVideoSink::DeliverEncodedVideoFrame(
     scoped_refptr<EncodedVideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
-  OnEncodedVideoFrame();
+  OnEncodedVideoFrame(estimated_capture_time);
 }
 
 void MockMediaStreamVideoSink::OnReadyStateChanged(

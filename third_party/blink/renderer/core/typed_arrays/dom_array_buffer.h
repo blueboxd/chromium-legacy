@@ -56,8 +56,8 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
     return Buffer()->ShareNonSharedForInternalUse(result);
   }
 
-  v8::Local<v8::Object> Wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creation_context) override;
+  v8::Local<v8::Value> Wrap(v8::Isolate*,
+                            v8::Local<v8::Object> creation_context) override;
 };
 
 }  // namespace blink

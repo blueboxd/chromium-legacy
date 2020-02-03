@@ -284,6 +284,22 @@ autofill_assistant::ModelProto MergeModelProtos(
   return model_merged;
 }
 
+void FillProtoForAdditionalSection(
+    const autofill_assistant::UserFormSectionProto& additional_section,
+    const UserData& user_data,
+    autofill_assistant::ProcessedActionProto* processed_action_proto) {
+  if (additional_section.section_case() ==
+      autofill_assistant::UserFormSectionProto::kTextInputSection) {
+    for (const auto& text_input :
+         additional_section.text_input_section().input_fields()) {
+      if (user_data.has_additional_value(text_input.client_memory_key())) {
+        processed_action_proto->mutable_collect_user_data_result()
+            ->add_set_text_input_memory_keys(text_input.client_memory_key());
+      }
+    }
+  }
+}
+
 }  // namespace
 
 namespace autofill_assistant {
@@ -429,8 +445,9 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
         UserFormSectionProto::kTextInputSection) {
       for (const auto& text_input :
            additional_section.text_input_section().input_fields()) {
-        user_data->additional_values_[text_input.client_memory_key()] =
-            text_input.value();
+        ValueProto value;
+        value.mutable_strings()->add_values(text_input.value());
+        user_data->additional_values_[text_input.client_memory_key()] = value;
       }
     }
   }
@@ -440,8 +457,9 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
         UserFormSectionProto::kTextInputSection) {
       for (const auto& text_input :
            additional_section.text_input_section().input_fields()) {
-        user_data->additional_values_[text_input.client_memory_key()] =
-            text_input.value();
+        ValueProto value;
+        value.mutable_strings()->add_values(text_input.value());
+        user_data->additional_values_[text_input.client_memory_key()] = value;
       }
     }
   }
@@ -575,12 +593,15 @@ void CollectUserDataAction::OnGetUserData(
           ->set_date_range_end_timeslot(
               *user_data->date_time_range_end_timeslot_);
     }
-
-    for (const auto& value : user_data->additional_values_) {
-      if (!value.second.empty()) {
-        processed_action_proto_->mutable_collect_user_data_result()
-            ->add_set_text_input_memory_keys(value.first);
-      }
+    for (const auto& section :
+         collect_user_data.additional_prepended_sections()) {
+      FillProtoForAdditionalSection(section, *user_data,
+                                    processed_action_proto_.get());
+    }
+    for (const auto& section :
+         collect_user_data.additional_appended_sections()) {
+      FillProtoForAdditionalSection(section, *user_data,
+                                    processed_action_proto_.get());
     }
 
     processed_action_proto_->mutable_collect_user_data_result()

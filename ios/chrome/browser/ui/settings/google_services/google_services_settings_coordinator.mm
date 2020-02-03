@@ -242,12 +242,7 @@
   DCHECK(!self.manageSyncSettingsCoordinator);
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState];
-  // TODO(crbug.com/1029346): Remove dispatcher from the property of the
-  // coordinator.
-  self.manageSyncSettingsCoordinator.dispatcher = static_cast<
-      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
-      self.browser->GetCommandDispatcher());
+                         browser:self.browser];
   self.manageSyncSettingsCoordinator.navigationController =
       self.navigationController;
   self.manageSyncSettingsCoordinator.delegate = self;

@@ -240,7 +240,10 @@ bool PseudoElement::CanGeneratePseudoElement(PseudoId pseudo_id) const {
 }
 
 Node* PseudoElement::InnerNodeForHitTesting() const {
-  return ParentOrShadowHostNode();
+  Node* parent = ParentOrShadowHostNode();
+  if (parent && parent->IsPseudoElement())
+    return To<PseudoElement>(parent)->InnerNodeForHitTesting();
+  return parent;
 }
 
 bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* pseudo_style,

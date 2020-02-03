@@ -899,6 +899,7 @@
         'DeviceRollbackToTargetVersion',
         'DeviceRollbackAllowedMilestones',
         'DeviceQuickFixBuildToken',
+        'MinimumChromeVersionEnforced',
       ],
     },
     {
@@ -13923,7 +13924,7 @@
     {
       'name': 'MinimumRequiredChromeVersion',
       'owners': ['antrim@chromium.org'],
-      'supported_on': ['chrome_os:64-'],
+      'supported_on': ['chrome_os:64-81'],
       'device_only': True,
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -13931,16 +13932,87 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': '61.0.3163.120',
       'id': 394,
       'caption': '''Configure minimum allowed Chrome version for the device.''',
       'tags': [],
-      'desc': '''Configures the requirement of the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Versions below given are treated as obsolete and device would not allow user sign in before OS is updated.
+      'desc': '''This policy is removed in M82, please use MinimumChromeVersionEnforced instead.
+
+      Configures the requirement of the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Versions below given are treated as obsolete and device would not allow user sign in before OS is updated.
+
       If current version becomes obsolete during user session, user will be forcefully signed out.
 
       If this policy is not set, no restrictions are applied, and user can sign regardless of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version.
 
       Here "Version" can be either an exact version like '61.0.3163.120' or a version prefix, like '61.0'  ''',
+    },
+    {
+      'name': 'MinimumChromeVersionEnforced',
+      'owners': ['snijhara@google.com'],
+      'supported_on': ['chrome_os:81-'],
+      'device_only': True,
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'chrome_version': {
+              'description': '''Minimum allowed chrome OS version''',
+              'type': 'string',
+            },
+            'warning_period': {
+              'description': '''Time in days after which the user will be logged off if chrome OS version is less than the "version"''',
+              'type': 'integer',
+              'minimum': 0,
+            },
+            'eol_warning_period': {
+              'description': '''Time in days after end of life post which the user will be logged off''',
+              'type': 'integer',
+              'minimum': 0,
+            },
+          },
+          'required': ['chrome_version'],
+        },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [
+        {
+          "chrome_version" : "78",
+          "warning_period" : 0,
+          "eol_warning_period" : 14
+        }, {
+          "chrome_version" : "82",
+          "warning_period" : 10,
+          "eol_warning_period" : 21
+        }
+      ],
+      'id': 670,
+      'caption': '''Configure minimum allowed Chrome version for the device.''',
+      'tags': [],
+      'desc': '''Configures the requirement of the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      When this policy is set to a non-empty list :
+      If none of the entries has a "chrome_version" greater than the current version in the device, then no restrictions are applied and the already existing restrictions are revoked.
+      If at least one of the entries has a "chrome_version" greater than the current version, the strongest entry is chosen whose version is closest to the current version.
+      In case of conflict, preference is given to the one with lesser "warning_period" or "eol_warning_period" and the policy is applied using that entry.
+
+      If current version becomes obsolete during user session, an on-screen notification is shown to update the device within the "warning_period" shown in the notification.
+      The "warning_period" starts from the time the policy is applied.
+      If the device is not updated till the expiry of the "warning_period", the user is logged out of the system.
+      If the current version is found to be obsolete at the time of login with expired "warning_period", the user is required to update the device before signing in.
+
+      If the end-of-life is reached during user session, an on-screen notification is shown to log out the user after the "eol_warning_period" has expired.
+      If the device is found to have reached the end-of-life at the time of login with expired "eol_warning_period", the device is blocked for any user to sign in.
+
+      If this policy is not set or set to empty, no restrictions are applied, already existing restrictions are revoked and user can sign in regardless of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version.
+
+      Here "chrome_version" can be either an exact version like '61.0.3163.120' or a version prefix, like '61.0'.
+      The "warning_period" and "eol_warning_period" are optional values specified in number of days. Default value for them is 0 days, which means that there is no waiting period. ''',
     },
     {
       'name': 'QuickUnlockModeWhitelist',
@@ -20094,6 +20166,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed',
     'DeviceLoginScreenWebUsbAllowDevicesForUrls': 'device_login_screen_webusb_allow_devices_for_urls.device_login_screen_webusb_allow_devices_for_urls',
     'DeviceWebBasedAttestationAllowedUrls': 'device_web_based_attestation_allowed_urls.value',
+    'MinimumChromeVersionEnforced' : 'minimum_chrome_version_enforced.value',
   },
   'policy_atomic_group_definitions': [
     {
@@ -20547,6 +20620,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 669,
+  'highest_id_currently_used': 670,
   'highest_atomic_group_id_currently_used': 38
 }

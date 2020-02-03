@@ -318,6 +318,11 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
+    def is_array_buffer_view(self):
+        """Returns True if this is ArrayBufferView."""
+        return False
+
+    @property
     def is_data_view(self):
         """Returns True if this is DataView."""
         return False
@@ -559,7 +564,17 @@ class SimpleType(IdlType):
     _TYPED_ARRAY_TYPES = ('Int8Array', 'Int16Array', 'Int32Array',
                           'Uint8Array', 'Uint16Array', 'Uint32Array',
                           'Uint8ClampedArray', 'Float32Array', 'Float64Array')
-    _BUFFER_SOURCE_TYPES = ('ArrayBuffer', 'DataView') + _TYPED_ARRAY_TYPES
+    # ArrayBufferView is not defined as a buffer source type in Web IDL, it's
+    # defined as an union type of all typed array types.  However, practically
+    # it's much more convenient and reasonable for most of (if not all) use
+    # cases to treat ArrayBufferView as a buffer source type than as an union
+    # type.
+    # https://heycam.github.io/webidl/#ArrayBufferView
+    #
+    # Note that BufferSource is an union type as defined in Web IDL.
+    # https://heycam.github.io/webidl/#BufferSource
+    _BUFFER_SOURCE_TYPES = (
+        ('ArrayBuffer', 'ArrayBufferView', 'DataView') + _TYPED_ARRAY_TYPES)
     _MISC_TYPES = ('any', 'boolean', 'object', 'symbol', 'void')
     _VALID_TYPES = set(_NUMERIC_TYPES + _STRING_TYPES + _BUFFER_SOURCE_TYPES +
                        _MISC_TYPES)
@@ -628,6 +643,10 @@ class SimpleType(IdlType):
     @property
     def is_array_buffer(self):
         return self._name == 'ArrayBuffer'
+
+    @property
+    def is_array_buffer_view(self):
+        return self._name == 'ArrayBufferView'
 
     @property
     def is_data_view(self):
@@ -1144,10 +1163,6 @@ class UnionType(IdlType):
 
     @property
     def flattened_member_types(self):
-        return set(self.flattened_member_types_in_original_order)
-
-    @property
-    def flattened_member_types_in_original_order(self):
         def flatten(idl_type):
             if idl_type.is_union:
                 return functools.reduce(
@@ -1160,7 +1175,7 @@ class UnionType(IdlType):
             else:
                 return [idl_type]
 
-        return flatten(self)
+        return set(flatten(self))
 
     @property
     def union_definition_object(self):

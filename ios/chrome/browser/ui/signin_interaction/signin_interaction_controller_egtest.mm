@@ -147,8 +147,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 // Tests that opening the sign-in screen from the Settings and signing in works
 // correctly when there is already an identity on the device.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInOneUser {
+- (void)testSignInOneUser {
   // Set up a fake identity.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
@@ -161,21 +160,18 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInSwitchAccountsAndKeepDataSeparate {
+- (void)testSignInSwitchAccountsAndKeepDataSeparate {
   ChooseImportOrKeepDataSepareteDialog(SettingsImportDataKeepSeparateButton());
 }
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInSwitchAccountsAndImportData {
+- (void)testSignInSwitchAccountsAndImportData {
   ChooseImportOrKeepDataSepareteDialog(SettingsImportDataImportButton());
 }
 
 // Tests that signing out from the Settings works correctly.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInDisconnectFromChrome {
+- (void)testSignInDisconnectFromChrome {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
@@ -189,8 +185,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInDisconnectFromChromeManaged {
+- (void)testSignInDisconnectFromChromeManaged {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeManagedIdentity];
 
   // Sign-in with a managed account.
@@ -207,8 +202,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests that signing in, tapping the Settings link on the confirmation screen
 // and closing the advanced sign-in settings correctly leaves the user signed
 // in.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInOpenSettings {
+- (void)testSignInOpenSettings {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
@@ -229,8 +223,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 // Opens the sign in screen and then cancel it by opening a new tab. Ensures
 // that the sign in screen is correctly dismissed. crbug.com/462200
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInCancelIdentityPicker {
+- (void)testSignInCancelIdentityPicker {
   // Add an identity to avoid arriving on the Add Account screen when opening
   // sign-in.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
@@ -266,8 +259,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Starts an authentication flow and cancel it by opening a new tab. Ensures
 // that the authentication flow is correctly canceled and dismissed.
 // crbug.com/462202
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInCancelAuthenticationFlow {
+- (void)testSignInCancelAuthenticationFlow {
   // Set up the fake identities.
   FakeChromeIdentity* fakeIdentity1 = [SigninEarlGreyUtils fakeIdentity1];
   FakeChromeIdentity* fakeIdentity2 = [SigninEarlGreyUtils fakeIdentity2];
@@ -321,8 +313,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on
 // done. Ensures that the sign in screen is correctly dismissed.
 // Regression test for crbug.com/596029.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSignInCancelFromBookmarks {
+- (void)testSignInCancelFromBookmarks {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
@@ -368,8 +359,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: setting menu.
 // Interrupted at: user consent.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissSigninFromSettings {
+- (void)testDismissSigninFromSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromSettings
                         tapSettingsLink:NO];
 }
@@ -377,8 +367,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: setting menu.
 // Interrupted at: advanced sign-in.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissAdvancedSigninSettingsFromAdvancedSigninSettings {
+- (void)testDismissAdvancedSigninSettingsFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromSettings
                         tapSettingsLink:YES];
 }
@@ -386,8 +375,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: bookmark view.
 // Interrupted at: user consent.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissSigninFromBookmarks {
+- (void)testDismissSigninFromBookmarks {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromBookmarks
                         tapSettingsLink:NO];
 }
@@ -395,8 +383,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: bookmark view.
 // Interrupted at: advanced sign-in.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissAdvancedSigninBookmarksFromAdvancedSigninSettings {
+- (void)testDismissAdvancedSigninBookmarksFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromBookmarks
                         tapSettingsLink:YES];
 }
@@ -404,8 +391,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: recent tabs.
 // Interrupted at: user consent.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissSigninFromRecentTabs {
+- (void)testDismissSigninFromRecentTabs {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromRecentTabs
                         tapSettingsLink:NO];
 }
@@ -413,8 +399,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: recent tabs.
 // Interrupted at: advanced sign-in.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissSigninFromRecentTabsFromAdvancedSigninSettings {
+- (void)testDismissSigninFromRecentTabsFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromRecentTabs
                         tapSettingsLink:YES];
 }
@@ -422,8 +407,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: tab switcher.
 // Interrupted at: user consent.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissSigninFromTabSwitcher {
+- (void)testDismissSigninFromTabSwitcher {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:NO];
 }
@@ -431,16 +415,14 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: tab switcher.
 // Interrupted at: advanced sign-in.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
+- (void)testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:YES];
 }
 
 // Verifies that advanced sign-in shows an alert dialog when being swiped to
 // dismiss.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testSwipeDownToCancelAdvancedSignin {
+- (void)testSwipeDownToCancelAdvancedSignin {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
   }
@@ -525,8 +507,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 }
 
 // Tests the "ADD ACCOUNT" button in the identity chooser view controller.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testAddAccountAutomatically {
+- (void)testAddAccountAutomatically {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -546,8 +527,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 }
 
 // Tests to remove the last identity in the identity chooser.
-// TODO(crbug.com/1045478) Fails on ios-simulator-full-configs.
-- (void)DISABLED_testRemoveLastAccount {
+- (void)testRemoveLastAccount {
   // Set up a fake identity.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];

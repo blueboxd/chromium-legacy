@@ -6,8 +6,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDimension_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantValue_jni.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
 
@@ -159,6 +163,71 @@ ValueProto ToNativeValue(JNIEnv* env,
   }
 
   return proto;
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDialogButton(
+    JNIEnv* env,
+    const InfoPopupProto_DialogButton& button_proto) {
+  base::android::ScopedJavaLocalRef<jstring> jurl = nullptr;
+
+  switch (button_proto.click_action_case()) {
+    case InfoPopupProto::DialogButton::kOpenUrlInCct:
+      jurl = base::android::ConvertUTF8ToJavaString(
+          env, button_proto.open_url_in_cct().url());
+      break;
+    case InfoPopupProto::DialogButton::kCloseDialog:
+      break;
+    case InfoPopupProto::DialogButton::CLICK_ACTION_NOT_SET:
+      NOTREACHED();
+      break;
+  }
+  return Java_AssistantDialogButton_Constructor(
+      env, base::android::ConvertUTF8ToJavaString(env, button_proto.label()),
+      jurl);
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
+    JNIEnv* env,
+    const InfoPopupProto& info_popup_proto) {
+  base::android::ScopedJavaLocalRef<jobject> jpositive_button = nullptr;
+  base::android::ScopedJavaLocalRef<jobject> jnegative_button = nullptr;
+  base::android::ScopedJavaLocalRef<jobject> jneutral_button = nullptr;
+
+  if (info_popup_proto.has_positive_button() ||
+      info_popup_proto.has_negative_button() ||
+      info_popup_proto.has_neutral_button()) {
+    if (info_popup_proto.has_positive_button()) {
+      jpositive_button =
+          CreateJavaDialogButton(env, info_popup_proto.positive_button());
+    }
+    if (info_popup_proto.has_negative_button()) {
+      jnegative_button =
+          CreateJavaDialogButton(env, info_popup_proto.negative_button());
+    }
+    if (info_popup_proto.has_neutral_button()) {
+      jneutral_button =
+          CreateJavaDialogButton(env, info_popup_proto.neutral_button());
+    }
+  } else {
+    // If no button is set in the proto, we add a Close button
+    jpositive_button = Java_AssistantDialogButton_Constructor(
+        env,
+        base::android::ConvertUTF8ToJavaString(
+            env, l10n_util::GetStringUTF8(IDS_CLOSE)),
+        nullptr);
+  }
+
+  return Java_AssistantInfoPopup_Constructor(
+      env,
+      base::android::ConvertUTF8ToJavaString(env, info_popup_proto.title()),
+      base::android::ConvertUTF8ToJavaString(env, info_popup_proto.text()),
+      jpositive_button, jnegative_button, jneutral_button);
+}
+
+void ShowJavaInfoPopup(JNIEnv* env,
+                       base::android::ScopedJavaLocalRef<jobject> jinfo_popup,
+                       base::android::ScopedJavaLocalRef<jobject> jcontext) {
+  Java_AssistantInfoPopup_show(env, jinfo_popup, jcontext);
 }
 
 }  // namespace ui_controller_android_utils

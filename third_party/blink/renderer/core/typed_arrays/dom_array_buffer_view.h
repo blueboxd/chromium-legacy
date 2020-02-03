@@ -80,8 +80,8 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
     return View()->BaseAddressMaybeShared();
   }
 
-  v8::Local<v8::Object> Wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creation_context) override {
+  v8::Local<v8::Value> Wrap(v8::Isolate*,
+                            v8::Local<v8::Object> creation_context) override {
     NOTREACHED();
     return v8::Local<v8::Object>();
   }

@@ -78,11 +78,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)deleteBackward;
 // Returns the layers affected by animations added by |-animateFadeWithStyle:|.
 - (NSArray*)fadeAnimationLayers;
-// Returns the text that is displayed in the field, including any inline
-// autocomplete text that may be present as an NSString. Returns the same
-// value as -|displayedText| but prefer to use this to avoid unnecessary
-// conversion from NSString to base::string16 if possible.
-- (NSString*)nsDisplayedText;
 // Font that should be used in current size class.
 - (UIFont*)currentFont;
 
@@ -173,19 +168,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }
 }
 
-- (base::string16)displayedText {
-  return base::SysNSStringToUTF16([self nsDisplayedText]);
-}
-
-- (base::string16)autocompleteText {
-  DCHECK_LT([[self text] length], [[_selection text] length])
-      << "[_selection text] and [self text] are out of sync. "
+- (NSString*)autocompleteText {
+  DCHECK_LT(self.text.length, _selection.text.length)
+      << "[_selection text] and self.text are out of sync. "
       << "Please email justincohen@ and rohitrao@ if you see this.";
-  if (_selection && [[_selection text] length] > [[self text] length]) {
-    return base::SysNSStringToUTF16(
-        [[_selection text] substringFromIndex:[[self text] length]]);
+  if (_selection && _selection.text.length > self.text.length) {
+    return [_selection.text substringFromIndex:self.text.length];
   }
-  return base::string16();
+  return @"";
 }
 
 - (BOOL)hasAutocompleteText {
@@ -218,7 +208,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (NSTextAlignment)bestTextAlignment {
   if ([self isFirstResponder]) {
-    return [self bestAlignmentForText:[self text]];
+    return [self bestAlignmentForText:self.text];
   }
   return NSTextAlignmentNatural;
 }
@@ -277,7 +267,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return;
   // Setting the empty field to Natural seems to let iOS update the cursor
   // position when the keyboard language is changed.
-  if (![self text].length) {
+  if (!self.text.length) {
     [self setTextAlignment:NSTextAlignmentNatural];
     return;
   }
@@ -588,7 +578,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     return;
 
   // Accept selection.
-  NSString* newText = [[self nsDisplayedText] copy];
+  NSString* newText = [[self displayedText] copy];
   [self clearAutocompleteText];
   [self setText:newText];
 }
@@ -605,7 +595,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self exitPreEditState];
   }
   if (_selection) {
-    NSString* newText = [[self nsDisplayedText] copy];
+    NSString* newText = [[self displayedText] copy];
     [self clearAutocompleteText];
     [self setText:newText];
   }
@@ -839,10 +829,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
              : NSTextAlignmentRight;
 }
 
-- (NSString*)nsDisplayedText {
+- (NSString*)displayedText {
   if (_selection)
     return [_selection text];
-  return [self text];
+  return self.text;
 }
 
 // Creates the SelectedTextLabel if it doesn't already exist and adds it as a

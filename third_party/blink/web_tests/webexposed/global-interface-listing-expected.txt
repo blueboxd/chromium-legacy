@@ -4667,6 +4667,14 @@ interface LargestContentfulPaint : PerformanceEntry
     getter url
     method constructor
     method toJSON
+interface LaunchParams
+    attribute @@toStringTag
+    getter files
+    method constructor
+interface LaunchQueue
+    attribute @@toStringTag
+    method constructor
+    method setConsumer
 interface LayoutShift : PerformanceEntry
     attribute @@toStringTag
     getter hadRecentInput
@@ -11636,6 +11644,7 @@ interface webkitURL
     getter innerHeight
     getter innerWidth
     getter isSecureContext
+    getter launchQueue
     getter localStorage
     getter locationbar
     getter menubar

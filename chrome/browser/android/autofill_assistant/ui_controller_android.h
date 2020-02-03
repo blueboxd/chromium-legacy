@@ -139,7 +139,7 @@ class UiControllerAndroid : public ControllerObserver {
   void OnDateTimeRangeEndDateCleared();
   void OnDateTimeRangeEndTimeSlotChanged(int index);
   void OnDateTimeRangeEndTimeSlotCleared();
-  void OnKeyValueChanged(const std::string& key, const std::string& value);
+  void OnKeyValueChanged(const std::string& key, const ValueProto& value);
   void OnTextFocusLost();
 
   // Called by AssistantFormDelegate:

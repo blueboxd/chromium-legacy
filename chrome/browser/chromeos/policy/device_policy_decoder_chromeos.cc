@@ -1461,14 +1461,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                   nullptr);
   }
 
-  if (policy.has_minimum_required_version()) {
-    const em::MinimumRequiredVersionProto& container(
-        policy.minimum_required_version());
-    if (container.has_chrome_version())
-      policies->Set(key::kMinimumRequiredChromeVersion, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    std::make_unique<base::Value>(container.chrome_version()),
-                    nullptr);
+  if (policy.has_minimum_chrome_version_enforced()) {
+    const em::StringPolicyProto& container(
+        policy.minimum_chrome_version_enforced());
+    if (container.has_value()) {
+      SetJsonDevicePolicy(key::kMinimumChromeVersionEnforced, container.value(),
+                          policies);
+    }
   }
 
   if (policy.has_unaffiliated_arc_allowed()) {

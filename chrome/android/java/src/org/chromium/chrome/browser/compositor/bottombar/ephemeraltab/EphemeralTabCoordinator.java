@@ -81,7 +81,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             @Override
             public void onSheetStateChanged(int newState) {
                 if (mSheetContent == null) return;
-                mSheetContent.showOpenInNewTabButton(newState == SheetState.FULL);
                 switch (newState) {
                     case SheetState.PEEK:
                         mMetrics.recordMetricsForPeeked();
@@ -101,9 +100,9 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
             @Override
             public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-                if (heightFraction == 0.0f) {
-                    mMetrics.recordMetricsForClosed(mCloseReason);
-                }
+                if (mSheetContent == null) return;
+                if (heightFraction == 0.0f) mMetrics.recordMetricsForClosed(mCloseReason);
+                mSheetContent.showOpenInNewTabButton(heightFraction);
             }
         });
     }

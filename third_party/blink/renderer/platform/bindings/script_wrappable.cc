@@ -17,7 +17,7 @@ struct SameSizeAsScriptWrappable {
 static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable),
               "ScriptWrappable should stay small");
 
-v8::Local<v8::Object> ScriptWrappable::Wrap(
+v8::Local<v8::Value> ScriptWrappable::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();

@@ -10,6 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/sharing_app.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -28,6 +29,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using ::testing::Property;
+
 namespace {
 
 class SharingDialogViewFake : public SharingDialogView {
@@ -45,10 +48,6 @@ class SharingDialogViewFake : public SharingDialogView {
 };
 
 }  // namespace
-
-MATCHER_P(DeviceEquals, device, "") {
-  return device->guid() == arg.guid();
-}
 
 MATCHER_P(AppEquals, app, "") {
   return app->name == arg.name;
@@ -71,14 +70,9 @@ class SharingDialogViewTest : public BrowserWithTestWindowTest {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> CreateDevices(int count) {
     std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
     for (int i = 0; i < count; i++) {
-      devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
-          base::StrCat({"device_guid_", base::NumberToString(i)}),
-          base::StrCat({"device", base::NumberToString(i)}), "chrome_version",
-          "user_agent", sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-          base::SysInfo::HardwareInfo(),
-          /*last_updated_timestamp=*/base::Time::Now(),
-          /*send_tab_to_self_receiving_enabled=*/false,
-          /*sharing_info=*/base::nullopt));
+      devices.emplace_back(CreateFakeDeviceInfo(
+          base::StrCat({"guid_", base::NumberToString(i)}),
+          base::StrCat({"name_", base::NumberToString(i)})));
     }
     return devices;
   }
@@ -151,14 +145,8 @@ TEST_F(SharingDialogViewTest, PopulateDialogView) {
 }
 
 TEST_F(SharingDialogViewTest, DevicePressed) {
-  syncer::DeviceInfo device_info("device_guid_1", "device1", "chrome_version",
-                                 "user_agent",
-                                 sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                 "device_id", base::SysInfo::HardwareInfo(),
-                                 /*last_updated_timestamp=*/base::Time::Now(),
-                                 /*send_tab_to_self_receiving_enabled=*/false,
-                                 /*sharing_info=*/base::nullopt);
-  EXPECT_CALL(device_callback_, Call(DeviceEquals(&device_info)));
+  EXPECT_CALL(device_callback_,
+              Call(Property(&syncer::DeviceInfo::guid, "guid_1")));
 
   auto dialog_data = CreateDialogData(/*devices=*/3, /*apps=*/2);
   auto dialog = CreateDialogView(std::move(dialog_data));

@@ -181,7 +181,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetDateTimeRangeEndTimeSlot(
       const base::Optional<int>& timeslot_index) override;
   void SetAdditionalValue(const std::string& client_memory_key,
-                          const std::string& value) override;
+                          const ValueProto& value) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;

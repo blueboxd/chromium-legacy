@@ -366,10 +366,10 @@ void PasswordAutofillManager::OnAddPasswordFillData(
   if (!autofill_client_ || autofill_client_->GetPopupSuggestions().empty())
     return;
   // TODO(https://crbug.com/1043963): Add empty state.
-  UpdatePopup(BuildSuggestions(ShowAllPasswords(true),
+  UpdatePopup(BuildSuggestions(base::string16(),
                                ForPasswordField(AreSuggestionForPasswordField(
                                    autofill_client_->GetPopupSuggestions())),
-                               base::string16(), OffersGeneration(false),
+                               ShowAllPasswords(true), OffersGeneration(false),
                                ShowPasswordSuggestions(true)));
 }
 
@@ -388,10 +388,10 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     const gfx::RectF& bounds) {
   ShowPopup(
       bounds, text_direction,
-      BuildSuggestions(ShowAllPasswords(options & autofill::SHOW_ALL),
+      BuildSuggestions(typed_username,
                        ForPasswordField(options & autofill::IS_PASSWORD_FIELD),
-                       typed_username, OffersGeneration(false),
-                       ShowPasswordSuggestions(true)));
+                       ShowAllPasswords(options & autofill::SHOW_ALL),
+                       OffersGeneration(false), ShowPasswordSuggestions(true)));
 }
 
 bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
@@ -399,8 +399,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
     base::i18n::TextDirection text_direction) {
   return ShowPopup(
       bounds, text_direction,
-      BuildSuggestions(ShowAllPasswords(true), ForPasswordField(true),
-                       base::string16(), OffersGeneration(false),
+      BuildSuggestions(base::string16(), ForPasswordField(true),
+                       ShowAllPasswords(true), OffersGeneration(false),
                        ShowPasswordSuggestions(true)));
 }
 
@@ -410,8 +410,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
     bool show_password_suggestions) {
   return ShowPopup(
       bounds, text_direction,
-      BuildSuggestions(ShowAllPasswords(true), ForPasswordField(true),
-                       base::string16(), OffersGeneration(true),
+      BuildSuggestions(base::string16(), ForPasswordField(true),
+                       ShowAllPasswords(true), OffersGeneration(true),
                        ShowPasswordSuggestions(show_password_suggestions)));
 }
 
@@ -435,9 +435,9 @@ bool PasswordAutofillManager::PreviewSuggestionForTest(
 // PasswordAutofillManager, private:
 
 std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
-    ShowAllPasswords show_all_passwords,
+    const base::string16& username_filter,
     ForPasswordField for_password_field,
-    const base::string16& typed_username,
+    ShowAllPasswords show_all_passwords,
     OffersGeneration offers_generation,
     ShowPasswordSuggestions show_password_suggestions) {
   std::vector<autofill::Suggestion> suggestions;
@@ -453,7 +453,7 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 
   // Add password suggestions if they exist and were requested.
   if (show_password_suggestions && fill_data_) {
-    GetSuggestions(*fill_data_, typed_username, page_favicon_,
+    GetSuggestions(*fill_data_, username_filter, page_favicon_,
                    show_all_passwords.value(), for_password_field.value(),
                    &suggestions);
   }

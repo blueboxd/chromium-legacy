@@ -25,8 +25,8 @@ const base::Feature kPulseInterval{"PulseInterval",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The delay between periodic updates to the entry corresponding to this device.
-const base::FeatureParam<int> kPulseIntervalHours = {&kPulseInterval,
-                                                     "PulseIntervalHours", 24};
+const base::FeatureParam<int> kPulseIntervalMinutes = {
+    &kPulseInterval, "PulseIntervalMinutes", 1440};  // 1 day
 
 base::TimeDelta Age(const base::Time last_update, const base::Time now) {
   // Don't allow negative age for things somehow updated in the future.
@@ -37,7 +37,7 @@ base::TimeDelta Age(const base::Time last_update, const base::Time now) {
 
 // static
 base::TimeDelta DeviceInfoUtil::GetPulseInterval() {
-  return base::TimeDelta::FromHours(kPulseIntervalHours.Get());
+  return base::TimeDelta::FromMinutes(kPulseIntervalMinutes.Get());
 }
 
 // static

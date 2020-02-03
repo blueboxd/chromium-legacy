@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -18,6 +19,8 @@
 #include "ui/gfx/image/image_skia.h"
 
 class Browser;
+class BrowserThemePack;
+class CustomThemeSupplier;
 
 namespace web_app {
 
@@ -32,7 +35,8 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url);
 
 // Class to encapsulate logic to control the browser UI for web apps.
 class AppBrowserController : public TabStripModelObserver,
-                             public content::WebContentsObserver {
+                             public content::WebContentsObserver,
+                             public BrowserThemeProviderDelegate {
  public:
   ~AppBrowserController() override;
 
@@ -46,6 +50,9 @@ class AppBrowserController : public TabStripModelObserver,
 
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
+
+  // Returns a theme built from the current page or app's theme color.
+  const ui::ThemeProvider* GetThemeProvider() const;
 
   // Returns whether this controller was created for an installed PWA.
   virtual bool IsHostedApp() const;
@@ -144,6 +151,9 @@ class AppBrowserController : public TabStripModelObserver,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
+  // BrowserThemeProviderDelegate:
+  CustomThemeSupplier* GetThemeSupplier() const override;
+
  protected:
   explicit AppBrowserController(Browser* browser,
                                 base::Optional<web_app::AppId> app_id);
@@ -162,9 +172,14 @@ class AppBrowserController : public TabStripModelObserver,
   // Sets the url that the app browser controller was created with.
   void SetInitialURL(const GURL& initial_url);
 
+  void UpdateThemePack();
+
   const base::Optional<AppId> app_id_;
   Browser* const browser_;
   GURL initial_url_;
+
+  scoped_refptr<BrowserThemePack> theme_pack_;
+  std::unique_ptr<ui::ThemeProvider> theme_provider_;
 
   base::Optional<SystemAppType> system_app_type_;
 

@@ -22,11 +22,12 @@ class UserModel;
 class GenericUiControllerAndroid {
  public:
   // Attempts to creata a new instance. May fail if the proto is invalid.
-  // |delegate|, |user_model| and |event_handler| must outlive this instance.
+  // |jcontext|, |delegate|, |user_model| and |event_handler| must outlive this
+  // instance. Ownership of the arguments is not changed.
   static std::unique_ptr<GenericUiControllerAndroid> CreateFromProto(
       const GenericUserInterfaceProto& proto,
-      const base::android::ScopedJavaLocalRef<jobject>& jcontext,
-      const base::android::ScopedJavaGlobalRef<jobject>& delegate,
+      base::android::ScopedJavaLocalRef<jobject> jcontext,
+      base::android::ScopedJavaGlobalRef<jobject> delegate,
       UserModel* user_model,
       EventHandler* event_handler);
 

@@ -91,22 +91,6 @@ void LayoutNGListItem::UpdateMarkerTextIfNeeded() {
     list_marker->UpdateMarkerTextIfNeeded(*marker);
 }
 
-LayoutNGListItem* LayoutNGListItem::FromMarkerOrMarkerContent(
-    const LayoutObject& object) {
-  DCHECK(object.IsAnonymous());
-
-  if (const ListMarker* marker = ListMarker::Get(&object))
-    return marker->ListItem(object);
-
-  // Check if this is a marker content.
-  if (const LayoutObject* parent = object.Parent()) {
-    if (const ListMarker* marker = ListMarker::Get(parent))
-      return marker->ListItem(*parent);
-  }
-
-  return nullptr;
-}
-
 int LayoutNGListItem::Value() const {
   DCHECK(GetNode());
   return ordinal_.Value(*GetNode());

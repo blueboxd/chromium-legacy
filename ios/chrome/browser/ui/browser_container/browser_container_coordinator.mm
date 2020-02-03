@@ -67,7 +67,7 @@ class WebContentAreaOverlayFullscreenDisabler
   if (self.started)
     return;
   self.started = YES;
-  DCHECK(self.browserState);
+  DCHECK(self.browser);
   DCHECK(!_viewController);
   BrowserContainerViewController* viewController =
       [[BrowserContainerViewController alloc] init];

@@ -53,11 +53,9 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     storage::SpecialStoragePolicy* special_storage_policy)
     : context_(context),
       storage_(ServiceWorkerStorage::Create(user_data_directory,
-                                            context,
                                             std::move(database_task_runner),
                                             quota_manager_proxy,
-                                            special_storage_policy,
-                                            this)) {
+                                            special_storage_policy)) {
   DCHECK(context_);
 }
 
@@ -65,9 +63,7 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     ServiceWorkerContextCore* context,
     ServiceWorkerRegistry* old_registry)
     : context_(context),
-      storage_(ServiceWorkerStorage::Create(context,
-                                            old_registry->storage(),
-                                            this)) {
+      storage_(ServiceWorkerStorage::Create(old_registry->storage())) {
   DCHECK(context_);
 }
 
@@ -328,7 +324,7 @@ void ServiceWorkerRegistry::NotifyDoneInstallingRegistration(
     std::set<int64_t> resource_ids;
     for (const auto& resource : resources)
       resource_ids.insert(resource.resource_id);
-    storage()->DoomUncommittedResources(resource_ids);
+    DoomUncommittedResources(resource_ids);
   }
 }
 
@@ -353,6 +349,18 @@ void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id) {
       resource_id,
       base::BindOnce(&ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
                      weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRegistry::DoomUncommittedResource(int64_t resource_id) {
+  DoomUncommittedResources(std::set<int64_t>(&resource_id, &resource_id + 1));
+}
+
+void ServiceWorkerRegistry::DoomUncommittedResources(
+    const std::set<int64_t>& resource_ids) {
+  storage()->DoomUncommittedResources(
+      resource_ids,
+      base::BindOnce(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
+                     weak_factory_.GetWeakPtr(), resource_ids));
 }
 
 void ServiceWorkerRegistry::GetUserData(int64_t registration_id,
@@ -543,6 +551,20 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
       key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserDataForAllRegistrations,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::PrepareForDeleteAndStarOver() {
+  should_schedule_delete_and_start_over_ = false;
+  storage()->Disable();
+}
+
+void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
+  storage()->DeleteAndStartOver(std::move(callback));
+}
+
+void ServiceWorkerRegistry::DisableDeleteAndStartOverForTesting() {
+  DCHECK(should_schedule_delete_and_start_over_);
+  should_schedule_delete_and_start_over_ = false;
 }
 
 ServiceWorkerRegistration*
@@ -969,6 +991,16 @@ void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
     ScheduleDeleteAndStartOver();
 }
 
+void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
+    const std::set<int64_t>& resource_ids,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    ScheduleDeleteAndStartOver();
+    return;
+  }
+  storage()->PurgeResources(resource_ids);
+}
+
 void ServiceWorkerRegistry::DidGetUserData(
     GetUserDataCallback callback,
     const std::vector<std::string>& data,
@@ -1027,13 +1059,18 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {
-  if (storage()->IsDisabled()) {
+  if (!should_schedule_delete_and_start_over_) {
     // Recovery process has already been scheduled.
     return;
   }
 
-  storage()->Disable();
+  // Ideally, the corruption recovery should not be scheduled if the error
+  // is transient as it can get healed soon (e.g. IO error). However we
+  // unconditionally start recovery here for simplicity and low error rates.
+  DVLOG(1) << "Schedule to delete the context and start over.";
   context_->ScheduleDeleteAndStartOver();
+  // ServiceWorkerContextCore should call PrepareForDeleteAndStartOver().
+  DCHECK(!should_schedule_delete_and_start_over_);
 }
 
 }  // namespace content

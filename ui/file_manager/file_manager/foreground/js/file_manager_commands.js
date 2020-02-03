@@ -1017,17 +1017,21 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
 
     if (!dialog) {
       dialog = fileManager.ui.deleteConfirmDialog;
+    } else if (dialog.showModalElement) {
+      dialog.showModalElement();
     }
 
     dialog.show(message, () => {
+      dialog.doneCallback && dialog.doneCallback();
       fileManager.fileOperationManager.deleteEntries(entries);
-    }, null, null);
+    }, dialog.doneCallback, null);
   }
 
   /**
-   * Checks if the entries are deletable.
+   * Returns true if all entries can be deleted.
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
+   * @return {boolean}
    */
   canDeleteEntries_(entries, fileManager) {
     return entries.length > 0 &&

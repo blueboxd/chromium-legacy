@@ -181,6 +181,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
   void ExecCommand(gin::Arguments* args);
+  void TriggerTestInspectorIssue(gin::Arguments* args);
   void ForceNextDrawingBufferCreationToFail();
   void ForceNextWebGLContextCreationToFail();
   void ForceRedSelectionColors();
@@ -451,6 +452,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
           "evaluateScriptInIsolatedWorldAndReturnValue",
           &TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue)
       .SetMethod("execCommand", &TestRunnerBindings::ExecCommand)
+      .SetMethod("triggerTestInspectorIssue",
+                 &TestRunnerBindings::TriggerTestInspectorIssue)
       .SetMethod("findString", &TestRunnerBindings::FindString)
       .SetMethod("forceNextDrawingBufferCreationToFail",
                  &TestRunnerBindings::ForceNextDrawingBufferCreationToFail)
@@ -713,6 +716,11 @@ void TestRunnerBindings::SetTabKeyCyclesThroughElements(
 void TestRunnerBindings::ExecCommand(gin::Arguments* args) {
   if (view_runner_)
     view_runner_->ExecCommand(args);
+}
+
+void TestRunnerBindings::TriggerTestInspectorIssue(gin::Arguments* args) {
+  if (view_runner_)
+    view_runner_->TriggerTestInspectorIssue();
 }
 
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {

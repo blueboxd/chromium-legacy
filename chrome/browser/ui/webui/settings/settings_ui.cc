@@ -250,6 +250,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "navigateToGooglePasswordManager",
       ShouldManagePasswordsinGooglePasswordManager(profile));
 
+  html_source->AddBoolean(
+      "enablePasswordCheck",
+      base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck));
+
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));

@@ -1671,6 +1671,10 @@ ci.linux_builder(
     triggered_by = ['Linux Builder (dbg)'],
 )
 
+ci.fyi_builder(
+    name = 'Network Service Linux',
+)
+
 ci.linux_builder(
     name = 'fuchsia-arm64-cast',
     notifies = ['cr-fuchsia'],

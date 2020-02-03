@@ -8,6 +8,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync_device_info/device_info_sync_client.h"
+#include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/local_device_info_util.h"
 
 namespace syncer {
@@ -64,6 +65,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
       GetLocalDeviceType(), sync_client_->GetSigninScopedDeviceId(),
       hardware_info,
       /*last_updated_timestamp=*/base::Time(),
+      DeviceInfoUtil::GetPulseInterval(),
       sync_client_->GetSendTabToSelfReceivingEnabled(),
       sync_client_->GetLocalSharingInfo());
 

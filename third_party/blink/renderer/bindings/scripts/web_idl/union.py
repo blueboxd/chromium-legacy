@@ -87,8 +87,7 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         # type_names = sorted(
         #     [idl_type.type_name for idl_type in flattened_members])
         type_names = [
-            idl_type.type_name for idl_type in union_types[0].
-            flattened_member_types_in_original_order
+            idl_type.type_name for idl_type in union_types[0].member_types
         ]
         if does_include_nullable_type:
             type_names.append('Null')

@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST;
@@ -53,6 +54,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantCollectUserDataTestHelper.ViewHolder;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantContactField;
@@ -1437,13 +1439,17 @@ public class AutofillAssistantCollectUserDataUiTest {
 
         onView(withContentDescription("Discount code")).check(matches(isDisplayed()));
         onView(withContentDescription("Loyalty code")).check(matches(isDisplayed()));
-        assertThat(delegate.mAdditionalValues.get("discount"), is("123456789"));
-        assertThat(delegate.mAdditionalValues.get("loyalty"), is(""));
+        assertEquals(delegate.mAdditionalValues.get("discount"),
+                new AssistantValue(new String[] {"123456789"}));
+        assertEquals(
+                delegate.mAdditionalValues.get("loyalty"), new AssistantValue(new String[] {""}));
 
         onView(withContentDescription("Discount code")).perform(replaceText("D-742394"));
         onView(withContentDescription("Loyalty code")).perform(replaceText("L-394834"));
-        assertThat(delegate.mAdditionalValues.get("discount"), is("D-742394"));
-        assertThat(delegate.mAdditionalValues.get("loyalty"), is("L-394834"));
+        assertEquals(delegate.mAdditionalValues.get("discount"),
+                new AssistantValue(new String[] {"D-742394"}));
+        assertEquals(delegate.mAdditionalValues.get("loyalty"),
+                new AssistantValue(new String[] {"L-394834"}));
     }
 
     @Test

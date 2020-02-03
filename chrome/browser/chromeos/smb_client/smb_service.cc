@@ -173,19 +173,6 @@ void SmbService::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kMostRecentlyUsedNetworkFileShareURL, "");
 }
 
-void SmbService::Mount(const file_system_provider::MountOptions& options,
-                       const base::FilePath& share_path,
-                       const std::string& username,
-                       const std::string& password,
-                       bool use_kerberos,
-                       bool should_open_file_manager_after_mount,
-                       bool save_credentials,
-                       MountResponse callback) {
-  CallMount(options, share_path, username, password, use_kerberos,
-            should_open_file_manager_after_mount, save_credentials,
-            std::move(callback));
-}
-
 void SmbService::UnmountSmbFs(const base::FilePath& mount_path) {
   DCHECK(!mount_path.empty());
 
@@ -263,14 +250,14 @@ void SmbService::OnUpdateSharePathResponse(
   std::move(reply).Run(true /* should_retry_start_read_dir */);
 }
 
-void SmbService::CallMount(const file_system_provider::MountOptions& options,
-                           const base::FilePath& share_path,
-                           const std::string& username_input,
-                           const std::string& password_input,
-                           bool use_kerberos,
-                           bool should_open_file_manager_after_mount,
-                           bool save_credentials,
-                           MountResponse callback) {
+void SmbService::Mount(const file_system_provider::MountOptions& options,
+                       const base::FilePath& share_path,
+                       const std::string& username_input,
+                       const std::string& password_input,
+                       bool use_kerberos,
+                       bool should_open_file_manager_after_mount,
+                       bool save_credentials,
+                       MountResponse callback) {
   SmbUrl parsed_url(share_path.value());
   if (!parsed_url.IsValid() || parsed_url.GetShare().empty()) {
     // Handle invalid URLs early to avoid having unaccounted for UMA counts for

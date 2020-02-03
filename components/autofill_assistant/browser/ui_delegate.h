@@ -149,7 +149,7 @@ class UiDelegate {
 
   // Sets an additional value.
   virtual void SetAdditionalValue(const std::string& client_memory_key,
-                                  const std::string& value) = 0;
+                                  const ValueProto& value) = 0;
 
   // Adds the rectangles that correspond to the current touchable area to
   // the given vector.

@@ -73,6 +73,12 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"configureMessage", IDS_CROSTINI_INSTALLER_CONFIGURE_MESSAGE},
       {"diskSizeMessage", IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE},
       {"usernameMessage", IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE},
+      {"usernameInvalidFirstCharacterError",
+       IDS_CROSTINI_INSTALLER_USERNAME_INVALID_FIRST_CHARACTER_ERROR},
+      {"usernameInvalidCharactersError",
+       IDS_CROSTINI_INSTALLER_USERNAME_INVALID_CHARACTERS_ERROR},
+      {"usernameNotAvailableError",
+       IDS_CROSTINI_INSTALLER_USERNAME_NOT_AVAILABLE_ERROR},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
@@ -150,9 +156,12 @@ bool CrostiniInstallerUI::can_close() {
 }
 
 void CrostiniInstallerUI::ClickInstallForTesting() {
+  // TODO(lxj): This assumes the config page does not show. When flag
+  // CrostiniUsername or CrostiniDiskResizing is turned on by default, we should
+  // click the "next" button first.
   web_ui()->GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.querySelector('crostini-installer-app')"
-                         ".$$('.action-button').click()"),
+                         ".$.install.click()"),
       base::NullCallback());
 }
 

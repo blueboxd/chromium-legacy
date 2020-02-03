@@ -2247,8 +2247,32 @@
   </message>
 
   <!-- Obsolete versions Notification strings-->
-  <message name="IDS_UPDATE_REQUIRED_LOGIN_SCREEN_MESSAGE" desc="The message on login screen to inform the user that policy prevents user sign in before OS version is is updated.">
-    Your device is no longer compliant with the minimum client version specified by your admin. Please update to login.
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_TITLE" desc="The title of the update required dialog on the login screen to inform the user that policy prevents user sign in before OS version is is updated.">
+     Immediate update required
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_MESSAGE" desc="The message of the update required dialog on the login screen to inform the user that policy prevents user sign in before OS version is is updated.">
+     <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to update your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> immediately.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_START_UPDATE" desc="Label for the update button on the update required dialog on the login screen to start the update process.">
+     Update now
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_EOL_TITLE" desc="The title on login screen to inform the user that policy prevents the device from being used as it has reached its end of life.">
+    Device has been blocked
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_EOL_MESSAGE" desc="The message on login screen to inform the user that policy prevents the device from being used as it has reached its end of life.">
+    The deadline to return this device has passed.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_METERED_MESSAGE" desc="The message on the dialog shown to the user in Chrome OS before forced update is attempted if the Chrome OS device is connected to a cellular/metered network. The dialog warns the user that procceeding on a metered network can cause overage charges.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to connect to Wi-Fi now and download an update. Or, download from a metered connection (charges may apply).
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_ALLOW_METERED" desc="Label for button to allow downloading update over a metered connection.">
+    Use metered connection
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_NO_NETWORK_MESSAGE" desc="The message on the dialog shown to the user in Chrome OS before forced update is attempted if the Chrome OS device is not connected to a network.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to connect to Wi-Fi now and download an update. The update will download automatically when you connect to the internet.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS" desc="Label for network configuration button on the update required dialog on the login screen to open network settings so that the user can connect to a network.">
+    Open network settings
   </message>
 
   <!-- Genius App -->
@@ -3619,6 +3643,15 @@
   </message>
   <message name="IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE" desc="Text shown in the Crostini installer dialog prompting the user to pick their username">
     Select a username
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_USERNAME_INVALID_FIRST_CHARACTER_ERROR" desc="Text shown in the Crostini installer dialog when the user picks a username starting with an invalid character">
+    Must start with a lowercase character or underscore
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_USERNAME_INVALID_CHARACTERS_ERROR" desc="Text shown in the Crostini installer dialog when the user picks a username containing an invalid character">
+    Lowercase characters, digits, underscores, or dashes only
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_USERNAME_NOT_AVAILABLE_ERROR" desc="Text shown in the Crostini installer dialog when the user picks a username that is not available">
+    Username "<ph name="USERNAME">$1<ex>root</ex></ph>" is not available
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
     Delete Linux (Beta)

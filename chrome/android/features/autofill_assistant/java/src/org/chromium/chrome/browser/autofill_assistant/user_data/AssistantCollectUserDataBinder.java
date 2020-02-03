@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSection.Delegate;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
 import org.chromium.chrome.browser.payments.AddressEditor;
@@ -197,7 +198,7 @@ class AssistantCollectUserDataBinder
             AssistantCollectUserDataDelegate collectUserDataDelegate) {
         return new Delegate() {
             @Override
-            public void onValueChanged(String key, String value) {
+            public void onValueChanged(String key, AssistantValue value) {
                 collectUserDataDelegate.onKeyValueChanged(key, value);
             }
 

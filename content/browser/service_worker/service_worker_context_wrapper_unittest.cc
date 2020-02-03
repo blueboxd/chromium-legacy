@@ -80,7 +80,8 @@ TEST_F(ServiceWorkerContextWrapperTest, HasRegistration) {
   GURL scope("https://example.com/");
   GURL script("https://example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), scope, script);
+      CreateServiceWorkerRegistrationAndVersion(context(), scope, script,
+                                                /*resource_id=*/1);
 
   // Store it.
   base::RunLoop loop;

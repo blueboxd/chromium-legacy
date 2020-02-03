@@ -170,7 +170,9 @@ TEST_F(SetFormFieldValueActionTest, GeneratedPassword) {
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   action.ProcessAction(callback_.Get());
   EXPECT_EQ(kGeneratedPassword,
-            user_data_.additional_values_[kMemoryKeyForGeneratedPassword]);
+            user_data_.additional_values_[kMemoryKeyForGeneratedPassword]
+                .strings()
+                .values(0));
 }
 
 TEST_F(SetFormFieldValueActionTest, Keycode) {
@@ -246,7 +248,9 @@ TEST_F(SetFormFieldValueActionTest, MultipleValuesAndSimulateKeypress) {
 TEST_F(SetFormFieldValueActionTest, ClientMemoryKey) {
   auto* value = set_form_field_proto_->add_value();
   value->set_client_memory_key("key");
-  user_data_.additional_values_["key"] = "SomeText𠜎";
+  ValueProto value_proto;
+  value_proto.mutable_strings()->add_values("SomeText𠜎");
+  user_data_.additional_values_["key"] = value_proto;
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "SomeText𠜎"));

@@ -7944,6 +7944,11 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
                             deprecation_message);
 }
 
+void RenderFrameHostImpl::AddInspectorIssue(
+    blink::mojom::InspectorIssueCode code) {
+  GetAssociatedLocalFrame()->AddInspectorIssue(code);
+}
+
 bool RenderFrameHostImpl::ShouldAddCookieSameSiteDeprecationMessage(
     const std::string& cookie_url,
     base::circular_deque<size_t>* already_seen_url_hashes) {

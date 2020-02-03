@@ -215,8 +215,8 @@ GenericUiControllerAndroid::~GenericUiControllerAndroid() {
 std::unique_ptr<GenericUiControllerAndroid>
 GenericUiControllerAndroid::CreateFromProto(
     const GenericUserInterfaceProto& proto,
-    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
-    const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
+    base::android::ScopedJavaLocalRef<jobject> jcontext,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate,
     UserModel* user_model,
     EventHandler* event_handler) {
   // Create view layout.
@@ -231,7 +231,7 @@ GenericUiControllerAndroid::CreateFromProto(
 
   // Create interactions.
   auto interaction_handler =
-      std::make_unique<InteractionHandlerAndroid>(event_handler);
+      std::make_unique<InteractionHandlerAndroid>(event_handler, jcontext);
   if (!interaction_handler->AddInteractionsFromProto(
           proto.interactions(), env, *views, jdelegate, user_model)) {
     return nullptr;

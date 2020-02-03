@@ -18,6 +18,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
@@ -376,6 +377,10 @@ class WebLocalFrame : public WebFrame {
   void AddMessageToConsole(const WebConsoleMessage& message,
                            bool discard_duplicates = false) {
     AddMessageToConsoleImpl(message, discard_duplicates);
+  }
+
+  void AddInspectorIssue(blink::mojom::InspectorIssueCode code) {
+    AddInspectorIssueImpl(code);
   }
 
   // Expose modal dialog methods to avoid having to go through JavaScript.
@@ -756,6 +761,7 @@ class WebLocalFrame : public WebFrame {
 
   virtual void AddMessageToConsoleImpl(const WebConsoleMessage&,
                                        bool discard_duplicates) = 0;
+  virtual void AddInspectorIssueImpl(blink::mojom::InspectorIssueCode code) = 0;
 };
 
 }  // namespace blink

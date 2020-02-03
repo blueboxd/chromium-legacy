@@ -188,17 +188,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       !user_profile->GetProfilePolicyConnector()->IsManaged())
     UserSessionManager::GetInstance()->CheckEolInfo(user_profile);
 
-  tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
-  UserSessionManager::GetInstance()->MaybeShowU2FNotification();
-  UserSessionManager::GetInstance()->MaybeShowReleaseNotesNotification(
-      user_profile);
-  g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetTPMAutoUpdateModePolicyHandler()
-      ->ShowTPMAutoUpdateNotificationIfNeeded();
-
-  ArcTermsOfServiceScreen::MaybeLaunchArcSettings(user_profile);
-  SyncConsentScreen::MaybeLaunchSyncConsentSettings(user_profile);
+  UserSessionManager::GetInstance()->ShowNotificationsIfNeeded(user_profile);
+  UserSessionManager::GetInstance()->MaybeLaunchSettings(user_profile);
   UserSessionManager::GetInstance()->StartAccountManagerMigration(user_profile);
 }
 

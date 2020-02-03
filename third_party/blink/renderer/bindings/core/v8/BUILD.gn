@@ -5,11 +5,18 @@
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/core/v8/generated.gni")
+import("//third_party/blink/renderer/bindings/generated_in_core.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/core/core.gni")
 import("//third_party/blink/renderer/core/core_idl_files.gni")
 
 visibility = [ "//third_party/blink/renderer/*" ]
+
+blink_core_sources("generated") {
+  sources = generated_enumeration_sources_in_core
+  deps =
+      [ "//third_party/blink/renderer/bindings:generate_bindings_enumeration" ]
+}
 
 generate_origin_trial_features("bindings_core_origin_trial_features") {
   sources =

@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+
+import java.util.Arrays;
 
 /** The Java equivalent to {@code ValueProto}. */
 @JNINamespace("autofill_assistant")
@@ -20,19 +24,19 @@ public class AssistantValue {
         mIntegers = null;
     }
 
-    AssistantValue(String[] strings) {
+    public AssistantValue(String[] strings) {
         mStrings = strings;
         mBooleans = null;
         mIntegers = null;
     }
 
-    AssistantValue(boolean[] booleans) {
+    public AssistantValue(boolean[] booleans) {
         mStrings = null;
         mBooleans = booleans;
         mIntegers = null;
     }
 
-    AssistantValue(int[] integers) {
+    public AssistantValue(int[] integers) {
         mStrings = null;
         mBooleans = null;
         mIntegers = integers;
@@ -71,5 +75,20 @@ public class AssistantValue {
     @CalledByNative
     public int[] getIntegers() {
         return mIntegers;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof AssistantValue)) {
+            return false;
+        }
+        AssistantValue value = (AssistantValue) obj;
+
+        return Arrays.equals(this.mStrings, value.mStrings)
+                && Arrays.equals(this.mBooleans, value.mBooleans)
+                && Arrays.equals(this.mIntegers, value.mIntegers);
     }
 }

@@ -47,6 +47,10 @@ body {
   width: 100%;
 }
 
+body.files-ng {
+  font-size: 13px;
+}
+
 button:focus,
 input[type='button']:focus,
 input[type='submit']:focus,
@@ -1616,10 +1620,24 @@ html[dir='rtl'] .badge {
   background-color: rgb(232, 234, 237);
 }
 
+body.files-ng #list-container list > li[selected],
+body.files-ng #list-container list > li:active,
+body.files-ng #list-container list > li.accepts,
+body.files-ng #list-container list:focus > li[lead] {
+  background-color: var(--google-grey-100);
+  border-radius: 2px;
+}
+
 #list-container list:focus > li[selected],
 #list-container list:focus > li.accepts[selected],
 #list-container list:focus > li[lead] {
   background-color: rgb(216, 223, 240);
+}
+
+body.files-ng #list-container list:focus > li[selected],
+body.files-ng #list-container list:focus > li.accepts[selected],
+body.files-ng #list-container list:focus > li[lead] {
+  background-color: var(--google-blue-50);
 }
 
 #default-tasks-list:focus > li[selected],
@@ -1636,6 +1654,15 @@ body.check-select #list-container list > li[lead]:not([selected]),
 body.check-select #list-container list:focus > li[lead]:not([selected]),
 #list-container list > li[lead]:not([selected]):focus {
   background-color: rgb(232, 234, 237);
+}
+
+body.files-ng #list-container li {
+  border: 1px solid transparent;
+}
+
+body.files-ng.check-select #list-container list:focus > li[lead] {
+  background-color: var(--google-blue-50);
+  border: 1px solid var(--google-blue-600);
 }
 
 #list-container.nohover grid > .accepts {
@@ -2121,6 +2148,10 @@ body[drive='error'] #unmounted-panel > .error,
   width: 120px;
 }
 
+body.files-ng #empty-folder {
+  display: none;
+}
+
 #empty-folder > .label {
   color: rgb(180, 180, 180);
   font-size: 16px;
@@ -2156,7 +2187,6 @@ body.files-ng .table-header {
   border-bottom: none;
   color: var(--google-grey-700);
   font-family: 'Roboto Medium';
-  font-size: 13px;
   height: 56px;
   line-height: 20px;
   padding-bottom: 16px;
@@ -2176,7 +2206,7 @@ body.files-ng #list-container .table-header-cell:first-child
 
 body.files-ng .table-header-splitter {
   background-image: url(../images/common/dragger.svg);
-  background-repeat: no-repeat ;
+  background-repeat: no-repeat;
   height: inherit;
   width: 16px;
 }
@@ -2201,6 +2231,67 @@ body.files-ng .table-header-sort-image-asc::after {
   margin-inline-start: 8px;
   padding: 0;
   width: 16px;
+}
+
+body.files-ng #list-container li.table-row {
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 20px;
+}
+
+body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
+> .thumbnail {
+  animation: none;
+}
+
+body.files-ng .table-row-cell > * {
+  color: var(--google-grey-700);
+  padding: 0;
+  padding-inline-start: 24px;
+}
+
+body.files-ng #list-container .table-row-cell .size {
+  padding-inline-end: 5px;
+  padding-inline-start: 22px;
+}
+
+body.files-ng.check-select list:focus li[selected] .table-row-cell > * {
+  color: var(--google-blue-600);
+}
+
+body.files-ng .table-row-cell:first-child > * {
+  padding-inline-start: 0;
+}
+
+body.files-ng .table-row-cell .filename-label {
+  color: var(--google-grey-900);
+}
+
+body.files-ng.check-select list:focus li[selected] .table-row-cell
+.filename-label {
+  color: var(--google-blue-600);
+}
+
+body.files-ng #list-container li .detail-icon {
+  height: 40px;
+  margin-inline-end: 16px;
+  margin-inline-start: 12px;
+  width: 32px;
+}
+
+body.files-ng #list-container li .detail-checkmark {
+  -webkit-mask-image: url(../images/files/ui/list_check.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
+  background-image: none;
+  height: 40px;
+  width: 32px;
+}
+
+body.files-ng #list-container li .detail-thumbnail {
+  height: 32px;
+  width: 32px;
 }
 
 #new-folder-button {

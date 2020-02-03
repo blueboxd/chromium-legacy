@@ -2040,6 +2040,28 @@ void UserSessionManager::StartTetherServiceIfPossible(Profile* profile) {
     tether_service->StartTetherIfPossible();
 }
 
+void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
+  // Check to see if this profile should show TPM Firmware Update Notification
+  // and show the message accordingly.
+  tpm_firmware_update::ShowNotificationIfNeeded(profile);
+
+  // Show legacy U2F notification if applicable.
+  MaybeShowU2FNotification();
+
+  // Show Release Notes notification if applicable.
+  MaybeShowReleaseNotesNotification(profile);
+
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetTPMAutoUpdateModePolicyHandler()
+      ->ShowTPMAutoUpdateNotificationIfNeeded();
+}
+
+void UserSessionManager::MaybeLaunchSettings(Profile* profile) {
+  ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
+  SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
+}
+
 void UserSessionManager::OnRestoreActiveSessions(
     base::Optional<SessionManagerClient::ActiveSessionsMap> sessions) {
   if (!sessions.has_value()) {
@@ -2344,24 +2366,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // the message accordingly.
   CheckEolInfo(profile);
 
-  // Check to see if this profile should show TPM Firmware Update Notification
-  // and show the message accordingly.
-  tpm_firmware_update::ShowNotificationIfNeeded(profile);
-
-  // Show legacy U2F notification if applicable.
-  MaybeShowU2FNotification();
-
-  // Show Release Notes notification if applicable.
-  MaybeShowReleaseNotesNotification(profile);
-
-  g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetTPMAutoUpdateModePolicyHandler()
-      ->ShowTPMAutoUpdateNotificationIfNeeded();
+  ShowNotificationsIfNeeded(profile);
 
   if (should_launch_browser_) {
-    ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
-    SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
+    MaybeLaunchSettings(profile);
   }
   StartAccountManagerMigration(profile);
 }

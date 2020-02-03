@@ -111,7 +111,7 @@ void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,
 }
 
 base::string16 OmniboxViewIOS::GetText() const {
-  return [field_ displayedText];
+  return base::SysNSStringToUTF16([field_ displayedText]);
 }
 
 void OmniboxViewIOS::SetWindowTextAndCaretPos(const base::string16& text,
@@ -163,7 +163,7 @@ void OmniboxViewIOS::UpdatePopup() {
   // cursor is not at the end of the text.
   bool prevent_inline_autocomplete =
       IsImeComposing() ||
-      NSMaxRange(current_selection_) != [[field_ text] length];
+      NSMaxRange(current_selection_) != [field_.text length];
   if (model())
     model()->StartAutocomplete(current_selection_.length != 0,
                                prevent_inline_autocomplete);
@@ -271,7 +271,7 @@ void OmniboxViewIOS::OnDidBeginEditing() {
 
   // Text attributes (e.g. text color) should not be shown while editing, so
   // strip them out by calling setText (as opposed to setAttributedText).
-  [field_ setText:[field_ text]];
+  [field_ setText:field_.text];
   OnBeforePossibleChange();
 
   // Make sure the omnibox popup's semantic content attribute is set correctly.
@@ -366,13 +366,13 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
       // or if the user pastes some text in.  Let's loosen this test to allow
       // multiple characters, as long as the "old range" ends at the end of the
       // permanent text.
-      if ([new_text length] == 1 && range.location == [[field_ text] length]) {
-        old_range = NSMakeRange([[field_ text] length],
-                                [field_ autocompleteText].length());
+      if ([new_text length] == 1 && range.location == [field_.text length]) {
+        old_range =
+            NSMakeRange(field_.text.length, field_.autocompleteText.length);
       }
     } else if (deleting_text) {
       if ([new_text length] == 0 &&
-          range.location == [[field_ text] length] - 1) {
+          range.location == [field_.text length] - 1) {
         ok_to_change = false;
       }
     }
@@ -404,7 +404,7 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
 void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
   // Sanitize pasted text.
   if (model() && model()->is_pasting()) {
-    base::string16 pastedText = base::SysNSStringToUTF16([field_ text]);
+    base::string16 pastedText = base::SysNSStringToUTF16(field_.text);
     base::string16 newText = OmniboxView::SanitizeTextForPaste(pastedText);
     if (pastedText != newText) {
       [field_ setText:base::SysUTF16ToNSString(newText)];
@@ -481,7 +481,7 @@ void OmniboxViewIOS::OnCopy() {
   NSString* selectedText = nil;
   NSInteger start_location = 0;
   if ([field_ isPreEditing]) {
-    selectedText = [field_ preEditText];
+    selectedText = field_.preEditText;
     start_location = 0;
   } else {
     UITextRange* selected_range = [field_ selectedTextRange];
@@ -572,7 +572,7 @@ void OmniboxViewIOS::UpdateAppearance() {
 }
 
 void OmniboxViewIOS::OnDeleteBackward() {
-  if ([field_ text].length == 0) {
+  if (field_.text.length == 0) {
     // If the user taps backspace while the pre-edit text is showing,
     // OnWillChange is invoked before this method and sets the text to an empty
     // string, so use the |clearingPreEditText| to determine if the chip should
@@ -605,7 +605,7 @@ void OmniboxViewIOS::ClearText() {
   // user can start typing a new query.
   if (![field_ isFirstResponder])
     [field_ becomeFirstResponder];
-  if ([field_ text].length == 0) {
+  if (field_.text.length == 0) {
     // If |field_| is empty, remove the query refinement chip.
     RemoveQueryRefinementChip();
   } else {
@@ -632,7 +632,7 @@ bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
   // http://www.fileformat.info/info/unicode/char/fffc/index.htm
   NSString* objectReplacementChar =
       [NSString stringWithFormat:@"%C", (unichar)0xFFFC];
-  return [[field_ text] rangeOfString:objectReplacementChar].length > 0;
+  return [field_.text rangeOfString:objectReplacementChar].length > 0;
 }
 
 void OmniboxViewIOS::EndEditing() {
@@ -668,7 +668,7 @@ BOOL OmniboxViewIOS::IsPopupOpen() {
 }
 
 int OmniboxViewIOS::GetOmniboxTextLength() const {
-  return [field_ displayedText].length();
+  return [field_ displayedText].length;
 }
 
 #pragma mark - OmniboxPopupViewSuggestionsDelegate

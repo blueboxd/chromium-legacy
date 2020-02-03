@@ -4,17 +4,15 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "extensions/common/constants.h"
 
 namespace chromeos {
 namespace app_time {
@@ -127,9 +125,6 @@ void AppActivityRegistry::OnAppActive(const AppId& app_id,
   if (!base::Contains(activity_registry_, app_id))
     return;
 
-  if (app_id == GetChromeAppId())
-    return;
-
   AppDetails& app_details = activity_registry_[app_id];
 
   DCHECK(IsAppAvailable(app_id));
@@ -150,9 +145,6 @@ void AppActivityRegistry::OnAppInactive(const AppId& app_id,
                                         aura::Window* window,
                                         base::Time timestamp) {
   if (!base::Contains(activity_registry_, app_id))
-    return;
-
-  if (app_id == GetChromeAppId())
     return;
 
   std::set<aura::Window*>& active_windows =
@@ -312,30 +304,6 @@ void AppActivityRegistry::UpdateAppLimits(
     }
   }
   // TODO(agawronska): Propagate information about the limit changes.
-}
-
-void AppActivityRegistry::OnChromeAppActivityChanged(
-    ChromeAppActivityState state,
-    base::Time timestamp) {
-  AppId chrome_app_id = GetChromeAppId();
-  if (!base::Contains(activity_registry_, chrome_app_id))
-    return;
-
-  AppDetails& details = activity_registry_[chrome_app_id];
-  bool was_active = details.activity.is_active();
-
-  bool is_active = (state == ChromeAppActivityState::kActive);
-
-  // No change in state.
-  if (was_active == is_active)
-    return;
-
-  if (is_active) {
-    SetAppActive(chrome_app_id, timestamp);
-    return;
-  }
-
-  SetAppInactive(chrome_app_id, timestamp);
 }
 
 void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {

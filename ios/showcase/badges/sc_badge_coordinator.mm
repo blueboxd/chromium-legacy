@@ -147,7 +147,8 @@
 
 - (void)overflowBadgeButtonTapped:(id)sender {
   self.badgePopupMenuCoordinator = [[BadgePopupMenuCoordinator alloc]
-      initWithBaseViewController:self.containerViewController];
+      initWithBaseViewController:self.containerViewController
+                         browser:nil];
   NSArray* badgeItems = @[ [[InfobarBadgeModel alloc]
       initWithInfobarType:InfobarType::kInfobarTypePasswordSave] ];
   [self.badgePopupMenuCoordinator setBadgeItemsToShow:badgeItems];

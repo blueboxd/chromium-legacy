@@ -104,6 +104,7 @@ class WindowAgent;
 class WindowAgentFactory;
 class ComputedStyle;
 class ConsoleMessage;
+class InspectorIssue;
 class ContextFeatures;
 class CookieJar;
 class V0CustomElementMicrotaskRunQueue;
@@ -1332,6 +1333,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void DidAssociateFormControl(Element*);
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
+  void AddInspectorIssue(InspectorIssue*);
 
   LocalDOMWindow* ExecutingWindow() const final;
   LocalFrame* ExecutingFrame();

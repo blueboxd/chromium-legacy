@@ -37,6 +37,11 @@
         "UpdateApplicationCacheStatus",
       ]
     },
+    InspectorAuditsAgent: {
+      probes: [
+        "InspectorIssueAdded"
+      ]
+    },
     InspectorCSSAgent: {
       probes: [
         "ActiveStyleSheetsUpdated",

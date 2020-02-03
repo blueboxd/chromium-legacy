@@ -44,10 +44,21 @@ DOMWindow::~DOMWindow() {
   DCHECK(!frame_);
 }
 
-v8::Local<v8::Object> DOMWindow::Wrap(v8::Isolate* isolate,
-                                      v8::Local<v8::Object> creation_context) {
-  NOTREACHED();
-  return v8::Local<v8::Object>();
+v8::Local<v8::Value> DOMWindow::Wrap(v8::Isolate* isolate,
+                                     v8::Local<v8::Object> creation_context) {
+  // TODO(yukishiino): Get understanding of why it's possible to initialize
+  // the context after the frame is detached.  And then, remove the following
+  // lines.  See also https://crbug.com/712638 .
+  Frame* frame = GetFrame();
+  if (!frame)
+    return v8::Null(isolate);
+
+  // TODO(yukishiino): Make this function always return the non-empty handle
+  // even if the frame is detached because the global proxy must always exist
+  // per spec.
+  ScriptState* script_state = ScriptState::From(isolate->GetCurrentContext());
+  return frame->GetWindowProxy(script_state->World())
+      ->GlobalProxyIfNotDetached();
 }
 
 v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(

@@ -5,7 +5,7 @@
 import("//third_party/libgav1/libgav1_srcs.gni")
 import("//third_party/libgav1/options.gni")
 
-config("libgav1_chromium_config") {
+config("public_libgav1_config") {
   include_dirs = [
     "src",
     "src/src",
@@ -14,32 +14,29 @@ config("libgav1_chromium_config") {
   defines = [
     "LIBGAV1_MAX_BITDEPTH=10",
     "LIBGAV1_THREADPOOL_USE_STD_MUTEX",  # to avoid abseil dependency.
+    "LIBGAV1_ENABLE_LOGGING=0",  # to avoid debug log of libgav1 in chromium
+                                 # debug build.
   ]
 }
 
-if (use_libgav1) {
-  # Separate from libgav1 because utils/constants.cc and constants.cc generates
-  # the same object file, constants.o.
-  source_set("libgav1_utils") {
+if (enable_libgav1_decoder) {
+  # Separate from libgav1 because utils/constants.cc and dsp/constants.cc
+  # generate the same object file, constants.o.
+  source_set("libgav1_util") {
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      "//build/config/compiler:no_chromium_code",
-      ":libgav1_chromium_config",
-    ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    public_configs = [ ":public_libgav1_config" ]
 
     sources = gav1_utils_sources
   }
-
   static_library("libgav1") {
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      "//build/config/compiler:no_chromium_code",
-      ":libgav1_chromium_config",
-    ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    public_deps = [ ":libgav1_utils" ]
+    public_configs = [ ":public_libgav1_config" ]
+    public_deps = [ ":libgav1_util" ]
 
-    # TODO(hiroh): Minimize source as small as obu parser can be built.
     sources = gav1_common_sources
     sources += gav1_dsp_sources
     sources += gav1_gav1_sources

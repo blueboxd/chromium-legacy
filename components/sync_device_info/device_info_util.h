@@ -29,8 +29,9 @@ class DeviceInfoUtil {
   // stale/inactive, and start ignoring it for active device counts.
   static const base::TimeDelta kActiveThreshold;
 
-  // The delay between periodic updates to the entry corresponding to the local
-  // device.
+  // The interval with which this device is updated to the sync servers if
+  // online and while sync is actively running (e.g. excludes backgrounded apps
+  // on Android).
   static base::TimeDelta GetPulseInterval();
 
   // Determines the amount of time to wait before pulsing something with the

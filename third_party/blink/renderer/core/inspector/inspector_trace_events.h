@@ -70,6 +70,7 @@ class StyleChangeReasonForTracing;
 class StyleImage;
 class XMLHttpRequest;
 enum class ResourceType : uint8_t;
+enum StyleChangeType : uint32_t;
 
 namespace probe {
 class CallFunction;
@@ -169,7 +170,9 @@ std::unique_ptr<TracedValue> RuleSetInvalidation(ContainerNode&,
           (element), (invalidationSet), ##__VA_ARGS__));
 
 namespace inspector_style_recalc_invalidation_tracking_event {
-std::unique_ptr<TracedValue> Data(Node*, const StyleChangeReasonForTracing&);
+std::unique_ptr<TracedValue> Data(Node*,
+                                  StyleChangeType,
+                                  const StyleChangeReasonForTracing&);
 }
 
 String DescendantInvalidationSetToIdString(const InvalidationSet&);

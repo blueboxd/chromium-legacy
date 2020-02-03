@@ -566,10 +566,10 @@ void ImageResource::ReloadIfLoFiOrPlaceholderImage(
 
   SetPreviewsState(previews_state_for_reload);
 
-  if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
+  if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
     ClearRangeRequestHeader();
-
     placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
+  }
 
   if (IsLoading()) {
     Loader()->Cancel();

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/fake_sharing_handler_registry.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/mock_sharing_message_handler.h"
@@ -81,12 +82,8 @@ class SharingFCMHandlerTest : public testing::Test {
     sharing_fcm_handler_ = std::make_unique<SharingFCMHandler>(
         &fake_gcm_driver_, &mock_sharing_fcm_sender_, sync_prefs_.get(),
         &handler_registry_);
-    fake_device_info_ = std::make_unique<syncer::DeviceInfo>(
-        kSenderGuid, kSenderName, "chrome_version", "user_agent",
-        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
-        base::SysInfo::HardwareInfo(),
-        /*last_updated_timestamp=*/base::Time::Now(),
-        /*send_tab_to_self_receiving_enabled=*/false,
+    fake_device_info_ = CreateFakeDeviceInfo(
+        kSenderGuid, kSenderName,
         syncer::DeviceInfo::SharingInfo(
             {kVapidFCMToken, kVapidP256dh, kVapidAuthSecret},
             {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},

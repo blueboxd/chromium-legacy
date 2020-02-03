@@ -54,18 +54,6 @@ enum class AppNotification {
   kTimeLimitReached,
 };
 
-enum class ChromeAppActivityState {
-  // The browser is active and hosts urls in its active tab which are not
-  // whitelisted.
-  kActive,
-
-  // Same as |kActive| except the urls the browser hosts are whitelisted.
-  kActiveWhitelisted,
-
-  // The browser window is not active.
-  kInactive,
-};
-
 // Identifies an app for app time limits.
 // Different types of use different identifier format. ARC++ apps are identified
 // by Android package name. Other types of apps use 32 character long Chrome

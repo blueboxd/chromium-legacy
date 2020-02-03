@@ -148,27 +148,45 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
 
 GridTrackSizingAlgorithmStrategy::~GridTrackSizingAlgorithmStrategy() = default;
 
+bool GridTrackSizingAlgorithmStrategy::HasRelativeMarginOrPaddingForChild(
+    const LayoutGrid& grid,
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) {
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
+  if (direction == child_inline_direction) {
+    return child.StyleRef().MarginStart().IsPercentOrCalc() ||
+           child.StyleRef().MarginEnd().IsPercentOrCalc() ||
+           child.StyleRef().PaddingStart().IsPercentOrCalc() ||
+           child.StyleRef().PaddingEnd().IsPercentOrCalc();
+  }
+  return child.StyleRef().MarginBefore().IsPercentOrCalc() ||
+         child.StyleRef().MarginAfter().IsPercentOrCalc() ||
+         child.StyleRef().PaddingBefore().IsPercentOrCalc() ||
+         child.StyleRef().PaddingAfter().IsPercentOrCalc();
+}
+
+bool GridTrackSizingAlgorithmStrategy::HasRelativeOrIntrinsicSizeForChild(
+    const LayoutGrid& grid,
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) {
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
+  if (direction == child_inline_direction) {
+    return child.HasRelativeLogicalWidth() ||
+           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto();
+  }
+  return child.HasRelativeLogicalHeight() ||
+         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto();
+}
+
 bool GridTrackSizingAlgorithmStrategy::
     ShouldClearOverrideContainingBlockContentSizeForChild(
         const LayoutGrid& grid,
         const LayoutBox& child,
         GridTrackSizingDirection direction) {
-  GridTrackSizingDirection child_inline_direction =
-      GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
-  if (direction == child_inline_direction) {
-    return child.HasRelativeLogicalWidth() ||
-           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto() ||
-           child.StyleRef().MarginStart().IsPercentOrCalc() ||
-           child.StyleRef().MarginEnd().IsPercentOrCalc() ||
-           child.StyleRef().PaddingStart().IsPercentOrCalc() ||
-           child.StyleRef().PaddingEnd().IsPercentOrCalc();
-  }
-  return child.HasRelativeLogicalHeight() ||
-         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
-         child.StyleRef().MarginBefore().IsPercentOrCalc() ||
-         child.StyleRef().MarginAfter().IsPercentOrCalc() ||
-         child.StyleRef().PaddingBefore().IsPercentOrCalc() ||
-         child.StyleRef().PaddingAfter().IsPercentOrCalc();
+  return HasRelativeOrIntrinsicSizeForChild(grid, child, direction) ||
+         HasRelativeMarginOrPaddingForChild(grid, child, direction);
 }
 
 void GridTrackSizingAlgorithmStrategy::
@@ -571,8 +589,11 @@ LayoutUnit DefiniteSizeStrategy::MinLogicalSizeForChild(
                                                   kForColumns);
   LayoutUnit indefinite_size =
       Direction() == child_inline_direction ? LayoutUnit() : LayoutUnit(-1);
-  if (ShouldClearOverrideContainingBlockContentSizeForChild(
-          *GetLayoutGrid(), child, Direction())) {
+  if (HasRelativeMarginOrPaddingForChild(*GetLayoutGrid(), child,
+                                         Direction()) ||
+      (Direction() != child_inline_direction &&
+       HasRelativeOrIntrinsicSizeForChild(*GetLayoutGrid(), child,
+                                          Direction()))) {
     SetOverrideContainingBlockContentSizeForChild(child, Direction(),
                                                   indefinite_size);
   }

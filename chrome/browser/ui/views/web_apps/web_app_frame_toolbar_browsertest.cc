@@ -21,6 +21,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
+#include "content/public/test/theme_change_waiter.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,57 +36,6 @@ namespace {
 // Keep in sync with browser_non_client_frame_view_mac.mm
 constexpr double kTitlePaddingWidthFraction = 0.1;
 #endif
-
-class LoadCompletedWaiter : public content::WebContentsObserver {
- public:
-  explicit LoadCompletedWaiter(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {}
-  ~LoadCompletedWaiter() override = default;
-
-  void Wait() {
-    if (observed_)
-      return;
-
-    run_loop_.Run();
-  }
-
- private:
-  // content::WebContentsObserver:
-  void DocumentOnLoadCompletedInMainFrame() override {
-    observed_ = true;
-    if (run_loop_.running())
-      run_loop_.Quit();
-  }
-
-  bool observed_ = false;
-  base::RunLoop run_loop_;
-};
-
-class ThemeChangeWaiter : public content::WebContentsObserver {
- public:
-  explicit ThemeChangeWaiter(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {}
-  ~ThemeChangeWaiter() override = default;
-
-  void Wait() {
-    if (observed_)
-      return;
-
-    run_loop_.Run();
-  }
-
- private:
-  // content::WebContentsObserver:
-  void DidChangeThemeColor() override {
-    observed_ = true;
-
-    if (run_loop_.running())
-      run_loop_.Quit();
-  }
-
-  bool observed_ = false;
-  base::RunLoop run_loop_;
-};
 
 }  // namespace
 
@@ -206,9 +157,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
 
   content::WebContents* web_contents =
       app_browser()->tab_strip_model()->GetActiveWebContents();
-  LoadCompletedWaiter waiter(web_contents);
-  if (!web_contents->IsDocumentOnLoadCompletedInMainFrame())
-    waiter.Wait();
+  content::AwaitDocumentOnLoadCompleted(web_contents);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Avoid dependence on Linux GTK+ Themes appearance setting.
@@ -224,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
       app_menu_button->GetInkDropBaseColor();
 
   {
-    ThemeChangeWaiter theme_change_waiter(web_contents);
+    content::ThemeChangeWaiter theme_change_waiter(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents,
                                 "document.getElementById('theme-color')."
                                 "setAttribute('content', '#246')"));
@@ -234,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
   }
 
   {
-    ThemeChangeWaiter theme_change_waiter(web_contents);
+    content::ThemeChangeWaiter theme_change_waiter(web_contents);
     EXPECT_TRUE(content::ExecJs(
         web_contents, "document.getElementById('theme-color').remove()"));
     theme_change_waiter.Wait();

@@ -57,7 +57,7 @@ const autofill::AutofillProfile* UserData::selected_address(
   return it->second.get();
 }
 
-const std::string* UserData::additional_value(const std::string& key) const {
+const ValueProto* UserData::additional_value(const std::string& key) const {
   auto it = additional_values_.find(key);
   if (it == additional_values_.end()) {
     return nullptr;

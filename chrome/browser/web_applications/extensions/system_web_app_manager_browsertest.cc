@@ -171,6 +171,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
 }
 
 // Check launch files are passed to application.
+// Note: This test uses ExecuteScriptXXX instead of ExecJs and EvalJs because of
+// some quirks surrounding origin trials and content security policies.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
                        LaunchFilesForSystemWebApp) {
   WaitForTestSystemAppInstall();
@@ -198,25 +200,31 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
 
   // Set up a Promise that resolves to launchParams, when launchQueue's consumer
   // callback is called.
-  EXPECT_TRUE(ExecJs(web_contents,
-                     "window.launchParamsPromise = new Promise(resolve => {"
-                     "  window.resolveLaunchParamsPromise = resolve;"
-                     "});"
-                     "launchQueue.setConsumer(launchParams => {"
-                     "  window.resolveLaunchParamsPromise(launchParams);"
-                     "});"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      "window.launchParamsPromise = new Promise(resolve => {"
+      "  window.resolveLaunchParamsPromise = resolve;"
+      "});"
+      "launchQueue.setConsumer(launchParams => {"
+      "  window.resolveLaunchParamsPromise(launchParams);"
+      "});"));
 
   // Check launch files are correct.
-  EXPECT_EQ(temp_file_path.BaseName().AsUTF8Unsafe(),
-            EvalJs(web_contents,
-                   "window.launchParamsPromise.then("
-                   "  launchParams => launchParams.files[0].name);"));
+  std::string file_name;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.launchParamsPromise.then("
+      "  launchParams => "
+      "    domAutomationController.send(launchParams.files[0].name));",
+      &file_name));
+  EXPECT_EQ(temp_file_path.BaseName().AsUTF8Unsafe(), file_name);
 
   // Reset the Promise to get second launchParams.
-  EXPECT_TRUE(ExecJs(web_contents,
-                     "window.launchParamsPromise = new Promise(resolve => {"
-                     "  window.resolveLaunchParamsPromise = resolve;"
-                     "});"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      "window.launchParamsPromise = new Promise(resolve => {"
+      "  window.resolveLaunchParamsPromise = resolve;"
+      "});"));
 
   // Second Launch.
   base::FilePath temp_file_path2;
@@ -231,10 +239,13 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   EXPECT_EQ(web_contents, web_contents2);
 
   // Second launch_files are passed to the opened application.
-  EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(),
-            EvalJs(web_contents,
-                   "window.launchParamsPromise.then("
-                   "  launchParams => launchParams.files[0].name)"));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.launchParamsPromise.then("
+      "  launchParams => "
+      "    domAutomationController.send(launchParams.files[0].name))",
+      &file_name));
+  EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(), file_name);
 }
 
 class SystemWebAppManagerLaunchFilesBrowserTest
@@ -249,6 +260,8 @@ class SystemWebAppManagerLaunchFilesBrowserTest
 
 // Launching behavior for apps that do not want to received launch directory are
 // tested in |SystemWebAppManagerBrowserTest.LaunchFilesForSystemWebApp|.
+// Note: This test uses ExecuteScriptXXX instead of ExecJs and EvalJs because of
+// some quirks surrounding origin trials and content security policies.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerLaunchFilesBrowserTest,
                        LaunchDirectoryForSystemWebApp) {
   WaitForTestSystemAppInstall();
@@ -276,37 +289,56 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerLaunchFilesBrowserTest,
 
   // Set up a Promise that resolves to launchParams, when launchQueue's consumer
   // callback is called.
-  EXPECT_TRUE(ExecJs(web_contents,
-                     "window.launchParamsPromise = new Promise(resolve => {"
-                     "  window.resolveLaunchParamsPromise = resolve;"
-                     "});"
-                     "launchQueue.setConsumer(launchParams => {"
-                     "  window.resolveLaunchParamsPromise(launchParams);"
-                     "});"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      "window.launchParamsPromise = new Promise(resolve => {"
+      "  window.resolveLaunchParamsPromise = resolve;"
+      "});"
+      "launchQueue.setConsumer(launchParams => {"
+      "  window.resolveLaunchParamsPromise(launchParams);"
+      "});"));
 
   // Wait for launch. Set window.firstLaunchParams for inspection.
-  EXPECT_TRUE(ExecJs(web_contents,
-                     "window.launchParamsPromise.then(launchParams => {"
-                     "  window.firstLaunchParams = launchParams;"
-                     "});"));
+  EXPECT_TRUE(
+      content::ExecuteScript(web_contents,
+                             "window.launchParamsPromise.then(launchParams => {"
+                             "  window.firstLaunchParams = launchParams;"
+                             "});"));
 
   // Check launch directory is correct.
-  EXPECT_EQ(true, EvalJs(web_contents,
-                         "window.firstLaunchParams.files[0].isDirectory"));
-  EXPECT_EQ(temp_directory.GetPath().BaseName().AsUTF8Unsafe(),
-            EvalJs(web_contents, "window.firstLaunchParams.files[0].name"));
+  bool is_directory;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "domAutomationController.send(window.firstLaunchParams."
+      "files[0].isDirectory)",
+      &is_directory));
+  EXPECT_TRUE(is_directory);
+
+  std::string file_name;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "domAutomationController.send(window.firstLaunchParams.files[0].name)",
+      &file_name));
+  EXPECT_EQ(temp_directory.GetPath().BaseName().AsUTF8Unsafe(), file_name);
 
   // Check launch files are correct.
-  EXPECT_EQ(true,
-            EvalJs(web_contents, "window.firstLaunchParams.files[1].isFile"));
-  EXPECT_EQ(temp_file_path.BaseName().AsUTF8Unsafe(),
-            EvalJs(web_contents, "window.firstLaunchParams.files[1].name"));
+  bool is_file;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "domAutomationController.send(window.firstLaunchParams.files[1].isFile)",
+      &is_file));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "domAutomationController.send(window.firstLaunchParams.files[1].name)",
+      &file_name));
+  EXPECT_EQ(temp_file_path.BaseName().AsUTF8Unsafe(), file_name);
 
   // Reset the Promise to get second launchParams.
-  EXPECT_TRUE(ExecJs(web_contents,
-                     "window.launchParamsPromise = new Promise(resolve => {"
-                     "  window.resolveLaunchParamsPromise = resolve;"
-                     "});"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      "window.launchParamsPromise = new Promise(resolve => {"
+      "  window.resolveLaunchParamsPromise = resolve;"
+      "});"));
 
   // Second Launch.
   base::ScopedTempDir temp_directory2;
@@ -323,20 +355,38 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerLaunchFilesBrowserTest,
   EXPECT_EQ(web_contents, web_contents2);
 
   // Wait for launch. Sets window.secondLaunchParams for inspection.
-  EXPECT_TRUE(ExecJs(web_contents,
-                     "window.launchParamsPromise.then(launchParams => {"
-                     "  window.secondLaunchParams = launchParams;"
-                     "});"));
+  EXPECT_TRUE(
+      content::ExecuteScript(web_contents,
+                             "window.launchParamsPromise.then(launchParams => {"
+                             "  window.secondLaunchParams = launchParams;"
+                             "});"));
 
   // Second launch_dir and launch_files are passed to the opened application.
-  EXPECT_EQ(true, EvalJs(web_contents,
-                         "window.secondLaunchParams.files[0].isDirectory"));
-  EXPECT_EQ(temp_directory2.GetPath().BaseName().AsUTF8Unsafe(),
-            EvalJs(web_contents, "window.secondLaunchParams.files[0].name"));
-  EXPECT_EQ(true,
-            EvalJs(web_contents, "window.secondLaunchParams.files[1].isFile"));
-  EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(),
-            EvalJs(web_contents, "window.secondLaunchParams.files[1].name"));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "domAutomationController.send(window.secondLaunchParams.files[0]."
+      "isDirectory)",
+      &is_directory));
+  EXPECT_TRUE(is_directory);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "domAutomationController.send(window.secondLaunchParams.files[0].name)",
+      &file_name));
+  EXPECT_EQ(temp_directory2.GetPath().BaseName().AsUTF8Unsafe(), file_name);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "domAutomationController.send(window.secondLaunchParams.files[1]."
+      "isFile)",
+      &is_file));
+  EXPECT_TRUE(is_file);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "domAutomationController.send(window.secondLaunchParams.files[1].name)",
+      &file_name));
+  EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(), file_name);
 }
 
 }  // namespace web_app

@@ -592,6 +592,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   const int64_t kVersionId = 0;
   const int64_t kResourceId = 0;
 
+  registry()->DisableDeleteAndStartOverForTesting();
   LazyInitialize();
   storage()->Disable();
 
@@ -999,7 +1000,8 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
 
   // Store a registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StoreRegistration(live_registration,
                               live_registration->waiting_version()));
@@ -1205,7 +1207,8 @@ TEST_F(ServiceWorkerStorageTest, GetAllRegistrationsInfosFields) {
   const GURL kScope("http://www.example.com/scope/");
   const GURL kScript("http://www.example.com/script1.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
 
   // Set some fields to check ServiceWorkerStorage serializes/deserializes
   // these fields correctly.
@@ -1242,27 +1245,32 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     script_ = GURL("http://www.test.not/script.js");
     import_ = GURL("http://www.test.not/import.js");
     document_url_ = GURL("http://www.test.not/scope/document.html");
-    registration_id_ = storage()->NewRegistrationId();
-    version_id_ = storage()->NewVersionId();
     resource_id1_ = storage()->NewResourceId();
     resource_id2_ = storage()->NewResourceId();
     resource_id1_size_ = 239193;
     resource_id2_size_ = 59923;
 
     // Cons up a new registration+version with two script resources.
-    RegistrationData data;
-    data.registration_id = registration_id_;
-    data.scope = scope_;
-    data.script = script_;
-    data.version_id = version_id_;
-    data.is_active = false;
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope_;
+    registration_ = registry()->CreateNewRegistration(options);
+    scoped_refptr<ServiceWorkerVersion> version = registry()->CreateNewVersion(
+        registration_.get(), script_, options.type);
+    version->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
+    version->SetStatus(ServiceWorkerVersion::INSTALLED);
+
     std::vector<ResourceRecord> resources;
     resources.push_back(
         ResourceRecord(resource_id1_, script_, resource_id1_size_));
     resources.push_back(
         ResourceRecord(resource_id2_, import_, resource_id2_size_));
-    registration_ = registry()->GetOrCreateRegistration(data, resources);
-    registration_->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
+    version->script_cache_map()->SetResources(resources);
+
+    registration_->SetWaitingVersion(version);
+
+    registration_id_ = registration_->id();
+    version_id_ = version->version_id();
 
     // Add the resources ids to the uncommitted list.
     registry()->StoreUncommittedResourceId(resource_id1_);
@@ -1682,19 +1690,22 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const GURL kScope1("http://www.example.com/scope/");
   const GURL kScript1("http://www.example.com/script1.js");
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScript1);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScript1,
+                                                /*resource_id=*/1);
 
   // Registration for "/scope/foo".
   const GURL kScope2("http://www.example.com/scope/foo");
   const GURL kScript2("http://www.example.com/script2.js");
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScript2);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScript2,
+                                                /*resource_id=*/2);
 
   // Registration for "/scope/foobar".
   const GURL kScope3("http://www.example.com/scope/foobar");
   const GURL kScript3("http://www.example.com/script3.js");
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope3, kScript3);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope3, kScript3,
+                                                /*resource_id=*/3);
 
   // Notify storage of them being installed.
   registry()->NotifyInstallingRegistration(live_registration1.get());
@@ -1962,7 +1973,8 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   const GURL kScope("https://example.com/scope");
   const GURL kScript("https://example.com/script.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
   ServiceWorkerVersion* version = registration->waiting_version();
 
   // Give it a main script response info.
@@ -2020,9 +2032,11 @@ TEST_F(ServiceWorkerStorageDiskTest, RegisteredOriginCount) {
        GURL("https://example.com/script.js")},
   };
   std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
+  int64_t dummy_resource_id = 1;
   for (const auto& pair : scope_and_script_pairs) {
     registrations.emplace_back(CreateServiceWorkerRegistrationAndVersion(
-        context(), pair.first, pair.second));
+        context(), pair.first, pair.second, dummy_resource_id));
+    ++dummy_resource_id;
   }
 
   // Store all registrations.
@@ -2058,7 +2072,8 @@ TEST_F(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
   const GURL kScope("https://valid.example.com/scope");
   const GURL kScript("https://valid.example.com/script.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
   ServiceWorkerVersion* version = registration->waiting_version();
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration->SetActiveVersion(version);
@@ -2095,7 +2110,8 @@ TEST_F(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
   const GURL kScript("https://valid.example.com/script.js");
   const std::string kHeaderValue("custom header value");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
   ServiceWorkerVersion* version = registration->waiting_version();
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration->SetActiveVersion(version);

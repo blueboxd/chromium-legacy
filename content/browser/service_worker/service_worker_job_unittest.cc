@@ -1122,14 +1122,10 @@ void OnIOComplete(int* rv_out, int rv) {
   *rv_out = rv;
 }
 
-void WriteResponse(ServiceWorkerStorage* storage,
-                   int64_t id,
+void WriteResponse(ServiceWorkerResponseWriter* writer,
                    const std::string& headers,
                    IOBuffer* body,
                    int length) {
-  std::unique_ptr<ServiceWorkerResponseWriter> writer =
-      storage->CreateResponseWriter(id);
-
   std::unique_ptr<net::HttpResponseInfo> info =
       std::make_unique<net::HttpResponseInfo>();
   info->request_time = base::Time::Now();
@@ -1150,14 +1146,13 @@ void WriteResponse(ServiceWorkerStorage* storage,
   EXPECT_EQ(length, rv);
 }
 
-void WriteStringResponse(ServiceWorkerStorage* storage,
-                         int64_t id,
+void WriteStringResponse(ServiceWorkerResponseWriter* writer,
                          const std::string& body) {
   scoped_refptr<IOBuffer> body_buffer =
       base::MakeRefCounted<WrappedIOBuffer>(body.data());
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
   std::string headers(kHttpHeaders, base::size(kHttpHeaders));
-  WriteResponse(storage, id, headers, body_buffer.get(), body.length());
+  WriteResponse(writer, headers, body_buffer.get(), body.length());
 }
 
 class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
@@ -1258,17 +1253,19 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     bool is_update = registration->active_version() &&
                      version != registration->active_version();
 
-    int64_t resource_id = storage()->NewResourceId();
+    std::unique_ptr<ServiceWorkerResponseWriter> writer =
+        CreateNewResponseWriterSync(storage());
+    int64_t resource_id = writer->response_id();
     version->script_cache_map()->NotifyStartedCaching(script, resource_id);
     if (!is_update) {
       // Spoof caching the script for the initial version.
-      WriteStringResponse(storage(), resource_id, kBody);
+      WriteStringResponse(writer.get(), kBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, sizeof(kBody) / sizeof(char), net::OK, std::string());
     } else {
       EXPECT_NE(NoChangeOrigin(), script.GetOrigin());
       // The script must be changed.
-      WriteStringResponse(storage(), resource_id, kNewBody);
+      WriteStringResponse(writer.get(), kNewBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, sizeof(kNewBody) / sizeof(char), net::OK, std::string());
     }
@@ -1711,8 +1708,10 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
 
   // Make sure the storage has the data of the current waiting version.
   const int64_t resource_id = 2;
+  std::unique_ptr<ServiceWorkerResponseWriter> writer =
+      storage()->CreateResponseWriter(resource_id);
   version->script_cache_map()->NotifyStartedCaching(new_script, resource_id);
-  WriteStringResponse(update_helper_->storage(), resource_id, kBody);
+  WriteStringResponse(writer.get(), kBody);
   version->script_cache_map()->NotifyFinishedCaching(
       new_script, sizeof(kBody) / sizeof(char), net::OK, std::string());
 

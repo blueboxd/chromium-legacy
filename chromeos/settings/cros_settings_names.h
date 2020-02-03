@@ -200,7 +200,7 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kTPMFirmwareUpdateSettings[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kMinimumRequiredChromeVersion[];
+extern const char kMinimumChromeVersionEnforced[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kCastReceiverName[];
 

@@ -24,8 +24,8 @@ class CORE_EXPORT DOMDataView final : public DOMArrayBufferView {
               DOMArrayBufferBase* dom_array_buffer)
       : DOMArrayBufferView(std::move(data_view), dom_array_buffer) {}
 
-  v8::Local<v8::Object> Wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creation_context) override;
+  v8::Local<v8::Value> Wrap(v8::Isolate*,
+                            v8::Local<v8::Object> creation_context) override;
 };
 
 }  // namespace blink

@@ -349,7 +349,8 @@ TEST_F(ResourceLoadSchedulerTest, PriorityIsConsidered) {
   // Push three requests.
   MockClient* client1 = MakeGarbageCollected<MockClient>();
 
-  Scheduler()->SetOutstandingLimitForTesting(0);
+  // Allows one kHigh priority request by limits below.
+  Scheduler()->SetOutstandingLimitForTesting(0, 1);
 
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
@@ -383,23 +384,21 @@ TEST_F(ResourceLoadSchedulerTest, PriorityIsConsidered) {
   EXPECT_FALSE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
-  // Client 4 does not count against the limit as it was not delayable when it
-  // was created.
-  Scheduler()->SetOutstandingLimitForTesting(1);
+  Scheduler()->SetOutstandingLimitForTesting(2);
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_FALSE(client2->WasRun());
   EXPECT_TRUE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
-  Scheduler()->SetOutstandingLimitForTesting(2);
+  Scheduler()->SetOutstandingLimitForTesting(3);
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_TRUE(client2->WasRun());
   EXPECT_TRUE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
-  Scheduler()->SetOutstandingLimitForTesting(3);
+  Scheduler()->SetOutstandingLimitForTesting(4);
 
   EXPECT_TRUE(client1->WasRun());
   EXPECT_TRUE(client2->WasRun());
@@ -407,7 +406,6 @@ TEST_F(ResourceLoadSchedulerTest, PriorityIsConsidered) {
   EXPECT_TRUE(client4->WasRun());
 
   // Release the rest.
-  EXPECT_TRUE(Release(id4));
   EXPECT_TRUE(Release(id3));
   EXPECT_TRUE(Release(id2));
   EXPECT_TRUE(Release(id1));
@@ -511,12 +509,11 @@ TEST_F(ResourceLoadSchedulerTest, StoppableRequestResumesWhenThrottled) {
 }
 
 TEST_F(ResourceLoadSchedulerTest, SetPriority) {
-  // Start with the normal scheduling policy.
-  Scheduler()->LoosenThrottlingPolicy();
   // Push three requests.
   MockClient* client1 = MakeGarbageCollected<MockClient>();
 
-  Scheduler()->SetOutstandingLimitForTesting(0);
+  // Allows one kHigh priority request by limits below.
+  Scheduler()->SetOutstandingLimitForTesting(0, 1);
 
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
@@ -554,7 +551,16 @@ TEST_F(ResourceLoadSchedulerTest, SetPriority) {
   EXPECT_FALSE(client2->WasRun());
   EXPECT_FALSE(client3->WasRun());
 
-  Scheduler()->SetOutstandingLimitForTesting(2);
+  // Loosen the policy to adopt the normal limit for all.
+  Scheduler()->LoosenThrottlingPolicy();
+  Scheduler()->SetOutstandingLimitForTesting(0, 2);
+
+  EXPECT_TRUE(client1->WasRun());
+  EXPECT_TRUE(client2->WasRun());
+  EXPECT_FALSE(client3->WasRun());
+
+  // kHigh priority does not help here.
+  Scheduler()->SetPriority(id3, ResourceLoadPriority::kHigh, 0);
 
   EXPECT_TRUE(client1->WasRun());
   EXPECT_TRUE(client2->WasRun());

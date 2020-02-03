@@ -209,8 +209,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
       document.documentElement.innerHTML =
           '<meta name="theme-color" content="yellow">';
   )"));
-  EXPECT_EQ(app_frame_view_->GetFrameColor(), SK_ColorYELLOW);
-  DCHECK_NE(*app_theme_color_, SK_ColorYELLOW);
+
+  // Frame view may get reset after theme change.
+  // TODO(crbug.com/1020050): Make it not do this and only refresh the Widget.
+  BrowserNonClientFrameView* frame_view =
+      app_browser_view_->frame()->GetFrameView();
+
+  EXPECT_EQ(frame_view->GetFrameColor(), SK_ColorYELLOW);
+  ASSERT_NE(*app_theme_color_, SK_ColorYELLOW);
 }
 
 class SaveCardOfferObserver

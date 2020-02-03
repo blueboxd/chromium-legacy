@@ -391,9 +391,8 @@ void ServiceWorkerContextWrapper::OnStarted(int64_t version_id,
   DCHECK(insertion_result.second);
 
   const auto& running_info = insertion_result.first->second;
-  for (auto& observer : observer_list_) {
-    observer.OnVersionStartedRunning(this, version_id, running_info);
-  }
+  for (auto& observer : observer_list_)
+    observer.OnVersionStartedRunning(version_id, running_info);
 }
 
 void ServiceWorkerContextWrapper::OnStopped(int64_t version_id) {
@@ -403,7 +402,7 @@ void ServiceWorkerContextWrapper::OnStopped(int64_t version_id) {
   if (it != running_service_workers_.end()) {
     running_service_workers_.erase(it);
     for (auto& observer : observer_list_)
-      observer.OnVersionStoppedRunning(this, version_id);
+      observer.OnVersionStoppedRunning(version_id);
   }
 }
 
@@ -413,7 +412,7 @@ void ServiceWorkerContextWrapper::OnDeleteAndStartOver() {
   for (const auto& kv : running_service_workers_) {
     int64_t version_id = kv.first;
     for (auto& observer : observer_list_)
-      observer.OnVersionStoppedRunning(this, version_id);
+      observer.OnVersionStoppedRunning(version_id);
   }
   running_service_workers_.clear();
 }

@@ -191,10 +191,19 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
         progressBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    /** Called to show or hide the open in new tab button. */
-    public void showOpenInNewTabButton(boolean show) {
-        View openInNewTabButton = mToolbarView.findViewById(R.id.open_in_new_tab);
-        openInNewTabButton.setVisibility(show ? View.VISIBLE : View.GONE);
+    /**
+     * Called to show (with alpha) or hide the open in new tab button.
+     * @param fraction Alpha for the button when visible.
+     */
+    public void showOpenInNewTabButton(float fraction) {
+        View button = mToolbarView.findViewById(R.id.open_in_new_tab);
+        // Start showing the button about halfway toward the full state.
+        if (fraction <= 0.5f) {
+            if (button.getVisibility() != View.GONE) button.setVisibility(View.GONE);
+        } else {
+            if (button.getVisibility() != View.VISIBLE) button.setVisibility(View.VISIBLE);
+            button.setAlpha((fraction - 0.5f) * 2.0f);
+        }
     }
 
     @Override

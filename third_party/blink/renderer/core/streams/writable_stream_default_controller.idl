@@ -7,8 +7,7 @@
 // https://streams.spec.whatwg.org/#ws-default-controller-class-definition
 [
     Exposed=(Window,Worker,Worklet),
-    NoInterfaceObject,
-    RaisesException=Constructor
+    NoInterfaceObject
 ] interface WritableStreamDefaultController {
     [CallWith=ScriptState, NotEnumerable] void error(optional any e);
 };

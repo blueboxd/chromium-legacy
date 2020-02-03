@@ -279,9 +279,24 @@ class QuickViewController {
 
     // Create a delete confirm dialog if needed.
     if (!this.deleteConfirmDialog_) {
-      const parent = this.quickView_.shadowRoot.getElementById('dialog');
-      this.deleteConfirmDialog_ = new FilesConfirmDialog(parent);
+      const dialogElement = document.createElement('dialog');
+      this.quickView_.shadowRoot.appendChild(dialogElement);
+      dialogElement.id = 'delete-confirm-dialog';
+
+      this.deleteConfirmDialog_ = new FilesConfirmDialog(dialogElement);
       this.deleteConfirmDialog_.setOkLabel(str('DELETE_BUTTON_LABEL'));
+
+      dialogElement.addEventListener('keydown', event => {
+        event.stopPropagation();
+      });
+
+      this.deleteConfirmDialog_.showModalElement = function() {
+        dialogElement.showModal();
+      };
+
+      this.deleteConfirmDialog_.doneCallback = function() {
+        dialogElement.close();
+      };
     }
 
     // Delete the entry.

@@ -572,7 +572,7 @@ GLuint TestPlugin::LoadProgram(const std::string& vertex_source,
 
 blink::WebInputEventResult TestPlugin::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
-    blink::WebCursorInfo& info) {
+    blink::WebCursorInfo* info) {
   const blink::WebInputEvent& event = coalesced_event.Event();
   const char* event_name = blink::WebInputEvent::GetName(event.GetType());
   if (!strcmp(event_name, "") || !strcmp(event_name, "Undefined"))

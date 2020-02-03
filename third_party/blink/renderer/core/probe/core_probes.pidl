@@ -53,6 +53,7 @@
 
 interface CoreProbes {
 
+  class InspectorIssue;
   class ConsoleMessage;
   class FontCustomPlatformData;
   class FontFace;
@@ -142,6 +143,7 @@ interface CoreProbes {
   void AnimationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState old_play_state, Animation::AnimationPlayState new_play_state);
   void WindowOpen([Keep] Document*, const String& url, const AtomicString& window_name, const WebWindowFeatures& window_features, bool user_gestrue);
   void ConsoleMessageAdded(ExecutionContext*, ConsoleMessage*);
+  void InspectorIssueAdded(ExecutionContext*, InspectorIssue*);
   void WillRunJavaScriptDialog(LocalFrame* frame);
   void DidRunJavaScriptDialog(LocalFrame* frame);
   void DocumentWriteFetchScript([Keep] Document*);

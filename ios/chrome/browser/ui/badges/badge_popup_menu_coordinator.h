@@ -7,15 +7,19 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-#import "ios/chrome/browser/ui/commands/infobar_commands.h"
-
 @protocol BadgeItem;
 
 // Coordinator for the badge overflow popup menu.
 @interface BadgePopupMenuCoordinator : ChromeCoordinator
 
-// The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<InfobarCommands> dispatcher;
+// Use -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+// Use -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // Updates the popup menu with |badgesItems|.
 - (void)setBadgeItemsToShow:(NSArray<id<BadgeItem>>*)badgeItems;

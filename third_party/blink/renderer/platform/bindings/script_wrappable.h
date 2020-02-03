@@ -95,8 +95,8 @@ class PLATFORM_EXPORT ScriptWrappable
   virtual const WrapperTypeInfo* GetWrapperTypeInfo() const = 0;
 
   // Creates and returns a new wrapper object.
-  virtual v8::Local<v8::Object> Wrap(v8::Isolate*,
-                                     v8::Local<v8::Object> creation_context);
+  virtual v8::Local<v8::Value> Wrap(v8::Isolate*,
+                                    v8::Local<v8::Object> creation_context);
 
   // Associates the instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns the wrapper already associated

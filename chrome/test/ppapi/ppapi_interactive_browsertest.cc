@@ -14,12 +14,12 @@
 // Disable tests under ASAN.  http://crbug.com/104832.
 // This is a bit heavy handed, but the majority of these tests fail under ASAN.
 // See bug for history.
-#if defined(ADDRESS_SANITIZER)
+// Flaky on Win/Mac, http://crbug.com/1048148.
+#if defined(ADDRESS_SANITIZER) || defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_MouseLock_SucceedWhenAllowed DISABLED_MouseLock_SucceedWhenAllowed
 #else
 #define MAYBE_MouseLock_SucceedWhenAllowed MouseLock_SucceedWhenAllowed
 #endif  // ADDRESS_SANITIZER
-// Disabled due to timeouts: http://crbug.com/136548
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
                        MAYBE_MouseLock_SucceedWhenAllowed) {
   RunTestViaHTTP("MouseLock_SucceedWhenAllowed");

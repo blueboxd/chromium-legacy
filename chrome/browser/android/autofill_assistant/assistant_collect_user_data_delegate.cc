@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataNativeDelegate_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
+#include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -202,9 +203,10 @@ void AssistantCollectUserDataDelegate::OnKeyValueChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jkey,
-    const base::android::JavaParamRef<jstring>& jvalue) {
-  ui_controller_->OnKeyValueChanged(SafeConvertJavaStringToNative(env, jkey),
-                                    SafeConvertJavaStringToNative(env, jvalue));
+    const base::android::JavaParamRef<jobject>& jvalue) {
+  ui_controller_->OnKeyValueChanged(
+      SafeConvertJavaStringToNative(env, jkey),
+      ui_controller_android_utils::ToNativeValue(env, jvalue));
 }
 
 void AssistantCollectUserDataDelegate::OnTextFocusLost(

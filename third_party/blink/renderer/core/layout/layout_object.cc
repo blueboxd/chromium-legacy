@@ -3426,17 +3426,12 @@ Node* LayoutObject::NodeForHitTest() const {
   // If we hit the anonymous layoutObjects inside generated content we should
   // actually hit the generated content so walk up to the PseudoElement.
   if (const LayoutObject* parent = Parent()) {
-    if (parent->IsBeforeOrAfterContent() ||
+    if (parent->IsBeforeOrAfterContent() || parent->IsMarkerContent() ||
         parent->StyleRef().StyleType() == kPseudoIdFirstLetter) {
       for (; parent; parent = parent->Parent()) {
         if (Node* node = parent->GetNode())
           return node;
       }
-    } else if (const LayoutNGListItem* list_item =
-                   LayoutNGListItem::FromMarkerOrMarkerContent(*this)) {
-      // If this is a list marker, or is inside of a list marker, return the
-      // list item.
-      return list_item->GetNode();
     }
   }
 

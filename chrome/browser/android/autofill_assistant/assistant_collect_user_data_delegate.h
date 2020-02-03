@@ -90,7 +90,7 @@ class AssistantCollectUserDataDelegate {
   void OnKeyValueChanged(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller,
                          const base::android::JavaParamRef<jstring>& jkey,
-                         const base::android::JavaParamRef<jstring>& jvalue);
+                         const base::android::JavaParamRef<jobject>& jvalue);
 
   void OnTextFocusLost(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& jcaller);

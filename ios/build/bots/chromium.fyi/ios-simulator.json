@@ -61,6 +61,18 @@
       "pool":"chromium.tests"
     },
     {
+      "app": "ios_chrome_signin_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "12.4",
+      "xcode parallelization": true,
+      "xctest": true,
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
+    },
+    {
       "app": "ios_chrome_smoke_egtests",
       "test args": [
         "--enable-features=SlimNavigationManager"

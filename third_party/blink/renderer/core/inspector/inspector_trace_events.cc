@@ -610,6 +610,7 @@ inspector_style_invalidator_invalidate_event::InvalidationList(
 std::unique_ptr<TracedValue>
 inspector_style_recalc_invalidation_tracking_event::Data(
     Node* node,
+    StyleChangeType change_type,
     const StyleChangeReasonForTracing& reason) {
   DCHECK(node);
 
@@ -617,6 +618,7 @@ inspector_style_recalc_invalidation_tracking_event::Data(
   value->SetString("frame",
                    IdentifiersFactory::FrameId(node->GetDocument().GetFrame()));
   SetNodeInfo(value.get(), node, "nodeId", "nodeName");
+  value->SetBoolean("subtree", change_type == kSubtreeStyleChange);
   value->SetString("reason", reason.ReasonString());
   value->SetString("extraData", reason.GetExtraData());
   SourceLocation::Capture()->ToTracedValue(value.get(), "stackTrace");

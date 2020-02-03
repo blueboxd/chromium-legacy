@@ -12,6 +12,7 @@ import "services/network/public/mojom/content_security_policy.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
+import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
@@ -271,6 +272,11 @@ interface LocalFrame {
   // Add message to the frame console.
   AddMessageToConsole(ConsoleMessageLevel level, string message,
                     bool discard_duplicates);
+
+  // Add devtools issue to the frames issue storage.
+  // Issues offer a more structured way to surface problems in DevTools than
+  // doing so via console messages.
+  AddInspectorIssue(InspectorIssueCode code);
 
   // Sent to a frame when one of its remote children finishes loading, so that
   // the frame can update its loading state.

@@ -32,9 +32,17 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
                      arguments,
                      return_type,
                      is_static=False,
+                     is_getter=False,
+                     is_setter=False,
+                     is_deleter=False,
                      extended_attributes=None,
                      component=None,
                      debug_info=None):
+            assert isinstance(is_getter, bool)
+            assert isinstance(is_setter, bool)
+            assert isinstance(is_deleter, bool)
+            assert is_getter + is_setter + is_deleter <= 1  # At most 1 True
+
             FunctionLike.IR.__init__(
                 self,
                 identifier=identifier,
@@ -48,6 +56,9 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
+            self.is_getter = is_getter
+            self.is_setter = is_setter
+            self.is_deleter = is_deleter
             self.is_stringifier = False
 
     def __init__(self, ir, owner):
@@ -62,7 +73,35 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithComponent.__init__(self, ir, readonly=True)
         WithDebugInfo.__init__(self, ir)
 
+        self._is_getter = ir.is_getter
+        self._is_setter = ir.is_setter
+        self._is_deleter = ir.is_deleter
         self._is_stringifier = ir.is_stringifier
+
+    @property
+    def is_special_operation(self):
+        return (self.is_getter or self.is_setter or self.is_deleter
+                or self.is_stringifier)
+
+    @property
+    def is_property_accessor(self):
+        """
+        Returns True if this is a indexed or named property accessor (one of
+        getter, setter, or deleter).
+        """
+        return self.is_getter or self.is_setter or self.is_deleter
+
+    @property
+    def is_getter(self):
+        return self._is_getter
+
+    @property
+    def is_setter(self):
+        return self._is_setter
+
+    @property
+    def is_deleter(self):
+        return self._is_deleter
 
     @property
     def is_stringifier(self):

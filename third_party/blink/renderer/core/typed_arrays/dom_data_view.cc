@@ -51,9 +51,8 @@ DOMDataView* DOMDataView::Create(DOMArrayBufferBase* buffer,
   return MakeGarbageCollected<DOMDataView>(data_view, buffer);
 }
 
-v8::Local<v8::Object> DOMDataView::Wrap(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> creation_context) {
+v8::Local<v8::Value> DOMDataView::Wrap(v8::Isolate* isolate,
+                                       v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
 
   const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();

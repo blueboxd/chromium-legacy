@@ -55,6 +55,16 @@ Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
   }
 }
 
+TimeDelta GetPulseIntervalFromSpecifics(const DeviceInfoSpecifics& specifics) {
+  if (specifics.has_pulse_interval_in_minutes()) {
+    return TimeDelta::FromMinutes(specifics.pulse_interval_in_minutes());
+  }
+  // If the interval is not set on the specifics it must be an old device, so we
+  // fall back to the value used by old devices. We really do not want to use
+  // the default int value of 0.
+  return TimeDelta::FromDays(1);
+}
+
 base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
     const DeviceInfoSpecifics& specifics) {
   if (!specifics.has_sharing_fields()) {
@@ -87,6 +97,7 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
       hardware_info, ProtoTimeToTime(specifics.last_updated_timestamp()),
+      GetPulseIntervalFromSpecifics(specifics),
       specifics.feature_fields().send_tab_to_self_receiving_enabled(),
       SpecificsToSharingInfo(specifics));
 }
@@ -117,6 +128,7 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   // timestamp to now.
   DCHECK(info.last_updated_timestamp() == base::Time());
   specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
+  specifics->set_pulse_interval_in_minutes(info.pulse_interval().InMinutes());
 
   FeatureSpecificFields* feature_fields = specifics->mutable_feature_fields();
   feature_fields->set_send_tab_to_self_receiving_enabled(

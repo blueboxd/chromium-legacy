@@ -375,17 +375,16 @@ CreateProviderHostForServiceWorkerContext(
 scoped_refptr<ServiceWorkerRegistration>
 CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           const GURL& scope,
-                                          const GURL& script) {
-  ServiceWorkerStorage* storage = context->storage();
-
+                                          const GURL& script,
+                                          int64_t resource_id) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
   auto registration = context->registry()->CreateNewRegistration(options);
   auto version = context->registry()->CreateNewVersion(
       registration.get(), script, blink::mojom::ScriptType::kClassic);
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
-      ServiceWorkerDatabase::ResourceRecord(storage->NewResourceId(), script,
-                                            100)};
+  ServiceWorkerDatabase::ResourceRecord record(resource_id, script,
+                                               /*size_bytes=*/100);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {record};
   version->script_cache_map()->SetResources(records);
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -428,6 +427,21 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
   return WriteToDiskCacheWithCustomResponseInfoAsync(
       storage, script_url, resource_id, std::move(info), body, meta_data,
       std::move(callback));
+}
+
+std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
+    ServiceWorkerStorage* storage) {
+  base::RunLoop run_loop;
+  std::unique_ptr<ServiceWorkerResponseWriter> writer;
+  storage->CreateNewResponseWriter(base::BindLambdaForTesting(
+      [&](int64_t /*resource_id*/,
+          std::unique_ptr<ServiceWorkerResponseWriter> new_writer) {
+        DCHECK(new_writer);
+        writer = std::move(new_writer);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return writer;
 }
 
 MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()

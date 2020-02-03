@@ -121,7 +121,7 @@ class WebPlugin {
   virtual void UpdateVisibility(bool) = 0;
 
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
-                                               WebCursorInfo&) = 0;
+                                               WebCursorInfo*) = 0;
 
   virtual bool HandleDragStatusUpdate(WebDragStatus,
                                       const WebDragData&,

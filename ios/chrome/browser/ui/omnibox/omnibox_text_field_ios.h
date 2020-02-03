@@ -41,10 +41,10 @@ typedef enum {
 
 // Returns the text that is displayed in the field, including any inline
 // autocomplete text that may be present.
-- (base::string16)displayedText;
+- (NSString*)displayedText;
 
 // Returns just the portion of |-displayedText| that is inline autocompleted.
-- (base::string16)autocompleteText;
+- (NSString*)autocompleteText;
 
 // Returns YES if this field is currently displaying any inline autocompleted
 // text.

@@ -123,7 +123,6 @@ bindings_core_v8_files =
                     "core/v8/serialization/v8_script_value_serializer.h",
                     "core/v8/source_location.cc",
                     "core/v8/source_location.h",
-                    "core/v8/to_v8_for_core.cc",
                     "core/v8/to_v8_for_core.h",
                     "core/v8/use_counter_callback.cc",
                     "core/v8/use_counter_callback.h",

@@ -168,6 +168,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                            const GURL& origin,
                            StatusCallback callback);
   void StoreUncommittedResourceId(int64_t resource_id);
+  void DoomUncommittedResource(int64_t resource_id);
+  void DoomUncommittedResources(const std::set<int64_t>& resource_ids);
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    GetUserDataCallback callback);
@@ -198,12 +200,14 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const std::string& key_prefix,
       GetUserDataForAllRegistrationsCallback callback);
 
-  // TODO(crbug.com/1039200): Make this private once methods/fields related to
-  // ServiceWorkerRegistration in ServiceWorkerStorage are moved into this
-  // class.
-  scoped_refptr<ServiceWorkerRegistration> GetOrCreateRegistration(
-      const ServiceWorkerDatabase::RegistrationData& data,
-      const ResourceList& resources);
+  // Disables the internal storage to prepare for error recovery.
+  void PrepareForDeleteAndStarOver();
+
+  // Deletes this registry and internal storage, then starts over for error
+  // recovery.
+  void DeleteAndStartOver(StatusCallback callback);
+
+  void DisableDeleteAndStartOverForTesting();
 
  private:
   ServiceWorkerRegistration* FindInstallingRegistrationForClientUrl(
@@ -212,6 +216,10 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const GURL& scope);
   ServiceWorkerRegistration* FindInstallingRegistrationForId(
       int64_t registration_id);
+
+  scoped_refptr<ServiceWorkerRegistration> GetOrCreateRegistration(
+      const ServiceWorkerDatabase::RegistrationData& data,
+      const ResourceList& resources);
 
   // Looks up live registrations and returns an optional value which may contain
   // a "findable" registration. See the implementation of this method for
@@ -265,6 +273,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void DidUpdateToActiveState(StatusCallback callback,
                               ServiceWorkerDatabase::Status status);
   void DidWriteUncommittedResourceIds(ServiceWorkerDatabase::Status status);
+  void DidDoomUncommittedResourceIds(const std::set<int64_t>& resource_ids,
+                                     ServiceWorkerDatabase::Status status);
   void DidGetUserData(GetUserDataCallback callback,
                       const std::vector<std::string>& data,
                       ServiceWorkerDatabase::Status status);
@@ -293,6 +303,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       std::map<int64_t, scoped_refptr<ServiceWorkerRegistration>>;
   RegistrationRefsById installing_registrations_;
   RegistrationRefsById uninstalling_registrations_;
+
+  // Indicates whether recovery process should be scheduled.
+  bool should_schedule_delete_and_start_over_ = true;
 
   base::WeakPtrFactory<ServiceWorkerRegistry> weak_factory_{this};
 };

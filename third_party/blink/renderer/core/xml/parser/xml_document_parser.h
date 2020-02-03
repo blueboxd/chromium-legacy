@@ -117,11 +117,14 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   void insert(const String&) override { NOTREACHED(); }
   void Append(const String&) override;
   void Finish() override;
+  void ExecuteScriptsWaitingForResources() final;
   bool IsWaitingForScripts() const override;
   void StopParsing() override;
   void Detach() override;
   OrdinalNumber LineNumber() const override;
   OrdinalNumber ColumnNumber() const;
+  void DidAddPendingParserBlockingStylesheet() final;
+  void DidLoadAllPendingParserBlockingStylesheets() final;
 
   // XMLParserScriptRunnerHost
   void NotifyScriptExecuted() override;
@@ -196,6 +199,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   bool parser_paused_;
   bool requesting_script_;
   bool finish_called_;
+  bool waiting_for_stylesheets_ = false;
 
   XMLErrors xml_errors_;
 

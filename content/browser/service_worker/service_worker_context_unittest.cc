@@ -329,7 +329,6 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
   }
 
   void OnVersionStartedRunning(
-      content::ServiceWorkerContext* context,
       int64_t version_id,
       const ServiceWorkerRunningInfo& running_info) override {
     EventLog log;
@@ -338,8 +337,7 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     events_.push_back(log);
   }
 
-  void OnVersionStoppedRunning(content::ServiceWorkerContext* context,
-                               int64_t version_id) override {
+  void OnVersionStoppedRunning(int64_t version_id) override {
     EventLog log;
     log.type = EventType::VersionStoppedRunning;
     log.version_id = version_id;

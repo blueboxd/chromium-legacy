@@ -12,6 +12,7 @@
 #include "base/android/jni_android.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/view_layout.pb.h"
 
 namespace autofill_assistant {
 
@@ -53,6 +54,16 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(JNIEnv* env,
 // Returns the native equivalent of |jvalue|.
 ValueProto ToNativeValue(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jvalue);
+
+// Returns an instance of |AssistantInfoPopup| for |proto|.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
+    JNIEnv* env,
+    const InfoPopupProto& proto);
+
+// Shows an instance of |AssistantInfoPopup| on the screen.
+void ShowJavaInfoPopup(JNIEnv* env,
+                       base::android::ScopedJavaLocalRef<jobject> jinfo_popup,
+                       base::android::ScopedJavaLocalRef<jobject> jcontext);
 
 }  // namespace ui_controller_android_utils
 

@@ -2,6 +2,7 @@ Test that each agent could be enabled/disabled separately.
 
 Accessibility.disable finished successfully
 Animation.disable finished successfully
+Audits.disable finished successfully
 CSS.disable finished successfully
 DOM.disable finished successfully
 DOMSnapshot.disable finished with error DOM snapshot agent hasn't been enabled.
@@ -27,6 +28,9 @@ Accessibility.disable finished successfully
 
 Animation.enable finished successfully
 Animation.disable finished successfully
+
+Audits.enable finished successfully
+Audits.disable finished successfully
 
 CSS.enable finished with error DOM agent needs to be enabled first.
 CSS.disable finished successfully

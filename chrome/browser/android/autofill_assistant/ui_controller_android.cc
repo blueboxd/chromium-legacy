@@ -20,13 +20,11 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetailsModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetails_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantHeaderModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBoxModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBox_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
@@ -94,65 +92,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDate(
   return CreateJavaDateTime(env, date_time);
 }
 
-base::android::ScopedJavaLocalRef<jobject> CreateJavaDialogButton(
-    JNIEnv* env,
-    const InfoPopupProto_DialogButton& button_proto) {
-  base::android::ScopedJavaLocalRef<jstring> jurl = nullptr;
-
-  switch (button_proto.click_action_case()) {
-    case InfoPopupProto::DialogButton::kOpenUrlInCct:
-      jurl = base::android::ConvertUTF8ToJavaString(
-          env, button_proto.open_url_in_cct().url());
-      break;
-    case InfoPopupProto::DialogButton::kCloseDialog:
-      break;
-    case InfoPopupProto::DialogButton::CLICK_ACTION_NOT_SET:
-      NOTREACHED();
-      break;
-  }
-  return Java_AssistantDialogButton_Constructor(
-      env, base::android::ConvertUTF8ToJavaString(env, button_proto.label()),
-      jurl);
-}
-
-base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
-    JNIEnv* env,
-    const InfoPopupProto& info_popup_proto) {
-  base::android::ScopedJavaLocalRef<jobject> jpositive_button = nullptr;
-  base::android::ScopedJavaLocalRef<jobject> jnegative_button = nullptr;
-  base::android::ScopedJavaLocalRef<jobject> jneutral_button = nullptr;
-
-  if (info_popup_proto.has_positive_button() ||
-      info_popup_proto.has_negative_button() ||
-      info_popup_proto.has_neutral_button()) {
-    if (info_popup_proto.has_positive_button()) {
-      jpositive_button =
-          CreateJavaDialogButton(env, info_popup_proto.positive_button());
-    }
-    if (info_popup_proto.has_negative_button()) {
-      jnegative_button =
-          CreateJavaDialogButton(env, info_popup_proto.negative_button());
-    }
-    if (info_popup_proto.has_neutral_button()) {
-      jneutral_button =
-          CreateJavaDialogButton(env, info_popup_proto.neutral_button());
-    }
-  } else {
-    // If no button is set in the proto, we add a Close button
-    jpositive_button = Java_AssistantDialogButton_Constructor(
-        env,
-        base::android::ConvertUTF8ToJavaString(
-            env, l10n_util::GetStringUTF8(IDS_CLOSE)),
-        nullptr);
-  }
-
-  return Java_AssistantInfoPopup_Constructor(
-      env,
-      base::android::ConvertUTF8ToJavaString(env, info_popup_proto.title()),
-      base::android::ConvertUTF8ToJavaString(env, info_popup_proto.text()),
-      jpositive_button, jnegative_button, jneutral_button);
-}
-
 // Creates the Java equivalent to |login_choices|.
 base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
     JNIEnv* env,
@@ -161,7 +100,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
   for (const auto& login_choice : login_choices) {
     base::android::ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
     if (login_choice.info_popup.has_value()) {
-      jinfo_popup = CreateJavaInfoPopup(env, *login_choice.info_popup);
+      jinfo_popup = ui_controller_android_utils::CreateJavaInfoPopup(
+          env, *login_choice.info_popup);
     }
     base::android::ScopedJavaLocalRef<jstring> jsublabel_accessibility_hint =
         nullptr;
@@ -946,7 +886,7 @@ void UiControllerAndroid::OnDateTimeRangeEndTimeSlotCleared() {
 }
 
 void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
-                                            const std::string& value) {
+                                            const ValueProto& value) {
   ui_delegate_->SetAdditionalValue(key, value);
 }
 
@@ -1430,7 +1370,9 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
 
   if (form->has_info_popup()) {
     Java_AssistantFormModel_setInfoPopup(
-        env, GetFormModel(), CreateJavaInfoPopup(env, form->info_popup()));
+        env, GetFormModel(),
+        ui_controller_android_utils::CreateJavaInfoPopup(env,
+                                                         form->info_popup()));
   } else {
     Java_AssistantFormModel_clearInfoPopup(env, GetFormModel());
   }

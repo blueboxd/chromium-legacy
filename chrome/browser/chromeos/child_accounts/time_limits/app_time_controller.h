@@ -31,7 +31,6 @@ namespace app_time {
 class AppActivityRegistry;
 class AppServiceWrapper;
 class WebTimeLimitEnforcer;
-class WebTimeActivityProvider;
 
 // Coordinates per-app time limit for child user.
 class AppTimeController : public SystemClockClient::Observer,
@@ -89,14 +88,6 @@ class AppTimeController : public SystemClockClient::Observer,
 
   AppActivityRegistry* app_registry() { return app_registry_.get(); }
 
-  const WebTimeActivityProvider* web_time_activity_provider() const {
-    return web_time_activity_provider_.get();
-  }
-
-  WebTimeActivityProvider* web_time_activity_provider() {
-    return web_time_activity_provider_.get();
-  }
-
  private:
   void RegisterProfilePrefObservers(PrefService* pref_service);
   void TimeLimitsPolicyUpdated(const std::string& pref_name);
@@ -124,7 +115,6 @@ class AppTimeController : public SystemClockClient::Observer,
 
   std::unique_ptr<AppServiceWrapper> app_service_wrapper_;
   std::unique_ptr<AppActivityRegistry> app_registry_;
-  std::unique_ptr<WebTimeActivityProvider> web_time_activity_provider_;
   std::unique_ptr<WebTimeLimitEnforcer> web_time_enforcer_;
 
   // Used to observe when policy preferences change.

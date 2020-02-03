@@ -5,6 +5,8 @@
 import("//build/config/python.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/core/v8/generated.gni")
+import("//third_party/blink/renderer/bindings/generated_in_core.gni")
+import("//third_party/blink/renderer/bindings/generated_in_modules.gni")
 import("//third_party/blink/renderer/bindings/idl_in_core.gni")
 import("//third_party/blink/renderer/bindings/idl_in_modules.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
@@ -12,6 +14,8 @@ import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/core/core_idl_files.gni")
 import("//third_party/blink/renderer/modules/modules_idl_files.gni")
+
+visibility = [ "//third_party/blink/renderer/*" ]
 
 action("interfaces_info") {
   script = "$bindings_scripts_dir/compute_interfaces_info_overall.py"
@@ -176,6 +180,40 @@ if (use_v8_bind_gen_for_dictionary) {
 
     deps = [ ":web_idl_database" ]
   }
+}
+
+template("generate_bindings") {
+  action_with_pydeps(target_name) {
+    script = "${bindings_scripts_dir}/generate_bindings.py"
+
+    web_idl_database_outputs = get_target_outputs(":web_idl_database")
+    web_idl_database = web_idl_database_outputs[0]
+
+    inputs = [ web_idl_database ]
+    outputs = invoker.outputs
+
+    args = [
+      invoker.target,
+      "--web_idl_database",
+      rebase_path(web_idl_database, root_build_dir),
+      "--root_src_dir",
+      rebase_path("//", root_build_dir),
+      "--root_gen_dir",
+      rebase_path(root_gen_dir, root_build_dir),
+      "--output_core_reldir",
+      rebase_path("${bindings_output_dir}/core/v8/", root_gen_dir),
+      "--output_modules_reldir",
+      rebase_path("${bindings_output_dir}/modules/v8/", root_gen_dir),
+    ]
+
+    deps = [ ":web_idl_database" ]
+  }
+}
+
+generate_bindings("generate_bindings_enumeration") {
+  target = "enumeration"
+  outputs = generated_enumeration_sources_in_core +
+            generated_enumeration_sources_in_modules
 }
 
 action_with_pydeps("generate_high_entropy_list") {

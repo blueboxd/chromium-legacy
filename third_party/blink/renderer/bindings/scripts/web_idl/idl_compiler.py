@@ -130,11 +130,11 @@ class IdlCompiler(object):
             self._ir_map.add(new_ir)
             is_partial = False
             is_mixin = False
-            if "LegacyTreatAsPartialInterface" in new_ir.extended_attributes:
+            if 'LegacyTreatAsPartialInterface' in new_ir.extended_attributes:
                 is_partial = True
-            elif hasattr(new_ir, "is_partial") and new_ir.is_partial:
+            elif hasattr(new_ir, 'is_partial') and new_ir.is_partial:
                 is_partial = True
-            elif hasattr(new_ir, "is_mixin") and new_ir.is_mixin:
+            elif hasattr(new_ir, 'is_mixin') and new_ir.is_mixin:
                 is_mixin = True
             for member in new_ir.iter_all_members():
                 member.code_generator_info.set_defined_in_partial(is_partial)
@@ -234,18 +234,18 @@ class IdlCompiler(object):
             new_ir = make_copy(old_ir)
             self._ir_map.add(new_ir)
 
-            if (new_ir.is_mixin and "LegacyTreatAsPartialInterface" not in
+            if (new_ir.is_mixin and 'LegacyTreatAsPartialInterface' not in
                     new_ir.extended_attributes):
                 continue
 
             basepath, _ = posixpath.splitext(
                 new_ir.debug_info.location.filepath)
             dirpath, filename = posixpath.split(basepath)
-            impl_class = new_ir.extended_attributes.value_of("ImplementedAs")
+            impl_class = new_ir.extended_attributes.value_of('ImplementedAs')
             if impl_class:
                 filename = NameStyleConverter(impl_class).to_snake_case()
             header = posixpath.join(dirpath,
-                                    posixpath.extsep.join([filename, "h"]))
+                                    posixpath.extsep.join([filename, 'h']))
             new_ir.code_generator_info.set_blink_headers([header])
 
     def _merge_partial_interface_likes(self):
@@ -341,13 +341,13 @@ class IdlCompiler(object):
         inherited_ext_attrs = (
             # (IDL extended attribute to be inherited,
             #  CodeGeneratorInfoMutable's set function)
-            ("ActiveScriptWrappable", "set_is_active_script_wrappable"),
-            ("LegacyUnenumerableNamedProperties",
-             "set_is_legacy_unenumerable_named_properties"),
+            ('ActiveScriptWrappable', 'set_is_active_script_wrappable'),
+            ('LegacyUnenumerableNamedProperties',
+             'set_is_legacy_unenumerable_named_properties'),
         )
 
         def is_own_member(member):
-            return "Unforgeable" in member.extended_attributes
+            return 'Unforgeable' in member.extended_attributes
 
         old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
 
@@ -401,9 +401,9 @@ class IdlCompiler(object):
             ]
 
     def _propagate_extattrs_to_overload_group(self):
-        ANY_OF = ("CrossOrigin", "Custom", "LenientThis", "NotEnumerable",
-                  "PerWorldBindings", "SecureContext", "Unforgeable",
-                  "Unscopable")
+        ANY_OF = ('CrossOrigin', 'Custom', 'LenientThis', 'NotEnumerable',
+                  'PerWorldBindings', 'SecureContext', 'Unforgeable',
+                  'Unscopable')
 
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
                                             IRMap.IR.Kind.NAMESPACE)
@@ -420,10 +420,10 @@ class IdlCompiler(object):
                            for overload in group):
                         group.extended_attributes.append(
                             ExtendedAttribute(key=key))
-                if all((overload.extended_attributes.value_of("Affects") ==
-                        "Nothing") for overload in group):
+                if all((overload.extended_attributes.value_of('Affects') ==
+                        'Nothing') for overload in group):
                     group.extended_attributes.append(
-                        ExtendedAttribute(key="Affects", values="Nothing"))
+                        ExtendedAttribute(key='Affects', values='Nothing'))
 
     def _calculate_group_exposure(self):
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
@@ -499,7 +499,7 @@ class IdlCompiler(object):
             self._ir_map.add(new_ir)
 
             assert not new_ir.exposed_constructs
-            global_names = new_ir.extended_attributes.values_of("Global")
+            global_names = new_ir.extended_attributes.values_of('Global')
             if not global_names:
                 continue
             constructs = set()

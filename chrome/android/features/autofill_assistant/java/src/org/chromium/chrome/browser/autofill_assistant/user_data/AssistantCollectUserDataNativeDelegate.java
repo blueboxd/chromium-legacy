@@ -10,6 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -160,7 +161,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     }
 
     @Override
-    public void onKeyValueChanged(String key, String value) {
+    public void onKeyValueChanged(String key, AssistantValue value) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
             AssistantCollectUserDataNativeDelegateJni.get().onKeyValueChanged(
                     mNativeAssistantCollectUserDataDelegate,
@@ -217,7 +218,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         void onDateTimeRangeEndTimeSlotCleared(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller);
         void onKeyValueChanged(long nativeAssistantCollectUserDataDelegate,
-                AssistantCollectUserDataNativeDelegate caller, String key, String value);
+                AssistantCollectUserDataNativeDelegate caller, String key, AssistantValue value);
         void onTextFocusLost(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller);
     }

@@ -160,6 +160,9 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
   // Executes an internal command (superset of document.execCommand() commands).
   void ExecCommand(gin::Arguments* args);
 
+  // Trigger a test issue
+  void TriggerTestInspectorIssue();
+
   // Checks if an internal command is currently available.
   bool IsCommandEnabled(const std::string& command);
 

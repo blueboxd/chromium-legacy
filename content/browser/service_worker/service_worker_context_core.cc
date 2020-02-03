@@ -695,7 +695,7 @@ void ServiceWorkerContextCore::UnprotectVersion(int64_t version_id) {
 }
 
 void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {
-  storage()->Disable();
+  registry()->PrepareForDeleteAndStarOver();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerContextWrapper::DeleteAndStartOver,
@@ -708,7 +708,7 @@ void ServiceWorkerContextCore::DeleteAndStartOver(StatusCallback callback) {
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnDeleteAndStartOver);
 
-  storage()->DeleteAndStartOver(std::move(callback));
+  registry()->DeleteAndStartOver(std::move(callback));
 }
 
 void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(

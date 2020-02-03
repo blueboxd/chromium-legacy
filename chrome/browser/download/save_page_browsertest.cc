@@ -734,7 +734,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SecurityLevelHistogram) {
 }
 
 // Tests that a page can be saved as MHTML.
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageAsMHTML) {
+// Flaky on Windows, crbug.com/1048100
+#if defined(OS_WIN)
+#define MAYBE_SavePageAsMHTML DISABLED_SavePageAsMHTML
+#else
+#define MAYBE_SavePageAsMHTML SavePageAsMHTML
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SavePageAsMHTML) {
   static const int64_t kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(

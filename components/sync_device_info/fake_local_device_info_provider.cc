@@ -6,6 +6,7 @@
 
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "components/sync_device_info/device_info_util.h"
 
 namespace syncer {
 
@@ -19,6 +20,7 @@ FakeLocalDeviceInfoProvider::FakeLocalDeviceInfoProvider()
           "device_id",
           base::SysInfo::HardwareInfo{"manufacturer", "model", "serial"},
           /*last_updated_timestamp=*/base::Time::Now(),
+          DeviceInfoUtil::GetPulseInterval(),
           /*send_tab_to_self_receiving_enabled=*/false,
           /*sharing_info=*/base::nullopt) {}
 

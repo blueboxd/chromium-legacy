@@ -24,6 +24,39 @@
 
 using sync_pb::SharingSpecificFields;
 
+namespace {
+bool IsDesktop(sync_pb::SyncEnums::DeviceType type) {
+  switch (type) {
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_CROS:
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_LINUX:
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_MAC:
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_WIN:
+      return true;
+    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
+    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET:
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_OTHER:
+      return false;
+  }
+}
+
+bool IsStale(const syncer::DeviceInfo& device) {
+  if (base::FeatureList::IsEnabled(kSharingMatchPulseInterval)) {
+    base::TimeDelta pulse_delta = base::TimeDelta::FromHours(
+        IsDesktop(device.device_type()) ? kSharingPulseDeltaDesktopHours.Get()
+                                        : kSharingPulseDeltaAndroidHours.Get());
+    base::Time min_updated_time =
+        base::Time::Now() - device.pulse_interval() - pulse_delta;
+    return device.last_updated_timestamp() < min_updated_time;
+  }
+
+  const base::Time min_updated_time =
+      base::Time::Now() -
+      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get());
+  return device.last_updated_timestamp() < min_updated_time;
+}
+}  // namespace
+
 SharingDeviceSourceSync::SharingDeviceSourceSync(
     syncer::SyncService* sync_service,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
@@ -79,13 +112,8 @@ SharingDeviceSourceSync::GetDeviceCandidates(
   if (!IsSyncEnabledForSharing(sync_service_) || !IsReady())
     return {};
 
-  const base::Time min_updated_time =
-      base::Time::Now() -
-      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get());
-
-  return RenameAndDeduplicateDevices(
-      FilterDeviceCandidates(device_info_tracker_->GetAllDeviceInfo(),
-                             min_updated_time, required_feature));
+  return RenameAndDeduplicateDevices(FilterDeviceCandidates(
+      device_info_tracker_->GetAllDeviceInfo(), required_feature));
 }
 
 bool SharingDeviceSourceSync::IsReady() {
@@ -126,8 +154,7 @@ void SharingDeviceSourceSync::OnLocalDeviceInfoProviderReady() {
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
 SharingDeviceSourceSync::FilterDeviceCandidates(
     std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
-    const base::Time min_updated_time,
-    SharingSpecificFields::EnabledFeatures required_feature) const {
+    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
   std::set<SharingSpecificFields::EnabledFeatures> accepted_features{
       required_feature};
   if (required_feature == SharingSpecificFields::CLICK_TO_CALL) {
@@ -140,11 +167,10 @@ SharingDeviceSourceSync::FilterDeviceCandidates(
   bool can_send_via_vapid = CanSendViaVapid(sync_service_);
   bool can_send_via_sender_id = CanSendViaSenderID(sync_service_);
 
-  base::EraseIf(devices, [this, min_updated_time, accepted_features,
-                          can_send_via_vapid,
+  base::EraseIf(devices, [this, accepted_features, can_send_via_vapid,
                           can_send_via_sender_id](const auto& device) {
     // Checks if |last_updated_timestamp| is not too old.
-    if (device->last_updated_timestamp() < min_updated_time)
+    if (IsStale(*device.get()))
       return true;
 
     // Checks if device has fcm configuration.

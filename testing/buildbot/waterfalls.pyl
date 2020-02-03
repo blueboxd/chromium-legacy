@@ -3647,6 +3647,14 @@
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
+      'Network Service Linux': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'network_service_extra_gtests',
+        },
+      },
       'fuchsia-arm64-cast': {
         'additional_compile_targets': [
           'cast_test_lists',

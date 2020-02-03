@@ -142,10 +142,13 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
 // Creates a registration with a waiting version in INSTALLED state.
+// |resource_id| is used as ID to represent script resource (|script|) and
+// should be unique for each test.
 scoped_refptr<ServiceWorkerRegistration>
 CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           const GURL& scope,
-                                          const GURL& script);
+                                          const GURL& script,
+                                          int64_t resource_id);
 
 // Writes the script down to |storage| synchronously. This should not be used in
 // base::RunLoop since base::RunLoop is used internally to wait for completing
@@ -171,6 +174,11 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
     const std::string& body,
     const std::string& meta_data,
     base::OnceClosure callback);
+
+// Calls ServiceWorkerStorage::CreateNewResponseWriter() and returns the
+// created writer synchronously.
+std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
+    ServiceWorkerStorage* storage);
 
 // A test implementation of ServiceWorkerResponseReader.
 //

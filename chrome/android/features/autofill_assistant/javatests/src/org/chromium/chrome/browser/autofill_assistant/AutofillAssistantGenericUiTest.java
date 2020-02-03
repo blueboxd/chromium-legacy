@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanList;
@@ -48,6 +49,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.DrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.EventProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.GenericUserInterfaceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ImageViewProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InteractionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InteractionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.LinearLayoutProto;
@@ -57,8 +59,9 @@ import org.chromium.chrome.browser.autofill_assistant.proto.OnViewClickedEventPr
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueCallbackProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowInfoPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.StringList;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
@@ -294,8 +297,7 @@ public class AutofillAssistantGenericUiTest {
                                         .setValue(ValueProto.newBuilder().setBooleans(
                                                 BooleanList.newBuilder().addValues(true)))))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueCallbackProto.newBuilder().setModelIdentifier(
-                                        "output_1")))
+                                SetModelValueProto.newBuilder().setModelIdentifier("output_1")))
                         .build());
         List<InteractionProto> interactionsAppended = new ArrayList<>();
         interactionsAppended.add(
@@ -306,8 +308,7 @@ public class AutofillAssistantGenericUiTest {
                                         .setValue(ValueProto.newBuilder().setStrings(
                                                 StringList.newBuilder().addValues("Hello World")))))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueCallbackProto.newBuilder().setModelIdentifier(
-                                        "output_2")))
+                                SetModelValueProto.newBuilder().setModelIdentifier("output_2")))
                         .build());
 
         List<ModelProto.ModelValue> modelValuesPrepended = new ArrayList<>();
@@ -431,11 +432,9 @@ public class AutofillAssistantGenericUiTest {
                                         .setValue(ValueProto.newBuilder().setStrings(
                                                 StringList.newBuilder().addValues("Hello World")))))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueCallbackProto.newBuilder().setModelIdentifier(
-                                        "output_1")))
+                                SetModelValueProto.newBuilder().setModelIdentifier("output_1")))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueCallbackProto.newBuilder().setModelIdentifier(
-                                        "output_3")))
+                                SetModelValueProto.newBuilder().setModelIdentifier("output_3")))
                         .build());
         // Whenever output_1 changes, copy the value to output_2.
         interactions.add(
@@ -444,8 +443,7 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "output_1")))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueCallbackProto.newBuilder().setModelIdentifier(
-                                        "output_2")))
+                                SetModelValueProto.newBuilder().setModelIdentifier("output_2")))
                         .build());
         // Whenever output_2 changes, copy the value to output_1. This tests that no infinite loop
         // is created, because events should only be fired for actual value changes.
@@ -455,8 +453,7 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "output_2")))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueCallbackProto.newBuilder().setModelIdentifier(
-                                        "output_1")))
+                                SetModelValueProto.newBuilder().setModelIdentifier("output_1")))
                         .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
@@ -546,5 +543,72 @@ public class AutofillAssistantGenericUiTest {
                                 .setValue(ValueProto.newBuilder().setStrings(
                                         StringList.newBuilder().addValues("Hello World")))
                                 .build()));
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testShowInfoPopupOnClick() {
+        ViewProto clickableView = (ViewProto) ViewProto.newBuilder()
+                                          .setTextView(TextViewProto.newBuilder().setText(
+                                                  "Shows an info popup when clicked"))
+                                          .setIdentifier("clickableView")
+                                          .build();
+
+        ViewProto rootView =
+                (ViewProto) ViewProto.newBuilder()
+                        .setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(clickableView))
+                        .build();
+
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                                 "clickableView")))
+                                 .addCallbacks(CallbackProto.newBuilder().setShowInfoPopup(
+                                         ShowInfoPopupProto.newBuilder().setInfoPopup(
+                                                 InfoPopupProto.newBuilder()
+                                                         .setText("Info message here")
+                                                         .setTitle("Some title"))))
+                                 .build());
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setGenericUserInterfacePrepended(
+                                                 GenericUserInterfaceProto.newBuilder()
+                                                         .setRootView(rootView)
+                                                         .setInteractions(
+                                                                 InteractionsProto.newBuilder()
+                                                                         .addAllInteractions(
+                                                                                 interactions)))
+                                         .setPrivacyNoticeText(
+                                                 "Chrome will send selected data to example.com")
+                                         .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+
+        onView(withText("Shows an info popup when clicked")).perform(click());
+        onView(withText("Some title")).check(matches(isDisplayed()));
+        onView(withText("Info message here")).check(matches(isDisplayed()));
+        onView(withText(mTestRule.getActivity().getString(R.string.close))).perform(click());
     }
 }

@@ -417,7 +417,13 @@ TEST_F(SystemMetricsTest, ParseZramStat) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_ANDROID)
-TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
+// Failing on ChromeOS, crbug.com/1048073
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetSystemMemoryInfo DISABLED_GetSystemMemoryInfo
+#else
+#define MAYBE_GetSystemMemoryInfo GetSystemMemoryInfo
+#endif
+TEST(SystemMetrics2Test, MAYBE_GetSystemMemoryInfo) {
   SystemMemoryInfoKB info;
   EXPECT_TRUE(GetSystemMemoryInfo(&info));
 

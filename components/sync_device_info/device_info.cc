@@ -45,6 +45,7 @@ DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& signin_scoped_device_id,
                        const base::SysInfo::HardwareInfo& hardware_info,
                        base::Time last_updated_timestamp,
+                       base::TimeDelta pulse_interval,
                        bool send_tab_to_self_receiving_enabled,
                        const base::Optional<SharingInfo>& sharing_info)
     : guid_(guid),
@@ -55,6 +56,7 @@ DeviceInfo::DeviceInfo(const std::string& guid,
       signin_scoped_device_id_(signin_scoped_device_id),
       hardware_info_(hardware_info),
       last_updated_timestamp_(last_updated_timestamp),
+      pulse_interval_(pulse_interval),
       send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled),
       sharing_info_(sharing_info) {
   // We do not store device's serial number in DeviceInfo.
@@ -97,6 +99,10 @@ const base::SysInfo::HardwareInfo& DeviceInfo::hardware_info() const {
 
 base::Time DeviceInfo::last_updated_timestamp() const {
   return last_updated_timestamp_;
+}
+
+base::TimeDelta DeviceInfo::pulse_interval() const {
+  return pulse_interval_;
 }
 
 bool DeviceInfo::send_tab_to_self_receiving_enabled() const {

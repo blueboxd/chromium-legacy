@@ -794,11 +794,17 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileList, /* file_list.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("fileListAriaAttributes"),
+                      TestCase("fileListAriaAttributes").FilesNg(),
                       TestCase("fileListFocusFirstItem"),
+                      TestCase("fileListFocusFirstItem").FilesNg(),
                       TestCase("fileListSelectLastFocusedItem"),
+                      TestCase("fileListSelectLastFocusedItem").FilesNg(),
                       TestCase("fileListKeyboardSelectionA11y"),
+                      TestCase("fileListKeyboardSelectionA11y").FilesNg(),
                       TestCase("fileListMouseSelectionA11y"),
-                      TestCase("fileListDeleteMultipleFiles")));
+                      TestCase("fileListMouseSelectionA11y").FilesNg(),
+                      TestCase("fileListDeleteMultipleFiles"),
+                      TestCase("fileListDeleteMultipleFiles").FilesNg()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */

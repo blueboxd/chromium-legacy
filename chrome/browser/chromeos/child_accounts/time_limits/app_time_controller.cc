@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_activity_provider.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -72,10 +71,7 @@ AppTimeController::AppTimeController(Profile* profile)
     : app_service_wrapper_(std::make_unique<AppServiceWrapper>(profile)),
       app_registry_(
           std::make_unique<AppActivityRegistry>(app_service_wrapper_.get(),
-                                                this)),
-      web_time_activity_provider_(std::make_unique<WebTimeActivityProvider>(
-          this,
-          app_service_wrapper_.get())) {
+                                                this)) {
   DCHECK(profile);
 
   if (WebTimeLimitEnforcer::IsEnabled())

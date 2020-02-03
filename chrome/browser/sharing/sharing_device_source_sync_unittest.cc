@@ -12,6 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
@@ -48,11 +49,9 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
                                                std::move(sender_id_target_info),
                                                std::move(enabled_features));
 
-  return std::make_unique<syncer::DeviceInfo>(
-      base::GenerateGUID(), client_name, "chrome_version", "sync_user_agent",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", hardware_info,
-      /*last_updated_timestamp=*/base::Time::Now(),
-      /*send_tab_to_self_receiving_enabled=*/false, std::move(sharing_info));
+  return CreateFakeDeviceInfo(
+      base::GenerateGUID(), client_name, std::move(sharing_info),
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, hardware_info);
 }
 
 std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(

@@ -284,7 +284,9 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->Append(
       MakeGarbageCollected<InspectorIOAgent>(isolate, session->V8Session()));
 
-  session->Append(MakeGarbageCollected<InspectorAuditsAgent>(network_agent));
+  session->Append(MakeGarbageCollected<InspectorAuditsAgent>(
+      network_agent,
+      &inspected_frames->Root()->GetPage()->GetInspectorIssueStorage()));
 
   session->Append(MakeGarbageCollected<InspectorMediaAgent>(inspected_frames));
 

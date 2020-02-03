@@ -53,9 +53,9 @@ const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables storing leaked credentials in the database.
-const base::Feature kLeakHistory = {"PasswordLeakHistory",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the bulk Password Check feature for signed in users.
+const base::Feature kPasswordCheck = {"PasswordCheck",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {

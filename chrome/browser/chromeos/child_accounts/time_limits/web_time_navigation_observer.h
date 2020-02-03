@@ -45,7 +45,7 @@ class WebTimeNavigationObserver
    public:
     virtual void OnWebActivityChanged(const NavigationInfo& info) {}
     virtual void WebTimeNavigationObserverDestroyed(
-        WebTimeNavigationObserver* observer) {}
+        const WebTimeNavigationObserver* observer) {}
   };
 
   static void MaybeCreateForWebContents(content::WebContents* web_contents);

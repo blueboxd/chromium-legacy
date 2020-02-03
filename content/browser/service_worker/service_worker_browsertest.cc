@@ -458,7 +458,6 @@ class WorkerRunningStatusObserver : public ServiceWorkerContextObserver {
   }
 
   void OnVersionStartedRunning(
-      ServiceWorkerContext* context,
       int64_t version_id,
       const ServiceWorkerRunningInfo& running_info) override {
     version_id_ = version_id;

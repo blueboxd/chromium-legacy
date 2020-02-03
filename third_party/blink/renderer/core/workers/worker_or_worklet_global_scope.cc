@@ -207,7 +207,7 @@ const AtomicString& WorkerOrWorkletGlobalScope::InterfaceName() const {
   return g_null_atom;
 }
 
-v8::Local<v8::Object> WorkerOrWorkletGlobalScope::Wrap(
+v8::Local<v8::Value> WorkerOrWorkletGlobalScope::Wrap(
     v8::Isolate*,
     v8::Local<v8::Object> creation_context) {
   LOG(FATAL) << "WorkerOrWorkletGlobalScope must never be wrapped with wrap "

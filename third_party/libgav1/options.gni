@@ -5,6 +5,6 @@
 import("//build/config/gclient_args.gni")
 
 declare_args() {
-  # Build libgav1 code
-  use_libgav1 = false
+  # Enable libgav1 decoder.
+  enable_libgav1_decoder = false
 }

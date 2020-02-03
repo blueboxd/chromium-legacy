@@ -70,7 +70,7 @@ DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
   return Create(std::move(buffer));
 }
 
-v8::Local<v8::Object> DOMArrayBuffer::Wrap(
+v8::Local<v8::Value> DOMArrayBuffer::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));

@@ -209,7 +209,9 @@ std::string HostedAppBrowserController::GetAppShortName() const {
 }
 
 base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
-  return FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
+  const Extension* extension = GetExtension();
+  return extension ? FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(extension))
+                   : base::string16();
 }
 
 bool HostedAppBrowserController::CanUninstall() const {

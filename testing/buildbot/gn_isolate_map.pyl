@@ -916,6 +916,11 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests",
     "type": "raw",
   },
+  "ios_chrome_signin_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests",
+    "type": "raw",
+  },
   "ios_chrome_settings_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",

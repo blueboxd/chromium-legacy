@@ -1346,8 +1346,7 @@ bool ChromeUserManagerImpl::IsUserAllowed(
 
   return chrome_user_manager_util::IsUserAllowed(
       user, AreSupervisedUsersAllowed(), IsGuestSessionAllowed(),
-      user.HasGaiaAccount() && IsGaiaUserAllowed(user),
-      GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
+      user.HasGaiaAccount() && IsGaiaUserAllowed(user));
 }
 
 UserFlow* ChromeUserManagerImpl::GetDefaultUserFlow() const {

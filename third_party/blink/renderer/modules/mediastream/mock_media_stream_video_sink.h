@@ -43,8 +43,8 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
   // Triggered when OnVideoFrame(scoped_refptr<media::VideoFrame> frame)
   // is called.
-  MOCK_METHOD0(OnVideoFrame, void());
-  MOCK_METHOD0(OnEncodedVideoFrame, void());
+  MOCK_METHOD1(OnVideoFrame, void(base::TimeTicks));
+  MOCK_METHOD1(OnEncodedVideoFrame, void(base::TimeTicks));
 
   VideoCaptureDeliverFrameCB GetDeliverFrameCB();
   EncodedVideoFrameCB GetDeliverEncodedVideoFrameCB();

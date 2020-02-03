@@ -28,8 +28,42 @@ const State = {
   CANCELING: 'canceling',
 };
 
+const MAX_USERNAME_LENGTH = 32;
 const InstallerState = crostini.mojom.InstallerState;
 const InstallerError = crostini.mojom.InstallerError;
+
+const UNAVAILABLE_USERNAMES = [
+  'root',
+  'daemon',
+  'bin',
+  'sys',
+  'sync',
+  'games',
+  'man',
+  'lp',
+  'mail',
+  'news',
+  'uucp',
+  'proxy',
+  'www-data',
+  'backup',
+  'list',
+  'irc',
+  'gnats',
+  'nobody',
+  '_apt',
+  'systemd-timesync',
+  'systemd-network',
+  'systemd-resolve',
+  'systemd-bus-proxy',
+  'messagebus',
+  'sshd',
+  'rtkit',
+  'pulse',
+  'android-root',
+  'chronos-access',
+  'android-everybody'
+];
 
 Polymer({
   is: 'crostini-installer-app',
@@ -98,9 +132,17 @@ Polymer({
 
     username_: {
       type: String,
-      notify: true,
-      value: loadTimeData.getString('defaultContainerUsername'),
+      value: loadTimeData.getString('defaultContainerUsername')
+                 .substring(0, MAX_USERNAME_LENGTH),
+      observer: 'onUsernameChanged_',
     },
+
+    usernameError_: {
+      type: String,
+    },
+
+    /* Enable the html template to access the length */
+    MAX_USERNAME_LENGTH: {type: Number, value: MAX_USERNAME_LENGTH},
   },
 
   /** @override */
@@ -149,7 +191,7 @@ Polymer({
     });
 
     BrowserProxy.getInstance().handler.requestAmountOfFreeDiskSpace();
-    this.$$('.action-button').focus();
+    this.$$('.action-button:not([hidden])').focus();
   },
 
   /** @override */
@@ -166,7 +208,7 @@ Polymer({
 
   /** @private */
   onInstallButtonClick_() {
-    assert(this.canInstall_(this.state_));
+    assert(this.showInstallButton_(this.state_));
     var diskSize = 0;
     if (loadTimeData.getBoolean('diskResizingEnabled')) {
       diskSize = this.diskSizeTicks_[this.$.diskSlider.value].value;
@@ -234,13 +276,13 @@ Polymer({
   },
 
   /**
-   * @param {State} state1
-   * @param {State} state2
+   * @param {*} value1
+   * @param {*} value2
    * @returns {boolean}
    * @private
    */
-  isState_(state1, state2) {
-    return state1 === state2;
+  eq_(value1, value2) {
+    return value1 === value2;
   },
 
   /**
@@ -248,12 +290,22 @@ Polymer({
    * @returns {boolean}
    * @private
    */
-  canInstall_(state) {
+  showInstallButton_(state) {
     if (this.configurePageAccessible_()) {
       return state === State.CONFIGURE || state === State.ERROR;
     } else {
       return state === State.PROMPT || state === State.ERROR;
     }
+  },
+
+  /**
+   * @param {State} state
+   * @param {string} usernameError
+   * @returns {boolean}
+   * @private
+   */
+  disableInstallButton_(state, usernameError) {
+    return state === State.CONFIGURE && usernameError !== '';
   },
 
   /**
@@ -416,5 +468,21 @@ Polymer({
    */
   showUsernameSelection_() {
     return loadTimeData.getBoolean('crostiniCustomUsername');
+  },
+
+  /** @private */
+  onUsernameChanged_(username, oldUsername) {
+    if (UNAVAILABLE_USERNAMES.includes(username)) {
+      this.usernameError_ =
+          loadTimeData.getStringF('usernameNotAvailableError', username);
+    } else if (!/^[a-z_]/.test(username)) {
+      this.usernameError_ =
+          loadTimeData.getString('usernameInvalidFirstCharacterError');
+    } else if (!/^[a-z0-9_-]*$/.test(username)) {
+      this.usernameError_ =
+          loadTimeData.getString('usernameInvalidCharactersError');
+    } else {
+      this.usernameError_ = '';
+    }
   },
 });

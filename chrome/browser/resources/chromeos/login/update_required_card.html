@@ -11,36 +11,47 @@
   Events: none
 -->
 <dom-module id="update-required-card">
-  <link rel="stylesheet" href="oobe_dialog_host.css">
-  <link rel="stylesheet" href="oobe_flex_layout.css">
-  <link rel="stylesheet" href="update_required_card.css">
-
   <template>
-    <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
-        'update-required-message',
-        'update-error')]]" id="update-required-error-dialog">
-      <div slot="subtitle">
-        <div hidden="[[showOn_(ui_state, 'update-error')]]"
-            class="update-error">
-          [[i18nDynamic(locale,'errorMessage')]]
-        </div>
-        <div>
-          [[i18nDynamic(locale,'updateRequiredMessage')]]
-        </div>
-      </div>
+    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <link rel="stylesheet" href="oobe_flex_layout.css">
+    <link rel="stylesheet" href="update_required_card.css">
 
+    <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
+        'update-required-message')]]" id="update-required-dialog"
+        title-key="updateRequiredTitle">
+      <div slot="subtitle">
+        [[i18nDynamic(locale,'updateRequiredMessage', enterpriseDomain,
+            deviceName)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+             srcset="images/1x/updating_1x.svg 1x,
+                     images/2x/updating_2x.svg 2x">
+      </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <cr-button disabled="[[selectNetworkDisabled]]"
-            on-click="onSelectNetworkClicked_">
-          [[i18nDynamic(locale,'selectNetworkButtonCaption')]]
-        </cr-button>
-        <cr-button disabled="[[!isConnected]]" on-click="onUpdateClicked_">
-          [[i18nDynamic(locale,'updateButtonCaption')]]
-        </cr-button>
+        <oobe-text-button inverse on-tap="onUpdateClicked_"
+            class="focus-on-show" text-key="updateButtonCaption">
+        </oobe-text-button>
       </div>
     </oobe-dialog>
 
-    <oobe-dialog hidden="[[showOn_(ui_state, 'update-process')]]" has-buttons>
+    <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
+        'update-error')]]" id="update-required-error-dialog"
+        title-key="updateRequiredTitle"
+        subtitle-key="errorMessage">
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onSelectNetworkClicked_"
+            class="focus-on-show" disabled="[[selectNetworkDisabled]]"
+            text-key="selectNetworkButtonCaption">
+        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onUpdateClicked_"
+            id="update-button" text-key="updateButtonCaption">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog hidden="[[showOn_(ui_state, 'update-process')]]" has-buttons
+        id="update-process-dialog">
       <h1 slot="title" hidden="[[!updateProgressUnavailable]]">
         [[i18nDynamic(locale,'checkingForUpdatesTitle')]]
       </h1>
@@ -49,7 +60,7 @@
       </paper-progress>
 
       <h1 slot="title" hidden="[[updateProgressUnavailable]]">
-          [[i18nDynamic(locale,'updatingTitle')]]
+        [[i18nDynamic(locale,'updatingTitle')]]
       </h1>
       <paper-progress slot="progress" min="0" max="100"
           value="[[updateProgressValue]]"
@@ -58,11 +69,11 @@
 
       <div slot="footer" hidden="[[updateProgressUnavailable]]"
           class="flex layout vertical">
-        <div id="estimated-time-left" class="progress-message text"
+        <div id="estimated-time-left" class="progress-message"
             hidden="[[!estimatedTimeLeftVisible]]">
           [[estimatedTimeLeft]]
         </div>
-        <div id="progress-message" class="progress-message text"
+        <div id="progress-message" class="progress-message"
             hidden="[[!updateProgressMessage]]">
           [[updateProgressMessage]]
         </div>
@@ -70,37 +81,56 @@
     </oobe-dialog>
 
     <oobe-dialog hidden="[[showOn_(ui_state, 'update-need-permission')]]"
-        has-buttons
-        title-key="updateOverCellularPromptTitle"
-        subtitle-key="updateOverCellularPromptMessage">
+        has-buttons title-key="updateRequiredTitle"
+        id="update-need-permission-dialog">
+      <div slot="subtitle" class="update-subtitle">
+        [[i18nDynamic(locale,'updateOverCellularPromptMessage',
+            enterpriseDomain)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+            srcset="images/1x/updating_1x.svg 1x,
+                    images/2x/updating_2x.svg 2x">
+      </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <cr-button on-click="onCellularPermissionRejected_">
-          [[i18nDynamic(locale,'RejectUpdateOverCellularButton')]]
-        </cr-button>
-        <cr-button on-click="onCellularPermissionAccepted_">
-          [[i18nDynamic(locale,'AcceptUpdateOverCellularButton')]]
-        </cr-button>
+        <oobe-text-button inverse on-tap="onCellularPermissionAccepted_"
+            class="focus-on-show" text-key="AcceptUpdateOverCellularButton">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog hidden="[[showOn_(ui_state, 'update-no-network')]]"
+        has-buttons title-key="updateRequiredTitle">
+      <div slot="subtitle" class="update-subtitle"
+          id="no-network-message">
+        [[i18nDynamic(locale,'noNetworkMessage', enterpriseDomain)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+            srcset="images/1x/updating_1x.svg 1x,
+                    images/2x/updating_2x.svg 2x">
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onSelectNetworkClicked_"
+            id="select-network-button" text-key="selectNetworkButtonCaption"
+            class="focus-on-show">
+        </oobe-text-button>
       </div>
     </oobe-dialog>
 
     <oobe-dialog
         hidden="[[showOn_(ui_state, 'update-completed-need-reboot')]]"
-        id="update-completed-dialog">
-      <div slot="subtitle">
-        <div>
-          [[i18nDynamic(locale,'rebootNeededMessage')]]
-        </div>
-      </div>
+        id="update-completed-dialog" subtitle-key="rebootNeededMessage">
     </oobe-dialog>
 
     <oobe-dialog
-        hidden="[[showOn_(ui_state, 'eol')]]"
-        id="eol-dialog">
-      <div slot="subtitle">>
-        <div>
-          [[i18nDynamic(locale,'eolMessage')]]
-        </div>
-      </div>
+        hidden="[[showOn_(ui_state, 'eol')]]" id="eol-dialog"
+        title-key="eolTitle"
+        subtitle-key="eolMessage">
+      <hd-iron-icon slot="oobe-icon" id="eol-alert-icon"
+          icon1x="oobe-32:alert" icon2x="oobe-64:alert">
+      </hd-iron-icon>
     </oobe-dialog>
+
   </template>
 </dom-module>

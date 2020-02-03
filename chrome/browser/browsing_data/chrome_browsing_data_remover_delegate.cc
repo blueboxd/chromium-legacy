@@ -861,7 +861,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           base::AdaptCallbackForRepeating(CreateTaskCompletionClosure(
               TracingDataType::kPasswordsStatistics)));
       if (base::FeatureList::IsEnabled(
-              password_manager::features::kLeakHistory)) {
+              password_manager::features::kPasswordCheck)) {
         password_store->RemoveCompromisedCredentialsByUrlAndTime(
             nullable_filter, delete_begin_, delete_end_,
             CreateTaskCompletionClosure(

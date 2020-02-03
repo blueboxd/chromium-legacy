@@ -38,9 +38,7 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-class ServiceWorkerContextCore;
 class ServiceWorkerDiskCache;
-class ServiceWorkerRegistry;
 class ServiceWorkerResponseMetadataWriter;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
@@ -90,6 +88,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources)>;
 
+  using ResponseWriterCreationCallback = base::OnceCallback<void(
+      int64_t resource_id,
+      std::unique_ptr<ServiceWorkerResponseWriter> response_writer)>;
+
   using DatabaseStatusCallback =
       base::OnceCallback<void(ServiceWorkerDatabase::Status status)>;
   using GetUserDataInDBCallback =
@@ -111,17 +113,13 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // ServiceWorkerRegistration dependencies are moved to ServiceWorkerRegistry.
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& user_data_directory,
-      ServiceWorkerContextCore* context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy,
-      ServiceWorkerRegistry* registry);
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   // Used for DeleteAndStartOver. Creates new storage based on |old_storage|.
   static std::unique_ptr<ServiceWorkerStorage> Create(
-      ServiceWorkerContextCore* context,
-      ServiceWorkerStorage* old_storage,
-      ServiceWorkerRegistry* registry);
+      ServiceWorkerStorage* old_storage);
 
   // Reads stored registrations for |client_url| or |scope| or
   // |registration_id|. Returns blink::ServiceWorkerStatusCode::kOk with
@@ -192,6 +190,14 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   std::unique_ptr<ServiceWorkerResponseMetadataWriter>
   CreateResponseMetadataWriter(int64_t resource_id);
 
+  // Assigns a new resource ID and creates a response writer associated with
+  // the resource ID. If ID allocation fails, kInvalidServiceWorkerResourceId
+  // and null writer are returned.
+  // NOTE: Currently this method is synchronous but intentionally uses async
+  // style because ServiceWorkerStorage will be accessed via mojo calls soon.
+  // See crbug.com/1046335 for details.
+  void CreateNewResponseWriter(ResponseWriterCreationCallback callback);
+
   // Adds |resource_id| to the set of resources that are in the disk cache
   // but not yet stored with a registration.
   void StoreUncommittedResourceId(int64_t resource_id,
@@ -199,8 +205,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Removes resource ids from uncommitted list, adds them to the purgeable list
   // and purges them.
-  void DoomUncommittedResource(int64_t resource_id);
-  void DoomUncommittedResources(const std::set<int64_t>& resource_ids);
+  void DoomUncommittedResources(const std::set<int64_t>& resource_ids,
+                                DatabaseStatusCallback callback);
 
   // Provide a storage mechanism to read/write arbitrary data associated with
   // a registration. Each registration has its own key namespace.
@@ -252,7 +258,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const std::string& key_prefix,
       DatabaseStatusCallback callback);
 
-  // Deletes the storage and starts over.
+  // Deletes the storage and starts over. This should be called only from
+  // ServiceWorkerRegistry other than tests.
   void DeleteAndStartOver(StatusCallback callback);
 
   // Returns a new registration id which is guaranteed to be unique in the
@@ -279,6 +286,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // the uncommitted resource keys.
   void PurgeResources(const ResourceList& resources);
   void PurgeResources(const std::vector<int64_t>& resource_ids);
+  void PurgeResources(const std::set<int64_t>& resource_ids);
 
   void LazyInitializeForTest();
 
@@ -353,11 +361,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   ServiceWorkerStorage(
       const base::FilePath& user_data_directory,
-      ServiceWorkerContextCore* context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy,
-      ServiceWorkerRegistry* registry);
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   base::FilePath GetDatabasePath();
   base::FilePath GetDiskCachePath();
@@ -387,8 +393,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const ServiceWorkerDatabase::RegistrationData& deleted_version,
       const std::vector<int64_t>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status);
-  void DidPurgeUncommittedResourceIds(const std::set<int64_t>& resource_ids,
-                                      ServiceWorkerDatabase::Status status);
 
   // Lazy disk_cache getter.
   ServiceWorkerDiskCache* disk_cache();
@@ -486,11 +490,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const std::set<GURL>& origins);
   static void PerformStorageCleanupInDB(ServiceWorkerDatabase* database);
 
-  // TODO(crbug.com/1039200): Remove this method. This relies on
-  // ServiceWorkerContextCore but it won't be available when this class is moved
-  // to the Storage Service.
-  void ScheduleDeleteAndStartOver();
-
   // Posted by the underlying cache implementation after it finishes making
   // disk changes upon its destruction.
   void DiskCacheImplDoneWithDisk();
@@ -532,9 +531,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   base::FilePath user_data_directory_;
 
-  // The ServiceWorkerContextCore object must outlive this.
-  ServiceWorkerContextCore* const context_;
-
   // |database_| is only accessed using |database_task_runner_|.
   std::unique_ptr<ServiceWorkerDatabase> database_;
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
@@ -548,11 +544,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   bool is_purge_pending_;
   bool has_checked_for_stale_resources_;
   base::OnceClosure purging_complete_callback_for_test_;
-
-  // |registry_| owns this class and must outlive this.
-  // TODO(crbug.com/1039200): Remove this reference once
-  // ServiceWorkerRegistration dependencies are moved to ServiceWorkerRegistry.
-  ServiceWorkerRegistry* registry_;
 
   base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_{this};
 

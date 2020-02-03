@@ -63,7 +63,6 @@ namespace blink {
 // dependencies to core/.
 
 class DOMWindow;
-class EventTarget;
 class ExceptionState;
 class ExecutionContext;
 class FlexibleArrayBufferView;
@@ -81,88 +80,6 @@ enum class UnionTypeConversionMode {
   kNullable,
   kNotNullable,
 };
-
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info,
-                             DOMWindow* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info,
-                             EventTarget* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info, Node* impl) {
-  V8SetReturnValue(callback_info, static_cast<ScriptWrappable*>(impl));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         DOMWindow* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         EventTarget* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         Node* impl) {
-  // Since EventTarget has a special version of ToV8 and V8EventTarget.h
-  // defines its own v8SetReturnValue family, which are slow, we need to
-  // override them with optimized versions for Node and its subclasses.
-  // Without this overload, V8SetReturnValueForMainWorld for Node would be
-  // very slow.
-  //
-  // class hierarchy:
-  //     ScriptWrappable <-- EventTarget <--+-- Node <-- ...
-  //                                        +-- Window
-  // overloads:
-  //     V8SetReturnValueForMainWorld(ScriptWrappable*)
-  //         Optimized and very fast.
-  //     V8SetReturnValueForMainWorld(EventTarget*)
-  //         Uses custom ToV8 function and slow.
-  //     V8SetReturnValueForMainWorld(Node*)
-  //         Optimized and very fast.
-  //     V8SetReturnValueForMainWorld(Window*)
-  //         Uses custom ToV8 function and slow.
-  V8SetReturnValueForMainWorld(callback_info,
-                               static_cast<ScriptWrappable*>(impl));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 DOMWindow* impl,
-                                 const ScriptWrappable*) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 EventTarget* impl,
-                                 const ScriptWrappable*) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 Node* impl,
-                                 const ScriptWrappable* wrappable) {
-  V8SetReturnValueFast(callback_info, static_cast<ScriptWrappable*>(impl),
-                       wrappable);
-}
 
 template <typename CallbackInfo, typename T>
 inline void V8SetReturnValue(const CallbackInfo& callbackInfo,

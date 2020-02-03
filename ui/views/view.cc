@@ -2196,6 +2196,12 @@ void View::AddChildViewAtImpl(View* view, int index) {
   // inherit the visibility of the owner View.
   view->UpdateLayerVisibility();
 
+  if (widget) {
+    const ui::NativeTheme* new_theme = view->GetNativeTheme();
+    if (new_theme != old_theme)
+      view->PropagateThemeChanged();
+  }
+
   // Need to notify the layout manager because one of the callbacks below might
   // want to know the view's new preferred size, minimum size, etc.
   if (layout_manager_)
@@ -2207,12 +2213,6 @@ void View::AddChildViewAtImpl(View* view, int index) {
     v->ViewHierarchyChangedImpl(false, details);
 
   view->PropagateAddNotifications(details, widget && widget != old_widget);
-
-  if (widget) {
-    const ui::NativeTheme* new_theme = view->GetNativeTheme();
-    if (new_theme != old_theme)
-      view->PropagateThemeChanged();
-  }
 
   UpdateTooltip();
 

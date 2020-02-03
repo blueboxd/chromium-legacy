@@ -49,16 +49,11 @@ class SharedClipboardUiControllerTest : public testing::Test {
                                            -> std::unique_ptr<KeyedService> {
           return std::make_unique<testing::NiceMock<MockSharingService>>();
         }));
-    syncer::DeviceInfo device_info(kReceiverGuid, kReceiverName,
-                                   "chrome_version", "user_agent",
-                                   sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                   "device_id", base::SysInfo::HardwareInfo(),
-                                   /*last_updated_timestamp=*/base::Time::Now(),
-                                   /*send_tab_to_self_receiving_enabled=*/false,
-                                   /*sharing_info=*/base::nullopt);
+    std::unique_ptr<syncer::DeviceInfo> device_info =
+        CreateFakeDeviceInfo(kReceiverGuid, kReceiverName);
     controller_ = SharedClipboardUiController::GetOrCreateFromWebContents(
         web_contents_.get());
-    controller_->OnDeviceSelected(base::UTF8ToUTF16(kText), device_info);
+    controller_->OnDeviceSelected(base::UTF8ToUTF16(kText), *device_info.get());
   }
 
  protected:

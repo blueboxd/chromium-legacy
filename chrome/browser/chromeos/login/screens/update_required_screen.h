@@ -66,6 +66,8 @@ class UpdateRequiredScreen : public BaseScreen,
   // Set a base clock (used to set current time) for testing EOL.
   void SetClockForTesting(base::Clock* clock);
 
+  void SetErrorMessageDelayForTesting(const base::TimeDelta& delay);
+
  private:
   void EnsureScreenIsShown();
 
@@ -124,6 +126,8 @@ class UpdateRequiredScreen : public BaseScreen,
 
   // Overridden for testing EOL by setting the current time.
   base::Clock* clock_;
+
+  base::TimeDelta error_message_delay_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

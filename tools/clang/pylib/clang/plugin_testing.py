@@ -68,6 +68,7 @@ class ClangPluginTest(object):
         pass
       cmd.append(test)
 
+      print("cmd", cmd)
       failure_message = self.RunOneTest(test_name, cmd)
       if failure_message:
         print('failed: %s' % failure_message)

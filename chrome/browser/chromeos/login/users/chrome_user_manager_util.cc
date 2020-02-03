@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -42,13 +41,6 @@ bool AreAllUsersAllowed(const user_manager::UserList& users,
   bool allow_new_user = false;
   decoded_policies.GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
 
-  std::string min_chrome_version_string;
-  decoded_policies.GetString(kMinimumRequiredChromeVersion,
-                             &min_chrome_version_string);
-  bool are_min_version_requirements_satisfied =
-      policy::MinimumVersionPolicyHandler::AreRequirementsSatisfied(
-          min_chrome_version_string);
-
   for (user_manager::User* user : users) {
     bool is_user_whitelisted =
         user->HasGaiaAccount() &&
@@ -56,8 +48,7 @@ bool AreAllUsersAllowed(const user_manager::UserList& users,
             whitelist, user->GetAccountId().GetUserEmail(), nullptr);
     if (!IsUserAllowed(
             *user, supervised_users_allowed, is_guest_allowed,
-            user->HasGaiaAccount() && (allow_new_user || is_user_whitelisted),
-            are_min_version_requirements_satisfied))
+            user->HasGaiaAccount() && (allow_new_user || is_user_whitelisted)))
       return false;
   }
   return true;
@@ -66,8 +57,7 @@ bool AreAllUsersAllowed(const user_manager::UserList& users,
 bool IsUserAllowed(const user_manager::User& user,
                    bool supervised_users_allowed,
                    bool is_guest_allowed,
-                   bool is_user_whitelisted,
-                   bool are_min_version_constraints_satisfied) {
+                   bool is_user_whitelisted) {
   DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
          user.GetType() == user_manager::USER_TYPE_GUEST ||
          user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
@@ -81,10 +71,6 @@ bool IsUserAllowed(const user_manager::User& user,
     return false;
   }
   if (user.HasGaiaAccount() && !is_user_whitelisted) {
-    return false;
-  }
-  if (!are_min_version_constraints_satisfied &&
-      user.GetType() != user_manager::USER_TYPE_GUEST) {
     return false;
   }
   return true;

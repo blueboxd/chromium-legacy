@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_registry.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
@@ -102,26 +101,21 @@ blink::ServiceWorkerStatusCode ServiceWorkerStorage::DatabaseStatusToStatusCode(
 // static
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::FilePath& user_data_directory,
-    ServiceWorkerContextCore* context,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy,
-    ServiceWorkerRegistry* registry) {
+    storage::SpecialStoragePolicy* special_storage_policy) {
   return base::WrapUnique(new ServiceWorkerStorage(
-      user_data_directory, context, std::move(database_task_runner),
-      quota_manager_proxy, special_storage_policy, registry));
+      user_data_directory, std::move(database_task_runner), quota_manager_proxy,
+      special_storage_policy));
 }
 
 // static
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
-    ServiceWorkerContextCore* context,
-    ServiceWorkerStorage* old_storage,
-    ServiceWorkerRegistry* registry) {
+    ServiceWorkerStorage* old_storage) {
   return base::WrapUnique(new ServiceWorkerStorage(
-      old_storage->user_data_directory_, context,
-      old_storage->database_task_runner_,
+      old_storage->user_data_directory_, old_storage->database_task_runner_,
       old_storage->quota_manager_proxy_.get(),
-      old_storage->special_storage_policy_.get(), registry));
+      old_storage->special_storage_policy_.get()));
 }
 
 void ServiceWorkerStorage::FindRegistrationForClientUrl(
@@ -491,6 +485,16 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
       resource_id, disk_cache()->GetWeakPtr()));
 }
 
+void ServiceWorkerStorage::CreateNewResponseWriter(
+    ResponseWriterCreationCallback callback) {
+  int64_t resource_id = NewResourceId();
+  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
+    std::move(callback).Run(resource_id, nullptr);
+  } else {
+    std::move(callback).Run(resource_id, CreateResponseWriter(resource_id));
+  }
+}
+
 void ServiceWorkerStorage::StoreUncommittedResourceId(
     int64_t resource_id,
     DatabaseStatusCallback callback) {
@@ -516,18 +520,9 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(
       std::move(callback));
 }
 
-void ServiceWorkerStorage::DoomUncommittedResource(int64_t resource_id) {
-  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
-  DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
-         STORAGE_STATE_DISABLED == state_)
-      << state_;
-  if (IsDisabled())
-    return;
-  DoomUncommittedResources(std::set<int64_t>(&resource_id, &resource_id + 1));
-}
-
 void ServiceWorkerStorage::DoomUncommittedResources(
-    const std::set<int64_t>& resource_ids) {
+    const std::set<int64_t>& resource_ids,
+    DatabaseStatusCallback callback) {
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
       << state_;
@@ -538,8 +533,7 @@ void ServiceWorkerStorage::DoomUncommittedResources(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::PurgeUncommittedResourceIds,
                      base::Unretained(database_.get()), resource_ids),
-      base::BindOnce(&ServiceWorkerStorage::DidPurgeUncommittedResourceIds,
-                     weak_factory_.GetWeakPtr(), resource_ids));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::StoreUserData(
@@ -902,28 +896,29 @@ void ServiceWorkerStorage::PurgeResources(
   StartPurgingResources(resource_ids);
 }
 
+void ServiceWorkerStorage::PurgeResources(
+    const std::set<int64_t>& resource_ids) {
+  if (!has_checked_for_stale_resources_)
+    DeleteStaleResources();
+  StartPurgingResources(resource_ids);
+}
+
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& user_data_directory,
-    ServiceWorkerContextCore* context,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy,
-    ServiceWorkerRegistry* registry)
+    storage::SpecialStoragePolicy* special_storage_policy)
     : next_registration_id_(blink::mojom::kInvalidServiceWorkerRegistrationId),
       next_version_id_(blink::mojom::kInvalidServiceWorkerVersionId),
       next_resource_id_(ServiceWorkerConsts::kInvalidServiceWorkerResourceId),
       state_(STORAGE_STATE_UNINITIALIZED),
       expecting_done_with_disk_on_disable_(false),
       user_data_directory_(user_data_directory),
-      context_(context),
       database_task_runner_(std::move(database_task_runner)),
       quota_manager_proxy_(quota_manager_proxy),
       special_storage_policy_(special_storage_policy),
       is_purge_pending_(false),
-      has_checked_for_stale_resources_(false),
-      registry_(registry) {
-  DCHECK(context_);
-  DCHECK(registry_);
+      has_checked_for_stale_resources_(false) {
   database_.reset(new ServiceWorkerDatabase(GetDatabasePath()));
 }
 
@@ -993,7 +988,7 @@ void ServiceWorkerStorage::DidReadInitialData(
   } else {
     DVLOG(2) << "Failed to initialize: "
              << ServiceWorkerDatabase::StatusToString(status);
-    ScheduleDeleteAndStartOver();
+    Disable();
   }
 
   for (base::OnceClosure& task : pending_tasks_)
@@ -1078,16 +1073,6 @@ void ServiceWorkerStorage::DidDeleteRegistration(
            newly_purgeable_resources);
 }
 
-void ServiceWorkerStorage::DidPurgeUncommittedResourceIds(
-    const std::set<int64_t>& resource_ids,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK) {
-    ScheduleDeleteAndStartOver();
-    return;
-  }
-  StartPurgingResources(resource_ids);
-}
-
 ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
@@ -1129,7 +1114,7 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
   if (rv != net::OK) {
     LOG(ERROR) << "Failed to open the serviceworker diskcache: "
                << net::ErrorToString(rv);
-    ScheduleDeleteAndStartOver();
+    Disable();
   }
   ServiceWorkerMetrics::CountInitDiskCacheResult(rv == net::OK);
 }
@@ -1222,7 +1207,7 @@ void ServiceWorkerStorage::DidCollectStaleResources(
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     DCHECK_NE(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND, status);
-    ScheduleDeleteAndStartOver();
+    Disable();
     return;
   }
   StartPurgingResources(stale_resource_ids);
@@ -1558,23 +1543,6 @@ void ServiceWorkerStorage::PerformStorageCleanupInDB(
     ServiceWorkerDatabase* database) {
   DCHECK(database);
   database->RewriteDB();
-}
-
-// TODO(nhiroki): The corruption recovery should not be scheduled if the error
-// is transient and it can get healed soon (e.g. IO error). To do that, the
-// database should not disable itself when an error occurs and the storage
-// controls it instead.
-void ServiceWorkerStorage::ScheduleDeleteAndStartOver() {
-  // TODO(dmurph): Notify the quota manager somehow that all of our data is now
-  // removed.
-  if (state_ == STORAGE_STATE_DISABLED) {
-    // Recovery process has already been scheduled.
-    return;
-  }
-  Disable();
-
-  DVLOG(1) << "Schedule to delete the context and start over.";
-  context_->ScheduleDeleteAndStartOver();
 }
 
 void ServiceWorkerStorage::DidDeleteDatabase(

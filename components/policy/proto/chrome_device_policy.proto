@@ -1281,12 +1281,12 @@ message TPMFirmwareUpdateSettingsProto {
 }
 
 // Settings to control the minimum version that is allowed to sign in / stay
-// in session.
-message MinimumRequiredVersionProto {
+// in session. This is now deprecated from M82 onwards.
+message OBSOLETE_MinimumRequiredVersionProto {
   // Value is chrome_version string, e.g. 61.0.3163.120
   // The client will use prefix matching to compare its version against the
   // value of this field.
-  optional string chrome_version = 1;
+  optional string OBSOLETE_chrome_version = 1 [deprecated = true];
 }
 
 // Specifies a list of rules to automatically select certificates on SAML IdP
@@ -1622,7 +1622,8 @@ message ChromeDeviceSettingsProto {
   optional DeviceNativePrintersWhitelistProto native_device_printers_whitelist =
       58;
   optional TPMFirmwareUpdateSettingsProto tpm_firmware_update_settings = 59;
-  optional MinimumRequiredVersionProto minimum_required_version = 60;
+  optional OBSOLETE_MinimumRequiredVersionProto minimum_required_version = 60
+      [deprecated = true];
   optional DeviceLoginScreenAutoSelectCertificateForUrls
       device_login_screen_auto_select_certificate_for_urls = 62;
   optional UnaffiliatedArcAllowedProto unaffiliated_arc_allowed = 63;
@@ -1668,4 +1669,5 @@ message ChromeDeviceSettingsProto {
   optional StringListPolicyProto device_web_based_attestation_allowed_urls = 94;
   optional BooleanPolicyProto device_show_numeric_keyboard_for_password = 95;
   optional BooleanPolicyProto login_screen_primary_mouse_button_switch = 96;
+  optional StringPolicyProto minimum_chrome_version_enforced = 97;
 }

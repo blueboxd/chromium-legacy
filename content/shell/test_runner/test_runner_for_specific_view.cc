@@ -468,6 +468,12 @@ void TestRunnerForSpecificView::ExecCommand(gin::Arguments* args) {
       blink::WebString::FromUTF8(command), blink::WebString::FromUTF8(value));
 }
 
+void TestRunnerForSpecificView::TriggerTestInspectorIssue() {
+  web_view()->FocusedFrame()->AddInspectorIssue(
+      blink::mojom::InspectorIssueCode::
+          kSameSiteCookiesSameSiteNoneMissingForThirdParty);
+}
+
 bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {
   return web_view()->FocusedFrame()->IsCommandEnabled(
       blink::WebString::FromUTF8(command));

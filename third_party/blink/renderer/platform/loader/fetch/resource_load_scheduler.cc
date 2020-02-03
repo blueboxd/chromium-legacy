@@ -275,7 +275,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
 
   // Check if the request can be throttled.
   ClientIdWithPriority request_info(*id, priority, intra_priority);
-  if (!IsClientDelayable(request_info, option)) {
+  if (!IsClientDelayable(option)) {
     Run(*id, client, false);
     return;
   }
@@ -356,27 +356,15 @@ void ResourceLoadScheduler::SetOutstandingLimitForTesting(size_t tight_limit,
   MaybeRun();
 }
 
-bool ResourceLoadScheduler::IsClientDelayable(const ClientIdWithPriority& info,
-                                              ThrottleOption option) const {
-  const bool throttleable = option == ThrottleOption::kThrottleable &&
-                            info.priority < ResourceLoadPriority::kHigh;
-  const bool stoppable = option != ThrottleOption::kCanNotBeStoppedOrThrottled;
-
-  // Also takes the lifecycle state of the associated FrameScheduler
-  // into account to determine if the request should be throttled
-  // regardless of the priority.
+bool ResourceLoadScheduler::IsClientDelayable(ThrottleOption option) const {
   switch (frame_scheduler_lifecycle_state_) {
     case scheduler::SchedulingLifecycleState::kNotThrottled:
-      return throttleable;
     case scheduler::SchedulingLifecycleState::kHidden:
     case scheduler::SchedulingLifecycleState::kThrottled:
       return option == ThrottleOption::kThrottleable;
     case scheduler::SchedulingLifecycleState::kStopped:
-      return stoppable;
+      return option != ThrottleOption::kCanNotBeStoppedOrThrottled;
   }
-
-  NOTREACHED() << static_cast<int>(frame_scheduler_lifecycle_state_);
-  return throttleable;
 }
 
 void ResourceLoadScheduler::OnLifecycleStateChanged(
@@ -419,9 +407,6 @@ bool ResourceLoadScheduler::IsPendingRequestEffectivelyEmpty(
 }
 
 bool ResourceLoadScheduler::GetNextPendingRequest(ClientId* id) {
-  bool needs_throttling =
-      running_throttleable_requests_.size() >= GetOutstandingLimit();
-
   auto& stoppable_queue = pending_requests_[ThrottleOption::kStoppable];
   auto& throttleable_queue = pending_requests_[ThrottleOption::kThrottleable];
 
@@ -429,14 +414,16 @@ bool ResourceLoadScheduler::GetNextPendingRequest(ClientId* id) {
   auto stoppable_it = stoppable_queue.begin();
   bool has_runnable_stoppable_request =
       stoppable_it != stoppable_queue.end() &&
-      (!IsClientDelayable(*stoppable_it, ThrottleOption::kStoppable) ||
-       !needs_throttling);
+      (!IsClientDelayable(ThrottleOption::kStoppable) ||
+       running_throttleable_requests_.size() <
+           GetOutstandingLimit(stoppable_it->priority));
 
   auto throttleable_it = throttleable_queue.begin();
   bool has_runnable_throttleable_request =
       throttleable_it != throttleable_queue.end() &&
-      (!IsClientDelayable(*throttleable_it, ThrottleOption::kThrottleable) ||
-       !needs_throttling);
+      (!IsClientDelayable(ThrottleOption::kThrottleable) ||
+       running_throttleable_requests_.size() <
+           GetOutstandingLimit(throttleable_it->priority));
 
   if (!has_runnable_throttleable_request && !has_runnable_stoppable_request)
     return false;
@@ -489,7 +476,8 @@ void ResourceLoadScheduler::Run(ResourceLoadScheduler::ClientId id,
   client->Run();
 }
 
-size_t ResourceLoadScheduler::GetOutstandingLimit() const {
+size_t ResourceLoadScheduler::GetOutstandingLimit(
+    ResourceLoadPriority priority) const {
   size_t limit = kOutstandingUnlimited;
 
   switch (frame_scheduler_lifecycle_state_) {
@@ -506,7 +494,9 @@ size_t ResourceLoadScheduler::GetOutstandingLimit() const {
 
   switch (policy_) {
     case ThrottlingPolicy::kTight:
-      limit = std::min(limit, tight_outstanding_limit_);
+      limit = std::min(limit, priority < ResourceLoadPriority::kHigh
+                                  ? tight_outstanding_limit_
+                                  : normal_outstanding_limit_);
       break;
     case ThrottlingPolicy::kNormal:
       limit = std::min(limit, normal_outstanding_limit_);

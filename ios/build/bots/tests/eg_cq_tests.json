@@ -10,6 +10,11 @@
       "shards": 1
     },
     {
+      "app": "ios_chrome_signin_egtests",
+      "xcode parallelization": true,
+      "xctest": true
+    },
+    {
       "app": "ios_chrome_ui_egtests",
       "swarming tasks": 5,
       "xcode parallelization": true,

@@ -155,8 +155,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   // Use app theme color if it is set, but not for apps with tabs.
   web_app::AppBrowserController* app_controller =
       browser_view_->browser()->app_controller();
-  if (app_controller && app_controller->GetThemeColor() &&
-      !app_controller->has_tab_strip())
+  if (app_controller && app_controller->GetThemeColor())
     return *app_controller->GetThemeColor();
 
   return GetUnthemedColor(color_id);

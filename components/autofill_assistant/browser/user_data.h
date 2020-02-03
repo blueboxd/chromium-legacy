@@ -118,7 +118,7 @@ class UserData {
   base::Optional<int> date_time_range_end_timeslot_;
 
   // A set of additional key/value pairs to be stored in client_memory.
-  std::map<std::string, std::string> additional_values_;
+  std::map<std::string, ValueProto> additional_values_;
 
   std::vector<std::unique_ptr<autofill::AutofillProfile>> available_profiles_;
   std::vector<std::unique_ptr<PaymentInstrument>>
@@ -144,7 +144,7 @@ class UserData {
       const std::string& name) const;
 
   // The additional value for |key|, or nullptr if it does not exist.
-  const std::string* additional_value(const std::string& key) const;
+  const ValueProto* additional_value(const std::string& key) const;
 
   std::string GetAllAddressKeyNames() const;
 };

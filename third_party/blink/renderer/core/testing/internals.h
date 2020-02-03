@@ -296,6 +296,8 @@ class Internals final : public ScriptWrappable {
                       const String& value,
                       ExceptionState&);
 
+  void triggerTestInspectorIssue(Document*);
+
   AtomicString htmlNamespace();
   Vector<AtomicString> htmlTags();
   AtomicString svgNamespace();

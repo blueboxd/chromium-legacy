@@ -21,7 +21,7 @@
 namespace blink {
 
 template <typename TypedArray, typename V8TypedArray>
-v8::Local<v8::Object> DOMTypedArray<TypedArray, V8TypedArray>::Wrap(
+v8::Local<v8::Value> DOMTypedArray<TypedArray, V8TypedArray>::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));

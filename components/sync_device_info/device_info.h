@@ -71,6 +71,7 @@ class DeviceInfo {
              const std::string& signin_scoped_device_id,
              const base::SysInfo::HardwareInfo& hardware_info,
              base::Time last_updated_timestamp,
+             base::TimeDelta pulse_interval,
              bool send_tab_to_self_receiving_enabled,
              const base::Optional<SharingInfo>& sharing_info);
   ~DeviceInfo();
@@ -106,6 +107,11 @@ class DeviceInfo {
 
   // Returns the time at which this device was last updated to the sync servers.
   base::Time last_updated_timestamp() const;
+
+  // Returns the interval with which this device is updated to the sync servers
+  // if online and while sync is actively running (e.g. excludes backgrounded
+  // apps on Android).
+  base::TimeDelta pulse_interval() const;
 
   // Whether the receiving side of the SendTabToSelf feature is enabled.
   bool send_tab_to_self_receiving_enabled() const;
@@ -160,6 +166,8 @@ class DeviceInfo {
   base::SysInfo::HardwareInfo hardware_info_;
 
   const base::Time last_updated_timestamp_;
+
+  const base::TimeDelta pulse_interval_;
 
   bool send_tab_to_self_receiving_enabled_;
 

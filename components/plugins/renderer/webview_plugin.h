@@ -106,7 +106,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,
-      blink::WebCursorInfo& cursor_info) override;
+      blink::WebCursorInfo* cursor_info) override;
 
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidReceiveData(const char* data, size_t data_length) override;

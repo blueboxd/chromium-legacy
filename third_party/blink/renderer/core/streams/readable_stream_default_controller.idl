@@ -5,8 +5,7 @@
 // https://streams.spec.whatwg.org/#rs-default-controller-class-definition
 [
     Exposed=(Window,Worker,Worklet),
-    NoInterfaceObject,
-    RaisesException=Constructor
+    NoInterfaceObject
 ] interface ReadableStreamDefaultController {
     [NotEnumerable] readonly attribute double? desiredSize;
     [CallWith=ScriptState, NotEnumerable, RaisesException] void close();

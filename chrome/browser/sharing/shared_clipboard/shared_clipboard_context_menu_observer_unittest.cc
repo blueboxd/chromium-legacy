@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -68,18 +69,12 @@ class SharedClipboardContextMenuObserverTest : public testing::Test {
         base::UTF16ToUTF8(text));
   }
 
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> CreateMockDevices(
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> CreateFakeDevices(
       int count) {
     std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
     for (int i = 0; i < count; i++) {
-      devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
-          base::StrCat({"guid", base::NumberToString(i)}), "name",
-          "chrome_version", "user_agent",
-          sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-          base::SysInfo::HardwareInfo(),
-          /*last_updated_timestamp=*/base::Time::Now(),
-          /*send_tab_to_self_receiving_enabled=*/false,
-          /*sharing_info=*/base::nullopt));
+      devices.emplace_back(CreateFakeDeviceInfo(
+          base::StrCat({"guid", base::NumberToString(i)}), "name"));
     }
     return devices;
   }
@@ -109,7 +104,7 @@ MATCHER_P(ProtoEquals, message, "") {
 }
 
 TEST_F(SharedClipboardContextMenuObserverTest, NoDevices_DoNotShowMenu) {
-  auto devices = CreateMockDevices(0);
+  auto devices = CreateFakeDevices(0);
 
   EXPECT_CALL(*service(), GetDeviceCandidates(_))
       .WillOnce(Return(ByMove(std::move(devices))));
@@ -120,7 +115,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, NoDevices_DoNotShowMenu) {
 }
 
 TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
-  auto devices = CreateMockDevices(1);
+  auto devices = CreateFakeDevices(1);
   auto guid = devices[0]->guid();
 
   EXPECT_CALL(*service(), GetDeviceCandidates(_))
@@ -148,7 +143,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
 
 TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
   constexpr int device_count = 3;
-  auto devices = CreateMockDevices(device_count);
+  auto devices = CreateFakeDevices(device_count);
   std::vector<std::string> guids;
   for (auto& device : devices)
     guids.push_back(device->guid());
@@ -192,7 +187,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
 TEST_F(SharedClipboardContextMenuObserverTest,
        MultipleDevices_MoreThanMax_ShowMenu) {
   int device_count = kMaxDevicesShown + 1;
-  auto devices = CreateMockDevices(device_count);
+  auto devices = CreateFakeDevices(device_count);
   std::vector<std::string> guids;
   for (auto& device : devices)
     guids.push_back(device->guid());

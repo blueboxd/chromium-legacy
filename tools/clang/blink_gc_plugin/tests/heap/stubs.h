@@ -305,7 +305,7 @@ public:
 
 template<typename T>
 struct TraceIfNeeded {
-    static void Trace(Visitor*, T*);
+  static void Trace(Visitor*, T&);
 };
 
 }

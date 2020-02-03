@@ -17,6 +17,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataDelegate;
@@ -117,7 +118,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         int mTermsStatus;
         @Nullable
         Integer mLastLinkClicked;
-        Map<String, String> mAdditionalValues = new HashMap<>();
+        Map<String, AssistantValue> mAdditionalValues = new HashMap<>();
 
         @Override
         public void onContactInfoChanged(@Nullable AutofillContact contact) {
@@ -170,7 +171,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         }
 
         @Override
-        public void onKeyValueChanged(String key, String value) {
+        public void onKeyValueChanged(String key, AssistantValue value) {
             mAdditionalValues.put(key, value);
         }
 

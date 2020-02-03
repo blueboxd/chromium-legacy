@@ -38,6 +38,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      constants=None,
                      constructors=None,
                      operations=None,
+                     property_accessors=None,
                      stringifier=None,
                      iterable=None,
                      maplike=None,
@@ -53,6 +54,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert constructors is None or isinstance(constructors,
                                                       (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
+            assert property_accessors is None or isinstance(
+                property_accessors, PropertyAccessors.IR)
             assert stringifier is None or isinstance(stringifier,
                                                      Stringifier.IR)
             assert iterable is None or isinstance(iterable, Iterable)
@@ -103,6 +106,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.operations = list(operations)
             self.operation_groups = []
             self.exposed_constructs = []
+            self.property_accessors = property_accessors
             self.stringifier = stringifier
             self.iterable = iterable
             self.maplike = maplike
@@ -164,6 +168,12 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 owner=self) for operation_group_ir in ir.operation_groups
         ])
         self._exposed_constructs = tuple(ir.exposed_constructs)
+        self._property_accessors = None
+        if ir.property_accessors:
+            operations = filter(lambda x: x.is_property_accessor,
+                                self._operations)
+            self._property_accessors = PropertyAccessors(
+                ir.property_accessors, operations, owner=self)
         self._stringifier = None
         if ir.stringifier:
             operations = filter(lambda x: x.is_stringifier, self._operations)
@@ -275,29 +285,9 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             map(lambda ref: ref.target_object, self._exposed_constructs))
 
     @property
-    def named_constructor(self):
-        """Returns a named constructor or None."""
-        assert False, "Not implemented yet."
-
-    @property
-    def indexed_property_handler(self):
-        """
-        Returns a set of handlers (getter/setter/deleter) for the indexed
-        property.
-        @return IndexedPropertyHandler?
-        """
-        # TODO: Include anonymous handlers of ancestors. https://crbug.com/695972
-        assert False, "Not implemented yet."
-
-    @property
-    def named_property_handler(self):
-        """
-        Returns a set of handlers (getter/setter/deleter) for the named
-        property.
-        @return NamedPropertyHandler?
-        """
-        # TODO: Include anonymous handlers of ancestors. https://crbug.com/695972
-        assert False, "Not implemented yet."
+    def property_accessors(self):
+        """Returns a PropertyAccessors or None."""
+        return self._property_accessors
 
     @property
     def stringifier(self):
@@ -323,6 +313,152 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     @property
     def is_interface(self):
         return True
+
+
+class PropertyAccessors(WithOwner, WithDebugInfo):
+    """
+    Represents a set of indexed/named getter/setter/deleter.
+
+    https://heycam.github.io/webidl/#idl-indexed-properties
+    https://heycam.github.io/webidl/#idl-named-properties
+    """
+
+    class IR(WithDebugInfo):
+        def __init__(self, operations, debug_info=None):
+            assert isinstance(operations, (list, tuple))
+            assert all(
+                isinstance(operation, Operation.IR)
+                for operation in operations)
+
+            WithDebugInfo.__init__(self, debug_info)
+
+            self.indexed_getter = None
+            self.indexed_setter = None
+            self.named_getter = None
+            self.named_setter = None
+            self.named_deleter = None
+
+            for operation in operations:
+                arg1_type = operation.arguments[0].idl_type
+                if arg1_type.is_integer:
+                    if operation.is_getter:
+                        assert self.indexed_getter is None
+                        self.indexed_getter = operation
+                    elif operation.is_setter:
+                        assert self.indexed_setter is None
+                        self.indexed_setter = operation
+                    else:
+                        assert False
+                elif arg1_type.is_string:
+                    if operation.is_getter:
+                        assert self.named_getter is None
+                        self.named_getter = operation
+                    elif operation.is_setter:
+                        assert self.named_setter is None
+                        self.named_setter = operation
+                    elif operation.is_deleter:
+                        assert self.named_deleter is None
+                        self.named_deleter = operation
+                    else:
+                        assert False
+                else:
+                    assert False
+
+    def __init__(self, ir, operations, owner):
+        assert isinstance(ir, PropertyAccessors.IR)
+        assert isinstance(operations, (list, tuple))
+        assert all(
+            isinstance(operation, Operation) for operation in operations)
+
+        WithOwner.__init__(self, owner)
+        WithDebugInfo.__init__(self, ir)
+
+        self._own_indexed_getter = None
+        self._own_indexed_setter = None
+        self._own_named_getter = None
+        self._own_named_setter = None
+        self._own_named_deleter = None
+
+        for operation in operations:
+            arg1_type = operation.arguments[0].idl_type
+            if arg1_type.is_integer:
+                if operation.is_getter:
+                    assert self._own_indexed_getter is None
+                    self._own_indexed_getter = operation
+                elif operation.is_setter:
+                    assert self._own_indexed_setter is None
+                    self._own_indexed_setter = operation
+                else:
+                    assert False
+            elif arg1_type.is_string:
+                if operation.is_getter:
+                    assert self._own_named_getter is None
+                    self._own_named_getter = operation
+                elif operation.is_setter:
+                    assert self._own_named_setter is None
+                    self._own_named_setter = operation
+                elif operation.is_deleter:
+                    assert self._own_named_deleter is None
+                    self._own_named_deleter = operation
+                else:
+                    assert False
+            else:
+                assert False
+
+    @property
+    def has_indexed_properties(self):
+        return self.indexed_getter or self.indexed_setter
+
+    @property
+    def has_named_properties(self):
+        return self.named_getter or self.named_setter or self.named_deleter
+
+    @property
+    def indexed_getter(self):
+        return self._find_accessor('own_indexed_getter')
+
+    @property
+    def indexed_setter(self):
+        return self._find_accessor('own_indexed_setter')
+
+    @property
+    def named_getter(self):
+        return self._find_accessor('own_named_getter')
+
+    @property
+    def named_setter(self):
+        return self._find_accessor('own_named_setter')
+
+    @property
+    def named_deleter(self):
+        return self._find_accessor('own_named_deleter')
+
+    @property
+    def own_indexed_getter(self):
+        return self._own_indexed_getter
+
+    @property
+    def own_indexed_setter(self):
+        return self._own_indexed_setter
+
+    @property
+    def own_named_getter(self):
+        return self._own_named_getter
+
+    @property
+    def own_named_setter(self):
+        return self._own_named_setter
+
+    @property
+    def own_named_deleter(self):
+        return self._own_named_deleter
+
+    def _find_accessor(self, attr):
+        for interface in self.owner.inclusive_inherited_interfaces:
+            accessors = interface.property_accessors
+            if accessors and hasattr(accessors, attr):
+                return getattr(accessors, attr)
+        return None
 
 
 class Stringifier(WithOwner, WithDebugInfo):
@@ -462,55 +598,3 @@ class Setlike(WithDebugInfo):
         @return bool
         """
         return self._is_readonly
-
-
-class IndexedPropertyHandler(object):
-    @property
-    def getter(self):
-        """
-        Returns an Operation for indexed property getter.
-        @return Operation?
-        """
-        assert False, "Not implemented yet."
-
-    @property
-    def setter(self):
-        """
-        Returns an Operation for indexed property setter.
-        @return Operation?
-        """
-        assert False, "Not implemented yet."
-
-    @property
-    def deleter(self):
-        """
-        Returns an Operation for indexed property deleter.
-        @return Operation?
-        """
-        assert False, "Not implemented yet."
-
-
-class NamedPropertyHandler(object):
-    @property
-    def getter(self):
-        """
-        Returns an Operation for named property getter.
-        @return Operation?
-        """
-        assert False, "Not implemented yet."
-
-    @property
-    def setter(self):
-        """
-        Returns an Operation for named property setter.
-        @return Operation?
-        """
-        assert False, "Not implemented yet."
-
-    @property
-    def deleter(self):
-        """
-        Returns an Operation for named property deleter.
-        @return Operation?
-        """
-        assert False, "Not implemented yet."

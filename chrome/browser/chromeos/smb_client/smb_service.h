@@ -134,16 +134,6 @@ class SmbService : public KeyedService,
  private:
   friend class SmbServiceTest;
 
-  // Calls SmbProviderClient::Mount().
-  void CallMount(const file_system_provider::MountOptions& options,
-                 const base::FilePath& share_path,
-                 const std::string& username,
-                 const std::string& password,
-                 bool use_kerberos,
-                 bool should_open_file_manager_after_mount,
-                 bool save_credentials,
-                 MountResponse callback);
-
   // Handles the response from mounting an smbfs share. Passes |result| onto
   // |callback|.
   void OnSmbfsMountDone(const std::string& smbfs_mount_id,

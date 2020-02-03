@@ -6,9 +6,12 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_item.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter.h"
@@ -88,23 +91,23 @@
                        didSelectItem:(TableViewItem<PopupMenuItem>*)item
                               origin:(CGPoint)origin {
   [self dismissPopupMenu];
+  id<InfobarCommands> handler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), InfobarCommands);
   switch (item.actionIdentifier) {
     case PopupMenuActionShowSavePasswordOptions: {
-      [self.dispatcher
-          displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
+      [handler displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
       break;
     }
     case PopupMenuActionShowUpdatePasswordOptions: {
-      [self.dispatcher
-          displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
+      [handler displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
       break;
     }
     case PopupMenuActionShowSaveCardOptions: {
-      [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeSaveCard];
+      [handler displayModalInfobar:InfobarType::kInfobarTypeSaveCard];
       break;
     }
     case PopupMenuActionShowTranslateOptions: {
-      [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeTranslate];
+      [handler displayModalInfobar:InfobarType::kInfobarTypeTranslate];
       break;
     }
     default:

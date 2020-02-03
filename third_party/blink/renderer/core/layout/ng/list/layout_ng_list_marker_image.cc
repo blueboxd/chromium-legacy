@@ -24,18 +24,6 @@ bool LayoutNGListMarkerImage::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGListMarkerImage || LayoutImage::IsOfType(type);
 }
 
-Node* LayoutNGListMarkerImage::NodeForHitTest() const {
-  // In LayoutNG tree, image list marker is structured like this:
-  // <li> (LayoutListItem)
-  //   ::marker (LayoutNGListMarker or LayoutNGInsideListMarker)
-  //     <anonymous img> (LayoutNGListMarkerImage)
-  // Hit testing should return the list-item node.
-  DCHECK(!GetNode());
-  const LayoutNGListItem* list_item =
-      LayoutNGListItem::FromMarkerOrMarkerContent(*this);
-  return list_item ? list_item->GetNode() : nullptr;
-}
-
 // Because ImageResource() is always LayoutImageResourceStyleImage. So we could
 // use StyleImage::ImageSize to determine the concrete object size with
 // default object size(ascent/2 x ascent/2).

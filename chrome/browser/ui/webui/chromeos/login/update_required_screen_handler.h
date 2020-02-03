@@ -28,7 +28,8 @@ class UpdateRequiredView {
     UPDATE_COMPLETED_NEED_REBOOT,  // Update successful, manual reboot is
                                    // needed.
     UPDATE_ERROR,                  // An error has occurred.
-    EOL                            // End of Life message.
+    EOL_REACHED,                   // End of Life reached message.
+    UPDATE_NO_NETWORK              // No network available to update
   };
 
   constexpr static StaticOobeScreenId kScreenId{"update-required"};
@@ -61,6 +62,9 @@ class UpdateRequiredView {
   virtual void SetEstimatedTimeLeft(int seconds_left) = 0;
   // Set the UI state of the screen.
   virtual void SetUIState(UpdateRequiredView::UIState ui_state) = 0;
+  // Set enterprise and device name to be used in strings in the UI.
+  virtual void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
+                                          const base::string16& deviceName) = 0;
 };
 
 class UpdateRequiredScreenHandler : public UpdateRequiredView,
@@ -84,6 +88,8 @@ class UpdateRequiredScreenHandler : public UpdateRequiredView,
   void SetEstimatedTimeLeftVisible(bool visible) override;
   void SetEstimatedTimeLeft(int seconds_left) override;
   void SetUIState(UpdateRequiredView::UIState ui_state) override;
+  void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
+                                  const base::string16& deviceName) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(
@@ -94,6 +100,9 @@ class UpdateRequiredScreenHandler : public UpdateRequiredView,
 
   // If true, Initialize() will call Show().
   bool show_on_init_ = false;
+
+  // The domain name for which update required screen is being shown.
+  std::string domain_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRequiredScreenHandler);
 };

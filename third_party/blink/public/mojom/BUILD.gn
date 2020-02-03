@@ -41,6 +41,7 @@ mojom("mojom_platform") {
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
     "devtools/devtools_frontend.mojom",
+    "devtools/inspector_issue.mojom",
     "feature_policy/feature_policy.mojom",
     "feature_policy/feature_policy_feature.mojom",
     "feature_policy/policy_value.mojom",

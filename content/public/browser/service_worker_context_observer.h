@@ -48,11 +48,9 @@ class ServiceWorkerContextObserver {
   // process of the service worker is allocated/released, instead of using the
   // running status of the embedded worker.
   virtual void OnVersionStartedRunning(
-      ServiceWorkerContext* context,
       int64_t version_id,
       const ServiceWorkerRunningInfo& running_info) {}
-  virtual void OnVersionStoppedRunning(ServiceWorkerContext* context,
-                                       int64_t version_id) {}
+  virtual void OnVersionStoppedRunning(int64_t version_id) {}
 
   // Called when there are no more controllees for the service worker with id
   // |version_id|.

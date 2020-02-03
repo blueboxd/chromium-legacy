@@ -11,6 +11,7 @@ option java_multiple_files = true;
 package autofill_assistant;
 
 import "model.proto";
+import "view_layout.proto";
 
 message InteractionsProto {
   repeated InteractionProto interactions = 1;
@@ -26,7 +27,10 @@ message InteractionProto {
 // Each callback takes a single |ValueProto| as input. Some callbacks only
 // support values of particular types.
 message CallbackProto {
-  oneof kind { SetModelValueCallbackProto set_value = 1; }
+  oneof kind {
+    SetModelValueProto set_value = 1;
+    ShowInfoPopupProto show_info_popup = 2;
+  }
 }
 
 message EventProto {
@@ -51,9 +55,14 @@ message OnViewClickedEventProto {
 }
 
 // Callback that writes the incoming value to |model_identifier|.
-message SetModelValueCallbackProto {
+message SetModelValueProto {
   // The identifier of the value to change.
   optional string model_identifier = 1;
+}
+
+// Displays a standard info popup.
+message ShowInfoPopupProto {
+  optional InfoPopupProto info_popup = 1;
 }
 
 // Callback that expects a boolean input value and enables/disables the

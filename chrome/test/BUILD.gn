@@ -1335,6 +1335,7 @@ if (!is_android) {
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_minimal_ui_test.cc",
+      "../browser/ui/views/web_apps/web_app_tab_strip_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_qr_code_test.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
@@ -2118,7 +2119,6 @@ if (!is_android) {
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.cc",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h",
-        "../browser/chromeos/child_accounts/time_limits/web_time_calculation_browsertest.cc",
         "../browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer_browsertest.cc",
         "../browser/chromeos/chrome_content_browser_client_chromeos_part_browsertest.cc",
         "../browser/chromeos/customization/customization_document_browsertest.cc",
@@ -2696,8 +2696,6 @@ if (!is_android) {
       sources += [
         "../browser/supervised_user/logged_in_user_mixin.cc",
         "../browser/supervised_user/logged_in_user_mixin.h",
-        "../browser/supervised_user/navigation_finished_waiter.cc",
-        "../browser/supervised_user/navigation_finished_waiter.h",
         "../browser/supervised_user/permission_request_creator_mock.cc",
         "../browser/supervised_user/permission_request_creator_mock.h",
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
@@ -2875,7 +2873,12 @@ group("ct_telemetry_perf_tests_without_chrome") {
   testonly = true
   deps = [ "//tools/perf/:perf_without_chrome" ]
 
-  data = [ "//tools/perf/contrib/cluster_telemetry/" ]
+  data = [
+    # crbug.com/1048153
+    "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
+
+    "//tools/perf/contrib/cluster_telemetry/",
+  ]
 
   data_deps = [
     "//components/subresource_filter/tools:index_ruleset",
@@ -3562,6 +3565,10 @@ test("unit_tests") {
       "../browser/ui/webui/favicon_source_unittest.cc",
       "../browser/ui/webui/ntp/cookie_controls_handler_unittest.cc",
       "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
+      "../browser/upgrade_detector/build_state_unittest.cc",
+      "../browser/upgrade_detector/get_installed_version_win_unittest.cc",
+      "../browser/upgrade_detector/mock_build_state_observer.cc",
+      "../browser/upgrade_detector/mock_build_state_observer.h",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
       "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc",
@@ -4836,6 +4843,7 @@ test("unit_tests") {
     sources += [
       "../browser/shell_integration_linux_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
+      "../browser/upgrade_detector/get_installed_version_linux_unittest.cc",
     ]
   }
   if (use_gtk) {
@@ -5214,12 +5222,15 @@ test("unit_tests") {
       "../browser/ui/views/sharing/sharing_dialog_view_unittest.cc",
       "../browser/ui/webui/signin/signin_create_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
+      "../browser/upgrade_detector/installed_version_poller_unittest.cc",
       "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
     ]
   }
   if (is_chromeos) {
-    sources +=
-        [ "../browser/upgrade_detector/upgrade_detector_chromeos_unittest.cc" ]
+    sources += [
+      "../browser/upgrade_detector/installed_version_updater_chromeos_unittest.cc",
+      "../browser/upgrade_detector/upgrade_detector_chromeos_unittest.cc",
+    ]
   }
   if (toolkit_views) {
     deps += [

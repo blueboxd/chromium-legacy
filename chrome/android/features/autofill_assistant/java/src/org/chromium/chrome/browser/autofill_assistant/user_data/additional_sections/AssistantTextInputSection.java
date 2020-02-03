@@ -24,6 +24,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
 
 import java.util.ArrayList;
@@ -135,7 +136,9 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                 summaryView.setText(result.second);
                 summaryView.setVisibility(
                         TextUtils.isEmpty(result.second) ? View.GONE : View.VISIBLE);
-                mDelegate.onValueChanged(result.first, result.second);
+
+                mDelegate.onValueChanged(
+                        result.first, new AssistantValue(new String[] {result.second}));
             });
             inputView.getInputLayout().addEditTextOnFocusChangeListener((unusedView, hasFocus) -> {
                 if (!hasFocus && mDelegate != null) {

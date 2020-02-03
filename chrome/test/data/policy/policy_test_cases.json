@@ -5290,13 +5290,19 @@
   },
 
   "MinimumRequiredChromeVersion": {
+    "note": "This policy is deprecated in M82 and doesn't map to a pref value anymore."
+  },
+
+  "MinimumChromeVersionEnforced": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
-          "MinimumRequiredChromeVersion": "61.0.3163.120"
+          "MinimumChromeVersionEnforced": [
+            {"chrome_version" : "82","warning_period" : 0, "eol_warning_period" : 14}
+          ]
         },
-        "prefs": { "cros.min_version.chrome": {} }
+        "prefs": { "cros.min_version_enforced.chrome": {} }
       }
     ]
   },

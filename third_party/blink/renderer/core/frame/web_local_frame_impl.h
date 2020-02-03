@@ -440,6 +440,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   void AddMessageToConsoleImpl(const WebConsoleMessage&,
                                bool discard_duplicates) override;
 
+  void AddInspectorIssueImpl(mojom::blink::InspectorIssueCode code) override;
+
  private:
   friend LocalFrameClientImpl;
 

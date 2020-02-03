@@ -730,10 +730,13 @@
       status: "experimental"
     },
     {
+      // Also enabled when blink::features::kFileHandlingAPI is overridden
+      // on the command line (or via chrome://flags).
       name: "FileHandling",
-      // NativeFileSystem is in Origin Trial, which doesn't support having
-      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
-      // depends_on: ["NativeFileSystem"]
+      depends_on: ["NativeFileSystem"],
+      status: {"Android": "test", "default": "experimental"},
+      origin_trial_feature_name: "FileHandling",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "FileSystem",

@@ -32,6 +32,7 @@
 #include "base/optional.h"
 #include "cc/layers/picture_layer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -107,6 +108,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
@@ -1961,6 +1963,13 @@ bool Internals::executeCommand(Document* document,
 
   LocalFrame* frame = document->GetFrame();
   return frame->GetEditor().ExecuteCommand(name, value);
+}
+
+void Internals::triggerTestInspectorIssue(Document* document) {
+  DCHECK(document);
+
+  document->AddInspectorIssue(InspectorIssue::Create(
+      mojom::InspectorIssueCode::kSameSiteCookiesSameSiteNoneWithoutSecure));
 }
 
 AtomicString Internals::htmlNamespace() {

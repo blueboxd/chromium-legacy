@@ -76,8 +76,8 @@ class DOMTypedArray final : public DOMArrayBufferView {
   // is responsible for doing so and returning undefined as necessary.
   ValueType Item(size_t index) const { return View()->Item(index); }
 
-  v8::Local<v8::Object> Wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creation_context) override;
+  v8::Local<v8::Value> Wrap(v8::Isolate*,
+                            v8::Local<v8::Object> creation_context) override;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

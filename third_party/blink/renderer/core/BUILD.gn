@@ -73,6 +73,7 @@ source_set("generated") {
     "//skia",
     "//third_party/blink/renderer/bindings/core/v8:bindings_core_origin_trial_features",
     "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
+    "//third_party/blink/renderer/bindings/core/v8:generated",
     "//third_party/blink/renderer/core/inspector:generated",
     "//third_party/blink/renderer/core/probe:generated",
     "//third_party/iccjpeg",

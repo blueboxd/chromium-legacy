@@ -341,6 +341,12 @@ class GridTrackSizingAlgorithmStrategy {
   }
 
   // Helper functions
+  static bool HasRelativeMarginOrPaddingForChild(const LayoutGrid&,
+                                                 const LayoutBox& child,
+                                                 GridTrackSizingDirection);
+  static bool HasRelativeOrIntrinsicSizeForChild(const LayoutGrid&,
+                                                 const LayoutBox& child,
+                                                 GridTrackSizingDirection);
   static bool ShouldClearOverrideContainingBlockContentSizeForChild(
       const LayoutGrid&,
       const LayoutBox& child,

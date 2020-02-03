@@ -17,10 +17,19 @@
   background-size: 16px 16px;
 }
 
+body.files-ng [file-type-icon] {
+  background-image: url(../images/filetype/filetype_generic.svg);
+  background-size: 20px 20px;
+}
+
 [file-type-icon='archive'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_archive.png) 1x,
       url(../images/filetype/2x/filetype_archive.png) 2x);
+}
+
+body.files-ng [file-type-icon='archive'] {
+  background-image: url(../images/filetype/filetype_archive.svg);
 }
 
 [file-type-icon='audio'] {
@@ -29,10 +38,18 @@
       url(../images/filetype/2x/filetype_audio.png) 2x);
 }
 
+body.files-ng [file-type-icon='audio'] {
+  background-image: url(../images/filetype/filetype_audio.svg);
+}
+
 [file-type-icon='excel'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_excel.png) 1x,
       url(../images/filetype/2x/filetype_excel.png) 2x);
+}
+
+body.files-ng [file-type-icon='excel'] {
+  background-image: url(../images/filetype/filetype_excel.svg);
 }
 
 [file-type-icon='folder'] {
@@ -41,10 +58,27 @@
       url(../images/filetype/2x/filetype_folder.png) 2x);
 }
 
+body.files-ng [file-type-icon='folder'] {
+  -webkit-mask-image: url(../images/filetype/filetype_folder.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
+  background-image: none;
+}
+
+body.check-select.files-ng #list-container li[selected] [file-type-icon] {
+  -webkit-mask-image: none;
+  background: none;
+}
+
 .computers-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/volumes/computer.png) 1x,
       url(../images/volumes/2x/computer.png) 2x);
+}
+
+body.files-ng .computers-root[file-type-icon='folder'] {
+  background-image: url(../images/volumes/computer.svg);
 }
 
 .external-media-root[file-type-icon='folder'] {
@@ -53,16 +87,28 @@
       url(../images/volumes/2x/usb.png) 2x);
 }
 
+body.files-ng .external-media-root[file-type-icon='folder'] {
+  background-image: url(../images/volumes/usb.svg);
+}
+
 .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_shared.png) 1x,
       url(../images/filetype/2x/filetype_folder_shared.png) 2x);
 }
 
+body.files-ng .shared[file-type-icon='folder'] {
+  background-image: url(../images/filetype/filetype_folder_shared.svg);
+}
+
 .team-drive-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive.png) 1x,
       url(../images/volumes/2x/hard_drive.png) 2x);
+}
+
+body.files-ng .team-drive-root[file-type-icon='folder'] {
+  background-image: url(../images/volumes/hard_drive.svg);
 }
 
 .tree-row[selected] > [file-type-icon='folder'] {
@@ -102,10 +148,18 @@
       url(../images/filetype/2x/filetype_gdoc.png) 2x);
 }
 
+body.files-ng [file-type-icon='gdoc'] {
+  background-image: url(../images/filetype/filetype_gdoc.svg);
+}
+
 [file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_gdraw.png) 1x,
       url(../images/filetype/2x/filetype_gdraw.png) 2x);
+}
+
+body.files-ng [file-type-icon='gdraw'] {
+  background-image: url(../images/filetype/filetype_gdraw.svg);
 }
 
 [file-type-icon='glink'] {
@@ -114,10 +168,18 @@
       url(../images/filetype/2x/filetype_generic.png) 2x);
 }
 
+body.files-ng [file-type-icon='glink'] {
+  background-image: url(../images/filetype/filetype_generic.svg);
+}
+
 [file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_gsheet.png) 1x,
       url(../images/filetype/2x/filetype_gsheet.png) 2x);
+}
+
+body.files-ng [file-type-icon='gsheet'] {
+  background-image: url(../images/filetype/filetype_gsheet.svg);
 }
 
 [file-type-icon='gslides'] {
@@ -126,10 +188,18 @@
       url(../images/filetype/2x/filetype_gslides.png) 2x);
 }
 
+body.files-ng [file-type-icon='gslides'] {
+  background-image: url(../images/filetype/filetype_gslides.svg);
+}
+
 [file-type-icon='gtable'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_gtable.png) 1x,
       url(../images/filetype/2x/filetype_gtable.png) 2x);
+}
+
+body.files-ng [file-type-icon='gtable'] {
+  background-image: url(../images/filetype/filetype_gtable.svg);
 }
 
 [file-type-icon='gform'] {
@@ -138,10 +208,18 @@
       url(../images/filetype/2x/filetype_gform.png) 2x);
 }
 
+body.files-ng [file-type-icon='gform'] {
+  background-image: url(../images/filetype/filetype_gform.svg);
+}
+
 [file-type-icon='gmap'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_gmap.png) 1x,
       url(../images/filetype/2x/filetype_gmap.png) 2x);
+}
+
+body.files-ng [file-type-icon='gmap'] {
+  background-image: url(../images/filetype/filetype_gmap.svg);
 }
 
 [file-type-icon='gsite'] {
@@ -150,10 +228,18 @@
       url(../images/filetype/2x/filetype_gsite.png) 2x);
 }
 
+body.files-ng [file-type-icon='gsite'] {
+  background-image: url(../images/filetype/filetype_gsite.svg);
+}
+
 [file-type-icon='image'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_image.png) 1x,
       url(../images/filetype/2x/filetype_image.png) 2x);
+}
+
+body.files-ng [file-type-icon='image'] {
+  background-image: url(../images/filetype/filetype_image.svg);
 }
 
 [file-type-icon='pdf'] {
@@ -162,10 +248,18 @@
       url(../images/filetype/2x/filetype_pdf.png) 2x);
 }
 
+body.files-ng [file-type-icon='pdf'] {
+  background-image: url(../images/filetype/filetype_pdf.svg);
+}
+
 [file-type-icon='ppt'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_ppt.png) 1x,
       url(../images/filetype/2x/filetype_ppt.png) 2x);
+}
+
+body.files-ng [file-type-icon='ppt'] {
+  background-image: url(../images/filetype/filetype_ppt.svg);
 }
 
 [file-type-icon='script'] {
@@ -174,10 +268,18 @@
       url(../images/filetype/2x/filetype_script.png) 2x);
 }
 
+body.files-ng [file-type-icon='script'] {
+  background-image: url(../images/filetype/filetype_script.svg);
+}
+
 [file-type-icon='sites'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_sites.png) 1x,
       url(../images/filetype/2x/filetype_sites.png) 2x);
+}
+
+body.files-ng [file-type-icon='sites'] {
+  background-image: url(../images/filetype/filetype_sites.svg);
 }
 
 [file-type-icon='tini'] {
@@ -186,16 +288,28 @@
       url(../images/filetype/2x/filetype_tini.png) 2x);
 }
 
+body.files-ng [file-type-icon='tini'] {
+  background-image: url(../images/filetype/filetype_tini.svg);
+}
+
 [file-type-icon='video'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_video.png) 1x,
       url(../images/filetype/2x/filetype_video.png) 2x);
 }
 
+body.files-ng [file-type-icon='video'] {
+  background-image: url(../images/filetype/filetype_video.svg);
+}
+
 [file-type-icon='word'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_word.png) 1x,
       url(../images/filetype/2x/filetype_word.png) 2x);
+}
+
+body.files-ng [file-type-icon='word'] {
+  background-image: url(../images/filetype/filetype_word.svg);
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */

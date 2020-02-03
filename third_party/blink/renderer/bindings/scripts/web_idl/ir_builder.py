@@ -23,6 +23,7 @@ from .includes import Includes
 from .interface import Interface
 from .interface import Iterable
 from .interface import Maplike
+from .interface import PropertyAccessors
 from .interface import Setlike
 from .interface import Stringifier
 from .literal_constant import LiteralConstant
@@ -114,6 +115,7 @@ class _IRBuilder(object):
         constants = []
         constructors = []
         operations = []
+        property_accessor_operations = []
         for member in members:
             if isinstance(member, Attribute.IR):
                 attributes.append(member)
@@ -122,16 +124,21 @@ class _IRBuilder(object):
             elif isinstance(member, Constructor.IR):
                 constructors.append(member)
             elif isinstance(member, Operation.IR):
-                if member.identifier:
-                    operations.append(member)
+                operations.append(member)
+                if member.is_getter or member.is_setter or member.is_deleter:
+                    property_accessor_operations.append(member)
             else:
                 assert False
+
+        property_accessors = None
+        if property_accessor_operations:
+            property_accessors = PropertyAccessors.IR(
+                property_accessor_operations, self._build_debug_info(node))
 
         if stringifier:
             operations.append(stringifier.operation)
             if stringifier.attribute:
                 attributes.append(stringifier.attribute)
-        # TODO(peria): Create indexed/named property handlers from |operations|.
 
         return Interface.IR(
             identifier=identifier,
@@ -142,6 +149,7 @@ class _IRBuilder(object):
             constants=constants,
             constructors=constructors,
             operations=operations,
+            property_accessors=property_accessors,
             stringifier=stringifier,
             iterable=iterable,
             maplike=maplike,
@@ -245,6 +253,9 @@ class _IRBuilder(object):
                 arguments=arguments,
                 return_type=return_type,
                 is_static=bool(node.GetProperty('STATIC')),
+                is_getter=bool(node.GetProperty('GETTER')),
+                is_setter=bool(node.GetProperty('SETTER')),
+                is_deleter=bool(node.GetProperty('DELETER')),
                 extended_attributes=extended_attributes,
                 component=self._component,
                 debug_info=self._build_debug_info(node))
@@ -408,21 +419,27 @@ class _IRBuilder(object):
             key = node.GetName()
             values = node.GetProperty('VALUE', default=None)
             arguments = None
-
-            # Drop constructors as they do not fit in ExtendedAttribute which
-            # doesn't support IdlType.
-            if key in ('Constructor', 'CustomConstructor', 'NamedConstructor'):
-                return None
+            name = None
 
             child_nodes = node.GetChildren()
             if child_nodes:
                 assert len(child_nodes) == 1
-                assert child_nodes[0].GetClass() == 'Arguments'
-                arguments = map(build_extattr_argument,
-                                child_nodes[0].GetChildren())
+                child = child_nodes[0]
+                if child.GetClass() == 'Arguments':
+                    arguments = map(build_extattr_argument,
+                                    child.GetChildren())
+                elif child.GetClass() == 'Call':
+                    assert len(child.GetChildren()) == 1
+                    grand_child = child.GetChildren()[0]
+                    assert grand_child.GetClass() == 'Arguments'
+                    # ExtendedAttribute is not designed to represent an
+                    # operation, especially a complicated argument list.
+                    # Discard the arguments.
+                    arguments = ()
+                    name = child.GetName()
 
             return ExtendedAttribute(
-                key=key, values=values, arguments=arguments)
+                key=key, values=values, arguments=arguments, name=name)
 
         def build_extattr_argument(node):
             assert node.GetClass() == 'Argument'
@@ -523,7 +540,7 @@ class _IRBuilder(object):
             value = dict()
             literal = '{}'
         else:
-            assert False, 'Unknown literal type: {}'.format(type_token)
+            assert False, "Unknown literal type: {}".format(type_token)
 
         return LiteralConstant(idl_type=idl_type, value=value, literal=literal)
 
@@ -688,6 +705,7 @@ class _IRBuilder(object):
 
         buffer_source_types = set([
             'ArrayBuffer',
+            'ArrayBufferView',  # Blink-specific ArrayBufferView definition
             'DataView',
             'Int8Array',
             'Int16Array',

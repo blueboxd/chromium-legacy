@@ -73,7 +73,7 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     return;  // Our storage has been wiped via DeleteAndStartOver.
   }
   if (net_error != net::OK) {
-    context_->storage()->DoomUncommittedResource(LookupResourceId(url));
+    context_->registry()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);
     if (owner_->script_url() == url) {
       main_script_net_error_ = net_error;

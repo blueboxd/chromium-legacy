@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
@@ -1942,6 +1943,10 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
       ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther, level,
                              message),
       discard_duplicates);
+}
+
+void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueCode code) {
+  GetDocument()->AddInspectorIssue(InspectorIssue::Create(code));
 }
 
 void LocalFrame::Collapse(bool collapsed) {

@@ -216,12 +216,12 @@ void PepperWebPluginImpl::UpdateVisibility(bool visible) {}
 
 blink::WebInputEventResult PepperWebPluginImpl::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
-    blink::WebCursorInfo& cursor_info) {
+    blink::WebCursorInfo* cursor_info) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
   if (!instance_ || instance_->FlashIsFullscreenOrPending())
     return blink::WebInputEventResult::kNotHandled;
-  return instance_->HandleCoalescedInputEvent(coalesced_event, &cursor_info)
+  return instance_->HandleCoalescedInputEvent(coalesced_event, cursor_info)
              ? blink::WebInputEventResult::kHandledApplication
              : blink::WebInputEventResult::kNotHandled;
 }

@@ -4241,12 +4241,15 @@
     ],
 
     'mojo_linux_gtests': [
-      'network_service_fyi_gtests',
-      'network_service_in_process_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
+      'network_service_fyi_gtests',
+      'network_service_in_process_gtests',
+    ],
+
+    'network_service_extra_gtests': [
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
     ],

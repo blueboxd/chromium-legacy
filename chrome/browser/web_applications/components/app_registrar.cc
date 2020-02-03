@@ -160,8 +160,10 @@ DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(
     const AppId& app_id) const {
   auto app_display_mode = GetAppDisplayMode(app_id);
   auto user_display_mode = GetAppUserDisplayMode(app_id);
-  if (user_display_mode == DisplayMode::kUndefined)
+  if (app_display_mode == DisplayMode::kUndefined ||
+      user_display_mode == DisplayMode::kUndefined) {
     return DisplayMode::kUndefined;
+  }
 
   return ResolveEffectiveDisplayMode(app_display_mode, user_display_mode);
 }

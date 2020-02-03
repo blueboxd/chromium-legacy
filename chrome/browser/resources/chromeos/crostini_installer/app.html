@@ -77,16 +77,18 @@
 
     <!-- Message containers. Depending on the current state, only one of them
       is visible. -->
-    <div id="prompt-message" hidden="[[!isState_(state_, State.PROMPT)]]">
+    <div id="prompt-message" hidden="[[!eq_(state_, State.PROMPT)]]">
       <span>$i18n{promptMessage} </span>
       <a href="$i18n{learnMoreUrl}" target="_blank">$i18n{learnMore}</a>
     </div>
-    <div id="configure-message" hidden="[[!isState_(state_, State.CONFIGURE)]]">
+    <div id="configure-message" hidden="[[!eq_(state_, State.CONFIGURE)]]">
       <div>$i18n{configureMessage}</div>
       <div hidden="[[!showUsernameSelection_()]]">
         <div>$i18n{usernameMessage}</div>
         <cr-input label="Username" id="username" type="text"
-                  value="{{username_}}">
+                  value="{{username_}}" maxlength="[[MAX_USERNAME_LENGTH]]"
+                  invalid="[[!eq_(usernameError_, '')]]"
+                  error-message="[[usernameError_]]">
         </cr-input>
       </div>
       <div hidden="[[!showDiskResizing_()]]">
@@ -105,15 +107,15 @@
       </div>
     </div>
     <div id="installing-message"
-        hidden="[[!isState_(state_, State.INSTALLING)]]">
+        hidden="[[!eq_(state_, State.INSTALLING)]]">
       <div>[[getProgressMessage_(installerState_)]]</div>
       <paper-progress class="progress-bar" value="[[installerProgress_]]">
       </paper-progress>
     </div>
-    <div id="error-message" hidden="[[!isState_(state_, State.ERROR)]]">
+    <div id="error-message" hidden="[[!eq_(state_, State.ERROR)]]">
       <div>[[getErrorMessage_(error_)]]</div>
     </div>
-    <div id="canceling-message" hidden="[[!isState_(state_, State.CANCELING)]]">
+    <div id="canceling-message" hidden="[[!eq_(state_, State.CANCELING)]]">
       <div>$i18n{cancelingMessage}</div>
       <paper-progress class="progress-bar" indeterminate></paper-progress>
     </div>
@@ -121,7 +123,7 @@
   <img id="img-linux-illustration" src="images/linux_illustration.png" alt="">
   <div id="button-container">
     <cr-button class="cancel-button" on-click="onCancelButtonClick_"
-        disabled="[[isState_(state_, State.CANCELING)]]">
+        disabled="[[eq_(state_, State.CANCELING)]]">
       $i18n{cancel}
     </cr-button>
     <cr-button id="next" class="action-button" on-click="onNextButtonClick_"
@@ -131,7 +133,8 @@
     </cr-button>
     <cr-button id="install" class="action-button"
       on-click="onInstallButtonClick_" aria-describedby="title"
-      aria-details="prompt-message" hidden="[[!canInstall_(state_)]]">
+      aria-details="prompt-message" hidden="[[!showInstallButton_(state_)]]"
+      disabled="[[disableInstallButton_(state_, usernameError_)]]">
       [[getInstallButtonLabel_(state_)]]
     </cr-button>
   </div>

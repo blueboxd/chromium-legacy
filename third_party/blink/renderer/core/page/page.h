@@ -57,6 +57,7 @@ class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
 class ConsoleMessageStorage;
+class InspectorIssueStorage;
 class ContextMenuController;
 class Document;
 class DragCaret;
@@ -215,6 +216,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   ConsoleMessageStorage& GetConsoleMessageStorage();
   const ConsoleMessageStorage& GetConsoleMessageStorage() const;
+
+  InspectorIssueStorage& GetInspectorIssueStorage();
+  const InspectorIssueStorage& GetInspectorIssueStorage() const;
 
   TopDocumentRootScrollerController& GlobalRootScrollerController() const;
 
@@ -386,6 +390,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   Member<ScrollingCoordinator> scrolling_coordinator_;
   const Member<BrowserControls> browser_controls_;
   const Member<ConsoleMessageStorage> console_message_storage_;
+  const Member<InspectorIssueStorage> inspector_issue_storage_;
   const Member<TopDocumentRootScrollerController>
       global_root_scroller_controller_;
   const Member<VisualViewport> visual_viewport_;

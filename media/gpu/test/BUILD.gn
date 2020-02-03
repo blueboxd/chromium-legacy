@@ -10,6 +10,8 @@ source_set("helpers") {
   sources = [
     "image.cc",
     "image.h",
+    "image_quality_metrics.cc",
+    "image_quality_metrics.h",
     "video_frame_helpers.cc",
     "video_frame_helpers.h",
     "video_test_environment.cc",

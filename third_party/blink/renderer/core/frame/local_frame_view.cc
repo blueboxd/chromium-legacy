@@ -1028,10 +1028,6 @@ void LocalFrameView::RunIntersectionObserverSteps() {
       !frame_->GetDocument()->IsActive()) {
     return;
   }
-
-  if (frame_->IsMainFrame())
-    EnsureOverlayInterstitialAdDetector().MaybeFireDetection(frame_.Get());
-
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::UpdateViewportIntersectionsForSubtree");
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
@@ -4461,15 +4457,6 @@ void LocalFrameView::OnPurgeMemory() {
       initial_or_multiple, LocalFrameRootPurgeSignal::kSignalCount);
   if (!received_foreground_compositor_memory_pressure_purge_signal_)
     received_foreground_compositor_memory_pressure_purge_signal_ = true;
-}
-
-OverlayInterstitialAdDetector&
-LocalFrameView::EnsureOverlayInterstitialAdDetector() {
-  if (!overlay_interstitial_ad_detector_) {
-    overlay_interstitial_ad_detector_ =
-        std::make_unique<OverlayInterstitialAdDetector>();
-  }
-  return *overlay_interstitial_ad_detector_.get();
 }
 
 }  // namespace blink

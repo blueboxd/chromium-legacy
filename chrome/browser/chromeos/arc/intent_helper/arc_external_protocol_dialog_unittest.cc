@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -80,17 +81,6 @@ class ArcExternalProtocolDialogTestUtils : public BrowserWithTestWindowTest {
   bool WasTabStartedFromArc() {
     return GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
         web_contents_);
-  }
-
-  std::unique_ptr<syncer::DeviceInfo> CreateSharingDevice(
-      const std::string& device_guid) {
-    return std::make_unique<syncer::DeviceInfo>(
-        device_guid, "device_name", "chrome_version", "user_agent",
-        sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-        base::SysInfo::HardwareInfo(),
-        /*last_updated_timestamp=*/base::Time::Now(),
-        /*send_tab_to_self_receiving_enabled=*/false,
-        /*sharing_info=*/base::nullopt);
   }
 
   MockSharingService* CreateSharingService() {
@@ -1011,7 +1001,7 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestSelectDeviceForTelLink) {
   content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
-  devices.push_back(CreateSharingDevice(device_guid));
+  devices.push_back(CreateFakeDeviceInfo(device_guid));
 
   EXPECT_CALL(
       *sharing_service,
@@ -1031,7 +1021,7 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestDialogWithoutAppsWithDevices) {
   MockSharingService* sharing_service = CreateSharingService();
   content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
-  devices.push_back(CreateSharingDevice("device_guid"));
+  devices.push_back(CreateFakeDeviceInfo("device_guid"));
 
   EXPECT_CALL(*sharing_service, GetDeviceCandidates(testing::_))
       .WillOnce(testing::Return(testing::ByMove(std::move(devices))));

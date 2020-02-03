@@ -17,8 +17,8 @@ class DeviceInfo;
 }  // namespace syncer
 
 std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
-    const std::string& id,
-    const std::string& name,
+    const std::string& guid,
+    const std::string& name = "name",
     const base::Optional<syncer::DeviceInfo::SharingInfo>& sharing_info =
         base::nullopt,
     sync_pb::SyncEnums_DeviceType device_type =

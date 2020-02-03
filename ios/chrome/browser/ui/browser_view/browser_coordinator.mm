@@ -240,9 +240,8 @@
 
 - (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems {
   self.badgePopupMenuCoordinator = [[BadgePopupMenuCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.badgePopupMenuCoordinator.dispatcher =
-      static_cast<id<InfobarCommands>>(self.dispatcher);
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
   [self.badgePopupMenuCoordinator setBadgeItemsToShow:badgeItems];
   [self.badgePopupMenuCoordinator start];
 }

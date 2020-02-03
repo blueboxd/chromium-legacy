@@ -139,6 +139,7 @@ void SharingBrowserTest::AddDeviceInfo(
               base::StrCat({"model", base::NumberToString(fake_device_id)}),
               "serial_number"},
           original_device.last_updated_timestamp(),
+          original_device.pulse_interval(),
           original_device.send_tab_to_self_receiving_enabled(),
           fake_sharing_info);
   fake_device_info_tracker_.Add(fake_device.get());

@@ -1521,9 +1521,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
 
-          # TODO(https://crbug.com/1016947) Clean up, enable.
-          "-Wno-bitwise-conditional-parentheses",
-
           # TODO(https://crbug.com/1016945) Clean up, enable.
           "-Wno-builtin-assume-aligned-alignment",
 
@@ -1536,6 +1533,13 @@ config("default_warnings") {
           # TODO(https://crbug.com/1039697): Evaluate and possibly enable.
           "-Wno-range-loop-analysis",
         ]
+
+        if (is_android) {
+          cflags += [
+            # TODO(https://crbug.com/1016947) Clean up, enable.
+            "-Wno-bitwise-conditional-parentheses",
+          ]
+        }
 
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.

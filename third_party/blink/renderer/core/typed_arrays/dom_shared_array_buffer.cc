@@ -8,7 +8,7 @@
 
 namespace blink {
 
-v8::Local<v8::Object> DOMSharedArrayBuffer::Wrap(
+v8::Local<v8::Value> DOMSharedArrayBuffer::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));

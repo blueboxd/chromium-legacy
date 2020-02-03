@@ -244,6 +244,39 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
   return inner_contents;
 }
 
+void AwaitDocumentOnLoadCompleted(WebContents* web_contents) {
+  class Awaiter : public WebContentsObserver {
+   public:
+    explicit Awaiter(content::WebContents* web_contents)
+        : content::WebContentsObserver(web_contents),
+          observed_(web_contents->IsDocumentOnLoadCompletedInMainFrame()) {}
+
+    Awaiter(const Awaiter&) = delete;
+    Awaiter& operator=(const Awaiter&) = delete;
+
+    ~Awaiter() override = default;
+
+    void Await() {
+      if (!observed_)
+        run_loop_.Run();
+      DCHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
+    }
+
+    // WebContentsObserver:
+    void DocumentOnLoadCompletedInMainFrame() override {
+      observed_ = true;
+      if (run_loop_.running())
+        run_loop_.Quit();
+    }
+
+   private:
+    bool observed_ = false;
+    base::RunLoop run_loop_;
+  };
+
+  Awaiter(web_contents).Await();
+}
+
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
     : quit_mode_(quit_mode) {}
 

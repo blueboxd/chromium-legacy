@@ -11,6 +11,9 @@
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
+#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
+
 namespace blink {
 
 using protocol::Maybe;
@@ -61,15 +64,30 @@ bool EncodeAsImage(char* body,
   return image_to_encode->EncodeImage(mime_type, quality, output);
 }
 
+String InspectorIssueCodeValue(mojom::blink::InspectorIssueCode code) {
+  switch (code) {
+    case mojom::blink::InspectorIssueCode::
+        kSameSiteCookiesSameSiteNoneMissingForThirdParty:
+      return "SameSiteCookies::SameSiteNoneMissingForThirdParty";
+    case mojom::blink::InspectorIssueCode::
+        kSameSiteCookiesSameSiteNoneWithoutSecure:
+      return "SameSiteCookies::SameSiteNoneWithoutSecure";
+  }
+}
+
 }  // namespace
 
 void InspectorAuditsAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(network_agent_);
+  visitor->Trace(inspector_issue_storage_);
   InspectorBaseAgent::Trace(visitor);
 }
 
-InspectorAuditsAgent::InspectorAuditsAgent(InspectorNetworkAgent* network_agent)
-    : network_agent_(network_agent) {}
+InspectorAuditsAgent::InspectorAuditsAgent(InspectorNetworkAgent* network_agent,
+                                           InspectorIssueStorage* storage)
+    : inspector_issue_storage_(storage),
+      enabled_(&agent_state_, false),
+      network_agent_(network_agent) {}
 
 InspectorAuditsAgent::~InspectorAuditsAgent() = default;
 
@@ -111,6 +129,38 @@ protocol::Response InspectorAuditsAgent::getEncodedResponse(
     *out_body = protocol::Binary::fromVector(std::move(encoded_image));
   }
   return Response::OK();
+}
+
+Response InspectorAuditsAgent::enable() {
+  if (enabled_.Get()) {
+    return Response::OK();
+  }
+
+  enabled_.Set(true);
+  instrumenting_agents_->AddInspectorAuditsAgent(this);
+  for (wtf_size_t i = 0; i < inspector_issue_storage_->size(); ++i)
+    InspectorIssueAdded(inspector_issue_storage_->at(i));
+  return Response::OK();
+}
+
+Response InspectorAuditsAgent::disable() {
+  if (!enabled_.Get()) {
+    return Response::OK();
+  }
+
+  enabled_.Clear();
+  instrumenting_agents_->RemoveInspectorAuditsAgent(this);
+  return Response::OK();
+}
+
+void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
+  std::unique_ptr<protocol::Audits::Issue> tmp =
+      protocol::Audits::Issue::create()
+          .setCode(InspectorIssueCodeValue(issue->Code()))
+          .build();
+
+  GetFrontend()->issueAdded(std::move(tmp));
+  GetFrontend()->flush();
 }
 
 }  // namespace blink

@@ -1989,7 +1989,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        RemoveCompromisedCredentialsByTimeOnly) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
 
   RemovePasswordsTester tester(GetProfile());
   base::Callback<bool(const GURL&)> empty_filter;

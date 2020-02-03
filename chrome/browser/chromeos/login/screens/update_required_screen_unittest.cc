@@ -22,6 +22,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,6 +102,8 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
   // Test versions of core browser infrastructure.
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
+  // This is used for |GetEnterpriseDisplayDomain|.
+  ScopedStubInstallAttributes test_install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRequiredScreenUnitTest);
 };

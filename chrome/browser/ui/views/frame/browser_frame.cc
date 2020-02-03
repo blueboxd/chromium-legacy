@@ -200,10 +200,9 @@ bool BrowserFrame::GetAccelerator(int command_id,
 
 const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
   Browser* browser = browser_view_->browser();
-  Profile* profile = browser->profile();
-  return ShouldUseTheme()
-             ? &ThemeService::GetThemeProviderForProfile(profile)
-             : &ThemeService::GetDefaultThemeProviderForProfile(profile);
+  if (browser->app_controller())
+    return browser->app_controller()->GetThemeProvider();
+  return &ThemeService::GetThemeProviderForProfile(browser->profile());
 }
 
 const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {

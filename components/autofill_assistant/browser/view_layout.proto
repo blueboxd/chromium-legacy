@@ -157,3 +157,31 @@ message ImageViewProto {
 }
 
 message CheckBoxViewProto {}
+
+// A generic read-only popup message.
+message InfoPopupProto {
+  // The title of the popup window.
+  optional string title = 1;
+  // The text of the popup window.
+  optional string text = 2;
+
+  message DialogButton {
+    message CloseDialog {}
+    message OpenUrlInCCT { optional string url = 1; }
+
+    // The action to be executed on click.
+    oneof click_action {
+      // Closes the popup.
+      CloseDialog close_dialog = 4;
+      // Opens the specified url into a new CCT.
+      OpenUrlInCCT open_url_in_cct = 5;
+    }
+    optional string label = 1;
+  }
+  // Optional: adds a positive button.
+  optional DialogButton positive_button = 3;
+  // Optional: adds a negative button.
+  optional DialogButton negative_button = 4;
+  // Optional: adds a neutral button.
+  optional DialogButton neutral_button = 5;
+}

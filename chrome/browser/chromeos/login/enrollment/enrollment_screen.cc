@@ -205,7 +205,7 @@ void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
   callback.Run();
 }
 
-void EnrollmentScreen::Show() {
+void EnrollmentScreen::ShowImpl() {
   VLOG(1) << "Show enrollment screen";
   UMA(policy::kMetricEnrollmentTriggered);
   if (enrollment_config_.mode ==
@@ -231,7 +231,7 @@ void EnrollmentScreen::ShowInteractiveScreen() {
                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnrollmentScreen::Hide() {
+void EnrollmentScreen::HideImpl() {
   view_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }

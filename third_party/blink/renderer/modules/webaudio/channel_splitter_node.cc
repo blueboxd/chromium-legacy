@@ -61,7 +61,7 @@ scoped_refptr<ChannelSplitterHandler> ChannelSplitterHandler::Create(
 }
 
 void ChannelSplitterHandler::Process(uint32_t frames_to_process) {
-  AudioBus* source = Input(0).Bus();
+  scoped_refptr<AudioBus> source = Input(0).Bus();
   DCHECK(source);
   DCHECK_EQ(frames_to_process, source->length());
 

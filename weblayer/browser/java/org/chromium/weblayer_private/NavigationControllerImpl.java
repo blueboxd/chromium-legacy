@@ -19,12 +19,10 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 @JNINamespace("weblayer")
 public final class NavigationControllerImpl extends INavigationController.Stub {
     private long mNativeNavigationController;
-    private TabImpl mTab;
     private INavigationControllerClient mNavigationControllerClient;
 
     public NavigationControllerImpl(TabImpl tab, INavigationControllerClient client) {
         mNavigationControllerClient = client;
-        mTab = tab;
         mNativeNavigationController =
                 NavigationControllerImplJni.get().getNavigationController(tab.getNativeTab());
         NavigationControllerImplJni.get().setNavigationControllerImpl(

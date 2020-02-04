@@ -396,9 +396,7 @@ void OverviewController::ToggleOverview(
         break;
       }
     }
-    // |should_focus_overview_| should also be false if overview starts when
-    // there is a window being dragged. Do not change the window activation as
-    // it might cause the unnecessary shelf item activition indicator change.
+    // Avoid stealing activation from a dragged active window.
     if (should_focus_overview_) {
       aura::Window* active_window = window_util::GetActiveWindow();
       if (active_window && WindowState::Get(active_window)->is_dragged()) {

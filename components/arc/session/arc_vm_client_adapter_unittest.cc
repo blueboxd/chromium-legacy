@@ -138,7 +138,6 @@ class ArcVmClientAdapterTest : public testing::Test,
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-    property_files_expanded_ = true;
     host_rootfs_writable_ = false;
     system_image_ext_format_ = false;
 
@@ -268,10 +267,6 @@ class ArcVmClientAdapterTest : public testing::Test,
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
-  void set_property_files_expanded(bool property_files_expanded) {
-    property_files_expanded_ = property_files_expanded;
-  }
-
   void set_host_rootfs_writable(bool host_rootfs_writable) {
     host_rootfs_writable_ = host_rootfs_writable;
   }
@@ -287,7 +282,6 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
   void RewriteStatus(FileSystemStatus* status) {
-    status->set_property_files_expanded_for_testing(property_files_expanded_);
     status->set_host_rootfs_writable_for_testing(host_rootfs_writable_);
     status->set_system_image_ext_format_for_testing(system_image_ext_format_);
   }
@@ -300,7 +294,6 @@ class ArcVmClientAdapterTest : public testing::Test,
   base::ScopedTempDir dir_;
 
   // Variables to override the value in FileSystemStatus.
-  bool property_files_expanded_;
   bool host_rootfs_writable_;
   bool system_image_ext_format_;
 
@@ -446,29 +439,6 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoSerial) {
   // it.
   adapter()->SetUserInfo(kUserIdHash, std::string());
   StartMiniArc();
-
-  UpgradeArc(false);
-  EXPECT_TRUE(GetStartConciergeCalled());
-  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
-  EXPECT_FALSE(arc_instance_stopped_called());
-
-  // Try to stop the VM. StopVm will fail in this case because
-  // no VM is running.
-  vm_tools::concierge::StopVmResponse response;
-  response.set_success(false);
-  GetTestConciergeClient()->set_stop_vm_response(response);
-  adapter()->StopArcInstance(/*on_shutdown=*/false);
-  run_loop()->Run();
-  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
-  EXPECT_TRUE(arc_instance_stopped_called());
-}
-
-// Tests that property expansion failure is handled correctly.
-TEST_F(ArcVmClientAdapterTest, UpgradeArc_PropertyExpansionError) {
-  SetValidUserInfo();
-  StartMiniArc();
-  // Inject failure to the FileSystemStatus object.
-  set_property_files_expanded(false);
 
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());

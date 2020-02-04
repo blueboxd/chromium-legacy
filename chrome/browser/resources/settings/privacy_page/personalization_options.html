@@ -60,14 +60,15 @@
 <if expr="_google_chrome">
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
-        label="$i18n{enableLogging}"
-        sub-label="$i18n{enableLoggingDesc}">
+        label="$i18n{enablePersonalizationLogging}"
+        sub-label="$i18n{enablePersonalizationLoggingDesc}">
     </settings-toggle-button>
 </if><!-- chromeos -->
 <if expr="not chromeos">
     <settings-toggle-button id="metricsReportingControl"
-        pref="[[metricsReportingPref_]]" label="$i18n{enableLogging}"
-        sub-label="$i18n{enableLoggingDesc}" no-set-pref
+        pref="[[metricsReportingPref_]]"
+        label="$i18n{enablePersonalizationLogging}"
+        sub-label="$i18n{enablePersonalizationLoggingDesc}" no-set-pref
         on-settings-boolean-control-change="onMetricsReportingChange_">
       <template is="dom-if" if="[[showRestart_]]" restamp>
         <cr-button on-click="onRestartTap_" id="restart"

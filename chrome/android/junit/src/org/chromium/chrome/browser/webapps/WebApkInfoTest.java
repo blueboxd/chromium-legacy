@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,7 +18,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.ResourceTable;
+import org.w3c.dom.Document;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -28,9 +32,13 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Tests WebApkInfo.
@@ -60,6 +68,28 @@ public class WebApkInfoTest {
     private static class FakeResources extends Resources {
         private final Map<String, Integer> mStringIdMap;
         private final Map<Integer, String> mIdValueMap;
+        private String mShortcutsXmlContents;
+
+        private class MockXmlResourceParserImpl extends XmlResourceParserImpl {
+            String mPackageName;
+
+            public MockXmlResourceParserImpl(Document document, String fileName, String packageName,
+                    String applicationPackageName, ResourceTable resourceTable) {
+                super(document, fileName, packageName, applicationPackageName, resourceTable);
+                mPackageName = packageName;
+            }
+
+            @Override
+            public int getAttributeResourceValue(
+                    String namespace, String attribute, int defaultValue) {
+                // Remove the trailing '@'.
+                String attributeValue = getAttributeValue(namespace, attribute).substring(1);
+                if (mStringIdMap.containsKey(attributeValue)) {
+                    return mStringIdMap.get(attributeValue);
+                }
+                return defaultValue;
+            }
+        }
 
         // Do not warn about deprecated call to Resources(); the documentation says code is not
         // supposed to create its own Resources object, but we are using it to fake out the
@@ -91,9 +121,33 @@ public class WebApkInfoTest {
             return Integer.parseInt(getString(id));
         }
 
+        @Override
+        public XmlResourceParser getXml(int id) {
+            try {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setNamespaceAware(true);
+                factory.setIgnoringComments(true);
+                factory.setIgnoringElementContentWhitespace(true);
+                DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+                Document document = documentBuilder.parse(
+                        new ByteArrayInputStream(mShortcutsXmlContents.getBytes()));
+
+                return new MockXmlResourceParserImpl(
+                        document, "file", WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME, null);
+            } catch (Exception e) {
+                Assert.fail("Failed to create XmlResourceParser");
+                return null;
+            }
+        }
+
+        void setShortcutsXmlContent(String content) {
+            mShortcutsXmlContents = content;
+        }
+
         public void addStringForTesting(
                 String name, String defType, String defPackage, int identifier, String value) {
             String key = getKey(name, defType, defPackage);
+
             mStringIdMap.put(key, identifier);
             mIdValueMap.put(identifier, value);
         }
@@ -631,5 +685,93 @@ public class WebApkInfoTest {
         WebApkInfo info = WebApkInfo.create(intent);
         Assert.assertEquals(
                 defaultBackgroundColorInWebApk, info.backgroundColorFallbackToDefault());
+    }
+
+    /**
+     * Test that shortcut items are properly parsed.
+     */
+    @Test
+    public void testShortcutItemsFromWebApkStrings() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+
+        FakeResources res = new FakeResources();
+        res.addStringForTesting(WebApkIntentDataProviderFactory.RESOURCE_SHORTCUTS,
+                WebApkIntentDataProviderFactory.RESOURCE_XML_TYPE, WEBAPK_PACKAGE_NAME, 1, null);
+        res.addStringForTesting("shortcut_1_short_name",
+                WebApkIntentDataProviderFactory.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 2,
+                "short name1");
+        res.addStringForTesting("shortcut_1_name",
+                WebApkIntentDataProviderFactory.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 3,
+                "name1");
+        res.addStringForTesting("shortcut_2_short_name",
+                WebApkIntentDataProviderFactory.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 4,
+                "short name2");
+        res.addStringForTesting("shortcut_2_name",
+                WebApkIntentDataProviderFactory.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 5,
+                "name2");
+        WebApkTestHelper.setResource(WEBAPK_PACKAGE_NAME, res);
+
+        Intent intent = createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
+
+        // No shortcuts case.
+        res.setShortcutsXmlContent(
+                "<shortcuts xmlns:android='http://schemas.android.com/apk/res/android'/>");
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(info.shortcutItems().size(), 0);
+
+        // One shortcut case.
+        String oneShortcut =
+                "<shortcuts xmlns:android='http://schemas.android.com/apk/res/android'>"
+                + "  <shortcut"
+                + "    android:shortcutId='shortcut_1'"
+                + "    android:icon='@drawable/shortcut_1_icon'"
+                + "    iconHash='1234'"
+                + "    android:shortcutShortLabel='@string/shortcut_1_short_name'"
+                + "    android:shortcutLongLabel='@string/shortcut_1_name'>"
+                + "      <intent android:data='https://example.com/launch1' />"
+                + "  </shortcut>"
+                + "</shortcuts>";
+
+        res.setShortcutsXmlContent(oneShortcut);
+        info = WebApkInfo.create(intent);
+        Assert.assertEquals(info.shortcutItems().size(), 1);
+        WebApkExtras.ShortcutItem item = info.shortcutItems().get(0);
+        Assert.assertEquals(item.name, "name1");
+        Assert.assertEquals(item.shortName, "short name1");
+        Assert.assertEquals(item.launchUrl, "https://example.com/launch1");
+        Assert.assertEquals(item.iconHash, "1234");
+
+        // Multiple shortcuts case.
+        String twoShortcuts =
+                "<shortcuts xmlns:android='http://schemas.android.com/apk/res/android'>"
+                + "  <shortcut"
+                + "    android:shortcutId='shortcut_1'"
+                + "    android:icon='@drawable/shortcut_1_icon'"
+                + "    iconHash='1234'"
+                + "    android:shortcutShortLabel='@string/shortcut_1_short_name'"
+                + "    android:shortcutLongLabel='@string/shortcut_1_name'>"
+                + "      <intent android:data='https://example.com/launch1' />"
+                + "  </shortcut>"
+                + "  <shortcut"
+                + "    android:shortcutId='shortcut_2'"
+                + "    android:icon='@drawable/shortcut_2_icon'"
+                + "    iconHash='2345'"
+                + "    android:shortcutShortLabel='@string/shortcut_2_short_name'"
+                + "    android:shortcutLongLabel='@string/shortcut_2_name'>"
+                + "      <intent android:data='https://example.com/launch2' />"
+                + "  </shortcut>"
+                + "</shortcuts>";
+
+        res.setShortcutsXmlContent(twoShortcuts);
+        info = WebApkInfo.create(intent);
+        Assert.assertEquals(info.shortcutItems().size(), 2);
+        item = info.shortcutItems().get(1);
+        Assert.assertEquals(item.name, "name2");
+        Assert.assertEquals(item.shortName, "short name2");
+        Assert.assertEquals(item.launchUrl, "https://example.com/launch2");
+        Assert.assertEquals(item.iconHash, "2345");
     }
 }

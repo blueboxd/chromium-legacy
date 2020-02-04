@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -295,6 +296,10 @@ class NavigationSimulator {
   // If the test sets this to false, it should follow up any calls that result
   // in throttles deferring the navigation with a call to Wait().
   virtual void SetAutoAdvance(bool auto_advance) = 0;
+
+  // Sets the ResolveErrorInfo to be set on the URLLoaderCompletionStatus.
+  virtual void SetResolveErrorInfo(
+      const net::ResolveErrorInfo& resolve_error_info) = 0;
 
   // Sets the SSLInfo to be set on the response. This should be called before
   // Commit().

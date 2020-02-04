@@ -563,4 +563,38 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
 }
 
+TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
+       GetReadPermissionGrant_FileBecomesDirectory) {
+  auto file_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+
+  auto directory_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, directory_grant->GetStatus());
+
+  // Requesting a permission grant for a directory which was previously a file
+  // should have revoked the original file permission.
+  EXPECT_EQ(PermissionStatus::DENIED, file_grant->GetStatus());
+}
+
+TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
+       GetWritePermissionGrant_FileBecomesDirectory) {
+  auto file_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
+      UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+
+  auto directory_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, directory_grant->GetStatus());
+
+  // Requesting a permission grant for a directory which was previously a file
+  // should have revoked the original file permission.
+  EXPECT_EQ(PermissionStatus::DENIED, file_grant->GetStatus());
+}
+
 #endif  // !defined(OS_ANDROID)

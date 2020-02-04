@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
@@ -130,6 +131,8 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
             base::BindRepeating(FakeArcSession::Create)));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    EXPECT_TRUE(ExpandPropertyFilesForTesting(ArcSessionManager::Get(),
+                                              temp_dir_.GetPath()));
 
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 

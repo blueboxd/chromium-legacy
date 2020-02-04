@@ -12,10 +12,12 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -179,13 +181,14 @@ public class WebApkInfo extends WebappInfo {
             String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
-            int webApkVersionCode) {
+            List<ShortcutItem> shortcutItems, int webApkVersionCode) {
         return create(WebApkIntentDataProviderFactory.create(url, scope, primaryIcon, badgeIcon,
                 splashIcon, name, shortName, displayMode, orientation, source, themeColor,
                 backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,
                 isSplashIconMaskable, webApkPackageName, shellApkVersion, manifestUrl,
                 manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
-                forceNavigation, isSplashProvidedByWebApk, shareData, webApkVersionCode));
+                forceNavigation, isSplashProvidedByWebApk, shareData, shortcutItems,
+                webApkVersionCode));
     }
 
     private static WebApkInfo create(@Nullable BrowserServicesIntentDataProvider provider) {
@@ -263,6 +266,10 @@ public class WebApkInfo extends WebappInfo {
 
     public ShareData shareData() {
         return getWebApkExtras().shareData;
+    }
+
+    public List<ShortcutItem> shortcutItems() {
+        return getWebApkExtras().shortcutItems;
     }
 
     private WebApkExtras getWebApkExtras() {

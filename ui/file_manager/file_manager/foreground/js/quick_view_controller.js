@@ -66,7 +66,7 @@ class QuickViewController {
 
     /**
      * Delete confirm dialog.
-     * @type {?FilesConfirmDialog}
+     * @private {?FilesConfirmDialog}
      */
     this.deleteConfirmDialog_ = null;
 
@@ -134,10 +134,9 @@ class QuickViewController {
     this.quickView_.onOpenInNewButtonTap =
         this.onOpenInNewButtonTap_.bind(this);
 
-    const toolTip = this.quickView_.$$('files-tooltip');
-    const elems =
+    const toolTipElements =
         this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
-    toolTip.addTargets(elems);
+    this.quickView_.$$('files-tooltip').addTargets(toolTipElements);
   }
 
   /**
@@ -279,6 +278,7 @@ class QuickViewController {
 
     // Create a delete confirm dialog if needed.
     if (!this.deleteConfirmDialog_) {
+      // TODO(crbug.com/803259): style this element to make it lighter.
       const dialogElement = document.createElement('dialog');
       this.quickView_.shadowRoot.appendChild(dialogElement);
       dialogElement.id = 'delete-confirm-dialog';
@@ -290,11 +290,11 @@ class QuickViewController {
         event.stopPropagation();
       });
 
-      this.deleteConfirmDialog_.showModalElement = function() {
+      this.deleteConfirmDialog_.showModalElement = () => {
         dialogElement.showModal();
       };
 
-      this.deleteConfirmDialog_.doneCallback = function() {
+      this.deleteConfirmDialog_.doneCallback = () => {
         dialogElement.close();
       };
     }
@@ -433,7 +433,6 @@ class QuickViewController {
       if (params.hasTask) {
         this.tasks_ = fileTasks;
       }
-
     });
   }
 
@@ -643,6 +642,7 @@ QuickViewController.UNSUPPORTED_IMAGE_SUBTYPES_ = [
  *   type: string,
  *   subtype: string,
  *   filePath: string,
+ *   hasTask: boolean,
  *   contentUrl: (string|undefined),
  *   videoPoster: (string|undefined),
  *   audioArtwork: (string|undefined),

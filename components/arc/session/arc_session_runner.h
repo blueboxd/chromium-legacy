@@ -78,6 +78,11 @@ class ArcSessionRunner : public ArcSession::Observer {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Resumes |this| runner. Every time when a runner is created, it is in
+  // 'suspended' state meaning that it won't start any instance. This method
+  // is to allow the runner to actually start it.
+  void ResumeRunner();
+
   // Starts the mini ARC instance.
   void RequestStartMiniInstance();
 
@@ -149,6 +154,8 @@ class ArcSessionRunner : public ArcSession::Observer {
   std::string user_id_hash_;
   // A serial number for the current profile.
   std::string serial_number_;
+
+  bool resumed_ = false;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_{this};

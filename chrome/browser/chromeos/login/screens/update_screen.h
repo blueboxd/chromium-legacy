@@ -69,11 +69,6 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   // associated View if this class is destroyed before it.
   void OnViewDestroyed(UpdateView* view);
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   base::OneShotTimer* GetShowTimerForTesting();
   base::OneShotTimer* GetErrorMessageTimerForTesting();
   VersionUpdater* GetVersionUpdaterForTesting();
@@ -96,6 +91,11 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   void FinishExitUpdate(VersionUpdater::Result result) override;
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   void ExitUpdate(Result result);
 
  private:

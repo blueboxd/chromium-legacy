@@ -59,6 +59,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/token.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -1346,6 +1347,7 @@ class RenderProcessHostImpl::IOThreadHostImpl
   DISALLOW_COPY_AND_ASSIGN(IOThreadHostImpl);
 };
 
+// static
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting() {
   return g_in_process_thread->task_runner();
@@ -1512,6 +1514,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                 ChildProcessImportance::NORMAL
 #endif
                 ),
+      clock_(base::DefaultTickClock::GetInstance()),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       browser_context_(browser_context),
       storage_partition_impl_(storage_partition_impl),
@@ -1659,6 +1662,24 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   }
   UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.FramePrioritiesSeen",
                             report);
+
+  // Report the histograms if the time is nonzero.  Note that LONG_TIMES records
+  // times in exponential bins up to an hour, so it should sufficiently catch
+  // most cases.
+  if (!background_status_update_time_.is_null()) {
+    base::TimeTicks current_time = clock_->NowTicks();
+    base::TimeDelta total_duration = current_time - init_time_;
+
+    // Only record for durations greater than zero.
+    if (total_duration.InMicroseconds() > 0) {
+      if (is_backgrounded_)
+        background_duration_ += current_time - background_status_update_time_;
+      UMA_HISTOGRAM_LONG_TIMES("BrowserRenderProcessHost.TotalTime",
+                               total_duration);
+      UMA_HISTOGRAM_LONG_TIMES("BrowserRenderProcessHost.BackgroundTime",
+                               background_duration_);
+    }
+  }
 }
 
 bool RenderProcessHostImpl::Init() {
@@ -1788,7 +1809,8 @@ bool RenderProcessHostImpl::Init() {
     fast_shutdown_started_ = false;
   }
 
-  init_time_ = base::TimeTicks::Now();
+  init_time_ = clock_->NowTicks();
+  background_status_update_time_ = init_time_;
   return true;
 }
 
@@ -1986,6 +2008,12 @@ void RenderProcessHostImpl::BindNativeFileSystemManager(
           // the Quarantine Service.
           origin.GetURL(), GetID(), MSG_ROUTING_NONE),
       std::move(receiver));
+}
+
+void RenderProcessHostImpl::SetClockForTesting(base::TickClock* clock) {
+  clock_ = clock;
+  init_time_ = clock_->NowTicks();
+  background_status_update_time_ = init_time_;
 }
 
 void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
@@ -4673,6 +4701,23 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
         "pid", child_process_launcher_->GetProcess().Pid(),
         "priority_is_background", priority.is_background());
     child_process_launcher_->SetProcessPriority(priority_);
+  }
+
+  // When switching in/out of the background, update the time spent in the
+  // background so the time spent backgrounded vs overall can be reported.
+  if (background_state_changed && allow_background_change) {
+    is_backgrounded_ = priority_.is_background();
+    // Don't update backgrounding metrics until the render process finishes
+    // initializing, at which point it will set |background_status_update_time_|
+    // to the current time.
+    if (!background_status_update_time_.is_null()) {
+      base::TimeTicks update_time = clock_->NowTicks();
+      base::TimeDelta update_duration =
+          update_time - background_status_update_time_;
+      background_status_update_time_ = update_time;
+      if (!is_backgrounded_)
+        background_duration_ += update_duration;
+    }
   }
 
   // Notify the child process of the change in state.

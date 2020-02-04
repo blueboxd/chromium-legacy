@@ -126,7 +126,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
      * the next time Chrome is launched into foreground.
      */
     private static boolean maybePersistLazyMessage(GCMMessage message) {
-        if (isNativeLoaded()) {
+        if (isFullBrowserLoaded()) {
             return false;
         }
 
@@ -221,7 +221,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
         GCMDriver.dispatchMessage(message);
     }
 
-    private static boolean isNativeLoaded() {
-        return ChromeBrowserInitializer.getInstance().hasNativeInitializationCompleted();
+    private static boolean isFullBrowserLoaded() {
+        return ChromeBrowserInitializer.getInstance().isFullBrowserInitialized();
     }
 }

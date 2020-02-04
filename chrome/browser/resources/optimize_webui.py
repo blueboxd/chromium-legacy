@@ -308,7 +308,7 @@ def _optimize(in_folder, args):
   in_path = os.path.normpath(os.path.join(_CWD, in_folder)).replace('\\', '/')
   out_path = os.path.join(_CWD, args.out_folder).replace('\\', '/')
   manifest_out_path = _request_list_path(out_path, args.host)
-  tmp_out_dir = os.path.join(out_path, 'bundled').replace('\\', '/')
+  tmp_out_dir = tempfile.mkdtemp(dir=out_path).replace('\\', '/')
 
   excludes = _BASE_EXCLUDES + [
     # This file is dynamically created by C++. Need to specify an exclusion

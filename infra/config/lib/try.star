@@ -180,12 +180,7 @@ def chromium_mac_builder(
 def chromium_mac_ios_builder(*, name, executable='recipe:ios/try', **kwargs):
   return try_builder(
       name = name,
-      caches = [
-          swarming.cache(
-              name = 'xcode_ios_11a1027',
-              path = 'xcode_ios_11a1027.app',
-          ),
-      ],
+      caches = [builders.xcode_cache.x11c29],
       cores = None,
       executable = executable,
       mastername = 'tryserver.chromium.mac',

@@ -55,6 +55,7 @@ class WindowEventHandlers {
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(rejectionhandled,
                                                 kRejectionhandled)
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(storage, kStorage)
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(timezonechange, kTimezonechange)
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unhandledrejection,
                                                 kUnhandledrejection)
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unload, kUnload)

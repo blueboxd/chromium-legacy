@@ -6,6 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/quota/quota_limit_type.h"
 
 namespace storage {
 
@@ -14,7 +15,7 @@ FileSystemOperationContext::FileSystemOperationContext(
     : file_system_context_(context),
       task_runner_(file_system_context_->default_file_task_runner()),
       allowed_bytes_growth_(0),
-      quota_limit_type_(storage::kQuotaLimitTypeUnknown) {}
+      quota_limit_type_(QuotaLimitType::kUnknown) {}
 
 FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context,
@@ -22,7 +23,7 @@ FileSystemOperationContext::FileSystemOperationContext(
     : file_system_context_(context),
       task_runner_(task_runner),
       allowed_bytes_growth_(0),
-      quota_limit_type_(storage::kQuotaLimitTypeUnknown) {}
+      quota_limit_type_(QuotaLimitType::kUnknown) {}
 
 FileSystemOperationContext::~FileSystemOperationContext() {
   DetachFromSequence();

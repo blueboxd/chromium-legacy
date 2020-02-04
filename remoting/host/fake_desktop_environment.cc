@@ -120,6 +120,11 @@ uint32_t FakeDesktopEnvironment::GetDesktopSessionId() const {
   return UINT32_MAX;
 }
 
+std::unique_ptr<DesktopAndCursorConditionalComposer>
+FakeDesktopEnvironment::CreateComposingVideoCapturer() {
+  return nullptr;
+}
+
 const DesktopEnvironmentOptions& FakeDesktopEnvironment::options() const {
   return options_;
 }

@@ -1279,15 +1279,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, DISABLED_AdPageLoadUKM) {
   EXPECT_EQ(*test_ukm_recorder().GetEntryMetric(
                 entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
             10);
-  EXPECT_GT(
-      *test_ukm_recorder().GetEntryMetric(
-          entries.front(), ukm::builders::AdPageLoad::kAdBytesPerSecondName),
-      0);
-  EXPECT_GT(
-      *test_ukm_recorder().GetEntryMetric(
-          entries.front(),
-          ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName),
-      0);
   EXPECT_EQ(
       *test_ukm_recorder().GetEntryMetric(
           entries.front(), ukm::builders::AdPageLoad::kMainframeAdBytesName),

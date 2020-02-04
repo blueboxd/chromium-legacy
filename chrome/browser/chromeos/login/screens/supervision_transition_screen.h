@@ -21,10 +21,6 @@ class SupervisionTransitionScreen : public BaseScreen {
                               const base::RepeatingClosure& exit_callback);
   ~SupervisionTransitionScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-
   // Called when view is destroyed so there's no dead reference to it.
   void OnViewDestroyed(SupervisionTransitionScreenView* view_);
 
@@ -32,6 +28,10 @@ class SupervisionTransitionScreen : public BaseScreen {
   void OnSupervisionTransitionFinished();
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   base::RepeatingClosure* exit_callback() { return &exit_callback_; }
 
  private:

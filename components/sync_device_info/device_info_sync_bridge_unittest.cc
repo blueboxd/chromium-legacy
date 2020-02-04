@@ -74,11 +74,11 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
         expected_fields.vapid_p256dh() != arg_info.vapid_target_info.p256dh ||
         expected_fields.vapid_auth_secret() !=
             arg_info.vapid_target_info.auth_secret ||
-        expected_fields.sender_id_fcm_token() !=
+        expected_fields.sender_id_fcm_token_v2() !=
             arg_info.sender_id_target_info.fcm_token ||
-        expected_fields.sender_id_p256dh() !=
+        expected_fields.sender_id_p256dh_v2() !=
             arg_info.sender_id_target_info.p256dh ||
-        expected_fields.sender_id_auth_secret() !=
+        expected_fields.sender_id_auth_secret_v2() !=
             arg_info.sender_id_target_info.auth_secret ||
         static_cast<size_t>(expected_fields.enabled_features_size()) !=
             arg_info.enabled_features.size()) {
@@ -202,8 +202,8 @@ std::string SharingSenderIdAuthSecretForSuffix(int suffix) {
 
 sync_pb::SharingSpecificFields::EnabledFeatures SharingEnabledFeaturesForSuffix(
     int suffix) {
-  return suffix % 2 ? sync_pb::SharingSpecificFields::CLICK_TO_CALL
-                    : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
+  return suffix % 2 ? sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2
+                    : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2;
 }
 
 DataTypeActivationRequest TestDataTypeActivationRequest(SyncMode sync_mode) {
@@ -234,11 +234,11 @@ DeviceInfoSpecifics CreateSpecifics(
       SharingVapidP256dhForSuffix(suffix));
   specifics.mutable_sharing_fields()->set_vapid_auth_secret(
       SharingVapidAuthSecretForSuffix(suffix));
-  specifics.mutable_sharing_fields()->set_sender_id_fcm_token(
+  specifics.mutable_sharing_fields()->set_sender_id_fcm_token_v2(
       SharingSenderIdFcmTokenForSuffix(suffix));
-  specifics.mutable_sharing_fields()->set_sender_id_p256dh(
+  specifics.mutable_sharing_fields()->set_sender_id_p256dh_v2(
       SharingSenderIdP256dhForSuffix(suffix));
-  specifics.mutable_sharing_fields()->set_sender_id_auth_secret(
+  specifics.mutable_sharing_fields()->set_sender_id_auth_secret_v2(
       SharingSenderIdAuthSecretForSuffix(suffix));
   specifics.mutable_sharing_fields()->add_enabled_features(
       SharingEnabledFeaturesForSuffix(suffix));

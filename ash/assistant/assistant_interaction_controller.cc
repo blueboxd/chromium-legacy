@@ -21,7 +21,6 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/public/cpp/android_intent_helper.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
@@ -236,30 +235,6 @@ void AssistantInteractionController::OnDeepLinkReceived(
                        /*query_source=*/AssistantQuerySource::kDeepLink);
 }
 
-void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode,
-                                                     bool due_to_interaction) {
-  switch (model_.input_modality()) {
-    case InputModality::kStylus:
-      // When the Assistant is not in mini state there should not be an active
-      // metalayer session. If we were in mini state when the UI mode was
-      // changed, we need to clean up the metalayer session.
-      Shell::Get()->highlighter_controller()->AbortSession();
-
-      // If the UI mode change was not due to interaction, we should reset the
-      // default input modality. We don't do this if the change occurred due to
-      // an Assistant interaction because we might inadvertently stop the active
-      // interaction by changing input modality. When this is the case, the
-      // modality will be correctly set in |OnInteractionStarted| if needed.
-      if (!due_to_interaction)
-        model_.SetInputModality(GetDefaultInputModality());
-      break;
-    case InputModality::kKeyboard:
-    case InputModality::kVoice:
-      // No action necessary.
-      break;
-  }
-}
-
 void AssistantInteractionController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
@@ -273,40 +248,8 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       model_.ClearInteraction();
       model_.SetInputModality(GetDefaultInputModality());
       break;
-    case AssistantVisibility::kHidden:
-      // When the UI is hidden we stop any voice query in progress so that we
-      // don't listen to the user while not visible. We also restore the default
-      // input modality for the next launch.
-      if (model_.pending_query().type() == AssistantQueryType::kVoice) {
-        StopActiveInteraction(false);
-      }
-      model_.SetInputModality(GetDefaultInputModality());
-      break;
     case AssistantVisibility::kVisible:
       OnUiVisible(entry_point.value());
-      break;
-  }
-}
-
-void AssistantInteractionController::OnHighlighterEnabledChanged(
-    HighlighterEnabledState state) {
-  switch (state) {
-    case HighlighterEnabledState::kEnabled:
-      // Skip setting input modality to stylus when the embedded Assistant
-      // feature is enabled to prevent highlighter aborting sessions in
-      // OnUiModeChanged.
-      if (!app_list_features::IsAssistantLauncherUIEnabled())
-        model_.SetInputModality(InputModality::kStylus);
-      break;
-    case HighlighterEnabledState::kDisabledByUser:
-    case HighlighterEnabledState::kDisabledBySessionComplete:
-      model_.SetInputModality(InputModality::kKeyboard);
-      break;
-    case HighlighterEnabledState::kDisabledBySessionAbort:
-      // When metalayer mode has been aborted, no action necessary. Abort occurs
-      // as a result of an interaction starting, most likely due to hotword
-      // detection. Setting the input modality in these cases would have the
-      // unintended consequence of stopping the active interaction.
       break;
   }
 }
@@ -826,14 +769,6 @@ void AssistantInteractionController::OnUiVisible(
                        assistant_controller_->suggestions_controller()
                            ->model()
                            ->GetProactiveSuggestions()));
-    return;
-  }
-
-  if (entry_point == AssistantEntryPoint::kStylus) {
-    // When the embedded Assistant feature is enabled, we call ShowUi(kStylus)
-    // OnHighlighterSelectionRecognized. But we are not actually using stylus.
-    if (!app_list_features::IsAssistantLauncherUIEnabled())
-      model_.SetInputModality(InputModality::kStylus);
     return;
   }
 

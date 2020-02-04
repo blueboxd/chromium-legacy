@@ -62,7 +62,7 @@ void NetworkScreen::OnViewDestroyed(NetworkScreenView* view) {
   }
 }
 
-void NetworkScreen::Show() {
+void NetworkScreen::ShowImpl() {
   if (DemoSetupController::IsOobeDemoSetupFlowInProgress()) {
     // Check if preinstalled resources are available. If so, we can allow
     // offline Demo Mode during Demo Mode network selection.
@@ -78,7 +78,7 @@ void NetworkScreen::Show() {
     view_->Show();
 }
 
-void NetworkScreen::Hide() {
+void NetworkScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

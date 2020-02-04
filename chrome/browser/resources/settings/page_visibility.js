@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 /**
  * Specifies page visibility based on incognito status and Chrome OS guest mode.
  * @typedef {{
@@ -44,7 +46,7 @@ cr.define('settings', function() {
    * Dictionary defining page visibility.
    * @type {!PageVisibility}
    */
-  let pageVisibility;
+  /* #export */ let pageVisibility;
 
   if (loadTimeData.getBoolean('isGuest')) {
     // "if not chromeos" and "if chromeos" in two completely separate blocks

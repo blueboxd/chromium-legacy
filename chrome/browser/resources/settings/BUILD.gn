@@ -9,6 +9,7 @@ import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
 import("../optimize_webui.gni")
+import("settings.gni")
 
 if (optimize_webui) {
   settings_pak_file = "settings_resources.pak"
@@ -33,6 +34,19 @@ if (optimize_webui) {
     excludes = [ "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html" ]
 
     deps = [ ":unpak" ]
+  }
+
+  optimize_webui("build_polymer3") {
+    host = "settings"
+    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
+    js_out_files = [ "settings.rollup.js" ]
+    js_module_in_files = [ "settings.js" ]
+
+    deps = [
+      ":unpak",
+      "../../../../ui/webui/resources:modulize",
+    ]
+    excludes = [ "chrome://resources/js/cr.m.js" ]
   }
 
   unpak("unpak") {
@@ -206,19 +220,22 @@ js_type_check("closure_compile_local_module") {
   is_polymer3 = true
   deps = [
     ":extension_control_browser_proxy.m",
+    ":i18n_setup.m",
 
     # TODO(crbug.com/1026426): Fix and enable.
-    #":global_scroll_target_behavior.m",
+    ":global_scroll_target_behavior.m",
+
     #":icons.m",
     #":lifetime_browser_proxy.m",
     #":metrics_browser_proxy.m",
     #":open_window_proxy.m",
-    #":page_visibility.m",
-    #":route.m",
+    ":page_visibility.m",
+    ":route.m",
     ":router.m",
 
     #":search_settings.m",
-    #":settings_routes.m",
+    ":settings_routes.m",
+
     #":site_favicon.m",
   ]
 }
@@ -230,10 +247,15 @@ js_library("extension_control_browser_proxy.m") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
+js_library("i18n_setup.m") {
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
+}
+
 js_library("global_scroll_target_behavior.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/global_scroll_target_behavior.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":router.m",
+    "//ui/webui/resources/js:promise_resolver.m",
   ]
   extra_deps = [ ":modulize" ]
 }
@@ -275,16 +297,17 @@ js_library("open_window_proxy.m") {
 js_library("page_visibility.m") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/settings/page_visibility.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("route.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/route.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":page_visibility.m",
+    ":router.m",
+    ":settings_routes.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   extra_deps = [ ":modulize" ]
 }
@@ -308,9 +331,7 @@ js_library("search_settings.m") {
 js_library("settings_routes.m") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/settings/settings_routes.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ ":router.m" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -408,10 +429,5 @@ js_modulizer("modulize") {
     "search_settings.js",
     "settings_routes.js",
   ]
-  namespace_rewrites = [
-    "cr.addSingletonGetter|addSingletonGetter",
-    "settings.ExtensionControlBrowserProxy|ExtensionControlBrowserProxy",
-    "settings.Route|Route",
-    "settings.MinimumRoutes|MinimumRoutes",
-  ]
+  namespace_rewrites = settings_namespace_rewrites
 }

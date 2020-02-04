@@ -273,7 +273,7 @@ void AccountManagerUIHandler::OnGetAccounts(
           GetEnterpriseDomainFromUsername(user->GetDisplayEmail()));
     } else if (profile_->GetProfilePolicyConnector()->IsManaged()) {
       device_account.SetOrganization(GetEnterpriseDomainFromUsername(
-          identity_manager_->GetPrimaryAccountInfo().email));
+          identity_manager_->GetUnconsentedPrimaryAccountInfo().email));
     }
 
     // Device account must show up at the top.

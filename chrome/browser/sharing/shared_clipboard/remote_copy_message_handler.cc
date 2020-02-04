@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -50,6 +51,8 @@ constexpr int kNotificationImageMaxHeightPx = 480;
 // This method should be called on a ThreadPool thread because it performs a
 // potentially slow operation.
 SkBitmap ResizeImage(const SkBitmap& image, int width, int height) {
+  TRACE_EVENT2("sharing", "ResizeImage", "src_pixels",
+               image.width() * image.height(), "dst_pixels", width * height);
   return skia::ImageOperations::Resize(
       image, skia::ImageOperations::RESIZE_BEST, width, height);
 }
@@ -104,6 +107,7 @@ void RemoteCopyMessageHandler::OnMessage(
     chrome_browser_sharing::SharingMessage message,
     DoneCallback done_callback) {
   DCHECK(message.has_remote_copy_message());
+  TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::OnMessage");
 
   // First cancel any pending async tasks that might otherwise overwrite the
   // results of the more recent message.
@@ -129,6 +133,9 @@ void RemoteCopyMessageHandler::OnMessage(
 }
 
 void RemoteCopyMessageHandler::HandleText(const std::string& text) {
+  TRACE_EVENT1("sharing", "RemoteCopyMessageHandler::HandleText", "text_size",
+               text.size());
+
   if (text.empty()) {
     Finish(RemoteCopyHandleMessageResult::kFailureEmptyText);
     return;
@@ -145,6 +152,8 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
 }
 
 void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
+  TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::HandleImage");
+
   GURL url(image_url);
 
   if (!network::IsUrlPotentiallyTrustworthy(url)) {
@@ -190,6 +199,8 @@ bool RemoteCopyMessageHandler::IsOriginAllowed(const GURL& image_url) {
 
 void RemoteCopyMessageHandler::OnURLLoadComplete(
     std::unique_ptr<std::string> content) {
+  TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::OnURLLoadComplete");
+
   int code;
   if (url_loader_->NetError() != net::OK) {
     code = url_loader_->NetError();
@@ -215,6 +226,8 @@ void RemoteCopyMessageHandler::OnURLLoadComplete(
 }
 
 void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& image) {
+  TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::OnImageDecoded");
+
   if (image.drawsNothing()) {
     Finish(RemoteCopyHandleMessageResult::kFailureDecodedImageDrawsNothing);
     return;
@@ -257,6 +270,10 @@ void RemoteCopyMessageHandler::OnDecodeImageFailed() {
 void RemoteCopyMessageHandler::WriteImageAndShowNotification(
     const SkBitmap& original_image,
     const SkBitmap& resized_image) {
+  TRACE_EVENT1("sharing",
+               "RemoteCopyMessageHandler::WriteImageAndShowNotification",
+               "bytes", original_image.computeByteSize());
+
   if (original_image.dimensions() != resized_image.dimensions())
     LogRemoteCopyResizeImageTime(timer_.Elapsed());
 
@@ -271,6 +288,8 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
 
 void RemoteCopyMessageHandler::ShowNotification(const base::string16& title,
                                                 const SkBitmap& image) {
+  TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::ShowNotification");
+
   std::string notification_id = base::GenerateGUID();
 
   message_center::RichNotificationData rich_notification_data;
@@ -297,6 +316,8 @@ void RemoteCopyMessageHandler::ShowNotification(const base::string16& title,
 }
 
 void RemoteCopyMessageHandler::Finish(RemoteCopyHandleMessageResult result) {
+  TRACE_EVENT1("sharing", "RemoteCopyMessageHandler::Finish", "result", result);
+
   LogRemoteCopyHandleMessageResult(result);
   device_name_.clear();
 }

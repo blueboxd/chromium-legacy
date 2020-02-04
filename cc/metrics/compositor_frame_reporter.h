@@ -83,8 +83,9 @@ class CC_EXPORT CompositorFrameReporter {
   enum class VizBreakdown {
     kSubmitToReceiveCompositorFrame = 0,
     kReceivedCompositorFrameToStartDraw = 1,
-    kStartDrawToSwapEnd = 2,
-    kSwapEndToPresentationCompositorFrame = 3,
+    kStartDrawToSwapStart = 2,
+    kSwapStartToSwapEnd = 3,
+    kSwapEndToPresentationCompositorFrame = 4,
     kBreakdownCount
   };
 

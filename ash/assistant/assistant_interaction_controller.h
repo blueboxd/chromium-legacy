@@ -81,8 +81,6 @@ class AssistantInteractionController
   void OnCommittedQueryChanged(const AssistantQuery& assistant_query) override;
 
   // AssistantUiModelObserver:
-  void OnUiModeChanged(AssistantUiMode ui_mode,
-                       bool due_to_interaction) override;
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
       AssistantVisibility old_visibility,
@@ -90,7 +88,6 @@ class AssistantInteractionController
       base::Optional<AssistantExitPoint> exit_point) override;
 
   // HighlighterController::Observer:
-  void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:

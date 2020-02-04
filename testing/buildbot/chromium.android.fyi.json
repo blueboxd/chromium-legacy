@@ -118,7 +118,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
+              "revision": "Zmi8uHgTaLXGm9f8Fu_0U-Xa6BljyNjsyL0Nq7VouKoC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -173,7 +173,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
+              "revision": "Zmi8uHgTaLXGm9f8Fu_0U-Xa6BljyNjsyL0Nq7VouKoC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -9264,7 +9264,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
+              "revision": "Zmi8uHgTaLXGm9f8Fu_0U-Xa6BljyNjsyL0Nq7VouKoC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

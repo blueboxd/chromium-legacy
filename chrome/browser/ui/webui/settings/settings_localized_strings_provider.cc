@@ -61,7 +61,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/version_ui/version_ui_constants.h"
 #include "components/zoom/page_zoom_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -79,10 +78,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
-#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -138,6 +135,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"confirm", IDS_CONFIRM},
     {"continue", IDS_SETTINGS_CONTINUE},
     {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
+    {"custom", IDS_SETTINGS_CUSTOM},
     {"delete", IDS_SETTINGS_DELETE},
     {"disable", IDS_DISABLE},
     {"done", IDS_DONE},
@@ -163,6 +161,14 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
     {"notValidWebAddressForContentType",
      IDS_SETTINGS_NOT_VALID_WEB_ADDRESS_FOR_CONTENT_TYPE},
+
+    // Common font related strings shown in a11y and appearance sections.
+    {"quickBrownFox", IDS_SETTINGS_QUICK_BROWN_FOX},
+    {"verySmall", IDS_SETTINGS_VERY_SMALL_FONT},
+    {"small", IDS_SETTINGS_SMALL_FONT},
+    {"medium", IDS_SETTINGS_MEDIUM_FONT},
+    {"large", IDS_SETTINGS_LARGE_FONT},
+    {"veryLarge", IDS_SETTINGS_VERY_LARGE_FONT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -213,103 +219,26 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddAboutStrings(content::WebUIDataSource* html_source) {
+  // Top level About Page strings.
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
 #endif
-
     {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
     {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
     {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
     {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
     {"aboutUpgradeUpdatingPercent", IDS_SETTINGS_UPGRADE_UPDATING_PERCENT},
-
+    {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
+    {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
+    {"aboutProductTitle", IDS_PRODUCT_NAME},
 #if defined(OS_CHROMEOS)
-    {"aboutBuildDetailsTitle", IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS},
-    {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
-    {"aboutChannelCanary", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_CANARY},
-    {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
-    {"aboutChannelLabel", IDS_SETTINGS_ABOUT_PAGE_CHANNEL},
-    {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
-    {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
-    {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
-    {"aboutDetailedBuildInfo", IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO},
-    {"aboutEndOfLifeTitle", IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_TITLE},
-    {"aboutRelaunchAndPowerwash",
-     IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
-    {"aboutRollbackInProgress", IDS_SETTINGS_UPGRADE_ROLLBACK_IN_PROGRESS},
-    {"aboutRollbackSuccess", IDS_SETTINGS_UPGRADE_ROLLBACK_SUCCESS},
     {"aboutUpdateOsSettingsLink",
      IDS_SETTINGS_ABOUT_SEE_OS_SETTINGS_FOR_UPDATE_MESSAGE},
-    {"aboutUpgradeUpdatingChannelSwitch",
-     IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
-    {"aboutUpgradeSuccessChannelSwitch",
-     IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
-    {"aboutTPMFirmwareUpdateTitle",
-     IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_TITLE},
-    {"aboutTPMFirmwareUpdateDescription",
-     IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_DESCRIPTION},
-
-    // About page, channel switcher dialog.
-    {"aboutChangeChannel", IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL},
-    {"aboutChangeChannelAndPowerwash",
-     IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL_AND_POWERWASH},
-    {"aboutDelayedWarningMessage",
-     IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_MESSAGE},
-    {"aboutDelayedWarningTitle", IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_TITLE},
-    {"aboutPowerwashWarningMessage",
-     IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_MESSAGE},
-    {"aboutPowerwashWarningTitle",
-     IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_TITLE},
-    {"aboutUnstableWarningMessage",
-     IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_MESSAGE},
-    {"aboutUnstableWarningTitle",
-     IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_TITLE},
-    {"aboutChannelDialogBeta", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_BETA},
-    {"aboutChannelDialogDev", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_DEV},
-    {"aboutChannelDialogStable", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_STABLE},
-
-    // About page, update warning dialog.
-    {"aboutUpdateWarningMessage",
-     IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_MESSAGE},
-    {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
-
-    // Detailed build information
-    {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
-    {version_ui::kPlatform, IDS_PLATFORM_LABEL},
-    {version_ui::kFirmwareVersion, IDS_VERSION_UI_FIRMWARE_VERSION},
-    {version_ui::kARC, IDS_ARC_LABEL},
-    {"aboutBuildDetailsCopyTooltipLabel",
-     IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS_COPY_TOOLTIP_LABEL},
-    {"aboutIsArcStatusTitle", IDS_OS_SETTINGS_ABOUT_ARC_STATUS_TITLE},
-    {"aboutIsDeveloperModeTitle", IDS_OS_SETTINGS_ABOUT_DEVELOPER_MODE},
-    {"isEnterpriseManagedTitle",
-     IDS_OS_SETTINGS_ABOUT_PAGE_ENTERPRISE_ENNROLLED_TITLE},
-#endif  // defined(OS_CHROMEOS)
+#endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-#if defined(OS_CHROMEOS)
-  html_source->AddLocalizedString("aboutOsPageTitle", IDS_SETTINGS_ABOUT_OS);
-  html_source->AddLocalizedString("aboutGetHelpUsingChromeOs",
-                                  IDS_SETTINGS_GET_HELP_USING_CHROME_OS);
-  html_source->AddLocalizedString("aboutOsProductTitle", IDS_PRODUCT_OS_NAME);
-  html_source->AddLocalizedString("aboutReleaseNotesOffline",
-                                  IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES);
-  html_source->AddLocalizedString("aboutShowReleaseNotes",
-                                  IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES);
-  html_source->AddLocalizedString("aboutGetHelpUsingChrome",
-                                  IDS_SETTINGS_GET_HELP_USING_CHROME);
-  html_source->AddLocalizedString("aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM);
-  html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_NAME);
-#else
-  html_source->AddLocalizedString("aboutGetHelpUsingChrome",
-                                  IDS_SETTINGS_GET_HELP_USING_CHROME);
-  html_source->AddLocalizedString("aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM);
-  html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_NAME);
-#endif
 
   html_source->AddString(
       "aboutUpgradeUpToDate",
@@ -317,11 +246,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
       ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
 #else
       l10n_util::GetStringUTF16(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
-#endif
-
-#if defined(OS_CHROMEOS)
-  html_source->AddString("aboutTPMFirmwareUpdateLearnMoreURL",
-                         chrome::kTPMFirmwareUpdateLearnMoreURL);
 #endif
 }
 
@@ -333,14 +257,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"enterCustomWebAddress", IDS_SETTINGS_ENTER_CUSTOM_WEB_ADDRESS},
     {"homeButtonDisabled", IDS_SETTINGS_HOME_BUTTON_DISABLED},
     {"themes", IDS_SETTINGS_THEMES},
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    {"systemTheme", IDS_SETTINGS_SYSTEM_THEME},
-    {"useSystemTheme", IDS_SETTINGS_USE_SYSTEM_THEME},
-    {"classicTheme", IDS_SETTINGS_CLASSIC_THEME},
-    {"useClassicTheme", IDS_SETTINGS_USE_CLASSIC_THEME},
-#else
-    {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
-#endif
     {"chromeColors", IDS_SETTINGS_CHROME_COLORS},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
@@ -348,8 +264,28 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
     {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
     {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
+    {"pageZoom", IDS_SETTINGS_PAGE_ZOOM_LABEL},
+    {"fontSize", IDS_SETTINGS_FONT_SIZE_LABEL},
+    {"customizeFonts", IDS_SETTINGS_CUSTOMIZE_FONTS},
+    {"fonts", IDS_SETTINGS_FONTS},
+    {"standardFont", IDS_SETTINGS_STANDARD_FONT_LABEL},
+    {"serifFont", IDS_SETTINGS_SERIF_FONT_LABEL},
+    {"sansSerifFont", IDS_SETTINGS_SANS_SERIF_FONT_LABEL},
+    {"fixedWidthFont", IDS_SETTINGS_FIXED_WIDTH_FONT_LABEL},
+    {"minimumFont", IDS_SETTINGS_MINIMUM_FONT_SIZE_LABEL},
+    {"tiny", IDS_SETTINGS_TINY_FONT_SIZE},
+    {"huge", IDS_SETTINGS_HUGE_FONT_SIZE},
+    {"advancedFontSettings", IDS_SETTINGS_ADVANCED_FONT_SETTINGS},
+    {"openAdvancedFontSettings", IDS_SETTINGS_OPEN_ADVANCED_FONT_SETTINGS},
+    {"requiresWebStoreExtension", IDS_SETTINGS_REQUIRES_WEB_STORE_EXTENSION},
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    {"systemTheme", IDS_SETTINGS_SYSTEM_THEME},
+    {"useSystemTheme", IDS_SETTINGS_USE_SYSTEM_THEME},
+    {"classicTheme", IDS_SETTINGS_CLASSIC_THEME},
+    {"useClassicTheme", IDS_SETTINGS_USE_CLASSIC_THEME},
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
+#else
+    {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
 #endif
 #if defined(OS_MACOSX)
     {"tabsToLinks", IDS_SETTINGS_TABS_TO_LINKS_PREF},
@@ -600,15 +536,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"triggeredResetPageTitle", IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE},
     {"resetDialogCommit", IDS_SETTINGS_RESET},
     {"resetPageFeedback", IDS_SETTINGS_RESET_PROFILE_FEEDBACK},
-#if defined(OS_CHROMEOS)
-    {"powerwashTitle", IDS_SETTINGS_FACTORY_RESET},
-    {"powerwashDialogTitle", IDS_SETTINGS_FACTORY_RESET_HEADING},
-    {"powerwashDialogExplanation", IDS_SETTINGS_FACTORY_RESET_WARNING},
-    {"powerwashDialogButton", IDS_SETTINGS_RESTART},
-    {"powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL},
-    {"powerwashButton", IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL},
-    {"powerwashButtonRoleDescription", IDS_SETTINGS_FACTORY_RESET_BUTTON_ROLE},
-#endif
+
     // Automatic reset banner (now a dialog).
     {"resetAutomatedDialogTitle", IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE},
     {"resetProfileBannerButton", IDS_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT},
@@ -624,12 +552,6 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
                          chrome::kResetProfileSettingsLearnMoreURL);
   html_source->AddString("resetProfileBannerLearnMoreUrl",
                          chrome::kAutomaticSettingsResetLearnMoreURL);
-#if defined(OS_CHROMEOS)
-  html_source->AddString(
-      "powerwashDescription",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_FACTORY_RESET_DESCRIPTION,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-#endif
 }
 
 #if !defined(OS_CHROMEOS)
@@ -1458,13 +1380,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
       {"privacyPageMore", IDS_SETTINGS_PRIVACY_MORE},
-      {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
-      {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
       {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
       {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
-      {"enableContentProtectionAttestation",
-       IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
-      {"wakeOnWifi", IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION},
       {"securityPageTitle", IDS_SETTINGS_SECURITY},
       {"securityPageAdvancedSectionLabel",
        IDS_SETTINGS_SECURITY_ADVANCED_SECTION_LABEL},
@@ -1493,28 +1410,12 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"safeBrowsingSectionLabel", IDS_SETTINGS_SAFEBROWSING_SECTION_LABEL},
       {"syncAndGoogleServicesPrivacyDescription",
        IDS_SETTINGS_SYNC_AND_GOOGLE_SERVICES_PRIVACY_DESC_UNIFIED_CONSENT},
-      {"urlKeyedAnonymizedDataCollection",
-       IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
-      {"urlKeyedAnonymizedDataCollectionDesc",
-       IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  static constexpr webui::LocalizedString kConditionalLocalizedStrings[] = {
-      {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
-      {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
       {"networkPredictionEnabled",
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
       {"networkPredictionEnabledDesc",
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
-      {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
-      {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
-      {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
-      {"spellingDescription", IDS_SETTINGS_SPELLING_PREF_DESC},
-      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
-      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
   };
-  AddLocalizedStringsBulk(html_source, kConditionalLocalizedStrings);
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
                          chrome::kSyncAndGoogleServicesLearnMoreURL);
@@ -1533,6 +1434,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "installedAppsInCbd",
       base::FeatureList::IsEnabled(features::kStoragePressureUI));
+
+  AddPersonalizationOptionsStrings(html_source);
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
@@ -1552,46 +1455,18 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("searchNoResultsHelp", help_text);
 }
 
-void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
-#if defined(OS_CHROMEOS)
-  // NOTE: This will be false when the flag is disabled.
-  const bool is_assistant_allowed =
-      assistant::IsAssistantAllowedForProfile(profile) ==
-      ash::mojom::AssistantAllowedState::ALLOWED;
-#endif
-
+void AddSearchStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-    {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
-    {"searchPageTitle", IDS_SETTINGS_SEARCH},
-#if defined(OS_CHROMEOS)
-    {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
-    {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
-    {"searchGoogleAssistantEnabled",
-     IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
-    {"searchGoogleAssistantDisabled",
-     IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
-    {"searchGoogleAssistantOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON},
-    {"searchGoogleAssistantOff", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF},
-#endif
+      {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
+      {"searchPageTitle", IDS_SETTINGS_SEARCH},
+
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-#if defined(OS_CHROMEOS)
-  html_source->AddLocalizedString("osSearchPageTitle",
-                                  is_assistant_allowed
-                                      ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                                      : IDS_SETTINGS_SEARCH);
-#endif
 
-  base::string16 search_explanation_text = l10n_util::GetStringFUTF16(
-      IDS_SETTINGS_SEARCH_EXPLANATION,
-      base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
-  html_source->AddString("searchExplanation", search_explanation_text);
-#if defined(OS_CHROMEOS)
-  html_source->AddString(
-      "osSearchEngineTooltip",
-      ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP));
-  html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
-#endif
+  html_source->AddString("searchExplanation",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_SEARCH_EXPLANATION,
+                             base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL)));
 }
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
@@ -2136,36 +2011,6 @@ void AddSystemStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
-void AddWebContentStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"webContent", IDS_SETTINGS_WEB_CONTENT},
-      {"pageZoom", IDS_SETTINGS_PAGE_ZOOM_LABEL},
-      {"fontSize", IDS_SETTINGS_FONT_SIZE_LABEL},
-      {"verySmall", IDS_SETTINGS_VERY_SMALL_FONT},
-      {"small", IDS_SETTINGS_SMALL_FONT},
-      {"medium", IDS_SETTINGS_MEDIUM_FONT},
-      {"large", IDS_SETTINGS_LARGE_FONT},
-      {"veryLarge", IDS_SETTINGS_VERY_LARGE_FONT},
-      {"custom", IDS_SETTINGS_CUSTOM},
-      {"customizeFonts", IDS_SETTINGS_CUSTOMIZE_FONTS},
-      {"fonts", IDS_SETTINGS_FONTS},
-      {"standardFont", IDS_SETTINGS_STANDARD_FONT_LABEL},
-      {"serifFont", IDS_SETTINGS_SERIF_FONT_LABEL},
-      {"sansSerifFont", IDS_SETTINGS_SANS_SERIF_FONT_LABEL},
-      {"fixedWidthFont", IDS_SETTINGS_FIXED_WIDTH_FONT_LABEL},
-      {"minimumFont", IDS_SETTINGS_MINIMUM_FONT_SIZE_LABEL},
-      {"tiny", IDS_SETTINGS_TINY_FONT_SIZE},
-      {"huge", IDS_SETTINGS_HUGE_FONT_SIZE},
-      {"loremIpsum", IDS_SETTINGS_LOREM_IPSUM},
-      {"loading", IDS_SETTINGS_LOADING},
-      {"advancedFontSettings", IDS_SETTINGS_ADVANCED_FONT_SETTINGS},
-      {"openAdvancedFontSettings", IDS_SETTINGS_OPEN_ADVANCED_FONT_SETTINGS},
-      {"requiresWebStoreExtension", IDS_SETTINGS_REQUIRES_WEB_STORE_EXTENSION},
-      {"quickBrownFox", IDS_SETTINGS_QUICK_BROWN_FOX},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-}
-
 void AddExtensionsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("extensionsPageTitle",
                                   IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL);
@@ -2307,9 +2152,8 @@ void AddBrowserLocalizedStrings(content::WebUIDataSource* html_source,
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSearchInSettingsStrings(html_source);
-  AddSearchStrings(html_source, profile);
+  AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
-  AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
   AddChromeOSUserStrings(html_source, profile);

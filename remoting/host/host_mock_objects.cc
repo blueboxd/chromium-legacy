@@ -62,6 +62,11 @@ std::unique_ptr<FileOperations> MockDesktopEnvironment::CreateFileOperations() {
   return base::WrapUnique(CreateFileOperationsPtr());
 }
 
+std::unique_ptr<DesktopAndCursorConditionalComposer>
+MockDesktopEnvironment::CreateComposingVideoCapturer() {
+  return base::WrapUnique(CreateComposingVideoCapturerPtr());
+}
+
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() = default;
 
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() = default;

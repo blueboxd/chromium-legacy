@@ -163,6 +163,7 @@ void CastMediaNotificationItem::SetView(
 void CastMediaNotificationItem::OnMediaSessionActionButtonPressed(
     media_session::mojom::MediaSessionAction action) {
   base::UmaHistogramEnumeration(kUserActionHistogramName, action);
+  base::UmaHistogramEnumeration(kCastUserActionHistogramName, action);
   session_controller_->Send(action);
 }
 

@@ -168,11 +168,11 @@ java_annotation_processor("robolectric_processor") {
     ":robolectric_annotations_java",
     ":sdk_list_txt",
     "//build/android:sun_tools_java",
+    "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/gson:gson_java",
-    "//third_party/ow2_asm:asm_commons_java",
-    "//third_party/ow2_asm:asm_java",
-    "//third_party/ow2_asm:asm_tree_java",
+    "//third_party/android_deps:org_ow2_asm_asm_commons_java",
+    "//third_party/android_deps:org_ow2_asm_asm_java",
+    "//third_party/android_deps:org_ow2_asm_asm_tree_java",
   ]
   provider_configurations = [ "local/processor/src/main/resources/META-INF/services/javax.annotation.processing.Processor" ]
   main_class = "org.robolectric.annotation.processing.RobolectricProcessor"
@@ -378,9 +378,9 @@ java_library("robolectric_sandbox_java") {
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/ow2_asm:asm_commons_java",
-    "//third_party/ow2_asm:asm_java",
-    "//third_party/ow2_asm:asm_tree_java",
+    "//third_party/android_deps:org_ow2_asm_asm_commons_java",
+    "//third_party/android_deps:org_ow2_asm_asm_java",
+    "//third_party/android_deps:org_ow2_asm_asm_tree_java",
   ]
 
   sources = [
@@ -873,8 +873,8 @@ java_library("shadows_core_java") {
 
     # Note that gson is not a direct dependency for this library, but must be
     # in the classpath when the Robolectric annotation processor runs.
+    "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/gson:gson_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/icu4j:icu4j_java",
     "//third_party/sqlite4java:sqlite4java_java",
@@ -907,8 +907,8 @@ java_library("shadows_multidex_java") {
     ":shadows_core_java",
     "//build/android:sun_tools_java",
     "//third_party/android_deps:com_android_support_multidex_java",
+    "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/gson:gson_java",
   ]
 
   # Work-around for gradle generator not yet supporting annotation processors.
@@ -943,8 +943,8 @@ java_library("shadows_play_services_java") {
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
     "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/gson:gson_java",
   ]
 
   # Work-around for gradle generator not yet supporting annotation processors.

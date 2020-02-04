@@ -200,7 +200,6 @@ const chromeos::StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
     chromeos::EnableDebuggingScreenView::kScreenId,
     chromeos::KioskAutolaunchScreenView::kScreenId,
     chromeos::KioskEnableScreenView::kScreenId,
-    chromeos::ResetView::kScreenId,
     chromeos::SupervisionTransitionScreenView::kScreenId,
     chromeos::WrongHWIDScreenView::kScreenId,
 };

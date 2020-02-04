@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/updateable_sequenced_task_runner.h"
-#include "chrome/browser/media/history/media_history_engagement_table.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"

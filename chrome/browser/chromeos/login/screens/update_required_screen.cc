@@ -65,7 +65,7 @@ void UpdateRequiredScreen::OnViewDestroyed(UpdateRequiredView* view) {
     view_ = nullptr;
 }
 
-void UpdateRequiredScreen::Show() {
+void UpdateRequiredScreen::ShowImpl() {
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(false);
   RefreshNetworkState();
   SubscribeNetworkNotification();
@@ -99,7 +99,7 @@ void UpdateRequiredScreen::OnGetEolInfo(
   }
 }
 
-void UpdateRequiredScreen::Hide() {
+void UpdateRequiredScreen::HideImpl() {
   if (view_)
     view_->Hide();
   is_shown_ = false;

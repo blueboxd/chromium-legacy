@@ -47,8 +47,6 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
 
   void Trace(blink::Visitor*) override;
 
-  SystemClipboard* system_clipboard() { return system_clipboard_; }
-
  private:
   // Called to begin writing a type.
   void StartWriteRepresentation();

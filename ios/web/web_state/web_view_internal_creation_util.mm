@@ -36,6 +36,13 @@ void VerifyWKWebViewCreationPreConditions(
 
 }  // namespace
 
+WKWebView* BuildWKWebViewForQueries(WKWebViewConfiguration* configuration,
+                                    BrowserState* browser_state) {
+  VerifyWKWebViewCreationPreConditions(browser_state, configuration);
+  return [[WKWebView alloc] initWithFrame:CGRectZero
+                            configuration:configuration];
+}
+
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state,
@@ -44,6 +51,7 @@ WKWebView* BuildWKWebView(CGRect frame,
   VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
   GetWebClient()->PreWebViewCreation();
+
   WKWebView* web_view =
       [[WKWebView alloc] initWithFrame:frame configuration:configuration];
 

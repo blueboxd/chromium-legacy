@@ -271,14 +271,14 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
   // to obtain the ticket. If the user enters an IP address, Samba will give us
   // a permission error, which isn't correct or useful to the end user.
   if (use_kerberos && url::HostIsIPAddress(parsed_url.GetHost())) {
-    std::move(callback).Run(SmbMountResult::INVALID_SSO_URL);
+    std::move(callback).Run(SmbMountResult::kInvalidSsoUrl);
     return;
   }
 
   if (IsShareMounted(parsed_url)) {
     // Prevent a share from being mounted twice. Although technically possible,
     // the UX when doing so is incomplete.
-    std::move(callback).Run(SmbMountResult::MOUNT_EXISTS);
+    std::move(callback).Run(SmbMountResult::kMountExists);
     return;
   }
 
@@ -342,7 +342,7 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                 smb_credentials_updater_->active_account_name());
       } else {
         LOG(WARNING) << "No Kerberos credential source available";
-        std::move(callback).Run(SmbMountResult::AUTHENTICATION_FAILED);
+        std::move(callback).Run(SmbMountResult::kAuthenticationFailed);
         return;
       }
     }
@@ -381,7 +381,7 @@ void SmbService::OnSmbfsMountDone(const std::string& smbfs_mount_id,
                                   SmbMountResult result) {
   RecordMountResult(result);
 
-  if (result != SmbMountResult::SUCCESS) {
+  if (result != SmbMountResult::kSuccess) {
     smbfs_shares_.erase(smbfs_mount_id);
     std::move(callback).Run(result);
     return;
@@ -390,7 +390,7 @@ void SmbService::OnSmbfsMountDone(const std::string& smbfs_mount_id,
   SmbFsShare* mount = smbfs_shares_[smbfs_mount_id].get();
   if (!mount) {
     LOG(ERROR) << "smbfs mount " << smbfs_mount_id << " does not exist";
-    std::move(callback).Run(SmbMountResult::UNKNOWN_FAILURE);
+    std::move(callback).Run(SmbMountResult::kUnknownFailure);
     return;
   }
 
@@ -399,7 +399,7 @@ void SmbService::OnSmbfsMountDone(const std::string& smbfs_mount_id,
   }
 
   RecordMountCount();
-  std::move(callback).Run(SmbMountResult::SUCCESS);
+  std::move(callback).Run(SmbMountResult::kSuccess);
 }
 
 void SmbService::OnMountResponse(

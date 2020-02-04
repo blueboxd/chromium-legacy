@@ -3714,6 +3714,7 @@ interface WorkerGlobalScope : EventTarget
     getter onerror
     getter onlanguagechange
     getter onrejectionhandled
+    getter ontimezonechange
     getter onunhandledrejection
     getter origin
     getter performance
@@ -3732,6 +3733,7 @@ interface WorkerGlobalScope : EventTarget
     setter onerror
     setter onlanguagechange
     setter onrejectionhandled
+    setter ontimezonechange
     setter onunhandledrejection
     setter origin
     setter performance

@@ -14,7 +14,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='absolute red'",
           "rect": [93, 234, 142, 143],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         }
       ]
     }

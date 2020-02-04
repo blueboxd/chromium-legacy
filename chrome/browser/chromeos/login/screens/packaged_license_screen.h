@@ -32,9 +32,10 @@ class PackagedLicenseScreen : public BaseScreen {
   PackagedLicenseScreen& operator=(const PackagedLicenseScreen&) = delete;
   ~PackagedLicenseScreen() override;
 
+ protected:
   // BaseScreen
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
  private:

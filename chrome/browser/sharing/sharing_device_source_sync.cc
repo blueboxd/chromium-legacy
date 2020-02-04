@@ -157,10 +157,10 @@ SharingDeviceSourceSync::FilterDeviceCandidates(
     sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
   std::set<SharingSpecificFields::EnabledFeatures> accepted_features{
       required_feature};
-  if (required_feature == SharingSpecificFields::CLICK_TO_CALL) {
+  if (required_feature == SharingSpecificFields::CLICK_TO_CALL_V2) {
     accepted_features.insert(SharingSpecificFields::CLICK_TO_CALL_VAPID);
   }
-  if (required_feature == SharingSpecificFields::SHARED_CLIPBOARD) {
+  if (required_feature == SharingSpecificFields::SHARED_CLIPBOARD_V2) {
     accepted_features.insert(SharingSpecificFields::SHARED_CLIPBOARD_VAPID);
   }
 

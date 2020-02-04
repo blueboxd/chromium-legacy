@@ -42,12 +42,12 @@ TEST_F('MediaHistoryWebUIBrowserTest', 'MAYBE_All', function() {
   test('check stats table is loaded', function() {
     let statsRows =
         Array.from(document.getElementById('stats-table-body').children);
-    assertEquals(5, statsRows.length);
+    assertEquals(4, statsRows.length);
 
     assertDeepEquals(
         [
-          ['mediaEngagement', '0'], ['meta', '3'], ['origin', '0'],
-          ['playback', '0'], ['playbackSession', '0']
+          ['meta', '3'], ['origin', '0'], ['playback', '0'],
+          ['playbackSession', '0']
         ],
         statsRows.map(
             x => [x.children[0].textContent, x.children[1].textContent]));

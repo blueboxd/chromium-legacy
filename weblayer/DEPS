@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/omnibox/browser",
+  "+third_party/metrics_proto/omnibox_input_type.pb.h",
+]

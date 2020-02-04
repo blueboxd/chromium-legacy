@@ -2497,9 +2497,9 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&GetFakeCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
-  // If kReportDeviceCpuInfo, kReportDevicePowerStatus, and
-  // kReportDeviceStorageStatus are false, expect that the data from
-  // cros_healthd isn't present in the protobuf.
+  // If kReportDeviceCpuInfo, kReportDevicePowerStatus,
+  // kReportDeviceStorageStatus, and kReportDeviceTimezoneInfo are false, expect
+  // that the data from cros_healthd isn't present in the protobuf.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceCpuInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2511,16 +2511,19 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_power_status());
   EXPECT_FALSE(device_status_.has_storage_status());
   EXPECT_FALSE(device_status_.has_system_status());
+  EXPECT_FALSE(device_status_.has_timezone_info());
 
-  // When kReportDeviceCpuInfo, kReportDevicePowerStatus, and
-  // kReportDeviceStorageStatus are set, expect the protobuf to have the data
-  // from cros_healthd.
+  // When kReportDeviceCpuInfo, kReportDevicePowerStatus,
+  // kReportDeviceStorageStatus, and kReportDeviceTimezoneInfo are set, expect
+  // the protobuf to have the data from cros_healthd.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceCpuInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDevicePowerStatus, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceTimezoneInfo, true);
   GetStatus();
 
   // Check that the CPU temperature samples are stored correctly.
@@ -2569,6 +2572,11 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(cpu.model_name(), kFakeModelName);
   EXPECT_EQ(cpu.architecture(), kFakeProtoArchitecture);
   EXPECT_EQ(cpu.max_clock_speed_khz(), kFakeMaxClockSpeed);
+
+  // Verify the Timezone info.
+  ASSERT_TRUE(device_status_.has_timezone_info());
+  EXPECT_EQ(device_status_.timezone_info().posix(), kPosixTimezone);
+  EXPECT_EQ(device_status_.timezone_info().region(), kTimezoneRegion);
 }
 
 // Fake device state.

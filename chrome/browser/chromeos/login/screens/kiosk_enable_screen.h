@@ -30,11 +30,11 @@ class KioskEnableScreen : public BaseScreen {
   // is destroyed earlier then it has to call SetDelegate(nullptr).
   void OnViewDestroyed(KioskEnableScreenView* view);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
  private:
+  // BaseScreen implementation:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   KioskEnableScreenView* view_;
   base::RepeatingClosure exit_callback_;
 

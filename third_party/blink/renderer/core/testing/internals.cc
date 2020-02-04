@@ -157,6 +157,7 @@
 #include "third_party/blink/renderer/core/testing/static_selection.h"
 #include "third_party/blink/renderer/core/testing/type_conversions.h"
 #include "third_party/blink/renderer/core/testing/union_types_test.h"
+#include "third_party/blink/renderer/core/timezone/timezone_controller.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -1737,6 +1738,10 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages) {
   for (const String& language : languages)
     atomic_languages.push_back(AtomicString(language));
   OverrideUserPreferredLanguagesForTesting(atomic_languages);
+}
+
+void Internals::setSystemTimeZone(const String& timezone) {
+  blink::TimeZoneController::ChangeTimeZoneForTesting(timezone);
 }
 
 unsigned Internals::mediaKeysCount() {

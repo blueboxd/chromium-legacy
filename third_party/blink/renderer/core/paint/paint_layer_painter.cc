@@ -109,10 +109,10 @@ PaintResult PaintLayerPainter::Paint(
   return PaintLayerContents(context, painting_info, paint_flags);
 }
 
-static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
-                                    const GraphicsContext& context,
-                                    const PaintLayerPaintingInfo& painting_info,
-                                    PaintLayerFlags paint_flags) {
+static bool ShouldCreateSubsequence(
+    const PaintLayer& paint_layer,
+    const GraphicsContext& context,
+    const PaintLayerPaintingInfo& painting_info) {
   // Caching is not needed during printing or painting previews.
   if (context.Printing() || context.IsPaintingPreview())
     return false;
@@ -135,9 +135,6 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
   // with normal painting.
   if (painting_info.GetGlobalPaintFlags() &
       kGlobalPaintFlattenCompositingLayers)
-    return false;
-
-  if (paint_flags & kPaintLayerPaintingOverlayOverflowControls)
     return false;
 
   return true;
@@ -363,8 +360,17 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
-  bool should_create_subsequence = ShouldCreateSubsequence(
-      paint_layer_, context, painting_info, paint_flags);
+  bool should_paint_content =
+      paint_layer_.HasVisibleContent() &&
+      // Content under a LayoutSVGHiddenContainer is auxiliary resources for
+      // painting. Foreign content should never paint in this situation, as it
+      // is primary, not auxiliary.
+      !paint_layer_.IsUnderSVGHiddenContainer() && is_self_painting_layer &&
+      !is_painting_overlay_overflow_controls;
+
+  bool should_create_subsequence =
+      should_paint_content &&
+      ShouldCreateSubsequence(paint_layer_, context, painting_info);
 
   base::Optional<SubsequenceRecorder> subsequence_recorder;
   if (should_create_subsequence) {
@@ -404,14 +410,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   PaintLayerPaintingInfo local_painting_info(painting_info);
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
-
-  bool should_paint_content =
-      paint_layer_.HasVisibleContent() &&
-      // Content under a LayoutSVGHiddenContainer is auxiliary resources for
-      // painting. Foreign content should never paint in this situation, as it
-      // is primary, not auxiliary.
-      !paint_layer_.IsUnderSVGHiddenContainer() && is_self_painting_layer &&
-      !is_painting_overlay_overflow_controls;
 
   PaintLayerFragments layer_fragments;
 
@@ -465,21 +463,34 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
     base::Optional<ScopedPaintChunkProperties>
         subsequence_forced_chunk_properties;
-    if (subsequence_recorder && paint_layer_.HasSelfPaintingLayerDescendant()) {
+    bool force_paint_chunks_for_phases =
+        should_create_subsequence &&
+        paint_layer_.HasSelfPaintingLayerDescendant();
+    if (force_paint_chunks_for_phases ||
+        (should_paint_content &&
+         RuntimeEnabledFeatures::CompositeAfterPaintEnabled())) {
       // Prepare for forced paint chunks to ensure chunk id stability to avoid
       // unnecessary full chunk raster invalidations on changed chunk ids.
-      // TODO(crbug.com/834606): This may be unnecessary after we refactor
-      // raster invalidation not to depend on chunk ids too much.
       subsequence_forced_chunk_properties.emplace(
           context.GetPaintController(),
           paint_layer_.GetLayoutObject()
               .FirstFragment()
               .LocalBorderBoxProperties(),
           paint_layer_, DisplayItem::kUninitializedType);
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+          !force_paint_chunks_for_phases) {
+        // This is a heuristic to allow more fine-grained layerization and more
+        // efficient merging in PaintArtifactCompositor. It emulates
+        // layerization decisions from pre-CompositeAfterPaint. This is not
+        // strictly necessary for correct rendering but improves layerization
+        // performance.
+        context.GetPaintController().ForceNewChunk(
+            paint_layer_, DisplayItem::kLayerChunkWhole);
+      }
     }
 
     if (should_paint_background) {
-      if (subsequence_forced_chunk_properties) {
+      if (force_paint_chunks_for_phases) {
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkBackground);
       }
@@ -488,7 +499,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_neg_z_order_list) {
-      if (subsequence_forced_chunk_properties) {
+      if (force_paint_chunks_for_phases) {
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkNegativeZOrderChildren);
       }
@@ -498,9 +509,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_own_contents) {
-      PaintForegroundForFragments(
-          layer_fragments, context, local_painting_info, selection_only,
-          !!subsequence_forced_chunk_properties, paint_flags);
+      PaintForegroundForFragments(layer_fragments, context, local_painting_info,
+                                  selection_only, force_paint_chunks_for_phases,
+                                  paint_flags);
     }
 
     if (!is_video && should_paint_self_outline) {
@@ -509,7 +520,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_normal_flow_and_pos_z_order_lists) {
-      if (subsequence_forced_chunk_properties) {
+      if (force_paint_chunks_for_phases) {
         context.GetPaintController().ForceNewChunk(
             paint_layer_,
             DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren);
@@ -765,7 +776,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     bool selection_only,
-    bool force_paint_chunks,
+    bool force_paint_chunks_for_phases,
     PaintLayerFlags paint_flags) {
   if (selection_only) {
     PaintForegroundForFragmentsWithPhase(PaintPhase::kSelection,
@@ -774,7 +785,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
   } else {
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds()) {
-      if (force_paint_chunks) {
+      if (force_paint_chunks_for_phases) {
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
       }
@@ -791,7 +802,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseFloat()) {
-      if (force_paint_chunks) {
+      if (force_paint_chunks_for_phases) {
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkFloat);
       }
@@ -800,7 +811,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
                                            paint_flags);
     }
 
-    if (force_paint_chunks) {
+    if (force_paint_chunks_for_phases) {
       context.GetPaintController().ForceNewChunk(
           paint_layer_, DisplayItem::kLayerChunkForeground);
     }

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {Router, Route} from './router.m.js';
+// #import {pageVisibility} from './page_visibility.m.js';
+// #import {SettingsRoutes} from './settings_routes.m.js';
+
 cr.define('settings', function() {
   /**
    * Add all of the child routes that originate from the privacy route,
@@ -104,7 +109,7 @@ cr.define('settings', function() {
       r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
     }
 
-    const pageVisibility = settings.pageVisibility || {};
+    /* #ignore */ const pageVisibility = settings.pageVisibility || {};
 
     // <if expr="not chromeos">
     r.IMPORT_DATA = r.BASIC.createChild('/importData');
@@ -219,7 +224,7 @@ cr.define('settings', function() {
 
   // TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
-  const routes = /** @type {!SettingsRoutes} */ (
+  /* #export */ const routes = /** @type {!SettingsRoutes} */ (
       settings.Router.getInstance().getRoutes());
 
   // #cr_define_end

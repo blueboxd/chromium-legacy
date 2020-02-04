@@ -1486,6 +1486,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "neural_palm_radius_polynomial": "0.17889799, 4.22584412"
+                    },
                     "enable_features": [
                         "EnableNeuralPalmDetectionFilter",
                         "EnableNeuralStylusReportFilter"
@@ -3701,6 +3704,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MirroringService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MostLikelyDesktopDeprecation": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "DisplaySuggestionsServiceTiles"
                     ]
                 }
             ]
@@ -7140,7 +7161,8 @@
     "V8WasmLiftoffMobile": [
         {
             "platforms": [
-                "android"
+                "android",
+                "ios"
             ],
             "experiments": [
                 {

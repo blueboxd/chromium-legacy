@@ -27,7 +27,7 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) SPAN",
           "rect": [155, 37, 292, 19],
           "reason": "chunk appeared"
         }

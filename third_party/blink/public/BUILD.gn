@@ -116,7 +116,6 @@ source_set("blink_headers") {
     "platform/blame_context.h",
     "platform/code_cache_loader.h",
     "platform/file_path_conversion.h",
-    "platform/interface_provider.h",
     "platform/interface_registry.h",
     "platform/linux/web_sandbox_support.h",
     "platform/mac/web_sandbox_support.h",

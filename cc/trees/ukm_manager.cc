@@ -219,9 +219,14 @@ void UkmManager::RecordLatencyUKM(
         if (viz_breakdown.swap_timings.is_null())
           break;
         builder
-            .SetSubmitCompositorFrameToPresentationCompositorFrame_StartDrawToSwapEnd(
-                (viz_breakdown.swap_timings.swap_end -
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_StartDrawToSwapStart(
+                (viz_breakdown.swap_timings.swap_start -
                  viz_breakdown.draw_start_timestamp)
+                    .InMicroseconds());
+        builder
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_SwapStartToSwapEnd(
+                (viz_breakdown.swap_timings.swap_end -
+                 viz_breakdown.swap_timings.swap_start)
                     .InMicroseconds());
         builder
             .SetSubmitCompositorFrameToPresentationCompositorFrame_SwapEndToPresentationCompositorFrame(

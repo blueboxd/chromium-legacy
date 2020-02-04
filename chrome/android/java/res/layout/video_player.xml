@@ -48,7 +48,7 @@
                 android:layout_gravity="bottom|start"
                 android:layout_marginStart="16dp"
                 android:paddingBottom="24dp"
-                style="@style/TextAppearance.WhiteBody" />
+                style="@style/TextAppearance.TextMedium.Primary.Light" />
             <ImageView
                 android:id="@+id/mute"
                 android:layout_width="wrap_content"

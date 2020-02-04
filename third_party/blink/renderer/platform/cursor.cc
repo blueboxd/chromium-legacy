@@ -24,7 +24,9 @@
  */
 
 #include "third_party/blink/renderer/platform/cursor.h"
+
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "ui/base/cursor/types/cursor_types.h"
 
 namespace blink {
 
@@ -76,13 +78,17 @@ Cursor::Cursor(Image* image,
 
 Cursor::Cursor(ui::CursorType type) : type_(type), image_scale_factor_(1) {}
 
-Cursor::Cursor(const Cursor& other) = default;
+Cursor::Cursor(const Cursor& other) {
+  *this = other;
+}
 
 Cursor& Cursor::operator=(const Cursor& other) {
   type_ = other.type_;
-  image_ = other.image_;
-  hot_spot_ = other.hot_spot_;
   image_scale_factor_ = other.image_scale_factor_;
+  if (type_ == ui::CursorType::kCustom) {
+    image_ = other.image_;
+    hot_spot_ = other.hot_spot_;
+  }
   return *this;
 }
 

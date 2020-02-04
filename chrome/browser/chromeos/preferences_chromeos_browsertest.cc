@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -63,13 +64,13 @@ class PreferencesTest : public LoginManagerTest {
   // |variant| value. For opposite |variant| values all preferences receive
   // different values.
   void SetPrefs(PrefService* prefs, bool variant) {
+    prefs->SetBoolean(ash::prefs::kMouseReverseScroll, variant);
+    prefs->SetBoolean(ash::prefs::kNaturalScroll, variant);
     prefs->SetBoolean(prefs::kTapToClickEnabled, variant);
     prefs->SetBoolean(prefs::kPrimaryMouseButtonRight, !variant);
-    prefs->SetBoolean(prefs::kMouseReverseScroll, variant);
     prefs->SetBoolean(prefs::kMouseAcceleration, variant);
     prefs->SetBoolean(prefs::kTouchpadAcceleration, variant);
     prefs->SetBoolean(prefs::kEnableTouchpadThreeFingerClick, !variant);
-    prefs->SetBoolean(prefs::kNaturalScroll, variant);
     prefs->SetInteger(prefs::kMouseSensitivity, !variant);
     prefs->SetInteger(prefs::kTouchpadSensitivity, variant);
     prefs->SetBoolean(prefs::kLanguageXkbAutoRepeatEnabled, variant);
@@ -86,7 +87,7 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(prefs->GetBoolean(prefs::kPrimaryMouseButtonRight),
               input_settings_->current_mouse_settings()
                   .GetPrimaryButtonRight());
-    EXPECT_EQ(prefs->GetBoolean(prefs::kMouseReverseScroll),
+    EXPECT_EQ(prefs->GetBoolean(ash::prefs::kMouseReverseScroll),
               input_settings_->current_mouse_settings().GetReverseScroll());
     EXPECT_EQ(prefs->GetBoolean(prefs::kMouseAcceleration),
               input_settings_->current_mouse_settings().GetAcceleration());

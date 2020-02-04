@@ -27,6 +27,7 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/obfuscated_file_util_disk_delegate.h"
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
+#include "storage/browser/file_system/quota/quota_limit_type.h"
 #include "storage/browser/file_system/sandbox_file_system_backend.h"
 #include "storage/browser/file_system/sandbox_isolated_origin_database.h"
 #include "storage/browser/file_system/sandbox_origin_database.h"
@@ -298,7 +299,7 @@ base::File ObfuscatedFileUtil::CreateOrOpen(FileSystemOperationContext* context,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::File file = CreateOrOpenInternal(context, url, file_flags);
   if (file.IsValid() && file_flags & base::File::FLAG_WRITE &&
-      context->quota_limit_type() == storage::kQuotaLimitTypeUnlimited &&
+      context->quota_limit_type() == QuotaLimitType::kUnlimited &&
       sandbox_delegate_) {
     sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
   }
@@ -993,8 +994,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
 
   // Prepopulate the directory database(s) if and only if this instance
   // has primary origin and the directory database is already there.
-  for (size_t i = 0; i < type_strings_to_prepopulate.size(); ++i) {
-    const std::string type_string = type_strings_to_prepopulate[i];
+  for (const std::string& type_string : type_strings_to_prepopulate) {
     // Only handles known types.
     if (!base::Contains(known_type_strings_, type_string))
       continue;

@@ -35,6 +35,7 @@ def _read_file(p):
     if p == '$I/Product Packaging/pkg_postinstall.in':
         return """app dir is '@APP_DIR@'
 app product is '@APP_PRODUCT@'
+brand code is '@BRAND_CODE@'
 framework dir is '@FRAMEWORK_DIR@'"""
 
     raise
@@ -268,7 +269,11 @@ class TestPipelineHelpers(unittest.TestCase):
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
 
-        dist = model.Distribution()
+        dist = model.Distribution(
+            branding_code='MOO',
+            packaging_name_fragment='ForCows',
+            package_as_dmg=False,
+            package_as_pkg=True)
         dist_config = dist.to_config(test_config.TestConfig())
         paths = self.paths.replace_work('$W')
 
@@ -285,6 +290,7 @@ class TestPipelineHelpers(unittest.TestCase):
         self.assertEqual(
             postinstall_string, """app dir is 'App Product.app'
 app product is 'App Product'
+brand code is 'MOO'
 framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framework'"""
         )
 
@@ -715,7 +721,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_chrome(self.paths, config)
+        pipeline.sign_all(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -778,7 +784,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_chrome(self.paths, config)
+        pipeline.sign_all(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -844,7 +850,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_chrome(self.paths, config)
+        pipeline.sign_all(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -899,7 +905,7 @@ class TestSignAll(unittest.TestCase):
         kwargs['wait_for_results'].return_value = iter([app_uuid])
 
         config = test_config.TestConfig()
-        pipeline.sign_chrome(self.paths, config, disable_packaging=True)
+        pipeline.sign_all(self.paths, config, disable_packaging=True)
 
         manager.assert_has_calls([
             # First customize the distribution and sign it.
@@ -935,7 +941,7 @@ class TestSignAll(unittest.TestCase):
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
-        pipeline.sign_chrome(self.paths, config, do_notarization=False)
+        pipeline.sign_all(self.paths, config, do_notarization=False)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
 
@@ -959,7 +965,7 @@ class TestSignAll(unittest.TestCase):
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
-        pipeline.sign_chrome(
+        pipeline.sign_all(
             self.paths, config, disable_packaging=True, do_notarization=False)
 
         manager.assert_has_calls([
@@ -1005,7 +1011,7 @@ class TestSignAll(unittest.TestCase):
                 ]
 
         config = Config()
-        pipeline.sign_chrome(self.paths, config, do_notarization=False)
+        pipeline.sign_all(self.paths, config, do_notarization=False)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
         self.assertEqual(4, kwargs['_customize_and_sign_chrome'].call_count)

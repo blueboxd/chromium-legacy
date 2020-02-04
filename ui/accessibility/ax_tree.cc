@@ -1836,51 +1836,58 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
   return return_value;
 }
 
-// Populates items vector with all items within ordered_set.
-// Will only add items whose roles match the role of the
-// ordered_set.
-void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
-                                     const AXNode* local_parent,
-                                     std::vector<const AXNode*>& items,
-                                     const AXNode& original_node) const {
+void AXTree::PopulateOrderedSetItems(
+    const AXNode& original_node,
+    const AXNode* ordered_set,
+    std::vector<const AXNode*>& items_to_be_populated) const {
   // Ignored nodes are not a part of ordered sets.
   if (original_node.IsIgnored())
     return;
 
-  // Stop searching current path if roles of local_parent and ordered set match.
-  // Don't compare the container to itself.
-  if (!(ordered_set == local_parent)) {
-    if (local_parent->data().role == ordered_set->data().role)
-      return;
-  }
-
-  // Initialize necessary variables.
   // Default hierarchical_level is 0, which represents that no hierarchical
-  // level was detected on original_node.
-  int original_level = original_node.GetIntAttribute(
+  // level was detected on |original_node|.
+  int original_node_min_level = original_node.GetIntAttribute(
       ax::mojom::IntAttribute::kHierarchicalLevel);
-  // If original node is ordered set, then set its hierarchical level equal to
-  // its first child that sets a hierarchical level, if any.
-  if (ordered_set == &original_node) {
-    for (auto unignored_iterator = original_node.UnignoredChildrenBegin();
-         unignored_iterator != original_node.UnignoredChildrenEnd();
-         ++unignored_iterator) {
-      int32_t level = unignored_iterator->GetIntAttribute(
-          ax::mojom::IntAttribute::kHierarchicalLevel);
-      if (level)
-        original_level =
-            original_level ? std::min(level, original_level) : level;
+
+  // If we are calling this function on the ordered set container itself, that
+  // is |original_node| is ordered set, then set |original_node|'s hierarchical
+  // level to be the min level of |original_node|'s direct children, if the
+  // child's level is defined.
+  if (&original_node == ordered_set) {
+    for (AXNode::UnignoredChildIterator itr =
+             original_node.UnignoredChildrenBegin();
+         itr != original_node.UnignoredChildrenEnd(); ++itr) {
+      int32_t child_level =
+          itr->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+      if (child_level > 0)
+        original_node_min_level =
+            original_node_min_level > 0
+                ? std::min(child_level, original_node_min_level)
+                : child_level;
     }
   }
-  size_t original_node_index = original_node.GetUnignoredIndexInParent();
-  bool node_is_radio_button =
-      (original_node.data().role == ax::mojom::Role::kRadioButton);
 
-  size_t i = 0;
-  for (AXNode::UnignoredChildIterator it =
+  RecursivelyPopulateOrderedSetItems(original_node, ordered_set, ordered_set,
+                                     original_node_min_level,
+                                     items_to_be_populated);
+}
+
+void AXTree::RecursivelyPopulateOrderedSetItems(
+    const AXNode& original_node,
+    const AXNode* ordered_set,
+    const AXNode* local_parent,
+    int32_t original_node_min_level,
+    std::vector<const AXNode*>& items_to_be_populated) const {
+  // Stop searching recursively on node |local_parent| if it turns out to be an
+  // ordered set whose role matches that of the top level ordered set.
+  if (ordered_set->data().role == local_parent->data().role &&
+      ordered_set != local_parent)
+    return;
+
+  for (AXNode::UnignoredChildIterator itr =
            local_parent->UnignoredChildrenBegin();
-       it != local_parent->UnignoredChildrenEnd(); ++it, ++i) {
-    const AXNode* child = it.get();
+       itr != local_parent->UnignoredChildrenEnd(); ++itr) {
+    const AXNode* child = itr.get();
 
     // Invisible children should not be counted.
     // However, in the collapsed container case (e.g. a combobox), items can
@@ -1893,39 +1900,55 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       continue;
     }
 
-    // Add child to items if role matches with ordered set's role. If role of
-    // node is kRadioButton, don't add items of other roles, even if item role
-    // matches ordered set role.
-    if ((node_is_radio_button &&
+    // Add child to |items_to_be_populated| if role matches with the role of
+    // |ordered_set|. If role of node is kRadioButton, don't add items of other
+    // roles, even if item role matches the role of |ordered_set|.
+    if (child->data().role == ax::mojom::Role::kComment ||
+        (original_node.data().role == ax::mojom::Role::kRadioButton &&
          child->data().role == ax::mojom::Role::kRadioButton) ||
-        child->data().role == ax::mojom::Role::kComment ||
-        (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))) {
+        (original_node.data().role != ax::mojom::Role::kRadioButton &&
+         child->SetRoleMatchesItemRole(ordered_set))) {
       int child_level =
           child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
 
-      if (child_level < original_level) {
-        // If a decrease in level occurs after the original node has been
-        // examined, stop adding to this set.
-        if (original_node_index < i)
-          break;
+      // If the hierarchical level of |child| and the level of |original_node|
+      // differ, we do not add child to |items_to_be_populated| and we do not
+      // recurse into |child| and populate its order set item descendants.
+      if (child_level != original_node_min_level) {
+        if (child_level < original_node_min_level &&
+            original_node.GetUnignoredParent() == child->GetUnignoredParent()) {
+          // For a flattened structure, where |original_node| and |child| share
+          // the same parent, if a decrease in level occurs after
+          // |original_node| has been examined (i.e. |original_node|'s index
+          // comes before that of |child|), we stop adding to this set, and stop
+          // from populating |child|'s other siblings to |items_to_be_populated|
+          // as well.
+          if (original_node.GetUnignoredIndexInParent() <
+              child->GetUnignoredIndexInParent())
+            break;
 
-        // If a decrease in level has been detected before the original node
-        // has been examined, then everything previously added to items actually
-        // belongs to a different set. Clear items vector.
-        items.clear();
-        continue;
-      } else if (child_level > original_level) {
+          // For a flattened structure, where |original_node| and |child| share
+          // the same parent, if a decrease in level has been detected before
+          // |original_node| has been examined (i.e. |original_node|'s index
+          // comes after that of |child|), then everything previously added to
+          // items actually belongs to a different set. Clear the items set.
+          items_to_be_populated.clear();
+        }
         continue;
       }
 
-      items.push_back(child);
+      // We only add child to |items_to_be_populated| if the child set item is
+      // at the same hierarchical level as |original_node|'s level.
+      items_to_be_populated.push_back(child);
     }
 
     // Recurse if there is a generic container, ignored, or unknown.
     if (child->IsIgnored() ||
         child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kUnknown) {
-      PopulateOrderedSetItems(ordered_set, child, items, original_node);
+      RecursivelyPopulateOrderedSetItems(original_node, ordered_set, child,
+                                         original_node_min_level,
+                                         items_to_be_populated);
     }
   }
 }
@@ -1938,7 +1961,7 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   DCHECK(ordered_set);
   std::vector<const AXNode*> items;
   // Find all items within ordered_set and add to vector.
-  PopulateOrderedSetItems(ordered_set, ordered_set, items, node);
+  PopulateOrderedSetItems(node, ordered_set, items);
 
   // If ordered_set role is kPopUpButton and it wraps a kMenuListPopUp, then we
   // would like it to inherit the SetSize from the kMenuListPopUp it wraps. To
@@ -1953,7 +1976,7 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
     DCHECK(items.size() == 1);
     const AXNode* menu_list_popup = items[0];
     items.clear();
-    PopulateOrderedSetItems(menu_list_popup, menu_list_popup, items, node);
+    PopulateOrderedSetItems(node, menu_list_popup, items);
   }
 
   // Keep track of the number of elements ordered_set has.

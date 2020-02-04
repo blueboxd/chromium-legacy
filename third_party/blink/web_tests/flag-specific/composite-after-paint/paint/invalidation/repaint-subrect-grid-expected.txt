@@ -22,7 +22,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='mask'",
           "rect": [36, 36, 19, 19],
           "reason": "chunk disappeared"
         },
@@ -92,7 +92,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='mask'",
           "rect": [0, 0, 19, 19],
           "reason": "chunk appeared"
         },

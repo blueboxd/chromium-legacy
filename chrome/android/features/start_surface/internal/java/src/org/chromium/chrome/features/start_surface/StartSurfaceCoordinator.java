@@ -8,6 +8,8 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -96,7 +98,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mSurfaceMode != SurfaceMode.NO_START_SURFACE
                         ? mActivity.getToolbarManager().getFakeboxDelegate()
                         : null,
-                mActivity.getNightModeStateProvider(), mActivity.getFullscreenManager());
+                mActivity.getNightModeStateProvider(), mActivity.getFullscreenManager(),
+                this::isActivityFinishingOrDestroyed);
     }
 
     // Implements StartSurface.
@@ -244,5 +247,20 @@ public class StartSurfaceCoordinator implements StartSurface {
             mOnTabSelectingListener = null;
         }
         return mSecondaryTasksSurface.getController();
+    }
+
+    // TODO(crbug.com/1047488): This is a temporary solution of the issue crbug.com/1047488, which
+    // has not been reproduced locally. The crash is because we can not find ChromeTabbedActivity's
+    // ActivityInfo in the ApplicationStatus. However, from the code, ActivityInfo is created in
+    // ApplicationStatus during AsyncInitializationActivity.onCreate, which happens before
+    // ChromeTabbedActivity.startNativeInitialization where creates the Start surface. So one
+    // possible reason is the ChromeTabbedActivity is finishing or destroyed when showing overview.
+    private boolean isActivityFinishingOrDestroyed() {
+        boolean finishingOrDestroyed = mActivity.isActivityFinishingOrDestroyed()
+                || ApplicationStatus.getStateForActivity(mActivity) == ActivityState.DESTROYED;
+        // TODO(crbug.com/1047488): Assert false. Do not do that in this CL to keep it small since
+        // Start surface is eanbled in the fieldtrial_testing_config.json, which requires update of
+        // the other browser tests.
+        return finishingOrDestroyed;
     }
 }

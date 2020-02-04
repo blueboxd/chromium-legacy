@@ -94,6 +94,17 @@ uint32_t BasicDesktopEnvironment::GetDesktopSessionId() const {
   return UINT32_MAX;
 }
 
+std::unique_ptr<DesktopAndCursorConditionalComposer>
+BasicDesktopEnvironment::CreateComposingVideoCapturer() {
+#if defined(OS_MACOSX)
+  // MacOS always includes the mouse cursor in the captured image.
+  return nullptr;
+#else
+  return std::make_unique<DesktopAndCursorConditionalComposer>(
+      CreateVideoCapturer());
+#endif
+}
+
 std::unique_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

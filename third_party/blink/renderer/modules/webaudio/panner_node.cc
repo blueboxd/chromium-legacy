@@ -170,7 +170,7 @@ void PannerHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  AudioBus* source = Input(0).Bus();
+  scoped_refptr<AudioBus> source = Input(0).Bus();
   if (!source) {
     destination->Zero();
     return;
@@ -194,7 +194,7 @@ void PannerHandler::Process(uint32_t frames_to_process) {
       // But in general we can't because something may scheduled to start in the
       // middle of the rendering quantum.  On the other hand, the audible effect
       // may be small enough that we can afford to do this optimization.
-      ProcessSampleAccurateValues(destination, source, frames_to_process);
+      ProcessSampleAccurateValues(destination, source.get(), frames_to_process);
     } else {
       // Apply the panning effect.
       double azimuth;
@@ -206,8 +206,8 @@ void PannerHandler::Process(uint32_t frames_to_process) {
 
       AzimuthElevation(&azimuth, &elevation);
 
-      panner_->Pan(azimuth, elevation, source, destination, frames_to_process,
-                   InternalChannelInterpretation());
+      panner_->Pan(azimuth, elevation, source.get(), destination,
+                   frames_to_process, InternalChannelInterpretation());
 
       // Get the distance and cone gain.
       float total_gain = DistanceConeGain();

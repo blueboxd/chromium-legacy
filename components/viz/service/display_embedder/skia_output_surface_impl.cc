@@ -702,11 +702,6 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
     *result = false;
   } else {
     capabilities_ = impl_on_gpu_->capabilities();
-    capabilities_.android_surface_control_feature_enabled =
-        dependency_->GetGpuFeatureInfo()
-            .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
-        gpu::kGpuFeatureStatusEnabled;
-
     is_displayed_as_overlay_ = impl_on_gpu_->IsDisplayedAsOverlay();
     *result = true;
   }

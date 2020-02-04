@@ -70,23 +70,24 @@ HardwareDisplayController::~HardwareDisplayController() = default;
 bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
                                         const drmModeModeInfo& mode) {
   TRACE_EVENT0("drm", "HDC::Modeset");
-  DCHECK(primary.buffer.get());
-  bool status = true;
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->Modeset(primary, mode);
-
-  is_disabled_ = false;
-  ResetCursor();
-  OnModesetComplete(primary);
-  return status;
+  return ModesetCrtc(primary, /*use_current_crtc_mode=*/false, mode);
 }
 
 bool HardwareDisplayController::Enable(const DrmOverlayPlane& primary) {
   TRACE_EVENT0("drm", "HDC::Enable");
+  drmModeModeInfo empty_mode = {};
+  return ModesetCrtc(primary, /*use_current_crtc_mode=*/true, empty_mode);
+}
+
+bool HardwareDisplayController::ModesetCrtc(const DrmOverlayPlane& primary,
+                                            bool use_current_crtc_mode,
+                                            const drmModeModeInfo& mode) {
   DCHECK(primary.buffer.get());
   bool status = true;
   for (const auto& controller : crtc_controllers_)
-    status &= controller->Modeset(primary, controller->mode());
+    status &= controller->Modeset(
+        primary, use_current_crtc_mode ? controller->mode() : mode,
+        owned_hardware_planes_);
 
   is_disabled_ = false;
   ResetCursor();

@@ -38,6 +38,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -1216,7 +1217,7 @@ TEST_F(DocumentTest, DocumentPolicyFeaturePolicyCoexist) {
   GetDocument().GetSecurityContext().SetDocumentPolicyForTesting(
       DocumentPolicy::CreateWithHeaderPolicy({}));
   EXPECT_EQ(
-      DocumentPolicy::GetFeatureDefaults().at(test_feature),
+      GetDocumentPolicyFeatureInfoMap().at(test_feature).default_value,
       GetDocument().GetSecurityContext().GetDocumentPolicy()->GetFeatureValue(
           test_feature));
 

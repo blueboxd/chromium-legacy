@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/current_process_stats_agent.h"
+#include "remoting/host/desktop_and_cursor_conditional_composer.h"
 #include "remoting/host/desktop_display_info.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/file_transfer/session_file_operations_handler.h"
@@ -96,6 +97,7 @@ class DesktopSessionAgent
 
   // webrtc::MouseCursorMonitor::Callback implementation.
   void OnMouseCursor(webrtc::MouseCursor* cursor) override;
+  void OnMouseCursorPosition(const webrtc::DesktopVector& position) override;
 
   // Forwards a local clipboard event though the IPC channel to the network
   // process.
@@ -224,8 +226,8 @@ class DesktopSessionAgent
   // True if the desktop session agent has been started.
   bool started_ = false;
 
-  // Captures the screen.
-  std::unique_ptr<webrtc::DesktopCapturer> video_capturer_;
+  // Captures the screen and composites with the mouse cursor if necessary.
+  std::unique_ptr<DesktopAndCursorConditionalComposer> video_capturer_;
 
   // Captures mouse shapes.
   std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;

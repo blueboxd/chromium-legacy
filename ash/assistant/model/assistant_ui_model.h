@@ -24,7 +24,6 @@ enum class AssistantUiMode {
 // Enumeration of Assistant visibility states.
 enum class AssistantVisibility {
   kClosed,   // Assistant UI is hidden and the previous session has finished.
-  kHidden,   // Assistant UI is hidden and the previous session is paused.
   kVisible,  // Assistant UI is visible and a session is in progress.
 };
 
@@ -64,7 +63,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
 
   // Sets the UI visibility.
   void SetVisible(AssistantEntryPoint entry_point);
-  void SetHidden(AssistantExitPoint exit_point);
   void SetClosed(AssistantExitPoint exit_point);
 
   AssistantVisibility visibility() const { return visibility_; }

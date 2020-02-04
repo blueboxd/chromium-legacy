@@ -97,6 +97,12 @@ uint32_t IpcDesktopEnvironment::GetDesktopSessionId() const {
   return desktop_session_proxy_->desktop_session_id();
 }
 
+std::unique_ptr<DesktopAndCursorConditionalComposer>
+IpcDesktopEnvironment::CreateComposingVideoCapturer() {
+  // Cursor compositing is done by the desktop process if necessary.
+  return nullptr;
+}
+
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,

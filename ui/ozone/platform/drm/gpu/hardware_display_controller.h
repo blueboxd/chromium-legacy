@@ -169,6 +169,12 @@ class HardwareDisplayController {
       const gfx::PresentationFeedback& presentation_feedback);
 
  private:
+  // If multiple CRTC Controllers exist and they're enabled, each will be
+  // enabled with its own mode. Set |use_current_crtc_mode| to Modeset using
+  // controller's mode instead of |mode|.
+  bool ModesetCrtc(const DrmOverlayPlane& primary,
+                   bool use_current_crtc_mode,
+                   const drmModeModeInfo& mode);
   void OnModesetComplete(const DrmOverlayPlane& primary);
   bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
                               scoped_refptr<PageFlipRequest> page_flip_request,

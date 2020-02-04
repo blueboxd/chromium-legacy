@@ -57,6 +57,11 @@ bool ExpandPropertyFile(const base::FilePath& input,
                         const base::FilePath& output,
                         CrosConfig* config);
 
+// Calls ExpandPropertyFile for {build,default}.prop files in |source_path|.
+// Expanded files are written in |dest_path|. Returns true on success.
+bool ExpandPropertyFiles(const base::FilePath& source_path,
+                         const base::FilePath& dest_path);
+
 }  // namespace arc
 
 #endif  // COMPONENTS_ARC_SESSION_ARC_PROPERTY_UTIL_H_

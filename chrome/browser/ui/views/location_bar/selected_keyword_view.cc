@@ -19,12 +19,27 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
+// static
+SelectedKeywordView::KeywordLabelNames
+SelectedKeywordView::GetKeywordLabelNames(const base::string16& keyword,
+                                          TemplateURLService* service) {
+  KeywordLabelNames names;
+  if (service) {
+    bool is_extension_keyword = false;
+    names.short_name =
+        service->GetKeywordShortName(keyword, &is_extension_keyword);
+    names.full_name = is_extension_keyword
+                          ? names.short_name
+                          : l10n_util::GetStringFUTF16(
+                                IDS_OMNIBOX_KEYWORD_TEXT_MD, names.short_name);
+  }
+  return names;
+}
+
 SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
-                                         const gfx::FontList& font_list,
-                                         Profile* profile)
+                                         const gfx::FontList& font_list)
     : IconLabelBubbleView(font_list, location_bar),
-      location_bar_(location_bar),
-      profile_(profile) {
+      location_bar_(location_bar) {
   full_label_.SetFontList(font_list);
   full_label_.SetVisible(false);
   partial_label_.SetFontList(font_list);
@@ -69,26 +84,22 @@ void SelectedKeywordView::OnThemeChanged() {
     SetCustomImage(gfx::Image());
 }
 
-void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
+void SelectedKeywordView::SetKeyword(const base::string16& keyword,
+                                     Profile* profile) {
   if (keyword_ != keyword) {
     keyword_ = keyword;
     if (keyword.empty())
       return;
-    DCHECK(profile_);
-    TemplateURLService* model =
-        TemplateURLServiceFactory::GetForProfile(profile_);
-    if (!model)
+
+    DCHECK(profile);
+    TemplateURLService* service =
+        TemplateURLServiceFactory::GetForProfile(profile);
+    if (!service)
       return;
 
-    bool is_extension_keyword;
-    const base::string16 short_name =
-        model->GetKeywordShortName(keyword, &is_extension_keyword);
-    const base::string16 full_name =
-        is_extension_keyword ? short_name
-                             : l10n_util::GetStringFUTF16(
-                                   IDS_OMNIBOX_KEYWORD_TEXT_MD, short_name);
-    full_label_.SetText(full_name);
-    partial_label_.SetText(short_name);
+    KeywordLabelNames names = GetKeywordLabelNames(keyword, service);
+    full_label_.SetText(names.full_name);
+    partial_label_.SetText(names.short_name);
 
     // Update the label now so ShouldShowLabel() works correctly when the parent
     // class is calculating the preferred size. It will be updated again in

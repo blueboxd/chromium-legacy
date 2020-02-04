@@ -557,13 +557,13 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Device settings.
   (*s_whitelist)[::prefs::kTapToClickEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kNaturalScroll] =
+  (*s_whitelist)[ash::prefs::kNaturalScroll] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kTouchpadSensitivity] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kPrimaryMouseButtonRight] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kMouseReverseScroll] =
+  (*s_whitelist)[ash::prefs::kMouseReverseScroll] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kMouseAcceleration] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

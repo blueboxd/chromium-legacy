@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -32,8 +33,8 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
       : scoped_user_manager_(
             std::make_unique<chromeos::FakeChromeUserManager>()),
         arc_service_manager_(std::make_unique<ArcServiceManager>()),
-        arc_session_manager_(std::make_unique<ArcSessionManager>(
-            std::make_unique<ArcSessionRunner>(
+        arc_session_manager_(
+            CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
                 base::BindRepeating(FakeArcSession::Create)))),
         testing_profile_(std::make_unique<TestingProfile>()),
         record_uma_counter_(0) {

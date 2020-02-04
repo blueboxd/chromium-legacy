@@ -150,7 +150,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   scoped_refptr<const NGLayoutResult> RunLegacyLayout(const NGConstraintSpace&);
 
   scoped_refptr<const NGLayoutResult> RunSimplifiedLayout(
-      const NGLayoutAlgorithmParams&) const;
+      const NGLayoutAlgorithmParams&,
+      const NGLayoutResult&) const;
 
   // If this node is a LayoutNGMixin, the caller must pass the layout object for
   // this node cast to a LayoutBlockFlow as the first argument.

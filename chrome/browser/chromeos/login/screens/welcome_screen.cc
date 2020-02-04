@@ -167,7 +167,7 @@ void WelcomeScreen::RemoveObserver(Observer* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 // BaseScreen implementation:
 
-void WelcomeScreen::Show() {
+void WelcomeScreen::ShowImpl() {
   // Here we should handle default locales, for which we do not have UI
   // resources. This would load fallback, but properly show "selected" locale
   // in the UI.
@@ -185,7 +185,7 @@ void WelcomeScreen::Show() {
   }
 }
 
-void WelcomeScreen::Hide() {
+void WelcomeScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

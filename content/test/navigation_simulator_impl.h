@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/referrer.mojom-forward.h"
 #include "url/gurl.h"
@@ -95,6 +96,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
   void SetAutoAdvance(bool auto_advance) override;
+  void SetResolveErrorInfo(
+      const net::ResolveErrorInfo& resolve_error_info) override;
   void SetSSLInfo(const net::SSLInfo& ssl_info) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
@@ -295,6 +298,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       network::mojom::CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
+  net::ResolveErrorInfo resolve_error_info_ = net::ResolveErrorInfo(net::OK);
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<PageState> page_state_;
   base::Optional<url::Origin> origin_;

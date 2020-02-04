@@ -33,7 +33,7 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   TouchDevicesController();
   ~TouchDevicesController() override;
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Toggles the status of touchpad between enabled and disabled.
   void ToggleTouchpad();

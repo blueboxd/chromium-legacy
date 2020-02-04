@@ -63,6 +63,15 @@ class HardwareDisplayPlaneManager {
   // or crtcs found.
   bool Initialize();
 
+  // Performs modesetting, either atomic or legacy, depending on the device.
+  virtual bool Modeset(uint32_t crtc_id,
+                       uint32_t framebuffer_id,
+                       uint32_t connector_id,
+                       const drmModeModeInfo& mode,
+                       const HardwareDisplayPlaneList& plane_list) = 0;
+
+  virtual bool DisableModeset(uint32_t crtc_id, uint32_t connector) = 0;
+
   // Clears old frame state out. Must be called before any AssignOverlayPlanes
   // calls.
   void BeginFrame(HardwareDisplayPlaneList* plane_list);

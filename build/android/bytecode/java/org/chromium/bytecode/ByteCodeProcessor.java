@@ -111,11 +111,11 @@ class ByteCodeProcessor {
             writer = new ClassWriter(reader, 0);
         }
         ClassVisitor chain = writer;
-        /* DEBUGGING:}
+        /* DEBUGGING:
          To see objectweb.asm code that will generate bytecode for a given class:
 
          java -cp
-         "third_party/ow2_asm/lib/asm.jar:third_party/ow2_asm/lib/asm-util.jar:out/Debug/lib.java/jar_containing_yourclass.jar"
+         "third_party/android_deps/libs/org_ow2_asm_asm/asm-7.0.jar:third_party/android_deps/libs/org_ow2_asm_asm_util/asm-util-7.0.jar:out/Debug/lib.java/jar_containing_yourclass.jar"
          org.objectweb.asm.util.ASMifier org.package.YourClassName
 
          See this pdf for more details: https://asm.ow2.io/asm4-guide.pdf

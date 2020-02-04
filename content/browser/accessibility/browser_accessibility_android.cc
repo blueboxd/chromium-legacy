@@ -139,6 +139,10 @@ bool BrowserAccessibilityAndroid::PlatformIsLeafIncludingIgnored() const {
       break;
   }
 
+  // Links are never a leaf
+  if (IsLink())
+    return false;
+
   // If it has a focusable child, we definitely can't leave out children.
   if (HasFocusableNonOptionChild())
     return false;
@@ -372,6 +376,14 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   // If it's not focusable but has a control role, then it's interesting.
   if (ui::IsControl(GetRole()))
     return true;
+
+  // If we are the direct descendant of a link and have no siblings/children,
+  // then we are not interesting, return false
+  parent = PlatformGetParent();
+  if (parent != nullptr && ui::IsLink(parent->GetRole()) &&
+      parent->PlatformChildCount() == 1 && PlatformChildCount() == 0) {
+    return false;
+  }
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
   return PlatformIsLeaf() &&

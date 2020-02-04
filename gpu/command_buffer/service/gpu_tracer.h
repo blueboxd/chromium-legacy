@@ -57,7 +57,7 @@ struct TraceMarker {
 // Traces GPU Commands.
 class GPU_GLES2_EXPORT GPUTracer {
  public:
-  explicit GPUTracer(DecoderContext* decoder);
+  explicit GPUTracer(DecoderContext* decoder, bool context_is_gl = true);
   virtual ~GPUTracer();
 
   void Destroy(bool have_context);
@@ -86,9 +86,18 @@ class GPU_GLES2_EXPORT GPUTracer {
   const std::string& CurrentName(GpuTracerSource source) const;
 
  protected:
+  bool is_gpu_service_tracing_enabled() {
+    return *gpu_trace_srv_category_ != 0;
+  }
+  bool is_gpu_device_tracing_enabled() {
+    return *gpu_trace_dev_category_ != 0 && can_trace_dev_;
+  }
+
   scoped_refptr<gl::GPUTimingClient> gpu_timing_client_;
-  const unsigned char* gpu_trace_srv_category;
-  const unsigned char* gpu_trace_dev_category;
+  const unsigned char* gpu_trace_srv_category_;
+  const unsigned char* gpu_trace_dev_category_;
+  // Disable gpu.device tracing if context is corrupted or not GL.
+  bool can_trace_dev_;
 
  private:
   bool CheckDisjointStatus();

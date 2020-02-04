@@ -54,6 +54,8 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
   MOCK_CONST_METHOD0(GetDesktopSessionId, uint32_t());
+  MOCK_METHOD0(CreateComposingVideoCapturerPtr,
+               DesktopAndCursorConditionalComposer*());
 
   // DesktopEnvironment implementation.
   std::unique_ptr<ActionExecutor> CreateActionExecutor() override;
@@ -67,6 +69,8 @@ class MockDesktopEnvironment : public DesktopEnvironment {
       base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback)
       override;
   std::unique_ptr<FileOperations> CreateFileOperations() override;
+  std::unique_ptr<DesktopAndCursorConditionalComposer>
+  CreateComposingVideoCapturer() override;
 };
 
 class MockClientSessionControl : public ClientSessionControl {

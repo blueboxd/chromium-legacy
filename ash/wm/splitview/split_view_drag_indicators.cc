@@ -49,6 +49,7 @@ std::unique_ptr<views::Widget> CreateWidget(aura::Window* root_window) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.accept_events = false;
+  params.layer_type = ui::LAYER_NOT_DRAWN;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
   widget->set_focus_on_creation(false);
@@ -119,28 +120,26 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
  public:
   explicit RotatedImageLabelView(bool is_right_or_bottom)
       : is_right_or_bottom_(is_right_or_bottom) {
-    label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL);
-    label_->SetPaintToLayer();
-    label_->layer()->SetFillsBoundsOpaquely(false);
-    label_->SetEnabledColor(kSplitviewLabelEnabledColor);
-    label_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
+    // TODO(sammiequon): Remove this extra intermediate layer.
+    SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+    layer()->SetFillsBoundsOpaquely(false);
 
     // Use |label_parent_| to add padding and rounded edges to the text. Create
     // this extra view so that we can rotate the label, while having a slide
     // animation at times on the whole thing.
-    label_parent_ = new RoundedRectView(kSplitviewLabelRoundRectRadiusDp,
-                                        kSplitviewLabelBackgroundColor);
+    label_parent_ = AddChildView(std::make_unique<RoundedRectView>(
+        kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor));
     label_parent_->SetPaintToLayer();
     label_parent_->layer()->SetFillsBoundsOpaquely(false);
     label_parent_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kSplitviewLabelVerticalInsetDp,
                     kSplitviewLabelHorizontalInsetDp)));
-    label_parent_->AddChildView(label_);
 
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-    AddChildView(label_parent_);
+    label_ = label_parent_->AddChildView(std::make_unique<views::Label>(
+        base::string16(), views::style::CONTEXT_LABEL));
+    label_->SetEnabledColor(kSplitviewLabelEnabledColor);
+    label_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
   }
 
   ~RotatedImageLabelView() override = default;
@@ -232,26 +231,20 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       public aura::WindowObserver {
  public:
   SplitViewDragIndicatorsView() {
-    left_highlight_view_ =
-        new SplitViewHighlightView(/*is_right_or_bottom=*/false);
-    right_highlight_view_ =
-        new SplitViewHighlightView(/*is_right_or_bottom=*/true);
+    left_highlight_view_ = AddChildView(
+        std::make_unique<SplitViewHighlightView>(/*is_right_or_bottom=*/false));
+    right_highlight_view_ = AddChildView(
+        std::make_unique<SplitViewHighlightView>(/*is_right_or_bottom=*/true));
 
     left_highlight_view_->SetPaintToLayer();
     right_highlight_view_->SetPaintToLayer();
     left_highlight_view_->layer()->SetFillsBoundsOpaquely(false);
     right_highlight_view_->layer()->SetFillsBoundsOpaquely(false);
 
-    AddChildView(left_highlight_view_);
-    AddChildView(right_highlight_view_);
-
-    left_rotated_view_ =
-        new RotatedImageLabelView(/*is_right_or_bottom=*/false);
-    right_rotated_view_ =
-        new RotatedImageLabelView(/*is_right_or_bottom=*/true);
-
-    AddChildView(left_rotated_view_);
-    AddChildView(right_rotated_view_);
+    left_rotated_view_ = AddChildView(
+        std::make_unique<RotatedImageLabelView>(/*is_right_or_bottom=*/false));
+    right_rotated_view_ = AddChildView(
+        std::make_unique<RotatedImageLabelView>(/*is_right_or_bottom=*/true));
 
     // Nothing is shown initially.
     left_highlight_view_->layer()->SetOpacity(0.f);

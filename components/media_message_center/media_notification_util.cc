@@ -36,6 +36,7 @@ const int kMediaNotificationCountHistogramMax = 20;
 }  // namespace
 
 const char kCountHistogramName[] = "Media.Notification.Count";
+const char kCastCountHistogramName[] = "Media.Notification.Cast.Count";
 
 base::string16 GetAccessibleNameFromMetadata(
     media_session::MediaMetadata session_metadata) {
@@ -95,6 +96,11 @@ MediaSessionAction GetPictureInPictureIgnoredAction(
 
 void RecordConcurrentNotificationCount(size_t count) {
   UMA_HISTOGRAM_EXACT_LINEAR(kCountHistogramName, count,
+                             kMediaNotificationCountHistogramMax);
+}
+
+void RecordConcurrentCastNotificationCount(size_t count) {
+  UMA_HISTOGRAM_EXACT_LINEAR(kCastCountHistogramName, count,
                              kMediaNotificationCountHistogramMax);
 }
 

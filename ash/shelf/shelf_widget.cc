@@ -748,7 +748,7 @@ void ShelfWidget::ShowIfHidden() {
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->IsMouseWheelEvent()) {
     ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
-    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event, /*from_touchpad=*/false);
     return;
   }
 
@@ -775,6 +775,12 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   shelf_layout_manager()->ProcessGestureEventFromShelfWidget(&event_in_screen);
   if (!event->handled())
     views::Widget::OnGestureEvent(event);
+}
+
+void ShelfWidget::OnScrollEvent(ui::ScrollEvent* event) {
+  shelf_->ProcessScrollEvent(event);
+  if (!event->handled())
+    views::Widget::OnScrollEvent(event);
 }
 
 void ShelfWidget::OnAccessibilityStatusChanged() {

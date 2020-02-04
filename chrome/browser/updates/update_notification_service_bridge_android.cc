@@ -28,13 +28,17 @@ void JNI_UpdateNotificationServiceBridge_Schedule(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_title,
-    const JavaParamRef<jstring>& j_message) {
+    const JavaParamRef<jstring>& j_message,
+    const jint j_state,
+    const jboolean j_show_immediately) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* update_notification_service =
       UpdateNotificationServiceFactory::GetForBrowserContext(profile);
   UpdateNotificationInfo data;
   data.title = ConvertJavaStringToUTF16(env, j_title);
   data.message = ConvertJavaStringToUTF16(env, j_message);
+  data.state = static_cast<int>(j_state);
+  data.should_show_immediately = static_cast<bool>(j_show_immediately);
   update_notification_service->Schedule(std::move(data));
 }
 
@@ -84,8 +88,9 @@ int UpdateNotificationServiceBridgeAndroid::GetUserDismissCount() {
   return Java_UpdateNotificationServiceBridge_getUserDismissCount(env);
 }
 
-void UpdateNotificationServiceBridgeAndroid::LaunchChromeActivity() {
+void UpdateNotificationServiceBridgeAndroid::LaunchChromeActivity(int state) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_UpdateNotificationServiceBridge_launchChromeActivity(env);
+  Java_UpdateNotificationServiceBridge_launchChromeActivity(
+      env, static_cast<jint>(state));
 }
 }  // namespace updates

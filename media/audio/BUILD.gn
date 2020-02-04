@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//tools/generate_stubs/rules.gni")
 
 # When libpulse is not directly linked, use stubs to allow for dlopening of the
@@ -38,6 +39,7 @@ source_set("audio") {
   # is a roll-up target which is part of the //media component. Most other DEPs
   # should be using //media and not directly DEP this roll-up target.
   visibility = [
+    ":wav_audio_handler_fuzzer",
     "//media",
 
     "//media/renderers",
@@ -450,4 +452,13 @@ source_set("unit_tests") {
       "audio_low_latency_input_output_unittest.cc",
     ]
   }
+}
+
+fuzzer_test("wav_audio_handler_fuzzer") {
+  sources = [ "wav_audio_handler_fuzzer.cc" ]
+  deps = [
+    ":audio",
+    "//base",
+    "//media:test_support",
+  ]
 }

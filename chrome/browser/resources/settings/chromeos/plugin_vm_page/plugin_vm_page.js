@@ -19,6 +19,9 @@ Polymer({
       notify: true,
     },
 
+    /** @private */
+    allowPluginVm_: Boolean,
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -33,6 +36,12 @@ Polymer({
         return map;
       },
     },
+  },
+
+  /** @override */
+  attached: function() {
+    this.allowPluginVm_ = loadTimeData.valueExists('allowPluginVm') &&
+        loadTimeData.getBoolean('allowPluginVm');
   },
 
   /**

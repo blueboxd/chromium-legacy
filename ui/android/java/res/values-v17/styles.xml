@@ -134,51 +134,55 @@
       on a light background) and light when the app is in dark theme (for
       display on a dark background).
     -->
-    <style name="TextAppearance.Headline.Primary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.Headline.Primary">
         <item name="android:textColor">@color/default_text_color_list</item>
     </style>
 
-    <style name="TextAppearance.TextLarge.Primary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextLarge.Primary">
         <item name="android:textColor">@color/default_text_color_list</item>
     </style>
 
-    <style name="TextAppearance.TextLarge.Secondary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextLarge.Secondary">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextLarge.Tertiary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextLarge.Tertiary">
         <item name="android:textColor">@color/default_text_color_tertiary</item>
     </style>
 
-    <style name="TextAppearance.TextMediumThick.Primary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextMediumThick.Primary">
         <item name="android:textColor">@color/default_text_color_list</item>
+    </style>
+
+    <style name="TextAppearance.TextMediumThick.Secondary">
+        <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
     <style name="TextAppearance.TextAccentMediumThick.Secondary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextMedium.Primary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextMedium.Primary">
         <item name="android:textColor">@color/default_text_color_list</item>
     </style>
 
-    <style name="TextAppearance.TextMedium.Secondary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextMedium.Secondary">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextMedium.Tertiary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextMedium.Tertiary">
         <item name="android:textColor">@color/default_text_color_tertiary</item>
     </style>
 
-    <style name="TextAppearance.TextSmall.Primary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextSmall.Primary">
         <item name="android:textColor">@color/default_text_color_list</item>
     </style>
 
-    <style name="TextAppearance.TextSmall.Secondary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextSmall.Secondary">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextSmall.Tertiary" tools:ignore="UnusedResources">
+    <style name="TextAppearance.TextSmall.Tertiary">
         <item name="android:textColor">@color/default_text_color_tertiary</item>
     </style>
 
@@ -193,28 +197,38 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- White Text Styles -->
-    <style name="TextAppearance.WhiteHeadline" tools:ignore="UnusedResources">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">@dimen/headline_size</item>
-        <item name="android:fontFamily">@font/accent_font</item>
+    <!-- Non Adaptive Text Styles -->
+    <!--  Light version  -->
+    <style name="TextAppearance.Headline.Primary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_light</item>
     </style>
-    <style name="TextAppearance.WhiteBodyIncognito" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/white_alpha_70</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
+    <style name="TextAppearance.TextLarge.Primary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_light</item>
     </style>
-    <style name="TextAppearance.WhiteBody" tools:ignore="UnusedResources">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
+    <style name="TextAppearance.TextMediumThick.Primary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_light</item>
     </style>
-    <style name="TextAppearance.WhiteTitle1" tools:ignore="UnusedResources">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">@dimen/text_size_large</item>
+    <style name="TextAppearance.TextMedium.Primary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_light</item>
     </style>
-    <style name="TextAppearance.WhiteTitle2" parent="TextAppearance.RobotoMediumStyle" tools:ignore="UnusedResources">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
+    <style name="TextAppearance.TextSmall.Primary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_light</item>
     </style>
+
+    <style name="TextAppearance.TextLarge.Secondary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_light</item>
+    </style>
+    <style name="TextAppearance.TextMedium.Secondary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_light</item>
+    </style>
+
+    <style name="TextAppearance.TextLarge.Tertiary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary_light</item>
+    </style>
+    <style name="TextAppearance.TextSmall.Tertiary.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary_light</item>
+    </style>
+
     <style name="TextAppearance.WhiteButtonText" parent="TextAppearance.AccentMediumStyle">
         <item name="android:textColor">@color/default_text_color_inverse</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
@@ -225,14 +239,51 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <!--  Dark version  -->
+    <style name="TextAppearance.Headline.Primary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_dark</item>
+    </style>
+    <style name="TextAppearance.TextLarge.Primary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_dark</item>
+    </style>
+    <style name="TextAppearance.TextMedium.Primary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_dark</item>
+    </style>
+    <style name="TextAppearance.TextSmall.Primary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_dark</item>
+    </style>
+
+    <style name="TextAppearance.TextLarge.Secondary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_dark</item>
+    </style>
+    <style name="TextAppearance.TextMedium.Secondary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_dark</item>
+    </style>
+    <style name="TextAppearance.TextSmall.Secondary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_dark</item>
+    </style>
+    <style name="TextAppearance.TextMediumThick.Secondary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_dark</item>
+    </style>
+
+    <style name="TextAppearance.TextLarge.Tertiary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary_dark</item>
+    </style>
+    <style name="TextAppearance.TextMedium.Tertiary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary_dark</item>
+    </style>
+    <style name="TextAppearance.TextSmall.Tertiary.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary_dark</item>
+    </style>
+
     <!-- Text styles used on dark background on light theme, and light background on dark theme. -->
-    <style name="TextAppearance.Headline.Inverse" parent="TextAppearance.WhiteHeadline" tools:ignore="UnusedResources">
+    <style name="TextAppearance.Headline.Inverse" parent="TextAppearance.Headline.Primary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_inverse</item>
     </style>
-    <style name="TextAppearance.Body.Inverse" parent="TextAppearance.WhiteBody" tools:ignore="UnusedResources">
+    <style name="TextAppearance.Body.Inverse" parent="TextAppearance.TextMedium.Primary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_inverse</item>
     </style>
-    <style name="TextAppearance.Title2.Inverse" parent="TextAppearance.WhiteTitle2"
+    <style name="TextAppearance.Title2.Inverse" parent="TextAppearance.TextMediumThick.Primary"
         tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_inverse</item>
     </style>

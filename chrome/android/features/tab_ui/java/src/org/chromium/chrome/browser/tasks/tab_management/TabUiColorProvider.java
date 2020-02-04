@@ -65,7 +65,7 @@ public class TabUiColorProvider {
      * @return The text appearance for the tab grid card title.
      */
     public static int getTitleTextAppearance(boolean isIncognito) {
-        return isIncognito ? R.style.TextAppearance_WhiteTitle2
+        return isIncognito ? R.style.TextAppearance_TextMediumThick_Primary_Light
                            : R.style.TextAppearance_TextMediumThick_Primary;
     }
 

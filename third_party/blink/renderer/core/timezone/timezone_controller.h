@@ -43,6 +43,8 @@ class CORE_EXPORT TimeZoneController final
 
   static bool HasTimeZoneOverride();
 
+  static void ChangeTimeZoneForTesting(const String&);
+
  private:
   TimeZoneController();
   static TimeZoneController& instance();

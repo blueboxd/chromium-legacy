@@ -51,6 +51,9 @@ base::string16 LocationBarModelImpl::GetFormattedFullURL() const {
 base::string16 LocationBarModelImpl::GetURLForDisplay() const {
   url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitDefaults;
+  if (delegate_->ShouldTrimDisplayUrlAfterHostName()) {
+    format_types |= url_formatter::kFormatUrlTrimAfterHost;
+  }
 
   // Early exit to prevent elision of URLs when relevant extension is enabled.
   if (delegate_->ShouldPreventElision()) {

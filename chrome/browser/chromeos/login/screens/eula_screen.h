@@ -56,9 +56,9 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
   // TpmPasswordFetcherDelegate implementation:

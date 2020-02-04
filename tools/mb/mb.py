@@ -821,6 +821,9 @@ class MetaBuildWrapper(object):
       args_contents = self.ReadFile(gn_args_path)
     gn_args = []
     for l in args_contents.splitlines():
+      l = l.split('#', 2)[0].strip()
+      if not l:
+        continue
       fields = l.split(' ')
       name = fields[0]
       val = ' '.join(fields[2:])

@@ -510,4 +510,29 @@ TEST_F(AnonymizerToolTest, AnonymizeAndroidAppStoragePaths) {
 }
 #endif  // defined(OS_CHROMEOS)
 
+TEST_F(AnonymizerToolTest, AnonymizeBlockDevices) {
+  // Test cases in the form {input, output}.
+  std::pair<std::string, std::string> test_cases[] = {
+      // UUIDs that come from the 'blkid' tool.
+      {"PTUUID=\"985dff64-9c0f-3f49-945b-2d8c2e0238ec\"",
+       "PTUUID=\"<UUID: 1>\""},
+      {"UUID=\"E064-868C\"", "UUID=\"<UUID: 2>\""},
+      {"PARTUUID=\"7D242B2B1C751832\"", "PARTUUID=\"<UUID: 3>\""},
+
+      // Volume labels.
+      {"LABEL=\"ntfs\"", "LABEL=\"<Volume Label: 1>\""},
+      {"PARTLABEL=\"SD Card\"", "PARTLABEL=\"<Volume Label: 2>\""},
+
+      // Removable media paths.
+      {"/media/removable/SD Card/", "/media/removable/<Volume Label: 2>/"},
+      {"'/media/removable/My Secret Volume Name' don't redact this",
+       "'/media/removable/<Volume Label: 3>' don't redact this"},
+      {"0 part /media/removable/My Secret Volume Name         With Spaces   ",
+       "0 part /media/removable/<Volume Label: 4>"},
+  };
+  for (const auto p : test_cases) {
+    EXPECT_EQ(anonymizer_.Anonymize(p.first), p.second);
+  }
+}
+
 }  // namespace feedback

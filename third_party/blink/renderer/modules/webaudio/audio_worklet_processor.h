@@ -45,7 +45,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
 
   // |AudioWorkletHandler| invokes this method to process audio.
   bool Process(
-      Vector<AudioBus*>* input_buses,
+      Vector<scoped_refptr<AudioBus>>* input_buses,
       Vector<AudioBus*>* output_buses,
       HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
 

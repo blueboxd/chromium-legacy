@@ -654,7 +654,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::BlameContext* GetFrameBlameContext() override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
-  service_manager::InterfaceProvider* GetInterfaceProvider() override;
   blink::AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
   blink::WebLocalFrame* CreateChildFrame(
@@ -682,8 +681,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& fp_header,
       const blink::DocumentPolicy::FeatureState& dp_header) override;
-  void DidAddContentSecurityPolicies(
-      const blink::WebVector<blink::WebContentSecurityPolicy>&) override;
   void DidChangeFrameOwnerProperties(
       blink::WebFrame* child_frame,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;

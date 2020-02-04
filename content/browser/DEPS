@@ -130,6 +130,12 @@ specific_include_rules = {
   "cross_site_document_blocking_browsertest.cc": [
     "+services/network/cross_origin_read_blocking.h",
   ],
+  # SiteInstance and BrowsingInstance should not depend on the types of things
+  # that rely on them, like RenderFrameHostImpl or WebContentsImpl.
+  "(site_instance_impl|browsing_instance)\.(cc|h)": [
+    "-content/browser/frame_host",
+    "-content/browser/web_contents",
+  ],
   "storage_partition_impl_unittest.cc": [
     "+third_party/leveldatabase",
   ],

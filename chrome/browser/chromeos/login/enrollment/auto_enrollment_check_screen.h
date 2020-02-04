@@ -52,10 +52,6 @@ class AutoEnrollmentCheckScreen
     exit_callback_ = callback;
   }
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
   // AutoEnrollmentCheckScreenView::Delegate implementation:
   void OnViewDestroyed(AutoEnrollmentCheckScreenView* view) override;
 
@@ -65,6 +61,10 @@ class AutoEnrollmentCheckScreen
       const NetworkPortalDetector::CaptivePortalState& state) override;
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   // Runs |exit_callback_| - used to prevent |exit_callback_| from running after
   // |this| has been destroyed (by wrapping it with a callback bound to a weak
   // ptr).

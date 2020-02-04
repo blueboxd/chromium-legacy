@@ -106,7 +106,8 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
 };
 
 // Tests CWVAutofillController fetch suggestions.
-TEST_F(CWVAutofillControllerTest, FetchSuggestions) {
+// This test is flaky (crbug.com/1048256).
+TEST_F(CWVAutofillControllerTest, FLAKY_FetchSuggestions) {
   FormSuggestion* suggestion =
       [FormSuggestion suggestionWithValue:kTestFieldValue
                        displayDescription:nil

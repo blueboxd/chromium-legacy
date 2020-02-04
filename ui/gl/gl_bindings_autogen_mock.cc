@@ -3180,6 +3180,14 @@ MockGLInterface::Mock_glMemoryBarrierEXT(GLbitfield barriers) {
   interface_->MemoryBarrierEXT(barriers);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMemoryObjectParameterivEXT(GLuint memoryObject,
+                                                   GLenum pname,
+                                                   const GLint* param) {
+  MakeGlMockFunctionUnique("glMemoryObjectParameterivEXT");
+  interface_->MemoryObjectParameterivEXT(memoryObject, pname, param);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glMinSampleShading(GLfloat value) {
   MakeGlMockFunctionUnique("glMinSampleShading");
   interface_->MinSampleShading(value);
@@ -6087,6 +6095,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
         Mock_glMemoryBarrierByRegion);
   if (strcmp(name, "glMemoryBarrierEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrierEXT);
+  if (strcmp(name, "glMemoryObjectParameterivEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMemoryObjectParameterivEXT);
   if (strcmp(name, "glMinSampleShading") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMinSampleShading);
   if (strcmp(name, "glMultiDrawArraysANGLE") == 0)

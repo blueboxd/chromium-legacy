@@ -19,12 +19,16 @@
           icon2x="oobe-64:lock">
       </hd-iron-icon>
       <div slot="subtitle" id="subtitle">
-        <span id="description">
+        <span id="description" hidden="[[processingCompletion_]]">
           [[i18nDynamic(locale, 'securityTokenPinDialogSubtitle')]]
         </span>
       </div>
+      <paper-progress slot="progress" id="progress"
+          hidden="[[!processingCompletion_]]"
+          indeterminate="[[processingCompletion_]]">
+      </paper-progress>
       <div slot="footer">
-        <div id="pinKeyboardContainer">
+        <div id="pinKeyboardContainer" hidden="[[processingCompletion_]]">
           <pin-keyboard id="pinKeyboard" enable-letters
               has-error="[[isErrorLabelVisible_(errorLabelId_, userEdited_)]]"
               aria-label="[[getLabel_(locale, parameters, errorLabelId_,

@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // An instance of this interface is assumed to be called on the file thread.
   class AbstractOriginEnumerator {
    public:
-    virtual ~AbstractOriginEnumerator() {}
+    virtual ~AbstractOriginEnumerator() = default;
 
     // Returns the next origin.  Returns empty if there are no more origins.
     virtual GURL Next() = 0;

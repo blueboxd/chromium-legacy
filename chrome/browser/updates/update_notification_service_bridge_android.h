@@ -23,7 +23,7 @@ class UpdateNotificationServiceBridgeAndroid
   base::Optional<base::TimeDelta> GetThrottleInterval() override;
   void UpdateUserDismissCount(int count) override;
   int GetUserDismissCount() override;
-  void LaunchChromeActivity() override;
+  void LaunchChromeActivity(int state) override;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateNotificationServiceBridgeAndroid);
 };

@@ -1547,15 +1547,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       0);
   EXPECT_GT(
       *ukm_recorder.GetEntryMetric(
-          entries.front(), ukm::builders::AdPageLoad::kAdBytesPerSecondName),
-      0);
-
-  // TTI is not reached by this page and thus should not have this recorded.
-  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
-      entries.front(),
-      ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName));
-  EXPECT_GT(
-      *ukm_recorder.GetEntryMetric(
           entries.front(), ukm::builders::AdPageLoad::kAdJavascriptBytesName),
       0);
   EXPECT_GT(*ukm_recorder.GetEntryMetric(

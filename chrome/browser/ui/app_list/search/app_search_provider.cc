@@ -309,8 +309,9 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
           this, update.AppId(), update.ShortName(), update.LastLaunchTime(),
           update.InstallTime(),
           update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
-      apps_vector->back()->set_recommendable(update.Recommendable() ==
-                                             apps::mojom::OptionalBool::kTrue);
+      apps_vector->back()->set_recommendable(
+          update.Recommendable() == apps::mojom::OptionalBool::kTrue &&
+          update.Paused() != apps::mojom::OptionalBool::kTrue);
       apps_vector->back()->set_searchable(update.Searchable() ==
                                           apps::mojom::OptionalBool::kTrue);
 

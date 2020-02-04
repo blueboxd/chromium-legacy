@@ -112,6 +112,7 @@ class OverlayPresenterImpl : public BrowserObserver,
                            size_t index) override;
   void QueuedRequestCancelled(OverlayRequestQueueImpl* queue,
                               OverlayRequest* request) override;
+  void OverlayRequestQueueDestroyed(OverlayRequestQueueImpl* queue) override;
 
   // OverlayPresentationContextObserver:
   void OverlayPresentationContextWillChangePresentationCapabilities(

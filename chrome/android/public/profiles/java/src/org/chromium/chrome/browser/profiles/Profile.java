@@ -31,23 +31,25 @@ public class Profile {
      *
      * https://crbug.com/1041781: Remove after auditing and replacing all usecases.
      *
-     * @deprecated use {@link #getMainProfile()} instead.
+     * @deprecated use {@link #getLastUsedRegularProfile()} instead.
      */
     @Deprecated
     public static Profile getLastUsedProfile() {
-        return getMainProfile();
+        return getLastUsedRegularProfile();
     }
 
     /**
-     * Returns the main profile. Note that it returns the original profile even
-     * if it is called in an incognito context.
+     * Returns the regular (i.e., not off-the-record) profile.
+     *
+     * Note: The function name uses the "last used" terminology for consistency with
+     * profile_manager.cc which supports multiple regular profiles.
      */
-    public static Profile getMainProfile() {
+    public static Profile getLastUsedRegularProfile() {
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!ProfileManager.isInitialized()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
         }
-        return (Profile) ProfileJni.get().getMainProfile();
+        return (Profile) ProfileJni.get().getLastUsedRegularProfile();
     }
 
     /**
@@ -133,7 +135,7 @@ public class Profile {
 
     @NativeMethods
     interface Natives {
-        Object getMainProfile();
+        Object getLastUsedRegularProfile();
         Object fromWebContents(WebContents webContents);
         void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);
         Object getOriginalProfile(long nativeProfileAndroid, Profile caller);

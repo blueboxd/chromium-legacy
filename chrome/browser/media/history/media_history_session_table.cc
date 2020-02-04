@@ -31,7 +31,7 @@ sql::InitStatus MediaHistorySessionTable::CreateTableIfNonExistent() {
       DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
                                        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                        "origin_id INTEGER NOT NULL,"
-                                       "url TEXT,"
+                                       "url TEXT NOT NULL UNIQUE,"
                                        "duration_ms INTEGER,"
                                        "position_ms INTEGER,"
                                        "last_updated_time_s BIGINT NOT NULL,"
@@ -76,7 +76,7 @@ bool MediaHistorySessionTable::SavePlaybackSession(
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
       base::StringPrintf(
-          "INSERT INTO %s "
+          "REPLACE INTO %s "
           "(origin_id, url, duration_ms, position_ms, last_updated_time_s, "
           "title, artist, album, source_title) "
           "VALUES "
@@ -104,7 +104,12 @@ bool MediaHistorySessionTable::SavePlaybackSession(
   statement.BindString16(7, metadata.album);
   statement.BindString16(8, metadata.source_title);
 
-  return statement.Run();
+  if (statement.Run()) {
+    DCHECK(DB()->GetLastInsertRowId());
+    return true;
+  }
+
+  return false;
 }
 
 base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
@@ -121,16 +126,9 @@ MediaHistorySessionTable::GetPlaybackSessions(
                          kTableName)
           .c_str()));
 
-  std::set<GURL> previous_urls;
   MediaHistoryStore::MediaPlaybackSessionList sessions;
 
   while (statement.Step()) {
-    // Check if we already have a playback session for this url.
-    GURL url(statement.ColumnString(0));
-    if (base::Contains(previous_urls, url))
-      continue;
-    previous_urls.insert(url);
-
     auto duration = base::TimeDelta::FromMilliseconds(statement.ColumnInt64(1));
     auto position = base::TimeDelta::FromMilliseconds(statement.ColumnInt64(2));
 
@@ -139,7 +137,7 @@ MediaHistorySessionTable::GetPlaybackSessions(
       continue;
 
     MediaHistoryStore::MediaPlaybackSession session;
-    session.url = url;
+    session.url = GURL(statement.ColumnString(0));
     session.duration = duration;
     session.position = position;
     session.metadata.title = statement.ColumnString16(3);

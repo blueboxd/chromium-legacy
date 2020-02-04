@@ -34,10 +34,11 @@ WebCursor& WebCursor::operator=(const WebCursor& other) {
 bool WebCursor::SetInfo(const CursorInfo& info) {
   static constexpr int kMaxSize = 1024;
   if (info.image_scale_factor < 0.01f || info.image_scale_factor > 100.f ||
-      info.custom_image.width() > kMaxSize ||
-      info.custom_image.height() > kMaxSize ||
-      info.custom_image.width() / info.image_scale_factor > kMaxSize ||
-      info.custom_image.height() / info.image_scale_factor > kMaxSize) {
+      (info.type == ui::CursorType::kCustom &&
+       (info.custom_image.width() > kMaxSize ||
+        info.custom_image.height() > kMaxSize ||
+        info.custom_image.width() / info.image_scale_factor > kMaxSize ||
+        info.custom_image.height() / info.image_scale_factor > kMaxSize))) {
     return false;
   }
 

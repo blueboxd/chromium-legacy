@@ -45,6 +45,21 @@ HardwareDisplayPlaneManagerLegacy::HardwareDisplayPlaneManagerLegacy(
 HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() =
     default;
 
+bool HardwareDisplayPlaneManagerLegacy::Modeset(
+    uint32_t crtc_id,
+    uint32_t framebuffer_id,
+    uint32_t connector_id,
+    const drmModeModeInfo& mode,
+    const HardwareDisplayPlaneList&) {
+  return drm_->SetCrtc(crtc_id, framebuffer_id,
+                       std::vector<uint32_t>(1, connector_id), mode);
+}
+
+bool HardwareDisplayPlaneManagerLegacy::DisableModeset(uint32_t crtc_id,
+                                                       uint32_t connector) {
+  return drm_->DisableCrtc(crtc_id);
+}
+
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     HardwareDisplayPlaneList* plane_list,
     scoped_refptr<PageFlipRequest> page_flip_request,

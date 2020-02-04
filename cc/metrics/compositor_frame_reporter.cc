@@ -67,10 +67,14 @@ constexpr const char* GetStageName(int stage_type_index) {
         kVizBreakdownInitialIndex:
       return "SubmitCompositorFrameToPresentationCompositorFrame."
              "ReceivedCompositorFrameToStartDraw";
-    case static_cast<int>(VizBreakdown::kStartDrawToSwapEnd) +
+    case static_cast<int>(VizBreakdown::kStartDrawToSwapStart) +
         kVizBreakdownInitialIndex:
       return "SubmitCompositorFrameToPresentationCompositorFrame."
-             "StartDrawToSwapEnd";
+             "StartDrawToSwapStart";
+    case static_cast<int>(VizBreakdown::kSwapStartToSwapEnd) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "SwapStartToSwapEnd";
     case static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame) +
         kVizBreakdownInitialIndex:
       return "SubmitCompositorFrameToPresentationCompositorFrame."
@@ -401,14 +405,23 @@ void CompositorFrameReporter::ReportVizBreakdowns(
 
   if (viz_breakdown_.swap_timings.is_null())
     return;
-  base::TimeDelta start_draw_to_swap_end_delta =
-      viz_breakdown_.swap_timings.swap_end -
+  base::TimeDelta start_draw_to_swap_start_delta =
+      viz_breakdown_.swap_timings.swap_start -
       viz_breakdown_.draw_start_timestamp;
 
   ReportHistogram(frame_sequence_tracker_type,
                   kVizBreakdownInitialIndex +
-                      static_cast<int>(VizBreakdown::kStartDrawToSwapEnd),
-                  start_draw_to_swap_end_delta);
+                      static_cast<int>(VizBreakdown::kStartDrawToSwapStart),
+                  start_draw_to_swap_start_delta);
+
+  base::TimeDelta swap_start_to_swap_end_delta =
+      viz_breakdown_.swap_timings.swap_end -
+      viz_breakdown_.swap_timings.swap_start;
+
+  ReportHistogram(frame_sequence_tracker_type,
+                  kVizBreakdownInitialIndex +
+                      static_cast<int>(VizBreakdown::kSwapStartToSwapEnd),
+                  swap_start_to_swap_end_delta);
 
   base::TimeDelta swap_end_to_presentation_compositor_frame_delta =
       viz_breakdown_.presentation_feedback.timestamp -

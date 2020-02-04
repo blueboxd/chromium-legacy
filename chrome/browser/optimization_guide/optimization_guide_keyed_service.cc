@@ -143,11 +143,12 @@ void OptimizationGuideKeyedService::OnNavigationStartOrRedirect(
 }
 
 void OptimizationGuideKeyedService::OnNavigationFinish(
-    const GURL& navigation_url) {
+    const GURL& navigation_url,
+    OptimizationGuideNavigationData* navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (hints_manager_)
-    hints_manager_->OnNavigationFinish(navigation_url);
+    hints_manager_->OnNavigationFinish(navigation_url, navigation_data);
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(

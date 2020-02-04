@@ -31,6 +31,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/mime_util.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -264,6 +265,12 @@ void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
       js_decoded_bytes_ += resource->decoded_body_length;
       if (resource->decoded_body_length > js_max_decoded_bytes_)
         js_max_decoded_bytes_ = resource->decoded_body_length;
+    } else if (blink::IsSupportedImageMimeType(resource->mime_type)) {
+      image_total_bytes_ += resource->received_data_length;
+      if (!resource->is_main_frame_resource)
+        image_subframe_bytes_ += resource->received_data_length;
+    } else if (media::IsSupportedMediaMimeType(resource->mime_type)) {
+      media_bytes_ += resource->received_data_length;
     }
     if (resource->cache_type !=
         page_load_metrics::mojom::CacheType::kNotCached) {
@@ -398,6 +405,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       ukm::GetExponentialBucketMin(js_decoded_bytes_, 10));
   builder.SetNet_JavaScriptMaxBytes(
       ukm::GetExponentialBucketMin(js_max_decoded_bytes_, 10));
+
+  builder.SetNet_ImageBytes(
+      ukm::GetExponentialBucketMin(image_total_bytes_, 1.3));
+  builder.SetNet_ImageSubframeBytes(
+      ukm::GetExponentialBucketMin(image_subframe_bytes_, 1.3));
+  builder.SetNet_MediaBytes(ukm::GetExponentialBucketMin(media_bytes_, 1.3));
 
   if (main_frame_timing_)
     ReportMainResourceTimingMetrics(timing, &builder);

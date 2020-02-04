@@ -44,6 +44,9 @@ constexpr uint32_t kInFormatsBlobPropId = 400;
 constexpr uint32_t kBackgroundColorPropId = 401;
 
 const gfx::Size kDefaultBufferSize(2, 2);
+// Create a basic mode for a 6x4 screen.
+drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
+                                0, 0, 0, 0, 0, 0, {'\0'}};
 
 class HardwareDisplayPlaneManagerTest
     : public testing::Test,
@@ -217,6 +220,32 @@ uint64_t HardwareDisplayPlaneManagerTest::GetPlanePropertyValue(
 using HardwareDisplayPlaneManagerLegacyTest = HardwareDisplayPlaneManagerTest;
 using HardwareDisplayPlaneManagerAtomicTest = HardwareDisplayPlaneManagerTest;
 
+TEST_P(HardwareDisplayPlaneManagerLegacyTest, Modeset) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_,
+                             /*use_atomic=*/false);
+  fake_drm_->set_set_crtc_expectation(false);
+
+  constexpr uint32_t kFrameBuffer = 2;
+  ui::HardwareDisplayPlaneList state;
+  EXPECT_FALSE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[0].id, kFrameBuffer, connector_properties_[0].id,
+      kDefaultMode, state));
+  EXPECT_EQ(kFrameBuffer, fake_drm_->current_framebuffer());
+  EXPECT_EQ(1, fake_drm_->get_set_crtc_call_count());
+}
+
+TEST_P(HardwareDisplayPlaneManagerLegacyTest, DisableModeset) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_,
+                             /*use_atomic*/ false);
+
+  EXPECT_TRUE(
+      fake_drm_->plane_manager()->DisableModeset(crtc_properties_[0].id, 0));
+}
+
 TEST_P(HardwareDisplayPlaneManagerLegacyTest, SinglePlaneAssignment) {
   ui::DrmOverlayPlaneList assigns;
   assigns.push_back(ui::DrmOverlayPlane(fake_buffer_, nullptr));
@@ -329,6 +358,32 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
   fake_drm_->plane_manager()->BeginFrame(&state_);
   EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns, crtc_properties_[0].id));
+}
+
+TEST_P(HardwareDisplayPlaneManagerAtomicTest, Modeset) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_,
+                             /*use_atomic=*/true);
+
+  constexpr uint32_t kFrameBuffer = 2;
+  ui::HardwareDisplayPlaneList state;
+  EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[0].id, kFrameBuffer, connector_properties_[0].id,
+      kDefaultMode, state));
+
+  EXPECT_EQ(0, fake_drm_->get_commit_count());
+}
+
+TEST_P(HardwareDisplayPlaneManagerAtomicTest, DisableModeset) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_,
+                             /*use_atomic*/ true);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->DisableModeset(
+      crtc_properties_[0].id, connector_properties_[0].id));
+  EXPECT_EQ(0, fake_drm_->get_commit_count());
 }
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest, MultiplePlaneAssignment) {

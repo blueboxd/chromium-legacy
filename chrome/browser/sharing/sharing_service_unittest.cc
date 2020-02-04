@@ -183,7 +183,7 @@ class SharingServiceTest : public testing::Test {
         {kVapidFcmToken, kP256dh, kAuthSecret},
         {kSharingFcmToken, kP256dh, kAuthSecret},
         std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
-            sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+            sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2});
   }
 
   // Lazily initialized so we can test the constructor.
@@ -245,7 +245,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   EXPECT_TRUE(candidates.empty());
 }
 
@@ -262,7 +262,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Tracked) {
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
 
   ASSERT_EQ(1u, candidates.size());
 }

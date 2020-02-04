@@ -58,7 +58,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   // Export a subset of the source list that affect navigation.
   // It contains every source-expressions, '*', 'none' and 'self'.
   // It doesn't contain 'unsafe-inline' or 'unsafe-eval' for instance.
-  WebContentSecurityPolicySourceList ExposeForNavigationalChecks() const;
+  network::mojom::blink::CSPSourceListPtr ExposeForNavigationalChecks() const;
   String DirectiveName() const { return directive_name_; }
 
  private:

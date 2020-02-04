@@ -90,7 +90,8 @@ void ConvolverHandler::Process(uint32_t frames_to_process) {
       // FIXME:  If we wanted to get fancy we could try to factor in the 'tail
       // time' and stop processing once the tail dies down if
       // we keep getting fed silence.
-      reverb_->Process(Input(0).Bus(), output_bus, frames_to_process);
+      scoped_refptr<AudioBus> input_bus = Input(0).Bus();
+      reverb_->Process(input_bus.get(), output_bus, frames_to_process);
     }
   } else {
     // Too bad - the tryLock() failed.  We must be in the middle of setting a

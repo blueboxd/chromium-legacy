@@ -928,23 +928,6 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   const auto& host = url.host();
 
-  // Check if we have a hint already loaded for this navigation.
-  const optimization_guide::proto::Hint* loaded_hint =
-      hint_cache_->GetHostKeyedHintIfLoaded(host);
-  bool has_hint_in_cache = hint_cache_->HasHint(host);
-  const optimization_guide::proto::PageHint* matched_page_hint =
-      loaded_hint ? GetPageHint(navigation_data, url, loaded_hint) : nullptr;
-
-  // Populate navigation data with hint information, if provided.
-  if (navigation_data) {
-    navigation_data->set_has_hint_after_commit(has_hint_in_cache);
-
-    if (loaded_hint) {
-      navigation_data->set_serialized_hint_version_string(
-          loaded_hint->version());
-    }
-  }
-
   // Check if the URL should be filtered out if we have an optimization filter
   // for the type.
   {
@@ -983,11 +966,14 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     }
   }
 
+  // Check if we have a hint already loaded for this navigation.
+  const optimization_guide::proto::Hint* loaded_hint =
+      hint_cache_->GetHostKeyedHintIfLoaded(host);
   if (!loaded_hint) {
     // If we do not have a hint already loaded and we do not have one in the
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
-    if (has_hint_in_cache) {
+    if (hint_cache_->HasHint(host)) {
       return optimization_guide::OptimizationTypeDecision::
           kHadHintButNotLoadedInTime;
     }
@@ -1000,6 +986,8 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   }
 
+  const optimization_guide::proto::PageHint* matched_page_hint =
+      loaded_hint ? GetPageHint(navigation_data, url, loaded_hint) : nullptr;
   return IsOptimizationTypeSupportedByPageHint(
              matched_page_hint, optimization_type, optimization_metadata)
              ? optimization_guide::OptimizationTypeDecision::kAllowedByHint
@@ -1093,9 +1081,9 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
     return;
   }
 
-  MaybeFetchHintsForNavigation(navigation_handle);
-
   LoadHintForNavigation(navigation_handle, std::move(callback));
+
+  MaybeFetchHintsForNavigation(navigation_handle);
 }
 
 void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
@@ -1181,8 +1169,22 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
 }
 
 void OptimizationGuideHintsManager::OnNavigationFinish(
-    const GURL& navigation_url) {
+    const GURL& navigation_url,
+    OptimizationGuideNavigationData* navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Populate navigation data with hint information.
+  if (navigation_data && navigation_url.has_host()) {
+    const std::string host = navigation_url.host();
+    navigation_data->set_has_hint_after_commit(hint_cache_->HasHint(host));
+
+    const optimization_guide::proto::Hint* loaded_hint =
+        hint_cache_->GetHostKeyedHintIfLoaded(host);
+    if (loaded_hint) {
+      navigation_data->set_serialized_hint_version_string(
+          loaded_hint->version());
+    }
+  }
 
   // The callbacks will be invoked when the fetch request comes back, so it
   // will be cleaned up later.

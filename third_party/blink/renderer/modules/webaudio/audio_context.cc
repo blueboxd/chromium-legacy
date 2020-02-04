@@ -565,7 +565,7 @@ void AudioContext::ContextDestroyed(ExecutionContext*) {
 bool AudioContext::HasPendingActivity() const {
   // There's activity if the context is is not closed.  Suspended contexts count
   // as having activity even though they are basically idle with nothing going
-  // on.  However, the can be resumed at any time, so we don't want contexts
+  // on.  However, they can be resumed at any time, so we don't want contexts
   // going away prematurely.
   return (ContextState() != kClosed) && BaseAudioContext::HasPendingActivity();
 }

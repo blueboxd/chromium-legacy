@@ -145,8 +145,8 @@ void WebContentController::ProcessRequest(
 
     case webview::WebviewRequest::kResize:
       if (request.has_resize()) {
-        GetWebContents()->GetNativeView()->SetBounds(
-            gfx::Rect(request.resize().width(), request.resize().height()));
+        HandleResize(
+            gfx::Size(request.resize().width(), request.resize().height()));
       } else {
         client_->OnError("resize() not supplied");
       }
@@ -177,13 +177,7 @@ void WebContentController::AttachTo(aura::Window* window, int window_id) {
   // Unretained is safe because we unset this in the destructor.
   surface_->SetEmbeddedSurfaceId(base::BindRepeating(
       &WebContentController::GetSurfaceId, base::Unretained(this)));
-
-  content::RenderFrameHost* rfh = GetWebContents()->GetMainFrame();
-  if (rfh) {
-    const base::Optional<gfx::Size>& size = rfh->GetFrameSize();
-    if (size.has_value())
-      surface_->SetEmbeddedSurfaceSize(*size);
-  }
+  HandleResize(contents_window->bounds().size());
 }
 
 void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
@@ -422,6 +416,15 @@ void WebContentController::HandleSetAutoMediaPlaybackPolicy(
   contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 }
 
+void WebContentController::HandleResize(const gfx::Size& size) {
+  LOG(INFO) << "Sizing web content to " << size.ToString();
+  GetWebContents()->GetNativeView()->SetBounds(gfx::Rect(size));
+  if (surface_) {
+    surface_->SetEmbeddedSurfaceSize(size);
+    surface_->Commit();
+  }
+}
+
 viz::SurfaceId WebContentController::GetSurfaceId() {
   content::WebContents* web_contents = GetWebContents();
   // Web contents are destroyed before controller for cast apps.
@@ -445,9 +448,9 @@ void WebContentController::OnSurfaceDestroying(exo::Surface* surface) {
 void WebContentController::FrameSizeChanged(
     content::RenderFrameHost* render_frame_host,
     const gfx::Size& frame_size) {
-  content::RenderFrameHost* rfh = GetWebContents()->GetMainFrame();
-  if (render_frame_host == rfh && surface_) {
-    surface_->SetEmbeddedSurfaceSize(frame_size);
+  // The surface ID may have changed, so trigger a new commit to re-issue the
+  // draw quad.
+  if (surface_) {
     surface_->Commit();
   }
 }
@@ -474,13 +477,7 @@ void WebContentController::RenderFrameHostChanged(
     content::RenderFrameHost* new_host) {
   // The surface ID may have changed, so trigger a new commit to re-issue the
   // draw quad.
-  content::RenderFrameHost* rfh = GetWebContents()->GetMainFrame();
-  if (new_host == rfh && surface_) {
-    if (new_host) {
-      auto size = new_host->GetFrameSize();
-      if (size.has_value())
-        surface_->SetEmbeddedSurfaceSize(*size);
-    }
+  if (surface_) {
     surface_->Commit();
   }
 }

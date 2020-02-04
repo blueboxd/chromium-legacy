@@ -26,6 +26,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -303,8 +305,10 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
   replacements["title"] = l10n_util::GetStringUTF8(IDS_NEW_TAB_TITLE);
   replacements["hideCookieControls"] =
-      CookieControlsHandler::ShouldHideCookieControlsUI(profile_) ? "hidden"
-                                                                  : "";
+      CookieControlsServiceFactory::GetForProfile(profile_)
+              ->ShouldHideCookieControlsUI()
+          ? "hidden"
+          : "";
   replacements["cookieControlsTitle"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
   replacements["cookieControlsDescription"] =
@@ -312,13 +316,16 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   // Ensure passing off-the-record profile; |profile_| might not be incognito.
   DCHECK(profile_->HasOffTheRecordProfile());
   replacements["cookieControlsToggleChecked"] =
-      CookieControlsHandler::GetToggleCheckedValue(
+      CookieControlsServiceFactory::GetForProfile(
           profile_->GetOffTheRecordProfile())
+              ->GetToggleCheckedValue()
           ? "checked"
           : "";
   replacements["hideTooltipIcon"] =
-      CookieControlsHandler::ShouldEnforceCookieControls(profile_) ? ""
-                                                                   : "hidden";
+      CookieControlsServiceFactory::GetForProfile(profile_)
+              ->ShouldEnforceCookieControls()
+          ? ""
+          : "hidden";
   replacements["cookieControlsToolTipIcon"] =
       CookieControlsHandler::GetEnforcementIcon(profile_);
   replacements["cookieControlsTooltipText"] = l10n_util::GetStringFUTF8(

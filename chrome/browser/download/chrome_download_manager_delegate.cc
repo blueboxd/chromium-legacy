@@ -521,7 +521,9 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
       state->CompleteDownload();
       return false;
     }
-  } else if (!state->is_complete()) {
+  } else if (!state->is_complete() &&
+             item->GetDangerType() !=
+                 download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
     // Don't complete the download until we have an answer.
     state->set_callback(std::move(internal_complete_callback));
     return false;

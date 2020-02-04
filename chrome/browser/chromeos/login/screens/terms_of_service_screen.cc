@@ -59,7 +59,7 @@ void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
     view_ = NULL;
 }
 
-void TermsOfServiceScreen::Show() {
+void TermsOfServiceScreen::ShowImpl() {
   if (!view_)
     return;
 
@@ -75,7 +75,7 @@ void TermsOfServiceScreen::Show() {
   StartDownload();
 }
 
-void TermsOfServiceScreen::Hide() {
+void TermsOfServiceScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

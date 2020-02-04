@@ -684,6 +684,7 @@ void NavigationSimulatorImpl::FailWithResponseHeaders(
       static_cast<TestNavigationURLLoader*>(request_->loader_for_testing());
   CHECK(url_loader);
   network::URLLoaderCompletionStatus status(error_code);
+  status.resolve_error_info = resolve_error_info_;
   status.ssl_info = ssl_info_;
   url_loader->SimulateErrorWithStatus(status);
 
@@ -914,6 +915,11 @@ void NavigationSimulatorImpl::SetLoadURLParams(
 
 void NavigationSimulatorImpl::SetAutoAdvance(bool auto_advance) {
   auto_advance_ = auto_advance;
+}
+
+void NavigationSimulatorImpl::SetResolveErrorInfo(
+    const net::ResolveErrorInfo& resolve_error_info) {
+  resolve_error_info_ = resolve_error_info;
 }
 
 void NavigationSimulatorImpl::SetSSLInfo(const net::SSLInfo& ssl_info) {

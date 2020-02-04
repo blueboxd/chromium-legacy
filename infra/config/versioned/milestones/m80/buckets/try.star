@@ -34,8 +34,7 @@ luci.bucket(
 
 luci.cq_group(
     name = vars.cq_group.get(),
-    # TODO(crbug/959436): enable it.
-    cancel_stale_tryjobs = False,
+    cancel_stale_tryjobs = True,
     retry_config = cq.RETRY_ALL_FAILURES,
     tree_status_host = 'chromium-status.appspot.com/',
     watch = cq.refset(

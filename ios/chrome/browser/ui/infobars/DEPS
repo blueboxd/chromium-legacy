@@ -4,7 +4,4 @@ specific_include_rules = {
   "infobar_egtest\.mm": [
     "+ios/web/public/test/http_server",
   ],
-  "translate_infobar_egtest\.mm": [
-    "+ios/web/public/test/http_server",
-  ],
 }

@@ -36,7 +36,7 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
   void Schedule(UpdateNotificationInfo data) override;
   bool IsReadyToDisplay() const override;
   void OnUserDismiss() override;
-  void OnUserClick() override;
+  void OnUserClick(const ExtraData& extra) override;
 
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.
@@ -44,7 +44,8 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
                                notifications::ClientOverview overview);
 
   // Build notification ScheduleParams for update notification.
-  notifications::ScheduleParams BuildScheduleParams();
+  notifications::ScheduleParams BuildScheduleParams(
+      bool should_show_immediately);
 
   // Return throttle interval from Android shared preference if exists,
   // otherwise return the default interval from config.

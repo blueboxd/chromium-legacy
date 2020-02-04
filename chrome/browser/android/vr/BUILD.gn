@@ -33,6 +33,8 @@ static_library("vr_android") {
     "gvr_graphics_delegate.h",
     "gvr_input_delegate.cc",
     "gvr_input_delegate.h",
+    "gvr_install_helper.cc",
+    "gvr_install_helper.h",
     "gvr_keyboard_delegate.cc",
     "gvr_keyboard_delegate.h",
     "gvr_keyboard_shim.cc",

@@ -463,10 +463,6 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
   if (GetDelegate().DidCommit()) {
-    if (timing.response_start) {
-      time_commit_ =
-          GetDelegate().GetNavigationStart() + *timing.response_start;
-    }
     RecordHistograms(GetDelegate().GetSourceId());
   }
 
@@ -475,8 +471,6 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
 
 void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (GetDelegate().DidCommit() && timing.response_start)
-    time_commit_ = GetDelegate().GetNavigationStart() + *timing.response_start;
   RecordHistograms(GetDelegate().GetSourceId());
 }
 
@@ -487,15 +481,6 @@ void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
   for (auto const& resource : resources) {
     ProcessResourceForPage(rfh->GetProcess()->GetID(), resource);
     ProcessResourceForFrame(rfh, resource);
-  }
-}
-
-void AdsPageLoadMetricsObserver::OnPageInteractive(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (timing.interactive_timing->interactive) {
-    time_interactive_ = GetDelegate().GetNavigationStart() +
-                        *timing.interactive_timing->interactive;
-    page_ad_bytes_at_interactive_ = aggregate_frame_data_->ad_network_bytes();
   }
 }
 
@@ -714,31 +699,6 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
       aggregate_ad_info_by_visibility_
           [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
               .cpu_time.InMilliseconds());
-
-  base::TimeTicks current_time = clock_->NowTicks();
-  if (!time_commit_.is_null()) {
-    int time_since_commit = (current_time - time_commit_).InMicroseconds();
-    if (time_since_commit > 0) {
-      int ad_kbps_from_commit =
-          (aggregate_frame_data_->ad_network_bytes() >> 10) * 1000 * 1000 /
-          time_since_commit;
-      builder.SetAdBytesPerSecond(ad_kbps_from_commit);
-    }
-  }
-
-  // TODO(https://crbug.com/1040613): Consider removing TTI ad metrics.
-  if (!time_interactive_.is_null()) {
-    int time_since_interactive =
-        (current_time - time_interactive_).InMicroseconds();
-    int64_t bytes_since_interactive =
-        aggregate_frame_data_->ad_network_bytes() -
-        page_ad_bytes_at_interactive_;
-    if (time_since_interactive > 0) {
-      int ad_kbps_since_interactive = (bytes_since_interactive >> 10) * 1000 *
-                                      1000 / time_since_interactive;
-      builder.SetAdBytesPerSecondAfterInteractive(ad_kbps_since_interactive);
-    }
-  }
   builder.Record(ukm_recorder->Get());
 }
 

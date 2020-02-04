@@ -53,6 +53,7 @@ import org.chromium.webapk.test.WebApkTestHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -393,7 +394,8 @@ public class WebApkUpdateManagerUnitTest {
                                         SHARE_TARGET_ENC_TYPE_MULTIPART),
                         manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts),
                 false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
-                null /* shareData */, 1 /* webApkVersionCode */);
+                null /* shareData */, new ArrayList<>() /* shortcutItems */,
+                1 /* webApkVersionCode */);
     }
 
     /**

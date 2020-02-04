@@ -86,7 +86,7 @@ unsigned AudioNodeInput::NumberOfChannels() const {
   return max_channels;
 }
 
-AudioBus* AudioNodeInput::Bus() {
+scoped_refptr<AudioBus> AudioNodeInput::Bus() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // Handle single connection specially to allow for in-place processing.
@@ -98,13 +98,13 @@ AudioBus* AudioNodeInput::Bus() {
   return InternalSummingBus();
 }
 
-AudioBus* AudioNodeInput::InternalSummingBus() {
+scoped_refptr<AudioBus> AudioNodeInput::InternalSummingBus() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
-  return internal_summing_bus_.get();
+  return internal_summing_bus_;
 }
 
-void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
+void AudioNodeInput::SumAllConnections(scoped_refptr<AudioBus> summing_bus,
                                        uint32_t frames_to_process) {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
@@ -132,8 +132,8 @@ void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
   }
 }
 
-AudioBus* AudioNodeInput::Pull(AudioBus* in_place_bus,
-                               uint32_t frames_to_process) {
+scoped_refptr<AudioBus> AudioNodeInput::Pull(AudioBus* in_place_bus,
+                                             uint32_t frames_to_process) {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // Handle single connection case.
@@ -144,7 +144,7 @@ AudioBus* AudioNodeInput::Pull(AudioBus* in_place_bus,
     return output->Pull(in_place_bus, frames_to_process);
   }
 
-  AudioBus* internal_summing_bus = this->InternalSummingBus();
+  scoped_refptr<AudioBus> internal_summing_bus = this->InternalSummingBus();
 
   if (!NumberOfRenderingConnections()) {
     // At least, generate silence if we're not connected to anything.

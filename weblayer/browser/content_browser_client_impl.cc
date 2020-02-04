@@ -13,9 +13,11 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -43,11 +45,11 @@
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/browser/ssl_error_handler.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
+#include "weblayer/browser/weblayer_security_blocking_page_factory.h"
 #include "weblayer/common/features.h"
 #include "weblayer/public/common/switches.h"
 #include "weblayer/public/fullscreen_delegate.h"
@@ -81,6 +83,10 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "weblayer/browser/captive_portal_service_factory.h"
+#endif
+
 namespace switches {
 // Specifies a list of hosts for whom we bypass proxy settings and use direct
 // connections. Ignored if --proxy-auto-detect or --no-proxy-server are also
@@ -110,6 +116,30 @@ class SSLCertReporterImpl : public SSLCertReporter {
   void ReportInvalidCertificateChain(
       const std::string& serialized_report) override {}
 };
+
+// Wrapper for SSLErrorHandler::HandleSSLError() that supplies //weblayer-level
+// parameters.
+void HandleSSLErrorWrapper(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback) {
+  CaptivePortalService* captive_portal_service = nullptr;
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  captive_portal_service = CaptivePortalServiceFactory::GetForBrowserContext(
+      web_contents->GetBrowserContext());
+#endif
+
+  SSLErrorHandler::HandleSSLError(
+      web_contents, cert_error, ssl_info, request_url,
+      std::move(ssl_cert_reporter), std::move(blocking_page_ready_callback),
+      weblayer::BrowserProcess::GetInstance()->GetNetworkTimeTracker(),
+      captive_portal_service,
+      std::make_unique<weblayer::WebLayerSecurityBlockingPageFactory>());
+}
 
 }  // namespace
 
@@ -343,7 +373,7 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
-      base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
+      base::BindOnce(&HandleSSLErrorWrapper), base::BindOnce(&IsInHostedApp)));
 
 #if defined(OS_ANDROID)
   if (handle->IsInMainFrame()) {

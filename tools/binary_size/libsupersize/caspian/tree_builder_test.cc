@@ -20,7 +20,7 @@ namespace caspian {
 
 namespace {
 
-using FilterList = std::vector<std::function<bool(const BaseSymbol&)>>;
+using FilterList = std::vector<TreeBuilder::FilterFunc>;
 
 void MakeSymbol(SizeInfo* info,
                 SectionId section_id,

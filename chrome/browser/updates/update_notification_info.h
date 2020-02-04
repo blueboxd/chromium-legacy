@@ -21,6 +21,13 @@ struct UpdateNotificationInfo {
 
   // The body text of the notification.
   base::string16 message;
+
+  // Update state enum value. Align with |UpdateState| in
+  // UpdateStatusProvider.java
+  int state;
+
+  // Should show the notification right away.
+  bool should_show_immediately;
 };
 
 }  // namespace updates

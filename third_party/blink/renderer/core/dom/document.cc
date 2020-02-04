@@ -55,7 +55,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -7771,13 +7770,6 @@ CoreProbeSink* Document::GetProbeSink() {
   if (!frame && TemplateDocumentHost())
     frame = TemplateDocumentHost()->GetFrame();
   return probe::ToCoreProbeSink(frame);
-}
-
-service_manager::InterfaceProvider* Document::GetInterfaceProvider() {
-  if (!GetFrame())
-    return nullptr;
-
-  return &GetFrame()->GetInterfaceProvider();
 }
 
 BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {

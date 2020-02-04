@@ -242,6 +242,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   image_format_ = RGBA_8888;
 #endif
 
+  capabilities_.android_surface_control_feature_enabled = true;
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   // TODO(vasilyt): Need to figure out why partial swap isn't working
   capabilities_.supports_post_sub_buffer = false;
@@ -277,8 +278,12 @@ SkiaOutputDeviceBufferQueue::Create(
     gpu::MemoryTracker* memory_tracker,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback) {
 #if defined(OS_ANDROID)
-  if (!features::IsAndroidSurfaceControlEnabled())
+  if (deps->GetGpuFeatureInfo()
+          .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
+      gpu::kGpuFeatureStatusEnabled) {
     return nullptr;
+  }
+
   bool can_be_used_with_surface_control = false;
   ANativeWindow* window =
       gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(

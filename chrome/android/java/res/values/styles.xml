@@ -246,7 +246,7 @@
 
     <!-- Manage Space Activity styles -->
     <style name="ManageSpaceActionBarModern" parent="SettingsActionBarModern">
-        <item name="titleTextStyle">@style/TextAppearance.WhiteHeadline</item>
+        <item name="titleTextStyle">@style/TextAppearance.Headline.Primary.Light</item>
     </style>
     <style name="ManageSpaceActivityButton">
       <item name="android:layout_width">wrap_content</item>

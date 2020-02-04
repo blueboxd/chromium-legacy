@@ -112,8 +112,6 @@ class AdsPageLoadMetricsObserver
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
-  void OnPageInteractive(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh) override;
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
                                 bool is_display_none) override;
@@ -237,15 +235,6 @@ class AdsPageLoadMetricsObserver
   // display state for frames. This prevents us from receiving the updates when
   // the frame elements are being destroyed in the renderer.
   bool process_display_state_updates_ = true;
-
-  // Time the page was committed.
-  base::TimeTicks time_commit_;
-
-  // Time the page was observed to be interactive.
-  base::TimeTicks time_interactive_;
-
-  // Total ad bytes loaded by the page since it was observed to be interactive.
-  size_t page_ad_bytes_at_interactive_ = 0u;
 
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
                  subresource_filter::SubresourceFilterObserver>

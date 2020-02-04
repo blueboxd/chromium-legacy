@@ -19,6 +19,15 @@ WKWebView* BuildWKWebView(CGRect frame, BrowserState* browser_state) {
   return BuildWKWebViewWithCustomContextMenu(frame, browser_state, nil);
 }
 
+WKWebView* BuildWKWebViewForQueries(BrowserState* browser_state) {
+  DCHECK(browser_state);
+
+  WKWebViewConfigurationProvider& config_provider =
+      WKWebViewConfigurationProvider::FromBrowserState(browser_state);
+  return BuildWKWebViewForQueries(config_provider.GetWebViewConfiguration(),
+                                  browser_state);
+}
+
 WKWebView* BuildWKWebViewWithCustomContextMenu(
     CGRect frame,
     BrowserState* browser_state,

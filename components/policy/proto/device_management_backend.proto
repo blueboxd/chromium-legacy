@@ -1055,6 +1055,15 @@ message CrashReportInfo {
   optional CrashReportUploadStatus upload_status = 4;
 }
 
+// Timezone information for the device. This reflects what set timezone of the
+// device, not necessarily the actual location of the device.
+message TimezoneInfo {
+  // The timezone of the device in POSIX standard. (MST7MDT,M3.2.0,M11.1.0)
+  optional string posix = 1;
+  // The timezone region of the device in the Olsen format (America/Denver).
+  optional string region = 2;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1155,6 +1164,9 @@ message DeviceStatusReportRequest {
 
   // Information about the crash report(s) generated from the local device.
   repeated CrashReportInfo crash_report_infos = 34;
+
+  // Information of the device's current timezone.
+  optional TimezoneInfo timezone_info = 35;
 }
 
 message OsUpdateStatus {
@@ -2696,6 +2708,102 @@ message ChildStatusReportResponse {
   optional string error_message = 2;
 }
 
+// Signing Algorithm for Client Certificate Provisioning Flow.
+enum SigningAlgorithm {
+  // DO NOT USE
+  SIGNING_ALGORITHM_UNSPECIFIED = 0;
+
+  SHA1_WITH_RSA = 1;
+  SHA256_WITH_RSA = 2;
+}
+
+// Client Certificate Provisioning Flow, Stage 1: Start a CSR request.
+// No additional fields because cert_profile_id and public_key are passed in the
+// outer message.
+message StartCsrRequest {}
+
+message StartCsrResponse {
+  // The client should register for FCM messages using this topic in order to
+  // receive notifications for the certificate provisioning process.
+  optional string invalidation_topic = 1;
+
+  // The verified access challenge.
+  optional bytes va_challenge = 2;
+
+  // Algorithm to sign data with for CSR creation.
+  optional SigningAlgorithm signing_algorithm = 3;
+
+  // Data to sign for CSR creation.
+  optional bytes data_to_sign = 4;
+}
+
+// Client Certificate Provisioning Flow, Stage 2: Finish the CSR request.
+message FinishCsrRequest {
+  // Verified access challenge response.
+  optional bytes va_challenge_response = 1;
+
+  // The signature generated using the private key.
+  optional bytes signature = 2;
+}
+
+message FinishCsrResponse {}
+
+// Client Certificate Provisioning Flow, Stage 3: Download the issued
+// certificate.
+message DownloadCertRequest {}
+
+message DownloadCertResponse {
+  // PEM-encoded issued certificate.
+  optional string pem_encoded_certificate = 1;
+}
+
+// Start / continue client certificate provisioning process for the profile
+// |cert_profile_id|.
+message ClientCertificateProvisioningRequest {
+  // The scope of the certificate. Similar to policy_type in PolicyFetchRequest.
+  //   google/chromeos/device => a certificate for a device is being requested.
+  //   google/chromeos/user => a certificate for a user is being requested.
+  optional string certificate_scope = 1;
+
+  // The id of the client certificate profile, specified in the policy.
+  optional string cert_profile_id = 2;
+
+  // The public key for which the certificate should be issued.
+  optional bytes public_key = 3;
+
+  // Only filled if this is a request for a certificate for a user
+  optional string device_dm_token = 4;
+
+  oneof request {
+    StartCsrRequest start_csr_request = 5;
+    FinishCsrRequest finish_csr_request = 6;
+    DownloadCertRequest download_cert_request = 7;
+  }
+}
+
+// Response for ClientCertificateProvisioningRequest.
+message ClientCertificateProvisioningResponse {
+  enum ClientCertificateProvisioningError {
+    UNDEFINED = 0;
+    TIMED_OUT = 1;
+    IDENTITY_VERIFICATION_ERROR = 2;
+    CA_ERROR = 3;
+  }
+
+  // If filled, the request can currently not be processed and the client
+  // is supposed to try again later using the same data.
+  // The value is the number of milliseconds when the client should
+  // automatically retry.
+  optional int64 try_again_later = 1;
+
+  oneof response {
+    ClientCertificateProvisioningError error = 2;
+    StartCsrResponse start_csr_response = 3;
+    FinishCsrResponse finish_csr_response = 4;
+    DownloadCertResponse download_cert_response = 5;
+  }
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -2731,6 +2839,7 @@ message ChildStatusReportResponse {
 //     * policy_validation_report
 //     * device_initial_enrollment_state
 //     * refresh_account
+//     * client_cert_provisioning
 //   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
 //     browser.
 //   * apptype: MUST BE Android or Chrome.
@@ -2748,7 +2857,7 @@ message ChildStatusReportResponse {
 //     gcm_id_update, active_directory_enroll_play_user,
 //     active_directory_play_activity, active_directory_user_signin,
 //     policy_validation_report, chrome_desktop_report,
-//     chrome_os_user_report and refresh_account requests
+//     chrome_os_user_report, refresh_account, client_cert_provisioning requests
 //     Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check,
@@ -2787,6 +2896,7 @@ message ChildStatusReportResponse {
 //   policy_validation_report: policy_validation_report_request
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
 //   refresh_account: refresh_account_request
+//   client_cert_provisioning: client_cert_provisioning_request
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
 
@@ -2890,7 +3000,11 @@ message DeviceManagementRequest {
   // A ChromeOS user report request.
   optional ChromeOsUserReportRequest chrome_os_user_report_request = 33;
 
-  // Next id: 34.
+  // Request to start / continue client certificate provisioning process.
+  optional ClientCertificateProvisioningRequest
+      client_certificate_provisionining_request = 34;
+
+  // Next id: 35.
 }
 
 // Response from server to device.
@@ -3016,5 +3130,9 @@ message DeviceManagementResponse {
   // Response to a ChromeOS user report request.
   optional ChromeOsUserReportResponse chrome_os_user_report_response = 32;
 
-  // Next id: 33.
+  // Response to a client certificate provisioning request.
+  optional ClientCertificateProvisioningResponse
+      client_cert_provisioning_response = 33;
+
+  // Next id: 34.
 }

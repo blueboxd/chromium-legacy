@@ -321,7 +321,7 @@ struct NodeStats {
   NodeStats();
   ~NodeStats();
   explicit NodeStats(const BaseSymbol& symbol);
-  void WriteIntoJson(Json::Value* out) const;
+  void WriteIntoJson(bool method_count_mode, Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
   int32_t SumCount() const;
@@ -341,6 +341,7 @@ struct TreeNode {
   void WriteIntoJson(int depth,
                      CompareFunc compare_func,
                      bool is_sparse,
+                     bool method_count_mode,
                      Json::Value* out);
 
   GroupedPath id_path;

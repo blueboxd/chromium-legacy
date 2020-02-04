@@ -185,7 +185,7 @@ class WindowCycleItemView : public WindowMiniView {
 
     // Show the backdrop if the preview view does not take up all the bounds
     // allocated for it.
-    gfx::Rect preview_max_bounds = GetLocalBounds();
+    gfx::Rect preview_max_bounds = GetContentsBounds();
     preview_max_bounds.Subtract(GetHeaderBounds());
     const gfx::Rect preview_area_bounds = preview_view()->bounds();
     SetBackdropVisibility(preview_max_bounds.size() !=
@@ -193,17 +193,11 @@ class WindowCycleItemView : public WindowMiniView {
   }
 
   gfx::Size CalculatePreferredSize() const override {
-    gfx::Size size = GetSizeForPreviewArea();
-    size.Enlarge(0, WindowMiniView::kHeaderHeightDp);
-    return size;
-  }
-
-  // Returns the size for the entire preview area (preview view and additional
-  // padding). All previews will be the same height, so if the preview view
-  // isn't tall enough we will add top and bottom padding. Previews can range
-  // in width from half to double of |kFixedPreviewHeightDp|. Again, padding
-  // will be added to the sides to achieve this if the preview is too narrow.
-  gfx::Size GetSizeForPreviewArea() const {
+    // Previews can range in width from half to double of
+    // |kFixedPreviewHeightDp|. Padding will be added to the sides to achieve
+    // this if the preview is too narrow.
+    // TODO(sammiequon): Investigate whether we can remove some of these
+    // calculations and use the views framework to layout the children.
     gfx::Size preview_size = GetPreviewViewSize();
 
     // All previews are the same height (this may add padding on top and
@@ -215,6 +209,8 @@ class WindowCycleItemView : public WindowMiniView {
     preview_size.set_width(base::ClampToRange(
         preview_size.width(), kMinPreviewWidthDp, kMaxPreviewWidthDp));
 
+    const int margin = GetInsets().width();
+    preview_size.Enlarge(margin, margin + WindowMiniView::kHeaderHeightDp);
     return preview_size;
   }
 
@@ -225,8 +221,7 @@ class WindowCycleItemView : public WindowMiniView {
 class WindowCycleView : public views::WidgetDelegateView {
  public:
   explicit WindowCycleView(const WindowCycleList::WindowList& windows)
-      : mirror_container_(new views::View()),
-        target_window_(nullptr),
+      : target_window_(nullptr),
         animation_metrics_reporter_(
             std::make_unique<WindowCycleAnimationMetricsReporter>(
                 kWindowCycleShowAnimationSmoothness)) {
@@ -244,6 +239,7 @@ class WindowCycleView : public views::WidgetDelegateView {
       layer()->SetOpacity(1.0);
     }
 
+    mirror_container_ = AddChildView(std::make_unique<views::View>());
     views::BoxLayout* layout =
         mirror_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
@@ -267,9 +263,9 @@ class WindowCycleView : public views::WidgetDelegateView {
     for (auto* window : windows) {
       // |mirror_container_| owns |view|. The |preview_view_| in |view| will
       // use trilinear filtering in InitLayerOwner().
-      WindowCycleItemView* view = new WindowCycleItemView(window);
+      auto* view = mirror_container_->AddChildView(
+          std::make_unique<WindowCycleItemView>(window));
       window_view_map_[window] = view;
-      mirror_container_->AddChildView(view);
     }
 
     // The insets in the WindowCycleItemView are coming from its border, which
@@ -280,8 +276,6 @@ class WindowCycleView : public views::WidgetDelegateView {
         window_view_map_.begin()->second->GetInsets();
     layout->set_between_child_spacing(kBetweenChildPaddingDp -
                                       cycle_item_insets.width());
-
-    AddChildView(mirror_container_);
   }
 
   ~WindowCycleView() override = default;

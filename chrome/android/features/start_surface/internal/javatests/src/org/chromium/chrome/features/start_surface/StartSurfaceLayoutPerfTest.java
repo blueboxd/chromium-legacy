@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -180,6 +181,7 @@ public class StartSurfaceLayoutPerfTest {
     @Test
     @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1048268")
     public void testTabToGridFromLiveTabWith100Tabs() throws InterruptedException {
         // Skip waiting for loading. Otherwise it would take too long.
         // Note that most of the tabs won't have thumbnails.

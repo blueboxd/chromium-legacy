@@ -16,9 +16,6 @@
   "tests": [
     {
       "include": "common_tests.json",
-      "test args": [
-        "--enable-features=SlimNavigationManager"
-      ],
       "device type": "iPhone 6s",
       "os": "12.4",
       "host os": "Mac-10.14.6",
@@ -50,9 +47,6 @@
     },
     {
       "app": "ios_chrome_integration_egtests",
-      "test args": [
-        "--enable-features=SlimNavigationManager"
-      ],
       "device type": "iPhone 6s",
       "os": "12.4",
       "xcode parallelization": true,
@@ -74,9 +68,6 @@
     },
     {
       "app": "ios_chrome_smoke_egtests",
-      "test args": [
-        "--enable-features=SlimNavigationManager"
-      ],
       "device type": "iPhone 6s",
       "os": "12.4",
       "xcode parallelization": true,
@@ -86,9 +77,6 @@
     },
     {
       "app": "ios_chrome_web_egtests",
-      "test args": [
-        "--enable-features=SlimNavigationManager"
-      ],
       "device type": "iPhone 6s",
       "os": "12.4",
       "xcode parallelization": true,
@@ -98,9 +86,6 @@
     },
     {
       "app": "ios_web_shell_egtests",
-      "test args": [
-        "--enable-features=SlimNavigationManager"
-      ],
       "device type": "iPhone 6s",
       "os": "12.4",
       "xcode parallelization": true,
@@ -110,9 +95,6 @@
     },
     {
       "app": "ios_chrome_ui_egtests",
-      "test args": [
-        "--enable-features=SlimNavigationManager"
-      ],
       "device type": "iPhone 6s",
       "os": "12.4",
       "xcode parallelization": true,

@@ -38,11 +38,10 @@ public class ClearDataDialogResultRecorder {
      * @param triggeredByUninstall Whether the dialog was triggered by uninstall.
      */
     public void handleDialogResult(boolean accepted, boolean triggeredByUninstall) {
-        if (accepted || mBrowserInitializer.hasNativeInitializationCompleted()) {
+        if (accepted || mBrowserInitializer.isFullBrowserInitialized()) {
             // If accepted, native is going to be loaded for the settings.
-            mBrowserInitializer.runNowOrAfterNativeInitialization(() ->
-                    mUmaRecorder.recordClearDataDialogAction(accepted,
-                            triggeredByUninstall));
+            mBrowserInitializer.runNowOrAfterFullBrowserStarted(
+                    () -> mUmaRecorder.recordClearDataDialogAction(accepted, triggeredByUninstall));
         } else {
             // Avoid loading native just for the sake of recording. Save the info and record
             // on next Chrome launch.

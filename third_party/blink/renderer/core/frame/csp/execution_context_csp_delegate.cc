@@ -218,10 +218,17 @@ void ExecutionContextCSPDelegate::ReportBlockedScriptExecutionToInspector(
 }
 
 void ExecutionContextCSPDelegate::DidAddContentSecurityPolicies(
-    const blink::WebVector<WebContentSecurityPolicy>& policies) {
+    WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies) {
   Document* document = GetDocument();
-  if (document && document->GetFrame())
-    document->GetFrame()->Client()->DidAddContentSecurityPolicies(policies);
+  if (!document)
+    return;
+
+  LocalFrame* frame = document->GetFrame();
+  if (!frame)
+    return;
+
+  frame->GetLocalFrameHostRemote().DidAddContentSecurityPolicies(
+      std::move(policies));
 }
 
 SecurityContext& ExecutionContextCSPDelegate::GetSecurityContext() {

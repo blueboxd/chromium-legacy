@@ -137,6 +137,7 @@ class ASH_EXPORT StatusAreaWidget : public ShelfComponent,
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;

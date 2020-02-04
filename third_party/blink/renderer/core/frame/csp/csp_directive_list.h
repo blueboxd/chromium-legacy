@@ -164,7 +164,8 @@ class CORE_EXPORT CSPDirectiveList final
   // * navigate-to
   // The exported directives only contains sources that affect navigation. For
   // instance it doesn't contains 'unsafe-inline' or 'unsafe-eval'
-  WebContentSecurityPolicy ExposeForNavigationalChecks() const;
+  network::mojom::blink::ContentSecurityPolicyPtr ExposeForNavigationalChecks()
+      const;
 
   // We consider `object-src` restrictions to be reasonable iff they're
   // equivalent to `object-src 'none'`.

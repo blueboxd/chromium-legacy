@@ -71,6 +71,23 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
             [[web_view configuration] processPool]);
 }
 
+// Tests web::BuildWKWebView function that it correctly returns a WKWebView
+// with the correct frame, WKProcessPool and calls WebClient::PreWebViewCreation
+// method.
+TEST_F(WebViewCreationUtilsTest, BuildWKWebViewForQueries) {
+  EXPECT_CALL(*creation_utils_web_client(), PreWebViewCreation()).Times(0);
+  WKWebViewConfigurationProvider& config_provider =
+      WKWebViewConfigurationProvider::FromBrowserState(GetBrowserState());
+  WKWebView* web_view = BuildWKWebViewForQueries(
+      config_provider.GetWebViewConfiguration(), GetBrowserState());
+
+  EXPECT_TRUE([web_view isKindOfClass:[WKWebView class]]);
+  EXPECT_TRUE(CGRectEqualToRect(CGRectZero, [web_view frame]));
+
+  EXPECT_EQ(config_provider.GetWebViewConfiguration().processPool,
+            [[web_view configuration] processPool]);
+}
+
 // Tests that web::BuildWKWebView always returns a web view with the same
 // processPool.
 TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {

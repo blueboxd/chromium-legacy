@@ -126,6 +126,12 @@ void NotificationCounterView::Update() {
   SetVisible(true);
 }
 
+base::string16 NotificationCounterView::GetAccessibleNameString() const {
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP,
+      message_center::MessageCenter::Get()->NotificationCount());
+}
+
 void NotificationCounterView::OnSessionStateChanged(
     session_manager::SessionState state) {
   Update();

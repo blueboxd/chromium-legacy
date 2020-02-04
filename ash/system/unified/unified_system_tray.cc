@@ -141,15 +141,15 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(quiet_mode_view_);
 
   if (features::IsSeparateNetworkIconsEnabled()) {
-    tray_container()->AddChildView(
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary));
+    network_tray_view_ =
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
     tray_container()->AddChildView(
         new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
   } else {
-    tray_container()->AddChildView(
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle));
+    network_tray_view_ =
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
   }
-
+  tray_container()->AddChildView(network_tray_view_);
   tray_container()->AddChildView(new tray::PowerTrayView(shelf));
   tray_container()->AddChildView(time_view_);
 
@@ -379,7 +379,15 @@ void UnifiedSystemTray::CloseBubble() {
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {
-  return GetAccessibleNameForTray();
+  if (IsBubbleShown())
+    return GetAccessibleNameForQuickSettingsBubble();
+  else
+    return GetAccessibleNameForTray();
+}
+
+base::string16 UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION);
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
@@ -388,8 +396,24 @@ base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
       Shell::Get()->system_tray_model()->clock()->hour_clock_type(),
       base::kKeepAmPm);
   base::string16 battery = PowerStatus::Get()->GetAccessibleNameString(false);
+  std::vector<base::string16> status = {time, battery};
+
+  status.push_back(network_tray_view_->GetVisible()
+                       ? network_tray_view_->GetAccessibleNameString()
+                       : base::EmptyString16());
+  status.push_back(notification_counter_item_->GetVisible()
+                       ? notification_counter_item_->GetAccessibleNameString()
+                       : base::EmptyString16());
+  status.push_back(ime_mode_view_->GetVisible()
+                       ? ime_mode_view_->label()->GetAccessibleNameString()
+                       : base::EmptyString16());
+  status.push_back(
+      current_locale_view_->GetVisible()
+          ? current_locale_view_->label()->GetAccessibleNameString()
+          : base::EmptyString16());
+
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION,
-                                    time, battery);
+                                    status, nullptr);
 }
 
 void UnifiedSystemTray::HideBubble(const TrayBubbleView* bubble_view) {

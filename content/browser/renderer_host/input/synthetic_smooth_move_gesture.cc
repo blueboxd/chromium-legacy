@@ -17,6 +17,26 @@ gfx::Vector2dF ProjectScalarOntoVector(float scalar,
   return gfx::ScaleVector2d(vector, scalar / vector.Length());
 }
 
+// returns the animation progress along an arctan curve to provide simple
+// ease-in ease-out behavior.
+float GetCurvedRatio(const base::TimeTicks& current,
+                     const base::TimeTicks& start,
+                     const base::TimeTicks& end,
+                     int speed_in_pixels_s) {
+  // Increasing this would make the start and the end of the curv smoother.
+  // Hence the higher value for the higher speed.
+  const float kArctanRange = sqrt(static_cast<double>(speed_in_pixels_s)) / 100;
+
+  const float kMaxArctan = std::atan(kArctanRange / 2);
+  const float kMinArctan = std::atan(-kArctanRange / 2);
+
+  float linear_ratio =
+      (current - start).InSecondsF() / (end - start).InSecondsF();
+  return (std::atan(kArctanRange * linear_ratio - kArctanRange / 2) -
+          kMinArctan) /
+         (kMaxArctan - kMinArctan);
+}
+
 const int kDefaultSpeedInPixelsPerSec = 800;
 
 }  // namespace
@@ -340,11 +360,11 @@ gfx::Vector2dF SyntheticSmoothMoveGesture::GetPositionDeltaAtTime(
   if (FinishedCurrentMoveSegment(timestamp))
     return params_.distances[current_move_segment_];
 
-  float delta_length =
-      params_.speed_in_pixels_s *
-      (timestamp - current_move_segment_start_time_).InSecondsF();
-  return ProjectScalarOntoVector(delta_length,
-                                 params_.distances[current_move_segment_]);
+  return gfx::ScaleVector2d(
+      params_.distances[current_move_segment_],
+      GetCurvedRatio(timestamp, current_move_segment_start_time_,
+                     current_move_segment_stop_time_,
+                     params_.speed_in_pixels_s));
 }
 
 void SyntheticSmoothMoveGesture::ComputeNextMoveSegment() {

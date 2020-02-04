@@ -99,10 +99,6 @@ class MockFrameHost : public mojom::FrameHost {
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override {}
-
-  void DidAddContentSecurityPolicies(
-      std::vector<network::mojom::ContentSecurityPolicyPtr>) override {}
-
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,

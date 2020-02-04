@@ -162,18 +162,21 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
     const std::string& body,
     const std::string& meta_data);
 
+using WriteToDiskCacheCallback =
+    base::OnceCallback<void(ServiceWorkerDatabase::ResourceRecord record)>;
+
 // Writes the script down to |storage| asynchronously. When completing tasks,
 // |callback| will be called. You must wait for |callback| instead of
 // base::RunUntilIdle because wiriting to the storage might happen on another
 // thread and base::RunLoop could get idle before writes has not finished yet.
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
+void WriteToDiskCacheAsync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data,
-    base::OnceClosure callback);
+    WriteToDiskCacheCallback callback);
 
 // Calls ServiceWorkerStorage::CreateNewResponseWriter() and returns the
 // created writer synchronously.

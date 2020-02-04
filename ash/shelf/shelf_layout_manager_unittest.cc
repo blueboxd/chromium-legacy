@@ -23,6 +23,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
@@ -76,6 +77,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -1987,7 +1989,7 @@ TEST_P(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
   GetAppListTestHelper()->CheckVisibility(false);
 
   ShelfNavigationWidget::TestApi navigation_test_api(
-      shelf->shelf_widget()->navigation_widget());
+      shelf->navigation_widget());
   ASSERT_TRUE(navigation_test_api.IsHomeButtonVisible());
   // Wait for the back button to finish animating from behind the home button.
   ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
@@ -2098,7 +2100,7 @@ TEST_P(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
 
   // Press the AppList button by mouse.
   views::View* home_button =
-      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+      GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   GetEventGenerator()->MoveMouseTo(
       home_button->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickLeftButton();
@@ -3438,12 +3440,18 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
   const struct {
     views::View* view;
     bool with_mousewheel_scroll;
+    bool reverse_scroll;
   } test_table[]{
-      {GetPrimaryShelf()->GetShelfViewForTesting(), false},
-      {GetShelfWidget()->status_area_widget()->GetContentsView(), false},
-      {GetShelfWidget()->navigation_widget()->GetContentsView(), false},
-      {GetShelfWidget()->status_area_widget()->GetContentsView(), true},
-      {GetShelfWidget()->navigation_widget()->GetContentsView(), true},
+      {GetPrimaryShelf()->GetShelfViewForTesting(), false, false},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), false, false},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), false, false},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), true, false},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), true, false},
+      {GetPrimaryShelf()->GetShelfViewForTesting(), false, true},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), false, true},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), false, true},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), true, true},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), true, true},
   };
   base::HistogramTester histogram_tester;
   const int scroll_offset_threshold =
@@ -3456,10 +3464,13 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
     // Scrolling up from the center of the view above the threshold should show
     // the peeking app list.
     const gfx::Point start = test.view->GetBoundsInScreen().CenterPoint();
-    if (test.with_mousewheel_scroll)
-      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold + 1);
-    else
-      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold + 10);
+    if (test.with_mousewheel_scroll) {
+      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold + 1,
+                                   test.reverse_scroll);
+    } else {
+      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold + 10,
+                                          test.reverse_scroll);
+    }
 
     GetAppListTestHelper()->WaitUntilIdle();
     GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
@@ -3474,12 +3485,14 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
     // Scrolling up from the center of the view below the threshold should not
     // show the app list.
     if (test.with_mousewheel_scroll) {
-      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold);
+      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold,
+                                   test.reverse_scroll);
     } else {
       // A ScrollEvent gets amplified when transformed into a mousewheel event.
       // We need to set a lower offset so when it gets amplified, it still is
       // under the threshold.
-      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold - 10);
+      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold - 10,
+                                          test.reverse_scroll);
     }
 
     GetAppListTestHelper()->WaitUntilIdle();
@@ -3547,12 +3560,10 @@ TEST_P(DimShelfLayoutManagerTest, AutoDimHandlerInitialized) {
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
             kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
-      kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
-      kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
+            kExpectedDefaultShelfOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       kExpectedDefaultShelfOpacity);
@@ -3582,14 +3593,12 @@ TEST_P(DimShelfLayoutManagerTest, FloatingShelfDimAlpha) {
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
             kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
-      dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
-                        : kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
-      dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
-                        : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
+            dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
+                              : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
+            dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
+                              : kExpectedDefaultShelfOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
@@ -3611,14 +3620,12 @@ TEST_P(DimShelfLayoutManagerTest, MaximizedShelfDimAlpha) {
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
             kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
-      dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
-                        : kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
-      dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
-                        : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
+            dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
+                              : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
+            dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
+                              : kExpectedDefaultShelfOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
@@ -3680,13 +3687,11 @@ TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeShelfDimAlpha) {
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
             kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
-      kExpectedFloatingShelfDimOpacity);
-  EXPECT_EQ(
-      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
-      shelf_hotseat_enabled ? kExpectedDefaultShelfOpacity
-                            : kExpectedFloatingShelfDimOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
+            kExpectedFloatingShelfDimOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
+            shelf_hotseat_enabled ? kExpectedDefaultShelfOpacity
+                                  : kExpectedFloatingShelfDimOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       kExpectedFloatingShelfDimOpacity);

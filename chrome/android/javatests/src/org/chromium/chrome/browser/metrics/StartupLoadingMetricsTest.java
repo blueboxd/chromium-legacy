@@ -17,10 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Log;
-import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LoadStatusRecorder.LoadLibraryStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -56,8 +52,6 @@ public class StartupLoadingMetricsTest {
             "Startup.Android.Cold.TimeToFirstNavigationCommit";
     private static final String FIRST_CONTENTFUL_PAINT_HISTOGRAM =
             "Startup.Android.Cold.TimeToFirstContentfulPaint";
-    private static final String LOAD_LIBRARY_STATUS_HISTOGRAM =
-            "ChromiumAndroidLinker.LoadLibraryStatus";
 
     private static final String TABBED_SUFFIX = ChromeTabbedActivity.STARTUP_UMA_HISTOGRAM_SUFFIX;
     private static final String WEBAPK_SUFFIX = WebApkActivity.STARTUP_UMA_HISTOGRAM_SUFFIX;
@@ -142,63 +136,6 @@ public class StartupLoadingMetricsTest {
         }, 10000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeTabUtils.waitForTabPageLoaded(
                 mWebApkActivityTestRule.getActivity().getActivityTab(), startUrl);
-    }
-
-    /**
-     * Tests that the startup loading histograms are recorded only once on startup. In addition
-     * tests that library loading histograms were recorded at startup.
-     */
-    @Test
-    @LargeTest
-    @RetryOnFailure
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
-            message = "https://crbug.com/1023433")
-    public void testStartWithURLRecorded() throws Exception {
-        runAndWaitForPageLoadMetricsRecorded(
-                () -> mTabbedActivityTestRule.startMainActivityWithURL(mTestPage));
-        assertHistogramsRecorded(1, TABBED_SUFFIX);
-        loadUrlAndWaitForPageLoadMetricsRecorded(mTabbedActivityTestRule, mTestPage2);
-        assertHistogramsRecorded(1, TABBED_SUFFIX);
-
-        // LibraryLoader checks.
-        if (!LibraryLoader.getInstance().useChromiumLinker()) {
-            Log.w(TAG, "Skipping test because not using ChromiumLinker.");
-            return;
-        }
-        // TODO(pasko): Make the checks stricter once renderer-side histograms become available for
-        // testing. Once fixed, the http://crbug.com/987288 should help with it.
-        Assert.assertTrue("At least the browser process should record a sample.",
-                1 <= RecordHistogram.getHistogramTotalCountForTesting(
-                        LOAD_LIBRARY_STATUS_HISTOGRAM));
-
-        // The specific values are explained in LoadLibraryStatus in
-        // tools/metrics/histograms/enums.xml.
-        final int browserQuickSuccess = 15;
-        Assert.assertEquals(browserQuickSuccess,
-                LoadLibraryStatus.WAS_SUCCESSFUL | LoadLibraryStatus.IS_BROWSER
-                        | LoadLibraryStatus.AT_FIXED_ADDRESS | LoadLibraryStatus.FIRST_ATTEMPT);
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            // On KitKat it is likely to fall back to loading without fixed address.
-            if (0 == getLibraryStatusHistogramValueCount(browserQuickSuccess)) {
-                final int browserNoFixedSuccess = 13;
-                Assert.assertEquals(browserNoFixedSuccess,
-                        browserQuickSuccess & ~LoadLibraryStatus.AT_FIXED_ADDRESS);
-                Assert.assertEquals("Browser-side fallback to no-fixed address should happen", 1,
-                        getLibraryStatusHistogramValueCount(browserNoFixedSuccess));
-            }
-        } else if (Build.VERSION.SDK_INT != Build.VERSION_CODES.M
-                || !ApiHelperForM.isProcess64Bit()) {
-            // Skip the check on M 64 bit. It fails rarely in the field, while one of 64bit M bots
-            // fails with RELRO start address mismatch for unknown reasons.
-            // See http://crbug.com/990551.
-            Assert.assertEquals("Browser-side sample should be present.", 1,
-                    getLibraryStatusHistogramValueCount(browserQuickSuccess));
-        }
-    }
-
-    private static int getLibraryStatusHistogramValueCount(int value) {
-        return RecordHistogram.getHistogramValueCountForTesting(
-                LOAD_LIBRARY_STATUS_HISTOGRAM, value);
     }
 
     /**

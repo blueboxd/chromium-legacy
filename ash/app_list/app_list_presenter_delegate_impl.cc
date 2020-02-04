@@ -229,23 +229,24 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   // If the event happened on the home button's widget, it'll get handled by the
   // button.
   Shelf* shelf = Shelf::ForWindow(target);
-  HomeButton* home_button =
-      shelf->shelf_widget()->navigation_widget()->GetHomeButton();
+  HomeButton* home_button = shelf->navigation_widget()->GetHomeButton();
   if (home_button && home_button->GetWidget() &&
-      target == home_button->GetWidget()->GetNativeWindow() &&
-      home_button->GetWidget()->GetWindowBoundsInScreen().Contains(
-          event->root_location())) {
-    return;
+      target == home_button->GetWidget()->GetNativeWindow()) {
+    gfx::Point location_in_home_button = event->location();
+    views::View::ConvertPointFromWidget(home_button, &location_in_home_button);
+    if (home_button->HitTestPoint(location_in_home_button))
+      return;
   }
 
   // If the event happened on the back button, it'll get handled by the
   // button.
-  BackButton* back_button =
-      shelf->shelf_widget()->navigation_widget()->GetBackButton();
+  BackButton* back_button = shelf->navigation_widget()->GetBackButton();
   if (back_button && back_button->GetWidget() &&
-      target == back_button->GetWidget()->GetNativeWindow() &&
-      back_button->bounds().Contains(event->location())) {
-    return;
+      target == back_button->GetWidget()->GetNativeWindow()) {
+    gfx::Point location_in_back_button = event->location();
+    views::View::ConvertPointFromWidget(back_button, &location_in_back_button);
+    if (back_button->HitTestPoint(location_in_back_button))
+      return;
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
@@ -262,7 +263,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
 
     // Keep the app list open if the event happened in the shelf area.
     const aura::Window* hotseat_window =
-        shelf->shelf_widget()->hotseat_widget()->GetNativeWindow();
+        shelf->hotseat_widget()->GetNativeWindow();
     if (!hotseat_window || !hotseat_window->Contains(target))
       presenter_->Dismiss(event->time_stamp());
   }

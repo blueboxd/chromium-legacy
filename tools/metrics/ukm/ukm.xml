@@ -238,12 +238,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="AdBytesPerSecond">
+    <obsolete>
+      Deprecated 01/2020.
+    </obsolete>
     <summary>
       Amount of network bytes used to load ad resources on the page, per second
       the page was alive after commit. Measured in kilobytes per second.
     </summary>
   </metric>
   <metric name="AdBytesPerSecondAfterInteractive">
+    <obsolete>
+      Deprecated 01/2020.
+    </obsolete>
     <summary>
       Amount of network bytes used to load ad resources on the page per second
       after the page was interactive. Measured in kilobytes.
@@ -3775,9 +3781,29 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapEnd">
+    <obsolete>
+      Deprecated 02/2020. Split into
+      SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapStart
+      and SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd.
+    </obsolete>
     <summary>
       The time from when the a compositor frame is started to draw to when it
       ends swap.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapStart">
+    <summary>
+      The time from when a compositor frame is started to draw to when it starts
+      swap.
     </summary>
     <aggregation>
       <history>
@@ -3808,6 +3834,20 @@ be describing additional metrics about the same event.
     <summary>
       The time from when the a compositor frame ends swap to when it is
       presented.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd">
+    <summary>
+      The time from when a compositor frame starts swap to when it ends swap.
     </summary>
     <aggregation>
       <history>
@@ -4155,6 +4195,18 @@ be describing additional metrics about the same event.
       start of event processing on the main thread for the meaningful input. In
       ms. (go/FirstInputDelay)
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -7001,6 +7053,22 @@ be describing additional metrics about the same event.
       navigation for this page load was initiated.
     </summary>
   </metric>
+  <metric name="Net.ImageBytes">
+    <summary>
+      The total number of bytes loaded from the network for images on the page.
+      This is rounded down to the nearest exponential bucket (with a bucket
+      spacing factor of 1.3). On mobile this only records bytes up until the
+      page/app is backgrounded.
+    </summary>
+  </metric>
+  <metric name="Net.ImageSubframeBytes">
+    <summary>
+      The total number of bytes loaded from the network for images on the
+      subframes of the page. This is rounded down to the nearest exponential
+      bucket (with a bucket spacing factor of 1.3). On mobile this only records
+      bytes up until the page/app is backgrounded.
+    </summary>
+  </metric>
   <metric name="Net.JavaScriptBytes">
     <summary>
       The sum of decoded body lengths of all JavaScript resouces that completed
@@ -7015,6 +7083,14 @@ be describing additional metrics about the same event.
       loading on the page. This is rounded down to the nearest exponential
       bucket (with a bucket spacing factor of 10). On mobile this only records
       bytes up until the page/app is backgrounded.
+    </summary>
+  </metric>
+  <metric name="Net.MediaBytes">
+    <summary>
+      The total number of bytes loaded from the network for media (video, audio)
+      on the page. This is rounded down to the nearest exponential bucket (with
+      a bucket spacing factor of 1.3). On mobile this only records bytes up
+      until the page/app is backgrounded.
     </summary>
   </metric>
   <metric name="Net.NetworkBytes">

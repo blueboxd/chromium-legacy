@@ -390,8 +390,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       <!DOCTYPE html>
       <html>
         <body>
-          <div style="font-size: 16px">
-            <span style="font-size: 12px">Text1</span>
+          <div style="font-size: 16pt">
+            <span style="font-size: 12pt">Text1</span>
             Text2
           </div>
         </body>

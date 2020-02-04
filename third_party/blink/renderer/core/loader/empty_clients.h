@@ -35,7 +35,6 @@
 #include "cc/paint/paint_canvas.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -299,7 +298,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks,
       const String&,
-      WebContentSecurityPolicyList,
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+          initiator_csp,
+      network::mojom::blink::CSPSourcePtr initiator_self_source,
       network::mojom::IPAddressSpace,
       mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
 
@@ -369,10 +370,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                 int32_t world_id) override {}
   bool AllowScriptExtensions() override { return false; }
 
-  service_manager::InterfaceProvider* GetInterfaceProvider() override {
-    return &interface_provider_;
-  }
-
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override {
     return GetEmptyBrowserInterfaceBroker();
   }
@@ -416,8 +413,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
  protected:
   // Not owned
   WebTextCheckClient* text_check_client_;
-
-  service_manager::InterfaceProvider interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyLocalFrameClient);
 };

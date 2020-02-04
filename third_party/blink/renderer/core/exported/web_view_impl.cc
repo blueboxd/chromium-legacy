@@ -1219,11 +1219,8 @@ void WebViewImpl::Close() {
   AsView().page->WillBeDestroyed();
 
   // The main frame being detached in WillBeDestroyed() will make use of this
-  // which happens in Page::WillBeDestroyed(). But since the RenderWidget lives
   // |animation_host_| through its WebFrameWidget, before causing the
-  // forever (https://crbug.com/419087), the WebWidget is not closed elsewhere.
   // WebWidgetClient and the AnimationHost to be destroyed. So this is nulled
-  // So we close it here but try to simulate the same ordering by closing it
   // out after detaching the main frame.
   animation_host_ = nullptr;
 
@@ -2043,10 +2040,6 @@ void WebViewImpl::DidAttachLocalMainFrame() {
 void WebViewImpl::DidDetachLocalMainFrame() {
   // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
   // for a local main frame is going away.
-  // TODO(crbug.com/419087): For now, the WebWidgetClient (aka RenderWidget)
-  // is not destroyed, so this comment is not true, but it will be in the
-  // future. All references between |this| and the WebWidgetClient should be
-  // dropped regardless.
   scoped_defer_main_frame_update_ = nullptr;
 }
 

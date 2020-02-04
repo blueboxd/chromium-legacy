@@ -174,6 +174,9 @@ ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
 
 ASH_PUBLIC_EXPORT extern const char kLockScreenMediaControlsEnabled[];
 
+ASH_PUBLIC_EXPORT extern const char kNaturalScroll[];
+ASH_PUBLIC_EXPORT extern const char kMouseReverseScroll[];
+
 }  // namespace prefs
 
 }  // namespace ash

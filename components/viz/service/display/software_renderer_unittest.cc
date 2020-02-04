@@ -468,25 +468,43 @@ TEST_F(SoftwareRendererTest, PartialSwap) {
   auto* device = device_owned.get();
   InitializeRenderer(std::move(device_owned));
 
-  RenderPassList list;
+  {
+    // Draw one black frame to make sure output surface is reshaped before
+    // tests.
+    RenderPassList list;
+    int root_pass_id = 1;
+    RenderPass* root_pass =
+        AddRenderPass(&list, root_pass_id, gfx::Rect(viewport_size),
+                      gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorBLACK);
 
-  int root_pass_id = 1;
-  RenderPass* root_pass =
-      AddRenderPass(&list, root_pass_id, gfx::Rect(viewport_size),
-                    gfx::Transform(), cc::FilterOperations());
-  cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
+    // Partial frame, we should pass this rect to the SoftwareOutputDevice.
+    // partial swap is enabled.
+    root_pass->damage_rect = gfx::Rect(viewport_size);
 
-  // Partial frame, we should pass this rect to the SoftwareOutputDevice.
-  // partial swap is enabled.
-  root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
+    renderer()->DecideRenderPassAllocationsForFrame(list);
+    renderer()->DrawFrame(&list, device_scale_factor, viewport_size);
+  }
+  {
+    RenderPassList list;
+    int root_pass_id = 1;
+    RenderPass* root_pass =
+        AddRenderPass(&list, root_pass_id, gfx::Rect(viewport_size),
+                      gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
-  renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list, device_scale_factor, viewport_size);
+    // Partial frame, we should pass this rect to the SoftwareOutputDevice.
+    // partial swap is enabled.
+    root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
 
-  // The damage rect should be reported to the SoftwareOutputDevice.
-  EXPECT_EQ(gfx::Rect(2, 2, 3, 3), device->damage_rect_at_start());
-  // The SkCanvas should be clipped to the damage rect.
-  EXPECT_EQ(gfx::RectF(2, 2, 3, 3), device->clip_rect_at_end());
+    renderer()->DecideRenderPassAllocationsForFrame(list);
+    renderer()->DrawFrame(&list, device_scale_factor, viewport_size);
+
+    // The damage rect should be reported to the SoftwareOutputDevice.
+    EXPECT_EQ(gfx::Rect(2, 2, 3, 3), device->damage_rect_at_start());
+    // The SkCanvas should be clipped to the damage rect.
+    EXPECT_EQ(gfx::RectF(2, 2, 3, 3), device->clip_rect_at_end());
+  }
 }
 
 }  // namespace

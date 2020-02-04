@@ -191,7 +191,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
         auto header = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(section->header_string_id),
             ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-            ChromeTextStyle::STYLE_EMPHASIZED_SECONDARY);
+            ChromeTextStyle::STYLE_EMPHASIZED);
         header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         header->SetBorder(views::CreateEmptyBorder(
             ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -203,7 +203,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
         auto description = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(section->description_string_id),
             ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-            views::style::STYLE_SECONDARY);
+            views::style::STYLE_PRIMARY);
         description->SetMultiLine(true);
         description->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         description->SetBorder(views::CreateEmptyBorder(0, horizontal_spacing,

@@ -94,6 +94,8 @@ constexpr char kOverviewEnterSingleClamshellHistogram[] =
     "Ash.Overview.AnimationSmoothness.Enter.SingleClamshellMode";
 constexpr char kOverviewEnterTabletHistogram[] =
     "Ash.Overview.AnimationSmoothness.Enter.TabletMode";
+constexpr char kOverviewEnterMinimizedTabletHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Enter.MinimizedTabletMode";
 constexpr char kOverviewEnterSplitViewHistogram[] =
     "Ash.Overview.AnimationSmoothness.Enter.SplitView";
 
@@ -103,6 +105,8 @@ constexpr char kOverviewExitSingleClamshellHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.SingleClamshellMode";
 constexpr char kOverviewExitTabletHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.TabletMode";
+constexpr char kOverviewExitMinimizedTabletHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Exit.MinimizedTabletMode";
 constexpr char kOverviewExitSplitViewHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.SplitView";
 
@@ -116,15 +120,18 @@ constexpr char kOverviewScrollMaxLatencyHistogram[] =
 template <const char* clamshell_single_name,
           const char* clamshell_multi_name,
           const char* tablet_name,
-          const char* splitview_name>
+          const char* splitview_name,
+          const char* tablet_minimized_name>
 class OverviewFpsCounter : public FpsCounter {
  public:
   OverviewFpsCounter(ui::Compositor* compositor,
                      bool in_split_view,
-                     bool single_animation_in_clamshell)
+                     bool single_animation_in_clamshell,
+                     bool minimized_in_tablet)
       : FpsCounter(compositor),
         in_split_view_(in_split_view),
-        single_animation_in_clamshell_(single_animation_in_clamshell) {}
+        single_animation_in_clamshell_(single_animation_in_clamshell),
+        minimized_in_tablet_(minimized_in_tablet) {}
   ~OverviewFpsCounter() override {
     int smoothness = ComputeSmoothness();
     if (smoothness < 0)
@@ -133,8 +140,14 @@ class OverviewFpsCounter : public FpsCounter {
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_single_name, smoothness);
     else
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_multi_name, smoothness);
-    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view_,
-                                                     tablet_name, smoothness);
+
+    if (minimized_in_tablet_) {
+      UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(
+          in_split_view_, tablet_minimized_name, smoothness);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view_,
+                                                       tablet_name, smoothness);
+    }
     UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view_, splitview_name,
                                           smoothness);
   }
@@ -145,6 +158,9 @@ class OverviewFpsCounter : public FpsCounter {
   // True if only top window animates upon enter/exit overview in clamshell.
   bool single_animation_in_clamshell_;
 
+  // True if all windows are minimized in tablet.
+  bool minimized_in_tablet_;
+
   DISALLOW_COPY_AND_ASSIGN(OverviewFpsCounter);
 };
 
@@ -152,19 +168,25 @@ using OverviewEnterFpsCounter =
     OverviewFpsCounter<kOverviewEnterSingleClamshellHistogram,
                        kOverviewEnterClamshellHistogram,
                        kOverviewEnterTabletHistogram,
-                       kOverviewEnterSplitViewHistogram>;
+                       kOverviewEnterSplitViewHistogram,
+                       kOverviewEnterMinimizedTabletHistogram>;
 using OverviewExitFpsCounter =
     OverviewFpsCounter<kOverviewExitSingleClamshellHistogram,
                        kOverviewExitClamshellHistogram,
                        kOverviewExitTabletHistogram,
-                       kOverviewExitSplitViewHistogram>;
+                       kOverviewExitSplitViewHistogram,
+                       kOverviewExitMinimizedTabletHistogram>;
 
 class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
  public:
   ShutdownAnimationFpsCounterObserver(ui::Compositor* compositor,
                                       bool in_split_view,
-                                      bool single_animation)
-      : fps_counter_(compositor, in_split_view, single_animation) {
+                                      bool single_animation,
+                                      bool minimized_in_tablet)
+      : fps_counter_(compositor,
+                     in_split_view,
+                     single_animation,
+                     minimized_in_tablet) {
     Shell::Get()->overview_controller()->AddObserver(this);
   }
   ~ShutdownAnimationFpsCounterObserver() override {
@@ -376,10 +398,13 @@ void OverviewGrid::Shutdown() {
       SplitViewController::Get(root_window_)->InSplitViewMode();
   // OverviewGrid in splitscreen does not include the window to be activated.
   if (!window_list_.empty() || in_split_view) {
+    bool minimized_in_tablet =
+        overview_session_->enter_exit_overview_type() ==
+        OverviewSession::EnterExitOverviewType::kFadeOutExit;
     // The following instance self-destructs when shutdown animation ends.
     new ShutdownAnimationFpsCounterObserver(
         root_window_->layer()->GetCompositor(), in_split_view,
-        single_animation_in_clamshell);
+        single_animation_in_clamshell, minimized_in_tablet);
   }
 
   while (!window_list_.empty()) {
@@ -488,10 +513,13 @@ void OverviewGrid::PositionWindows(
     bool single_animation_in_clamshell =
         animate_count == 1 && !has_non_cover_animating &&
         !Shell::Get()->tablet_mode_controller()->InTabletMode();
+    bool minimized_in_tablet =
+        overview_session_->enter_exit_overview_type() ==
+        OverviewSession::EnterExitOverviewType::kFadeInEnter;
     fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
         SplitViewController::Get(root_window_)->InSplitViewMode(),
-        single_animation_in_clamshell);
+        single_animation_in_clamshell, minimized_in_tablet);
   }
 
   // Apply the animation after creating fps_counter_ so that unit test

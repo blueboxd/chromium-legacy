@@ -21,9 +21,10 @@ class MultiDeviceSetupScreen : public BaseScreen {
                          const base::RepeatingClosure& exit_callback);
   ~MultiDeviceSetupScreen() override;
 
+ protected:
   // BaseScreen:
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
  private:

@@ -23,7 +23,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -35,6 +34,8 @@ import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -200,26 +201,19 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     @Test
     public void testLaunch_Duration_MoreThan_1Day() {
         long timestamp = System.currentTimeMillis() - 25 * HOURS_IN_MS;
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(MainIntentBehaviorMetrics.LAUNCH_TIMESTAMP_PREF, timestamp)
-                .commit();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(MainIntentBehaviorMetrics.LAUNCH_COUNT_PREF, 10)
-                .commit();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        prefs.writeLongSync(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP, timestamp);
+        prefs.writeIntSync(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT, 10);
         mActivityTestRule.startMainActivityFromLauncher();
 
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "MobileStartup.DailyLaunchCount", 10));
 
-        assertEquals(1,
-                ContextUtils.getAppSharedPreferences().getInt(
-                        MainIntentBehaviorMetrics.LAUNCH_COUNT_PREF, 0));
+        assertEquals(1, prefs.readInt(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT, 0));
 
-        long newTimestamp = ContextUtils.getAppSharedPreferences().getLong(
-                MainIntentBehaviorMetrics.LAUNCH_TIMESTAMP_PREF, 0);
+        long newTimestamp =
+                prefs.readLong(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP, 0);
         assertNotEquals(timestamp, newTimestamp);
         assertNotEquals(0, newTimestamp);
     }
@@ -228,27 +222,19 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     @Test
     public void testLaunch_Duration_LessThan_1Day() {
         long timestamp = System.currentTimeMillis() - 12 * HOURS_IN_MS;
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(MainIntentBehaviorMetrics.LAUNCH_TIMESTAMP_PREF, timestamp)
-                .commit();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(MainIntentBehaviorMetrics.LAUNCH_COUNT_PREF, 1)
-                .commit();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        prefs.writeLongSync(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP, timestamp);
+        prefs.writeIntSync(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT, 1);
         mActivityTestRule.startMainActivityFromLauncher();
 
         assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "MobileStartup.DailyLaunchCount", 1));
 
-        assertEquals(2,
-                ContextUtils.getAppSharedPreferences().getInt(
-                        MainIntentBehaviorMetrics.LAUNCH_COUNT_PREF, 0));
+        assertEquals(2, prefs.readInt(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT, 0));
 
         assertEquals(timestamp,
-                ContextUtils.getAppSharedPreferences().getLong(
-                        MainIntentBehaviorMetrics.LAUNCH_TIMESTAMP_PREF, 0));
+                prefs.readLong(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP, 0));
     }
 
     @MediumTest
@@ -258,10 +244,9 @@ public class MainIntentBehaviorMetricsIntegrationTest {
         try {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(0);
             long timestamp = System.currentTimeMillis() - 12 * HOURS_IN_MS;
-            ContextUtils.getAppSharedPreferences()
-                    .edit()
-                    .putLong(MainIntentBehaviorMetrics.LAUNCH_TIMESTAMP_PREF, timestamp)
-                    .commit();
+            SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+            prefs.writeLongSync(
+                    ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP, timestamp);
 
             mActivityTestRule.startMainActivityFromLauncher();
 
@@ -292,9 +277,8 @@ public class MainIntentBehaviorMetricsIntegrationTest {
                             mActivityTestRule.getActivity(), R.id.open_history_menu_id));
             historyActivity.finish();
 
-            assertEquals(1,
-                    ContextUtils.getAppSharedPreferences().getInt(
-                            MainIntentBehaviorMetrics.LAUNCH_COUNT_PREF, 0));
+            assertEquals(
+                    1, prefs.readInt(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT, 0));
         } finally {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(
                     MainIntentBehaviorMetrics.TIMEOUT_DURATION_MS);

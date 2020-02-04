@@ -1590,33 +1590,54 @@ bool CSPDirectiveList::Subsumes(const CSPDirectiveListVector& other) {
   return plugin_types_->Subsumes(plugin_types_other);
 }
 
-WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
-  WebContentSecurityPolicy policy;
-  policy.disposition = header_type_;
-  policy.source = header_source_;
-  for (const auto& directive :
-       {child_src_, default_src_, form_action_, frame_src_, navigate_to_}) {
-    if (directive) {
-      policy.directives.emplace_back(WebContentSecurityPolicyDirective{
-          directive->DirectiveName(),
-          directive->ExposeForNavigationalChecks()});
-    }
+network::mojom::blink::ContentSecurityPolicyPtr
+CSPDirectiveList::ExposeForNavigationalChecks() const {
+  using CSPDirectiveName = network::mojom::blink::CSPDirectiveName;
+
+  WTF::Vector<network::mojom::blink::CSPDirectivePtr> directives;
+
+  if (child_src_) {
+    directives.push_back(network::mojom::blink::CSPDirective::New(
+        CSPDirectiveName::ChildSrc, child_src_->ExposeForNavigationalChecks()));
   }
+
+  if (default_src_) {
+    directives.push_back(network::mojom::blink::CSPDirective::New(
+        CSPDirectiveName::DefaultSrc,
+        default_src_->ExposeForNavigationalChecks()));
+  }
+
+  if (form_action_) {
+    directives.push_back(network::mojom::blink::CSPDirective::New(
+        CSPDirectiveName::FormAction,
+        form_action_->ExposeForNavigationalChecks()));
+  }
+
+  if (frame_src_) {
+    directives.push_back(network::mojom::blink::CSPDirective::New(
+        CSPDirectiveName::FrameSrc, frame_src_->ExposeForNavigationalChecks()));
+  }
+
+  if (navigate_to_) {
+    directives.push_back(network::mojom::blink::CSPDirective::New(
+        CSPDirectiveName::NavigateTo,
+        navigate_to_->ExposeForNavigationalChecks()));
+  }
+
   if (upgrade_insecure_requests_) {
-    policy.directives.emplace_back(WebContentSecurityPolicyDirective{
-        blink::WebString("upgrade-insecure-requests"),
-        WebContentSecurityPolicySourceList()});
+    auto empty_source_list = network::mojom::blink::CSPSourceList::New(
+        WTF::Vector<network::mojom::blink::CSPSourcePtr>(), false, false,
+        false);
+    directives.push_back(network::mojom::blink::CSPDirective::New(
+        CSPDirectiveName::UpgradeInsecureRequests,
+        std::move(empty_source_list)));
   }
 
-  for (const auto& report_endpoint : ReportEndpoints()) {
-    policy.report_endpoints.emplace_back(report_endpoint);
-  }
-
-  policy.use_reporting_api = use_reporting_api_;
-
-  policy.header = Header();
-
-  return policy;
+  return network::mojom::blink::ContentSecurityPolicy::New(
+      std::move(directives),
+      network::mojom::blink::ContentSecurityPolicyHeader::New(
+          header_, header_type_, header_source_),
+      use_reporting_api_, report_endpoints_);
 }
 
 bool CSPDirectiveList::IsObjectRestrictionReasonable() const {

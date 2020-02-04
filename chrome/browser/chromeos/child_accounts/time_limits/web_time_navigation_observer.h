@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_NAVIGATION_OBSERVER_H_
 
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -45,7 +46,7 @@ class WebTimeNavigationObserver
    public:
     virtual void OnWebActivityChanged(const NavigationInfo& info) {}
     virtual void WebTimeNavigationObserverDestroyed(
-        const WebTimeNavigationObserver* observer) {}
+        WebTimeNavigationObserver* observer) {}
   };
 
   static void MaybeCreateForWebContents(content::WebContents* web_contents);
@@ -63,7 +64,7 @@ class WebTimeNavigationObserver
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
-  const NavigationInfo& last_navigation_info() const {
+  const base::Optional<NavigationInfo>& last_navigation_info() const {
     return last_navigation_info_;
   }
 
@@ -77,7 +78,7 @@ class WebTimeNavigationObserver
 
   base::ObserverList<EventListener> listeners_;
 
-  NavigationInfo last_navigation_info_;
+  base::Optional<NavigationInfo> last_navigation_info_ = base::nullopt;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

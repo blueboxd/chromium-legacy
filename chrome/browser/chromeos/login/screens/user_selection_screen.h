@@ -92,10 +92,6 @@ class UserSelectionScreen
                          const std::string& secret,
                          const std::string& key_label) override;
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(
       const user_manager::User* user,
@@ -122,6 +118,10 @@ class UserSelectionScreen
   void SetUsersLoaded(bool loaded);
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   UserBoardView* view_ = nullptr;
 
   // Map from public session account IDs to recommended locales set by policy.

@@ -119,7 +119,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   // code is the consumer of inputBuffer and the producer for outputBuffer.
 
   // Get input and output busses.
-  AudioBus* input_bus = Input(0).Bus();
+  scoped_refptr<AudioBus> input_bus = Input(0).Bus();
   AudioBus* output_bus = Output(0).Bus();
 
   // Get input and output buffers. We double-buffer both the input and output

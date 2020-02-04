@@ -88,17 +88,3 @@ index 000000000000..15bc7a4ea258
 +    "{{output_dir}}/{{target_output_name}}.wasm.map",
 +  ]
 +}
-diff --git a/tools/binary_size/BUILD.gn b/tools/binary_size/BUILD.gn
-index a9629c27bc42..aa07d6376ac7 100644
---- a/tools/binary_size/BUILD.gn
-+++ b/tools/binary_size/BUILD.gn
-@@ -30,3 +30,9 @@ if (is_linux) {
-     ]
-   }
- }
-+
-+group("caspian_web") {
-+  deps = [
-+    "//tools/binary_size/libsupersize/caspian:caspian_web(//build/toolchain/wasm:wasm)",
-+  ]
-+}

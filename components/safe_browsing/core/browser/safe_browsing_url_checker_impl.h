@@ -14,7 +14,6 @@
 #include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"

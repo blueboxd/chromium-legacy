@@ -193,7 +193,7 @@ void ResetScreen::RegisterPrefs(PrefRegistrySimple* registry) {
       static_cast<int>(tpm_firmware_update::Mode::kNone));
 }
 
-void ResetScreen::Show() {
+void ResetScreen::ShowImpl() {
   if (view_)
     view_->Show();
 
@@ -274,7 +274,7 @@ void ResetScreen::Show() {
   prefs->CommitPendingWrite();
 }
 
-void ResetScreen::Hide() {
+void ResetScreen::HideImpl() {
   if (view_)
     view_->Hide();
 

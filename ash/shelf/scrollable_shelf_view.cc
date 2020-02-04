@@ -813,8 +813,9 @@ gfx::Size ScrollableShelfView::CalculatePreferredSize() const {
 }
 
 void ScrollableShelfView::Layout() {
-  gfx::Size arrow_button_size(kArrowButtonSize, kArrowButtonSize);
   gfx::Rect shelf_container_bounds = gfx::Rect(size());
+  gfx::Size arrow_button_size(kArrowButtonSize,
+                              shelf_container_bounds.height());
 
   // Transpose and layout as if it is horizontal.
   const bool is_horizontal = GetShelf()->IsHorizontalAlignment();
@@ -898,7 +899,7 @@ void ScrollableShelfView::OnScrollEvent(ui::ScrollEvent* event) {
     return;
   if (ShouldDelegateScrollToShelf(*event)) {
     ui::MouseWheelEvent wheel(*event);
-    GetShelf()->ProcessMouseWheelEvent(&wheel);
+    GetShelf()->ProcessMouseWheelEvent(&wheel, /*from_touchpad=*/true);
     event->StopPropagation();
   }
 }
@@ -1571,7 +1572,7 @@ void ScrollableShelfView::HandleMouseWheelEvent(ui::MouseWheelEvent* event) {
   if (!ShouldHandleScroll(gfx::Vector2dF(event->x_offset(), event->y_offset()),
                           /*is_gesture_fling=*/false) &&
       GetShelf()->IsHorizontalAlignment()) {
-    GetShelf()->ProcessMouseWheelEvent(event);
+    GetShelf()->ProcessMouseWheelEvent(event, /*from_touchpad=*/false);
     return;
   }
 
@@ -1956,7 +1957,7 @@ void ScrollableShelfView::UpdateAvailableSpace() {
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
   if (HotseatWidget::ShouldShowHotseatBackground()) {
-    GetShelf()->shelf_widget()->hotseat_widget()->SetTranslucentBackground(
+    GetShelf()->hotseat_widget()->SetTranslucentBackground(
         GetHotseatBackgroundBounds());
   }
 

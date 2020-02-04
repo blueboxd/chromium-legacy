@@ -200,8 +200,7 @@ class DownloadProtectionService {
       download::DownloadItem* item,
       CheckDownloadRepeatingCallback callback,
       DeepScanningRequest::DeepScanTrigger trigger,
-      std::vector<DeepScanningRequest::DeepScanType> allowed_scans =
-          DeepScanningRequest::AllScans());
+      std::vector<DeepScanningRequest::DeepScanType> allowed_scans);
 
  private:
   friend class PPAPIDownloadRequest;

@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 /** @fileoverview Tests for shared Polymer 3 elements. */
-GEN('#include "chrome/common/buildflags.h"');
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
-// Settings v3 resources are only available in non optimized builds.
-GEN('#if !BUILDFLAG(OPTIMIZE_WEBUI)');
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
 var CrSettingsV3BrowserTest = class extends PolymerTest {
@@ -135,5 +132,3 @@ var CrSettingsToggleButtonV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsToggleButtonV3Test', 'All', function() {
   mocha.run();
 });
-
-GEN('#endif  // !BUILDFLAG(OPTIMIZE_WEBUI)');

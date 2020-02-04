@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -298,7 +299,14 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui()));
 
-  if (plugin_vm::IsPluginVmAllowedForProfile(profile)) {
+  // If |!allow_plugin_vm| we still want to |show_plugin_vm| if the VM image is
+  // on disk, so that users are still able to delete the image at will.
+  const bool allow_plugin_vm = plugin_vm::IsPluginVmAllowedForProfile(profile);
+  const bool show_plugin_vm =
+      allow_plugin_vm ||
+      profile->GetPrefs()->GetBoolean(plugin_vm::prefs::kPluginVmImageExists);
+
+  if (show_plugin_vm) {
     web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::PluginVmHandler>(profile));
   }
@@ -392,8 +400,8 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "allowCrostini", crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
 
-  html_source->AddBoolean("showPluginVm",
-                          plugin_vm::IsPluginVmAllowedForProfile(profile));
+  html_source->AddBoolean("allowPluginVm", allow_plugin_vm);
+  html_source->AddBoolean("showPluginVm", show_plugin_vm);
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());

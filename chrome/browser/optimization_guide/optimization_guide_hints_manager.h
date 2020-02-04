@@ -156,7 +156,9 @@ class OptimizationGuideHintsManager
                                    base::OnceClosure callback);
 
   // Notifies |this| that a navigation with URL |navigation_url| has finished.
-  void OnNavigationFinish(const GURL& navigation_url);
+  // The |navigation_data| will be updated based on the current state of |this|.
+  void OnNavigationFinish(const GURL& navigation_url,
+                          OptimizationGuideNavigationData* navigation_data);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);

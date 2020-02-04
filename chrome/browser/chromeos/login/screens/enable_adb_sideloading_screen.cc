@@ -71,7 +71,7 @@ void EnableAdbSideloadingScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-void EnableAdbSideloadingScreen::Show() {
+void EnableAdbSideloadingScreen::ShowImpl() {
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
   client->QueryAdbSideload(
@@ -119,7 +119,7 @@ void EnableAdbSideloadingScreen::OnQueryAdbSideload(
   view_->Show();
 }
 
-void EnableAdbSideloadingScreen::Hide() {
+void EnableAdbSideloadingScreen::HideImpl() {
   DCHECK(view_);
   view_->Hide();
 }

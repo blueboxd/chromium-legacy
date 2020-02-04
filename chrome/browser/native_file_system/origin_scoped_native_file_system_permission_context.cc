@@ -296,7 +296,16 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
   // readable this newly returned grant should also be readable.
   auto*& existing_grant = origin_state.read_grants[path];
   scoped_refptr<PermissionGrantImpl> new_grant;
-  if (!existing_grant || existing_grant->is_directory() != is_directory) {
+
+  if (existing_grant && existing_grant->is_directory() != is_directory) {
+    // |path| changed from being a directory to being a file or vice versa,
+    // don't just re-use the existing grant but revoke the old grant before
+    // creating a new grant.
+    existing_grant->SetStatus(PermissionStatus::DENIED);
+    existing_grant = nullptr;
+  }
+
+  if (!existing_grant) {
     new_grant = base::MakeRefCounted<PermissionGrantImpl>(
         weak_factory_.GetWeakPtr(), origin, path, is_directory,
         GrantType::kRead);
@@ -329,7 +338,16 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // writable this newly returned grant should also be writable.
   auto*& existing_grant = origin_state.write_grants[path];
   scoped_refptr<PermissionGrantImpl> new_grant;
-  if (!existing_grant || existing_grant->is_directory() != is_directory) {
+
+  if (existing_grant && existing_grant->is_directory() != is_directory) {
+    // |path| changed from being a directory to being a file or vice versa,
+    // don't just re-use the existing grant but revoke the old grant before
+    // creating a new grant.
+    existing_grant->SetStatus(PermissionStatus::DENIED);
+    existing_grant = nullptr;
+  }
+
+  if (!existing_grant) {
     new_grant = base::MakeRefCounted<PermissionGrantImpl>(
         weak_factory_.GetWeakPtr(), origin, path, is_directory,
         GrantType::kWrite);
@@ -446,8 +464,21 @@ void OriginScopedNativeFileSystemPermissionContext::PermissionGrantDestroyed(
 
   auto& grants = grant->type() == GrantType::kRead ? it->second.read_grants
                                                    : it->second.write_grants;
-  size_t result = grants.erase(grant->path());
-  DCHECK_EQ(result, 1u);
+  auto grant_it = grants.find(grant->path());
+  // Any non-denied permission grants should have still been in our grants list.
+  // If this invariant is voilated we would have permissions that might be
+  // granted but won't be visible in any UI because the permission context isn't
+  // tracking them anymore.
+  if (grant_it == grants.end()) {
+    DCHECK_EQ(PermissionStatus::DENIED, grant->GetStatus());
+    return;
+  }
+
+  // The grant in |grants| for this path might have been replaced with a
+  // different grant. Only erase if it actually matches the grant that was
+  // destroyed.
+  if (grant_it->second == grant)
+    grants.erase(grant_it);
 
   ScheduleUsageIconUpdate();
 }

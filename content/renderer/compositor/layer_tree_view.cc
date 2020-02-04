@@ -228,26 +228,10 @@ void LayerTreeView::RequestNewLayerTreeFrameSink() {
   if (!delegate_)
     return;
   // When the compositor is not visible it would not request a
-  // LayerTreeFrameSink so this is a race where it requested one then became
-  // not-visible. In that case, we can wait for it to become visible again
-  // before replying.
-  //
-  // This deals with an insidious race when the RenderWidget is swapped-out
-  // after this task was posted from the compositor. When swapped-out the
-  // compositor is stopped by making it not visible, and the RenderWidget (our
-  // delegate) is a zombie which can not be used (https://crbug.com/894899).
-  // Eventually the RenderWidget/LayerTreeView will not exist at all in this
-  // case (https://crbug.com/419087). So this handles the case for now since the
-  // compositor is not visible, and we can avoid using the RenderWidget until
-  // it marks the compositor visible again, indicating that it is valid to use
-  // the RenderWidget again.
-  //
-  // If there is no compositor thread, then this is a test-only path where
-  // composite is controlled directly by blink, and visibility is not
-  // considered. We don't expect blink to ever try composite on a swapped-out
-  // RenderWidget, which would be a bug, but the race condition can't happen
-  // in the single-thread case since this isn't a posted task.
-  if (!layer_tree_host_->IsVisible() && !!compositor_thread_) {
+  // LayerTreeFrameSink so this is a race where it requested one on the
+  // compositor thread while becoming non-visible on the main thread. In that
+  // case, we can wait for it to become visible again before replying.
+  if (!layer_tree_host_->IsVisible()) {
     layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;
   }
@@ -261,6 +245,10 @@ void LayerTreeView::DidInitializeLayerTreeFrameSink() {}
 void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
   if (!delegate_)
     return;
+  // When the RenderWidget is made hidden while an async request for a
+  // LayerTreeFrameSink is being processed, then if it fails we would arrive
+  // here. Since the compositor does not request a LayerTreeFrameSink while not
+  // visible, we can delay trying again until becoming visible again.
   if (!layer_tree_host_->IsVisible()) {
     layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;

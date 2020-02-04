@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
-#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -75,10 +75,6 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
-
-namespace service_manager {
-class InterfaceProvider;
-}  // namespace service_manager
 
 namespace blink {
 namespace mojom {
@@ -162,7 +158,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
-      WebContentSecurityPolicyList,
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+          initiator_csp,
+      network::mojom::blink::CSPSourcePtr initiator_self_source,
       network::mojom::IPAddressSpace,
       mojo::PendingRemote<mojom::blink::NavigationInitiator>) = 0;
 
@@ -315,13 +313,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const ParsedFeaturePolicy& feature_policy_header,
       const DocumentPolicy::FeatureState& document_policy_header) {}
 
-  // Called when a set of new Content Security Policies is added to the frame's
-  // document. This can be triggered by handling of HTTP headers, handling of
-  // <meta> element, or by inheriting CSP from the parent (in case of
-  // about:blank).
-  virtual void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) {}
-
   virtual void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
 
   virtual bool ShouldBlockWebGL() { return false; }
@@ -342,10 +333,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual KURL OverrideFlashEmbedWithHTML(const KURL&) { return KURL(); }
 
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
-
-  virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
-    return nullptr;
-  }
 
   virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
 

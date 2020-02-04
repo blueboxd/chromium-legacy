@@ -120,6 +120,7 @@ const char* const kKnownSettings[] = {
     kReportDeviceStorageStatus,
     kReportDeviceNetworkInterfaces,
     kReportDeviceSessionStatus,
+    kReportDeviceTimezoneInfo,
     kReportDeviceGraphicsStatus,
     kReportDeviceUsers,
     kReportDeviceVersionInfo,
@@ -564,6 +565,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_cpu_info()) {
       new_values_cache->SetBoolean(kReportDeviceCpuInfo,
                                    reporting_policy.report_cpu_info());
+    }
+    if (reporting_policy.has_report_timezone_info()) {
+      new_values_cache->SetBoolean(kReportDeviceTimezoneInfo,
+                                   reporting_policy.report_timezone_info());
     }
   }
 }

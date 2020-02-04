@@ -93,6 +93,7 @@ class WebContentController
   void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
   void HandleSetAutoMediaPlaybackPolicy(
       const webview::SetAutoMediaPlaybackPolicyRequest& request);
+  void HandleResize(const gfx::Size& size);
   viz::SurfaceId GetSurfaceId();
   void ChannelModified(content::RenderFrameHost* frame,
                        const std::string& channel,

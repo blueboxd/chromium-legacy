@@ -25,23 +25,31 @@ class BaseScreen {
   virtual ~BaseScreen();
 
   // Makes wizard screen visible.
-  virtual void Show() = 0;
+  void Show();
 
   // Makes wizard screen invisible.
-  virtual void Hide() = 0;
+  void Hide();
+
+  // Forwards user action if screen is shown.
+  void HandleUserAction(const std::string& action_id);
 
   // Returns the identifier of the screen.
   OobeScreenId screen_id() const { return screen_id_; }
 
-  // Called when user action event with |event_id|
-  // happened. Notification about this event comes from the JS
-  // counterpart.
-  virtual void OnUserAction(const std::string& action_id);
-
   // Change the configuration for the screen. |configuration| is unowned.
   virtual void SetConfiguration(base::Value* configuration);
 
+  bool is_hidden() { return is_hidden_; }
+
  protected:
+  virtual void ShowImpl() = 0;
+  virtual void HideImpl() = 0;
+
+  // Called when user action event with |event_id|
+  // happened. Notification about this event comes from the JS
+  // counterpart. Not called if the screen is hidden
+  virtual void OnUserAction(const std::string& action_id);
+
   // Global configuration for OOBE screens, that can be used to automate some
   // screens.
   // Screens can use values in Configuration to fill in UI values or
@@ -53,6 +61,8 @@ class BaseScreen {
   base::Value* GetConfiguration() { return configuration_; }
 
  private:
+  bool is_hidden_ = true;
+
   // Configuration itself is owned by WizardController and is accessible
   // to screen only between OnShow / OnHide calls.
   base::Value* configuration_ = nullptr;

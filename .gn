@@ -400,7 +400,6 @@ check_targets = [
   "//third_party/google_toolbox_for_mac/*",
   "//third_party/google-truth/*",
   "//third_party/gradle_wrapper/*",
-  "//third_party/gson/*",
   "//third_party/guava/*",
   "//third_party/gvr-android-keyboard/*",
   "//third_party/gvr-android-sdk/*",
@@ -418,7 +417,6 @@ check_targets = [
   "//third_party/ink/*",
   "//third_party/inspector_protocol/*",
   "//third_party/instrumented_libraries/*",
-  "//third_party/intellij/*",
   "//third_party/isimpledom/*",
   "//third_party/javax_inject/*",
   "//third_party/jinja2/*",
@@ -497,7 +495,6 @@ check_targets = [
   "//third_party/openvr/*",
   "//third_party/opus/*",
   "//third_party/ots/*",
-  "//third_party/ow2_asm/*",
 
   # "//third_party/pdfium/*",  # 3 errors
   "//third_party/perfetto/*",

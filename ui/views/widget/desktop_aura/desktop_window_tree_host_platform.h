@@ -129,7 +129,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
  private:
-  void Relayout();
+  void ScheduleRelayout();
 
   Widget* GetWidget();
   const Widget* GetWidget() const;

@@ -55,8 +55,24 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
   DCHECK(!item->id.IsNull());
 
   if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
-    return std::make_unique<AppServiceShelfContextMenu>(controller, item,
-                                                        display_id);
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(controller->profile());
+
+    // AppServiceShelfContextMenu supports context menus for apps registered in
+    // AppService, Arc shortcuts and Crostini apps with the prefix "crostini:".
+    if (proxy &&
+        (proxy->AppRegistryCache().GetAppType(item->id.app_id) !=
+             apps::mojom::AppType::kUnknown ||
+         base::StartsWith(item->id.app_id, crostini::kCrostiniAppIdPrefix,
+                          base::CompareCase::SENSITIVE) ||
+         arc::IsArcItem(controller->profile(), item->id.app_id))) {
+      return std::make_unique<AppServiceShelfContextMenu>(controller, item,
+                                                          display_id);
+    }
+
+    // Create an ExtensionShelfContextMenu for other items.
+    return std::make_unique<ExtensionShelfContextMenu>(controller, item,
+                                                       display_id);
   }
 
   // Create an ArcShelfContextMenu if the item is an ARC app.

@@ -31,6 +31,12 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
       switches::kAutoplayPolicy,
       switches::autoplay::kNoUserGestureRequiredPolicy);
 
+  std::vector<base::Feature> enabled_features = {
+#if defined(OS_ANDROID)
+    features::kLogJsConsoleMessages,
+#endif
+  };
+
   std::vector<base::Feature> disabled_features = {
     // Disable fallback after decode error to avoid unexpected test pass on
     // the fallback path.
@@ -43,8 +49,7 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
 #endif
   };
 
-  scoped_feature_list_.InitWithFeatures({/* enabled_features */},
-                                        disabled_features);
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,

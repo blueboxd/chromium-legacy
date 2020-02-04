@@ -203,7 +203,8 @@ void RealtimeAudioDestinationHandler::Render(
     if (try_locker.Locked() && IsPullingAudioGraphAllowed()) {
       // Renders the graph by pulling all the inputs to this node. This will
       // in turn pull on their inputs, all the way backwards through the graph.
-      AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
+      scoped_refptr<AudioBus> rendered_bus =
+          Input(0).Pull(destination_bus, number_of_frames);
 
       DCHECK(rendered_bus);
       if (!rendered_bus) {

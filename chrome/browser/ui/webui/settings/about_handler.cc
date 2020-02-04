@@ -714,11 +714,14 @@ void AboutHandler::OnGetEndOfLifeInfo(
   base::Value response(base::Value::Type::DICTIONARY);
   if (!eol_info.eol_date.is_null()) {
     response.SetBoolKey("hasEndOfLife", eol_info.eol_date <= base::Time::Now());
-    response.SetStringKey("aboutPageEndOfLifeMessage",
-                          l10n_util::GetStringFUTF16(
-                              IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE,
-                              base::TimeFormatMonthAndYear(eol_info.eol_date),
-                              base::ASCIIToUTF16(chrome::kEolNotificationURL)));
+    int eol_string_id = eol_info.eol_date <= base::Time::Now()
+                          ? IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_PAST
+                          : IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_FUTURE;
+    response.SetStringKey(
+          "aboutPageEndOfLifeMessage",
+          l10n_util::GetStringFUTF16(
+              eol_string_id, base::TimeFormatMonthAndYear(eol_info.eol_date),
+              base::ASCIIToUTF16(chrome::kEolNotificationURL)));
   } else {
     response.SetBoolKey("hasEndOfLife", false);
     response.SetStringKey("aboutPageEndOfLifeMessage", "");

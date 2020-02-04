@@ -1241,7 +1241,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
 
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
       return gfx::CreateVectorIcon(
-          vector_icons::kHelpIcon, GetWarningIconSize(),
+          vector_icons::kHelpIcon, GetErrorIconSize(),
           GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_DefaultIconColor));
 

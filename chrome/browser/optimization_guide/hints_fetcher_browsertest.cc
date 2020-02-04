@@ -129,32 +129,6 @@ GURL GetURLWithGoogleHost(net::EmbeddedTestServer* server,
 
 }  // namespace
 
-// A WebContentsObserver that asks whether an optimization type can be applied.
-class OptimizationGuideConsumerWebContentsObserver
-    : public content::WebContentsObserver {
- public:
-  OptimizationGuideConsumerWebContentsObserver(
-      content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {
-    OptimizationGuideKeyedServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-        ->RegisterOptimizationTypesAndTargets(
-            {optimization_guide::proto::NOSCRIPT}, {});
-  }
-  ~OptimizationGuideConsumerWebContentsObserver() override = default;
-
-  // contents::WebContentsObserver implementation:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    OptimizationGuideKeyedService* service =
-        OptimizationGuideKeyedServiceFactory::GetForProfile(
-            Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    service->CanApplyOptimization(navigation_handle,
-                                  optimization_guide::proto::NOSCRIPT,
-                                  /*optimization_metadata=*/nullptr);
-  }
-};
-
 // This test class sets up everything but does not enable any
 // HintsFetcher-related features. The parameter selects whether the
 // OptimizationGuideKeyedService is enabled (tests should pass in the same way
@@ -537,16 +511,20 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    // Set up an OptimizationGuideKeyedService consumer.
-    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
-        browser()->tab_strip_model()->GetActiveWebContents()));
+    // Register an optimization type, so hints will be fetched at page
+    // navigation.
+    OptimizationGuideKeyedServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()))
+        ->RegisterOptimizationTypesAndTargets(
+            {optimization_guide::proto::NOSCRIPT}, {});
 
     HintsFetcherDisabledBrowserTest::SetUpOnMainThread();
   }
 
  private:
-  std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
-
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
 };
 

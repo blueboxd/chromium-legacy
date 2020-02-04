@@ -68,6 +68,7 @@ std::unique_ptr<proto::PredictionModel> CreatePredictionModel() {
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
   model_info->add_supported_model_types(
       proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
   return prediction_model;
 }
 
@@ -423,14 +424,25 @@ class PredictionManagerTest
   void CreatePredictionManager(
       const std::vector<optimization_guide::proto::OptimizationTarget>&
           optimization_targets_at_initialization) {
-    if (prediction_manager_) {
+    if (prediction_manager_)
       prediction_manager_.reset();
-    }
 
     prediction_manager_ = std::make_unique<TestPredictionManager>(
         optimization_targets_at_initialization, temp_dir(), db_provider_.get(),
         top_host_provider_.get(), url_loader_factory_, pref_service_.get(),
         &testing_profile_);
+    prediction_manager_->SetClockForTesting(task_environment_.GetMockClock());
+  }
+
+  void CreatePredictionManagerWithoutTopHostProvider(
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets_at_initialization) {
+    if (prediction_manager_)
+      prediction_manager_.reset();
+
+    prediction_manager_ = std::make_unique<TestPredictionManager>(
+        optimization_targets_at_initialization, temp_dir(), db_provider_.get(),
+        nullptr, url_loader_factory_, pref_service_.get(), &testing_profile_);
     prediction_manager_->SetClockForTesting(task_environment_.GetMockClock());
   }
 
@@ -625,14 +637,13 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
           GURL("https://foo.com"));
 
   CreatePredictionManager({});
+  // The model will be loaded from the store.
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
-          PredictionModelFetcherEndState::
-              kFetchSuccessWithModelsAndHostsModelFeatures));
+          PredictionModelFetcherEndState::kFetchSuccessWithEmptyResponse));
 
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
-
   SetStoreInitialized();
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
 
@@ -654,14 +665,14 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.IsPredictionModelValid." +
           GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       true, 1);
 
-  histogram_tester.ExpectBucketCount("OptimizationGuide.IsPredictionModelValid",
-                                     true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.IsPredictionModelValid", true, 1);
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency." +
@@ -1377,19 +1388,14 @@ TEST_F(PredictionManagerTest, RestrictHostModelFeaturesCacheSize) {
             host_model_features_cache->size());
 }
 
-TEST_F(PredictionManagerTest, FetchHostModelFeaturesNotInCache) {
+TEST_F(PredictionManagerTest, FetchWithoutTopHostProvider) {
   base::HistogramTester histogram_tester;
 
-  CreatePredictionManager({});
+  CreatePredictionManagerWithoutTopHostProvider({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
           PredictionModelFetcherEndState::
               kFetchSuccessWithModelsAndHostsModelFeatures));
-
-  std::unique_ptr<proto::GetModelsResponse> get_models_response =
-      BuildGetModelsResponse({"example1.com", "bar.com"}, {});
-  prediction_manager()->UpdateHostModelFeaturesForTesting(
-      get_models_response.get());
 
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
@@ -1397,9 +1403,10 @@ TEST_F(PredictionManagerTest, FetchHostModelFeaturesNotInCache) {
   SetStoreInitialized();
 
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
-  // Only 1 of the 2 top hosts should have features fetched for it as the other
-  // is already in the host model features cache.
-  EXPECT_EQ(prediction_model_fetcher()->hosts_fetched(), 1ul);
+
+  // No hosts should be included in the fetch as the top host provider is not
+  // available.
+  EXPECT_EQ(prediction_model_fetcher()->hosts_fetched(), 0ul);
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {

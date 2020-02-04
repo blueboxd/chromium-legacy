@@ -1993,6 +1993,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glMemoryBarrierEXT"));
   }
 
+  if (ext.b_GL_EXT_memory_object) {
+    fn.glMemoryObjectParameterivEXTFn =
+        reinterpret_cast<glMemoryObjectParameterivEXTProc>(
+            GetGLProcAddress("glMemoryObjectParameterivEXT"));
+  }
+
   if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
     fn.glMinSampleShadingFn = reinterpret_cast<glMinSampleShadingProc>(
         GetGLProcAddress("glMinSampleShading"));
@@ -4802,6 +4808,12 @@ void GLApiBase::glMemoryBarrierByRegionFn(GLbitfield barriers) {
 
 void GLApiBase::glMemoryBarrierEXTFn(GLbitfield barriers) {
   driver_->fn.glMemoryBarrierEXTFn(barriers);
+}
+
+void GLApiBase::glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                               GLenum pname,
+                                               const GLint* param) {
+  driver_->fn.glMemoryObjectParameterivEXTFn(memoryObject, pname, param);
 }
 
 void GLApiBase::glMinSampleShadingFn(GLfloat value) {
@@ -8412,6 +8424,14 @@ void TraceGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
 void TraceGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMemoryBarrierEXT")
   gl_api_->glMemoryBarrierEXTFn(barriers);
+}
+
+void TraceGLApi::glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                                GLenum pname,
+                                                const GLint* param) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glMemoryObjectParameterivEXT")
+  gl_api_->glMemoryObjectParameterivEXTFn(memoryObject, pname, param);
 }
 
 void TraceGLApi::glMinSampleShadingFn(GLfloat value) {
@@ -12971,6 +12991,15 @@ void LogGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   gl_api_->glMemoryBarrierEXTFn(barriers);
 }
 
+void LogGLApi::glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                              GLenum pname,
+                                              const GLint* param) {
+  GL_SERVICE_LOG("glMemoryObjectParameterivEXT"
+                 << "(" << memoryObject << ", " << GLEnums::GetStringEnum(pname)
+                 << ", " << static_cast<const void*>(param) << ")");
+  gl_api_->glMemoryObjectParameterivEXTFn(memoryObject, pname, param);
+}
+
 void LogGLApi::glMinSampleShadingFn(GLfloat value) {
   GL_SERVICE_LOG("glMinSampleShading"
                  << "(" << value << ")");
@@ -16887,6 +16916,12 @@ void NoContextGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
 
 void NoContextGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   NoContextHelper("glMemoryBarrierEXT");
+}
+
+void NoContextGLApi::glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                                    GLenum pname,
+                                                    const GLint* param) {
+  NoContextHelper("glMemoryObjectParameterivEXT");
 }
 
 void NoContextGLApi::glMinSampleShadingFn(GLfloat value) {

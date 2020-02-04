@@ -274,14 +274,15 @@ SharingDeviceRegistration::GetEnabledFeatures(bool supports_vapid) const {
 
   std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
   if (IsClickToCallSupported()) {
-    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL);
+    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL_V2);
     if (supports_vapid)
       enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL_VAPID);
   }
   if (IsSharedClipboardSupported()) {
-    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
-    if (supports_vapid)
+    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD_V2);
+    if (supports_vapid) {
       enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD_VAPID);
+    }
   }
   if (IsSmsFetcherSupported())
     enabled_features.insert(SharingSpecificFields::SMS_FETCHER);

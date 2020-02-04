@@ -16,8 +16,8 @@ class MockEulaScreen : public EulaScreen {
   MockEulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
   ~MockEulaScreen() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD0(ShowImpl, void());
+  MOCK_METHOD0(HideImpl, void());
 
   void ExitScreen(Result result);
 };

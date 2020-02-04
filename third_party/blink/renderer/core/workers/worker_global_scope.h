@@ -100,6 +100,7 @@ class CORE_EXPORT WorkerGlobalScope
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(languagechange, kLanguagechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled, kRejectionhandled)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(timezonechange, kTimezonechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection)
 
   // WorkerUtils

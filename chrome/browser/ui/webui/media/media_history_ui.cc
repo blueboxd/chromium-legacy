@@ -21,7 +21,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 MediaHistoryUI::MediaHistoryUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui), receiver_(this) {
+    : ui::MojoWebUIController(web_ui) {
   // Setup the data source behind chrome://media-history.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaHistoryHost));
@@ -39,7 +39,7 @@ MediaHistoryUI::~MediaHistoryUI() = default;
 
 void MediaHistoryUI::BindInterface(
     mojo::PendingReceiver<media_history::mojom::MediaHistoryStore> pending) {
-  receiver_.Bind(std::move(pending));
+  receivers_.Add(this, std::move(pending));
 }
 
 void MediaHistoryUI::GetMediaHistoryStats(

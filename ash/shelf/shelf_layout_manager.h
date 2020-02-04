@@ -152,8 +152,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Handles events from ShelfWidget.
   void ProcessGestureEventFromShelfWidget(ui::GestureEvent* event_in_screen);
 
-  // Handles mouse wheel events from the shelf.
-  void ProcessMouseWheelEventFromShelf(ui::MouseWheelEvent* event);
+  // Handles mouse wheel events from the shelf. We use |from_touchpad| to
+  // distinguish if a event originated from a touchpad scroll or a mousewheel
+  // scroll.
+  void ProcessMouseWheelEventFromShelf(ui::MouseWheelEvent* event,
+                                       bool from_touchpad);
 
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;

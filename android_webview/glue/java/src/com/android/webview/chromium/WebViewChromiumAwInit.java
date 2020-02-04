@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
+import android.os.SystemClock;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
@@ -186,15 +187,22 @@ public class WebViewChromiumAwInit {
                     new BooleanHistogramSample("Android.WebView.DevUi.DeveloperModeEnabled");
             developerModeSample.record(isDeveloperModeEnabled);
             if (isDeveloperModeEnabled) {
-                FlagOverrideHelper helper =
-                        new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
-                Map<String, Boolean> flagOverrides =
-                        DeveloperModeUtils.getFlagOverrides(webViewPackageName);
-                helper.applyFlagOverrides(flagOverrides);
+                long start = SystemClock.elapsedRealtime();
+                try {
+                    FlagOverrideHelper helper =
+                            new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
+                    Map<String, Boolean> flagOverrides =
+                            DeveloperModeUtils.getFlagOverrides(webViewPackageName);
+                    helper.applyFlagOverrides(flagOverrides);
 
-                final Count100HistogramSample flagOverrideSample =
-                        new Count100HistogramSample("Android.WebView.DevUi.ToggledFlagCount");
-                flagOverrideSample.record(flagOverrides.size());
+                    final Count100HistogramSample flagOverrideSample =
+                            new Count100HistogramSample("Android.WebView.DevUi.ToggledFlagCount");
+                    flagOverrideSample.record(flagOverrides.size());
+                } finally {
+                    long end = SystemClock.elapsedRealtime();
+                    RecordHistogram.recordTimesHistogram(
+                            "Android.WebView.DevUi.FlagLoadingBlockingTime", end - start);
+                }
             }
 
             AwBrowserProcess.start();

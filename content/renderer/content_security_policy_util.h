@@ -15,13 +15,13 @@ namespace content {
 // Convert a WebContentSecurityPolicy into a ContentSecurityPolicy. These two
 // classes represent the exact same thing, but one is in content, the other is
 // in blink.
+// TODO(arthursonzogni): Remove this when BeginNavigation IPC will be called
+// directly from blink.
 network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
     const blink::WebContentSecurityPolicy&);
 
-// Convert a WebContentSecurityPolicyList into a list of ContentSecurityPolicy.
-std::vector<network::mojom::ContentSecurityPolicyPtr>
-BuildContentSecurityPolicyList(const blink::WebContentSecurityPolicyList&);
-
+// TODO(arthursonzogni): Remove this when BeginNavigation IPC will be called
+// directly from blink.
 network::mojom::CSPSourcePtr BuildCSPSource(
     const blink::WebContentSecurityPolicySourceExpression&);
 

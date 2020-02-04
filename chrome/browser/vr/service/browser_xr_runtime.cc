@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/vr/gvr_consent_helper.h"
+#include "chrome/browser/android/vr/gvr_install_helper.h"
 #if BUILDFLAG(ENABLE_ARCORE)
 #include "chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_install_helper.h"
@@ -251,6 +253,7 @@ BrowserXRRuntime::BrowserXRRuntime(
 #if defined(OS_ANDROID)
   if (id_ == device::mojom::XRDeviceId::GVR_DEVICE_ID) {
     consent_helper_ = std::make_unique<GvrConsentHelper>();
+    install_helper_ = std::make_unique<GvrInstallHelper>();
   }
 #if BUILDFLAG(ENABLE_ARCORE)
   if (id_ == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {

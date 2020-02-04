@@ -398,7 +398,16 @@ void Shelf::ProcessMouseEvent(const ui::MouseEvent& event) {
     shelf_layout_manager_->ProcessMouseEventFromShelf(event);
 }
 
-void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
+void Shelf::ProcessScrollEvent(ui::ScrollEvent* event) {
+  if (event->finger_count() == 2 && event->type() == ui::ET_SCROLL) {
+    ui::MouseWheelEvent wheel(*event);
+    ProcessMouseWheelEvent(&wheel, /*from_touchpad=*/true);
+    event->SetHandled();
+  }
+}
+
+void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event,
+                                   bool from_touchpad) {
   event->SetHandled();
   if (!IsHorizontalAlignment())
     return;
@@ -406,10 +415,12 @@ void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
   DCHECK(app_list_controller);
   // If the App List is not visible, send MouseWheel events to the
   // |shelf_layout_manager_| because these events are used to show the App List.
-  if (app_list_controller->IsVisible())
+  if (app_list_controller->IsVisible()) {
     app_list_controller->ProcessMouseWheelEvent(*event);
-  else
-    shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event);
+  } else {
+    shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event,
+                                                           from_touchpad);
+  }
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {

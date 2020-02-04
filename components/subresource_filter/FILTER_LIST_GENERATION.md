@@ -88,9 +88,11 @@ An example using [EasyList](https://easylist.to/easylist/easylist.txt) follows:
 ```
 
 ## 4. Append all of the whitelist rules to be safe
+Appends whitelist rules and also deduplicates rules which only differ by their set of affected domains.
 ```sh
 1. grep ^@@ easylist.txt >> smaller_list.txt
-2. sort smaller_list.txt | uniq > final_list.txt
+2. awk -F,domain= '{ if(!length($2)) table[$1] = ""; else table[$1 FS] = length(table[$1 FS]) ? table[$1 FS] "|" $2 : $2; } END{ for (key in table) print key table[key] }' smaller_list.txt > smaller_list.txt
+3. sort smaller_list.txt | uniq > final_list.txt
 ```
 
 ## 5. Turn the final list into a form usable by Chromium tools

@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='box'",
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [135, 361, 159, 194],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [300, 302, 80, 176],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         }
       ]
     }

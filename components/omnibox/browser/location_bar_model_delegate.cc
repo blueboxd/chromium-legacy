@@ -8,6 +8,10 @@ bool LocationBarModelDelegate::ShouldPreventElision() const {
   return false;
 }
 
+bool LocationBarModelDelegate::ShouldTrimDisplayUrlAfterHostName() const {
+  return false;
+}
+
 bool LocationBarModelDelegate::ShouldDisplayURL() const {
   return true;
 }

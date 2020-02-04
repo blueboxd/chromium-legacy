@@ -759,7 +759,8 @@ ContextResult RasterDecoderImpl::Initialize(
   DCHECK_EQ(context.get(), shared_context_state_->context());
 
   // Create GPU Tracer for timing values.
-  gpu_tracer_.reset(new gles2::GPUTracer(this));
+  gpu_tracer_.reset(
+      new gles2::GPUTracer(this, shared_context_state_->GrContextIsGL()));
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =

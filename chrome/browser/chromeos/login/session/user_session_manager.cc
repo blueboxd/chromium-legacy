@@ -1421,8 +1421,7 @@ void UserSessionManager::InitProfilePreferences(
               ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
                   gaia_id);
       DCHECK(account_info.has_value());
-      // TODO(jamescook): Replace switch with IsSplitSettingsSyncEnabled().
-      if (switches::UseUnconsentedPrimaryAccount()) {
+      if (features::IsSplitSettingsSyncEnabled()) {
         if (is_new_profile) {
           if (!identity_manager->HasPrimaryAccount()) {
             // Set the account without recording browser sync consent.
@@ -1435,7 +1434,7 @@ void UserSessionManager::InitProfilePreferences(
                  gaia_id);
       } else {
         // Set a primary account here because the profile might have been
-        // created with switches::UseUnconsentedPrimaryAccount set. Then the
+        // created with the feature SplitSettingsSync enabled. Then the
         // profile might only have an unconsented primary account.
         identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
             account_info->account_id);

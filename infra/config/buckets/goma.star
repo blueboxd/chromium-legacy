@@ -1,4 +1,4 @@
-load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os', 'xcode_cache')
 
 luci.bucket(
     name = 'goma',
@@ -117,12 +117,7 @@ fyi_goma_canary_builder(
 
 fyi_goma_canary_builder(
     name = 'ios-device-goma-canary-clobber',
-    caches = [
-        swarming.cache(
-            name = 'xcode_ios_11a1027',
-            path = 'xcode_ios_11a1027.app',
-        ),
-    ],
+    caches = [xcode_cache.x11c29],
     cores = None,
     executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
@@ -196,12 +191,7 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = 'ios-device-goma-rbe-canary-clobber',
-    caches = [
-        swarming.cache(
-            name = 'xcode_ios_11a1027',
-            path = 'xcode_ios_11a1027.app',
-        ),
-    ],
+    caches = [xcode_cache.x11c29],
     cores = None,
     executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
@@ -295,12 +285,7 @@ fyi_goma_latest_client_builder(
 
 fyi_goma_latest_client_builder(
     name = 'ios-device-goma-latest-clobber',
-    caches = [
-        swarming.cache(
-            name = 'xcode_ios_11a1027',
-            path = 'xcode_ios_11a1027.app',
-        ),
-    ],
+    caches = [xcode_cache.x11c29],
     cores = None,
     executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
@@ -388,12 +373,7 @@ fyi_goma_rbe_latest_client_builder(
 
 fyi_goma_rbe_latest_client_builder(
     name = 'ios-device-goma-rbe-latest-clobber',
-    caches = [
-        swarming.cache(
-            name = 'xcode_ios_11a1027',
-            path = 'xcode_ios_11a1027.app',
-        ),
-    ],
+    caches = [xcode_cache.x11c29],
     cores = None,
     executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,

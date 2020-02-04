@@ -10,6 +10,9 @@ import android.support.annotation.NonNull;
 import android.util.TypedValue;
 import android.widget.TextView;
 
+import org.chromium.base.LifetimeAssert;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -18,6 +21,7 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 /**
  *  Implementation of {@link IUrlBarController}.
  */
+@JNINamespace("weblayer")
 public class UrlBarControllerImpl extends IUrlBarController.Stub {
     // To be kept in sync with the constants in UrlBarOptions.java
     public static final String URL_TEXT_SIZE = "UrlTextSize";
@@ -25,13 +29,27 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
     public static final float MINIMUM_TEXT_SIZE = 5.0F;
 
     private BrowserImpl mBrowserImpl;
+    private long mNativeUrlBarController;
+    private final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
 
-    public UrlBarControllerImpl(BrowserImpl browserImpl) {
-        mBrowserImpl = browserImpl;
+    private String getUrlForDisplay() {
+        return UrlBarControllerImplJni.get().getUrlForDisplay(mNativeUrlBarController);
     }
 
     void destroy() {
+        UrlBarControllerImplJni.get().deleteUrlBarController(mNativeUrlBarController);
+        mNativeUrlBarController = 0;
         mBrowserImpl = null;
+
+        // If mLifetimeAssert is GC'ed before this is called, it will throw an exception
+        // with a stack trace showing the stack during LifetimeAssert.create().
+        LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
+    }
+
+    public UrlBarControllerImpl(BrowserImpl browserImpl, long nativeBrowser) {
+        mBrowserImpl = browserImpl;
+        mNativeUrlBarController =
+                UrlBarControllerImplJni.get().createUrlBarController(nativeBrowser);
     }
 
     @Override
@@ -47,7 +65,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         return ObjectWrapper.wrap(urlBarView);
     }
 
-    private class UrlBarView extends TextView implements BrowserImpl.VisibleSecurityStateObserver {
+    protected class UrlBarView
+            extends TextView implements BrowserImpl.VisibleSecurityStateObserver {
         private float mTextSize;
         public UrlBarView(@NonNull Context context, Bundle options) {
             super(context);
@@ -84,7 +103,16 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             // TODO(crbug.com/1025607): Add a way to get a formatted URL based
             // on mOptions.
             if (mBrowserImpl == null) return;
-            setText(mBrowserImpl.getActiveTab().getWebContents().getVisibleUrl());
+            String displayUrl =
+                    UrlBarControllerImplJni.get().getUrlForDisplay(mNativeUrlBarController);
+            setText(displayUrl);
         }
+    }
+
+    @NativeMethods()
+    interface Natives {
+        long createUrlBarController(long browserPtr);
+        void deleteUrlBarController(long urlBarControllerImplPtr);
+        String getUrlForDisplay(long nativeUrlBarControllerImpl);
     }
 }

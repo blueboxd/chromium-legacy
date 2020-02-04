@@ -5,13 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_GVR_CONSENT_HELPER_H_
 #define CHROME_BROWSER_ANDROID_VR_GVR_CONSENT_HELPER_H_
 
-#include <jni.h>
-#include <memory>
-
 #include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/android/vr/vr_module_provider.h"
 #include "chrome/browser/vr/service/xr_consent_helper.h"
 
 namespace vr {
@@ -30,11 +26,6 @@ class GvrConsentHelper : public XrConsentHelper {
   void OnUserConsentResult(JNIEnv* env, jboolean is_granted);
 
  private:
-  void OnModuleInstalled(bool success);
-
-  std::unique_ptr<VrModuleProvider> module_delegate_;
-  int render_process_id_;
-  int render_frame_id_;
   XrConsentPromptLevel consent_level_;
 
   OnUserConsentCallback on_user_consent_callback_;

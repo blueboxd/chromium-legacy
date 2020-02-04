@@ -53,7 +53,7 @@ void StereoPannerHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  AudioBus* input_bus = Input(0).Bus();
+  scoped_refptr<AudioBus> input_bus = Input(0).Bus();
   if (!input_bus) {
     output_bus->Zero();
     return;
@@ -64,10 +64,10 @@ void StereoPannerHandler::Process(uint32_t frames_to_process) {
     DCHECK_LE(frames_to_process, sample_accurate_pan_values_.size());
     float* pan_values = sample_accurate_pan_values_.Data();
     pan_->CalculateSampleAccurateValues(pan_values, frames_to_process);
-    stereo_panner_->PanWithSampleAccurateValues(input_bus, output_bus,
+    stereo_panner_->PanWithSampleAccurateValues(input_bus.get(), output_bus,
                                                 pan_values, frames_to_process);
   } else {
-    stereo_panner_->PanToTargetValue(input_bus, output_bus, pan_->Value(),
+    stereo_panner_->PanToTargetValue(input_bus.get(), output_bus, pan_->Value(),
                                      frames_to_process);
   }
 }

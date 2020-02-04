@@ -92,7 +92,7 @@ std::vector<gfx::Rect> CollectCollisionRects(
     // The hotseat doesn't span the whole width of the display, but to allow
     // a PIP window to be slided horizontally along the hotseat, we extend the
     // width of the hotseat to that of the display.
-    auto* hotseat_widget = shelf->shelf_widget()->hotseat_widget();
+    auto* hotseat_widget = shelf->hotseat_widget();
     if (hotseat_widget) {
       auto* hotseat_window = hotseat_widget->GetNativeWindow();
       gfx::Rect hotseat_rect{root_window->bounds().x(),

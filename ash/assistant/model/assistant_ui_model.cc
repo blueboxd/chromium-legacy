@@ -34,11 +34,6 @@ void AssistantUiModel::SetVisible(AssistantEntryPoint entry_point) {
                 /*exit_point=*/base::nullopt);
 }
 
-void AssistantUiModel::SetHidden(AssistantExitPoint exit_point) {
-  SetVisibility(AssistantVisibility::kHidden,
-                /*entry_point=*/base::nullopt, exit_point);
-}
-
 void AssistantUiModel::SetClosed(AssistantExitPoint exit_point) {
   SetVisibility(AssistantVisibility::kClosed,
                 /*entry_point=*/base::nullopt, exit_point);

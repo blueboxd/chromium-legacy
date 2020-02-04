@@ -14,6 +14,9 @@
  * |setGlobalScrollTarget| should only be called once.
  */
 
+// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+// #import {Route, Router, RouteObserverBehavior} from './router.m.js';
+
 cr.define('settings', function() {
   const scrollTargetResolver = new PromiseResolver();
 
@@ -99,16 +102,18 @@ cr.define('settings', function() {
     scrollTargetResolver.resolve(scrollTarget);
   };
 
+  // This is done to make the closure compiler happy: it needs fully qualified
+  // names when specifying an array of behaviors.
+  /** @polymerBehavior */
+  /* #export */ const GlobalScrollTargetBehavior =
+      [settings.RouteObserverBehavior, GlobalScrollTargetBehaviorImpl];
+
   // #cr_define_end
   return {
     GlobalScrollTargetBehaviorImpl: GlobalScrollTargetBehaviorImpl,
+    GlobalScrollTargetBehavior: GlobalScrollTargetBehavior,
     setGlobalScrollTarget: setGlobalScrollTarget,
     scrollTargetResolver: scrollTargetResolver,
   };
 });
 
-// This is done to make the closure compiler happy: it needs fully qualified
-// names when specifying an array of behaviors.
-/** @polymerBehavior */
-settings.GlobalScrollTargetBehavior =
-    [settings.RouteObserverBehavior, settings.GlobalScrollTargetBehaviorImpl];

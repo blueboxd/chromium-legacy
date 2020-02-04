@@ -314,9 +314,15 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
       ConstructRequiredPolicy();
   const auto* frame = GetDocument().GetFrame();
   DCHECK(frame);
-  frame_policy_.required_document_policy = DocumentPolicy::MergeFeatureState(
-      self_required_policy,
-      frame->GetRequiredDocumentPolicy() /* parent required policy */);
+  DocumentPolicy::FeatureState new_required_policy;
+  for (const auto& entry : DocumentPolicy::MergeFeatureState(
+           self_required_policy,
+           frame->GetRequiredDocumentPolicy() /* parent required policy */)) {
+    if (!DisabledByOriginTrial(entry.first, &GetDocument()))
+      new_required_policy.insert(entry);
+  }
+  frame_policy_.required_document_policy = std::move(new_required_policy);
+
   if (ContentFrame()) {
     frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);
   }

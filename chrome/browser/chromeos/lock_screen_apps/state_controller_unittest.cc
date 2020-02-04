@@ -21,6 +21,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/fake_lock_screen_profile_creator.h"
 #include "chrome/browser/chromeos/lock_screen_apps/first_app_run_toast_manager.h"
@@ -395,7 +396,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
         session_manager::SessionState::LOGIN_PRIMARY);
 
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
-    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+    arc_session_manager_ = arc::CreateTestArcSessionManager(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(&ArcSessionFactory)));
 

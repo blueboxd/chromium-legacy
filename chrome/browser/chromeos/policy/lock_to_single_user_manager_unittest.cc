@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -47,7 +48,7 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
     settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     arc::ArcSessionManager::SetUiEnabledForTesting(false);
     arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
-    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+    arc_session_manager_ = arc::CreateTestArcSessionManager(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(arc::FakeArcSession::Create)));
 

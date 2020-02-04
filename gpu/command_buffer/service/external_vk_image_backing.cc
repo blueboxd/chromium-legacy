@@ -36,6 +36,11 @@
 #endif
 
 #if defined(OS_LINUX)
+#define GL_DEDICATED_MEMORY_OBJECT_EXT 0x9581
+#define GL_TEXTURE_TILING_EXT 0x9580
+#define GL_TILING_TYPES_EXT 0x9583
+#define GL_OPTIMAL_TILING_EXT 0x9584
+#define GL_LINEAR_TILING_EXT 0x9585
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
 #endif
 
@@ -674,6 +679,9 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     }
 
     api->glCreateMemoryObjectsEXTFn(1, &memory_object);
+    int dedicated = GL_TRUE;
+    api->glMemoryObjectParameterivEXTFn(
+        memory_object, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
     api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
                                GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
   }
@@ -693,16 +701,15 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
                              size().height());
   } else {
     DCHECK(memory_object);
-    if (internal_format == GL_BGRA8_EXT) {
-      // BGRA8 internal format is not well supported, so use RGBA8 instead.
-      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(),
-                                  size().height(), memory_object, 0);
+    bool is_brga8 = (internal_format == GL_BGRA8_EXT);
+    if (is_brga8)
+      internal_format = GL_RGBA8;
+    api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                size().width(), size().height(), memory_object,
+                                0);
+    if (is_brga8) {
       api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
       api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-    } else {
-      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                  size().width(), size().height(),
-                                  memory_object, 0);
     }
   }
   api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);

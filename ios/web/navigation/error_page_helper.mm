@@ -16,6 +16,8 @@
 
 namespace {
 
+const char kOriginalUrlKey[] = "url";
+
 // Escapes HTML characters in |text|.
 NSString* EscapeHTMLCharacters(NSString* text) {
   return base::SysUTF8ToNSString(
@@ -76,9 +78,9 @@ NSString* InjectedErrorPageFilePath() {
 
 - (NSURL*)errorPageFileURL {
   if (!_errorPageFileURL) {
-    NSURLQueryItem* itemURL =
-        [NSURLQueryItem queryItemWithName:@"url"
-                                    value:self.failedNavigationURLString];
+    NSURLQueryItem* itemURL = [NSURLQueryItem
+        queryItemWithName:base::SysUTF8ToNSString(kOriginalUrlKey)
+                    value:self.failedNavigationURLString];
     NSURLQueryItem* itemError =
         [NSURLQueryItem queryItemWithName:@"error"
                                     value:_error.localizedDescription];
@@ -137,10 +139,9 @@ NSString* InjectedErrorPageFilePath() {
 
   if (URL.SchemeIsFile() &&
       URL.path() == base::SysNSStringToUTF8(LoadedErrorPageFilePath())) {
-    for (net::QueryIterator it(URL); !it.IsAtEnd(); it.Advance()) {
-      if (it.GetKey() == "file") {
-        return GURL(it.GetValue());
-      }
+    std::string value;
+    if (net::GetValueForKeyInQuery(URL, kOriginalUrlKey, &value)) {
+      return GURL(value);
     }
   }
 
@@ -157,7 +158,7 @@ NSString* InjectedErrorPageFilePath() {
                                               resolvingAgainstBaseURL:NO];
   NSURL* failedNavigationURL = nil;
   for (NSURLQueryItem* item in URLComponents.queryItems) {
-    if ([item.name isEqualToString:@"url"]) {
+    if ([item.name isEqualToString:base::SysUTF8ToNSString(kOriginalUrlKey)]) {
       failedNavigationURL = [NSURL URLWithString:item.value];
       break;
     }

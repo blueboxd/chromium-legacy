@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/client_session_details.h"
+#include "remoting/host/desktop_and_cursor_conditional_composer.h"
 #include "remoting/host/desktop_display_info.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/host_experiment_session_plugin.h"
@@ -38,7 +39,6 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/video_stream.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
@@ -316,13 +316,8 @@ class ClientSession : public protocol::HostStub,
   std::unique_ptr<MouseShapePump> mouse_shape_pump_;
   std::unique_ptr<KeyboardLayoutMonitor> keyboard_layout_monitor_;
 
-  // Raw pointer to the DesktopAndCursorComposer, owned by |video_stream_|.
-  // TODO(crbug.com/1043325): Replace this with something more robust if the
-  // relative pointer experiment is a success.
-  webrtc::DesktopAndCursorComposer* desktop_and_cursor_composer_raw_ = nullptr;
-
-  std::unique_ptr<webrtc::MouseCursor> mouse_cursor_;
-  bool pointer_lock_active_ = false;
+  base::WeakPtr<DesktopAndCursorConditionalComposer>
+      desktop_and_cursor_composer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -188,6 +188,7 @@ public final class ChromePreferenceKeys {
 
     public static final KeyPrefix CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX =
             new KeyPrefix("pref_local_custom_tabs_module_dex_last_update_time_*");
+    public static final String CUSTOM_TABS_LAST_URL = "pref_last_custom_tab_url";
 
     /**
      * Key used to save the time in milliseconds since epoch that the first run experience or second
@@ -430,6 +431,9 @@ public final class ChromePreferenceKeys {
             "LocaleManager_WAS_IN_SPECIAL_LOCALE";
 
     public static final String MEDIA_WEBRTC_NOTIFICATION_IDS = "WebRTCNotificationIds";
+
+    public static final String METRICS_MAIN_INTENT_LAUNCH_COUNT = "MainIntent.LaunchCount";
+    public static final String METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP = "MainIntent.LaunchTimestamp";
 
     public static final String NOTIFICATIONS_CHANNELS_VERSION = "channels_version_key";
     public static final String NOTIFICATIONS_LAST_SHOWN_NOTIFICATION_TYPE =
@@ -784,6 +788,7 @@ public final class ChromePreferenceKeys {
                 CRASH_UPLOAD_SUCCESS_GPU,
                 CRASH_UPLOAD_SUCCESS_OTHER,
                 CRASH_UPLOAD_SUCCESS_RENDERER,
+                CUSTOM_TABS_LAST_URL,
                 DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_TIME_MS,
                 DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION,
                 DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_RUN_PROMO,
@@ -837,6 +842,8 @@ public final class ChromePreferenceKeys {
                 LOCALE_MANAGER_SEARCH_ENGINE_PROMO_SHOW_STATE,
                 LOCALE_MANAGER_WAS_IN_SPECIAL_LOCALE,
                 MEDIA_WEBRTC_NOTIFICATION_IDS,
+                METRICS_MAIN_INTENT_LAUNCH_COUNT,
+                METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP,
                 NOTIFICATIONS_CHANNELS_VERSION,
                 NOTIFICATIONS_LAST_SHOWN_NOTIFICATION_TYPE,
                 NOTIFICATIONS_NEXT_TRIGGER,

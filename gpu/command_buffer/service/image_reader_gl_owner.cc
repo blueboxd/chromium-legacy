@@ -110,7 +110,6 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   uint64_t usage = mode == Mode::kAImageReaderSecureSurfaceControl
                        ? AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT
                        : AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
-  usage |= gl::SurfaceControl::RequiredUsage();
 
   // Create a new reader for images of the desired size and format.
   media_status_t return_code = loader_.AImageReader_newWithUsage(

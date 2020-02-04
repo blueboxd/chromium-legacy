@@ -118,6 +118,7 @@ scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
 
 // static
 ModuleDatabase* ModuleDatabase::GetInstance() {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   return g_module_database;
 }
 

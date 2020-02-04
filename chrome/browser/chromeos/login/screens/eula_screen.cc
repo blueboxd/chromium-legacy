@@ -66,7 +66,7 @@ void EulaScreen::OnViewDestroyed(EulaView* view) {
     view_ = NULL;
 }
 
-void EulaScreen::Show() {
+void EulaScreen::ShowImpl() {
   // Command to own the TPM.
   CryptohomeClient::Get()->TpmCanAttemptOwnership(
       EmptyVoidDBusMethodCallback());
@@ -76,7 +76,7 @@ void EulaScreen::Show() {
     view_->Show();
 }
 
-void EulaScreen::Hide() {
+void EulaScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

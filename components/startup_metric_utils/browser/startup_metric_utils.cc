@@ -49,8 +49,6 @@ base::TimeTicks g_message_loop_start_ticks;
 
 base::TimeTicks g_browser_window_display_ticks;
 
-base::TimeDelta g_browser_open_tabs_duration = base::TimeDelta::Max();
-
 // An enumeration of startup temperatures. This must be kept in sync with the
 // UMA StartupType enumeration defined in histograms.xml.
 enum StartupTemperature {
@@ -370,41 +368,27 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   RecordHardFaultHistogram();
 
   // Record timing of the browser message-loop start time.
-  if (!is_first_run && !g_process_creation_ticks.is_null()) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
-        g_process_creation_ticks, ticks);
-  }
-
-  // Record timing between the shared library's main() entry and the browser
-  // main message loop start.
-  if (is_first_run) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2",
-        g_browser_main_entry_point_ticks, ticks);
-  } else {
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry3",
-        g_browser_main_entry_point_ticks, ticks);
+  if (!g_process_creation_ticks.is_null()) {
+    if (is_first_run) {
+      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
+          UMA_HISTOGRAM_LONG_TIMES_100,
+          "Startup.BrowserMessageLoopStartTime.FirstRun",
+          g_process_creation_ticks, ticks);
+    } else {
+      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
+          UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
+          g_process_creation_ticks, ticks);
+    }
   }
 
   AddStartupEventsForTelemetry();
 
   // Record values stored prior to startup temperature evaluation.
-  if (ShouldLogStartupHistogram()) {
-    if (!g_browser_open_tabs_duration.is_max()) {
-      UMA_HISTOGRAM_WITH_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
-                                     "Startup.BrowserOpenTabs",
-                                     g_browser_open_tabs_duration);
-    }
-
-    if (!g_browser_window_display_ticks.is_null()) {
-      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
-          g_process_creation_ticks, g_browser_window_display_ticks);
-    }
+  if (ShouldLogStartupHistogram() &&
+      !g_browser_window_display_ticks.is_null()) {
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
+        UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
+        g_process_creation_ticks, g_browser_window_display_ticks);
   }
 
   // Record timings between process creation, the main() in the executable being
@@ -443,14 +427,6 @@ void RecordBrowserWindowDisplay(base::TimeTicks ticks) {
   // these cases, the value will not be recorded, which is the desired behavior
   // for a non-conventional launch.
   g_browser_window_display_ticks = ticks;
-}
-
-void RecordBrowserOpenTabsDelta(base::TimeDelta delta) {
-  DCHECK(g_browser_open_tabs_duration.is_max());
-  DCHECK_EQ(g_startup_temperature, UNDETERMINED_STARTUP_TEMPERATURE);
-  // The value will be recorded in appropriate histograms after the startup
-  // temperature is evaluated.
-  g_browser_open_tabs_duration = delta;
 }
 
 void RecordFirstWebContentsNonEmptyPaint(

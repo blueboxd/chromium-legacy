@@ -14,7 +14,7 @@
       "backgroundColor": "#000000"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='outer'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='inner'",
       "position": [500, 120],
       "bounds": [100, 100],
       "contentsOpaque": true,

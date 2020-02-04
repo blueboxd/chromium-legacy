@@ -13,7 +13,7 @@ Hi!
       "bounds": [15, 600]
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='abs'",
       "position": [-360, -90],
       "bounds": [360, 90],
       "backgroundColor": "#FFFF00",

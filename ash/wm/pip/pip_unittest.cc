@@ -103,10 +103,8 @@ TEST_F(PipTest, ShortcutNavigation) {
   EXPECT_TRUE(pip_widget->IsActive());
   EXPECT_FALSE(widget->IsActive());
 
-  auto* navigation_widget =
-      AshTestBase::GetPrimaryShelf()->shelf_widget()->navigation_widget();
-  auto* hotseat_widget =
-      AshTestBase::GetPrimaryShelf()->shelf_widget()->hotseat_widget();
+  auto* navigation_widget = AshTestBase::GetPrimaryShelf()->navigation_widget();
+  auto* hotseat_widget = AshTestBase::GetPrimaryShelf()->hotseat_widget();
   auto* status_area =
       Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
 

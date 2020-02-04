@@ -724,7 +724,8 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   if (no_pending_swaps_callback_ && pending_swaps_ == 0)
     std::move(no_pending_swaps_callback_).Run();
 
-  overlay_processor_->OverlayPresentationComplete();
+  if (overlay_processor_)
+    overlay_processor_->OverlayPresentationComplete();
   if (renderer_)
     renderer_->SwapBuffersComplete();
 

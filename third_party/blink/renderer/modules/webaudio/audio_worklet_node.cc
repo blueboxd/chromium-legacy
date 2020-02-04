@@ -89,12 +89,13 @@ void AudioWorkletHandler::Process(uint32_t frames_to_process) {
   // We also need to check if the global scope is valid before we request
   // the rendering in the AudioWorkletGlobalScope.
   if (processor_ && !processor_->hasErrorOccured()) {
-    Vector<AudioBus*> input_buses;
+    Vector<scoped_refptr<AudioBus>> input_buses;
     Vector<AudioBus*> output_buses;
     for (unsigned i = 0; i < NumberOfInputs(); ++i) {
       // If the input is not connected, inform the processor of that
       // fact by setting the bus to null.
-      AudioBus* bus = Input(i).IsConnected() ? Input(i).Bus() : nullptr;
+      scoped_refptr<AudioBus> bus =
+          Input(i).IsConnected() ? Input(i).Bus() : nullptr;
       input_buses.push_back(bus);
     }
     for (unsigned i = 0; i < NumberOfOutputs(); ++i)

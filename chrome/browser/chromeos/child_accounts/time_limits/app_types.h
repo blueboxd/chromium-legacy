@@ -54,6 +54,18 @@ enum class AppNotification {
   kTimeLimitReached,
 };
 
+enum class ChromeAppActivityState {
+  // The browser is active and hosts urls in its active tab which are not
+  // whitelisted.
+  kActive,
+
+  // Same as |kActive| except the urls the browser hosts are whitelisted.
+  kActiveWhitelisted,
+
+  // The browser window is not active.
+  kInactive,
+};
+
 // Identifies an app for app time limits.
 // Different types of use different identifier format. ARC++ apps are identified
 // by Android package name. Other types of apps use 32 character long Chrome
@@ -177,6 +189,13 @@ class AppActivity {
 
   void set_last_notification(AppNotification notification) {
     last_notification_ = notification;
+  }
+
+  // Chrome and web apps share the same time limit. Therefore, we need to have a
+  // consistent |running_active_time_| across all web apps and chrome.
+  void set_running_active_time(base::TimeDelta time) {
+    DCHECK(!is_active_);
+    running_active_time_ = time;
   }
 
  private:

@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_source.h"
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -695,11 +696,15 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
                            : mojom::RequestContextFrameType::kNested);
 
   mojo::PendingRemote<mojom::blink::NavigationInitiator> navigation_initiator;
-  WebContentSecurityPolicyList initiator_csp;
+  WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp;
+  network::mojom::blink::CSPSourcePtr initiator_self_source;
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
     initiator_csp = origin_document->GetContentSecurityPolicy()
                         ->ExposeForNavigationalChecks();
+    initiator_self_source = origin_document->GetContentSecurityPolicy()
+                                ->GetSelfSource()
+                                ->ExposeForNavigationalChecks();
     origin_document->NavigationInitiator().BindReceiver(
         navigation_initiator.InitWithNewPipeAndPassReceiver());
   }
@@ -799,7 +804,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
       request.HrefTranslate().GetString(), std::move(initiator_csp),
-      initiator_address_space, std::move(navigation_initiator));
+      std::move(initiator_self_source), initiator_address_space,
+      std::move(navigation_initiator));
 }
 
 static void FillStaticResponseIfNeeded(WebNavigationParams* params,

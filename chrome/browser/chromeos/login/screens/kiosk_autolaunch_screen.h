@@ -34,9 +34,10 @@ class KioskAutolaunchScreen : public BaseScreen {
   // is destroyed earlier then it has to call SetDelegate(nullptr).
   void OnViewDestroyed(KioskAutolaunchScreenView* view);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
+ protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
 
  private:
   KioskAutolaunchScreenView* view_;

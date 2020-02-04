@@ -46,16 +46,16 @@ class RecommendAppsScreen : public BaseScreen,
   // Called when the view is destroyed so there is no dead reference to it.
   void OnViewDestroyed(RecommendAppsScreenView* view);
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-
   // RecommendAppsFetcherDelegate:
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnLoadError() override;
   void OnParseResponseError() override;
 
  private:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   RecommendAppsScreenView* view_;
   ScreenExitCallback exit_callback_;
 

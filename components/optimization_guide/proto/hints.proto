@@ -57,6 +57,8 @@ message GetHintsRequest {
 
 // Response to the GetHints request.
 message GetHintsResponse {
+  reserved 2;
+
   // An ordered list containing hints for key/optimization combinations.
   //
   // It is guaranteed that there will only be a single hint per key and key
@@ -70,10 +72,6 @@ message GetHintsResponse {
   // sports.cnn.com/foo. In this case, the client is expected to use the
   // hints from (HOST_SUFFIX,sports.cnn.com).
   repeated Hint hints = 1;
-
-  // The maximum duration in which the hints provided in this response should
-  // be retained in the client cache.
-  optional Duration max_cache_duration = 2 [deprecated = true];
 
   // A set of hint keys to remove from the client cache.
   //
@@ -148,23 +146,9 @@ enum KeyRepresentation {
 }
 
 message Optimization {
+  reserved 2, 3;
   // The type of optimization the hint applies to.
   optional OptimizationType optimization_type = 1;
-  // A percent value to inflate the number of received bytes by for the purposes
-  // of data savings calculations in the client.
-  //
-  // If this value is set to 0, the client should use its configured default.
-  //
-  // Ex: If the received bytes is 100 and the inflation_percent is 30, the
-  // inflated bytes calculated by the client will be 30 in order to have a total
-  // consumed bytes value of 130.
-  optional int64 inflation_percent = 2 [deprecated = true];
-  // An ordered set of resource loading hints for OptimizationType
-  // RESOURCE_LOADING.
-  //
-  // Only the first ResourceLoadingHint record that matches a target resource
-  // URL will be applied to that resource.
-  repeated ResourceLoadingHint resource_loading_hints = 3 [deprecated = true];
   // The experiment name that activates the optimization.
   //
   // If a non-empty name is provided, the optimization will be disabled unless

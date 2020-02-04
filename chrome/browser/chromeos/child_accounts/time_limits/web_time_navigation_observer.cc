@@ -54,14 +54,17 @@ void WebTimeNavigationObserver::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  last_navigation_info_.navigation_finish_time = base::Time::Now();
-  last_navigation_info_.is_error = navigation_handle->IsErrorPage();
-  last_navigation_info_.is_web_app = IsWebApp();
-  last_navigation_info_.url = navigation_handle->GetURL();
-  last_navigation_info_.web_contents = web_contents();
+  if (!last_navigation_info_.has_value())
+    last_navigation_info_ = NavigationInfo();
+
+  last_navigation_info_->navigation_finish_time = base::Time::Now();
+  last_navigation_info_->is_error = navigation_handle->IsErrorPage();
+  last_navigation_info_->is_web_app = IsWebApp();
+  last_navigation_info_->url = navigation_handle->GetURL();
+  last_navigation_info_->web_contents = web_contents();
 
   for (auto& listener : listeners_)
-    listener.OnWebActivityChanged(last_navigation_info_);
+    listener.OnWebActivityChanged(last_navigation_info_.value());
 }
 
 void WebTimeNavigationObserver::WebContentsDestroyed() {

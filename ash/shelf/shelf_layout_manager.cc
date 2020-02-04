@@ -18,6 +18,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -55,6 +56,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -150,6 +152,16 @@ bool IsTabletModeEnabled() {
 
 bool IsHotseatEnabled() {
   return IsTabletModeEnabled() && chromeos::switches::ShouldShowShelfHotseat();
+}
+
+int GetOffset(int offset, bool from_touchpad) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+  if (from_touchpad)
+    return prefs->GetBoolean(prefs::kNaturalScroll) ? -offset : offset;
+
+  return prefs->GetBoolean(prefs::kMouseReverseScroll) ? -offset : offset;
 }
 
 // Returns HomeLauncherGestureHandler mode that should be used to handle shelf
@@ -728,11 +740,12 @@ void ShelfLayoutManager::ProcessGestureEventFromShelfWidget(
 }
 
 void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
-    ui::MouseWheelEvent* event) {
-  if (event->y_offset() <=
-      ShelfConfig::Get()->mousewheel_scroll_offset_threshold()) {
+    ui::MouseWheelEvent* event,
+    bool from_touchpad) {
+  const int y_offset = GetOffset(event->y_offset(), from_touchpad);
+  if (y_offset <= ShelfConfig::Get()->mousewheel_scroll_offset_threshold())
     return;
-  }
+
   Shell::Get()->app_list_controller()->ToggleAppList(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())

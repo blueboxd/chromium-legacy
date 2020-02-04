@@ -96,6 +96,9 @@ interface BlinkTestClient {
   // BlinkTestMsg_LayoutDumpCompleted.
   InitiateLayoutDump();
 
+  // Notify the browser process the reset was done.
+  ResetDone();
+
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).
   PrintMessageToStderr(string message);

@@ -230,7 +230,7 @@ void GaiaAuthFetcherIOSWKWebViewBridge::ResetWKWebView() {
 }
 
 WKWebView* GaiaAuthFetcherIOSWKWebViewBridge::BuildWKWebView() {
-  return web::BuildWKWebView(CGRectZero, GetBrowserState());
+  return web::BuildWKWebViewForQueries(GetBrowserState());
 }
 
 void GaiaAuthFetcherIOSWKWebViewBridge::OnActive() {

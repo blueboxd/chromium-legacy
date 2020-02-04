@@ -45,7 +45,7 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
       : CaptivePortalTabReloader(nullptr, nullptr, base::Callback<void()>()) {}
 
   MOCK_METHOD1(OnLoadStart, void(bool));
-  MOCK_METHOD1(OnLoadCommitted, void(int));
+  MOCK_METHOD2(OnLoadCommitted, void(int, net::ResolveErrorInfo));
   MOCK_METHOD0(OnAbort, void());
   MOCK_METHOD1(OnRedirect, void(bool));
   MOCK_METHOD2(OnCaptivePortalResults,
@@ -91,7 +91,9 @@ class CaptivePortalTabHelperTest : public content::RenderViewHostTestHarness {
     auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
         url, web_contents());
     navigation->Start();
-    EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+    EXPECT_CALL(mock_reloader(),
+                OnLoadCommitted(net::OK, net::ResolveErrorInfo(net::OK)))
+        .Times(1);
     navigation->Commit();
   }
 
@@ -102,7 +104,27 @@ class CaptivePortalTabHelperTest : public content::RenderViewHostTestHarness {
     auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
         url, web_contents());
     navigation->Fail(net::ERR_TIMED_OUT);
-    EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT)).Times(1);
+    EXPECT_CALL(
+        mock_reloader(),
+        OnLoadCommitted(net::ERR_TIMED_OUT, net::ResolveErrorInfo(net::OK)))
+        .Times(1);
+    navigation->CommitErrorPage();
+  }
+
+  // Simulates a secure DNS network error while requesting |url|.
+  void SimulateSecureDnsNetworkError(const GURL& url) {
+    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
+        .Times(1);
+    auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+        url, web_contents());
+    navigation->SetResolveErrorInfo({net::ERR_CERT_COMMON_NAME_INVALID,
+                                     true /* is_secure_network_error */});
+    navigation->Fail(net::ERR_NAME_NOT_RESOLVED);
+    EXPECT_CALL(mock_reloader(),
+                OnLoadCommitted(net::ERR_NAME_NOT_RESOLVED,
+                                net::ResolveErrorInfo(
+                                    net::ERR_CERT_COMMON_NAME_INVALID, true)))
+        .Times(1);
     navigation->CommitErrorPage();
   }
 
@@ -189,6 +211,13 @@ TEST_F(CaptivePortalTabHelperTest, HttpsTimeout) {
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
+TEST_F(CaptivePortalTabHelperTest, HttpsSecureDnsNetworkError) {
+  SimulateSecureDnsNetworkError(GURL(kHttpsUrl));
+  // Make sure no state was carried over from the secure DNS network error.
+  SimulateSuccess(GURL(kHttpsUrl));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
+}
+
 TEST_F(CaptivePortalTabHelperTest, HttpsAbort) {
   SimulateAbort(GURL(kHttpsUrl));
   // Make sure no state was carried over from the abort.
@@ -261,7 +290,9 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
   // The cross-process navigation fails.
   cross_process_navigation->Fail(net::ERR_FAILED);
 
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_FAILED)).Times(1);
+  EXPECT_CALL(mock_reloader(),
+              OnLoadCommitted(net::ERR_FAILED, net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   cross_process_navigation->CommitErrorPage();
 }
 
@@ -298,7 +329,9 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
   EXPECT_CALL(mock_reloader(),
               OnLoadStart(same_site_url.SchemeIsCryptographic()))
       .Times(1);
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  EXPECT_CALL(mock_reloader(),
+              OnLoadCommitted(net::OK, net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   same_site_navigation->Commit();
 }
 
@@ -355,7 +388,9 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
 
   // Error page load finishes.
   subframe_navigation->CommitErrorPage();
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_UNEXPECTED)).Times(1);
+  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_UNEXPECTED,
+                                               net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   main_frame_navigation->CommitErrorPage();
 }
 
@@ -373,7 +408,9 @@ TEST_F(CaptivePortalTabHelperTest, HttpToHttpsRedirectTimeout) {
 
   navigation->Fail(net::ERR_TIMED_OUT);
 
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT)).Times(1);
+  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT,
+                                               net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   navigation->CommitErrorPage();
 }
 
@@ -391,7 +428,9 @@ TEST_F(CaptivePortalTabHelperTest, HttpsToHttpRedirect) {
       .Times(1);
   navigation->Redirect(http_url);
 
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  EXPECT_CALL(mock_reloader(),
+              OnLoadCommitted(net::OK, net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   navigation->Commit();
 }
 
@@ -408,7 +447,9 @@ TEST_F(CaptivePortalTabHelperTest, HttpToHttpRedirect) {
       .Times(1);
   navigation->Redirect(http_url);
 
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  EXPECT_CALL(mock_reloader(),
+              OnLoadCommitted(net::OK, net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   navigation->Commit();
 }
 
@@ -431,7 +472,9 @@ TEST_F(CaptivePortalTabHelperTest, SubframeRedirect) {
   GURL https_url(kHttpsUrl);
   subframe_navigation->Redirect(https_url);
 
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  EXPECT_CALL(mock_reloader(),
+              OnLoadCommitted(net::OK, net::ResolveErrorInfo(net::OK)))
+      .Times(1);
   main_frame_navigation->Commit();
 }
 

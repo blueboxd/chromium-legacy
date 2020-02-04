@@ -147,8 +147,7 @@ DesktopMediaPickerController::Params MakeDesktopPickerParams(
   params.context = web_contents->GetTopLevelNativeWindow();
   params.app_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   params.target_name = params.app_name;
-  // TODO(crbug.com/637643): Change to true after privacy approval.
-  params.select_only_screen = false;
+  params.select_only_screen = true;
   return params;
 }
 

@@ -209,8 +209,10 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   // the next transaction.
   DCHECK_LE(pending_surfaces_count_, surface_list_.size());
   for (size_t i = pending_surfaces_count_; i < surface_list_.size(); ++i) {
-    pending_transaction_->SetBuffer(*surface_list_[i].surface, nullptr,
+    const auto& surface_state = surface_list_[i];
+    pending_transaction_->SetBuffer(*surface_state.surface, nullptr,
                                     base::ScopedFD());
+    pending_transaction_->SetVisibility(*surface_state.surface, false);
   }
 
   // TODO(khushalsagar): Consider using the SetDamageRect API for partial

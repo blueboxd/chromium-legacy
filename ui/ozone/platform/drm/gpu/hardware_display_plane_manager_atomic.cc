@@ -60,6 +60,21 @@ HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic(
 HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() =
     default;
 
+bool HardwareDisplayPlaneManagerAtomic::Modeset(
+    uint32_t crtc_id,
+    uint32_t framebuffer_id,
+    uint32_t connector_id,
+    const drmModeModeInfo& mode,
+    const HardwareDisplayPlaneList&) {
+  return drm_->SetCrtc(crtc_id, framebuffer_id,
+                       std::vector<uint32_t>(1, connector_id), mode);
+}
+
+bool HardwareDisplayPlaneManagerAtomic::DisableModeset(uint32_t crtc_id,
+                                                       uint32_t connector) {
+  return drm_->DisableCrtc(crtc_id);
+}
+
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
     scoped_refptr<PageFlipRequest> page_flip_request,

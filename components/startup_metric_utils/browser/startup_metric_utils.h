@@ -52,9 +52,6 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
 // Call this with the time when the first browser window became visible.
 void RecordBrowserWindowDisplay(base::TimeTicks ticks);
 
-// Call this with the time delta that the browser spent opening its tabs.
-void RecordBrowserOpenTabsDelta(base::TimeDelta delta);
-
 // Call this with the time when the first web contents had a non-empty paint,
 // only if the first web contents was unimpeded in its attempt to do so.
 void RecordFirstWebContentsNonEmptyPaint(

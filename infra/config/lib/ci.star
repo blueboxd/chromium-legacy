@@ -90,16 +90,10 @@ def clang_builder(*, name, cores=32, properties=None, **kwargs):
   )
 
 
-XCODE_IOS_11_CACHE = swarming.cache(
-    name = 'xcode_ios_11a1027',
-    path = 'xcode_ios_11a1027.app',
-)
-
-
 def clang_ios_builder(*, name, **kwargs):
   return clang_builder(
       name = name,
-      caches = [XCODE_IOS_11_CACHE],
+      caches = [builders.xcode_cache.x11a1027],
       cores = None,
       executable = 'recipe:ios/unified_builder_tester',
       os = builders.os.MAC_10_14,
@@ -208,7 +202,7 @@ def fyi_ios_builder(
     **kwargs):
   return fyi_builder(
       name = name,
-      caches = [XCODE_IOS_11_CACHE],
+      caches = [builders.xcode_cache.x11c29],
       cores = None,
       executable = executable,
       goma_backend = None,
@@ -362,7 +356,7 @@ def mac_builder(
 def mac_ios_builder(*, name, **kwargs):
   return mac_builder(
       name = name,
-      caches = [XCODE_IOS_11_CACHE],
+      caches = [builders.xcode_cache.x11c29],
       executable = 'recipe:ios/unified_builder_tester',
       goma_backend = None,
       os = builders.os.MAC_ANY,

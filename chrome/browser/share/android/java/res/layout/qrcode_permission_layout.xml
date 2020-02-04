@@ -8,12 +8,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/camera_icon"
+        android:layout_marginTop="200dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="125dp"
+        android:layout_height="125dp"
+        android:scaleType="center"
+        android:importantForAccessibility="no"
+        android:src="@drawable/camera" />
     <TextView
         android:id="@+id/qrcode_permission_image"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="75dp"
         android:drawablePadding="24dp"
         android:gravity="center_horizontal"
         android:layout_gravity="center_horizontal"

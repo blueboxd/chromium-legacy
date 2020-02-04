@@ -58,12 +58,12 @@ void AnalyserHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  AudioBus* input_bus = Input(0).Bus();
+  scoped_refptr<AudioBus> input_bus = Input(0).Bus();
 
   // Give the analyser the audio which is passing through this
   // AudioNode.  This must always be done so that the state of the
   // Analyser reflects the current input.
-  analyser_.WriteInput(input_bus, frames_to_process);
+  analyser_.WriteInput(input_bus.get(), frames_to_process);
 
   if (!Input(0).IsConnected()) {
     // No inputs, so clear the output, and propagate the silence hint.

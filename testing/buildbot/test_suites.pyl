@@ -3134,16 +3134,16 @@
     },
 
     'skia_renderer_isolated_scripts': {
-      'skia_renderer_swiftshader_blink_web_tests': {
+      'non_skia_renderer_swiftshader_blink_web_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
         # passed, but 0 times when '--test-list' is passed. We want to always
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
-          '--fuzzy-diff',
+          '--additional-driver-flag=--disable-features=UseSkiaRenderer',
           '--skipped=always',
-          '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
+          '--fuzzy-diff',
+	  '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -3364,7 +3364,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': '4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C',
+              'revision': 'Zmi8uHgTaLXGm9f8Fu_0U-Xa6BljyNjsyL0Nq7VouKoC',
             }
           ]
         },
@@ -3382,7 +3382,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': '4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C',
+              'revision': 'Zmi8uHgTaLXGm9f8Fu_0U-Xa6BljyNjsyL0Nq7VouKoC',
             }
           ]
         },
@@ -3930,6 +3930,7 @@
     'gpu_desktop_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_desktop_specific_gtests',
     ],
 
@@ -4191,6 +4192,7 @@
     'gpu_win_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
     ],

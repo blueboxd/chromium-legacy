@@ -82,6 +82,8 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceBoardStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceBootMode[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceCpuInfo[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceTimezoneInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceLocation[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceNetworkInterfaces[];

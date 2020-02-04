@@ -492,15 +492,8 @@ const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 const char kEnableTouchpadThreeFingerClick[] =
     "settings.touchpad.enable_three_finger_click";
 
-// A boolean pref set to true if touchpad natural scrolling is enabled.
-const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
-
 // A boolean pref set to true if primary mouse button is the left button.
 const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
-
-// A boolean pref set to true if turning the mouse wheel toward the user should
-// result in scrolling up instead of the more common scrolling down.
-const char kMouseReverseScroll[] = "settings.mouse.reverse_scroll";
 
 // A boolean pref set to true if mouse acceleration is enabled. When disabled
 // only simple linear scaling is applied based on sensitivity.

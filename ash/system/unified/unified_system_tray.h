@@ -21,6 +21,7 @@ namespace ash {
 
 namespace tray {
 class TimeTrayItemView;
+class NetworkTrayView;
 }  // namespace tray
 
 class CurrentLocaleView;
@@ -138,6 +139,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
+  base::string16 GetAccessibleNameForQuickSettingsBubble();
+
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
 
@@ -182,6 +185,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
   tray::TimeTrayItemView* const time_view_;
+
+  tray::NetworkTrayView* network_tray_view_ = nullptr;
 
   ui::Layer* ink_drop_layer_ = nullptr;
   base::OneShotTimer timer_;

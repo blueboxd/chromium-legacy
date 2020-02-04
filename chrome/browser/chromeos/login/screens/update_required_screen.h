@@ -43,11 +43,6 @@ class UpdateRequiredScreen : public BaseScreen,
   // associated View if this class is destroyed before it.
   void OnViewDestroyed(UpdateRequiredView* view);
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   // VersionUpdater::Delegate:
   void OnWaitForRebootTimeElapsed() override;
   void PrepareForUpdateCheck() override;
@@ -69,6 +64,11 @@ class UpdateRequiredScreen : public BaseScreen,
   void SetErrorMessageDelayForTesting(const base::TimeDelta& delay);
 
  private:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   void EnsureScreenIsShown();
 
   void OnSelectNetworkButtonClicked();

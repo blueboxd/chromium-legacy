@@ -445,7 +445,7 @@ WebContents* GuestViewBase::GetOwnerWebContents() {
 }
 
 const GURL& GuestViewBase::GetOwnerSiteURL() const {
-  return owner_web_contents()->GetLastCommittedURL();
+  return owner_web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL();
 }
 
 bool GuestViewBase::ShouldDestroyOnDetach() const {

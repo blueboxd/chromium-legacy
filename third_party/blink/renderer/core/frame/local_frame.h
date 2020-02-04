@@ -70,10 +70,6 @@ namespace gfx {
 class Point;
 }
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace blink {
 
 class AdTracker;
@@ -285,8 +281,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // framebusting defenses, in order to give the option of restarting the
   // navigation at a later time.
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
-
-  service_manager::InterfaceProvider& GetInterfaceProvider();
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
 

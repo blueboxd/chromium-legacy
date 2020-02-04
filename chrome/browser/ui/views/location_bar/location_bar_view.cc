@@ -213,8 +213,8 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_ =
       AddChildView(std::move(ime_inline_autocomplete_view));
 
-  selected_keyword_view_ = AddChildView(
-      std::make_unique<SelectedKeywordView>(this, font_list, profile_));
+  selected_keyword_view_ =
+      AddChildView(std::make_unique<SelectedKeywordView>(this, font_list));
 
   keyword_hint_view_ =
       AddChildView(std::make_unique<KeywordHintView>(this, profile_));
@@ -511,7 +511,7 @@ void LocationBarView::Layout() {
     // Call this even if keyword doesn't change. Let the View decide what to do
     // about a11y.
     bool keyword_changed = selected_keyword_view_->keyword() != keyword;
-    selected_keyword_view_->SetKeyword(keyword);
+    selected_keyword_view_->SetKeyword(keyword, profile_);
     if (keyword_changed) {
       const TemplateURL* template_url =
           TemplateURLServiceFactory::GetForProfile(profile_)

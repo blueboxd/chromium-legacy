@@ -70,7 +70,7 @@ void UpdateScreen::OnViewDestroyed(UpdateView* view) {
     view_ = nullptr;
 }
 
-void UpdateScreen::Show() {
+void UpdateScreen::ShowImpl() {
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (view_) {
     view_->SetCancelUpdateShortcutEnabled(true);
@@ -85,7 +85,7 @@ void UpdateScreen::Show() {
   version_updater_->StartNetworkCheck();
 }
 
-void UpdateScreen::Hide() {
+void UpdateScreen::HideImpl() {
   show_timer_.Stop();
   if (view_)
     view_->Hide();

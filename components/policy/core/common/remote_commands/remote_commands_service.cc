@@ -36,16 +36,12 @@ RemoteCommandsService::~RemoteCommandsService() {
 }
 
 bool RemoteCommandsService::FetchRemoteCommands() {
-  // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  SYSLOG(INFO) << "Fetching remote commands.";
   if (!client_->is_registered()) {
     SYSLOG(WARNING) << "Client is not registered.";
     return false;
   }
 
   if (command_fetch_in_progress_) {
-    // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-    SYSLOG(WARNING) << "Command fetch is already in progress.";
     has_enqueued_fetch_request_ = true;
     return false;
   }
@@ -221,8 +217,6 @@ void RemoteCommandsService::OnRemoteCommandsFetched(
     const std::vector<enterprise_management::RemoteCommand>& commands,
     const std::vector<enterprise_management::SignedData>& signed_commands) {
   DCHECK(command_fetch_in_progress_);
-  // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  SYSLOG(INFO) << "Remote commands fetched.";
   command_fetch_in_progress_ = false;
 
   if (!on_command_acked_callback_.is_null())

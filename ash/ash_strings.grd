@@ -190,7 +190,15 @@ This file contains the strings for ash.
 
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the status tray and the information on it.">
-        Status tray, time <ph name="time">$1<ex>9:50</ex></ph>, <ph name="battery">$2<ex>Battery is full.</ex></ph> Press search + left to access the notification center.
+        Status tray, time <ph name="time">$1<ex>9:50</ex></ph>,
+        <ph name="battery">$2<ex>Battery is full.</ex></ph>
+        <ph name="network">$3<ex>Connected to Wifi.</ex></ph>,
+        <ph name="notification">$4<ex>1 notification</ex></ph>,
+        <ph name="ime">$5<ex>Using US keyboard</ex></ph>
+        <ph name="locale">$6<ex>Using English</ex></ph>
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the quick settings bubble and the information in it.">
+        Quick Settings, Press search + left to access the notification center.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED" desc="The message shown on a notification when a braille display is connected">
         Braille display connected.
@@ -1619,12 +1627,6 @@ This file contains the strings for ash.
 
       <!-- Deprecated Accelerators Messages -->
       <!-- Shortcut keys MUST be connected with pluses (e.g. Ctrl+Shift+L). -->
-      <message name="IDS_SHORTCUT_LOCK_SCREEN_OLD" desc="the old deprecated shortcut to lock the screen.">
-        Ctrl+Shift+L
-      </message>
-      <message name="IDS_SHORTCUT_LOCK_SCREEN_NEW" desc="the new shortcut to lock the screen.">
-        Search+L
-      </message>
       <message name="IDS_SHORTCUT_TASK_MANAGER_OLD" desc="the old deprecated shortcut to open the task manager.">
         Shift+Esc
       </message>
@@ -1642,10 +1644,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_SHORTCUT_TOGGLE_HIGH_CONTRAST_NEW" desc="the new shortcut to toggle the high contrast display mode.">
         Ctrl+Search+H
-      </message>
-      <message name="IDS_DEPRECATED_LOCK_SCREEN_MSG"
-               desc="Notification message to tell users about the deprecation of Ctrl+Shift+L shortcut to lock the screen.">
-        The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+L</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Ctrl+Shift+L</ex></ph>.
       </message>
       <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
                desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">

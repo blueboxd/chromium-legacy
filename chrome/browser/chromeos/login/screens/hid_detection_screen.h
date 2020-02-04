@@ -63,8 +63,8 @@ class HIDDetectionScreen : public BaseScreen,
   friend class HIDDetectionScreenTest;
 
   // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
 
   // device::BluetoothDevice::PairingDelegate implementation:
   void RequestPinCode(device::BluetoothDevice* device) override;
@@ -237,8 +237,6 @@ class HIDDetectionScreen : public BaseScreen,
   bool switch_on_adapter_when_ready_ = false;
 
   bool devices_enumerated_ = false;
-
-  bool showing_ = false;
 
   base::WeakPtrFactory<HIDDetectionScreen> weak_ptr_factory_{this};
 

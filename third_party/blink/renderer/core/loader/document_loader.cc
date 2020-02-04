@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -185,9 +186,8 @@ DocumentLoader::DocumentLoader(
     // Require-Document-Policy header only affects subtree of current document,
     // but not the current document.
     const DocumentPolicy::FeatureState header_required_policy =
-        DocumentPolicy::Parse(
-            response_.HttpHeaderField(http_names::kRequireDocumentPolicy)
-                .Ascii())
+        DocumentPolicyParser::Parse(
+            response_.HttpHeaderField(http_names::kRequireDocumentPolicy))
             .value_or(DocumentPolicy::FeatureState{});
     frame_->SetRequiredDocumentPolicy(DocumentPolicy::MergeFeatureState(
         frame_policy_.required_document_policy, header_required_policy));
@@ -818,9 +818,9 @@ DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())
     return DocumentPolicy::FeatureState{};
 
-  DocumentPolicy::FeatureState header_policy =
-      DocumentPolicy::Parse(
-          response_.HttpHeaderField(http_names::kDocumentPolicy).Ascii())
+  const DocumentPolicy::FeatureState header_policy =
+      DocumentPolicyParser::Parse(
+          response_.HttpHeaderField(http_names::kDocumentPolicy))
           .value_or(DocumentPolicy::FeatureState{});
 
   if (!DocumentPolicy::IsPolicyCompatible(
@@ -1644,7 +1644,7 @@ void DocumentLoader::CreateParserPostCommit() {
     // Security Policies that have accumulated so far for the new navigation.
     frame_->GetSecurityContext()
         ->GetContentSecurityPolicy()
-        ->ReportAccumulatedHeaders(&GetLocalFrameClient());
+        ->ReportAccumulatedHeaders(frame_);
   }
 
   // Initializing origin trials might force window proxy initialization,

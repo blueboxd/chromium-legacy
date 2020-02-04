@@ -17,8 +17,8 @@ class MockWrongHWIDScreen : public WrongHWIDScreen {
                       const base::RepeatingClosure& exit_callback);
   ~MockWrongHWIDScreen() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD0(ShowImpl, void());
+  MOCK_METHOD0(HideImpl, void());
 };
 
 class MockWrongHWIDScreenView : public WrongHWIDScreenView {

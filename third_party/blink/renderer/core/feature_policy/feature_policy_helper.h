@@ -36,6 +36,10 @@ const FeatureSet& GetAvailableDocumentPolicyFeatures();
 // origin trial controlled, and the origin trial is not enabled).
 bool DisabledByOriginTrial(const String&, FeatureContext*);
 
+// Returns true if this feature is currently disabled by an origin trial (it is
+// origin trial controlled, and the origin trial is not enabled).
+bool DisabledByOriginTrial(mojom::blink::FeaturePolicyFeature, FeatureContext*);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_FEATURE_POLICY_HELPER_H_

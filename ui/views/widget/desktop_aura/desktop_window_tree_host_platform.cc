@@ -556,7 +556,7 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
   DCHECK_EQ(fullscreen, IsFullscreen());
 
   if (IsFullscreen() == fullscreen)
-    Relayout();
+    ScheduleRelayout();
   // Else: the widget will be relaid out either when the window bounds change
   // or when |platform_window|'s fullscreen state changes.
 }
@@ -669,7 +669,7 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is
   // synchronous.)
-  Relayout();
+  ScheduleRelayout();
 }
 
 void DesktopWindowTreeHostPlatform::OnCloseRequest() {
@@ -712,11 +712,13 @@ gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-void DesktopWindowTreeHostPlatform::Relayout() {
+void DesktopWindowTreeHostPlatform::ScheduleRelayout() {
   Widget* widget = native_widget_delegate_->AsWidget();
   NonClientView* non_client_view = widget->non_client_view();
   // non_client_view may be NULL, especially during creation.
   if (non_client_view) {
+    if (non_client_view->frame_view())
+      non_client_view->frame_view()->InvalidateLayout();
     non_client_view->client_view()->InvalidateLayout();
     non_client_view->InvalidateLayout();
   }

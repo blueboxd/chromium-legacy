@@ -1,7 +1,9 @@
 afakhry@chromium.org
 jkardatzke@chromium.org
+iby@chromium.org
 zork@chromium.org
 
 per-file anonymizer_tool*=jkardatzke@chromium.org
+per-file anonymizer_tool*=iby@chromium.org
 
 # COMPONENT: Platform>Apps>Feedback

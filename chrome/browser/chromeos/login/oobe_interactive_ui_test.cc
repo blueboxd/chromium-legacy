@@ -1,4 +1,3 @@
-
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -9,6 +8,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
@@ -474,6 +475,8 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   }
 
   void SetUpOnMainThread() override {
+    ASSERT_TRUE(arc_temp_dir_.CreateUniqueTempDir());
+
     if (params_.is_tablet)
       ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
@@ -483,6 +486,8 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
       arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
           std::make_unique<arc::ArcSessionRunner>(
               base::BindRepeating(arc::FakeArcSession::Create)));
+      EXPECT_TRUE(arc::ExpandPropertyFilesForTesting(
+          arc::ArcSessionManager::Get(), arc_temp_dir_.GetPath()));
 
       if (arc_tos_server_) {
         test::OobeJS().Evaluate(base::StringPrintf(
@@ -524,6 +529,7 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   std::unique_ptr<ScopedTestRecommendAppsFetcherFactory>
       recommend_apps_fetcher_factory_;
   net::EmbeddedTestServer* arc_tos_server_;
+  base::ScopedTempDir arc_temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeEndToEndTestSetupMixin);
 };

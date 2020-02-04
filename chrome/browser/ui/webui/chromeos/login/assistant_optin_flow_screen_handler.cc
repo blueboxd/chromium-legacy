@@ -579,7 +579,7 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
   UMA_HISTOGRAM_EXACT_LINEAR("Assistant.OptInFlow.LoadingTimeoutCount",
                              loading_timeout_counter_, 10);
   if (screen_)
-    screen_->OnUserAction(kFlowFinished);
+    screen_->HandleUserAction(kFlowFinished);
   else
     CallJS("login.AssistantOptInFlowScreen.closeDialog");
 }

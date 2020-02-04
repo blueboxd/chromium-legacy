@@ -40,9 +40,12 @@ class CrtcController {
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }
   bool is_disabled() const { return is_disabled_; }
 
-  // Perform the initial modesetting operation using |plane| as the buffer for
-  // the primary plane. The CRTC configuration is specified by |mode|.
-  bool Modeset(const DrmOverlayPlane& plane, const drmModeModeInfo& mode);
+  // Calls the appropriate Plane Manager to perform the initial modesetting
+  // operation using |plane| as the buffer for the primary plane. The CRTC
+  // configuration is specified by |mode|.
+  bool Modeset(const DrmOverlayPlane& plane,
+               const drmModeModeInfo& mode,
+               const ui::HardwareDisplayPlaneList& plane_list);
 
   // Disables the controller.
   bool Disable();

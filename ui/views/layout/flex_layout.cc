@@ -93,9 +93,17 @@ class FlexLayout::ChildViewSpacing {
   int GetLeadingSpace(size_t view_index) const;
   int GetTotalSpace() const;
 
-  // Returns the change in space required if the specified view index were
-  // added. Returns zero if the view is already present.
-  int GetAddDelta(size_t view_index) const;
+  // Returns the maximum size for the child at |view_index|, given its
+  // |current_size| and the amount of |available_space| for flex allocation.
+  int GetMaxSize(size_t view_index,
+                 int current_size,
+                 int available_space) const;
+
+  // Returns the change in total allocated size if the child at |view_index| is
+  // resized from |current_size| to |new_size|.
+  int GetTotalSizeChangeForNewSize(size_t view_index,
+                                   int current_size,
+                                   int new_size) const;
 
   // Add the view at the specified index.
   //
@@ -108,6 +116,10 @@ class FlexLayout::ChildViewSpacing {
  private:
   base::Optional<size_t> GetPreviousViewIndex(size_t view_index) const;
   base::Optional<size_t> GetNextViewIndex(size_t view_index) const;
+
+  // Returns the change in space required if the specified view index were
+  // added. The view must not already be present.
+  int GetAddDelta(size_t view_index) const;
 
   GetViewSpacingCallback get_view_spacing_;
   // Maps from view index to the leading spacing for that index.
@@ -162,15 +174,32 @@ int FlexLayout::ChildViewSpacing::GetTotalSpace() const {
       [](int total, const auto& value) { return total + value.second; });
 }
 
-int FlexLayout::ChildViewSpacing::GetAddDelta(size_t view_index) const {
+int FlexLayout::ChildViewSpacing::GetMaxSize(size_t view_index,
+                                             int current_size,
+                                             int available_space) const {
+  DCHECK_GE(available_space, 0);
+
   if (HasViewIndex(view_index))
-    return 0;
-  base::Optional<size_t> prev = GetPreviousViewIndex(view_index);
-  base::Optional<size_t> next = GetNextViewIndex(view_index);
-  const int old_spacing = next ? GetLeadingSpace(*next) : GetTrailingInset();
-  const int new_spacing = get_view_spacing_.Run(prev, view_index) +
-                          get_view_spacing_.Run(view_index, next);
-  return new_spacing - old_spacing;
+    return current_size + available_space;
+
+  DCHECK_EQ(0, current_size);
+  // Making the child visible may result in the addition of margin space, which
+  // counts against the child view's flex space allocation.
+  //
+  // Note: In cases where the layout's internal margins and/or the child views'
+  // margins are wildly different sizes, subtracting the full delta out of the
+  // available space can cause the first view to be smaller than we would expect
+  // (see TODOs in unit tests for examples). We should look into ways to make
+  // this "feel" better (but in the meantime, specify reasonable margins).
+  return std::max(available_space - GetAddDelta(view_index), 0);
+}
+
+int FlexLayout::ChildViewSpacing::GetTotalSizeChangeForNewSize(
+    size_t view_index,
+    int current_size,
+    int new_size) const {
+  return HasViewIndex(view_index) ? new_size - current_size
+                                  : new_size + GetAddDelta(view_index);
 }
 
 void FlexLayout::ChildViewSpacing::AddViewIndex(size_t view_index,
@@ -208,6 +237,16 @@ base::Optional<size_t> FlexLayout::ChildViewSpacing::GetNextViewIndex(
   if (it == leading_spacings_.end())
     return base::nullopt;
   return it->first;
+}
+
+int FlexLayout::ChildViewSpacing::GetAddDelta(size_t view_index) const {
+  DCHECK(!HasViewIndex(view_index));
+  base::Optional<size_t> prev = GetPreviousViewIndex(view_index);
+  base::Optional<size_t> next = GetNextViewIndex(view_index);
+  const int old_spacing = next ? GetLeadingSpace(*next) : GetTrailingInset();
+  const int new_spacing = get_view_spacing_.Run(prev, view_index) +
+                          get_view_spacing_.Run(view_index, next);
+  return new_spacing - old_spacing;
 }
 
 // Represents a specific stored layout given a set of size bounds.
@@ -354,9 +393,9 @@ ProposedLayout FlexLayout::CalculateProposedLayout(
 
   if (bounds.main().has_value()) {
     // Flex up to preferred size.
-    CalculateNonFlexAvailableSpace(&data,
-                                   *bounds.main() - data.total_size.main(),
-                                   child_spacing, order_to_view_index);
+    CalculateNonFlexAvailableSpace(
+        &data, std::max(*bounds.main() - data.total_size.main(), 0),
+        child_spacing, order_to_view_index);
     FlexOrderToViewIndexMap expandable_views;
     AllocateFlexSpace(bounds, order_to_view_index, &data, &child_spacing,
                       &expandable_views);
@@ -535,20 +574,12 @@ void FlexLayout::CalculateNonFlexAvailableSpace(
     if (base::Contains(all_flex_indices, index))
       continue;
 
-    ChildLayout& child_layout = data->layout.child_layouts[index];
-    const FlexChildData& flex_child = data->child_data[index];
-
-    // If the view is currently not visible, we do have to add in whatever
-    // margins would be inserted if it were to be made visible.
-    const int add_delta = child_spacing.GetAddDelta(index);
-    const int old_size =
-        child_layout.visible ? flex_child.current_size.main() : 0;
-    const int max_size = old_size - add_delta + available_space;
-
     // Cross-axis available size is already set in InitializeChildData(), so
     // just set the main axis here.
-    SetMainAxis(&child_layout.available_size, orientation(),
-                std::max(flex_child.current_size.main(), max_size));
+    const int max_size = child_spacing.GetMaxSize(
+        index, data->child_data[index].current_size.main(), available_space);
+    SetMainAxis(&data->layout.child_layouts[index].available_size,
+                orientation(), max_size);
   }
 }
 
@@ -744,30 +775,10 @@ void FlexLayout::AllocateFlexSpace(
     std::vector<size_t> view_indices(flex_elem.second);
     if (flex_allocation_order() == FlexAllocationOrder::kReverse)
       std::reverse(view_indices.begin(), view_indices.end());
-    for (int view_index : view_indices) {
+    for (size_t view_index : view_indices) {
       ChildLayout& child_layout = data->layout.child_layouts[view_index];
       FlexChildData& flex_child = data->child_data[view_index];
-
-      // If the layout was previously invisible, then making it visible
-      // may result in the addition of margin space, so we'll have to
-      // recalculate the margins on either side of this view. The change in
-      // margin space (if any) counts against the child view's flex space
-      // allocation.
-      //
-      // Note: In cases where the layout's internal margins and/or the child
-      // views' margins are wildly different sizes, subtracting the full delta
-      // out of the available space can cause the first view to be smaller
-      // than we would expect (see TODOs in unit tests for examples). We
-      // should look into ways to make this "feel" better (but in the
-      // meantime, please try to specify reasonable margins).
-      const int margin_delta = child_spacing->GetAddDelta(view_index);
-
-      // This is the space on the main axis that was already allocated to the
-      // child view; it will be added to the total flex space for the child
-      // view since it is considered a fixed overhead of the layout if it is
-      // nonzero.
-      const int old_size =
-          child_layout.visible ? flex_child.current_size.main() : 0;
+      const int current_size = flex_child.current_size.main();
 
       // We'll save the maximum amount of main axis size first offered to the
       // view so we can report the maximum available size later.
@@ -776,9 +787,9 @@ void FlexLayout::AllocateFlexSpace(
         // total remaining flex space at this priority. Note that this is not
         // the actual remaining space at this step, which will be based on flex
         // used by previous children at the same priority.
-        SetMainAxis(&child_layout.available_size, orientation(),
-                    std::max(flex_child.current_size.main(),
-                             old_size - margin_delta + remaining_at_priority));
+        const int max_size = child_spacing->GetMaxSize(view_index, current_size,
+                                                       remaining_at_priority);
+        SetMainAxis(&child_layout.available_size, orientation(), max_size);
       }
 
       // At this point we need to bail out if there isn't any actual remaining
@@ -799,7 +810,7 @@ void FlexLayout::AllocateFlexSpace(
       // Offer the modified flex space to the child view and see how large it
       // wants to be (or if it wants to be visible at that size at all).
       const NormalizedSizeBounds available(
-          flex_amount + old_size - margin_delta,
+          child_spacing->GetMaxSize(view_index, current_size, flex_amount),
           GetCrossAxis(orientation(), child_layout.available_size));
 
       NormalizedSize desired_size = GetCurrentSizeForRule(
@@ -817,10 +828,17 @@ void FlexLayout::AllocateFlexSpace(
         desired_size.set_main(flex_child.preferred_size.main());
       }
 
+      // Increasing the child size should not result in a net total size
+      // decrease.  In theory this can happen if the child has larger internal
+      // padding values than its new size.  But this means the child's minimum
+      // size is less than its total internal padding.  Assume this is a
+      // mistake; if we ever want to support this we need to think carefully
+      // about the ramifications.
+      const int to_deduct = child_spacing->GetTotalSizeChangeForNewSize(
+          view_index, current_size, desired_size.main());
+      DCHECK_GE(to_deduct, 0);
       // If the desired size increases (but is still within bounds), we can make
       // the control visible and allocate the additional space.
-      const int to_deduct = (desired_size.main() - old_size) + margin_delta;
-      DCHECK_GE(to_deduct, 0);
       if (to_deduct > 0 && to_deduct <= remaining) {
         flex_child.current_size = desired_size;
         child_layout.visible = true;

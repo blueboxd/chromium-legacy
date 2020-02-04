@@ -239,10 +239,6 @@ void AssistantDialogPlate::OnInputModalityChanged(
       animation_observer_->SetActive();
       break;
     }
-    case InputModality::kStylus:
-      // |InputModality::kStylus| is not used for the embedded UI.
-      NOTREACHED();
-      break;
   }
 }
 
@@ -282,10 +278,6 @@ views::View* AssistantDialogPlate::FindFirstFocusableView() {
       return textfield_;
     case InputModality::kVoice:
       return animated_voice_input_toggle_;
-    case InputModality::kStylus:
-      // |InputModality::kStylus| is not used for the embedded UI.
-      NOTREACHED();
-      return nullptr;
   }
 }
 
@@ -443,10 +435,6 @@ void AssistantDialogPlate::UpdateModalityVisibility() {
       break;
     case InputModality::kVoice:
       voice_layout_container_->SetVisible(true);
-      break;
-    case InputModality::kStylus:
-      // |InputModality::kStylus| is not used for the embedded UI.
-      NOTREACHED();
       break;
   }
 }

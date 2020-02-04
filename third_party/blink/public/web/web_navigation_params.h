@@ -125,7 +125,11 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // This is the navigation relevant CSP to be used during request and response
   // checks.
-  WebContentSecurityPolicyList initiator_csp;
+  WebVector<WebContentSecurityPolicy> initiator_csp;
+
+  // The navigation initiator source to be used when comparing an URL against
+  // 'self'.
+  WebContentSecurityPolicySourceExpression initiator_self_source;
 
   // The navigation initiator, if any.
   mojo::ScopedMessagePipeHandle navigation_initiator_handle;

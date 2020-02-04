@@ -53,6 +53,7 @@ class CastMediaNotificationProvider : public media_router::MediaRoutesObserver {
   GetNotificationItem(const std::string& id);
 
   virtual bool HasItems() const;
+  size_t GetItemCount() const;
 
  private:
   Profile* const profile_;

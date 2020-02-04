@@ -10,6 +10,7 @@ import collections
 import json
 import logging
 import os
+import re
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'libsupersize'))
@@ -30,6 +31,26 @@ _HTML_REPORT_BASE_URL = (
 _MAX_DEX_METHOD_COUNT_INCREASE = 50
 _MAX_NORMALIZED_INCREASE = 16 * 1024
 _MAX_PAK_INCREASE = 1024
+
+
+_PROGUARD_CLASS_MAPPING_RE = re.compile(r'(?P<original_name>[^ ]+)'
+                                        r' -> '
+                                        r'(?P<obfuscated_name>[^:]+):')
+_PROGUARD_FIELD_MAPPING_RE = re.compile(r'(?P<type>[^ ]+) '
+                                        r'(?P<original_name>[^ (]+)'
+                                        r' -> '
+                                        r'(?P<obfuscated_name>[^:]+)')
+_PROGUARD_METHOD_MAPPING_RE = re.compile(
+    # line_start:line_end: (optional)
+    r'((?P<line_start>\d+):(?P<line_end>\d+):)?'
+    r'(?P<return_type>[^ ]+)'  # original method return type
+    # original method class name (if exists)
+    r' (?:(?P<original_method_class>[a-zA-Z_\d.$]+)\.)?'
+    r'(?P<original_method_name>[^.\(]+)'
+    r'\((?P<params>[^\)]*)\)'  # original method params
+    r'(?:[^ ]*)'  # original method line numbers (ignored)
+    r' -> '
+    r'(?P<obfuscated_name>.+)')  # obfuscated method name
 
 
 class _SizeDelta(collections.namedtuple(
@@ -121,14 +142,66 @@ def _CreateUncompressedPakSizeDeltas(symbols):
   ]
 
 
-def _CreateTestingSymbolsDeltas(symbols):
-  testing_symbols = symbols.WhereIsDex().WhereNameMatches(
-      'ForTest').WhereDiffStatusIs(models.DIFF_STATUS_ADDED)
-  lines = None
-  if len(testing_symbols):
-    lines = list(describe.GenerateLines(testing_symbols, summarize=False))
+def _ExtractForTestingSymbolsFromMapping(mapping_path):
+  symbols = set()
+  with open(mapping_path) as f:
+    proguard_mapping_lines = f.readlines()
+    current_class_orig = None
+    for line in proguard_mapping_lines:
+      if line.isspace():
+        continue
+      if not line.startswith(' '):
+        match = _PROGUARD_CLASS_MAPPING_RE.search(line)
+        if match is None:
+          raise Exception('Malformed class mapping')
+        current_class_orig = match.group('original_name')
+        continue
+      assert current_class_orig is not None
+      line = line.strip()
+      match = _PROGUARD_METHOD_MAPPING_RE.search(line)
+      if (match is not None
+          and match.group('original_method_name').find('ForTest') > -1):
+        method_symbol = '{}#{}'.format(
+            match.group('original_method_class') or current_class_orig,
+            match.group('original_method_name'))
+        symbols.add(method_symbol)
+
+      match = _PROGUARD_FIELD_MAPPING_RE.search(line)
+      if (match is not None
+          and match.group('original_name').find('ForTest') > -1):
+        field_symbol = '{}#{}'.format(current_class_orig,
+                                      match.group('original_name'))
+        symbols.add(field_symbol)
+  return symbols
+
+
+def _CreateTestingSymbolsDeltas(before_mapping_path, after_mapping_path):
+  before_symbols = _ExtractForTestingSymbolsFromMapping(before_mapping_path)
+  after_symbols = _ExtractForTestingSymbolsFromMapping(after_mapping_path)
+  added_symbols = list(after_symbols.difference(before_symbols))
+  removed_symbols = list(before_symbols.difference(after_symbols))
+  lines = []
+  if added_symbols:
+    lines.append('Added Symbols Named "ForTest"')
+    lines.extend(added_symbols)
+    lines.extend(['', ''])  # empty lines added for clarity
+  if removed_symbols:
+    lines.append('Removed Symbols Named "ForTest"')
+    lines.extend(removed_symbols)
+    lines.extend(['', ''])  # empty lines added for clarity
   return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
-                           len(testing_symbols))
+                           len(added_symbols) - len(removed_symbols))
+
+
+def _GuessMappingFilename(results_dir, apk_name):
+  guess = apk_name + '.mapping'
+  if os.path.exists(os.path.join(results_dir, guess)):
+    return guess
+  guess = (apk_name.replace('minimal.apks', '.aab').replace('.apks', '.aab') +
+           '.mapping')
+  if os.path.exists(os.path.join(results_dir, guess)):
+    return guess
+  return None
 
 
 def _GenerateBinarySizePluginDetails(metrics):
@@ -218,9 +291,15 @@ def main():
   metrics.add((mutable_constants_delta, _MUTABLE_CONSTANTS_LOG))
 
   # Look for symbols with 'ForTesting' in their name.
-  logging.info('Checking for symbols named "ForTest"')
-  testing_symbols_lines, test_symbols_delta = (
-      _CreateTestingSymbolsDeltas(changed_symbols))
+  logging.info('Checking for DEX symbols named "ForTest"')
+  mapping_name = _GuessMappingFilename(args.before_dir, args.apk_name)
+  if not mapping_name:
+    raise Exception('Cannot find proguard mapping file.')
+
+  before_mapping = os.path.join(args.before_dir, mapping_name)
+  after_mapping = os.path.join(args.after_dir, mapping_name)
+  testing_symbols_lines, test_symbols_delta = (_CreateTestingSymbolsDeltas(
+      before_mapping, after_mapping))
   size_deltas.add(test_symbols_delta)
   metrics.add((test_symbols_delta, _FOR_TESTING_LOG))
 

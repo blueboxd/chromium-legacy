@@ -138,10 +138,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
                                                                         : "0");
 
   scoped_refptr<gl::GLContext> context = shared_context_state->context();
-  // Raster decoder needs gl context for GPUTracing.
-  // TODO(penghuang): get rid of the gl dependeny when GL is not used for
-  // raster. https://crbug.com/c/1018725
-  if (!shared_context_state->MakeCurrent(nullptr, true /* needs_gl */)) {
+  if (!shared_context_state->MakeCurrent(nullptr, false /* needs_gl */)) {
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "Failed to make context current.";
     return gpu::ContextResult::kTransientFailure;

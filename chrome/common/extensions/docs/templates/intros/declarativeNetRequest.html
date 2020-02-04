@@ -2,7 +2,9 @@
 
 <p>
 You must declare the <code>"declarativeNetRequest"</code> permission in the
-extension <a href="manifest">manifest</a> to use this API.
+extension <a href="manifest">manifest</a> to use this API. The
+<code>"declarativeNetRequestFeedback"</code> permission is required to access
+functions and events which return information on declarative rules matched.
 <a href="declare_permissions">Host permissions</a> are required if the extension
 wants to redirect requests. You must also declare the
 <code>"declarative_net_request"</code> manifest key, which should be a
@@ -21,6 +23,7 @@ declarative rules to use, as shown below.
   },
   "permissions": [
     "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
     "*://example.com/*"
   ],</b>
   ...

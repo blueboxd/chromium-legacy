@@ -23,6 +23,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_SELECTED_TAB_POSITION;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.FEED_SURFACE_COORDINATOR;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_BOTTOM_BAR_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
@@ -88,6 +89,8 @@ public class StartSurfaceMediatorUnitTest {
     @Mock
     private ChromeFullscreenManager mChromeFullscreenManager;
     @Mock
+    private StartSurfaceMediator.ActivityStateChecker mActivityStateChecker;
+    @Mock
     private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
     @Mock
     private SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
@@ -122,6 +125,7 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(mSecondaryTasksSurfaceController)
                 .when(mSecondaryTasksSurfaceInitializer)
                 .initialize();
+        doReturn(false).when(mActivityStateChecker).isFinishingOrDestroyed();
     }
 
     @After
@@ -692,6 +696,59 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
+    public void activityIsFinishingOrDestroyedSinglePane() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+
+        doReturn(2).when(mNormalTabModel).getCount();
+        doReturn(true).when(mActivityStateChecker).isFinishingOrDestroyed();
+        mediator.setOverviewState(OverviewModeState.SHOWING_HOMEPAGE);
+        mediator.showOverview(false);
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_INCOGNITO), equalTo(false));
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
+        assertThat(mPropertyModel.get(MV_TILES_VISIBLE), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+        assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
+        assertThat(mPropertyModel.get(FEED_SURFACE_COORDINATOR), equalTo(null));
+
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+        mediator.onClick(mock(View.class));
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_TABSWITCHER));
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_INCOGNITO), equalTo(false));
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(false));
+        assertThat(mPropertyModel.get(MV_TILES_VISIBLE), equalTo(false));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
+        assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
+                equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(false));
+        assertThat(mPropertyModel.get(FEED_SURFACE_COORDINATOR), equalTo(null));
+
+        mediator.onBackPressed();
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_INCOGNITO), equalTo(false));
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
+        assertThat(mPropertyModel.get(MV_TILES_VISIBLE), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+        assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
+        assertThat(mPropertyModel.get(FEED_SURFACE_COORDINATOR), equalTo(null));
+
+        mediator.startedHiding();
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+        assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
+    }
+
+    @Test
     public void overviewModeSwitchToIncognitoModeAndBackTasksOnly() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mLocationBarVoiceRecognitionHandler)
@@ -1124,6 +1181,7 @@ public class StartSurfaceMediatorUnitTest {
                         ? mFeedSurfaceCreator
                         : null,
                 mode == SurfaceMode.SINGLE_PANE ? mSecondaryTasksSurfaceInitializer : null, mode,
-                mFakeBoxDelegate, mNightModeStateProvider, mChromeFullscreenManager);
+                mFakeBoxDelegate, mNightModeStateProvider, mChromeFullscreenManager,
+                mActivityStateChecker);
     }
 }

@@ -38,9 +38,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
@@ -68,22 +66,6 @@
 namespace blink {
 
 namespace {
-
-class DefaultInterfaceProvider : public InterfaceProvider {
-  USING_FAST_MALLOC(DefaultInterfaceProvider);
-
- public:
-  DefaultInterfaceProvider() = default;
-  ~DefaultInterfaceProvider() = default;
-
-  // InterfaceProvider implementation:
-  void GetInterface(const char* interface_name,
-                    mojo::ScopedMessagePipeHandle interface_pipe) override {
-    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        mojo::GenericPendingReceiver(interface_name,
-                                     std::move(interface_pipe)));
-  }
-};
 
 class DefaultBrowserInterfaceBrokerProxy
     : public ThreadSafeBrowserInterfaceBrokerProxy {
@@ -278,11 +260,6 @@ void Platform::UnsetMainThreadTaskRunnerForTesting() {
 
 Platform* Platform::Current() {
   return g_platform;
-}
-
-InterfaceProvider* Platform::GetInterfaceProvider() {
-  DEFINE_STATIC_LOCAL(DefaultInterfaceProvider, provider, ());
-  return &provider;
 }
 
 ThreadSafeBrowserInterfaceBrokerProxy* Platform::GetBrowserInterfaceBroker() {

@@ -132,6 +132,7 @@ PASS childWindow.onstorage is null
 PASS childWindow.onsubmit is null
 PASS childWindow.onsuspend is null
 PASS childWindow.ontimeupdate is null
+PASS childWindow.ontimezonechange is null
 PASS childWindow.ontoggle is null
 PASS childWindow.ontouchcancel is null
 PASS childWindow.ontouchend is null

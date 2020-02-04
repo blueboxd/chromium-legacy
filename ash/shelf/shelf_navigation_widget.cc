@@ -159,8 +159,7 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
   home_button_->set_context_menu_controller(shelf_view);
   home_button_->SetSize(gfx::Size(control_size, control_size));
 
-  GetViewAccessibility().OverrideNextFocus(
-      shelf->shelf_widget()->hotseat_widget());
+  GetViewAccessibility().OverrideNextFocus(shelf->hotseat_widget());
   GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
   opaque_background_.SetName("shelfNavigation/Background");
 }
@@ -348,11 +347,17 @@ gfx::Size ShelfNavigationWidget::GetIdealSize() const {
 void ShelfNavigationWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->IsMouseWheelEvent()) {
     ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
-    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event, /*from_touchpad=*/false);
     return;
   }
 
   views::Widget::OnMouseEvent(event);
+}
+
+void ShelfNavigationWidget::OnScrollEvent(ui::ScrollEvent* event) {
+  shelf_->ProcessScrollEvent(event);
+  if (!event->handled())
+    views::Widget::OnScrollEvent(event);
 }
 
 bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {

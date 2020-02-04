@@ -113,7 +113,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
         createAttachmentState(context, windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
-        mUrlBarController = new UrlBarControllerImpl(this);
+        mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
 
         for (Observer observer : sLifecycleObservers) {
             observer.onBrowserCreated();
@@ -352,8 +352,11 @@ public class BrowserImpl extends IBrowser.Stub {
         for (Observer observer : sLifecycleObservers) {
             observer.onBrowserDestroyed();
         }
-        BrowserImplJni.get().deleteBrowser(mNativeBrowser);
+
+        // mUrlBarController keeps a reference to mNativeBrowser, and hence must be destroyed before
+        // mNativeBrowser.
         mUrlBarController.destroy();
+        BrowserImplJni.get().deleteBrowser(mNativeBrowser);
     }
 
     private void destroyAttachmentState() {

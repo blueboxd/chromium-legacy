@@ -15,6 +15,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
@@ -53,6 +56,7 @@
 #include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/arc/session/arc_data_remover.h"
 #include "components/arc/session/arc_instance_mode.h"
+#include "components/arc/session/arc_property_util.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/session/arc_supervision_transition.h"
@@ -77,6 +81,9 @@ bool g_ui_enabled = true;
 bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
 
 base::Optional<bool> g_enable_check_android_management_in_tests;
+
+constexpr const char kPropertyFilesPathVm[] = "/usr/share/arcvm/properties";
+constexpr const char kPropertyFilesPath[] = "/usr/share/arc/properties";
 
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
 // timeout expires, keep ARC running in case the user wants to file feedback,
@@ -237,7 +244,12 @@ class ArcSessionManager::ScopedOptInFlowTracker {
 ArcSessionManager::ArcSessionManager(
     std::unique_ptr<ArcSessionRunner> arc_session_runner)
     : arc_session_runner_(std::move(arc_session_runner)),
-      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)) {
+      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)),
+      property_files_source_dir_(base::FilePath(
+          IsArcVmEnabled() ? kPropertyFilesPathVm : kPropertyFilesPath)),
+      property_files_dest_dir_(
+          base::FilePath(IsArcVmEnabled() ? kGeneratedPropertyFilesPathVm
+                                          : kGeneratedPropertyFilesPath)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
@@ -609,6 +621,8 @@ void ArcSessionManager::ResetArcState() {
 void ArcSessionManager::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.AddObserver(observer);
+  if (property_files_expansion_result_)
+    observer->OnPropertyFilesExpanded(*property_files_expansion_result_);
 }
 
 void ArcSessionManager::RemoveObserver(Observer* observer) {
@@ -1250,6 +1264,28 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
     return;
 
   arc_session_runner_->RequestStartMiniInstance();
+}
+
+void ArcSessionManager::ExpandPropertyFiles() {
+  VLOG(1) << "Started expanding *.prop files";
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&arc::ExpandPropertyFiles, property_files_source_dir_,
+                     property_files_dest_dir_),
+      base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcSessionManager::OnExpandPropertyFiles(bool result) {
+  // ExpandPropertyFiles() should be called only once.
+  DCHECK(!property_files_expansion_result_);
+
+  property_files_expansion_result_ = result;
+  if (result)
+    arc_session_runner_->ResumeRunner();
+  for (auto& observer : observer_list_)
+    observer.OnPropertyFilesExpanded(result);
 }
 
 std::ostream& operator<<(std::ostream& os,

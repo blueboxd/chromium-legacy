@@ -133,6 +133,7 @@ void ArcServiceLauncher::Initialize(
     mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
         display_config) {
   default_scale_factor_retriever_.Start(std::move(display_config));
+  arc_session_manager_->ExpandPropertyFiles();
 }
 
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {

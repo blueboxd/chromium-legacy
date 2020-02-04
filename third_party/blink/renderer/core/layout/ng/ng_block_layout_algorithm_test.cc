@@ -97,8 +97,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
+  // The inner element exists so that "simplified" layout logic isn't invoked.
   SetBodyInnerHTML(R"HTML(
-    <div id="box" style="width:30px; height:40%;"></div>
+    <div id="box" style="width:30px; height:40%;">
+      <div style="height: 100%;"></div>
+    </div>
   )HTML");
 
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
@@ -130,7 +133,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
   EXPECT_NE(result.get(), nullptr);
 
   // Test a different constraint space that will actually result in a different
-  // size.
+  // sized fragment.
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       LogicalSize(LayoutUnit(200), LayoutUnit(200)));

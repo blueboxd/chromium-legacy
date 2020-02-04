@@ -2511,8 +2511,12 @@ void RenderFrameHostManager::CommitPending(
     }
   }
 
-  // For top-level frames, the RenderWidget{Host} will not be destroyed when the
+  // For top-level frames, the RenderWidgetHost will not be destroyed when the
   // local frame is detached. https://crbug.com/419087
+  //
+  // The RenderWidget in the renderer process is destroyed, but the
+  // RenderWidgetHost and RenderWidgetHostView are still kept alive for a remote
+  // main frame.
   //
   // To work around that, we hide it here. Truly this is to hit all the hide
   // paths in the browser side, but has a side effect of also hiding the
@@ -2524,15 +2528,15 @@ void RenderFrameHostManager::CommitPending(
   // RenderFrameHost crashed.
   //
   // TODO(crbug.com/419087): This is only done for the main frame, as for sub
-  // frames the RenderWidget and its view will be destroyed when the frame is
-  // detached, but for the main frame it is not. This call to Hide() can go away
-  // when the main frame's RenderWidget is destroyed on frame detach. Note that
-  // calling this on a subframe that is not a local root would be incorrect as
-  // it would hide an ancestor local root's RenderWidget when that frame is not
-  // necessarily navigating. Removing this Hide() has previously been attempted
-  // without success in r426913 (https://crbug.com/658688) and r438516 (broke
-  // assumptions about RenderWidgetHosts not changing RenderWidgetHostViews over
-  // time).
+  // frames the RenderWidgetHost and its view will be destroyed when the frame
+  // is detached, but for the main frame it is not. This call to Hide() can go
+  // away when the main frame's RenderWidgetHost is destroyed on frame detach.
+  // Note that calling this on a subframe that is not a local root would be
+  // incorrect as it would hide an ancestor local root's RenderWidget when that
+  // frame is not necessarily navigating. Removing this Hide() has previously
+  // been attempted without success in r426913 (https://crbug.com/658688) and
+  // r438516 (broke assumptions about RenderWidgetHosts not changing
+  // RenderWidgetHostViews over time).
   //
   // |old_rvh| and |new_rvh| can be the same when navigating same-site from a
   // crashed RenderFrameHost. When RenderDocument will be implemented, this will

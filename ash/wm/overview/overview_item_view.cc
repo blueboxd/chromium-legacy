@@ -134,10 +134,8 @@ class OverviewCloseButton : public views::ImageButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return std::make_unique<views::InkDropHighlight>(
-        gfx::PointF(GetLocalBounds().CenterPoint()),
-        std::make_unique<views::CircleLayerDelegate>(
-            kCloseButtonInkDropRippleHighlightColor,
-            kCloseButtonInkDropRadiusDp));
+        gfx::SizeF(GetLocalBounds().size()),
+        kCloseButtonInkDropRippleHighlightColor);
   }
 };
 
@@ -152,10 +150,10 @@ OverviewItemView::OverviewItemView(OverviewItem* overview_item,
   // |window->GetTitle()| is empty.
   SetFocusBehavior(FocusBehavior::NEVER);
 
-  close_button_ = new OverviewCloseButton(overview_item_);
+  close_button_ = header_view()->AddChildView(
+      std::make_unique<OverviewCloseButton>(overview_item_));
   close_button_->SetPaintToLayer();
   close_button_->layer()->SetFillsBoundsOpaquely(false);
-  header_view()->AddChildView(close_button_);
 
   // Call this last as it calls |Layout()| which relies on the some of the other
   // elements existing.

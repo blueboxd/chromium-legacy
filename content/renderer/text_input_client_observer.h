@@ -42,14 +42,7 @@ class TextInputClientObserver : public IPC::Listener, public IPC::Sender {
   bool Send(IPC::Message* message) override;
 
  private:
-  // The WebFrameWidget corresponding to this TextInputClientObserver. While the
-  // main frame is remote, the value returned from this method for a main frame
-  // RenderWidget is null.
-  // TODO(crbug.com/669219): The browser shouldn't be sending IPCs that land
-  // in this class when the main frame is remote.
-  // TODO(crbug.com/419087): The lifetime of the WebFrameWidget should
-  // eventually be tied to the lifetime of the RenderWidget so this would never
-  // return null.
+  // The WebFrameWidget corresponding to this TextInputClientObserver.
   blink::WebFrameWidget* GetWebFrameWidget() const;
 
   blink::WebLocalFrame* GetFocusedFrame() const;

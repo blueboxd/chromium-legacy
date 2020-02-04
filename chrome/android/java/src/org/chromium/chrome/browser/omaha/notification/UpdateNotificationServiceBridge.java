@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
+import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -74,12 +75,15 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
     private void processUpdateStatus() {
         if (mUpdateStatus == null) return;
         switch (mUpdateStatus.updateState) {
-            case UPDATE_AVAILABLE:
+            case UPDATE_AVAILABLE: // Intentional fallthrough.
+            case INLINE_UPDATE_AVAILABLE: // Intentional fallthrough.
+                // TODO(hesen): Have a debug control switch to enable/disable manually.
+                boolean shouldShowImmediately =
+                        mUpdateStatus.updateState == INLINE_UPDATE_AVAILABLE;
                 UpdateNotificationServiceBridgeJni.get().schedule(Profile.getLastUsedProfile(),
-                        getUpdateNotificationTitle(), getUpdateNotificationTextBody());
-                break;
-            case INLINE_UPDATE_AVAILABLE:
-                // TODO(hesen): handle inline update.
+                        getUpdateNotificationTitle(), getUpdateNotificationTextBody(),
+                        mUpdateStatus.updateState, shouldShowImmediately);
+
                 break;
             default:
                 break;
@@ -88,7 +92,16 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
 
     @NativeMethods
     interface Natives {
-        void schedule(Profile profile, String title, String message);
+        /**
+         * Schedule a notification through scheduling system.
+         * @param profile the main {@link Profile}.
+         * @param title The title string of notification context.
+         * @param message The body string of notification context.
+         * @param state An enum of {@link UpdateState} pulled from UpdateStatusProvider.
+         * @param shouldShowImmediately A flag to show notification right away if it is true.
+         */
+        void schedule(Profile profile, String title, String message, @UpdateState int state,
+                boolean shouldShowImmediately);
     }
 
     @CalledByNative
@@ -151,12 +164,15 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
         editor.apply();
     }
 
+    /**
+     * Launches Chrome activity depends on {@link UpdateState}.
+     * @param state An enum value of {@link UpdateState} stored in native side schedule service.
+     * */
     @CalledByNative
-    private static void launchChromeActivity() {
+    private static void launchChromeActivity(@UpdateState int state) {
         // TODO(hesen): Record metrics.
         try {
-            // TODO(hesen): Handle the INLINE_UPDATE_AVAILABLE state.
-            UpdateUtils.onUpdateAvailable(ContextUtils.getApplicationContext(), UPDATE_AVAILABLE);
+            UpdateUtils.onUpdateAvailable(ContextUtils.getApplicationContext(), state);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Failed to start activity in background.", e);
         }

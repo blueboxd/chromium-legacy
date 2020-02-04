@@ -84,4 +84,18 @@ bool DisabledByOriginTrial(const String& feature_name,
   return false;
 }
 
+bool DisabledByOriginTrial(mojom::blink::FeaturePolicyFeature feature,
+                           FeatureContext* feature_context) {
+  {% for feature_name, dependencies in origin_trial_dependency_map.items() | sort %}
+  if (feature == mojom::FeaturePolicyFeature::k{{feature_name}}) {
+    return
+    {%- for dependency in dependencies %}
+    {%- if not loop.first %} &&{% endif %}
+ !RuntimeEnabledFeatures::{{dependency}}Enabled(feature_context)
+    {%- endfor %};
+  }
+  {% endfor %}
+  return false;
+}
+
 }  // namespace blink

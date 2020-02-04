@@ -46,11 +46,11 @@ class TermsOfServiceScreen : public BaseScreen {
   // Called when view is destroyed so there is no dead reference to it.
   void OnViewDestroyed(TermsOfServiceScreenView* view);
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-
  private:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   // Start downloading the Terms of Service.
   void StartDownload();
 

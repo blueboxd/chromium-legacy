@@ -14,6 +14,8 @@ component("metal_util") {
     "device.mm",
     "device_removal.h",
     "device_removal.mm",
+    "hdr_copier_layer.h",
+    "hdr_copier_layer.mm",
     "metal_util_export.h",
     "test_shader.h",
     "test_shader.mm",
@@ -27,6 +29,9 @@ component("metal_util") {
 
   libs = [
     "Cocoa.framework",
+    "IOSurface.framework",
     "Metal.framework",
+    "MetalKit.framework",
+    "QuartzCore.framework",
   ]
 }

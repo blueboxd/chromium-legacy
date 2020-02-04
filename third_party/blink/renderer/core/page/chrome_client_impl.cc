@@ -788,9 +788,7 @@ void ChromeClientImpl::AttachCompositorAnimationTimeline(
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
-  // TODO(crbug.com/912193): This is called while a frame is attached so widget
-  // is never null, right?
-  CHECK(widget);
+  DCHECK(widget);
   widget->AnimationHost()->AddAnimationTimeline(
       compositor_timeline->GetAnimationTimeline());
 }
@@ -801,9 +799,7 @@ void ChromeClientImpl::DetachCompositorAnimationTimeline(
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
-  // TODO(crbug.com/912193): This should not be called after Document::Shutdown,
-  // so widget is never null, right?
-  CHECK(widget);
+  DCHECK(widget);
   widget->AnimationHost()->RemoveAnimationTimeline(
       compositor_timeline->GetAnimationTimeline());
 }

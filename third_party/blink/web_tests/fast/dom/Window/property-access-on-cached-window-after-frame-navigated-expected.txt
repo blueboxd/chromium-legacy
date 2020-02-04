@@ -171,6 +171,7 @@ PASS oldChildWindow.onstorage is newChildWindow.onstorage
 PASS oldChildWindow.onsubmit is newChildWindow.onsubmit
 PASS oldChildWindow.onsuspend is newChildWindow.onsuspend
 PASS oldChildWindow.ontimeupdate is newChildWindow.ontimeupdate
+PASS oldChildWindow.ontimezonechange is newChildWindow.ontimezonechange
 PASS oldChildWindow.ontoggle is newChildWindow.ontoggle
 PASS oldChildWindow.ontouchcancel is newChildWindow.ontouchcancel
 PASS oldChildWindow.ontouchend is newChildWindow.ontouchend

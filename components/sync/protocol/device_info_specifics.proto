@@ -87,10 +87,6 @@ message FeatureSpecificFields {
 // Device specific information for Sharing feature. Used to send end-to-end
 // encrypted message through FCM to other devices.
 message SharingSpecificFields {
-  // Tags 5, 6, 7 are previously sender_id prefixed fields, they're deleted as
-  // new device only upload them if they're able to send messages via Sync.
-  reserved 5, 6, 7;
-
   // FCM registration token of device subscribed using VAPID key.
   // TODO(crbug.com/1012226): Deprecate when VAPID migration is over.
   optional string vapid_fcm_token = 1;
@@ -115,20 +111,29 @@ message SharingSpecificFields {
     PEER_CONNECTION = 5;
     DISCOVERY = 6;
     // Suppots Click to Call via both VAPID and sender ID.
-    CLICK_TO_CALL = 7;
+    CLICK_TO_CALL_V2 = 7;
     // Suppots Shared Clipboard via both VAPID and sender ID.
-    SHARED_CLIPBOARD = 8;
+    SHARED_CLIPBOARD_V2 = 8;
   }
 
   // A list of enabled Sharing features.
   repeated EnabledFeatures enabled_features = 4;
 
+  // Deprecated. Use sender_id_fcm_token_v2 for new clients.
+  optional string sender_id_fcm_token_deprecated = 5 [deprecated = true];
+
+  // Deprecated. Use sender_id_p256dh_v2 for new clients.
+  optional bytes sender_id_p256dh_deprecated = 6 [deprecated = true];
+
+  // Deprecated. Use sender_id_auth_secret_v2 for new clients.
+  optional bytes sender_id_auth_secret_deprecated = 7 [deprecated = true];
+
   // FCM registration token of device subscribed using Sharing sender ID.
-  optional string sender_id_fcm_token = 8;
+  optional string sender_id_fcm_token_v2 = 8;
 
   // Public key for message encryption [RFC8291] using Sharing sender ID.
-  optional bytes sender_id_p256dh = 9;
+  optional bytes sender_id_p256dh_v2 = 9;
 
   // Auth secret for message encryption [RFC8291] using Sharing sender ID.
-  optional bytes sender_id_auth_secret = 10;
+  optional bytes sender_id_auth_secret_v2 = 10;
 }

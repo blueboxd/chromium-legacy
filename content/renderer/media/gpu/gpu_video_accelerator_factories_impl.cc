@@ -323,6 +323,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
   auto capabilities = context_provider_->ContextCapabilities();
   const size_t bit_depth = media::BitDepth(pixel_format);
   if (bit_depth > 8) {
+#if !defined(OS_MACOSX)
     // If high bit depth rendering is enabled, bail here, otherwise try and use
     // XR30 storage, and if not and we support RG textures, use those, albeit at
     // a reduced bit depth of 8 bits per component.
@@ -330,6 +331,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
     // long as the hardware may support it https://crbug.com/798485.
     if (rendering_color_space_.IsHDR())
       return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+#endif
 
 #if !defined(OS_WIN)
     // TODO(mcasas): enable Win https://crbug.com/803451.

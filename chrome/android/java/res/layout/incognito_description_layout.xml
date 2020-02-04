@@ -27,13 +27,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/new_tab_otr_title"
-        android:textAppearance="@style/TextAppearance.WhiteHeadline" />
+        android:textAppearance="@style/TextAppearance.Headline.Primary.Light" />
 
     <org.chromium.ui.widget.TextViewWithClickableSpans
         android:id="@+id/new_tab_incognito_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary.Light"
         android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
     <LinearLayout
@@ -47,14 +47,14 @@
             android:id="@+id/new_tab_incognito_features"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary.Light"
             app:leading="@dimen/text_size_medium_leading" />
 
         <org.chromium.ui.widget.TextViewWithLeading
             android:id="@+id/new_tab_incognito_warning"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary.Light"
             app:leading="@dimen/text_size_medium_leading" />
 
     </LinearLayout>
@@ -89,7 +89,7 @@
         <org.chromium.ui.widget.TextViewWithLeading
             android:id="@+id/cookie_controls_card_title"
             android:text="@string/new_tab_otr_third_party_cookie"
-            android:textAppearance="@style/TextAppearance.WhiteTitle1"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary.Light"
             android:layout_marginBottom="@dimen/md_incognito_ntp_line_spacing"
             android:layout_alignParentStart="true"
             android:layout_height="wrap_content"
@@ -97,7 +97,7 @@
 
         <org.chromium.ui.widget.TextViewWithLeading
             android:text="@string/new_tab_otr_third_party_cookie_sublabel"
-            android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary.Light"
             android:layout_alignParentStart="true"
             android:layout_toStartOf="@id/cookie_controls_card_toggle"
             android:layout_below="@id/cookie_controls_card_title"

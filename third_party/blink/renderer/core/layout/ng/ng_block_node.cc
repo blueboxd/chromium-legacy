@@ -317,8 +317,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->CachedLayoutResult(constraint_space, break_token, early_break,
                                &fragment_geometry, &cache_status);
-  if (layout_result) {
-    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  if (cache_status == NGLayoutCacheStatus::kHit) {
+    DCHECK(layout_result);
 
     // We may have to update the margins on box_; we reuse the layout result
     // even if a percentage margin may have changed.
@@ -359,18 +359,25 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
       !(block_flow->ChildrenInline() &&
         RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) &&
       !block_flow->IsLayoutNGCustom()) {
+    DCHECK(layout_result);
+#if DCHECK_IS_ON()
+    scoped_refptr<const NGLayoutResult> previous_result = layout_result;
+#endif
+
     // A child may have changed size while performing "simplified" layout (it
     // may have gained or removed scrollbars, changing its size). In these
     // cases "simplified" layout will return a null layout-result, indicating
     // we need to perform a full layout.
-    layout_result = RunSimplifiedLayout(params);
+    layout_result = RunSimplifiedLayout(params, *layout_result);
 
 #if DCHECK_IS_ON()
     if (layout_result) {
       layout_result->CheckSameForSimplifiedLayout(
-          *box_->GetCachedLayoutResult(), /* check_same_block_size */ false);
+          *previous_result, /* check_same_block_size */ false);
     }
 #endif
+  } else {
+    layout_result = nullptr;
   }
 
   // Fragment geometry scrollbars are potentially size constrained, and cannot
@@ -547,7 +554,11 @@ void NGBlockNode::FinishLayout(
   wtf_size_t fragment_index = 0;
   if (break_token && !break_token->IsBreakBefore())
     fragment_index = break_token->SequenceNumber() + 1;
-  box_->AddLayoutResult(layout_result, fragment_index);
+
+  if (layout_result->IsSingleUse())
+    box_->AddLayoutResult(layout_result, fragment_index);
+  else
+    box_->SetCachedLayoutResult(layout_result);
 
   if (block_flow) {
     auto* child = GetLayoutObjectForFirstChildNode(block_flow);
@@ -1288,9 +1299,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::RunSimplifiedLayout(
-    const NGLayoutAlgorithmParams& params) const {
-  return NGSimplifiedLayoutAlgorithm(params, *box_->GetCachedLayoutResult())
-      .Layout();
+    const NGLayoutAlgorithmParams& params,
+    const NGLayoutResult& result) const {
+  return NGSimplifiedLayoutAlgorithm(params, result).Layout();
 }
 
 void NGBlockNode::CopyBaselinesFromLegacyLayout(

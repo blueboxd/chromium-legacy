@@ -675,7 +675,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
   vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
-  DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
+  DVLOG(2) << "fps: " << vr_ui_fps_meter_.GetFPS();
   TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
 
   if (frame_type == kWebXrFrame) {

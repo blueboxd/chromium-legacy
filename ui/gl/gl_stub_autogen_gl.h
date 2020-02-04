@@ -932,6 +932,9 @@ void glMatrixLoadIdentityEXTFn(GLenum matrixMode) override {}
 void glMaxShaderCompilerThreadsKHRFn(GLuint count) override {}
 void glMemoryBarrierByRegionFn(GLbitfield barriers) override {}
 void glMemoryBarrierEXTFn(GLbitfield barriers) override {}
+void glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                    GLenum pname,
+                                    const GLint* param) override {}
 void glMinSampleShadingFn(GLfloat value) override {}
 void glMultiDrawArraysANGLEFn(GLenum mode,
                               const GLint* firsts,

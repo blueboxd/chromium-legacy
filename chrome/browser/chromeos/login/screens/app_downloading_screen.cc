@@ -30,12 +30,12 @@ AppDownloadingScreen::~AppDownloadingScreen() {
   view_->Bind(nullptr);
 }
 
-void AppDownloadingScreen::Show() {
+void AppDownloadingScreen::ShowImpl() {
   // Show the screen.
   view_->Show();
 }
 
-void AppDownloadingScreen::Hide() {
+void AppDownloadingScreen::HideImpl() {
   view_->Hide();
 }
 

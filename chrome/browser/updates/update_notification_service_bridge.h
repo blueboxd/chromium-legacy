@@ -38,8 +38,9 @@ class UpdateNotificationServiceBridge {
   // Returns persisted count from Android SharedPreferences.
   virtual int GetUserDismissCount();
 
-  // Launches Chrome activity after user clicked the notification.
-  virtual void LaunchChromeActivity();
+  // Launches Chrome activity after user clicked the notification. Launching
+  // behavior may be different which depends on |state|.
+  virtual void LaunchChromeActivity(int state);
 
   virtual ~UpdateNotificationServiceBridge() = default;
 

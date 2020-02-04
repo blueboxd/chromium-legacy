@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
@@ -56,7 +57,7 @@ class StorageHandlerTest : public testing::Test {
     chromeos::disks::DiskMountManager::InitializeForTesting(
         new file_manager::FakeDiskMountManager);
     arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
-    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+    arc_session_manager_ = arc::CreateTestArcSessionManager(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(arc::FakeArcSession::Create)));
 

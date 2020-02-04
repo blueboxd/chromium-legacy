@@ -679,6 +679,11 @@ void ExtensionApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS, &menu_items);
   }
 
+  if (menu_type == apps::mojom::MenuType::kShelf &&
+      !instance_registry_->GetWindows(app_id).empty()) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
+  }
+
   const extensions::ManagementPolicy* policy =
       extensions::ExtensionSystem::Get(profile_)->management_policy();
   DCHECK(policy);

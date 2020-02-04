@@ -95,7 +95,6 @@ namespace blink {
 
 class BrowserInterfaceBrokerProxy;
 class ThreadSafeBrowserInterfaceBrokerProxy;
-class InterfaceProvider;
 class Thread;
 struct ThreadCreationParams;
 class WebAudioBus;
@@ -637,10 +636,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual WebCrypto* Crypto() { return nullptr; }
 
   // Mojo ---------------------------------------------------------------
-
-  // DEPRECATED: Use |GetBrowserInterfaceBroker()| instead. The same
-  // interfaces are reachable through either method.
-  virtual InterfaceProvider* GetInterfaceProvider();
 
   // Callable from any thread. Asks the browser to bind an interface receiver on
   // behalf of this renderer.

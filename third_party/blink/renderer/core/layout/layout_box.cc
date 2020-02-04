@@ -109,7 +109,7 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
   LayoutUnit preferred_logical_width[2];
-  void* pointers[3];
+  void* pointers[4];
   Persistent<void*> rare_data;
   Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results;
 };
@@ -779,8 +779,10 @@ void LayoutBox::UpdateAfterLayout() {
   // We also want to make sure that if our entrance point into layout changes,
   // e.g. an OOF-positioned object is laid out by an NG containing block, then
   // Legacy, then NG again, NG won't use a stale layout result.
-  if (IsOutOfFlowPositioned() && !IsLayoutNGObject())
+  if (IsOutOfFlowPositioned() && !IsLayoutNGObject()) {
+    measure_result_.reset();
     layout_results_.clear();
+  }
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
@@ -2393,8 +2395,19 @@ void LayoutBox::SetCachedLayoutResult(
     scoped_refptr<const NGLayoutResult> result) {
   DCHECK(!result->PhysicalFragment().BreakToken());
   DCHECK(!result->IsSingleUse());
-  ClearLayoutResults();
-  AddLayoutResult(result, 0);
+
+  if (result->GetConstraintSpaceForCaching().CacheSlot() ==
+      NGCacheSlot::kMeasure) {
+    if (measure_result_)
+      InvalidateItems(*measure_result_);
+    measure_result_ = result;
+    // When setting the "measure" result we also set the "layout" result.
+  }
+
+  for (auto result : layout_results_)
+    InvalidateItems(*result);
+  layout_results_.clear();
+  AddLayoutResult(std::move(result), 0);
 }
 
 void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
@@ -2404,22 +2417,28 @@ void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
     DCHECK_GE(layout_results_.size(), index);
     layout_results_.Shrink(index);
   }
-  layout_results_.push_back(result);
+  layout_results_.push_back(std::move(result));
 }
 
 void LayoutBox::ClearLayoutResults() {
-  for (auto result : layout_results_) {
-    // Invalidate if inline |DisplayItemClient|s will be destroyed.
-    if (const auto* box_fragment =
-            DynamicTo<NGPhysicalBoxFragment>(&result->PhysicalFragment())) {
-      if (box_fragment->HasItems()) {
-        DCHECK_EQ(this, box_fragment->GetLayoutObject());
-        ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
-        break;
-      }
-    }
-  }
+  if (measure_result_)
+    InvalidateItems(*measure_result_);
+  measure_result_ = nullptr;
+
+  for (auto result : layout_results_)
+    InvalidateItems(*result);
   layout_results_.clear();
+}
+
+void LayoutBox::InvalidateItems(const NGLayoutResult& result) {
+  // Invalidate if inline |DisplayItemClient|s will be destroyed.
+  const auto& box_fragment =
+      To<NGPhysicalBoxFragment>(result.PhysicalFragment());
+  if (!box_fragment.HasItems())
+    return;
+
+  DCHECK_EQ(this, box_fragment.GetLayoutObject());
+  ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
 }
 
 const NGLayoutResult* LayoutBox::GetCachedLayoutResult() const {
@@ -2433,6 +2452,16 @@ const NGLayoutResult* LayoutBox::GetCachedLayoutResult() const {
   return result;
 }
 
+const NGLayoutResult* LayoutBox::GetCachedMeasureResult() const {
+  if (!measure_result_)
+    return nullptr;
+
+  if (measure_result_->IsSingleUse())
+    return nullptr;
+
+  return measure_result_.get();
+}
+
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
     const NGBreakToken* break_token,
@@ -2441,7 +2470,12 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     NGLayoutCacheStatus* out_cache_status) {
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
 
-  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
+  const NGLayoutResult* cached_layout_result =
+      new_space.CacheSlot() == NGCacheSlot::kLayout &&
+              !layout_results_.IsEmpty()
+          ? GetCachedLayoutResult()
+          : GetCachedMeasureResult();
+
   if (!cached_layout_result)
     return nullptr;
 
@@ -2574,7 +2608,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // "simplified" layout then abort now.
   *out_cache_status = cache_status;
   if (*out_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
-    return nullptr;
+    return cached_layout_result;
 
   physical_fragment.CheckType();
 

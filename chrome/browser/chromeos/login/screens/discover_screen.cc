@@ -31,7 +31,7 @@ DiscoverScreen::~DiscoverScreen() {
   view_->Bind(nullptr);
 }
 
-void DiscoverScreen::Show() {
+void DiscoverScreen::ShowImpl() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !ash::TabletMode::Get()->InTabletMode() ||
@@ -41,17 +41,15 @@ void DiscoverScreen::Show() {
     return;
   }
   view_->Show();
-  is_shown_ = true;
 }
 
-void DiscoverScreen::Hide() {
+void DiscoverScreen::HideImpl() {
   view_->Hide();
-  is_shown_ = false;
 }
 
 void DiscoverScreen::OnUserAction(const std::string& action_id) {
   // Only honor finish if discover is currently being shown.
-  if (action_id == kFinished && is_shown_) {
+  if (action_id == kFinished) {
     exit_callback_.Run();
     return;
   }

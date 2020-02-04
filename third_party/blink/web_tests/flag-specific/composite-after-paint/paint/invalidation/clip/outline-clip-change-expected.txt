@@ -7,14 +7,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) A id='link' class='updated'",
           "rect": [48, 88, 90, 25],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
+          "rect": [48, 107, 90, 6],
+          "reason": "incremental"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Lorem Ipsum'",
           "rect": [48, 88, 86, 19],
-          "reason": "chunk disappeared"
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
+          "rect": [134, 88, 4, 19],
+          "reason": "incremental"
         }
       ]
     }

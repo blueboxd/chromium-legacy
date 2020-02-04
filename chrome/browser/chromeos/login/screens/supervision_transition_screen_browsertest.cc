@@ -6,11 +6,13 @@
 #include <string>
 
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -47,12 +49,15 @@ class SupervisionTransitionScreenTest
   }
 
   void SetUpOnMainThread() override {
+    ASSERT_TRUE(arc_temp_dir_.CreateUniqueTempDir());
     CHECK(logged_in_user_mixin_.GetUserPolicyMixin()->RequestPolicyUpdate());
 
     arc::ArcServiceLauncher::Get()->ResetForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(arc::FakeArcSession::Create)));
+    EXPECT_TRUE(arc::ExpandPropertyFilesForTesting(
+        arc::ArcSessionManager::Get(), arc_temp_dir_.GetPath()));
 
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     // For this test class, the PRE tests just happen to always wait for active
@@ -81,6 +86,7 @@ class SupervisionTransitionScreenTest
   LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, content::IsPreTest() ? GetParam() : GetTargetUserType(),
       embedded_test_server(), this, false /*should_launch_browser*/};
+  base::ScopedTempDir arc_temp_dir_;
 };
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,

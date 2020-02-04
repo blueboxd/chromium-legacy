@@ -648,6 +648,7 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
       &fake_thread_scheduler_);
   layer_tree_view_->Initialize(settings,
                                std::make_unique<cc::TestUkmRecorderFactory>());
+  layer_tree_view_->SetVisible(true);
   return layer_tree_view_.get();
 }
 

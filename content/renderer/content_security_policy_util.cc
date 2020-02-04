@@ -54,17 +54,6 @@ network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
       policy.use_reporting_api, std::move(report_endpoints));
 }
 
-std::vector<network::mojom::ContentSecurityPolicyPtr>
-BuildContentSecurityPolicyList(
-    const blink::WebContentSecurityPolicyList& policies) {
-  std::vector<network::mojom::ContentSecurityPolicyPtr> list;
-
-  for (const auto& policy : policies.policies)
-    list.push_back(BuildContentSecurityPolicy(policy));
-
-  return list;
-}
-
 blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
     const content::CSPViolationParams& violation_params) {
   blink::WebContentSecurityPolicyViolation violation;

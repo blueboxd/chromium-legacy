@@ -207,6 +207,11 @@ void HTMLFrameSetElement::ParseAttribute(
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kPortalactivate,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
+  } else if (RuntimeEnabledFeatures::TimeZoneChangeEventEnabled() &&
+             name == html_names::kOntimezonechangeAttr) {
+    GetDocument().SetWindowAttributeEventListener(
+        event_type_names::kTimezonechange,
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else {
     HTMLElement::ParseAttribute(params);
   }

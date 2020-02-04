@@ -1269,31 +1269,6 @@ bool ChromeContentRendererClient::AllowPopup() {
 #endif
 }
 
-bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
-                                             const GURL& url,
-                                             const std::string& http_method,
-                                             bool is_initial_navigation,
-                                             bool is_server_redirect) {
-  // TODO(lukasza): https://crbug.com/650694: For now, we skip the rest for POST
-  // submissions.  This is because 1) in M54 there are some remaining issues
-  // with POST in OpenURL path (e.g. https://crbug.com/648648) and 2) OpenURL
-  // path regresses (blocks) navigations that result in downloads
-  // (https://crbug.com/646261).  In the long-term we should avoid forking for
-  // extensions (not hosted apps though) altogether and rely on transfers logic
-  // instead.
-  if (http_method != "GET")
-    return false;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  bool should_fork = ChromeExtensionsRendererClient::ShouldFork(
-      frame, url, is_initial_navigation, is_server_redirect);
-  if (should_fork)
-    return true;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-  return false;
-}
-
 void ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,

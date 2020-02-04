@@ -35,7 +35,6 @@
 #include <utility>
 
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -1173,11 +1172,6 @@ ContentCaptureManager* LocalFrame::GetContentCaptureManager() {
     content_capture_manager_ = nullptr;
   }
   return content_capture_manager_;
-}
-
-service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
-  DCHECK(Client());
-  return *Client()->GetInterfaceProvider();
 }
 
 BrowserInterfaceBrokerProxy& LocalFrame::GetBrowserInterfaceBroker() {

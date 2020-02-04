@@ -148,10 +148,12 @@ void RecordPermissionActionUkm(
   if (!source_id.has_value())
     return;
 
+  size_t num_values = 0;
   ukm::builders::Permission(source_id.value())
       .SetAction(static_cast<int64_t>(action))
       .SetGesture(static_cast<int64_t>(gesture_type))
-      .SetPermissionType(static_cast<int64_t>(permission))
+      .SetPermissionType(static_cast<int64_t>(
+          ContentSettingTypeToHistogramValue(permission, &num_values)))
       .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
       .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
       .SetSource(static_cast<int64_t>(source_ui))

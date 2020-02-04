@@ -721,7 +721,8 @@ public class TabGridDialogParent
                 isHovered ? mUngroupBarHoveredBackgroundColorResourceId
                           : mUngroupBarBackgroundColorResourceId));
         mUngroupBarTextView.setTextAppearance(context,
-                isHovered ? R.style.TextAppearance_WhiteTitle2 : mUngroupBarTextAppearance);
+                isHovered ? R.style.TextAppearance_TextMediumThick_Primary_Light
+                          : mUngroupBarTextAppearance);
     }
 
     /**

@@ -26,11 +26,11 @@ class EnableDebuggingScreen : public BaseScreen {
   void OnExit(bool success);
   void OnViewDestroyed(EnableDebuggingScreenView* view);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   base::RepeatingClosure* exit_callback() { return &exit_callback_; }
 
  private:

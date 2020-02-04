@@ -147,10 +147,6 @@ public class LibraryLoader {
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
 
-    // Stores information about attempts to load the library and eventually emits those bits as
-    // UMA histograms.
-    private final LoadStatusRecorder mLoadStatusRecorder = new LoadStatusRecorder();
-
     /**
      * Call this method to determine if the chromium project must load the library
      * directly from a zip file.
@@ -184,7 +180,6 @@ public class LibraryLoader {
                             mLibraryProcessType, type));
         }
         mLibraryProcessType = type;
-        mLoadStatusRecorder.setProcessType(type);
     }
 
     /**
@@ -414,23 +409,13 @@ public class LibraryLoader {
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
     // Records UMA histograms depending on the results of loading.
-    private void loadLibraryWithCustomLinker(
-            Linker linker, String library, boolean isFirstAttempt) {
+    private void loadLibraryWithCustomLinker(Linker linker, String library) {
         // Attempt shared RELROs, and if that fails then retry without.
-        boolean loadAtFixedAddress = true;
-        boolean success = true;
         try {
             linker.loadLibrary(library, true /* isFixedAddressPermitted */);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
-            mLoadStatusRecorder.recordLoadAttempt(
-                    false /* success */, isFirstAttempt, true /* loadAtFixedAddress */);
-            loadAtFixedAddress = false;
-            success = false;
             linker.loadLibrary(library, false /* isFixedAddressPermitted */);
-            success = true;
-        } finally {
-            mLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
         }
     }
 
@@ -456,17 +441,8 @@ public class LibraryLoader {
             Log.i(TAG, "Loading %s", library);
         }
 
-        try {
-            // Load the library using this Linker. May throw UnsatisfiedLinkError.
-            loadLibraryWithCustomLinker(linker, library, true /* isFirstAttempt */);
-        } catch (UnsatisfiedLinkError e) {
-            if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                loadLibraryWithCustomLinker(linker, getExtractedLibraryPath(appInfo, library),
-                        false /* isFirstAttempt */);
-            } else {
-                throw e;
-            }
-        }
+        // Load the library using this Linker. May throw UnsatisfiedLinkError.
+        loadLibraryWithCustomLinker(linker, library);
     }
 
     @GuardedBy("mLock")

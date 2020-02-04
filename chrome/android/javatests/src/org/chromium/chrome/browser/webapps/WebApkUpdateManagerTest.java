@@ -33,6 +33,7 @@ import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -167,18 +168,16 @@ public class WebApkUpdateManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebappDataStorage storage =
                     WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
-            WebApkInfo info = WebApkInfo.create(
-                    "", creationData.scope, null, null, null, creationData.name,
-                    creationData.shortName, creationData.displayMode, creationData.orientation, 0,
-                    creationData.themeColor, creationData.backgroundColor, 0,
-                    creationData.isPrimaryIconMaskable, false /* isSplashIconMaskable */, "",
+            WebApkInfo info = WebApkInfo.create("", creationData.scope, null, null, null,
+                    creationData.name, creationData.shortName, creationData.displayMode,
+                    creationData.orientation, 0, creationData.themeColor,
+                    creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable,
+                    false /* isSplashIconMaskable */, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
                     creationData.startUrl, WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
                     false /* isSplashProvidedByWebApk */, null /* shareData */,
-                    1 /* webApkVersionCode */
-
-            );
+                    new ArrayList<>() /* shortcutItems */, 1 /* webApkVersionCode */);
             updateManager.updateIfNeeded(storage, info);
         });
         waiter.waitForCallback(0);

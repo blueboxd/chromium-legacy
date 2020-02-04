@@ -34,6 +34,10 @@ class IconizedLabel : public views::Label {
     custom_accessible_name_ = name;
   }
 
+  base::string16 GetAccessibleNameString() const {
+    return custom_accessible_name_;
+  }
+
   // views::Label:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 

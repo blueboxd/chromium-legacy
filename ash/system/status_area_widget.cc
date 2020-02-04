@@ -347,7 +347,7 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->IsMouseWheelEvent()) {
     ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
-    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event, /*from_touchpad=*/false);
     return;
   }
 
@@ -372,6 +372,12 @@ void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
   }
   views::Widget::OnGestureEvent(event);
+}
+
+void StatusAreaWidget::OnScrollEvent(ui::ScrollEvent* event) {
+  shelf_->ProcessScrollEvent(event);
+  if (!event->handled())
+    views::Widget::OnScrollEvent(event);
 }
 
 void StatusAreaWidget::OnShelfConfigUpdated() {

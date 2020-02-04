@@ -481,12 +481,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     if (file_system_status_rewriter_for_testing_)
       file_system_status_rewriter_for_testing_.Run(&file_system_status);
 
-    if (!file_system_status.property_files_expanded()) {
-      LOG(ERROR) << "Failed to expand property files";
-      std::move(callback).Run(false);
-      return;
-    }
-
     if (serial_number_.empty()) {
       LOG(ERROR) << "Serial number is not set";
       std::move(callback).Run(false);

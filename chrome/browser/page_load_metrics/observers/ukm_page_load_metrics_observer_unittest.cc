@@ -1289,6 +1289,55 @@ TEST_F(UkmPageLoadMetricsObserverTest, JSMaxSizeMetrics) {
   }
 }
 
+TEST_F(UkmPageLoadMetricsObserverTest, ImageMediaSizeMetrics) {
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  resources.push_back(CreateResource(
+      false /* was_cached */, 10 * 1024 /* delta_bytes */,
+      10 * 1024 /* encoded_body_length */, 10 * 1024 /* decoded_body_length */,
+      true /* is_complete */));
+  resources.push_back(CreateResource(
+      false /* was_cached */, 20 * 1024 /* delta_bytes */,
+      20 * 1024 /* encoded_body_length */, 20 * 1024 /* decoded_body_length */,
+      true /* is_complete */));
+  resources.push_back(CreateResource(
+      false /* was_cached */, 50 * 1024 /* delta_bytes */,
+      50 * 1024 /* encoded_body_length */, 50 * 1024 /* decoded_body_length */,
+      true /* is_complete */));
+
+  resources[0]->mime_type = "image/png";
+  resources[0]->is_main_frame_resource = true;
+  resources[1]->mime_type = "image/jpg";
+  resources[1]->is_main_frame_resource = false;
+  resources[2]->mime_type = "video/mp4";
+
+  tester()->SimulateResourceDataUseUpdate(resources);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                          GURL(kTestUrl1));
+    // 30 KB for all images, 20 KB for subframe images, and 50 KB for media.
+    tester()->test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), "Net.ImageBytes",
+        ukm::GetExponentialBucketMin(30 * 1024, 1.3));
+    tester()->test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), "Net.ImageSubframeBytes",
+        ukm::GetExponentialBucketMin(20 * 1024, 1.3));
+    tester()->test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), "Net.MediaBytes",
+        ukm::GetExponentialBucketMin(50 * 1024, 1.3));
+  }
+}
+
 TEST_F(UkmPageLoadMetricsObserverTest, CpuTimeMetrics) {
   NavigateAndCommit(GURL(kTestUrl1));
 

@@ -42,7 +42,7 @@ void UpdateNotificationClient::OnUserAction(const UserActionData& action_data) {
 
   switch (action_data.action_type) {
     case notifications::UserActionType::kClick:
-      update_notification_service->OnUserClick();
+      update_notification_service->OnUserClick(action_data.custom_data);
       break;
     case notifications::UserActionType::kButtonClick:
       NOTIMPLEMENTED();

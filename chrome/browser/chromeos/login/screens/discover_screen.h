@@ -21,15 +21,15 @@ class DiscoverScreen : public BaseScreen {
                  const base::RepeatingClosure& exit_callback);
   ~DiscoverScreen() override;
 
+ protected:
   // BaseScreen:
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
  private:
   DiscoverScreenView* const view_;
   base::RepeatingClosure exit_callback_;
-  bool is_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DiscoverScreen);
 };

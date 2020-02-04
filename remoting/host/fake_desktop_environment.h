@@ -106,6 +106,8 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;
+  std::unique_ptr<DesktopAndCursorConditionalComposer>
+  CreateComposingVideoCapturer() override;
 
   base::WeakPtr<FakeInputInjector> last_input_injector() {
     return last_input_injector_;

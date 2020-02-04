@@ -86,12 +86,7 @@
   "declarativeNetRequest": {
     "Permissions": [
       {
-        "class": "code",
-        "text": "\"declarativeNetRequest\""
-      },
-      {
-        "link": "declare_permissions#host-permissions",
-        "text": "host permissions"
+        "partial": "intro_tables/declarative_net_request_permissions.html"
       }
     ]
   },

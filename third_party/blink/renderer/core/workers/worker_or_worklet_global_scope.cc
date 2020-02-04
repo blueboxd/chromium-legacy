@@ -148,7 +148,7 @@ class OutsideSettingsCSPDelegate final
   }
 
   void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) override {
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>) override {
     DCHECK(global_scope_for_logging_->IsContextThread());
     // We do nothing here, because if the added policies should be reported to
     // LocalFrameClient, then they are already reported on the parent

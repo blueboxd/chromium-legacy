@@ -33,7 +33,6 @@
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
@@ -604,12 +603,6 @@ IndexedDBBackingStore::IndexedDBBackingStore(
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-  if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
-    ChildProcessSecurityPolicyImpl* policy =
-        ChildProcessSecurityPolicyImpl::GetInstance();
-    for (const auto& pid : child_process_ids_granted_)
-      policy->RevokeAllPermissionsForFile(pid, blob_path_);
-  }
 }
 
 IndexedDBBackingStore::RecordIdentifier::RecordIdentifier(
@@ -1062,16 +1055,6 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(const FilePath& path_base,
   base::JSONWriter::Write(root_dict, &output_js);
   return base::ImportantFileWriter::WriteFileAtomically(info_path,
                                                         output_js.c_str());
-}
-
-void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-
-  if (!child_process_ids_granted_.count(child_process_id)) {
-    child_process_ids_granted_.insert(child_process_id);
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        child_process_id, blob_path_);
-  }
 }
 
 Status IndexedDBBackingStore::DeleteDatabase(

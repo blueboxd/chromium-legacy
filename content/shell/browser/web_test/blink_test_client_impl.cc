@@ -25,6 +25,10 @@ void BlinkTestClientImpl::InitiateLayoutDump() {
   BlinkTestController::Get()->OnInitiateLayoutDump();
 }
 
+void BlinkTestClientImpl::ResetDone() {
+  BlinkTestController::Get()->OnResetDone();
+}
+
 void BlinkTestClientImpl::PrintMessageToStderr(const std::string& message) {
   BlinkTestController::Get()->OnPrintMessageToStderr(message);
 }

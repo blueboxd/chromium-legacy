@@ -200,22 +200,22 @@ class SharingDeviceRegistrationTest : public testing::Test {
     // IsClickToCallSupported() involves JNI call which is hard to test.
     if (sharing_device_registration_.IsClickToCallSupported()) {
       if (supports_vapid) {
-        return {sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+        return {sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
                 sync_pb::SharingSpecificFields::CLICK_TO_CALL_VAPID,
-                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD,
+                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2,
                 sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_VAPID};
       } else {
-        return {sync_pb::SharingSpecificFields::CLICK_TO_CALL,
-                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+        return {sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
+                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2};
       }
     }
 
     // Shared clipboard should always be supported.
     if (supports_vapid) {
-      return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD,
+      return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2,
               sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_VAPID};
     } else {
-      return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+      return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2};
     }
   }
 

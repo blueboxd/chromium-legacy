@@ -25,6 +25,7 @@
 #include "storage/browser/file_system/file_system_options.h"
 #include "storage/browser/file_system/file_system_usage_cache.h"
 #include "storage/browser/file_system/obfuscated_file_util.h"
+#include "storage/browser/file_system/quota/quota_limit_type.h"
 #include "storage/browser/file_system/sandbox_quota_observer.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/file_system/file_system_types.h"
@@ -113,9 +114,9 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
 
   SpecialStoragePolicy* policy = delegate_->special_storage_policy();
   if (policy && policy->IsStorageUnlimited(url.origin().GetURL()))
-    operation_context->set_quota_limit_type(storage::kQuotaLimitTypeUnlimited);
+    operation_context->set_quota_limit_type(QuotaLimitType::kUnlimited);
   else
-    operation_context->set_quota_limit_type(storage::kQuotaLimitTypeLimited);
+    operation_context->set_quota_limit_type(QuotaLimitType::kLimited);
 
   return FileSystemOperation::Create(url, context,
                                      std::move(operation_context));

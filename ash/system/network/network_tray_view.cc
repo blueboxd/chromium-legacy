@@ -58,6 +58,10 @@ void NetworkTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetDescription(accessible_description_);
 }
 
+base::string16 NetworkTrayView::GetAccessibleNameString() const {
+  return tooltip_;
+}
+
 views::View* NetworkTrayView::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
   return GetLocalBounds().Contains(point) ? this : nullptr;

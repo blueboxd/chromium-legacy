@@ -809,6 +809,13 @@ class DeviceStatusCollectorState : public StatusCollectorState {
           cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
         }
       }
+      const auto& timezone_info = probe_result->timezone_info;
+      if (!timezone_info.is_null()) {
+        em::TimezoneInfo* const timezone_info_out =
+            response_params_.device_status->mutable_timezone_info();
+        timezone_info_out->set_posix(timezone_info->posix);
+        timezone_info_out->set_region(timezone_info->region);
+      }
 
       for (const std::unique_ptr<SampledData>& sample_data : samples) {
         auto it = sample_data->battery_samples.find(battery_info->model_name);
@@ -974,6 +981,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceCpuInfo, callback);
   graphics_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceGraphicsStatus, callback);
+  timezone_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceTimezoneInfo, callback);
 
   power_manager_->AddObserver(this);
 
@@ -1098,6 +1107,10 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceGraphicsStatus,
                                   &report_graphics_status_)) {
     report_graphics_status_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceTimezoneInfo,
+                                  &report_timezone_info_)) {
+    report_timezone_info_ = false;
   }
 
   if (!report_hardware_status_) {
@@ -1377,6 +1390,8 @@ void DeviceStatusCollector::FetchCrosHealthdData(
     categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
   if (report_cpu_info_)
     categories_to_probe.push_back(ProbeCategoryEnum::kCpu);
+  if (report_timezone_info_)
+    categories_to_probe.push_back(ProbeCategoryEnum::kTimezone);
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
@@ -1399,7 +1414,8 @@ void DeviceStatusCollector::OnProbeDataFetched(
 }
 
 bool DeviceStatusCollector::ShouldFetchCrosHealthData() const {
-  return report_power_status_ || report_storage_status_ || report_cpu_info_;
+  return report_power_status_ || report_storage_status_ || report_cpu_info_ ||
+         report_timezone_info_;
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {

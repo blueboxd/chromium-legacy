@@ -1050,8 +1050,10 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
       ++it;
     }
   }
-  if (notify)
+  if (notify) {
     OnUserRemoved(account_id);
+    NotifyLocalStateChanged();
+  }
   return user;
 }
 

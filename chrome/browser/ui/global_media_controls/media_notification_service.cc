@@ -596,6 +596,10 @@ void MediaNotificationService::SetDialogDelegate(
 
   media_message_center::RecordConcurrentNotificationCount(
       active_controllable_session_ids_.size());
+  if (cast_notification_provider_) {
+    media_message_center::RecordConcurrentCastNotificationCount(
+        cast_notification_provider_->GetItemCount());
+  }
 }
 
 bool MediaNotificationService::HasActiveNotifications() const {

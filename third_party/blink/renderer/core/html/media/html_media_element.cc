@@ -33,6 +33,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_switches.h"
@@ -101,7 +102,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
@@ -134,25 +134,25 @@ using DocumentElementSetMap =
 namespace {
 
 // This enum is used to record histograms. Do not reorder.
-enum MediaControlsShow {
-  kMediaControlsShowAttribute = 0,
-  kMediaControlsShowFullscreen,
-  kMediaControlsShowNoScript,
-  kMediaControlsShowNotShown,
-  kMediaControlsShowDisabledSettings,
-  kMediaControlsShowMax
+enum class MediaControlsShow {
+  kAttribute = 0,
+  kFullscreen,
+  kNoScript,
+  kNotShown,
+  kDisabledSettings,
+  kMaxValue = kDisabledSettings,
 };
 
 // These values are used for the Media.MediaElement.ContentTypeResult histogram.
 // Do not reorder.
-enum ContentTypeParseableResult {
+enum class ContentTypeParseableResult {
   kIsSupportedParseable = 0,
   kMayBeSupportedParseable,
   kIsNotSupportedParseable,
   kIsSupportedNotParseable,
   kMayBeSupportedNotParseable,
   kIsNotSupportedNotParseable,
-  kContentTypeParseableMax
+  kMaxValue = kIsNotSupportedNotParseable,
 };
 
 // This enum is used to record histograms. Do not reorder.
@@ -161,7 +161,7 @@ enum class PlayPromiseRejectReason {
   kNoSupportedSources,
   kInterruptedByPause,
   kInterruptedByLoad,
-  kCount,
+  kMaxValue = kInterruptedByLoad,
 };
 
 static const base::TimeDelta kStalledNotificationInterval =
@@ -173,26 +173,30 @@ const double kMaxRate = 16.0;
 
 void ReportContentTypeResultToUMA(String content_type,
                                   MIMETypeRegistry::SupportsType result) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, content_type_parseable_histogram,
-      ("Media.MediaElement.ContentTypeParseable", kContentTypeParseableMax));
   ParsedContentType parsed_content_type(content_type);
-  ContentTypeParseableResult uma_result = kIsNotSupportedNotParseable;
+  ContentTypeParseableResult uma_result =
+      ContentTypeParseableResult::kIsNotSupportedNotParseable;
   switch (result) {
     case MIMETypeRegistry::kIsSupported:
-      uma_result = parsed_content_type.IsValid() ? kIsSupportedParseable
-                                                 : kIsSupportedNotParseable;
+      uma_result = parsed_content_type.IsValid()
+                       ? ContentTypeParseableResult::kIsSupportedParseable
+                       : ContentTypeParseableResult::kIsSupportedNotParseable;
       break;
     case MIMETypeRegistry::kMayBeSupported:
-      uma_result = parsed_content_type.IsValid() ? kMayBeSupportedParseable
-                                                 : kMayBeSupportedNotParseable;
+      uma_result =
+          parsed_content_type.IsValid()
+              ? ContentTypeParseableResult::kMayBeSupportedParseable
+              : ContentTypeParseableResult::kMayBeSupportedNotParseable;
       break;
     case MIMETypeRegistry::kIsNotSupported:
-      uma_result = parsed_content_type.IsValid() ? kIsNotSupportedParseable
-                                                 : kIsNotSupportedNotParseable;
+      uma_result =
+          parsed_content_type.IsValid()
+              ? ContentTypeParseableResult::kIsNotSupportedParseable
+              : ContentTypeParseableResult::kIsNotSupportedNotParseable;
       break;
   }
-  content_type_parseable_histogram.Count(uma_result);
+  base::UmaHistogramEnumeration("Media.MediaElement.ContentTypeParseable",
+                                uma_result);
 }
 
 String UrlForLoggingMedia(const KURL& url) {
@@ -363,10 +367,16 @@ String PreloadTypeToString(WebMediaPlayer::Preload preload_type) {
 }
 
 void RecordPlayPromiseRejected(PlayPromiseRejectReason reason) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
-                      ("Media.MediaElement.PlayPromiseReject",
-                       static_cast<int>(PlayPromiseRejectReason::kCount)));
-  histogram.Count(static_cast<int>(reason));
+  base::UmaHistogramEnumeration("Media.MediaElement.PlayPromiseReject", reason);
+}
+
+void RecordShowControlsUsage(const HTMLMediaElement* element,
+                             MediaControlsShow value) {
+  if (element->IsHTMLVideoElement()) {
+    base::UmaHistogramEnumeration("Media.Controls.Show.Video", value);
+    return;
+  }
+  base::UmaHistogramEnumeration("Media.Controls.Show.Audio", value);
 }
 
 bool IsValidPlaybackRate(double rate) {
@@ -2609,31 +2619,31 @@ bool HTMLMediaElement::ShouldShowControls(
   Settings* settings = GetDocument().GetSettings();
   if (settings && !settings->GetMediaControlsEnabled()) {
     if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      ShowControlsHistogram().Count(kMediaControlsShowDisabledSettings);
+      RecordShowControlsUsage(this, MediaControlsShow::kDisabledSettings);
     return false;
   }
 
   if (FastHasAttribute(html_names::kControlsAttr)) {
     if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      ShowControlsHistogram().Count(kMediaControlsShowAttribute);
+      RecordShowControlsUsage(this, MediaControlsShow::kAttribute);
     return true;
   }
 
   if (IsFullscreen()) {
     if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      ShowControlsHistogram().Count(kMediaControlsShowFullscreen);
+      RecordShowControlsUsage(this, MediaControlsShow::kFullscreen);
     return true;
   }
 
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame && !GetDocument().CanExecuteScripts(kNotAboutToExecuteScript)) {
     if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      ShowControlsHistogram().Count(kMediaControlsShowNoScript);
+      RecordShowControlsUsage(this, MediaControlsShow::kNoScript);
     return true;
   }
 
   if (record_metrics == RecordMetricsBehavior::kDoRecord)
-    ShowControlsHistogram().Count(kMediaControlsShowNotShown);
+    RecordShowControlsUsage(this, MediaControlsShow::kNotShown);
   return false;
 }
 
@@ -4148,18 +4158,6 @@ void HTMLMediaElement::RejectPlayPromisesInternal(DOMExceptionCode code,
     resolver->Reject(MakeGarbageCollected<DOMException>(code, message));
 
   play_promise_reject_list_.clear();
-}
-
-EnumerationHistogram& HTMLMediaElement::ShowControlsHistogram() const {
-  if (IsHTMLVideoElement()) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
-                        ("Media.Controls.Show.Video", kMediaControlsShowMax));
-    return histogram;
-  }
-
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
-                      ("Media.Controls.Show.Audio", kMediaControlsShowMax));
-  return histogram;
 }
 
 void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {

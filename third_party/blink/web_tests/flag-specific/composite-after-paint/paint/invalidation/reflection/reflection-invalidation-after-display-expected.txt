@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='box' class='green reflected box'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='box' class='green box'",
           "rect": [300, 8, 450, 200],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='box' class='green box'",
           "rect": [300, 8, 200, 200],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         }
       ]
     }

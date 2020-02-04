@@ -9,9 +9,10 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/security_interstitials/content/ssl_error_handler.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/browser/browser_process.h"
-#include "weblayer/browser/ssl_error_handler.h"
+#include "weblayer/browser/weblayer_security_blocking_page_factory.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
 #include "weblayer/test/load_completion_observer.h"
@@ -166,7 +167,8 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     // Note: The embedded test server cannot actually load the captive portal
     // login URL, so simply detect the start of the navigation to the page.
     TestNavigationObserver navigation_observer(
-        GetCaptivePortalLoginPageUrlForTesting(),
+        WebLayerSecurityBlockingPageFactory::
+            GetCaptivePortalLoginPageUrlForTesting(),
         TestNavigationObserver::NavigationEvent::kStart, shell());
     ExecuteScript(shell(), "window.certificateErrorPageController.openLogin();",
                   false /*use_separate_isolate*/);
@@ -274,12 +276,12 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, NavigateAway) {
 // then switches OS captive portal status to false and reloads the page. This
 // time, a normal SSL interstitial should be displayed.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, OSReportsCaptivePortal) {
-  SetDiagnoseSSLErrorsAsCaptivePortalForTesting(true);
+  SSLErrorHandler::SetOSReportsCaptivePortalForTesting(true);
 
   NavigateToPageWithMismatchedCertExpectCaptivePortalInterstitial();
 
   // Check that clearing the test setting causes behavior to revert to normal.
-  SetDiagnoseSSLErrorsAsCaptivePortalForTesting(false);
+  SSLErrorHandler::SetOSReportsCaptivePortalForTesting(false);
   NavigateToPageWithMismatchedCertExpectSSLInterstitial();
 }
 
@@ -287,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, OSReportsCaptivePortal) {
 // Tests that after reaching a captive portal interstitial, clicking on the
 // connect link will cause a navigation to the login page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, CaptivePortalConnectToLoginPage) {
-  SetDiagnoseSSLErrorsAsCaptivePortalForTesting(true);
+  SSLErrorHandler::SetOSReportsCaptivePortalForTesting(true);
 
   NavigateToPageWithMismatchedCertExpectCaptivePortalInterstitial();
 

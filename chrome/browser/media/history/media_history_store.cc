@@ -8,13 +8,13 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media/history/media_history_engagement_table.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "services/media_session/public/cpp/media_position.h"
 #include "sql/statement.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -78,7 +78,6 @@ class MediaHistoryStoreInternal
   const base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
   sql::MetaTable meta_table_;
-  scoped_refptr<MediaHistoryEngagementTable> engagement_table_;
   scoped_refptr<MediaHistoryOriginTable> origin_table_;
   scoped_refptr<MediaHistoryPlaybackTable> playback_table_;
   scoped_refptr<MediaHistorySessionTable> session_table_;
@@ -92,14 +91,12 @@ MediaHistoryStoreInternal::MediaHistoryStoreInternal(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : db_task_runner_(db_task_runner),
       db_path_(profile->GetPath().Append(kMediaHistoryDatabaseName)),
-      engagement_table_(new MediaHistoryEngagementTable(db_task_runner_)),
       origin_table_(new MediaHistoryOriginTable(db_task_runner_)),
       playback_table_(new MediaHistoryPlaybackTable(db_task_runner_)),
       session_table_(new MediaHistorySessionTable(db_task_runner_)),
       initialization_successful_(false) {}
 
 MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(engagement_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(origin_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(playback_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_table_));
@@ -175,9 +172,7 @@ sql::InitStatus MediaHistoryStoreInternal::CreateOrUpgradeIfNeeded() {
 
 sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  sql::InitStatus status = engagement_table_->Initialize(db_.get());
-  if (status == sql::INIT_OK)
-    status = origin_table_->Initialize(db_.get());
+  sql::InitStatus status = origin_table_->Initialize(db_.get());
   if (status == sql::INIT_OK)
     status = playback_table_->Initialize(db_.get());
   if (status == sql::INIT_OK)

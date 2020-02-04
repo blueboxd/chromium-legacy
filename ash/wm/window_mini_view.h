@@ -19,7 +19,6 @@ class View;
 }  // namespace views
 
 namespace ash {
-class RoundedRectView;
 class WindowPreviewView;
 class WmHighlightItemBorder;
 
@@ -47,7 +46,7 @@ class ASH_EXPORT WindowMiniView : public views::View,
 
   views::View* header_view() { return header_view_; }
   views::Label* title_label() const { return title_label_; }
-  RoundedRectView* backdrop_view() { return backdrop_view_; }
+  views::View* backdrop_view() { return backdrop_view_; }
   WindowPreviewView* preview_view() const { return preview_view_; }
 
  protected:
@@ -95,7 +94,7 @@ class ASH_EXPORT WindowMiniView : public views::View,
 
   // A view that covers the area except the header. It is null when the window
   // associated is not pillar or letter boxed.
-  RoundedRectView* backdrop_view_ = nullptr;
+  views::View* backdrop_view_ = nullptr;
 
   // Optionally shows a preview of |window_|.
   WindowPreviewView* preview_view_ = nullptr;

@@ -61,7 +61,6 @@ class AudioTrackList;
 class AutoplayPolicy;
 class ContentType;
 class CueTimeline;
-class EnumerationHistogram;
 class Event;
 class EventQueue;
 class ExceptionState;
@@ -556,8 +555,6 @@ class CORE_EXPORT HTMLMediaElement
   void RejectScheduledPlayPromises();
   void RejectPlayPromises(DOMExceptionCode, const String&);
   void RejectPlayPromisesInternal(DOMExceptionCode, const String&);
-
-  EnumerationHistogram& ShowControlsHistogram() const;
 
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 

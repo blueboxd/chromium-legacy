@@ -211,6 +211,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.bitfields_.baseline_algorithm_type = static_cast<unsigned>(type);
   }
 
+  void SetCacheSlot(NGCacheSlot slot) {
+    space_.bitfields_.cache_slot = static_cast<unsigned>(slot);
+  }
+
   void SetMarginStrut(const NGMarginStrut& margin_strut) {
 #if DCHECK_IS_ON()
     DCHECK(!is_margin_strut_set_);

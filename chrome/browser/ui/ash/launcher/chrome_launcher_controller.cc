@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -1332,11 +1331,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
               profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
       app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
     }
-
-    std::unique_ptr<AppIconLoader> internal_app_icon_loader =
-        std::make_unique<InternalAppIconLoader>(
-            profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
-    app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
 
     if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
       std::unique_ptr<AppIconLoader> crostini_app_icon_loader =

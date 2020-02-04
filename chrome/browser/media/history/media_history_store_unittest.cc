@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
@@ -16,6 +17,8 @@
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "services/media_session/public/cpp/media_metadata.h"
+#include "services/media_session/public/cpp/media_position.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,9 +86,9 @@ class MediaHistoryStoreUnitTest : public testing::Test {
 };
 
 TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
-  ASSERT_TRUE(GetDB().DoesTableExist("mediaEngagement"));
   ASSERT_TRUE(GetDB().DoesTableExist("origin"));
   ASSERT_TRUE(GetDB().DoesTableExist("playback"));
+  ASSERT_TRUE(GetDB().DoesTableExist("playbackSession"));
 }
 
 TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
@@ -132,8 +135,8 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
   EXPECT_EQ(2, playback_row_count);
 
   // Verify that the origin table contains the expected number of items
-  sql::Statement select_from_origin_statement(
-      GetDB().GetUniqueStatement("SELECT id, origin FROM origin"));
+  sql::Statement select_from_origin_statement(GetDB().GetUniqueStatement(
+      "SELECT id, origin, last_updated_time_s FROM origin"));
   ASSERT_TRUE(select_from_origin_statement.is_valid());
   int origin_row_count = 0;
   while (select_from_origin_statement.Step()) {
@@ -141,6 +144,10 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
     EXPECT_EQ(1, select_from_origin_statement.ColumnInt(0));
     EXPECT_EQ("http://google.com/",
               select_from_origin_statement.ColumnString(1));
+    EXPECT_LE(now_in_seconds_before,
+              select_from_origin_statement.ColumnInt64(2));
+    EXPECT_GE(now_in_seconds_after,
+              select_from_origin_statement.ColumnInt64(2));
   }
 
   EXPECT_EQ(1, origin_row_count);
@@ -153,8 +160,6 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
     EXPECT_EQ(0, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
     EXPECT_EQ(0,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
-    EXPECT_EQ(0,
-              stats->table_row_counts[MediaHistoryEngagementTable::kTableName]);
     EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
   }
 
@@ -173,9 +178,56 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
     EXPECT_EQ(1, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
     EXPECT_EQ(1,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
-    EXPECT_EQ(0,
-              stats->table_row_counts[MediaHistoryEngagementTable::kTableName]);
     EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+  }
+}
+
+TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
+  GURL url_a("https://www.google.com");
+  GURL url_b("https://www.example.org");
+
+  {
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+  }
+
+  // Save a couple of sessions on different URLs.
+  GetMediaHistoryStore()->SavePlaybackSession(
+      url_a, media_session::MediaMetadata(), base::nullopt);
+  GetMediaHistoryStore()->SavePlaybackSession(
+      url_b, media_session::MediaMetadata(), base::nullopt);
+
+  // Wait until the sessions have finished saving.
+  content::RunAllTasksUntilIdle();
+
+  {
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+
+    sql::Statement s(GetDB().GetUniqueStatement(
+        "SELECT id FROM playbackSession WHERE url = ?"));
+    s.BindString(0, url_a.spec());
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(1, s.ColumnInt(0));
+  }
+
+  // Save a session on the first URL.
+  GetMediaHistoryStore()->SavePlaybackSession(
+      url_a, media_session::MediaMetadata(), base::nullopt);
+
+  // Wait until the sessions have finished saving.
+  content::RunAllTasksUntilIdle();
+
+  {
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+
+    // The row for |url_a| should have been replaced so we should have a new ID.
+    sql::Statement s(GetDB().GetUniqueStatement(
+        "SELECT id FROM playbackSession WHERE url = ?"));
+    s.BindString(0, url_a.spec());
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(3, s.ColumnInt(0));
   }
 }
 

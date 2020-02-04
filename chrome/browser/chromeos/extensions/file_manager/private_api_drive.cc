@@ -1040,7 +1040,9 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   const ChromeExtensionFunctionDetails chrome_details(this);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details.GetProfile());
-  const CoreAccountId& account_id = identity_manager->GetPrimaryAccountId();
+  // This class doesn't care about browser sync consent.
+  const CoreAccountId& account_id =
+      identity_manager->GetUnconsentedPrimaryAccountId();
   std::vector<std::string> scopes;
   scopes.emplace_back("https://www.googleapis.com/auth/drive.readonly");
 

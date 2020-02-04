@@ -37,6 +37,7 @@ class PredictionManager;
 
 class GURL;
 class OptimizationGuideHintsManager;
+class OptimizationGuideNavigationData;
 
 class OptimizationGuideKeyedService
     : public KeyedService,
@@ -73,7 +74,8 @@ class OptimizationGuideKeyedService
 
   // Notifies |hints_manager_| that the navigation associated with
   // |navigation_url| has finished.
-  void OnNavigationFinish(const GURL& navigation_url);
+  void OnNavigationFinish(const GURL& navigation_url,
+                          OptimizationGuideNavigationData* navigation_data);
 
   // Clears data specific to the user.
   void ClearData();

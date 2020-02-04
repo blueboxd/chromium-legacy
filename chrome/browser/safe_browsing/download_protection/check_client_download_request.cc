@@ -273,7 +273,8 @@ void CheckClientDownloadRequest::UploadBinary(
         {DeepScanningRequest::DeepScanType::SCAN_DLP});
   } else {
     service()->UploadForDeepScanning(
-        item_, callback_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY);
+        item_, callback_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+        DeepScanningRequest::AllScans());
   }
 }
 

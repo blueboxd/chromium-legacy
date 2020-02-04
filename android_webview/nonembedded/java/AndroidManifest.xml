@@ -36,8 +36,10 @@
             <!--suppress HardcodedText -->
             <activity android:name="org.chromium.android_webview.devui.MainActivity"
                       android:label="WebView DevTools"
+                      android:icon="@drawable/icon_webview"
                       android:theme="@style/Theme.DevUi.DayNight"
                       android:launchMode="singleTask"
+                      android:taskAffinity="org.chromium.android_webview.devui" {# Explicit taskAffinity to distinguish from monochrome browser task. #}
                       android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
                 <intent-filter>
                     <action android:name="com.android.webview.SHOW_DEV_UI" />
@@ -53,12 +55,14 @@
                       android:label="WebView Crashes"
                       android:theme="@style/Theme.DevUi.DayNight"
                       android:launchMode="singleTop"
+                      android:taskAffinity="org.chromium.android_webview.devui" {# Explicit taskAffinity to distinguish from monochrome browser task. #}
                       android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
             </activity>
             <activity android:name="org.chromium.android_webview.devui.FlagsActivity"
                       android:label="WebView Flags"
                       android:theme="@style/Theme.DevUi.DayNight"
                       android:launchMode="singleTop"
+                      android:taskAffinity="org.chromium.android_webview.devui" {# Explicit taskAffinity to distinguish from monochrome browser task. #}
                       android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
             </activity>
             <!-- End of WebView Developer UI Activities -->

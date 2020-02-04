@@ -15,7 +15,7 @@ MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
 MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() {}
 
 void MockAutoEnrollmentCheckScreen::RealShow() {
-  AutoEnrollmentCheckScreen::Show();
+  AutoEnrollmentCheckScreen::ShowImpl();
 }
 
 void MockAutoEnrollmentCheckScreen::ExitScreen() {

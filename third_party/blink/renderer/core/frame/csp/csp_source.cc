@@ -290,25 +290,20 @@ bool CSPSource::FirstSubsumesSecond(
   return true;
 }
 
-WebContentSecurityPolicySourceExpression
-CSPSource::ExposeForNavigationalChecks() const {
-  WebContentSecurityPolicySourceExpression source_expression;
-  source_expression.scheme = scheme_;
-  source_expression.host = host_;
-  source_expression.is_host_wildcard =
-      static_cast<WebWildcardDisposition>(host_wildcard_);
-  source_expression.port = port_;
-  source_expression.is_port_wildcard =
-      static_cast<WebWildcardDisposition>(port_wildcard_);
-  source_expression.path = path_;
-  return source_expression;
+network::mojom::blink::CSPSourcePtr CSPSource::ExposeForNavigationalChecks()
+    const {
+  return network::mojom::blink::CSPSource::New(
+      scheme_ ? scheme_ : "",                               // scheme
+      host_ ? host_ : "",                                   // host
+      port_ == 0 ? -1 /* url::PORT_UNSPECIFIED */ : port_,  // port
+      path_ ? path_ : "",                                   // path
+      host_wildcard_ == kHasWildcard,                       // is_host_wildcard
+      port_wildcard_ == kHasWildcard                        // is_port_wildcard
+  );
 }
 
 void CSPSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(policy_);
 }
-
-STATIC_ASSERT_ENUM(kWebWildcardDispositionNoWildcard, CSPSource::kNoWildcard);
-STATIC_ASSERT_ENUM(kWebWildcardDispositionHasWildcard, CSPSource::kHasWildcard);
 
 }  // namespace blink

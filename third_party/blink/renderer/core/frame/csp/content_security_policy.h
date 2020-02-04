@@ -29,7 +29,7 @@
 #include <memory>
 #include <utility>
 
-#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -65,7 +65,6 @@ class CSPSource;
 class Document;
 class Element;
 class ExecutionContext;
-class LocalFrameClient;
 class LocalFrame;
 class KURL;
 class ResourceRequest;
@@ -127,7 +126,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
   virtual void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) = 0;
   virtual void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) = 0;
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>) = 0;
 };
 
 class CORE_EXPORT ContentSecurityPolicy final
@@ -230,7 +229,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   void AddPolicyFromHeaderValue(const String&,
                                 network::mojom::ContentSecurityPolicyType,
                                 network::mojom::ContentSecurityPolicySource);
-  void ReportAccumulatedHeaders(LocalFrameClient*) const;
+  void ReportAccumulatedHeaders(LocalFrame*) const;
 
   Vector<CSPHeaderAndType> Headers() const;
 
@@ -479,7 +478,8 @@ class CORE_EXPORT ContentSecurityPolicy final
   // for certain navigational checks. We create a string version of the relevant
   // CSP directives to be passed around with the request. This allows us to
   // perform these checks in NavigationRequest::CheckContentSecurityPolicy.
-  WebContentSecurityPolicyList ExposeForNavigationalChecks() const;
+  WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+  ExposeForNavigationalChecks() const;
 
   // Retrieves the parsed sandbox flags. A lot of the time the execution
   // context will be used for all sandbox checks but there are situations

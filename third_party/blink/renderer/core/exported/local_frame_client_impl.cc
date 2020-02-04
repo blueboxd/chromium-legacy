@@ -157,6 +157,79 @@ void ResetWheelAndTouchEventHandlerProperties(LocalFrame& frame) {
       cc::EventListenerProperties::kNone);
 }
 
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
+WebContentSecurityPolicySourceExpression ConvertToPublic(
+    network::mojom::blink::CSPSourcePtr source) {
+  return {source->scheme,
+          source->host,
+          source->is_host_wildcard ? kWebWildcardDispositionHasWildcard
+                                   : kWebWildcardDispositionNoWildcard,
+          source->port,
+          source->is_port_wildcard ? kWebWildcardDispositionHasWildcard
+                                   : kWebWildcardDispositionNoWildcard,
+          source->path};
+}
+
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
+WebContentSecurityPolicySourceList ConvertToPublic(
+    network::mojom::blink::CSPSourceListPtr source_list) {
+  WebVector<WebContentSecurityPolicySourceExpression> sources(
+      source_list->sources.size());
+  for (size_t i = 0; i < sources.size(); ++i)
+    sources[i] = ConvertToPublic(std::move(source_list->sources[i]));
+  return {source_list->allow_self, source_list->allow_star,
+          source_list->allow_response_redirects, std::move(sources)};
+}
+
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
+WebString ConvertToPublic(
+    network::mojom::blink::CSPDirectiveName directive_name) {
+  using CSPDirectiveName = network::mojom::blink::CSPDirectiveName;
+  switch (directive_name) {
+    case CSPDirectiveName::DefaultSrc:
+      return "default-src";
+    case CSPDirectiveName::ChildSrc:
+      return "child-src";
+    case CSPDirectiveName::FrameSrc:
+      return "frame-src";
+    case CSPDirectiveName::FormAction:
+      return "form-action";
+    case CSPDirectiveName::UpgradeInsecureRequests:
+      return "upgrade-insecure-requests";
+    case CSPDirectiveName::NavigateTo:
+      return "navigate-to";
+    case CSPDirectiveName::FrameAncestors:
+      return "frame-ancestors";
+    case CSPDirectiveName::Unknown:
+      NOTREACHED();
+      return "";
+  };
+}
+
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
+WebContentSecurityPolicyDirective ConvertToPublic(
+    network::mojom::blink::CSPDirectivePtr directive) {
+  return {ConvertToPublic(directive->name),
+          ConvertToPublic(std::move(directive->source_list))};
+}
+
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
+WebContentSecurityPolicy ConvertToPublic(
+    network::mojom::blink::ContentSecurityPolicyPtr policy) {
+  WebVector<WebContentSecurityPolicyDirective> directives(
+      policy->directives.size());
+  for (size_t i = 0; i < directives.size(); ++i)
+    directives[i] = ConvertToPublic(std::move(policy->directives[i]));
+  return {policy->header->type,         policy->header->source,
+          std::move(directives),        std::move(policy->report_endpoints),
+          policy->header->header_value, policy->use_reporting_api};
+}
+
 }  // namespace
 
 LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
@@ -477,7 +550,8 @@ void LocalFrameClientImpl::BeginNavigation(
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
-    WebContentSecurityPolicyList initiator_csp,
+    WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp,
+    network::mojom::blink::CSPSourcePtr initiator_self_source,
     network::mojom::IPAddressSpace initiator_address_space,
     mojo::PendingRemote<mojom::blink::NavigationInitiator>
         navigation_initiator) {
@@ -497,7 +571,14 @@ void LocalFrameClientImpl::BeginNavigation(
       should_check_main_world_content_security_policy;
   navigation_info->blob_url_token = blob_url_token.PassPipe();
   navigation_info->input_start = input_start_time;
-  navigation_info->initiator_csp = std::move(initiator_csp);
+  for (auto& policy : initiator_csp) {
+    navigation_info->initiator_csp.emplace_back(
+        ConvertToPublic(std::move(policy)));
+  }
+  if (initiator_self_source) {
+    navigation_info->initiator_self_source =
+        ConvertToPublic(std::move(initiator_self_source));
+  }
   navigation_info->initiator_address_space = initiator_address_space;
   navigation_info->navigation_initiator_handle =
       navigation_initiator.PassPipe();
@@ -873,12 +954,6 @@ void LocalFrameClientImpl::DidSetFramePolicyHeaders(
   }
 }
 
-void LocalFrameClientImpl::DidAddContentSecurityPolicies(
-    const blink::WebVector<WebContentSecurityPolicy>& policies) {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidAddContentSecurityPolicies(policies);
-}
-
 void LocalFrameClientImpl::DidChangeFrameOwnerProperties(
     HTMLFrameOwnerElement* frame_element) {
   if (!web_frame_->Client())
@@ -959,11 +1034,6 @@ WebTextCheckClient* LocalFrameClientImpl::GetTextCheckerClient() const {
 std::unique_ptr<blink::WebURLLoaderFactory>
 LocalFrameClientImpl::CreateURLLoaderFactory() {
   return web_frame_->Client()->CreateURLLoaderFactory();
-}
-
-service_manager::InterfaceProvider*
-LocalFrameClientImpl::GetInterfaceProvider() {
-  return web_frame_->Client()->GetInterfaceProvider();
 }
 
 blink::BrowserInterfaceBrokerProxy&

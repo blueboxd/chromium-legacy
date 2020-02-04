@@ -12,7 +12,9 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -32,13 +34,20 @@ PrefService* GetActivePrefService() {
 }  // namespace
 
 // static
-void TouchDevicesController::RegisterProfilePrefs(
-    PrefRegistrySimple* registry) {
+void TouchDevicesController::RegisterProfilePrefs(PrefRegistrySimple* registry,
+                                                  bool for_test) {
   registry->RegisterBooleanPref(
       prefs::kTapDraggingEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kTouchpadEnabled, true);
   registry->RegisterBooleanPref(prefs::kTouchscreenEnabled, true);
+  if (for_test) {
+    registry->RegisterBooleanPref(
+        prefs::kNaturalScroll,
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kNaturalScrollDefault),
+        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  }
 }
 
 TouchDevicesController::TouchDevicesController() {

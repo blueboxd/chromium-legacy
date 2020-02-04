@@ -17,14 +17,9 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [8, 308, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='target3'",
-          "rect": [8, 388, 100, 20],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

@@ -36,8 +36,6 @@ constexpr int kPlusIconLargestSize = 72;
 class DropTargetView::PlusIconView : public views::ImageView {
  public:
   PlusIconView() {
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
     set_can_process_events_within_subtree(false);
     SetVerticalAlignment(views::ImageView::Alignment::kCenter);
     SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
@@ -49,7 +47,7 @@ class DropTargetView::PlusIconView : public views::ImageView {
 };
 
 DropTargetView::DropTargetView(bool has_plus_icon) {
-  background_view_ = new views::View();
+  background_view_ = AddChildView(std::make_unique<views::View>());
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetColor(kDropTargetBackgroundColor);
   background_view_->layer()->SetOpacity(kDropTargetBackgroundOpacity);
@@ -58,12 +56,9 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
   background_view_->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(corner_radius));
   background_view_->layer()->SetIsFastRoundedCorner(true);
-  AddChildView(background_view_);
 
-  if (has_plus_icon) {
-    plus_icon_ = new PlusIconView();
-    AddChildView(plus_icon_);
-  }
+  if (has_plus_icon)
+    plus_icon_ = AddChildView(std::make_unique<PlusIconView>());
 
   SetBorder(views::CreateRoundedRectBorder(
       kDropTargetBorderThickness, corner_radius, kDropTargetBorderColor));

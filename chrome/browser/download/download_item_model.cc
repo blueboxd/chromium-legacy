@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -741,7 +742,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
               &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
               delegate->GetWeakPtr(), download_->GetId()),
           safe_browsing::DeepScanningRequest::DeepScanTrigger::
-              TRIGGER_APP_PROMPT);
+              TRIGGER_APP_PROMPT,
+          {safe_browsing::DeepScanningRequest::DeepScanType::SCAN_MALWARE});
       break;
   }
 }

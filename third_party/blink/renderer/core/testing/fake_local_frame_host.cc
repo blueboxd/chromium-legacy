@@ -35,6 +35,8 @@ void FakeLocalFrameHost::UnregisterProtocolHandler(const WTF::String& scheme,
 
 void FakeLocalFrameHost::DidDisplayInsecureContent() {}
 
+void FakeLocalFrameHost::DidAddContentSecurityPolicies(
+    WTF::Vector<::network::mojom::blink::ContentSecurityPolicyPtr>) {}
 void FakeLocalFrameHost::DidContainInsecureFormAction() {}
 
 void FakeLocalFrameHost::DocumentAvailableInMainFrame(

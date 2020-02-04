@@ -59,10 +59,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace blink {
 
 class Agent;
@@ -281,11 +277,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   }
 
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
-
-  // DEPRECATED. Please use GetBrowserInterfaceBroker() instead.
-  virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
-    return nullptr;
-  }
 
   virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
 

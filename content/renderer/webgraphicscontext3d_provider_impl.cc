@@ -110,8 +110,6 @@ WebGraphicsContext3DProviderImpl::GetWebglPreferences() const {
       } else {
         prefs.anti_aliasing_mode = blink::kAntialiasingModeUnspecified;
       }
-    } else if (gpu_feature_info.IsWorkaroundEnabled(WEBGL_MSAA_IS_BROKEN)) {
-      prefs.anti_aliasing_mode = blink::kAntialiasingModeNone;
     }
 
     // Set default context limits for WebGL.

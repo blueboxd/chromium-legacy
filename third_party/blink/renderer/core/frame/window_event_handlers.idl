@@ -48,6 +48,7 @@
     [RuntimeEnabled=Portals] attribute EventHandler onportalactivate;
     attribute EventHandler onrejectionhandled;
     attribute EventHandler onstorage;
+    [RuntimeEnabled=TimeZoneChangeEvent] attribute EventHandler ontimezonechange;
     attribute EventHandler onunhandledrejection;
     attribute EventHandler onunload;
 };

@@ -21,9 +21,11 @@ import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.find_in_page.FindInPageBridge;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
@@ -47,6 +49,7 @@ public final class TabImpl extends ITab.Stub {
 
     private ProfileImpl mProfile;
     private WebContents mWebContents;
+    private WebContentsObserver mWebContentsObserver;
     private TabCallbackProxy mTabCallbackProxy;
     private NavigationControllerImpl mNavigationController;
     private DownloadCallbackProxy mDownloadCallbackProxy;
@@ -122,6 +125,16 @@ public final class TabImpl extends ITab.Stub {
         };
         mWebContents.initialize("", mViewAndroidDelegate, new InternalAccessDelegateImpl(),
                 windowAndroid, WebContents.createDefaultInternalsHolder());
+
+        mWebContentsObserver = new WebContentsObserver() {
+            @Override
+            public void didStartNavigation(NavigationHandle navigationHandle) {
+                if (navigationHandle.isInMainFrame() && !navigationHandle.isSameDocument()) {
+                    hideFindInPageUiAndNotifyClient();
+                }
+            }
+        };
+        mWebContents.addObserver(mWebContentsObserver);
     }
 
     public ProfileImpl getProfile() {
@@ -193,6 +206,7 @@ public final class TabImpl extends ITab.Stub {
                 mNativeTab, TabImpl.this, topControlsContainerViewHandle);
         mWebContents.onShow();
     }
+
     /**
      * Called when this TabImpl is no longer the active TabImpl.
      */
@@ -339,6 +353,7 @@ public final class TabImpl extends ITab.Stub {
 
         try {
             if (mFindInPageCallbackClient != null) mFindInPageCallbackClient.onFindEnded();
+            mFindInPageCallbackClient = null;
         } catch (RemoteException e) {
             throw new AndroidRuntimeException(e);
         }
@@ -423,6 +438,7 @@ public final class TabImpl extends ITab.Stub {
         hideFindInPageUiAndNotifyClient();
         mFindInPageCallbackClient = null;
         mNavigationController = null;
+        mWebContents.removeObserver(mWebContentsObserver);
         TabImplJni.get().deleteTab(mNativeTab);
         mNativeTab = 0;
     }

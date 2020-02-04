@@ -55,7 +55,7 @@ ArcTermsOfServiceScreen::~ArcTermsOfServiceScreen() {
   }
 }
 
-void ArcTermsOfServiceScreen::Show() {
+void ArcTermsOfServiceScreen::ShowImpl() {
   if (!view_)
     return;
 
@@ -63,7 +63,7 @@ void ArcTermsOfServiceScreen::Show() {
   view_->Show();
 }
 
-void ArcTermsOfServiceScreen::Hide() {
+void ArcTermsOfServiceScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

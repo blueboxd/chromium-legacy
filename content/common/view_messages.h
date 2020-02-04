@@ -185,9 +185,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
 
 // Sent from an inactive renderer for the browser to route to the active
 // renderer, instructing it to close.
-//
-// TODO(http://crbug.com/419087): Move this thing to Frame as it's a signal
-// from a swapped out frame to the mainframe of the frame tree.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
 
 // Indicates that the current page has been closed, after a ClosePage

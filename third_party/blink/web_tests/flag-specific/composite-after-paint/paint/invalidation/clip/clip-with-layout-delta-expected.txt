@@ -12,7 +12,7 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
           "reason": "chunk disappeared"
         },

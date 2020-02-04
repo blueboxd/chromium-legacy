@@ -166,6 +166,12 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
     api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                   &texture_service_id_, &dst_layout);
     api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
+    // Base on the spec, the glSignalSemaphoreEXT() call just inserts signal
+    // semaphore command in the gl context. It may or may not flush the context
+    // which depends on the impelemntation. So to make it safe, we always call
+    // glFlush() here. If the implementation does flush in the
+    // glSignalSemaphoreEXT() call, the glFlush() call should be a noop.
+    api()->glFlushFn();
   }
 
   backing_impl()->EndAccess(readonly, std::move(semaphore_handle),

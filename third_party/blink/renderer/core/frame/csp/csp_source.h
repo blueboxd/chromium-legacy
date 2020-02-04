@@ -65,7 +65,7 @@ class CORE_EXPORT CSPSource final : public GarbageCollected<CSPSource> {
   static bool FirstSubsumesSecond(const HeapVector<Member<CSPSource>>&,
                                   const HeapVector<Member<CSPSource>>&);
 
-  WebContentSecurityPolicySourceExpression ExposeForNavigationalChecks() const;
+  network::mojom::blink::CSPSourcePtr ExposeForNavigationalChecks() const;
 
   void Trace(blink::Visitor*);
 

@@ -17,8 +17,8 @@ class MockArcTermsOfServiceScreen : public ArcTermsOfServiceScreen {
                               const ScreenExitCallback& exit_callback);
   ~MockArcTermsOfServiceScreen() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD0(ShowImpl, void());
+  MOCK_METHOD0(HideImpl, void());
 
   void ExitScreen(Result result);
 };

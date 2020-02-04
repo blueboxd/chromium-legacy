@@ -4420,10 +4420,14 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       V_VT(result) = VT_BSTR;
       V_BSTR(result) = GetFontNameAttributeAsBSTR();
       break;
-    case UIA_FontSizeAttributeId:
-      V_VT(result) = VT_R8;
-      V_R8(result) = GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize);
+    case UIA_FontSizeAttributeId: {
+      base::Optional<float> font_size_in_points = GetFontSizeInPoints();
+      if (font_size_in_points) {
+        V_VT(result) = VT_R8;
+        V_R8(result) = *font_size_in_points;
+      }
       break;
+    }
     case UIA_FontWeightAttributeId:
       V_VT(result) = VT_I4;
       V_I4(result) = GetFloatAttribute(ax::mojom::FloatAttribute::kFontWeight);

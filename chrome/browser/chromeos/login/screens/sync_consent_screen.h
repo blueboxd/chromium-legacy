@@ -64,10 +64,6 @@ class SyncConsentScreen : public BaseScreen,
                     const base::RepeatingClosure& exit_callback);
   ~SyncConsentScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 
@@ -96,6 +92,10 @@ class SyncConsentScreen : public BaseScreen,
   SyncConsentScreenTestDelegate* GetDelegateForTesting() const;
 
  private:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   // Returns new SyncScreenBehavior value.
   SyncScreenBehavior GetSyncScreenBehavior() const;
 
@@ -127,9 +127,6 @@ class SyncConsentScreen : public BaseScreen,
   // Primary user ind his Profile (if screen is shown).
   const user_manager::User* user_ = nullptr;
   Profile* profile_ = nullptr;
-
-  // True when screen is shown.
-  bool shown_ = false;
 
   base::Optional<bool> test_sync_disabled_by_policy_;
   base::Optional<bool> test_sync_engine_initialized_;

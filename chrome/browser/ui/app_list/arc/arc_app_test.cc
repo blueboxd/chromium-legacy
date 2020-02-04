@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -99,8 +100,8 @@ void ArcAppTest::SetUp(Profile* profile) {
         profile_);
   }
   arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
-  arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
-      std::make_unique<arc::ArcSessionRunner>(
+  arc_session_manager_ =
+      arc::CreateTestArcSessionManager(std::make_unique<arc::ArcSessionRunner>(
           base::BindRepeating(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::SetUiEnabledForTesting(false);

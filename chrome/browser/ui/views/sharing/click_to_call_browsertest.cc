@@ -98,10 +98,10 @@ class ClickToCallBrowserTest : public BaseClickToCallBrowserTest {
 // TODO(himanshujaju): Add UI checks.
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_TelLink_SingleDeviceAvailable) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
   Init(sync_pb::SharingSpecificFields::UNKNOWN,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(0u, devices.size());
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -144,10 +144,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
     return;
   }
 
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
 
   // Disable syncing preferences which is necessary for Sharing.
@@ -164,10 +164,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_TelLink_MultipleDevicesAvailable) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
-       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
+       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(2u, devices.size());
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -197,10 +197,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_HighlightedText_MultipleDevicesAvailable) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
-       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
+       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(2u, devices.size());
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_TelLink_Histograms) {
   base::HistogramTester histograms;
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
 
   // Trigger a context menu for a link with 8 digits and 9 characters.
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_TelLink_Histograms) {
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_HighlightedText_Histograms) {
   base::HistogramTester histograms;
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
 
   // Trigger a context menu for a selection with 8 digits and 9 characters.
@@ -366,10 +366,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
 
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -418,10 +418,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
 
   base::RunLoop run_loop;
@@ -443,10 +443,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
 // TODO(himanshujaju) - Add chromeos test for same flow.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, LeftClick_ChooseDevice) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
 
   base::RunLoop run_loop;
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, LeftClick_ChooseDevice) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, OpenNewTabAndShowBubble) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
 
   // Open tab to different origin.
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, OpenNewTabAndShowBubble) {
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, NavigateDifferentOrigin) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
 
   base::RunLoop run_loop;
@@ -622,7 +622,7 @@ class ClickToCallBrowserTestDetectionV2 : public BaseClickToCallBrowserTest {
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTestDetectionV2,
                        ContextMenu_HighlightedText_Histograms) {
   base::HistogramTester histograms;
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,
        sync_pb::SharingSpecificFields::UNKNOWN);
 
   // Trigger a context menu for a selection with 8 digits and 9 characters.

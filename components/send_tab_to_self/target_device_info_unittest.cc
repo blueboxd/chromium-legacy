@@ -40,7 +40,7 @@ static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
           {"vapid_fcm_token", "vapid_p256dh", "vapid_auth_secret"},
           {"sender_id_fcm_token", "sender_id_p256dh", "sender_id_auth_secret"},
           std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
-              sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
+              sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2}));
 }
 
 }  // namespace

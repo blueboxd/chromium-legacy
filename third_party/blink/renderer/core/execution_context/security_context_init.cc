@@ -63,7 +63,7 @@ SecurityContextInit::SecurityContextInit(const DocumentInit& initializer) {
   InitializeFeaturePolicy(initializer);
 
   // Initialize document policy.
-  document_policy_ = initializer.GetDocumentPolicy();
+  InitializeDocumentPolicy(initializer);
 
   // Initialize the agent. Depends on security origin.
   InitializeAgent(initializer);
@@ -260,6 +260,19 @@ void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
   }
 }
 
+void SecurityContextInit::InitializeDocumentPolicy(
+    const DocumentInit& initializer) {
+  // Because Document-Policy http header is parsed in DocumentLoader,
+  // when origin trial context is not initialized yet.
+  // Needs to filter out features that are not in origin trial after
+  // we have origin trial information available.
+  for (const auto& entry : initializer.GetDocumentPolicy()) {
+    if (!DisabledByOriginTrial(entry.first, this)) {
+      document_policy_.insert(entry);
+    }
+  }
+}
+
 void SecurityContextInit::InitializeFeaturePolicy(
     const DocumentInit& initializer) {
   initialized_feature_policy_state_ = true;
@@ -341,9 +354,7 @@ std::unique_ptr<FeaturePolicy> SecurityContextInit::CreateFeaturePolicy()
 
 std::unique_ptr<DocumentPolicy> SecurityContextInit::CreateDocumentPolicy()
     const {
-  if (!document_policy_)
-    return nullptr;
-  return DocumentPolicy::CreateWithHeaderPolicy(document_policy_.value());
+  return DocumentPolicy::CreateWithHeaderPolicy(document_policy_);
 }
 
 void SecurityContextInit::InitializeSecureContextMode(

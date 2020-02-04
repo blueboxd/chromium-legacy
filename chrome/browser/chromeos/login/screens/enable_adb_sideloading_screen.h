@@ -27,11 +27,6 @@ class EnableAdbSideloadingScreen : public BaseScreen {
                              const base::RepeatingClosure& exit_callback);
   ~EnableAdbSideloadingScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   // Called by EnableAdbSideloadingHandler.
   void OnViewDestroyed(EnableAdbSideloadingScreenView* view);
 
@@ -39,6 +34,11 @@ class EnableAdbSideloadingScreen : public BaseScreen {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   base::RepeatingClosure* exit_callback() { return &exit_callback_; }
 
  private:

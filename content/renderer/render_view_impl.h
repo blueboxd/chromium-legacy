@@ -87,20 +87,9 @@ class CreateViewParams;
 // the owner of it. Thus a tab may have multiple RenderViewImpls, one for the
 // main frame, and one for each other frame tree generated.
 //
-// The RenderViewImpl manages a WebView object from blink, which hosts the
-// web page and a blink frame tree. If the main frame (root of the tree) is
-// a local frame for this view, then it also manages a RenderWidget for the
-// main frame.
-//
-// The main distinction between RenderView and RenderWidget is that the
-// RenderView holds synchronized state across all processes participating in the
-// frame tree, whereas the RenderWidget holds per-root-frame state.
-//
-// TODO(419087): Currently even though the RenderViewImpl "manages" the
-// RenderWidget, the RenderWidget owns the RenderViewImpl. This is due to
-// RenderViewImpl historically being a subclass of RenderWidget. Breaking
-// the ownership relation will require moving the RenderWidget to the main
-// frame and updating all the blink objects to understand the lifetime changes.
+// When the main frame is part of this RenderViewImpl's frame tree, then this
+// object acts as the RenderWidgetDelegate for that frame's RenderWidget. Other
+// RenderWidgets would have a null RenderWidgetDelegate.
 class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                                       public IPC::Listener,
                                       public RenderWidgetDelegate,
@@ -301,11 +290,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // be able to specify |initial_setting| where IPC handlers do not.
   void ApplyPageVisibilityState(PageVisibilityState visibility_state,
                                 bool initial_setting);
-
-  // Closes the main frame RenderWidget.
-  // TODO(crbug.com/419087): Move ownership of the RenderWidget to
-  // RenderFrameImpl.
-  void CloseMainFrameRenderWidget();
 
  private:
   // For unit tests.

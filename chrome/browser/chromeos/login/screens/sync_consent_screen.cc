@@ -73,7 +73,7 @@ SyncConsentScreen::~SyncConsentScreen() {
   view_->Bind(NULL);
 }
 
-void SyncConsentScreen::Show() {
+void SyncConsentScreen::ShowImpl() {
   user_ = user_manager::UserManager::Get()->GetPrimaryUser();
   profile_ = ProfileHelper::Get()->GetProfileByUser(user_);
 
@@ -84,7 +84,6 @@ void SyncConsentScreen::Show() {
     return;
   }
 
-  shown_ = true;
   if (behavior_ != SyncScreenBehavior::SHOW) {
     // Wait for updates and set the loading throbber to be visible.
     view_->SetThrobberVisible(true /*visible*/);
@@ -98,8 +97,7 @@ void SyncConsentScreen::Show() {
   view_->Show();
 }
 
-void SyncConsentScreen::Hide() {
-  shown_ = false;
+void SyncConsentScreen::HideImpl() {
   sync_service_observer_.RemoveAll();
   view_->Hide();
 }
@@ -188,7 +186,7 @@ void SyncConsentScreen::UpdateScreen() {
   const SyncScreenBehavior old_behavior = behavior_;
   behavior_ = new_behavior;
 
-  if (!shown_ || behavior_ == old_behavior)
+  if (is_hidden() || behavior_ == old_behavior)
     return;
 
   // Screen is shown and behavior has changed.

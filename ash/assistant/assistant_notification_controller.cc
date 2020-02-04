@@ -145,7 +145,6 @@ void AssistantNotificationController::OnUiVisibilityChanged(
         model_.AddOrUpdateNotification(std::move(update));
       }
       break;
-    case AssistantVisibility::kHidden:
     case AssistantVisibility::kClosed:
       // When the Assistant UI is no longer visible to the user we remove any
       // notifications of type |kInAssistant| as this type of notification does

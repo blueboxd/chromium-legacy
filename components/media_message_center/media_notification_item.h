@@ -24,6 +24,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
   // The name of the histogram used when recording user actions.
   static const char kUserActionHistogramName[];
 
+  // The name of the histogram used when recording user actions for Cast
+  // notifications.
+  static const char kCastUserActionHistogramName[];
+
   // The name of the histogram used when recording the source.
   static const char kSourceHistogramName[];
 

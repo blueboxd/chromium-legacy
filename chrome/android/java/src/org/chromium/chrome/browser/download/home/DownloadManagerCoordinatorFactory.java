@@ -29,7 +29,7 @@ public class DownloadManagerCoordinatorFactory {
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
             ModalDialogManager modalDialogManager) {
-        Profile profile = Profile.getMainProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
         LegacyDownloadProvider legacyProvider =
                 config.useNewDownloadPath ? null : new LegacyDownloadProviderImpl();
         return new DownloadManagerCoordinatorImpl(activity, config, new PrefetchEnabledSupplier(),

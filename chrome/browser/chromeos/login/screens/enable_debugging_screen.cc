@@ -34,12 +34,12 @@ void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {
     view_ = nullptr;
 }
 
-void EnableDebuggingScreen::Show() {
+void EnableDebuggingScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void EnableDebuggingScreen::Hide() {
+void EnableDebuggingScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

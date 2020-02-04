@@ -42,14 +42,14 @@ void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   view_ = nullptr;
 }
 
-void RecommendAppsScreen::Show() {
+void RecommendAppsScreen::ShowImpl() {
   view_->Show();
 
   recommend_apps_fetcher_ = RecommendAppsFetcher::Create(this);
   recommend_apps_fetcher_->Start();
 }
 
-void RecommendAppsScreen::Hide() {
+void RecommendAppsScreen::HideImpl() {
   view_->Hide();
 }
 

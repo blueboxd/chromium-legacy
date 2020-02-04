@@ -710,7 +710,7 @@ TEST_P(HotseatAppListControllerImplTest,
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
       shelf->shelf_widget()->GetWindowBoundsInScreen()));
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen()));
+      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
@@ -721,7 +721,7 @@ TEST_P(HotseatAppListControllerImplTest,
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
       shelf->shelf_widget()->GetWindowBoundsInScreen()));
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen()));
+      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
 }
 
 // The test parameter indicates whether the shelf should auto-hide. In either

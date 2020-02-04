@@ -30,7 +30,7 @@ MarketingOptInScreen::~MarketingOptInScreen() {
   view_->Bind(nullptr);
 }
 
-void MarketingOptInScreen::Show() {
+void MarketingOptInScreen::ShowImpl() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   // Skip the screen if:
   //   1) the feature is disabled, or
@@ -47,7 +47,7 @@ void MarketingOptInScreen::Show() {
   prefs->SetBoolean(prefs::kOobeMarketingOptInScreenFinished, true);
 }
 
-void MarketingOptInScreen::Hide() {
+void MarketingOptInScreen::HideImpl() {
   view_->Hide();
 }
 void MarketingOptInScreen::OnAllSet(bool play_communications_opt_in,

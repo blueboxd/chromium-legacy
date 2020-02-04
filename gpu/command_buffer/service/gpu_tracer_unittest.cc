@@ -56,8 +56,8 @@ class GPUTracerTester : public GPUTracer {
     gpu_timing_client_->SetCpuTimeForTesting(base::BindRepeating(&FakeCpuTime));
 
     // Force tracing to be dependent on our mock variable here.
-    gpu_trace_srv_category = &tracing_enabled_;
-    gpu_trace_dev_category = &tracing_enabled_;
+    gpu_trace_srv_category_ = &tracing_enabled_;
+    gpu_trace_dev_category_ = &tracing_enabled_;
   }
 
   ~GPUTracerTester() override = default;

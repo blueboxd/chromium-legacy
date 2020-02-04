@@ -1313,6 +1313,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
   void DidFocusFrame() override;
+  void DidAddContentSecurityPolicies(
+      std::vector<network::mojom::ContentSecurityPolicyPtr> policies) override;
   void EnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
@@ -1623,8 +1625,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
-  void DidAddContentSecurityPolicies(
-      std::vector<network::mojom::ContentSecurityPolicyPtr> policies) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

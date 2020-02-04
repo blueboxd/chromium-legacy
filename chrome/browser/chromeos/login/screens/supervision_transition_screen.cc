@@ -23,12 +23,12 @@ SupervisionTransitionScreen::~SupervisionTransitionScreen() {
     view_->Unbind();
 }
 
-void SupervisionTransitionScreen::Show() {
+void SupervisionTransitionScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void SupervisionTransitionScreen::Hide() {
+void SupervisionTransitionScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

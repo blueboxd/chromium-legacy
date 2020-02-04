@@ -53,7 +53,6 @@ suite('PluginVmPage', function() {
     pluginVmBrowserProxy = new TestPluginVmBrowserProxy();
     settings.PluginVmBrowserProxyImpl.instance_ = pluginVmBrowserProxy;
     PolymerTest.clearBody();
-    page = document.createElement('settings-plugin-vm-page');
 
     routes = [];
 
@@ -72,40 +71,54 @@ suite('PluginVmPage', function() {
     settings.routes = preTestSettingsRoutes;
   });
 
-  test('ImageExistsLink', function() {
-    page.prefs = {
-      plugin_vm: {
-        image_exists: {value: true},
-      }
-    };
-    document.body.appendChild(page);
-    Polymer.dom.flush();
+  function setUpPluginVmPage({allowedByPolicy, vmImageExists}) {
+    loadTimeData.overrideValues({allowPluginVm: allowedByPolicy});
 
-    const button = page.$$('cr-icon-button');
-    assertTrue(!!button);
+    page = document.createElement('settings-plugin-vm-page');
+    page.prefs = {plugin_vm: {image_exists: {value: vmImageExists}}};
+    document.body.appendChild(page);
+
+    Polymer.dom.flush();
+  }
+
+  test('PolicyEnabledAndImageExists', function() {
+    setUpPluginVmPage({allowedByPolicy: true, vmImageExists: true});
+
+    assertEquals(page.$$('#enable'), null);
 
     assertDeepEquals(routes, []);
-    button.click();
+    page.$$('#navigate-to-subpage').click();
     assertDeepEquals(routes, ['TEST_PLUGIN_VM_DETAILS_ROUTE']);
   });
 
-  test('ImageDoesntExist', function() {
-    page.prefs = {
-      plugin_vm: {
-        image_exists: {value: false},
-      }
-    };
-    document.body.appendChild(page);
-    Polymer.dom.flush();
+  test('PolicyEnabledAndImageDoesntExist', function() {
+    setUpPluginVmPage({allowedByPolicy: true, vmImageExists: false});
 
-    const button = page.$$('cr-button');
-    assertTrue(!!button);
+    assertEquals(page.$$('#navigate-to-subpage'), null);
 
     assertEquals(
         0, pluginVmBrowserProxy.getCallCount('requestPluginVmInstallerView'));
-    button.click();
+    page.$$('#enable').click();
     assertEquals(
         1, pluginVmBrowserProxy.getCallCount('requestPluginVmInstallerView'));
+  });
+
+  test('PolicyDisabledAndImageExists', function() {
+    setUpPluginVmPage({allowedByPolicy: false, vmImageExists: true});
+
+    assertEquals(page.$$('#enable'), null);
+
+    assertDeepEquals(routes, []);
+    page.$$('#navigate-to-subpage').click();
+    assertDeepEquals(routes, ['TEST_PLUGIN_VM_DETAILS_ROUTE']);
+  });
+
+  test('PolicyDisabledAndImageDoesntExist', function() {
+    setUpPluginVmPage({allowedByPolicy: false, vmImageExists: false});
+
+    assertEquals(page.$$('#navigate-to-subpage'), null);
+
+    assertTrue(page.$$('#enable').disabled);
   });
 });
 

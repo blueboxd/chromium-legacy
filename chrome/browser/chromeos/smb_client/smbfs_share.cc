@@ -23,22 +23,22 @@ constexpr char kMountDirPrefix[] = "smbfs-";
 SmbMountResult MountErrorToMountResult(smbfs::mojom::MountError mount_error) {
   switch (mount_error) {
     case smbfs::mojom::MountError::kOk:
-      return SmbMountResult::SUCCESS;
+      return SmbMountResult::kSuccess;
     case smbfs::mojom::MountError::kTimeout:
-      return SmbMountResult::ABORTED;
+      return SmbMountResult::kAborted;
     case smbfs::mojom::MountError::kInvalidUrl:
-      return SmbMountResult::INVALID_URL;
+      return SmbMountResult::kInvalidUrl;
     case smbfs::mojom::MountError::kInvalidOptions:
-      return SmbMountResult::INVALID_OPERATION;
+      return SmbMountResult::kInvalidOperation;
     case smbfs::mojom::MountError::kNotFound:
-      return SmbMountResult::NOT_FOUND;
+      return SmbMountResult::kNotFound;
     case smbfs::mojom::MountError::kAccessDenied:
-      return SmbMountResult::AUTHENTICATION_FAILED;
+      return SmbMountResult::kAuthenticationFailed;
     case smbfs::mojom::MountError::kInvalidProtocol:
-      return SmbMountResult::UNSUPPORTED_DEVICE;
+      return SmbMountResult::kUnsupportedDevice;
     case smbfs::mojom::MountError::kUnknown:
     default:
-      return SmbMountResult::UNKNOWN_FAILURE;
+      return SmbMountResult::kUnknownFailure;
   }
 }
 
@@ -123,7 +123,7 @@ void SmbFsShare::OnMountDone(MountCallback callback,
 
   file_manager::VolumeManager::Get(profile_)->AddSmbFsVolume(
       host_->mount_path(), display_name_);
-  std::move(callback).Run(SmbMountResult::SUCCESS);
+  std::move(callback).Run(SmbMountResult::kSuccess);
 }
 
 void SmbFsShare::OnDisconnected() {

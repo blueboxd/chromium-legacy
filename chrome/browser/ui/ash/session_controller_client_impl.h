@@ -92,6 +92,7 @@ class SessionControllerClientImpl
   void UserAddedToSession(const user_manager::User* added_user) override;
 
   // user_manager::UserManager::Observer
+  void LocalStateChanged(user_manager::UserManager* user_manager) override;
   void OnUserImageChanged(const user_manager::User& user) override;
 
   // session_manager::SessionManagerObserver:

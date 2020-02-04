@@ -118,10 +118,11 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
         }
 
         FeatureHighlightProvider.getInstance().buildForView(activity, anchor, titleId,
-                FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteTitle1,
-                descId, FeatureHighlightProvider.TextAlignment.CENTER,
-                R.style.TextAppearance_WhiteBody, innerBackgroundColor, finalOuterColor,
-                finalScrimColor, FeatureHighlightProvider.NO_TIMEOUT, tapToDismiss,
+                FeatureHighlightProvider.TextAlignment.CENTER,
+                R.style.TextAppearance_TextLarge_Primary_Light, descId,
+                FeatureHighlightProvider.TextAlignment.CENTER,
+                R.style.TextAppearance_TextMedium_Primary_Light, innerBackgroundColor,
+                finalOuterColor, finalScrimColor, FeatureHighlightProvider.NO_TIMEOUT, tapToDismiss,
                 completeRunnable);
     }
 

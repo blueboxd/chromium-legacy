@@ -14,7 +14,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
+      "name": "LayoutNGBlockFlow (positioned) SPAN class='child'",
       "position": [50, 50],
       "bounds": [50, 50],
       "contentsOpaque": true,

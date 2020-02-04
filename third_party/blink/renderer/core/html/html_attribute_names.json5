@@ -248,6 +248,7 @@
     "onsuspend",
     "onsubmit",
     "ontimeupdate",
+    "ontimezonechange",
     "ontoggle",
     "ontouchstart",
     "ontouchmove",

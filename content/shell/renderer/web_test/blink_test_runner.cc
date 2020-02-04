@@ -716,15 +716,22 @@ void BlinkTestRunner::CaptureDump(
   CaptureDumpComplete();
 }
 
-void BlinkTestRunner::DidCommitNavigationInMainFrame() {
+void BlinkTestRunner::DidCommitNavigationInMainFrame(bool is_secondary_window) {
   WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
   if (!waiting_for_reset_ || !main_frame->IsWebLocalFrame())
     return;
   GURL url = main_frame->ToWebLocalFrame()->GetDocumentLoader()->GetUrl();
   if (!url.IsAboutBlank())
     return;
+
+  // Avoid a situation where ResetDone is called twice, because
+  // ResetDone should be called once if a secondary renderer exists.
+  if (is_secondary_window)
+    return;
+
   waiting_for_reset_ = false;
-  Send(new BlinkTestHostMsg_ResetDone(routing_id()));
+
+  GetBlinkTestClientRemote().ResetDone();
 }
 
 // Private methods  -----------------------------------------------------------

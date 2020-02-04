@@ -202,6 +202,7 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
       info->cannot_freeze_reasons = freeze_details.GetFailureReasonStrings();
       resource_coordinator::DecisionDetails discard_details;
       info->cannot_discard_reasons = discard_details.GetFailureReasonStrings();
+      info->discard_reason = lifecycle_unit->GetDiscardReason();
       info->discard_count = lifecycle_unit->GetDiscardCount();
       info->utility_rank = rank++;
       const base::TimeTicks last_focused_time =

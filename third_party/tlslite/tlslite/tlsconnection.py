@@ -78,7 +78,7 @@ def _hexStringToNumber(s):
     s = s.replace(" ", "").replace("\n", "")
     if len(s) % 2 != 0:
         raise ValueError("Length is not even")
-    return bytesToNumber(bytearray(s.decode("hex")))
+    return bytesToNumber(bytearray.fromhex(s))
 
 class DHE_RSAKeyExchange(KeyExchange):
     # 2048-bit MODP Group (RFC 3526, Section 3)
@@ -1817,7 +1817,7 @@ class TLSConnection(TLSRecordLayer):
         try:
             premasterSecret = \
                 keyExchange.processClientKeyExchange(clientKeyExchange)
-        except TLSLocalAlert, alert:
+        except alert as TLSLocalAlert:
             for result in self._sendError(alert.description, alert.message):
                 yield result
 

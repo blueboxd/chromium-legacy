@@ -30,6 +30,9 @@
   "clipboardWrite": {
     "partial": "permissions/clipboard_write.html"
   },
+  "declarativeNetRequestFeedback": {
+    "partial": "permissions/declarative_net_request_feedback.html"
+  },
   "experimental": {
     "partial": "permissions/experimental.html"
   },

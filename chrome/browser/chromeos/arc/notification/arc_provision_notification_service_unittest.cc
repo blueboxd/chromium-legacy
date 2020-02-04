@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -47,7 +48,7 @@ class ArcProvisionNotificationServiceTest : public BrowserWithTestWindowTest {
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
 
     // This creates |profile()|, so it has to come after the arc managers.

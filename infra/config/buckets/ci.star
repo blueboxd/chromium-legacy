@@ -1,4 +1,4 @@
-load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'goma', 'os', 'xcode_cache')
 load('//lib/ci.star', 'ci')
 
 # Defaults that apply to all branch versions of the bucket
@@ -25,12 +25,6 @@ exec('//versioned/trunk/buckets/ci.star')
 # *** After this point everything is trunk only ***
 ci.defaults.bucket.set('ci')
 ci.defaults.triggered_by.set(['master-gitiles-trigger'])
-
-
-XCODE_IOS_11_CACHE = swarming.cache(
-    name = 'xcode_ios_11a1027',
-    path = 'xcode_ios_11a1027.app',
-)
 
 
 # Builders are sorted first lexicographically by the function used to define
@@ -1077,7 +1071,7 @@ ci.fyi_coverage_builder(
 
 ci.fyi_coverage_builder(
     name = 'ios-simulator-code-coverage',
-    caches = [XCODE_IOS_11_CACHE],
+    caches = [xcode_cache.x11m382q],
     cores = None,
     goma_backend = None,  # TODO(crbug.com/950413): Use goma.backend.RBE_PROD
     os = os.MAC_ANY,

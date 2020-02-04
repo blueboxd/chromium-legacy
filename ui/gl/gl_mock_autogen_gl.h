@@ -916,6 +916,8 @@ MOCK_METHOD1(MatrixLoadIdentityEXT, void(GLenum matrixMode));
 MOCK_METHOD1(MaxShaderCompilerThreadsKHR, void(GLuint count));
 MOCK_METHOD1(MemoryBarrierByRegion, void(GLbitfield barriers));
 MOCK_METHOD1(MemoryBarrierEXT, void(GLbitfield barriers));
+MOCK_METHOD3(MemoryObjectParameterivEXT,
+             void(GLuint memoryObject, GLenum pname, const GLint* param));
 MOCK_METHOD1(MinSampleShading, void(GLfloat value));
 MOCK_METHOD4(MultiDrawArraysANGLE,
              void(GLenum mode,

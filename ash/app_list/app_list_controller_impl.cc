@@ -838,9 +838,6 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       // changed to visible by this point.
       presenter_.SetViewVisibility(true);
       break;
-    case AssistantVisibility::kHidden:
-      NOTREACHED();
-      break;
     case AssistantVisibility::kClosed:
       if (!IsShowingEmbeddedAssistantUI())
         break;

@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -60,7 +61,7 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
 
     BrowserWithTestWindowTest::SetUp();

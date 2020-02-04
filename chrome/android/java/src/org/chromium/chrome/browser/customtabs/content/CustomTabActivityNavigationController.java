@@ -196,7 +196,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
      * Handles back button navigation.
      */
     public boolean navigateOnBack() {
-        if (!mChromeBrowserInitializer.hasNativeInitializationCompleted()) return false;
+        if (!mChromeBrowserInitializer.isFullBrowserInitialized()) return false;
 
         RecordUserAction.record("CustomTabs.SystemBack");
         if (mTabProvider.getTab() == null) return false;

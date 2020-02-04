@@ -112,9 +112,10 @@ class ErrorScreen : public BaseScreen,
   void DoShow();
   void DoHide();
 
-  // BaseScreen overrides:
-  void Show() override;
-  void Hide() override;
+ protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
  private:

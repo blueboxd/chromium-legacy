@@ -145,6 +145,11 @@ class UkmPageLoadMetricsObserver
   // Max decoded body length of JS resources in bytes.
   int64_t js_max_decoded_bytes_ = 0;
 
+  // Network data use broken down by resource type.
+  int64_t image_total_bytes_ = 0;
+  int64_t image_subframe_bytes_ = 0;
+  int64_t media_bytes_ = 0;
+
   // Network quality estimates.
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;

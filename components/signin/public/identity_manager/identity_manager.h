@@ -18,6 +18,7 @@
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_mutator.h"
 #include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
@@ -161,19 +162,25 @@ class IdentityManager : public KeyedService,
   void RemoveObserver(Observer* observer);
 
   // Provides access to the core information of the user's primary account.
+  // The primary account may or may not be blessed with the sync consent.
   // Returns an empty struct if no such info is available, either because there
-  // is no primary account yet or because the user signed out. A non-empty
-  // struct implies that the user has blessed this account for sync (see
-  // ./README.md).
-  CoreAccountInfo GetPrimaryAccountInfo() const;
+  // is no primary account yet or because the user signed out or the |consent|
+  // level required |ConsentLevel::kSync| was not granted.
+  // Returns a non-empty struct if the primary account exists and was granted
+  // the required consent level.
+  // TODO(1046746): Update (./README.md).
+  CoreAccountInfo GetPrimaryAccountInfo(
+      ConsentLevel consent = ConsentLevel::kSync) const;
 
   // Provides access to the account ID of the user's primary account. Simple
   // convenience wrapper over GetPrimaryAccountInfo().account_id.
-  CoreAccountId GetPrimaryAccountId() const;
+  CoreAccountId GetPrimaryAccountId(
+      ConsentLevel consent = ConsentLevel::kSync) const;
 
-  // Returns whether the user's primary account is available. True implies that
-  // the user has blessed this account for sync (see ./README.md).
-  bool HasPrimaryAccount() const;
+  // Returns whether the user's primary account is available. If consent is
+  // |ConsentLevel::kSyn| then true implies that the user has blessed this
+  // account for sync.
+  bool HasPrimaryAccount(ConsentLevel consent = ConsentLevel::kSync) const;
 
   // Provides access to the core information of the user's unconsented primary
   // account (see ./README.md). Returns an empty info, if there is no such

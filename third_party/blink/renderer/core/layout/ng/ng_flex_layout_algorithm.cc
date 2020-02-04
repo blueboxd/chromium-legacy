@@ -293,6 +293,7 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
                                          child_style.GetWritingMode(),
                                          /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item, &space_builder);
+  space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
   space_builder.SetIsPaintedAtomically(true);
 
   if (ShouldItemShrinkToFit(flex_item))

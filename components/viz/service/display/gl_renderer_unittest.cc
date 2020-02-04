@@ -1463,7 +1463,20 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   renderer.SetVisible(true);
 
   gfx::Size viewport_size(100, 100);
+  {
+    // Draw one black frame to make sure the output surface is reshaped before
+    // testes.
+    int root_pass_id = 1;
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorBLACK);
+    root_pass->damage_rect = gfx::Rect(viewport_size);
 
+    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+    DrawFrame(&renderer, viewport_size);
+    gl->reset_discarded();
+  }
   {
     // Partial frame, should not discard.
     int root_pass_id = 1;
@@ -1708,6 +1721,21 @@ class GLRendererSkipTest : public GLRendererTest {
     renderer_->SetVisible(true);
   }
 
+  void DrawBlackFrame(const gfx::Size& viewport_size) {
+    EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(1);
+
+    int root_pass_id = 1;
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    root_pass->damage_rect = gfx::Rect(viewport_size);
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorBLACK);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    DrawFrame(renderer_.get(), viewport_size);
+    Mock::VerifyAndClearExpectations(gl_);
+  }
+
   StrictMock<DrawElementsGLES2Interface>* gl_;
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
@@ -1718,11 +1746,14 @@ class GLRendererSkipTest : public GLRendererTest {
 };
 
 TEST_F(GLRendererSkipTest, DrawQuad) {
-  EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(1);
-
   gfx::Size viewport_size(100, 100);
   gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
 
+  // Draw the a black frame to make sure output surface is reshaped before
+  // tests.
+  DrawBlackFrame(viewport_size);
+
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(1);
   int root_pass_id = 1;
   RenderPass* root_pass = cc::AddRenderPass(
       &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
@@ -1737,6 +1768,10 @@ TEST_F(GLRendererSkipTest, DrawQuad) {
 TEST_F(GLRendererSkipTest, SkipVisibleRect) {
   gfx::Size viewport_size(100, 100);
   gfx::Rect quad_rect = gfx::Rect(0, 0, 40, 40);
+
+  // Draw the a black frame to make sure output surface is reshaped before
+  // tests.
+  DrawBlackFrame(viewport_size);
 
   int root_pass_id = 1;
   RenderPass* root_pass = cc::AddRenderPass(
@@ -1759,10 +1794,15 @@ TEST_F(GLRendererSkipTest, SkipClippedQuads) {
   gfx::Size viewport_size(100, 100);
   gfx::Rect quad_rect = gfx::Rect(25, 25, 90, 90);
 
+  // Draw the a black frame to make sure output surface is reshaped before
+  // tests.
+  DrawBlackFrame(viewport_size);
+
   int root_pass_id = 1;
-  RenderPass* root_pass = cc::AddRenderPass(
-      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-      gfx::Transform(), cc::FilterOperations());
+
+  auto* root_pass = cc::AddRenderPass(&render_passes_in_draw_order_,
+                                      root_pass_id, gfx::Rect(viewport_size),
+                                      gfx::Transform(), cc::FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 25, 25);
   cc::AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
   root_pass->quad_list.front()->rect = gfx::Rect(20, 20, 20, 20);
@@ -2826,8 +2866,32 @@ class GLRendererPartialSwapTest : public GLRendererTest {
     gfx::Rect root_pass_output_rect(80, 80);
     gfx::Rect root_pass_damage_rect(2, 2, 3, 3);
 
+    // Draw one black frame to make sure the output surface is reshaped before
+    // tests.
+    EXPECT_CALL(*gl, Disable(GL_DEPTH_TEST)).Times(1);
+    EXPECT_CALL(*gl, Disable(GL_CULL_FACE)).Times(1);
+    EXPECT_CALL(*gl, Disable(GL_STENCIL_TEST)).Times(1);
+    EXPECT_CALL(*gl, Disable(GL_BLEND)).Times(2);
+    EXPECT_CALL(*gl, Enable(GL_BLEND)).Times(1);
+    EXPECT_CALL(*gl, Disable(GL_SCISSOR_TEST)).Times(1);
+    EXPECT_CALL(*gl, Scissor(0, 0, 0, 0)).Times(1);
+    if (set_draw_rectangle) {
+      EXPECT_CALL(*gl, Enable(GL_SCISSOR_TEST)).Times(1);
+      EXPECT_CALL(*gl, Scissor(0, 0, 100, 100)).Times(1);
+    }
+
+    int root_pass_id = 1;
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    root_pass->damage_rect = gfx::Rect(viewport_size);
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorBLACK);
+
+    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+    DrawFrame(&renderer, viewport_size);
+    Mock::VerifyAndClearExpectations(gl);
+
     for (int i = 0; i < 2; ++i) {
-      int root_pass_id = 1;
       RenderPass* root_pass = cc::AddRenderPassWithDamage(
           &render_passes_in_draw_order_, root_pass_id, root_pass_output_rect,
           root_pass_damage_rect, gfx::Transform(), cc::FilterOperations());
@@ -2844,14 +2908,9 @@ class GLRendererPartialSwapTest : public GLRendererTest {
       EXPECT_CALL(*gl, Scissor(0, 0, 0, 0));
 
       // Partial frame, we should use a scissor to swap only that part when
-      // partial swap is enabled. With SetDrawRectangle the first frame will
-      // have its damage expanded to cover the entire output rect.
-      bool draw_rectangle_needs_full_damage = set_draw_rectangle && (i == 0);
-      bool frame_has_partial_damage =
-          partial_swap && !draw_rectangle_needs_full_damage;
-      gfx::Rect output_rectangle = frame_has_partial_damage
-                                       ? root_pass_damage_rect
-                                       : gfx::Rect(viewport_size);
+      // partial swap is enabled.
+      gfx::Rect output_rectangle =
+          partial_swap ? root_pass_damage_rect : gfx::Rect(viewport_size);
 
       if (partial_swap || set_draw_rectangle) {
         EXPECT_CALL(*gl, Enable(GL_SCISSOR_TEST));
@@ -3252,6 +3311,23 @@ class CALayerGLRendererTest : public GLRendererTest {
     output_surface_.reset();
   }
 
+  void DrawBlackFrame(const gfx::Size& viewport_size) {
+    RenderPassId root_pass_id = 1;
+
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorBLACK);
+
+    renderer().DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+
+    DrawFrame(&renderer(), viewport_size);
+    renderer().SwapBuffers(DirectRenderer::SwapFrameData());
+    renderer().SwapBuffersComplete();
+    Mock::VerifyAndClearExpectations(&gl());
+  }
+
   MockCALayerGLES2Interface& gl() const { return *gl_; }
   FakeRendererGL& renderer() const { return *renderer_; }
   FakeOutputSurface& output_surface() const { return *output_surface_; }
@@ -3267,6 +3343,9 @@ class CALayerGLRendererTest : public GLRendererTest {
 
 TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
   gfx::Size viewport_size(10, 10);
+
+  // Draw an empty frame to make sure output surface is reshaped before tests.
+  DrawBlackFrame(viewport_size);
 
   // This frame has a root pass with a RenderPassDrawQuad pointing to a child
   // pass that is at 1,2 to make it identifiable.
@@ -3348,6 +3427,9 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
 TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
   gfx::Size viewport_size(10, 10);
 
+  // Draw an empty frame to make sure output surface is reshaped before tests.
+  DrawBlackFrame(viewport_size);
+
   for (size_t subtest = 0; subtest < 3; ++subtest) {
     RenderPass* child_pass =
         cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(250, 250),
@@ -3404,6 +3486,9 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
 
 TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   gfx::Size viewport_size(300, 300);
+
+  // Draw an empty frame to make sure output surface is reshaped before tests.
+  DrawBlackFrame(viewport_size);
 
   // This frame has a root pass with a RenderPassDrawQuad pointing to a child
   // pass that is at 1,2 to make it identifiable.
@@ -3556,6 +3641,9 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
 
 TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   gfx::Size viewport_size(300, 300);
+
+  // Draw an empty frame to make sure output surface is reshaped before tests.
+  DrawBlackFrame(viewport_size);
 
   // This frame has a root pass with a RenderPassDrawQuad pointing to a child
   // pass that is at 1,2 to make it identifiable.
@@ -3836,6 +3924,9 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
 TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
   gfx::Size viewport_size(300, 300);
 
+  // Draw an empty frame to make sure output surface is reshaped before tests.
+  DrawBlackFrame(viewport_size);
+
   // Each frame has a root pass with a RenderPassDrawQuad pointing to a child
   // pass. We generate a bunch of frames and swap them, each with a different
   // child RenderPass id, without getting any of the resources back from the OS.
@@ -3961,6 +4052,9 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
 
 TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
   gfx::Size viewport_size(300, 300);
+
+  // Draw an empty frame to make sure output surface is reshaped before tests.
+  DrawBlackFrame(viewport_size);
 
   // Each frame has a root pass with a RenderPassDrawQuad pointing to a child
   // pass. We generate a bunch of frames and swap them, each with a different

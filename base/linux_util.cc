@@ -16,18 +16,15 @@
 #include <iomanip>
 #include <memory>
 
-#include "base/command_line.h"
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
-#include "base/memory/singleton.h"
+#include "base/files/scoped_file.h"
 #include "base/no_destructor.h"
-#include "base/process/launch.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -90,10 +87,10 @@ class DistroNameGetter {
 };
 #endif  // !defined(OS_CHROMEOS)
 
-}  // namespace
-
 // Account for the terminating null character.
-static const int kDistroSize = 128 + 1;
+constexpr int kDistroSize = 128 + 1;
+
+}  // namespace
 
 // We use this static string to hold the Linux distro info. If we
 // crash, the crash handler code will send this in the crash dump.
@@ -125,7 +122,7 @@ std::string GetLinuxDistro() {
 #if !defined(OS_CHROMEOS)
   // We do this check only once per process. If it fails, there's
   // little reason to believe it will work if we attempt to run it again.
-  static base::NoDestructor<DistroNameGetter> distro_name_getter;
+  static NoDestructor<DistroNameGetter> distro_name_getter;
 #endif
   return g_linux_distro;
 }
@@ -160,29 +157,27 @@ bool GetThreadsForProcess(pid_t pid, std::vector<pid_t>* tids) {
 
 pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
                               bool* syscall_supported) {
-  if (syscall_supported != nullptr)
+  if (syscall_supported)
     *syscall_supported = false;
 
   std::vector<pid_t> tids;
   if (!GetThreadsForProcess(pid, &tids))
     return -1;
 
-  std::unique_ptr<char[]> syscall_data(new char[expected_data.length()]);
+  std::vector<char> syscall_data(expected_data.size());
   for (pid_t tid : tids) {
     char buf[256];
     snprintf(buf, sizeof(buf), "/proc/%d/task/%d/syscall", pid, tid);
-    int fd = open(buf, O_RDONLY);
-    if (fd < 0)
-      continue;
-    if (syscall_supported != nullptr)
-      *syscall_supported = true;
-    bool read_ret = ReadFromFD(fd, syscall_data.get(), expected_data.length());
-    close(fd);
-    if (!read_ret)
+    ScopedFD fd(open(buf, O_RDONLY));
+    if (!fd.is_valid())
       continue;
 
-    if (0 == strncmp(expected_data.c_str(), syscall_data.get(),
-                     expected_data.length())) {
+    *syscall_supported = true;
+    if (!ReadFromFD(fd.get(), syscall_data.data(), syscall_data.size()))
+      continue;
+
+    if (0 == strncmp(expected_data.c_str(), syscall_data.data(),
+                     expected_data.size())) {
       return tid;
     }
   }
@@ -190,8 +185,7 @@ pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
 }
 
 pid_t FindThreadID(pid_t pid, pid_t ns_tid, bool* ns_pid_supported) {
-  if (ns_pid_supported)
-    *ns_pid_supported = false;
+  *ns_pid_supported = false;
 
   std::vector<pid_t> tids;
   if (!GetThreadsForProcess(pid, &tids))
@@ -208,8 +202,8 @@ pid_t FindThreadID(pid_t pid, pid_t ns_tid, bool* ns_pid_supported) {
       StringPiece value_str(tokenizer.token_piece());
       if (!value_str.starts_with("NSpid"))
         continue;
-      if (ns_pid_supported)
-        *ns_pid_supported = true;
+
+      *ns_pid_supported = true;
       std::vector<StringPiece> split_value_str = SplitStringPiece(
           value_str, "\t", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
       DCHECK_GE(split_value_str.size(), 2u);

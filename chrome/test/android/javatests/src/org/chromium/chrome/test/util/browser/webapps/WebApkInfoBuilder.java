@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /** Builder class for {@link WebApkInfo} objects. */
@@ -58,6 +59,6 @@ public class WebApkInfoBuilder {
                 WebApkDistributor.BROWSER,
                 new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, null,
                 false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null,
-                mWebApkVersionCode);
+                new ArrayList<>() /* shortcutItems */, mWebApkVersionCode);
     }
 }

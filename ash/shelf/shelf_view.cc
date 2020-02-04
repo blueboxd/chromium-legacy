@@ -648,7 +648,8 @@ void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
       // scrollable shelf is not active, then we delegate the event to the
       // shelf.
       if (!chromeos::switches::ShouldShowScrollableShelf())
-        shelf_->ProcessMouseWheelEvent(event->AsMouseWheelEvent());
+        shelf_->ProcessMouseWheelEvent(event->AsMouseWheelEvent(),
+                                       /*from_touchpad=*/false);
       break;
     case ui::ET_MOUSE_PRESSED:
       if (!event->IsOnlyLeftMouseButton()) {
@@ -675,6 +676,12 @@ void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
+}
+
+void ShelfView::OnScrollEvent(ui::ScrollEvent* event) {
+  shelf_->ProcessScrollEvent(event);
+  if (!event->handled())
+    views::View::OnScrollEvent(event);
 }
 
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {

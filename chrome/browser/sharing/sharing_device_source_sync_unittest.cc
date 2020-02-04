@@ -165,11 +165,11 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceByGuid_SyncDisabled) {
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Ready) {
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
   auto device_info = CreateDeviceInfo(
-      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
   EXPECT_EQ(device_info->guid(), devices[0]->guid());
 }
@@ -177,13 +177,13 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Ready) {
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_NotReady) {
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/false);
   auto device_info = CreateDeviceInfo(
-      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info.get());
   // Local device needs to be ready for deduplication.
-  EXPECT_TRUE(
-      device_source
-          ->GetDeviceCandidates(sync_pb::SharingSpecificFields::CLICK_TO_CALL)
-          .empty());
+  EXPECT_TRUE(device_source
+                  ->GetDeviceCandidates(
+                      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2)
+                  .empty());
 }
 
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Deduplicated) {
@@ -192,30 +192,30 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Deduplicated) {
   // Add two devices with the same |client_name| without hardware info.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_1 = CreateDeviceInfo(
-      "client_name_1", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      "client_name_1", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_1.get());
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_2 = CreateDeviceInfo(
-      "client_name_1", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      "client_name_1", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_2.get());
 
   // Add two devices with the same hardware info.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_3 =
       CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_3.get());
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_4 =
       CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_4.get());
 
   // Add a device with the same info as the local device.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_5 = CreateDeviceInfo(
       local_device_info_->client_name(), local_device_info_->hardware_info(),
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_5.get());
 
   // Add a device with the local personalizable device name as client_name to
@@ -223,11 +223,11 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Deduplicated) {
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_6 =
       CreateDeviceInfo(syncer::GetPersonalizableDeviceNameBlocking(), {},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_6.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(2u, devices.size());
   EXPECT_EQ(device_info_4->guid(), devices[0]->guid());
   EXPECT_EQ(device_info_2->guid(), devices[1]->guid());
@@ -238,29 +238,29 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_DeviceNaming) {
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_1 = CreateDeviceInfo(
-      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_1.get());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_2 =
       CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_2.get());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_3 =
       CreateDeviceInfo("model 2", {"manufacturer 1", "model 2"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_3.get());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_4 =
       CreateDeviceInfo("model 1", {"manufacturer 2", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_4.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(4u, devices.size());
   EXPECT_EQ(
       send_tab_to_self::GetSharingDeviceNames(device_info_4.get()).short_name,
@@ -282,7 +282,7 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Expired) {
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
   auto device_info =
       CreateDeviceInfo("model 1", {"manufacturer 2", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info.get());
 
   // Forward time until device expires.
@@ -292,7 +292,7 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_Expired) {
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       device_source->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -302,13 +302,13 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_MissingRequirements) {
   // Create device in with Click to call feature.
   auto device_info =
       CreateDeviceInfo("model 1", {"manufacturer 2", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info.get());
 
   // Requires shared clipboard feature.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       device_source->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::SHARED_CLIPBOARD);
+          sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -321,7 +321,7 @@ TEST_F(SharingDeviceSourceSyncTest,
   fake_device_info_tracker_.Add(device_info.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
   EXPECT_EQ(device_info->guid(), devices[0]->guid());
 }
@@ -335,7 +335,7 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_RenameAfterFiltering) {
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_1 =
       CreateDeviceInfo("model 3", {"manufacturer 2", "model 3"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_1.get());
 
   // This device will be displayed with its short name.
@@ -343,25 +343,25 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_RenameAfterFiltering) {
       base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get()));
   auto device_info_2 =
       CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_2.get());
 
   // This device will be filtered out since click to call is not enabled.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_3 =
       CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"},
-                       sync_pb::SharingSpecificFields::SHARED_CLIPBOARD);
+                       sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2);
   fake_device_info_tracker_.Add(device_info_3.get());
 
   // This device will be displayed with its short name.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_4 =
       CreateDeviceInfo("model 2", {"manufacturer 2", "model 2"},
-                       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+                       sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   fake_device_info_tracker_.Add(device_info_4.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(2u, devices.size());
   EXPECT_EQ(device_info_4->guid(), devices[0]->guid());
   EXPECT_EQ(
@@ -378,11 +378,11 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_NoChannel) {
   auto device_info =
       CreateDeviceInfo("client_name", /*hardware_info=*/{},
                        /*vapid_target_info=*/{}, /*sender_id_target_info=*/{},
-                       {sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+                       {sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2});
   fake_device_info_tracker_.Add(device_info.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   EXPECT_TRUE(devices.empty());
 }
 
@@ -393,11 +393,11 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_FCMChannel) {
       CreateDeviceInfo("client_name", /*hardware_info=*/{},
                        {kVapidFCMToken, kDevicep256dh, kDeviceAuthSecret},
                        /*sender_id_target_info=*/{},
-                       {sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+                       {sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2});
   fake_device_info_tracker_.Add(device_info.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
   EXPECT_EQ(device_info->guid(), devices[0]->guid());
 }
@@ -413,11 +413,11 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_SenderIDChannel) {
       "client_name", /*hardware_info=*/{},
       /*vapid_target_info=*/{},
       {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
-      {sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+      {sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2});
   fake_device_info_tracker_.Add(device_info.get());
 
   auto devices = device_source->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2);
   ASSERT_EQ(1u, devices.size());
   EXPECT_EQ(device_info->guid(), devices[0]->guid());
 }

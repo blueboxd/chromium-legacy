@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {Route} from './router.m.js';
+
 /**
  * Specifies all possible routes in settings.
  *
@@ -131,4 +133,4 @@
  *   TRIGGERED_RESET_DIALOG: (undefined|!settings.Route),
  * }}
  */
-let SettingsRoutes;
+/* #export */ let SettingsRoutes;

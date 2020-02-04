@@ -12,6 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -41,6 +42,13 @@ struct Env {
     SetContentClient(test_content_client.get());
     SetBrowserClientForTesting(test_content_browser_client.get());
     CHECK(base::i18n::InitializeICU());
+
+    // Ensure the process ID that will be used for creating the appcache
+    // backend is registered with ChildProcessSecurityPolicy.  This avoids
+    // hitting DCHECKs that its associated
+    // ChildProcessSecurityPolicyImpl::Handle() is invalid.
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kProcessId,
+                                                       &test_browser_context);
   }
 
   void InitializeAppCacheService(
@@ -61,6 +69,7 @@ struct Env {
   std::unique_ptr<TestContentClient> test_content_client;
   std::unique_ptr<TestContentBrowserClient> test_content_browser_client;
   TestBrowserContext test_browser_context;
+  const int kProcessId = 1;
 
   // used by ICU integration.
   base::AtExitManager at_exit_manager;
@@ -143,7 +152,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
 
   mojo::Remote<blink::mojom::AppCacheBackend> host;
   SingletonEnv().appcache_service->CreateBackend(
-      /*process_id=*/1, /*routing_id=*/MSG_ROUTING_NONE,
+      SingletonEnv().kProcessId, /*routing_id=*/MSG_ROUTING_NONE,
       host.BindNewPipeAndPassReceiver());
 
   std::map<int, mojo::Remote<blink::mojom::AppCacheHost>> registered_hosts;

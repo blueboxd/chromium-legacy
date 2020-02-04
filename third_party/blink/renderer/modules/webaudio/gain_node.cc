@@ -65,7 +65,7 @@ void GainHandler::Process(uint32_t frames_to_process) {
   if (!IsInitialized() || !Input(0).IsConnected()) {
     output_bus->Zero();
   } else {
-    AudioBus* input_bus = Input(0).Bus();
+    scoped_refptr<AudioBus> input_bus = Input(0).Bus();
 
     if (gain_->HasSampleAccurateValues()) {
       // Apply sample-accurate gain scaling for precise envelopes, grain

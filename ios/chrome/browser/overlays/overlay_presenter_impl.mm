@@ -356,6 +356,11 @@ void OverlayPresenterImpl::QueuedRequestCancelled(
   CancelOverlayUIForRequest(request);
 }
 
+void OverlayPresenterImpl::OverlayRequestQueueDestroyed(
+    OverlayRequestQueueImpl* queue) {
+  queue->RemoveObserver(this);
+}
+
 #pragma mark - OverlayPresentationContextObserver
 
 void OverlayPresenterImpl::

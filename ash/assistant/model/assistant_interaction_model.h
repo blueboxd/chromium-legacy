@@ -24,7 +24,6 @@ class AssistantResponse;
 // Enumeration of interaction input modalities.
 enum class InputModality {
   kKeyboard,
-  kStylus,
   kVoice,
 };
 

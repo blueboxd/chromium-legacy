@@ -183,7 +183,7 @@ TEST_P(BackButtonTest, BackKeySequenceGenerated) {
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   ShelfNavigationWidget::TestApi navigation_widget_test_api(
-      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+      GetPrimaryShelf()->navigation_widget());
   // Wait for the navigation widget's animation.
   test_api()->RunMessageLoopUntilAnimationsDone(
       navigation_widget_test_api.GetBoundsAnimator());
@@ -239,7 +239,7 @@ TEST_P(BackButtonTest, NoContextMenuOnBackButton) {
 
   // Wait for the navigation widget's animation.
   ShelfNavigationWidget::TestApi navigation_widget_test_api(
-      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+      GetPrimaryShelf()->navigation_widget());
   test_api()->RunMessageLoopUntilAnimationsDone(
       navigation_widget_test_api.GetBoundsAnimator());
 
@@ -263,7 +263,7 @@ TEST_P(BackButtonVisibilityWithAccessibilityFeaturesTest,
   SetTestA11yFeatureEnabled(true /*enabled*/);
 
   ShelfNavigationWidget::TestApi test_api(
-      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+      GetPrimaryShelf()->navigation_widget());
   // Back button is not shown in clamshell.
   EXPECT_FALSE(test_api.IsBackButtonVisible());
 
@@ -281,7 +281,7 @@ TEST_P(BackButtonVisibilityWithAccessibilityFeaturesTest,
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   ShelfNavigationWidget::TestApi test_api(
-      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+      GetPrimaryShelf()->navigation_widget());
   // Back button is not shown in clamshell.
   EXPECT_FALSE(test_api.IsBackButtonVisible());
 

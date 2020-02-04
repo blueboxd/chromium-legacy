@@ -106,43 +106,43 @@ SmbMountResult TranslateErrorToMountResult(smbprovider::ErrorType error) {
 
   switch (error) {
     case smbprovider::ERROR_OK:
-      return SmbMountResult::SUCCESS;
+      return SmbMountResult::kSuccess;
     case smbprovider::ERROR_EXISTS:
     case smbprovider::ERROR_IN_USE:
-      return SmbMountResult::MOUNT_EXISTS;
+      return SmbMountResult::kMountExists;
     case smbprovider::ERROR_NOT_FOUND:
     case smbprovider::ERROR_NOT_A_DIRECTORY:
-      return SmbMountResult::NOT_FOUND;
+      return SmbMountResult::kNotFound;
     case smbprovider::ERROR_ACCESS_DENIED:
     case smbprovider::ERROR_SECURITY:
-      return SmbMountResult::AUTHENTICATION_FAILED;
+      return SmbMountResult::kAuthenticationFailed;
     case smbprovider::ERROR_SMB1_UNSUPPORTED:
-      return SmbMountResult::UNSUPPORTED_DEVICE;
+      return SmbMountResult::kUnsupportedDevice;
     case smbprovider::ERROR_INVALID_URL:
-      return SmbMountResult::INVALID_URL;
+      return SmbMountResult::kInvalidUrl;
     case smbprovider::ERROR_IO:
-      return SmbMountResult::IO_ERROR;
+      return SmbMountResult::kIoError;
     case smbprovider::ERROR_TOO_MANY_OPENED:
-      return SmbMountResult::TOO_MANY_OPENED;
+      return SmbMountResult::kTooManyOpened;
     case smbprovider::ERROR_NO_MEMORY:
     case smbprovider::ERROR_NO_SPACE:
-      return SmbMountResult::OUT_OF_MEMORY;
+      return SmbMountResult::kOutOfMemory;
     case smbprovider::ERROR_INVALID_OPERATION:
-      return SmbMountResult::INVALID_OPERATION;
+      return SmbMountResult::kInvalidOperation;
     case smbprovider::ERROR_ABORT:
-      return SmbMountResult::ABORTED;
+      return SmbMountResult::kAborted;
     case smbprovider::ERROR_DBUS_PARSE_FAILED:
-      return SmbMountResult::DBUS_PARSE_FAILED;
+      return SmbMountResult::kDbusParseFailed;
     case smbprovider::ERROR_NOT_A_FILE:
     case smbprovider::ERROR_NOT_EMPTY:
     case smbprovider::ERROR_FAILED:
-      return SmbMountResult::UNKNOWN_FAILURE;
+      return SmbMountResult::kUnknownFailure;
     default:
       break;
   }
 
   NOTREACHED();
-  return SmbMountResult::UNKNOWN_FAILURE;
+  return SmbMountResult::kUnknownFailure;
 }
 
 SmbMountResult TranslateErrorToMountResult(base::File::Error error) {

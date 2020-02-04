@@ -24,12 +24,13 @@ class AssistantOptInFlowScreen : public BaseScreen {
   // Called when view is destroyed so there's no dead reference to it.
   void OnViewDestroyed(AssistantOptInFlowScreenView* view_);
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   void SetSkipForTesting() { skip_for_testing_ = true; }
+
+ protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
 
  private:
   AssistantOptInFlowScreenView* view_;

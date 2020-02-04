@@ -860,9 +860,6 @@ void RenderViewHostImpl::OnRouteCloseEvent() {
   // This is only used when the RenderViewHost is not active, to signal to
   // the active RenderViewHost that JS has requested the page to close.
   //
-  // TODO(https://crbug.com/419087): Move to RenderFrameHost or
-  // RenderFrameProxyHost.
-  //
   // The delegate will route the close request to the active RenderViewHost.
   delegate_->RouteCloseEvent(this);
 }

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutInline (relative positioned) SPAN id='target'",
           "rect": [8, 8, 200, 100],
           "reason": "chunk disappeared"
         },

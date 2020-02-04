@@ -91,44 +91,90 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
                            kBackgroundType)));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
+  auto* content1_layer = ToLayoutBoxModelObject(content1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
+  auto* content2_layer = ToLayoutBoxModelObject(content2).Layer();
   auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
   auto chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
 
-  auto view_chunk_type = kDocumentBackgroundType;
-  auto chunk_background_type = DisplayItem::kLayerChunkBackground;
-  auto chunk_foreground_type =
-      DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren;
-  auto filler_chunk_type = DisplayItem::PaintPhaseToDrawingType(
-      PaintPhase::kSelfBlockBackgroundOnly);
-
   auto check_chunks = [&]() {
-    // Check that new paint chunks were forced for |container1| and
-    // |container2|.
-    EXPECT_THAT(
-        RootPaintController().PaintChunks(),
-        ElementsAre(
-            IsPaintChunk(0, 1, PaintChunk::Id(view_client, view_chunk_type),
-                         chunk_state),
-            IsPaintChunk(
-                1, 2, PaintChunk::Id(*container1_layer, chunk_background_type),
-                chunk_state),
-            IsPaintChunk(
-                2, 3, PaintChunk::Id(*container1_layer, chunk_foreground_type),
-                chunk_state),
-            IsPaintChunk(3, 4,
-                         PaintChunk::Id(*filler1_layer, filler_chunk_type),
-                         chunk_state),
-            IsPaintChunk(
-                4, 5, PaintChunk::Id(*container2_layer, chunk_background_type),
-                chunk_state),
-            IsPaintChunk(
-                5, 6, PaintChunk::Id(*container2_layer, chunk_foreground_type),
-                chunk_state),
-            IsPaintChunk(6, 7,
-                         PaintChunk::Id(*filler2_layer, filler_chunk_type),
-                         chunk_state)));
+    // Check that new paint chunks were forced for the layers.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      EXPECT_THAT(
+          RootPaintController().PaintChunks(),
+          ElementsAre(
+              IsPaintChunk(0, 1,
+                           PaintChunk::Id(view_client, kDocumentBackgroundType),
+                           chunk_state),
+              IsPaintChunk(1, 2,
+                           PaintChunk::Id(*container1_layer,
+                                          DisplayItem::kLayerChunkBackground),
+                           chunk_state),
+              IsPaintChunk(2, 3,
+                           PaintChunk::Id(*content1_layer,
+                                          DisplayItem::kLayerChunkWhole),
+                           chunk_state),
+              IsPaintChunk(
+                  3, 4,
+                  PaintChunk::Id(*filler1_layer, DisplayItem::kLayerChunkWhole),
+                  chunk_state),
+              IsPaintChunk(4, 5,
+                           PaintChunk::Id(*container2_layer,
+                                          DisplayItem::kLayerChunkBackground),
+                           chunk_state),
+              IsPaintChunk(5, 6,
+                           PaintChunk::Id(*content2_layer,
+                                          DisplayItem::kLayerChunkWhole),
+                           chunk_state),
+              IsPaintChunk(
+                  6, 7,
+                  PaintChunk::Id(*filler2_layer, DisplayItem::kLayerChunkWhole),
+                  chunk_state)));
+    } else {
+      DisplayItem::PaintPhaseToDrawingType(
+          PaintPhase::kSelfBlockBackgroundOnly);
+      EXPECT_THAT(
+          RootPaintController().PaintChunks(),
+          ElementsAre(
+              IsPaintChunk(0, 1,
+                           PaintChunk::Id(view_client, kDocumentBackgroundType),
+                           chunk_state),
+              IsPaintChunk(1, 2,
+                           PaintChunk::Id(*container1_layer,
+                                          DisplayItem::kLayerChunkBackground),
+                           chunk_state),
+              IsPaintChunk(
+                  2, 3,
+                  PaintChunk::Id(
+                      *container1_layer,
+                      DisplayItem::
+                          kLayerChunkNormalFlowAndPositiveZOrderChildren),
+                  chunk_state),
+              IsPaintChunk(
+                  3, 4,
+                  PaintChunk::Id(*filler1_layer,
+                                 DisplayItem::PaintPhaseToDrawingType(
+                                     PaintPhase::kSelfBlockBackgroundOnly)),
+                  chunk_state),
+              IsPaintChunk(4, 5,
+                           PaintChunk::Id(*container2_layer,
+                                          DisplayItem::kLayerChunkBackground),
+                           chunk_state),
+              IsPaintChunk(
+                  5, 6,
+                  PaintChunk::Id(
+                      *container2_layer,
+                      DisplayItem::
+                          kLayerChunkNormalFlowAndPositiveZOrderChildren),
+                  chunk_state),
+              IsPaintChunk(
+                  6, 7,
+                  PaintChunk::Id(*filler2_layer,
+                                 DisplayItem::PaintPhaseToDrawingType(
+                                     PaintPhase::kSelfBlockBackgroundOnly)),
+                  chunk_state)));
+    }
   };
 
   check_chunks();

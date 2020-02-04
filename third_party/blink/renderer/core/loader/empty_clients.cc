@@ -104,7 +104,8 @@ void EmptyLocalFrameClient::BeginNavigation(
     mojo::PendingRemote<mojom::blink::BlobURLToken>,
     base::TimeTicks,
     const String&,
-    WebContentSecurityPolicyList,
+    WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp,
+    network::mojom::blink::CSPSourcePtr initiator_csp_self,
     network::mojom::IPAddressSpace,
     mojo::PendingRemote<mojom::blink::NavigationInitiator>) {}
 

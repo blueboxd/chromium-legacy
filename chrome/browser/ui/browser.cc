@@ -64,6 +64,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
@@ -1736,6 +1737,9 @@ void Browser::WebContentsCreated(WebContents* source_contents,
 }
 
 void Browser::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("PortalsActive",
+                                                            "Enabled");
+
   TabHelpers::AttachTabHelpers(portal_web_contents);
 
   // Make the portal show up in the task manager.

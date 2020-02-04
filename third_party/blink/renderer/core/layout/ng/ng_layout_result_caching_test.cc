@@ -1060,7 +1060,6 @@ TEST_F(NGLayoutResultCachingTest, ChangeTableCellBlockSizeConstrainedness) {
   // height or not. We're only going to need simplified layout, though, since no
   // children will be affected by its height change.
   EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsSimplifiedLayout);
-  EXPECT_EQ(result.get(), nullptr);
 }
 
 TEST_F(NGLayoutResultCachingTest, OptimisticFloatPlacementNoRelayout) {
@@ -1501,6 +1500,57 @@ TEST_F(NGLayoutResultCachingTest, MissIsFixedBlockSizeIndefinite) {
   // cache.
   EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
   EXPECT_EQ(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, HitFlexBoxMeasureAndLayout) {
+  ScopedLayoutNGFlexBoxForTest layout_ng_flex_box(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div style="display: flex; flex-direction: column; width: 100px; height: 100px;">
+      <div id="src1" style="flex-grow: 0;">
+        <div style="height: 50px;"></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; width: 100px; height: 100px;">
+      <div id="src2" style="flex-grow: 1;">
+        <div style="height: 50px;"></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; width: 100px; height: 100px;">
+      <div id="test1" style="flex-grow: 2;">
+        <div style="height: 50px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  // "src1" only had one "measure" pass performed, and should hit the "measure"
+  // cache-slot for "test1".
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(space.CacheSlot(), NGCacheSlot::kMeasure);
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  // "src2" had both a "measure" and "layout" pass performed, and should hit
+  // the "layout" cache-slot for "test1".
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test1->CachedLayoutResult(space, nullptr, nullptr,
+                                     &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(space.CacheSlot(), NGCacheSlot::kLayout);
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
 }
 
 }  // namespace

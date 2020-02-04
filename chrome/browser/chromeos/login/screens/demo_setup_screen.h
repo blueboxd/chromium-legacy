@@ -28,16 +28,16 @@ class DemoSetupScreen : public BaseScreen {
                   const ScreenExitCallback& exit_callback);
   ~DemoSetupScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   // Called when view is being destroyed. If Screen is destroyed earlier
   // then it has to call Bind(nullptr).
   void OnViewDestroyed(DemoSetupScreenView* view);
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:

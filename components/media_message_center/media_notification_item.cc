@@ -11,6 +11,10 @@ const char MediaNotificationItem::kUserActionHistogramName[] =
     "Media.Notification.UserAction";
 
 // static
+const char MediaNotificationItem::kCastUserActionHistogramName[] =
+    "Media.Notification.Cast.UserAction";
+
+// static
 const char MediaNotificationItem::kSourceHistogramName[] =
     "Media.Notification.Source";
 

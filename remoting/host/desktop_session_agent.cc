@@ -407,13 +407,15 @@ void DesktopSessionAgent::OnStartSessionAgent(
   }
 
   // Start the video capturer and mouse cursor monitor.
-  video_capturer_ = desktop_environment_->CreateVideoCapturer();
+  video_capturer_ = std::make_unique<DesktopAndCursorConditionalComposer>(
+      desktop_environment_->CreateVideoCapturer());
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
       std::unique_ptr<webrtc::SharedMemoryFactory>(new SharedMemoryFactoryImpl(
           base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
-  mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
+  mouse_cursor_monitor_->Init(this,
+                              webrtc::MouseCursorMonitor::SHAPE_AND_POSITION);
   // Unretained is sound because callback will never be invoked once after
   // |keyboard_layout_monitor_| is destroyed.
   keyboard_layout_monitor_ = desktop_environment_->CreateKeyboardLayoutMonitor(
@@ -459,6 +461,17 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   SendToNetwork(
       std::make_unique<ChromotingDesktopNetworkMsg_MouseCursor>(*owned_cursor));
+
+  if (video_capturer_)
+    video_capturer_->SetMouseCursor(owned_cursor.release());
+}
+
+void DesktopSessionAgent::OnMouseCursorPosition(
+    const webrtc::DesktopVector& position) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (video_capturer_)
+    video_capturer_->SetMouseCursorPosition(position);
 }
 
 void DesktopSessionAgent::InjectClipboardEvent(
@@ -654,6 +667,10 @@ void DesktopSessionAgent::OnInjectMouseEvent(
     LOG(ERROR) << "Failed to parse protocol::MouseEvent.";
     return;
   }
+
+  if (video_capturer_)
+    video_capturer_->SetComposeEnabled(event.has_delta_x() ||
+                                       event.has_delta_y());
 
   // InputStub implementations must verify events themselves, so we don't need
   // verification here. This matches HostEventDispatcher.

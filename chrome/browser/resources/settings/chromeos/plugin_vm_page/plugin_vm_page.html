@@ -30,15 +30,21 @@
             </div>
           </div>
           <template is="dom-if" if="[[prefs.plugin_vm.image_exists.value]]">
-            <cr-icon-button class="subpage-arrow"
+            <cr-icon-button id="navigate-to-subpage"
+                class="subpage-arrow"
                 aria-label="i18n{pluginVmPageLabel}"
                 aria-describedby="secondaryText"
                 aria-roledescription="$i18n{subpageArrowRoleDescription}">
             </cr-icon-button>
           </template>
           <template is="dom-if" if="[[!prefs.plugin_vm.image_exists.value]]">
+            <template is="dom-if" if="[[!allowPluginVm_]]" restamp>
+              <cr-policy-indicator indicator-type="userPolicy">
+              </cr-policy-indicator>
+            </template>
             <div class="separator"></div>
             <cr-button id="enable"
+                disabled="[[!allowPluginVm_]]"
                 on-click="onEnableClick_"
                 aria-describedby="secondaryText">
               $i18n{pluginVmPageEnable}

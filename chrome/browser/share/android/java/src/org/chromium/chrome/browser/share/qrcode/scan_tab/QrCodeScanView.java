@@ -43,11 +43,19 @@ class QrCodeScanView {
         mView = new FrameLayout(context);
         mView.setLayoutParams(
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        mPermissionsView = (View) LayoutInflater.from(context).inflate(
+        mPermissionsView = createPermissionView(context, permissionPrompter);
+    }
+
+    public View getView() {
+        return mView;
+    }
+
+    private View createPermissionView(Context context, PermissionPrompter permissionPrompter) {
+        View permissionView = (View) LayoutInflater.from(context).inflate(
                 org.chromium.chrome.browser.share.qrcode.R.layout.qrcode_permission_layout, null,
                 false);
 
-        ButtonCompat cameraPermissionPrompt = mPermissionsView.findViewById(
+        ButtonCompat cameraPermissionPrompt = permissionView.findViewById(
                 org.chromium.chrome.browser.share.qrcode.R.id.ask_for_permission);
         cameraPermissionPrompt.setOnClickListener(new OnClickListener() {
             @Override
@@ -55,10 +63,7 @@ class QrCodeScanView {
                 permissionPrompter.promptForCameraPermission();
             }
         });
-    }
-
-    public View getView() {
-        return mView;
+        return permissionView;
     }
 
     /**
@@ -67,8 +72,10 @@ class QrCodeScanView {
      * @param hasCameraPermission Indicates whether camera permissions were granted.
      */
     public void cameraPermissionsChanged(Boolean hasCameraPermission) {
-        // No change, nothing to do here (This really shouldn't happen)
-        if (mHasCameraPermission == hasCameraPermission) {
+        // No change, nothing to do here
+        // We need to make sure mHasCameraPermission was not set to false already as that
+        // is the default value and therefore nothing will get rendered the first time.
+        if (mHasCameraPermission && hasCameraPermission) {
             return;
         }
         mHasCameraPermission = hasCameraPermission;

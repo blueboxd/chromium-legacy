@@ -20,8 +20,8 @@ class MockWelcomeScreen : public WelcomeScreen {
                     const base::RepeatingClosure& exit_callback);
   ~MockWelcomeScreen() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD0(ShowImpl, void());
+  MOCK_METHOD0(HideImpl, void());
   MOCK_METHOD1(SetConfiguration, void(base::Value* configuration));
 
   void ExitScreen();

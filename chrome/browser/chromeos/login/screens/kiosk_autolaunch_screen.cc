@@ -36,11 +36,11 @@ void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {
     view_ = NULL;
 }
 
-void KioskAutolaunchScreen::Show() {
+void KioskAutolaunchScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void KioskAutolaunchScreen::Hide() {}
+void KioskAutolaunchScreen::HideImpl() {}
 
 }  // namespace chromeos

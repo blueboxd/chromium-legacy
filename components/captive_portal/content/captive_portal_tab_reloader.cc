@@ -70,9 +70,17 @@ void CaptivePortalTabReloader::OnLoadStart(bool is_ssl) {
     SetState(STATE_TIMER_RUNNING);
 }
 
-void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
+void CaptivePortalTabReloader::OnLoadCommitted(
+    int net_error,
+    net::ResolveErrorInfo resolve_error_info) {
   provisional_main_frame_load_ = false;
   ssl_url_in_redirect_chain_ = false;
+
+  // There was a secure DNS network error, so maybe check for a captive portal.
+  if (resolve_error_info.is_secure_network_error) {
+    OnSecureDnsNetworkError();
+    return;
+  }
 
   if (state_ == STATE_NONE)
     return;
@@ -181,6 +189,19 @@ void CaptivePortalTabReloader::OnSlowSSLConnect() {
   SetState(STATE_MAYBE_BROKEN_BY_PORTAL);
 }
 
+void CaptivePortalTabReloader::OnSecureDnsNetworkError() {
+  if (state_ == STATE_NONE || state_ == STATE_TIMER_RUNNING) {
+    SetState(STATE_MAYBE_BROKEN_BY_PORTAL);
+    return;
+  }
+
+  if (state_ == STATE_NEEDS_RELOAD) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&CaptivePortalTabReloader::ReloadTabIfNeeded,
+                                  weak_factory_.GetWeakPtr()));
+  }
+}
+
 void CaptivePortalTabReloader::SetState(State new_state) {
   // Stop the timer even when old and new states are the same.
   if (state_ == STATE_TIMER_RUNNING) {
@@ -192,7 +213,8 @@ void CaptivePortalTabReloader::SetState(State new_state) {
   // Check for unexpected state transitions.
   switch (state_) {
     case STATE_NONE:
-      DCHECK(new_state == STATE_NONE || new_state == STATE_TIMER_RUNNING);
+      DCHECK(new_state == STATE_NONE || new_state == STATE_TIMER_RUNNING ||
+             new_state == STATE_MAYBE_BROKEN_BY_PORTAL);
       break;
     case STATE_TIMER_RUNNING:
       DCHECK(new_state == STATE_NONE ||

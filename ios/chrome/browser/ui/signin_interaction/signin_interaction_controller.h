@@ -64,10 +64,6 @@ typedef void (^SigninInteractionControllerCompletionCallback)(
 - (void)reAuthenticateWithCompletion:
     (SigninInteractionControllerCompletionCallback)completion;
 
-// Starts the flow to add an identity via ChromeIdentityInteractionManager.
-- (void)addAccountWithCompletion:
-    (SigninInteractionControllerCompletionCallback)completion;
-
 // Cancels any current process. Calls the completion callback when done.
 - (void)cancel;
 

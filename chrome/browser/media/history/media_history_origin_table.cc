@@ -21,12 +21,18 @@ sql::InitStatus MediaHistoryOriginTable::CreateTableIfNonExistent() {
   if (!CanAccessDatabase())
     return sql::INIT_FAILURE;
 
-  bool success =
-      DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
-                                       "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                       "origin TEXT NOT NULL UNIQUE)",
-                                       kTableName)
-                        .c_str());
+  bool success = DB()->Execute(
+      base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
+                         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                         "origin TEXT NOT NULL UNIQUE, "
+                         "last_updated_time_s INTEGER,"
+                         "has_media_engagement INTEGER, "
+                         "media_engagement_visits INTEGER,"
+                         "media_engagement_playbacks INTEGER,"
+                         "media_engagement_last_playback_time REAL,"
+                         "media_engagement_has_high_score INTEGER)",
+                         kTableName)
+          .c_str());
 
   if (!success) {
     ResetDB();
@@ -44,11 +50,14 @@ bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
 
   // Insert the origin into the table if it does not exist.
   sql::Statement statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE, base::StringPrintf("INSERT OR IGNORE INTO %s"
-                                        "(origin) VALUES (?)",
-                                        kTableName)
-                         .c_str()));
+      SQL_FROM_HERE,
+      base::StringPrintf("INSERT OR IGNORE INTO %s"
+                         "(origin, last_updated_time_s) VALUES (?, ?)",
+                         kTableName)
+          .c_str()));
   statement.BindString(0, origin);
+  statement.BindInt64(1,
+                      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
   if (!statement.Run()) {
     LOG(ERROR) << "Failed to create the origin ID.";
     return false;

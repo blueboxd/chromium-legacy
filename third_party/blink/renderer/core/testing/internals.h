@@ -279,6 +279,7 @@ class Internals final : public ScriptWrappable {
 
   Vector<AtomicString> userPreferredLanguages() const;
   void setUserPreferredLanguages(const Vector<String>&);
+  void setSystemTimeZone(const String&);
 
   unsigned mediaKeysCount();
   unsigned mediaKeySessionCount();

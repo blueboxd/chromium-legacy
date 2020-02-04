@@ -178,9 +178,9 @@ IN_PROC_BROWSER_TEST_F(FileURLLoaderFactoryBrowserTest, SymlinksToFiles) {
   // Get an absolute path since |temp_dir| can contain a symbolic link.
   base::FilePath absolute_temp_dir = AbsoluteFilePath(temp_dir.GetPath());
 
-  // MIME sniffing uses the symbolic link's path, so this needs to end in
-  // ".html" for it to be sniffed as HTML.
-  base::FilePath sym_link = absolute_temp_dir.AppendASCII("link.html");
+  // MIME sniffing should use the symbolic link's destination path, so despite
+  // not having a file extension of "html", this should be rendered as HTML.
+  base::FilePath sym_link = absolute_temp_dir.AppendASCII("link.bin");
   ASSERT_TRUE(
       base::CreateSymbolicLink(AbsoluteFilePath(TestFilePath()), sym_link));
 

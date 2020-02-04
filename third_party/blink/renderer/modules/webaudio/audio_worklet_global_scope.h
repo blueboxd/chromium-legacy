@@ -81,7 +81,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   // AudioWorkletProcessor, along with given AudioBuffer from the audio graph.
   bool Process(
       AudioWorkletProcessor*,
-      Vector<AudioBus*>* input_buses,
+      Vector<scoped_refptr<AudioBus>>* input_buses,
       Vector<AudioBus*>* output_buses,
       HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
 

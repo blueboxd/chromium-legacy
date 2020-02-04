@@ -29,6 +29,8 @@ class NetworkTrayView : public TrayItemView,
 
   NetworkTrayView(Shelf* shelf, ActiveNetworkIcon::Type type);
 
+  base::string16 GetAccessibleNameString() const;
+
   const char* GetClassName() const override;
 
   // views::View:

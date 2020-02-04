@@ -705,6 +705,23 @@ base::Optional<int> AXPlatformNodeBase::GetTableRowSpan() const {
   return delegate_->GetTableCellRowSpan();
 }
 
+base::Optional<float> AXPlatformNodeBase::GetFontSizeInPoints() const {
+  float font_size;
+  // Attribute has no default value.
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize, &font_size)) {
+    // The IA2 Spec requires the value to be in pt, not in pixels.
+    // There are 72 points per inch.
+    // We assume that there are 96 pixels per inch on a standard display.
+    // TODO(nektar): Figure out the current value of pixels per inch.
+    float points = font_size * 72.0 / 96.0;
+
+    // Round to the nearest 0.5 points.
+    points = std::round(points * 2.0) / 2.0;
+    return points;
+  }
+  return base::nullopt;
+}
+
 bool AXPlatformNodeBase::HasCaret() {
   if (IsInvisibleOrIgnored())
     return false;
@@ -1808,20 +1825,11 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
     attributes.push_back(std::make_pair("font-family", font_family));
   }
 
-  float font_size;
+  base::Optional<float> font_size_in_points = GetFontSizeInPoints();
   // Attribute has no default value.
-  if (GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize, &font_size)) {
-    // The IA2 Spec requires the value to be in pt, not in pixels.
-    // There are 72 points per inch.
-    // We assume that there are 96 pixels per inch on a standard display.
-    // TODO(nektar): Figure out the current value of pixels per inch.
-    float points = font_size * 72.0 / 96.0;
-
-    // Round to the nearest 0.5 points.
-    points = std::round(points * 2.0) / 2.0;
-
-    attributes.push_back(
-        std::make_pair("font-size", base::NumberToString(points) + "pt"));
+  if (font_size_in_points) {
+    attributes.push_back(std::make_pair(
+        "font-size", base::NumberToString(*font_size_in_points) + "pt"));
   }
 
   // TODO(nektar): Add Blink support for the following attributes:

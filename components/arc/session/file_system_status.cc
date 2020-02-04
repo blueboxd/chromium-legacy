@@ -16,7 +16,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/arc/session/arc_property_util.h"
 
 namespace arc {
 namespace {
@@ -25,10 +24,7 @@ constexpr const char kArcVmConfigJsonPath[] = "/usr/share/arcvm/config.json";
 constexpr const char kBuiltinPath[] = "/opt/google/vms/android";
 constexpr const char kDlcPath[] = "/run/imageloader/arcvm-dlc/package/root";
 constexpr const char kFstab[] = "fstab";
-constexpr const char kGeneratedPropertyFilesPath[] =
-    "/run/arcvm/host_generated";
 constexpr const char kKernel[] = "vmlinux";
-constexpr const char kPropertyFilesPath[] = "/usr/share/arcvm/properties";
 constexpr const char kRootFs[] = "system.raw.img";
 constexpr const char kVendorImage[] = "vendor.raw.img";
 
@@ -47,9 +43,6 @@ FileSystemStatus::FileSystemStatus()
       vendor_image_path_(SelectDlcOrBuiltin(base::FilePath(kVendorImage))),
       guest_kernel_path_(SelectDlcOrBuiltin(base::FilePath(kKernel))),
       fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))),
-      property_files_expanded_(
-          ExpandPropertyFiles(base::FilePath(kPropertyFilesPath),
-                              base::FilePath(kGeneratedPropertyFilesPath))),
       is_system_image_ext_format_(IsSystemImageExtFormat(system_image_path_)) {}
 
 // static
@@ -108,20 +101,6 @@ base::FilePath FileSystemStatus::SelectDlcOrBuiltin(
     return dlc_path;
   }
   return base::FilePath(kBuiltinPath).Append(file);
-}
-
-// static
-bool FileSystemStatus::ExpandPropertyFiles(const base::FilePath& source_path,
-                                           const base::FilePath& dest_path) {
-  CrosConfig config;
-  for (const char* file : {"default.prop", "build.prop"}) {
-    if (!ExpandPropertyFile(source_path.Append(file), dest_path.Append(file),
-                            &config)) {
-      LOG(ERROR) << "Failed to expand " << source_path.Append(file);
-      return false;
-    }
-  }
-  return true;
 }
 
 // static

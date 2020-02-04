@@ -36,11 +36,11 @@ void KioskEnableScreen::OnViewDestroyed(KioskEnableScreenView* view) {
     view_ = NULL;
 }
 
-void KioskEnableScreen::Show() {
+void KioskEnableScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void KioskEnableScreen::Hide() {}
+void KioskEnableScreen::HideImpl() {}
 
 }  // namespace chromeos

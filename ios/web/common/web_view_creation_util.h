@@ -24,6 +24,17 @@ class BrowserState;
 //
 WKWebView* BuildWKWebView(CGRect frame, BrowserState* browser_state);
 
+// Returns a new WKWebView that will not be used to display content.
+// This WKWebView can be used to fetch some data using the same cookie store
+// as the other WKWebView but cannot be presented to the user as some components
+// are not initialized (e.g. voice search).
+//
+// Preconditions for creation of a WKWebView:
+// 1) |browser_state| is not null.
+// 2) web::BrowsingDataPartition is synchronized.
+//
+WKWebView* BuildWKWebViewForQueries(BrowserState* browser_state);
+
 // Returns a new WKWebView for displaying regular web content.
 // The returned WKWebView is equivalent to the one created by |BuildWKWebView|
 // but a context menu recognizer is attached to it.

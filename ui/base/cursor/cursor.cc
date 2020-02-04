@@ -16,11 +16,12 @@ Cursor::Cursor(CursorType type) : native_type_(type) {}
 Cursor::Cursor(const Cursor& cursor)
     : native_type_(cursor.native_type_),
       platform_cursor_(cursor.platform_cursor_),
-      device_scale_factor_(cursor.device_scale_factor_),
-      custom_hotspot_(cursor.custom_hotspot_),
-      custom_bitmap_(cursor.custom_bitmap_) {
-  if (native_type_ == CursorType::kCustom)
+      device_scale_factor_(cursor.device_scale_factor_) {
+  if (native_type_ == CursorType::kCustom) {
+    custom_hotspot_ = cursor.custom_hotspot_;
+    custom_bitmap_ = cursor.custom_bitmap_;
     RefCustomCursor();
+  }
 }
 
 Cursor::~Cursor() {
@@ -69,9 +70,9 @@ bool Cursor::operator==(const Cursor& cursor) const {
   return native_type_ == cursor.native_type_ &&
          platform_cursor_ == cursor.platform_cursor_ &&
          device_scale_factor_ == cursor.device_scale_factor_ &&
-         custom_hotspot_ == cursor.custom_hotspot_ &&
          (native_type_ != CursorType::kCustom ||
-          gfx::BitmapsAreEqual(custom_bitmap_, cursor.custom_bitmap_));
+          (custom_hotspot_ == cursor.custom_hotspot_ &&
+           gfx::BitmapsAreEqual(custom_bitmap_, cursor.custom_bitmap_)));
 }
 
 void Cursor::operator=(const Cursor& cursor) {
@@ -81,11 +82,12 @@ void Cursor::operator=(const Cursor& cursor) {
     UnrefCustomCursor();
   native_type_ = cursor.native_type_;
   platform_cursor_ = cursor.platform_cursor_;
-  if (native_type_ == CursorType::kCustom)
+  if (native_type_ == CursorType::kCustom) {
     RefCustomCursor();
+    custom_hotspot_ = cursor.custom_hotspot_;
+    custom_bitmap_ = cursor.custom_bitmap_;
+  }
   device_scale_factor_ = cursor.device_scale_factor_;
-  custom_hotspot_ = cursor.custom_hotspot_;
-  custom_bitmap_ = cursor.custom_bitmap_;
 }
 
 }  // namespace ui

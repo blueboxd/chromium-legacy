@@ -87,3 +87,34 @@ copy("updater_install_script") {
   sources = [ "setup/.install.sh" ]
   outputs = [ "$root_build_dir/chrome/updater/.install.sh" ]
 }
+
+source_set("installer_sources") {
+  sources = [
+    "installer.h",
+    "installer.mm",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("updater_setup_tests") {
+  testonly = true
+
+  sources = [
+    "setup/setup_unittest.mm",
+  ]
+
+  data = [
+    "//chrome/test/data/updater/updater_setup_test_dmg.dmg",
+  ]
+
+  deps = [
+    ":installer_sources",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/common:constants",
+    "//testing/gtest",
+  ]
+}

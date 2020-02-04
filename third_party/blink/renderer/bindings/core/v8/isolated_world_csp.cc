@@ -113,7 +113,7 @@ class IsolatedWorldCSPDelegate final
   }
 
   void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) override {}
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>) override {}
 
  private:
   const Member<Document> document_;

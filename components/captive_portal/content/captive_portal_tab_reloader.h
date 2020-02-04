@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/captive_portal/content/captive_portal_service.h"
+#include "net/dns/public/resolve_error_info.h"
 
 namespace content {
 class WebContents;
@@ -85,15 +86,17 @@ class CaptivePortalTabReloader {
   // loads and for error pages.
   virtual void OnLoadStart(bool is_ssl);
 
-  // Called when the main frame is committed.  |net_error| will be net::OK in
-  // the case of a successful load.  For an errror page, the entire 3-step
+  // Called when the main frame is committed. |net_error| will be net::OK in
+  // the case of a successful load. |resolve_error_info| contains information
+  // about any hostname resolution error. For an error page, the entire 3-step
   // process of getting the error, starting a new provisional load for the error
   // page, and committing the error page is treated as a single commit.
   //
   // The Link Doctor page will typically be one OnLoadCommitted with an error
   // code, followed by another OnLoadCommitted with net::OK for the Link Doctor
   // page.
-  virtual void OnLoadCommitted(int net_error);
+  virtual void OnLoadCommitted(int net_error,
+                               net::ResolveErrorInfo resolve_error_info);
 
   // This is called when the current provisional main frame load is canceled.
   // Sets state to STATE_NONE, unless this is a login tab.
@@ -137,6 +140,9 @@ class CaptivePortalTabReloader {
   // Called by a timer when an SSL main frame provisional load is taking a
   // while to commit.
   void OnSlowSSLConnect();
+
+  // Called when a main frame loads with a secure DNS network error.
+  void OnSecureDnsNetworkError();
 
   // Reloads the tab if there's no provisional load going on and the current
   // state is STATE_NEEDS_RELOAD.  Not safe to call synchronously when called

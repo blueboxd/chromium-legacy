@@ -86,3 +86,7 @@ CastMediaNotificationProvider::GetNotificationItem(const std::string& id) {
 bool CastMediaNotificationProvider::HasItems() const {
   return !items_.empty();
 }
+
+size_t CastMediaNotificationProvider::GetItemCount() const {
+  return items_.size();
+}

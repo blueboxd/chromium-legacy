@@ -214,7 +214,10 @@ if (!is_android) {
       # The .grd contains references to generated files.
       source_is_generated = true
 
-      deps = [ "//chrome/browser/resources/settings:build" ]
+      deps = [
+        "//chrome/browser/resources/settings:build",
+        "//chrome/browser/resources/settings:build_polymer3",
+      ]
     } else {
       source = "settings/settings_resources.grd"
       deps = [ "//chrome/browser/resources/settings:polymer3_elements" ]

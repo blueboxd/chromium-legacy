@@ -976,7 +976,7 @@ TEST_P(ReorderOverlayOverflowControlsTest,
   EXPECT_FALSE(LayersPaintingOverlayOverflowControlsAfter(child));
 }
 
-TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
+TEST_P(PaintLayerTest, SubsequenceCachingStackedLayers) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative'>
       <div id='child1' style='position: relative'>

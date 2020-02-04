@@ -122,7 +122,8 @@ void CaptivePortalTabHelper::DidFinishNavigation(
   }
 
   if (navigation_handle->HasCommitted()) {
-    tab_reloader_->OnLoadCommitted(navigation_handle->GetNetErrorCode());
+    tab_reloader_->OnLoadCommitted(navigation_handle->GetNetErrorCode(),
+                                   navigation_handle->GetResolveErrorInfo());
   } else {
     tab_reloader_->OnAbort();
   }

@@ -60,7 +60,8 @@ class AccountManagerPolicyControllerTest
     auto* identity_test_env =
         identity_test_environment_adaptor_->identity_test_env();
     const AccountInfo primary_account_info =
-        identity_test_env->MakePrimaryAccountAvailable(kFakePrimaryUsername);
+        identity_test_env->MakeUnconsentedPrimaryAccountAvailable(
+            kFakePrimaryUsername);
     auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
     primary_account_id_ = AccountId::FromUserEmailGaiaId(
         primary_account_info.email, primary_account_info.gaia);
@@ -169,7 +170,7 @@ IN_PROC_BROWSER_TEST_P(
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
                 .GetGaiaId(),
-            identity_manager()->GetPrimaryAccountInfo().gaia);
+            identity_manager()->GetUnconsentedPrimaryAccountInfo().gaia);
   EXPECT_EQ(ProfileHelper::Get()
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
@@ -204,7 +205,7 @@ IN_PROC_BROWSER_TEST_P(
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
                 .GetGaiaId(),
-            identity_manager()->GetPrimaryAccountInfo().gaia);
+            identity_manager()->GetUnconsentedPrimaryAccountInfo().gaia);
   EXPECT_EQ(ProfileHelper::Get()
                 ->GetUserByProfile(profile())
                 ->GetAccountId()

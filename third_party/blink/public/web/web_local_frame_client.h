@@ -79,10 +79,6 @@
 #include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace blink {
 namespace mojom {
 enum class WebFeature : int32_t;
@@ -192,11 +188,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Returns a blame context for attributing work belonging to this frame.
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
 
-  // DEPRECATED. Please use GetBrowserInterfaceBroker() instead.
-  // Returns an InterfaceProvider the frame can use to request interfaces from
-  // the browser. This method may not return nullptr.
-  virtual service_manager::InterfaceProvider* GetInterfaceProvider();
-
   // Returns a BrowserInterfaceBrokerProxy the frame can use to request
   // interfaces from the browser.
   virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
@@ -273,13 +264,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       WebSandboxFlags flags,
       const ParsedFeaturePolicy& feature_policy_header,
       const DocumentPolicy::FeatureState& document_policy_header) {}
-
-  // Called when a new Content Security Policy is added to the frame's
-  // document.  This can be triggered by handling of HTTP headers, handling
-  // of <meta> element, or by inheriting CSP from the parent (in case of
-  // about:blank).
-  virtual void DidAddContentSecurityPolicies(
-      const WebVector<WebContentSecurityPolicy>& policies) {}
 
   // Some frame owner properties have changed for a child frame of this frame.
   // Frame owner properties currently include: scrolling, marginwidth and

@@ -76,8 +76,7 @@ void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
   // *   Going in reverse when the shelf has a back button, which implies that
   //     the widget is trying to loop back from the back button.
   if (GetFocusManager()->GetFocusedView() == this ||
-      (reverse &&
-       shelf()->shelf_widget()->navigation_widget()->GetBackButton())) {
+      (reverse && shelf()->navigation_widget()->GetBackButton())) {
     shelf()->shelf_focus_cycler()->FocusOut(reverse,
                                             SourceView::kShelfNavigationView);
   }

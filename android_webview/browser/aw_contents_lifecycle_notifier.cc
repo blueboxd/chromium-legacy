@@ -31,6 +31,13 @@ AwContentsLifecycleNotifier::AwContentsState CalcuateState(
 
 }  // namespace
 
+AwContentsLifecycleNotifier::AwContentsData::AwContentsData() = default;
+
+AwContentsLifecycleNotifier::AwContentsData::AwContentsData(
+    AwContentsData&& data) = default;
+
+AwContentsLifecycleNotifier::AwContentsData::~AwContentsData() = default;
+
 // static
 AwContentsLifecycleNotifier& AwContentsLifecycleNotifier::GetInstance() {
   static base::NoDestructor<AwContentsLifecycleNotifier> instance;
@@ -45,8 +52,7 @@ void AwContentsLifecycleNotifier::OnWebViewCreated(
   bool first_created = !HasAwContentsInstance();
   DCHECK(aw_contents_id_to_data_.find(id) == aw_contents_id_to_data_.end());
 
-  aw_contents_id_to_data_.insert(
-      std::make_pair(id, AwContentsLifecycleNotifier::AwContentsData()));
+  aw_contents_id_to_data_.emplace(id, AwContentsData());
   state_count_[ToIndex(AwContentsState::kDetached)]++;
   UpdateAppState();
 

@@ -327,13 +327,23 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
     ~OrderedSetInfo() {}
   };
 
-  // Populates items vector with all items within ordered_set.
-  // Will only add items whose roles match the role of the
-  // ordered_set.
-  void PopulateOrderedSetItems(const AXNode* ordered_set,
-                               const AXNode* local_parent,
-                               std::vector<const AXNode*>& items,
-                               const AXNode& original_node) const;
+  // Populates ordered set items vector with all items associated with
+  // |original_node| and within |ordered_set|. Only items whose roles match the
+  // role of the |ordered_set| will be added.
+  void PopulateOrderedSetItems(
+      const AXNode& original_node,
+      const AXNode* ordered_set,
+      std::vector<const AXNode*>& items_to_be_populated) const;
+
+  // Helper function for recursively populating ordered sets items vector with
+  // all items associated with |original_node| and |ordered_set|. |local_parent|
+  // tracks the recursively passed in child nodes of |ordered_set|.
+  void RecursivelyPopulateOrderedSetItems(
+      const AXNode& original_node,
+      const AXNode* ordered_set,
+      const AXNode* local_parent,
+      int32_t original_node_min_level,
+      std::vector<const AXNode*>& items_to_be_populated) const;
 
   // Helper for GetPosInSet and GetSetSize. Computes the pos_in_set and set_size
   // values of all items in ordered_set and caches those values.

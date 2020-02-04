@@ -45,7 +45,7 @@ class ExecutionContextCSPDelegate final
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) override;
   void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) override;
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>) override;
 
  private:
   SecurityContext& GetSecurityContext();

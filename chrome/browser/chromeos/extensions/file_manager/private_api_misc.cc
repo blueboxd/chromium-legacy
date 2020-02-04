@@ -376,8 +376,9 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
     return RespondNow(Error("Unable to fetch token."));
   }
 
+  // "Unconsented" because this class doesn't care about browser sync consent.
   auth_service_ = std::make_unique<google_apis::AuthService>(
-      identity_manager, identity_manager->GetPrimaryAccountId(),
+      identity_manager, identity_manager->GetUnconsentedPrimaryAccountId(),
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       scopes);

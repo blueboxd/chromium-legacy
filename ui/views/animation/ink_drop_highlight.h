@@ -31,8 +31,8 @@ class InkDropHighlightTestApi;
 class BasePaintedLayerDelegate;
 class InkDropHighlightObserver;
 
-// Manages fade in/out animations for a painted Layer that is used to provide
-// visual feedback on ui::Views for highlight states (e.g. mouse hover, keyboard
+// Manages fade in/out animations for a Layer that is used to provide visual
+// feedback on ui::Views for highlight states (e.g. mouse hover, keyboard
 // focus).
 class VIEWS_EXPORT InkDropHighlight {
  public:
@@ -55,6 +55,10 @@ class VIEWS_EXPORT InkDropHighlight {
                    int corner_radius,
                    const gfx::PointF& center_point,
                    SkColor color);
+
+  // Creates a highlight that is drawn with a solid color layer. It's shape will
+  // be determined by the mask or clip applied to the parent layer.
+  InkDropHighlight(const gfx::SizeF& size, SkColor color);
 
   virtual ~InkDropHighlight();
 
@@ -130,10 +134,11 @@ class VIEWS_EXPORT InkDropHighlight {
   // otherwise.
   bool last_animation_initiated_was_fade_in_;
 
-  // The LayerDelegate that paints the highlight |layer_|.
+  // The LayerDelegate that paints the highlight |layer_|. Null if |layer_| is a
+  // solid color layer.
   std::unique_ptr<BasePaintedLayerDelegate> layer_delegate_;
 
-  // The visual highlight layer that is painted by |layer_delegate_|.
+  // The visual highlight layer.
   std::unique_ptr<ui::Layer> layer_;
 
   InkDropHighlightObserver* observer_;

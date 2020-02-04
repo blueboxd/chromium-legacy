@@ -15,6 +15,7 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
       "bounds": [100, 100],
+      "contentsOpaque": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {

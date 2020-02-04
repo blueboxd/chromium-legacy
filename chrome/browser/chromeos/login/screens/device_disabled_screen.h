@@ -37,18 +37,15 @@ class DeviceDisabledScreen : public BaseScreen,
   // Returns the device serial number that should be shown to the user.
   const std::string& GetSerialNumber() const;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-
   // system::DeviceDisablingManager::Observer:
   void OnDisabledMessageChanged(const std::string& disabled_message) override;
 
  private:
-  DeviceDisabledScreenView* view_;
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
 
-  // Whether the screen is currently showing.
-  bool showing_ = false;
+  DeviceDisabledScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreen);
 };

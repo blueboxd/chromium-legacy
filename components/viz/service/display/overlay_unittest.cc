@@ -224,6 +224,7 @@ class OverlayOutputSurface : public OutputSurface {
   }
 
   unsigned bind_framebuffer_count() const { return bind_framebuffer_count_; }
+  void clear_bind_framebuffer_count() { bind_framebuffer_count_ = 0; }
 
  private:
   bool is_displayed_as_overlay_plane_;
@@ -2332,6 +2333,26 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_->AddExpectedRectToOverlayProcessor(rect);
   }
 
+  void DrawEmptyFrame() {
+    // Draw one frame to make sure output surface is reshaped before tests.
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+    CreateFullscreenCandidateQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
+    DrawFrame(&pass_list, kDisplaySize);
+    EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
+    output_surface_->clear_bind_framebuffer_count();
+    SwapBuffers();
+    Mock::VerifyAndClearExpectations(renderer_.get());
+    Mock::VerifyAndClearExpectations(&scheduler_);
+  }
+
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<OverlayOutputSurface> output_surface_;
@@ -2462,6 +2483,9 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
 
+  // Draw one frame to make sure output surface is reshaped before tests.
+  DrawEmptyFrame();
+
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
 
   CreateFullscreenCandidateQuad(
@@ -2475,7 +2499,6 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  output_surface_->set_is_displayed_as_overlay_plane(true);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(0);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   DrawFrame(&pass_list, kDisplaySize);
@@ -2491,6 +2514,9 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
   bool use_overlay_processor = true;
   Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
+
+  // Draw one frame to make sure output surface is reshaped before tests.
+  DrawEmptyFrame();
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
 

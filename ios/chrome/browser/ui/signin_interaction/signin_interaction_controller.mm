@@ -149,20 +149,6 @@
                     }];
 }
 
-- (void)addAccountWithCompletion:
-    (SigninInteractionControllerCompletionCallback)completion {
-  _completionCallback = [completion copy];
-  _identityInteractionManager = ios::GetChromeBrowserProvider()
-                                    ->GetChromeIdentityService()
-                                    ->CreateChromeIdentityInteractionManager(
-                                        _browser->GetBrowserState(), self);
-  __weak SigninInteractionController* weakSelf = self;
-  [_identityInteractionManager
-      addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
-        [weakSelf handleIdentityAdded:identity error:error shouldSignIn:NO];
-      }];
-}
-
 #pragma mark - ChromeIdentityInteractionManager operations
 
 - (void)handleIdentityAdded:(ChromeIdentity*)identity

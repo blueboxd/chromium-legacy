@@ -47,6 +47,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;
+  std::unique_ptr<DesktopAndCursorConditionalComposer>
+  CreateComposingVideoCapturer() override;
 
  protected:
   friend class BasicDesktopEnvironmentFactory;

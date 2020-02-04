@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
@@ -21,6 +22,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -240,6 +242,47 @@ const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 // See SetDisableRevealerDelayForTesting().
 bool g_disable_revealer_delay_for_testing = false;
 
+#if DCHECK_IS_ON()
+
+std::string FocusListToString(views::View* view) {
+  std::ostringstream result;
+  base::flat_set<views::View*> seen_views;
+
+  while (view != nullptr) {
+    if (base::Contains(seen_views, view)) {
+      result << "*CYCLE TO " << view->GetClassName() << "*";
+      break;
+    }
+    seen_views.insert(view);
+    result << view->GetClassName() << " ";
+
+    view = view->GetNextFocusableView();
+  }
+
+  return result.str();
+}
+
+void CheckFocusListForCycles(views::View* const start_view) {
+  views::View* view = start_view;
+
+  base::flat_set<views::View*> seen_views;
+
+  while (view != nullptr) {
+    DCHECK(!base::Contains(seen_views, view)) << FocusListToString(start_view);
+    seen_views.insert(view);
+
+    views::View* next_view = view->GetNextFocusableView();
+    if (next_view != nullptr) {
+      DCHECK_EQ(view, next_view->GetPreviousFocusableView())
+          << view->GetClassName();
+    }
+
+    view = next_view;
+  }
+}
+
+#endif  // DCHECK_IS_ON()
+
 // Inserts |to_insert| into the focus order after the view |insert_after|, which
 // must be a sibling. All other sibling views will be re-ordered in a sensible
 // way around the change, ensuring there are no cycles.
@@ -247,14 +290,28 @@ void InsertIntoFocusOrderAfter(views::View* insert_after,
                                views::View* to_insert) {
   DCHECK_NE(to_insert, insert_after);
   DCHECK_EQ(to_insert->parent(), insert_after->parent());
+  DCHECK_NE(insert_after, insert_after->GetNextFocusableView());
   views::View* const old_prev = to_insert->GetPreviousFocusableView();
-  views::View* const old_next = to_insert->GetNextFocusableView();
   if (old_prev == insert_after)
     return;
-  to_insert->SetNextFocusableView(insert_after->GetNextFocusableView());
-  insert_after->SetNextFocusableView(to_insert);
+  views::View* const old_next = to_insert->GetNextFocusableView();
+  views::View* const new_next = insert_after->GetNextFocusableView();
+
+  // Fully detach |to_insert| from its focus order
+  to_insert->SetNextFocusableView(nullptr);
   if (old_prev)
     old_prev->SetNextFocusableView(old_next);
+
+  // Re-attach it after |insert_after|
+  to_insert->SetNextFocusableView(new_next);
+  insert_after->SetNextFocusableView(to_insert);
+
+#if DCHECK_IS_ON()
+  // Catch errors that might indicate a focus list cycle.
+  DCHECK_NE(new_next, insert_after) << FocusListToString(insert_after);
+  DCHECK_EQ(new_next->GetPreviousFocusableView(), to_insert)
+      << FocusListToString(insert_after);
+#endif  // DCHECK_IS_ON()
 }
 
 bool GetGestureCommand(ui::GestureEvent* event, int* command) {
@@ -2143,6 +2200,11 @@ void BrowserView::EnsureFocusOrder() {
   // focus traversal) from the toolbar/omnibox.
   if (download_shelf_ && contents_container_)
     InsertIntoFocusOrderAfter(contents_container_, download_shelf_.get());
+
+#if DCHECK_IS_ON()
+  // Make sure we didn't create any cycles in the focus order.
+  CheckFocusListForCycles(top_container_);
+#endif
 }
 
 bool BrowserView::CanChangeWindowIcon() const {

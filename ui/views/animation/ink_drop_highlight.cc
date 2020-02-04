@@ -16,6 +16,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/views/animation/ink_drop_highlight_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/animation/ink_drop_util.h"
@@ -78,6 +79,20 @@ InkDropHighlight::InkDropHighlight(const gfx::Size& size,
                                    const gfx::PointF& center_point,
                                    SkColor color)
     : InkDropHighlight(gfx::SizeF(size), corner_radius, center_point, color) {}
+
+InkDropHighlight::InkDropHighlight(const gfx::SizeF& size, SkColor color)
+    : visible_opacity_(1.f),
+      last_animation_initiated_was_fade_in_(false),
+      observer_(nullptr) {
+  size_ = explode_size_ = size;
+
+  layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+  layer_->SetColor(color);
+  layer_->SetBounds(gfx::Rect(gfx::ToRoundedSize(size)));
+  layer_->SetVisible(false);
+  layer_->SetMasksToBounds(false);
+  layer_->SetName("InkDropHighlight:solid_color_layer");
+}
 
 InkDropHighlight::~InkDropHighlight() {
   // Explicitly aborting all the animations ensures all callbacks are invoked
@@ -156,6 +171,10 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
 gfx::Transform InkDropHighlight::CalculateTransform(
     const gfx::SizeF& size) const {
   gfx::Transform transform;
+  // No transform needed for a solid color layer.
+  if (!layer_delegate_)
+    return transform;
+
   transform.Translate(center_point_.x(), center_point_.y());
   // TODO(bruthig): Fix the InkDropHighlight to work well when initialized with
   // a (0x0) size. See https://crbug.com/661618.

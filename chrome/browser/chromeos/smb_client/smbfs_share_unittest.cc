@@ -157,7 +157,7 @@ TEST_F(SmbFsShareTest, Mount) {
 
   base::RunLoop run_loop;
   share.Mount(base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
-    EXPECT_EQ(result, SmbMountResult::SUCCESS);
+    EXPECT_EQ(result, SmbMountResult::kSuccess);
     run_loop.Quit();
   }));
   run_loop.Run();
@@ -188,7 +188,7 @@ TEST_F(SmbFsShareTest, MountFailure) {
 
   base::RunLoop run_loop;
   share.Mount(base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
-    EXPECT_EQ(result, SmbMountResult::ABORTED);
+    EXPECT_EQ(result, SmbMountResult::kAborted);
     run_loop.Quit();
   }));
   run_loop.Run();
@@ -235,7 +235,7 @@ TEST_F(SmbFsShareTest, UnmountOnDisconnect) {
 
   share.Mount(
       base::BindLambdaForTesting([&smbfs_receiver](SmbMountResult result) {
-        EXPECT_EQ(result, SmbMountResult::SUCCESS);
+        EXPECT_EQ(result, SmbMountResult::kSuccess);
 
         // Disconnect the Mojo service which should trigger the unmount.
         smbfs_receiver.reset();

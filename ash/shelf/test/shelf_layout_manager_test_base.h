@@ -72,10 +72,14 @@ class ShelfLayoutManagerTestBase : public AshTestBase {
   void MouseMouseToShowAutoHiddenShelf();
 
   // Move mouse to |location| and do a two-finger vertical scroll.
-  void DoTwoFingerVerticalScrollAtLocation(gfx::Point location, int y_offset);
+  void DoTwoFingerVerticalScrollAtLocation(gfx::Point location,
+                                           int y_offset,
+                                           bool reverse_scroll);
 
   // Move mouse to |location| and do a mousewheel scroll.
-  void DoMouseWheelScrollAtLocation(gfx::Point location, int delta_y);
+  void DoMouseWheelScrollAtLocation(gfx::Point location,
+                                    int delta_y,
+                                    bool reverse_scroll);
 
  private:
   base::TimeTicks timestamp_;

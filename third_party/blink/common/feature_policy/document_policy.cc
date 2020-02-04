@@ -4,9 +4,8 @@
 
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 
-#include <map>
-
 #include "base/no_destructor.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/http/structured_header.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 
@@ -15,7 +14,10 @@ namespace blink {
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
     const FeatureState& header_policy) {
-  return CreateWithHeaderPolicy(header_policy, GetFeatureDefaults());
+  DocumentPolicy::FeatureState feature_defaults;
+  for (const auto& entry : GetDocumentPolicyFeatureInfoMap())
+    feature_defaults.emplace(entry.first, entry.second.default_value);
+  return CreateWithHeaderPolicy(header_policy, feature_defaults);
 }
 
 namespace {
@@ -32,46 +34,6 @@ http_structured_header::Item PolicyValueToItem(const PolicyValue& value) {
   }
 }
 
-base::Optional<PolicyValue> ItemToPolicyValue(
-    const http_structured_header::Item& item) {
-  switch (item.Type()) {
-    case http_structured_header::Item::ItemType::kIntegerType:
-      return PolicyValue(static_cast<double>(item.GetInteger()));
-    case http_structured_header::Item::ItemType::kFloatType:
-      return PolicyValue(item.GetFloat());
-    default:
-      return base::nullopt;
-  }
-}
-
-struct FeatureInfo {
-  std::string feature_name;
-  std::string feature_param_name;
-};
-
-using FeatureInfoMap = std::map<mojom::FeaturePolicyFeature, FeatureInfo>;
-
-const FeatureInfoMap& GetDefaultFeatureInfoMap() {
-  static base::NoDestructor<FeatureInfoMap> feature_info_map(
-      {{mojom::FeaturePolicyFeature::kFontDisplay,
-        {"font-display-late-swap", ""}},
-       {mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
-        {"unoptimized-lossless-images", "bpp"}}});
-  return *feature_info_map;
-}
-
-using NameFeatureMap = std::map<std::string, mojom::FeaturePolicyFeature>;
-
-const NameFeatureMap& GetDefaultNameFeatureMap() {
-  static base::NoDestructor<NameFeatureMap> name_feature_map;
-  if (name_feature_map->empty()) {
-    for (const auto& entry : GetDefaultFeatureInfoMap()) {
-      (*name_feature_map)[entry.second.feature_name] = entry.first;
-    }
-  }
-  return *name_feature_map;
-}
-
 }  // namespace
 
 // static
@@ -84,15 +46,15 @@ base::Optional<std::string> DocumentPolicy::Serialize(
       sorted_policy(policy.begin(), policy.end());
   std::sort(sorted_policy.begin(), sorted_policy.end(),
             [](const auto& a, const auto& b) {
-              const auto& m = GetDefaultFeatureInfoMap();
+              const auto& m = GetDocumentPolicyFeatureInfoMap();
               const std::string& feature_a = m.at(a.first).feature_name;
               const std::string& feature_b = m.at(b.first).feature_name;
               return feature_a < feature_b;
             });
 
   for (const auto& policy_entry : sorted_policy) {
-    const FeatureInfo& info =
-        GetDefaultFeatureInfoMap().at(policy_entry.first /* feature */);
+    const auto& info =
+        GetDocumentPolicyFeatureInfoMap().at(policy_entry.first /* feature */);
 
     const PolicyValue& value = policy_entry.second;
     if (value.Type() == mojom::PolicyValueType::kBool) {
@@ -116,74 +78,6 @@ base::Optional<std::string> DocumentPolicy::Serialize(
   return http_structured_header::SerializeList(root);
 }
 
-// static
-base::Optional<DocumentPolicy::FeatureState> DocumentPolicy::Parse(
-    const std::string& policy_string) {
-  const auto& name_feature_map = GetDefaultNameFeatureMap();
-  const auto& default_values_map = GetFeatureDefaults();
-  const auto& feature_info_map = GetDefaultFeatureInfoMap();
-
-  auto root = http_structured_header::ParseList(policy_string);
-  if (!root)
-    return base::nullopt;
-
-  DocumentPolicy::FeatureState policy;
-  for (const http_structured_header::ParameterizedMember& directive :
-       root.value()) {
-    // Each directive is allowed exactly 1 member.
-    if (directive.member.size() != 1)
-      return base::nullopt;
-
-    const http_structured_header::Item& feature_token =
-        directive.member.front();
-    // The item in directive should be token type.
-    if (!feature_token.is_token())
-      return base::nullopt;
-
-    // Feature policy now only support boolean and double PolicyValue
-    // which correspond to 0 and 1 param number.
-    if (directive.params.size() > 1)
-      return base::nullopt;
-
-    base::Optional<PolicyValue> policy_value;
-    std::string feature_name = feature_token.GetString();
-
-    if (directive.params.empty()) {  // boolean value
-      // handle "no-" prefix
-      const std::string& feature_str = feature_token.GetString();
-      const bool bool_val =
-          feature_str.size() < 3 || feature_str.substr(0, 3) != "no-";
-      policy_value = PolicyValue(bool_val);
-      if (!bool_val) {  // drop "no-" prefix
-        feature_name = feature_name.substr(3);
-      }
-    } else {  // double value
-      policy_value =
-          ItemToPolicyValue(directive.params.front().second /* param value */);
-    }
-
-    if (!policy_value)
-      return base::nullopt;
-
-    if (name_feature_map.find(feature_name) ==
-        name_feature_map.end())  // Unrecognized feature name.
-      return base::nullopt;
-    const mojom::FeaturePolicyFeature feature =
-        name_feature_map.at(feature_name);
-
-    if (default_values_map.at(feature).Type() !=
-        policy_value->Type())  // Invalid value type.
-      return base::nullopt;
-
-    if ((*policy_value).Type() != mojom::PolicyValueType::kBool &&
-        feature_info_map.at(feature).feature_param_name !=
-            directive.params.front().first)  // Invalid param key name.
-      return base::nullopt;
-
-    policy.insert({feature, std::move(*policy_value)});
-  }
-  return policy;
-}
 
 // static
 DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
@@ -224,7 +118,8 @@ DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
 
 bool DocumentPolicy::IsFeatureEnabled(
     mojom::FeaturePolicyFeature feature) const {
-  mojom::PolicyValueType feature_type = GetFeatureDefaults().at(feature).Type();
+  mojom::PolicyValueType feature_type =
+      GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type();
   return IsFeatureEnabled(feature,
                           PolicyValue::CreateMaxPolicyValue(feature_type));
 }
@@ -271,19 +166,6 @@ std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
       base::WrapUnique(new DocumentPolicy(defaults));
   new_policy->UpdateFeatureState(header_policy);
   return new_policy;
-}
-
-// static
-// TODO(iclelland): This list just contains two sample features for use during
-// development. It should be generated from definitions in a feature
-// configuration json5 file.
-const DocumentPolicy::FeatureState& DocumentPolicy::GetFeatureDefaults() {
-  static base::NoDestructor<FeatureState> default_feature_list(
-      {{mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(true)},
-       {mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
-        PolicyValue::CreateMaxPolicyValue(
-            mojom::PolicyValueType::kDecDouble)}});
-  return *default_feature_list;
 }
 
 // static

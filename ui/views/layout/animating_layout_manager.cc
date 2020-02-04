@@ -1038,12 +1038,11 @@ gfx::Size AnimatingLayoutManager::DefaultFlexRuleImpl(
   if (CanFitInBounds(preferred_size, size_bounds))
     return preferred_size;
 
-  const base::Optional<int> bounds_main =
-      GetMainAxis(animating_layout->orientation(), size_bounds);
-
   // Special case - if we're being asked for a zero-size layout we'll return the
   // minimum size of the layout. This is because we're being probed for how
   // small we can get, not being asked for an actual size.
+  const base::Optional<int> bounds_main =
+      GetMainAxis(animating_layout->orientation(), size_bounds);
   if (bounds_main && *bounds_main <= 0)
     return animating_layout->GetMinimumSize(view);
 
@@ -1075,10 +1074,11 @@ gfx::Size AnimatingLayoutManager::DefaultFlexRuleImpl(
     // TODO(dfried): This should be rare, but it is also inefficient. See if we
     // can't add an alternative to GetPreferredHeightForWidth() that actually
     // calculates the layout in this space so we don't have to do it twice.
-    const int height =
-        target_layout->GetPreferredHeightForWidth(view, *size_bounds.width());
-    size = gfx::Size(*size_bounds.width(), height);
+    const int width = *size_bounds.width();
+    size = gfx::Size(width,
+                     target_layout->GetPreferredHeightForWidth(view, width));
   } else {
+    DCHECK(size_bounds.height());
     // The height is specified and too small.  Fortunately the height of a
     // layout can't (shouldn't?) affect its width.
     size = gfx::Size(target_preferred.width(), *size_bounds.height());

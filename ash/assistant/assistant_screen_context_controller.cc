@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -240,14 +239,6 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
     assistant_->ClearScreenContextCache();
     return;
   }
-
-  InputModality input_modality = assistant_controller_->interaction_controller()
-                                     ->model()
-                                     ->input_modality();
-
-  // We don't initiate a cache request if we are using stylus input modality.
-  if (input_modality == InputModality::kStylus)
-    return;
 
   // Abort any request in progress and update request state.
   screen_context_request_factory_.InvalidateWeakPtrs();

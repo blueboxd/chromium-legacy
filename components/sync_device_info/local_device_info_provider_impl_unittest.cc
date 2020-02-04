@@ -24,7 +24,8 @@ const char kSharingSenderIdFCMToken[] = "test_sender_id_fcm_token";
 const char kSharingSenderIdP256dh[] = "test_sender_id_p256_dh";
 const char kSharingSenderIdAuthSecret[] = "test_sender_id_auth_secret";
 const sync_pb::SharingSpecificFields::EnabledFeatures
-    kSharingEnabledFeatures[] = {sync_pb::SharingSpecificFields::CLICK_TO_CALL};
+    kSharingEnabledFeatures[] = {
+        sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2};
 
 using testing::NotNull;
 using testing::Return;

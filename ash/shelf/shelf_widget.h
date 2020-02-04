@@ -103,6 +103,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
 
   // ShelfComponent:

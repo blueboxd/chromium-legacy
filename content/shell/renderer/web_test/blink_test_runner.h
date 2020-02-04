@@ -152,7 +152,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnSetupSecondaryRenderer();
   void CaptureDump(mojom::BlinkTestControl::CaptureDumpCallback callback);
-  void DidCommitNavigationInMainFrame();
+  void DidCommitNavigationInMainFrame(bool is_secondary_window);
   void OnReset();
   void OnTestFinishedInSecondaryRenderer();
   void OnLayoutDumpCompleted(std::string completed_layout_dump);

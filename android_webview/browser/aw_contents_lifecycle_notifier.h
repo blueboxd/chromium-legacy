@@ -46,9 +46,16 @@ class AwContentsLifecycleNotifier {
 
  private:
   struct AwContentsData {
+    AwContentsData();
+    AwContentsData(AwContentsData&& data);
+    ~AwContentsData();
+
     bool attached_to_window = false;
     bool window_visible = false;
     AwContentsState aw_content_state = AwContentsState::kDetached;
+
+   private:
+    DISALLOW_COPY(AwContentsData);
   };
 
   friend base::NoDestructor<AwContentsLifecycleNotifier>;

@@ -523,9 +523,11 @@ class FileURLLoader : public network::mojom::URLLoader {
       return;
     }
 
+    // Full file path with all symbolic links resolved.
+    base::FilePath full_path = base::MakeAbsoluteFilePath(path);
     if (file_access_policy == FileAccessPolicy::kRestricted &&
-        !GetContentClient()->browser()->IsFileAccessAllowed(
-            path, base::MakeAbsoluteFilePath(path), profile_path)) {
+        !GetContentClient()->browser()->IsFileAccessAllowed(path, full_path,
+                                                            profile_path)) {
       OnClientComplete(net::ERR_ACCESS_DENIED, std::move(observer));
       return;
     }
@@ -669,9 +671,9 @@ class FileURLLoader : public network::mojom::URLLoader {
 
     // TODO(crbug.com/995177): Update mime_util.cc when WebBundles feature is
     // launched and stop using GetWebBundleFileMimeTypeFromFile().
-    if (!web_bundle_utils::GetWebBundleFileMimeTypeFromFile(path,
+    if (!web_bundle_utils::GetWebBundleFileMimeTypeFromFile(full_path,
                                                             &head->mime_type) &&
-        !net::GetMimeTypeFromFile(path, &head->mime_type)) {
+        !net::GetMimeTypeFromFile(full_path, &head->mime_type)) {
       std::string new_type;
       net::SniffMimeType(
           initial_read_buffer.data(), read_result.bytes_read, request.url,

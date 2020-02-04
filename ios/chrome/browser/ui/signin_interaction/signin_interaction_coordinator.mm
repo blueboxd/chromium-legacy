@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
@@ -27,6 +28,11 @@
 
 // The controller managed by this coordinator.
 @property(nonatomic, strong) SigninInteractionController* controller;
+
+// The coordinator used to control sign-in UI flows.
+// See https://crbug.com/971989 for the migration plan to exclusively use
+// SigninCoordinator to trigger sign-in UI.
+@property(nonatomic, strong) SigninCoordinator* coordinator;
 
 // The UIViewController upon which UI should be presented.
 @property(nonatomic, strong) UIViewController* presentingViewController;
@@ -57,7 +63,7 @@
     presentingViewController:(UIViewController*)viewController
                   completion:(signin_ui::CompletionCallback)completion {
   // Ensure that nothing is done if a sign in operation is already in progress.
-  if (self.controller) {
+  if (self.coordinator || self.controller) {
     return;
   }
 
@@ -76,7 +82,7 @@
                            completion:
                                (signin_ui::CompletionCallback)completion {
   // Ensure that nothing is done if a sign in operation is already in progress.
-  if (self.controller) {
+  if (self.coordinator || self.controller) {
     return;
   }
 
@@ -93,16 +99,23 @@
          presentingViewController:(UIViewController*)viewController
                        completion:(signin_ui::CompletionCallback)completion {
   // Ensure that nothing is done if a sign in operation is already in progress.
-  if (self.controller) {
+  if (self.coordinator || self.controller) {
     return;
   }
 
-  [self setupForSigninOperationWithAccessPoint:accessPoint
-                                   promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+  self.coordinator = [SigninCoordinator
+      addAccountCoordinatorWithBaseViewController:viewController
+                                          browser:self.browser
+                                      accessPoint:accessPoint];
 
-  [self.controller addAccountWithCompletion:[self callbackToClearState]];
+  __weak SigninInteractionCoordinator* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        completion(signinResult == SigninCoordinatorResultSuccess);
+        weakSelf.coordinator = nil;
+      };
+
+  [self.coordinator start];
 }
 
 - (void)showAdvancedSigninSettingsWithPresentingViewController:
@@ -113,6 +126,8 @@
 
 - (void)cancel {
   [self.controller cancel];
+  [self.coordinator stop];
+  self.coordinator = nil;
   [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
                                                   animated:YES
                                                 completion:nil];
@@ -120,6 +135,8 @@
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
+  [self.coordinator stop];
+  self.coordinator = nil;
   [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
                                                   animated:YES
                                                 completion:nil];

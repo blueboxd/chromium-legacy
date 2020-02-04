@@ -77,7 +77,7 @@ class SharingSyncPreferenceTest : public testing::Test {
         {kDeviceSenderIdFcmToken, kDeviceSenderIdP256dh,
          kDeviceSenderIdAuthToken},
         std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
-            sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+            sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2});
   }
 
   sync_preferences::TestingPrefServiceSyncable prefs_;

@@ -202,7 +202,7 @@ void ErrorScreen::DoHide() {
       PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
 }
 
-void ErrorScreen::Show() {
+void ErrorScreen::ShowImpl() {
   if (!on_hide_callback_) {
     SetHideCallback(base::Bind(&ErrorScreen::DefaultHideCallback,
                                weak_factory_.GetWeakPtr()));
@@ -211,7 +211,7 @@ void ErrorScreen::Show() {
     view_->Show();
 }
 
-void ErrorScreen::Hide() {
+void ErrorScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

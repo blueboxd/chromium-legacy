@@ -948,6 +948,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
 
+  void InvalidateItems(const NGLayoutResult&);
+
   void SetCachedLayoutResult(scoped_refptr<const NGLayoutResult>);
 
   // Store one layout result (with its physical fragment) at the specified
@@ -957,6 +959,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearLayoutResults();
 
   const NGLayoutResult* GetCachedLayoutResult() const;
+  const NGLayoutResult* GetCachedMeasureResult() const;
 
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
@@ -1905,6 +1908,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   };
 
   Persistent<LayoutBoxRareData> rare_data_;
+  scoped_refptr<const NGLayoutResult> measure_result_;
   Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results_;
 };
 

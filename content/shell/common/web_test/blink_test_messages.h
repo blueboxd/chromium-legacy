@@ -15,8 +15,6 @@
 
 #define IPC_MESSAGE_START BlinkTestMsgStart
 
-IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_ResetDone)
-
 // WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_PrintMessage, std::string /* message */)
 

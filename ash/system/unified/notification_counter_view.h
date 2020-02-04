@@ -19,6 +19,9 @@ class NotificationCounterView : public TrayItemView, public SessionObserver {
 
   void Update();
 
+  // Returns a string describing the current state for accessibility.
+  base::string16 GetAccessibleNameString() const;
+
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 

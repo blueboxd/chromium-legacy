@@ -97,7 +97,6 @@
 /google_toolbox_for_mac/src
 /googlemac
 /grpc/src
-/gson/lib/
 /gvr-android-sdk/common_library.aar
 /gvr-android-sdk/test-libraries/controller_test_api.aar
 /gvr-android-sdk/libgvr_shim_static_*.a
@@ -113,7 +112,6 @@
 /hunspell_dictionaries
 /icu
 /icu4j/lib/
-/intellij/lib/
 /instrumented_libraries/scripts/*.tgz
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
@@ -179,7 +177,6 @@
 /openh264/src
 /openscreen/src
 /openxr/src
-/ow2_asm/lib/
 /pdfsqueeze
 /pdfium
 /pefile

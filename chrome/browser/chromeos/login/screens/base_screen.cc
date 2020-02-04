@@ -12,6 +12,25 @@ BaseScreen::BaseScreen(OobeScreenId screen_id) : screen_id_(screen_id) {}
 
 BaseScreen::~BaseScreen() {}
 
+void BaseScreen::Show() {
+  ShowImpl();
+  is_hidden_ = false;
+}
+
+void BaseScreen::Hide() {
+  HideImpl();
+  is_hidden_ = true;
+}
+
+void BaseScreen::HandleUserAction(const std::string& action_id) {
+  if (is_hidden_) {
+    LOG(WARNING) << "User action came when screen is hidden: action_id="
+                 << action_id;
+    return;
+  }
+  OnUserAction(action_id);
+}
+
 void BaseScreen::OnUserAction(const std::string& action_id) {
   LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }

@@ -349,7 +349,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
    * @param {MessageSender} sender
    */
   onExternalMessageReceived_(message, sender) {
-    if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
+    if ('origin' in sender && sender.origin === GPLUS_PHOTOS_APP_ORIGIN) {
       importer.handlePhotosAppMessage(message);
     }
   }
@@ -529,7 +529,8 @@ function registerDialog(dialogWindow) {
 }
 
 /** @const {!string} */
-const GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
+const GPLUS_PHOTOS_APP_ORIGIN =
+    'chrome-extension://efjnaogkjbogokcnohkmnjdojkikgobo';
 
 /**
  * Singleton instance of Background object.

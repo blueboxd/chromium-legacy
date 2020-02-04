@@ -74,7 +74,7 @@ void AutoEnrollmentCheckScreen::ClearState() {
   captive_portal_status_ = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 }
 
-void AutoEnrollmentCheckScreen::Show() {
+void AutoEnrollmentCheckScreen::ShowImpl() {
   // If the decision got made already, don't show the screen at all.
   if (!AutoEnrollmentController::IsEnabled() || IsCompleted()) {
     SignalCompletion();
@@ -125,7 +125,7 @@ void AutoEnrollmentCheckScreen::Show() {
       false /* force */);
 }
 
-void AutoEnrollmentCheckScreen::Hide() {}
+void AutoEnrollmentCheckScreen::HideImpl() {}
 
 void AutoEnrollmentCheckScreen::OnViewDestroyed(
     AutoEnrollmentCheckScreenView* view) {

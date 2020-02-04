@@ -14,7 +14,7 @@
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow HTML",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
       "position": [5, 5],
       "bounds": [150, 150],
       "backgroundColor": "#00000099"

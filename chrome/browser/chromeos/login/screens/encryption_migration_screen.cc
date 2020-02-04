@@ -31,12 +31,12 @@ void EncryptionMigrationScreen::OnViewDestroyed(
     view_ = nullptr;
 }
 
-void EncryptionMigrationScreen::Show() {
+void EncryptionMigrationScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void EncryptionMigrationScreen::Hide() {
+void EncryptionMigrationScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

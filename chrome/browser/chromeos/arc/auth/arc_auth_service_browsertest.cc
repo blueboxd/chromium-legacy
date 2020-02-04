@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -205,6 +206,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
@@ -214,10 +217,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
+    EXPECT_TRUE(ExpandPropertyFilesForTesting(ArcSessionManager::Get(),
+                                              temp_dir_.GetPath()));
 
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
-
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   void TearDownOnMainThread() override {

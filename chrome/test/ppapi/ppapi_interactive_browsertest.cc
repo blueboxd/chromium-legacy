@@ -25,12 +25,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
   RunTestViaHTTP("MouseLock_SucceedWhenAllowed");
 }
 
-// Flaky on Linux and Windows. http://crbug.com/135403
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_ImeInputEvent DISABLED_ImeInputEvent
-#else
-#define MAYBE_ImeInputEvent ImeInputEvent
-#endif
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_ImeInputEvent) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, ImeInputEvent) {
   RunTest(ppapi::StripTestPrefixes("ImeInputEvent"));
 }

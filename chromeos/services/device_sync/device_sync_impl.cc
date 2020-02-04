@@ -390,7 +390,9 @@ DeviceSyncImpl::DeviceSyncImpl(
       status_(Status::FETCHING_ACCOUNT_INFO) {
   DCHECK(profile_prefs_);
   PA_LOG(VERBOSE) << "DeviceSyncImpl: Initializing.";
-  CoreAccountInfo primary_account = identity_manager_->GetPrimaryAccountInfo();
+  // "Unconsented" because this feature is not tied to browser sync consent.
+  CoreAccountInfo primary_account =
+      identity_manager_->GetUnconsentedPrimaryAccountInfo();
   if (primary_account.account_id.empty()) {
     // Primary profile not loaded yet. This happens when adding a new account.
     PA_LOG(VERBOSE) << "DeviceSyncImpl: Waiting for primary account info";
@@ -738,9 +740,12 @@ void DeviceSyncImpl::Shutdown() {
   clock_ = nullptr;
 }
 
-void DeviceSyncImpl::OnPrimaryAccountSet(
+void DeviceSyncImpl::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& primary_account_info) {
-  PA_LOG(VERBOSE) << "DeviceSyncImpl: OnPrimaryAccountSet";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: OnUnconsentedPrimaryAccountChanged";
+  // We're only interested when the account is set.
+  if (primary_account_info.account_id.empty())
+    return;
   identity_manager_->RemoveObserver(this);
   ProcessPrimaryAccountInfo(primary_account_info);
 }

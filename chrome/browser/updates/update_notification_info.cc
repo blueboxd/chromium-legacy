@@ -6,14 +6,17 @@
 
 namespace updates {
 
-UpdateNotificationInfo::UpdateNotificationInfo() = default;
+UpdateNotificationInfo::UpdateNotificationInfo()
+    : state(0), should_show_immediately(false) {}
 
 UpdateNotificationInfo::UpdateNotificationInfo(
     const UpdateNotificationInfo& other) = default;
 
 bool UpdateNotificationInfo::operator==(
     const UpdateNotificationInfo& other) const {
-  return title == other.title && message == other.message;
+  return title == other.title && message == other.message &&
+         state == other.state &&
+         should_show_immediately == other.should_show_immediately;
 }
 
 UpdateNotificationInfo::~UpdateNotificationInfo() = default;

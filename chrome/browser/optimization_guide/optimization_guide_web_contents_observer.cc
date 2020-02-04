@@ -173,7 +173,8 @@ void OptimizationGuideWebContentsObserver::
   // If we have a navigation data for it, it's probably safe to say that this
   // URL is the main frame URL of the navigation.
   if (optimization_guide_keyed_service_)
-    optimization_guide_keyed_service_->OnNavigationFinish(navigation_url);
+    optimization_guide_keyed_service_->OnNavigationFinish(
+        navigation_url, &nav_data_iter->second);
 
   (nav_data_iter->second).RecordMetrics(has_committed);
 

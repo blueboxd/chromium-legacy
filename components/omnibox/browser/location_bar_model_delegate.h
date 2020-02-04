@@ -41,6 +41,10 @@ class LocationBarModelDelegate {
   // query in omnibox. Based on whether user has a specified extension enabled.
   virtual bool ShouldPreventElision() const;
 
+  // Returns whether everything everything after the hostname should be trimmed
+  // from the display URL.
+  virtual bool ShouldTrimDisplayUrlAfterHostName() const;
+
   // Returns whether the URL for the current navigation entry should be
   // in the location bar.
   virtual bool ShouldDisplayURL() const;

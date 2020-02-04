@@ -16,11 +16,11 @@ class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
 
   ~FakeBaseScreen() override = default;
 
-  // chromeos::BaseScreen:
-  void Show() override {}
-  void Hide() override {}
-
  private:
+  // chromeos::BaseScreen:
+  void ShowImpl() override {}
+  void HideImpl() override {}
+
   DISALLOW_COPY_AND_ASSIGN(FakeBaseScreen);
 };
 

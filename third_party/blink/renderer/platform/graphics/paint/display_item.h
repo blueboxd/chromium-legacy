@@ -135,6 +135,7 @@ class PLATFORM_EXPORT DisplayItem {
     // Used to prevent composited scrolling on plugins with wheel handlers.
     kPluginScrollHitTest,
 
+    kLayerChunkWhole,
     kLayerChunkBackground,
     kLayerChunkNegativeZOrderChildren,
     kLayerChunkDescendantBackgrounds,

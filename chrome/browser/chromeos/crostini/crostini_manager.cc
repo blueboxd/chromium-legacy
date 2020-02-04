@@ -2729,6 +2729,13 @@ void CrostiniManager::OnLxdContainerStarting(
       result = CrostiniResult::UNKNOWN_ERROR;
       break;
   }
+
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to start container. VM: " << signal.vm_name()
+               << " container: " << signal.container_name()
+               << " reason: " << signal.failure_reason();
+  }
+
   if (result == CrostiniResult::SUCCESS &&
       !GetContainerInfo(signal.vm_name(), signal.container_name())) {
     VLOG(1) << "Awaiting ContainerStarted signal from Garcon";

@@ -80,6 +80,14 @@ enum class NGBaselineAlgorithmType {
   kInlineBlock
 };
 
+// Some layout algorithms have multiple layout passes. Between passes they
+// typically have different results which we need to cache separately for
+// performance reasons.
+//
+// This enum gives the caching logic a hint into which cache "slot" it should
+// store a result in.
+enum class NGCacheSlot { kLayout, kMeasure };
+
 // The NGConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a NGFragment within.
 class CORE_EXPORT NGConstraintSpace final {
@@ -374,6 +382,11 @@ class CORE_EXPORT NGConstraintSpace final {
   NGBaselineAlgorithmType BaselineAlgorithmType() const {
     return static_cast<NGBaselineAlgorithmType>(
         bitfields_.baseline_algorithm_type);
+  }
+
+  // Which cache slot the output layout result should be stored in.
+  NGCacheSlot CacheSlot() const {
+    return static_cast<NGCacheSlot>(bitfields_.cache_slot);
   }
 
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
@@ -1018,6 +1031,7 @@ class CORE_EXPORT NGConstraintSpace final {
           needs_baseline(false),
           baseline_algorithm_type(
               static_cast<unsigned>(NGBaselineAlgorithmType::kFirstLine)),
+          cache_slot(static_cast<unsigned>(NGCacheSlot::kLayout)),
           is_shrink_to_fit(false),
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
@@ -1070,6 +1084,8 @@ class CORE_EXPORT NGConstraintSpace final {
 
     unsigned needs_baseline : 1;
     unsigned baseline_algorithm_type : 1;
+
+    unsigned cache_slot : 1;
 
     // Size constraints.
     unsigned is_shrink_to_fit : 1;

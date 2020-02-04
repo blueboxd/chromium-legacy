@@ -190,11 +190,7 @@ TEST_F(DialogClientViewTest, RemoveAndUpdateButtons) {
 
 // Test that views inside the dialog client view have the correct focus order.
 TEST_F(DialogClientViewTest, SetupFocusChain) {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  const bool kIsOkButtonOnLeftSide = true;
-#else
-  const bool kIsOkButtonOnLeftSide = false;
-#endif
+  const bool kIsOkButtonOnLeftSide = PlatformStyle::kIsOkButtonLeading;
 
   GetContentsView()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   // Initially the dialog client view only contains the content view.

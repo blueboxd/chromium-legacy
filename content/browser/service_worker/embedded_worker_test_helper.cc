@@ -165,23 +165,34 @@ net::HttpResponseInfo EmbeddedWorkerTestHelper::CreateHttpResponseInfo() {
 void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     int64_t version_id,
     base::OnceClosure callback) {
-  ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+  scoped_refptr<ServiceWorkerVersion> version =
+      context()->GetLiveVersion(version_id);
   if (!version) {
     std::move(callback).Run();
     return;
   }
-  if (!version->script_cache_map()->size()) {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    // Add a dummy ResourceRecord for the main script to the script cache map of
-    // the ServiceWorkerVersion.
-    records.push_back(WriteToDiskCacheAsync(
-        context()->storage(), version->script_url(),
-        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
-        "I'm a meta data", std::move(callback)));
-    version->script_cache_map()->SetResources(records);
-  }
   if (!version->GetMainScriptHttpResponseInfo())
     version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
+  if (!version->script_cache_map()->size()) {
+    // Add a dummy ResourceRecord for the main script to the script cache map of
+    // the ServiceWorkerVersion.
+    WriteToDiskCacheAsync(
+        context()->storage(), version->script_url(),
+        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
+        "I'm a meta data",
+        base::BindOnce(
+            [](scoped_refptr<ServiceWorkerVersion> version,
+               base::OnceClosure callback,
+               ServiceWorkerDatabase::ResourceRecord record) {
+              std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+              records.push_back(std::move(record));
+              version->script_cache_map()->SetResources(records);
+
+              std::move(callback).Run();
+            },
+            version, std::move(callback)));
+    return;
+  }
   // Call |callback| if |version| already has ResourceRecords.
   if (!callback.is_null())
     std::move(callback).Run();

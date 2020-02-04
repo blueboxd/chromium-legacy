@@ -36,11 +36,10 @@ TreeBuilder::TreeBuilder(DeltaSizeInfo* size_info) {
 
 TreeBuilder::~TreeBuilder() = default;
 
-void TreeBuilder::Build(
-    std::unique_ptr<BaseLens> lens,
-    char separator,
-    bool method_count_mode,
-    std::vector<std::function<bool(const BaseSymbol&)>> filters) {
+void TreeBuilder::Build(std::unique_ptr<BaseLens> lens,
+                        char separator,
+                        bool method_count_mode,
+                        std::vector<FilterFunc> filters) {
   lens_ = std::move(lens);
   method_count_mode_ = method_count_mode;
   filters_ = filters;
@@ -54,10 +53,10 @@ void TreeBuilder::Build(
   std::unordered_map<GroupedPath, std::vector<const BaseSymbol*>>
       symbols_by_grouped_path;
   for (const BaseSymbol* sym : symbols_) {
-    if (ShouldIncludeSymbol(*sym)) {
-      GroupedPath key = GroupedPath{
-          lens_->ParentName(*sym),
-          sym->SourcePath() ? sym->SourcePath() : sym->ObjectPath()};
+    GroupedPath key =
+        GroupedPath{lens_->ParentName(*sym),
+                    sym->SourcePath() ? sym->SourcePath() : sym->ObjectPath()};
+    if (ShouldIncludeSymbol(key, *sym)) {
       symbols_by_grouped_path[key].push_back(sym);
     }
   }
@@ -131,7 +130,8 @@ Json::Value TreeBuilder::Open(const char* path) {
     exit(1);
   }
   Json::Value v;
-  node->WriteIntoJson(1, node_sort_func, size_info_->IsSparse(), &v);
+  node->WriteIntoJson(1, node_sort_func, size_info_->IsSparse(),
+                      method_count_mode_, &v);
   return v;
 }
 
@@ -247,9 +247,10 @@ ContainerType TreeBuilder::ContainerTypeFromChild(
                                      : ContainerType::kDirectory;
 }
 
-bool TreeBuilder::ShouldIncludeSymbol(const BaseSymbol& symbol) const {
+bool TreeBuilder::ShouldIncludeSymbol(const GroupedPath& id_path,
+                                      const BaseSymbol& symbol) const {
   for (const auto& filter : filters_) {
-    if (!filter(symbol)) {
+    if (!filter(id_path, symbol)) {
       return false;
     }
   }

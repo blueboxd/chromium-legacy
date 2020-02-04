@@ -5,14 +5,19 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -29,12 +34,14 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/locale_settings.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -82,6 +89,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       {"close", IDS_CLOSE},
       {"confirm", IDS_CONFIRM},
       {"continue", IDS_SETTINGS_CONTINUE},
+      {"custom", IDS_SETTINGS_CUSTOM},
       {"delete", IDS_SETTINGS_DELETE},
       {"deviceOff", IDS_SETTINGS_DEVICE_OFF},
       {"deviceOn", IDS_SETTINGS_DEVICE_ON},
@@ -104,6 +112,14 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
       {"notValidWebAddressForContentType",
        IDS_SETTINGS_NOT_VALID_WEB_ADDRESS_FOR_CONTENT_TYPE},
+
+      // Common font related strings shown in a11y and appearance sections.
+      {"quickBrownFox", IDS_SETTINGS_QUICK_BROWN_FOX},
+      {"verySmall", IDS_SETTINGS_VERY_SMALL_FONT},
+      {"small", IDS_SETTINGS_SMALL_FONT},
+      {"medium", IDS_SETTINGS_MEDIUM_FONT},
+      {"large", IDS_SETTINGS_LARGE_FONT},
+      {"veryLarge", IDS_SETTINGS_VERY_LARGE_FONT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -1422,11 +1438,168 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
           g_browser_process->GetApplicationLocale().c_str())));
 }
 
+void AddAboutStrings(content::WebUIDataSource* html_source) {
+  // Top level About page strings.
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+    {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
+#endif
+    {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
+    {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
+    {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
+    {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
+    {"aboutUpgradeUpdatingPercent", IDS_SETTINGS_UPGRADE_UPDATING_PERCENT},
+    {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
+    {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
+    {"aboutProductTitle", IDS_PRODUCT_NAME},
+
+    {"aboutEndOfLifeTitle", IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_TITLE},
+    {"aboutRelaunchAndPowerwash",
+     IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
+    {"aboutRollbackInProgress", IDS_SETTINGS_UPGRADE_ROLLBACK_IN_PROGRESS},
+    {"aboutRollbackSuccess", IDS_SETTINGS_UPGRADE_ROLLBACK_SUCCESS},
+    {"aboutUpgradeUpdatingChannelSwitch",
+     IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
+    {"aboutUpgradeSuccessChannelSwitch",
+     IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
+    {"aboutTPMFirmwareUpdateTitle",
+     IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_TITLE},
+    {"aboutTPMFirmwareUpdateDescription",
+     IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_DESCRIPTION},
+
+    // About page, channel switcher dialog.
+    {"aboutChangeChannel", IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL},
+    {"aboutChangeChannelAndPowerwash",
+     IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL_AND_POWERWASH},
+    {"aboutDelayedWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_MESSAGE},
+    {"aboutDelayedWarningTitle", IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_TITLE},
+    {"aboutPowerwashWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_MESSAGE},
+    {"aboutPowerwashWarningTitle",
+     IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_TITLE},
+    {"aboutUnstableWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_MESSAGE},
+    {"aboutUnstableWarningTitle",
+     IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_TITLE},
+    {"aboutChannelDialogBeta", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_BETA},
+    {"aboutChannelDialogDev", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_DEV},
+    {"aboutChannelDialogStable", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_STABLE},
+
+    // About page, update warning dialog.
+    {"aboutUpdateWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_MESSAGE},
+    {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
+
+    // Detailed build information
+    {"aboutBuildDetailsTitle", IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS},
+    {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
+    {"aboutChannelCanary", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_CANARY},
+    {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
+    {"aboutChannelLabel", IDS_SETTINGS_ABOUT_PAGE_CHANNEL},
+    {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
+    {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
+    {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
+    {"aboutDetailedBuildInfo", IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO},
+    {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
+    {version_ui::kPlatform, IDS_PLATFORM_LABEL},
+    {version_ui::kFirmwareVersion, IDS_VERSION_UI_FIRMWARE_VERSION},
+    {version_ui::kARC, IDS_ARC_LABEL},
+    {"aboutBuildDetailsCopyTooltipLabel",
+     IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS_COPY_TOOLTIP_LABEL},
+    {"aboutIsArcStatusTitle", IDS_OS_SETTINGS_ABOUT_ARC_STATUS_TITLE},
+    {"aboutIsDeveloperModeTitle", IDS_OS_SETTINGS_ABOUT_DEVELOPER_MODE},
+    {"isEnterpriseManagedTitle",
+     IDS_OS_SETTINGS_ABOUT_PAGE_ENTERPRISE_ENNROLLED_TITLE},
+    {"aboutOsPageTitle", IDS_SETTINGS_ABOUT_OS},
+    {"aboutGetHelpUsingChromeOs", IDS_SETTINGS_GET_HELP_USING_CHROME_OS},
+    {"aboutOsProductTitle", IDS_PRODUCT_OS_NAME},
+    {"aboutReleaseNotesOffline", IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES},
+    {"aboutShowReleaseNotes", IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString("aboutTPMFirmwareUpdateLearnMoreURL",
+                         chrome::kTPMFirmwareUpdateLearnMoreURL);
+  html_source->AddString(
+      "aboutUpgradeUpToDate",
+      ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
+}
+
+void AddResetStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"resetPageTitle", IDS_SETTINGS_RESET},
+      {"powerwashTitle", IDS_SETTINGS_FACTORY_RESET},
+      {"powerwashDialogTitle", IDS_SETTINGS_FACTORY_RESET_HEADING},
+      {"powerwashDialogButton", IDS_SETTINGS_RESTART},
+      {"powerwashButton", IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL},
+      {"powerwashDialogExplanation", IDS_SETTINGS_FACTORY_RESET_WARNING},
+      {"powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL},
+      {"powerwashButtonRoleDescription",
+       IDS_SETTINGS_FACTORY_RESET_BUTTON_ROLE},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString(
+      "powerwashDescription",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_FACTORY_RESET_DESCRIPTION,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+}
+
+void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
+      {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
+      {"searchGoogleAssistantEnabled",
+       IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
+      {"searchGoogleAssistantDisabled",
+       IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
+      {"searchGoogleAssistantOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON},
+      {"searchGoogleAssistantOff", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  // NOTE: This will be false when the flag is disabled.
+  const bool is_assistant_allowed =
+      ::assistant::IsAssistantAllowedForProfile(profile) ==
+      ash::mojom::AssistantAllowedState::ALLOWED;
+  html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
+  html_source->AddLocalizedString("osSearchPageTitle",
+                                  is_assistant_allowed
+                                      ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                                      : IDS_SETTINGS_SEARCH);
+  html_source->AddString("searchExplanation",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_SEARCH_EXPLANATION,
+                             base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL)));
+  html_source->AddString(
+      "osSearchEngineTooltip",
+      ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP));
+}
+
+void AddPrivacyStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
+      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
+      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
+      {"wakeOnWifi", IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION},
+      {"enableContentProtectionAttestation",
+       IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString("syncAndGoogleServicesLearnMoreURL",
+                         chrome::kSyncAndGoogleServicesLearnMoreURL);
+  ::settings::AddPersonalizationOptionsStrings(html_source);
+}
+
 }  // namespace
 
 void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
                            Profile* profile,
                            content::WebContents* web_contents) {
+  AddAboutStrings(html_source);
   AddA11yStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddAppManagementStrings(html_source);
@@ -1447,7 +1620,10 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
   AddPersonalizationStrings(html_source);
   AddPluginVmStrings(html_source, profile);
   AddPrintingStrings(html_source);
+  AddPrivacyStrings(html_source);
+  AddResetStrings(html_source);
   AddSearchInSettingsStrings(html_source);
+  AddSearchStrings(html_source, profile);
   AddUsersStrings(html_source);
 }
 

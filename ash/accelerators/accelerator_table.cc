@@ -32,7 +32,6 @@ namespace ash {
 // 5- Don't forget to update the keyboard_shortcut_viewer_metadata.cc and
 //    shortcut_viewer_strings.grdp.
 const AcceleratorData kDeprecatedAccelerators[] = {
-    {true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN},
     {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER},
 
     // Deprecated in M59.
@@ -47,12 +46,6 @@ const size_t kDeprecatedAcceleratorsLength =
     base::size(kDeprecatedAccelerators);
 
 const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
-    {
-        LOCK_SCREEN, "Ash.Accelerators.Deprecated.LockScreen",
-        IDS_DEPRECATED_LOCK_SCREEN_MSG, IDS_SHORTCUT_LOCK_SCREEN_OLD,
-        IDS_SHORTCUT_LOCK_SCREEN_NEW,
-        false  // Old accelerator was disabled in M56.
-    },
     {SHOW_TASK_MANAGER, "Ash.Accelerators.Deprecated.ShowTaskManager",
      IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG, IDS_SHORTCUT_TASK_MANAGER_OLD,
      IDS_SHORTCUT_TASK_MANAGER_NEW, true},
@@ -69,6 +62,10 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
 
 const size_t kDeprecatedAcceleratorsDataLength =
     base::size(kDeprecatedAcceleratorsData);
+
+static_assert(kDeprecatedAcceleratorsLength ==
+                  kDeprecatedAcceleratorsDataLength,
+              "Deprecated accelerator tables must be kept in sync");
 
 const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_N, kDebugModifier, TOGGLE_WIFI},

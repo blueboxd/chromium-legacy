@@ -557,6 +557,16 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       has_download_sandbox_flag, info->blocking_downloads_in_sandbox_enabled,
       from_ad, &download_policy);
 
+  auto initiator_csp_info = mojom::InitiatorCSPInfo::New();
+  initiator_csp_info->should_check_main_world_csp =
+      info->should_check_main_world_content_security_policy;
+  initiator_csp_info->initiator_self_source =
+      BuildCSPSource(info->initiator_self_source);
+  for (const auto& policy : info->initiator_csp) {
+    initiator_csp_info->initiator_csp.push_back(
+        BuildContentSecurityPolicy(policy));
+  }
+
   return mojom::CommonNavigationParams::New(
       info->url_request.Url(), info->url_request.RequestorOrigin(),
       std::move(referrer), extra_data->transition_type(), navigation_type,
@@ -566,14 +576,9 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info->url_request), source_location,
       false /* started_from_context_menu */, info->url_request.HasUserGesture(),
-      mojom::InitiatorCSPInfo::New(
-          info->should_check_main_world_content_security_policy,
-          BuildContentSecurityPolicyList(info->initiator_csp),
-          info->initiator_csp.self_source.has_value()
-              ? BuildCSPSource(info->initiator_csp.self_source.value())
-              : nullptr),
-      initiator_origin_trial_features, info->href_translate.Latin1(),
-      is_history_navigation_in_new_child_frame, info->input_start);
+      std::move(initiator_csp_info), initiator_origin_trial_features,
+      info->href_translate.Latin1(), is_history_navigation_in_new_child_frame,
+      info->input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(mojom::NavigationType navigation_type,
@@ -3952,10 +3957,6 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
   return std::make_unique<WebServiceWorkerProviderImpl>(provider->context());
 }
 
-service_manager::InterfaceProvider* RenderFrameImpl::GetInterfaceProvider() {
-  return &remote_interfaces_;
-}
-
 blink::AssociatedInterfaceProvider*
 RenderFrameImpl::GetRemoteNavigationAssociatedInterfaces() {
   return GetRemoteAssociatedInterfaces();
@@ -4195,18 +4196,6 @@ void RenderFrameImpl::DidSetFramePolicyHeaders(
       flags != blink::WebSandboxFlags::kNone) {
     GetFrameHost()->DidSetFramePolicyHeaders(flags, fp_header, dp_header);
   }
-}
-
-void RenderFrameImpl::DidAddContentSecurityPolicies(
-    const blink::WebVector<blink::WebContentSecurityPolicy>& policies) {
-  // TODO(arthursonzogni): Send DidAddContentSecurityPolicies from blink side.
-  // Mojo will automagically convert from/to blink types. This requires
-  // converting native struct to mojo struct first.
-  std::vector<network::mojom::ContentSecurityPolicyPtr> content_policies;
-  for (const auto& policy : policies)
-    content_policies.push_back(BuildContentSecurityPolicy(policy));
-
-  GetFrameHost()->DidAddContentSecurityPolicies(std::move(content_policies));
 }
 
 void RenderFrameImpl::DidChangeFrameOwnerProperties(
@@ -5808,22 +5797,6 @@ void RenderFrameImpl::BeginNavigation(
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
                        (cumulative_bindings & kWebUIBindingsPolicyMask);
-    if (!should_fork && url.SchemeIs(url::kFileScheme)) {
-      // Fork non-file to file opens (see https://crbug.com/1031119).  Note that
-      // this may fork unnecessarily if another tab (hosting a file or not)
-      // targeted this one before its initial navigation, but that shouldn't
-      // cause a problem.
-      should_fork = !old_url.SchemeIs(url::kFileScheme);
-    }
-
-    if (!should_fork) {
-      // Give the embedder a chance.
-      bool is_initial_navigation = render_view_->history_list_length_ == 0;
-      should_fork = GetContentClient()->renderer()->ShouldFork(
-          frame_, url, info->url_request.HttpMethod().Utf8(),
-          is_initial_navigation, false /* is_redirect */);
-    }
-
     if (should_fork) {
       OpenURL(std::move(info));
       return;  // Suppress the load here.

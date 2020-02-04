@@ -64,6 +64,8 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;
+  std::unique_ptr<DesktopAndCursorConditionalComposer>
+  CreateComposingVideoCapturer() override;
 
  private:
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;

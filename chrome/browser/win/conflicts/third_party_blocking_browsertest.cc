@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 
 namespace {
 
@@ -76,6 +78,29 @@ class ThirdPartyRegistryKeyObserver {
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyRegistryKeyObserver);
 };
 
+// Creates an empty serialized ModuleList proto in the module list component
+// directory and returns its path.
+void CreateModuleList(base::FilePath* module_list_path) {
+  chrome::conflicts::ModuleList module_list;
+  // Include an empty blacklist and whitelist.
+  module_list.mutable_blacklist();
+  module_list.mutable_whitelist();
+
+  std::string contents;
+  ASSERT_TRUE(module_list.SerializeToString(&contents));
+
+  // Put the module list beside the module blacklist cache.
+  *module_list_path = ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath()
+                          .DirName()
+                          .Append(FILE_PATH_LITERAL("ModuleList.bin"));
+
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  ASSERT_TRUE(base::CreateDirectory(module_list_path->DirName()));
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(*module_list_path, contents.data(),
+                            static_cast<int>(contents.size())));
+}
+
 class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
  protected:
   ThirdPartyBlockingBrowserTest() = default;
@@ -83,8 +108,9 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kThirdPartyModulesBlocking);
+    scoped_feature_list_.InitWithFeatures({features::kThirdPartyModulesBlocking,
+                                           quarantine::kOutOfProcessQuarantine},
+                                          {});
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     ASSERT_NO_FATAL_FAILURE(
@@ -106,30 +132,6 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
         FILE_PATH_LITERAL("third_party_module.dll"));
     base::ScopedAllowBlockingForTesting scoped_allow_blocking;
     ASSERT_TRUE(base::CopyFile(test_dll_path, *third_party_module_path));
-  }
-
-  // Creates an empty serialized ModuleList proto in the module list component
-  // directory and returns its path.
-  void CreateModuleList(base::FilePath* module_list_path) {
-    chrome::conflicts::ModuleList module_list;
-    // Include an empty blacklist and whitelist.
-    module_list.mutable_blacklist();
-    module_list.mutable_whitelist();
-
-    std::string contents;
-    ASSERT_TRUE(module_list.SerializeToString(&contents));
-
-    // Put the module list beside the module blacklist cache.
-    *module_list_path =
-        ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath()
-            .DirName()
-            .Append(FILE_PATH_LITERAL("ModuleList.bin"));
-
-    base::ScopedAllowBlockingForTesting scoped_allow_blocking;
-    ASSERT_TRUE(base::CreateDirectory(module_list_path->DirName()));
-    ASSERT_EQ(static_cast<int>(contents.size()),
-              base::WriteFile(*module_list_path, contents.data(),
-                              static_cast<int>(contents.size())));
   }
 
   // Enables the ThirdPartyModulesBlocking feature.
@@ -158,22 +160,30 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyBlockingBrowserTest,
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
-  base::FilePath module_list_path;
-  ASSERT_NO_FATAL_FAILURE(CreateModuleList(&module_list_path));
-  ASSERT_FALSE(module_list_path.empty());
-
-  ModuleDatabase* module_database = ModuleDatabase::GetInstance();
-
-  // Speed up the test.
-  module_database->IncreaseInspectionPriority();
-
   // Create the observer early so the change is guaranteed to be observed.
   ThirdPartyRegistryKeyObserver third_party_registry_key_observer;
   ASSERT_TRUE(third_party_registry_key_observer.StartWatching());
 
-  // Simulate the download of the module list component.
-  module_database->third_party_conflicts_manager()->LoadModuleList(
-      module_list_path);
+  base::RunLoop run_loop;
+  ModuleDatabase::GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindLambdaForTesting([quit_closure = run_loop.QuitClosure()]() {
+        ModuleDatabase* module_database = ModuleDatabase::GetInstance();
+
+        // Speed up the test.
+        module_database->IncreaseInspectionPriority();
+
+        base::FilePath module_list_path;
+        ASSERT_NO_FATAL_FAILURE(CreateModuleList(&module_list_path));
+        ASSERT_FALSE(module_list_path.empty());
+
+        // Simulate the download of the module list component.
+        module_database->third_party_conflicts_manager()->LoadModuleList(
+            module_list_path);
+
+        quit_closure.Run();
+      }));
+  run_loop.Run();
 
   // Injects the third-party DLL into the process.
   base::FilePath third_party_module_path;

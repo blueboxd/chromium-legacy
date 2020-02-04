@@ -257,6 +257,12 @@ void OverviewSession::Shutdown() {
 
   grid_list_.clear();
 
+  // Hide the focus widget on overview session end to prevent it from retaining
+  // focus and handling key press events now that overview session is not
+  // consuming them.
+  if (overview_focus_widget_)
+    overview_focus_widget_->Hide();
+
   if (no_windows_widget_) {
     if (enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit) {
       ImmediatelyCloseWidgetOnExit(std::move(no_windows_widget_));

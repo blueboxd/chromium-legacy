@@ -57,6 +57,9 @@ class AppServiceShelfContextMenu : public ShelfContextMenu {
   // id with the prefix "crostini:".
   void BuildCrostiniAppMenu(ui::SimpleMenuModel* menu_model);
 
+  // Build additional Chrome app menu items.
+  void BuildChromeAppMenu(ui::SimpleMenuModel* menu_model);
+
   void ShowAppInfo();
 
   // Helpers to set the launch type.

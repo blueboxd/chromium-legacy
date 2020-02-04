@@ -22,9 +22,7 @@
 OverlayRequestQueue* OverlayRequestQueue::FromWebState(
     web::WebState* web_state,
     OverlayModality modality) {
-  OverlayRequestQueueImpl::Container::CreateForWebState(web_state);
-  return OverlayRequestQueueImpl::Container::FromWebState(web_state)
-      ->QueueForModality(modality);
+  return OverlayRequestQueueImpl::FromWebState(web_state, modality);
 }
 
 #pragma mark - OverlayRequestQueueImpl::Container
@@ -45,9 +43,22 @@ OverlayRequestQueueImpl* OverlayRequestQueueImpl::Container::QueueForModality(
 
 #pragma mark - OverlayRequestQueueImpl
 
+OverlayRequestQueueImpl* OverlayRequestQueueImpl::FromWebState(
+    web::WebState* web_state,
+    OverlayModality modality) {
+  OverlayRequestQueueImpl::Container::CreateForWebState(web_state);
+  return OverlayRequestQueueImpl::Container::FromWebState(web_state)
+      ->QueueForModality(modality);
+}
+
 OverlayRequestQueueImpl::OverlayRequestQueueImpl(web::WebState* web_state)
     : web_state_(web_state), weak_factory_(this) {}
-OverlayRequestQueueImpl::~OverlayRequestQueueImpl() = default;
+
+OverlayRequestQueueImpl::~OverlayRequestQueueImpl() {
+  for (auto& observer : observers_) {
+    observer.OverlayRequestQueueDestroyed(this);
+  }
+}
 
 #pragma mark Public
 

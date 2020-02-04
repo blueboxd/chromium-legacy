@@ -3554,7 +3554,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kDocToc:
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kEmbeddedObject:
-    case ax::mojom::Role::kEmphasis:
     case ax::mojom::Role::kFeed:
     case ax::mojom::Role::kFigure:
     case ax::mojom::Role::kForm:
@@ -3596,7 +3595,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kSpinButton:
     case ax::mojom::Role::kStatus:
     case ax::mojom::Role::kSliderThumb:
-    case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kSuggestion:
     case ax::mojom::Role::kSvgRoot:
     case ax::mojom::Role::kTable:
@@ -3630,6 +3628,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kDescriptionList:
     case ax::mojom::Role::kDescriptionListTerm:
     case ax::mojom::Role::kDetails:
+    case ax::mojom::Role::kEmphasis:
     case ax::mojom::Role::kFigcaption:
     case ax::mojom::Role::kFooter:
     case ax::mojom::Role::kFooterAsNonLandmark:
@@ -3659,6 +3658,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kRuby:
     case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kSection:
+    case ax::mojom::Role::kStrong:
       result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
       break;
 

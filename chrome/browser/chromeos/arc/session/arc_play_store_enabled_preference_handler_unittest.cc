@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
@@ -72,7 +73,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
     preference_handler_ =
         std::make_unique<ArcPlayStoreEnabledPreferenceHandler>(

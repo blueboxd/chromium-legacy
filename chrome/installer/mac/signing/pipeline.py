@@ -137,6 +137,7 @@ def _create_pkgbuild_scripts(paths, dist_config):
         substitutions = {
             '@APP_DIR@': dist_config.app_dir,
             '@APP_PRODUCT@': dist_config.app_product,
+            '@BRAND_CODE@': dist_config.distribution.branding_code,
             '@FRAMEWORK_DIR@': dist_config.framework_dir
         }
         for key, value in substitutions.items():
@@ -429,7 +430,7 @@ def _intermediate_work_dir_name(dist_config):
     return dist_config.packaging_basename
 
 
-def sign_chrome(orig_paths,
+def sign_all(orig_paths,
              config,
              disable_packaging=False,
              do_notarization=True,

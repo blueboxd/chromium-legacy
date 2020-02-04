@@ -136,6 +136,12 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
       std::move(on_destruction_callback_).Run();
   }
 
+  // Returns true if the DownloadType indicates the response body is being saved
+  // to disk. Writing to disk can sometimes be slow on the bots.
+  static bool IsDownloadTypeToFile(DownloadType type) {
+    return type == DownloadType::TO_FILE || type == DownloadType::TO_TEMP_FILE;
+  }
+
   // File path that will be written to.
   const base::FilePath& dest_path() const {
     DCHECK_EQ(DownloadType::TO_FILE, download_type_);
@@ -3167,11 +3173,19 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryTriggered) {
 }
 
 TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
-  // The size of the payload cannot be bigger than
-  // net::test_server::<anonymous>::kRequestSizeLimit which is
-  // 64Mb. We set a pretty large value in order to ensure multiple
-  // progress update calls even on fast machines.
-  std::string long_string = GetLongUploadBody(31 * 1024 * 1024);
+  std::string long_string;
+  if (SimpleLoaderTestHelper::IsDownloadTypeToFile(GetParam())) {
+    // Use a smaller upload body when writing to disk - sometimes creating a
+    // large file takes a while on the bots (and, strangely, sometimes it
+    // performs fine on the exact same bot).
+    long_string = GetLongUploadBody();
+  } else {
+    // The size of the payload cannot be bigger than
+    // net::test_server::<anonymous>::kRequestSizeLimit which is
+    // 64Mb. We set a pretty large value in order to ensure multiple
+    // progress update calls even on fast machines.
+    long_string = GetLongUploadBody(31 * 1024 * 1024);
+  }
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
   test_helper->simple_url_loader()->AttachStringForUpload(long_string,
@@ -3179,14 +3193,11 @@ TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
 
   uint64_t progress = 0;
   test_helper->simple_url_loader()->SetOnUploadProgressCallback(
-      base::BindRepeating(
-          [](uint64_t* progress, uint64_t current, uint64_t total) {
-            EXPECT_GT(current, *progress);
-            EXPECT_GE(total, current);
-            *progress = current;
-          },
-          base::Unretained(&progress)));
-
+      base::BindLambdaForTesting([&](uint64_t current, uint64_t total) {
+        EXPECT_GT(current, progress);
+        EXPECT_GE(total, current);
+        progress = current;
+      }));
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
   EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
   EXPECT_EQ(long_string.size(), progress);

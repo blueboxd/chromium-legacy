@@ -34,7 +34,7 @@ AssistantOptInFlowScreen::~AssistantOptInFlowScreen() {
     view_->Unbind();
 }
 
-void AssistantOptInFlowScreen::Show() {
+void AssistantOptInFlowScreen::ShowImpl() {
   if (!view_)
     return;
 
@@ -53,7 +53,7 @@ void AssistantOptInFlowScreen::Show() {
   exit_callback_.Run();
 }
 
-void AssistantOptInFlowScreen::Hide() {
+void AssistantOptInFlowScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

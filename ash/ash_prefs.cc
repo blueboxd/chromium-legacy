@@ -12,6 +12,7 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
@@ -25,6 +26,7 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace ash {
 
@@ -46,12 +48,16 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
-  TouchDevicesController::RegisterProfilePrefs(registry);
+  TouchDevicesController::RegisterProfilePrefs(registry, for_test);
   tray::VPNListView::RegisterProfilePrefs(registry);
 
-  // ash_unittests relies on assistant prefs.
-  if (for_test)
+  // Provide prefs registered in the browser for ash_unittests.
+  if (for_test) {
     chromeos::assistant::prefs::RegisterProfilePrefs(registry);
+    registry->RegisterBooleanPref(
+        prefs::kMouseReverseScroll, false,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  }
 }
 
 }  // namespace

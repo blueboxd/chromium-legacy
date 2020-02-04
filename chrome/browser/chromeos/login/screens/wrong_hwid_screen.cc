@@ -33,12 +33,12 @@ void WrongHWIDScreen::OnViewDestroyed(WrongHWIDScreenView* view) {
     view_ = nullptr;
 }
 
-void WrongHWIDScreen::Show() {
+void WrongHWIDScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void WrongHWIDScreen::Hide() {
+void WrongHWIDScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

@@ -187,6 +187,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // table.
   base::Optional<int> GetTableRowSpan() const;
 
+  // Returns the font size converted to points, if available.
+  base::Optional<float> GetFontSizeInPoints() const;
+
   // Returns true if either a descendant has selection (sel_focus_object_id) or
   // if this node is a simple text element and has text selection attributes.
   bool HasCaret();

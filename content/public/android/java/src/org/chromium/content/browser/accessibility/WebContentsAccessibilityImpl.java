@@ -1313,7 +1313,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             int[] suggestionEnds, String[] suggestions) {
         CharSequence computedText = computeText(
                 text, isEditableText, language, suggestionStarts, suggestionEnds, suggestions);
-        node.setText(computedText);
+        // We expose the nested structure of links, which results in the roles of all nested nodes
+        // being read. Use content description in the case of links to prevent verbose TalkBack
+        if (annotateAsLink) {
+            node.setContentDescription(computedText);
+        } else {
+            node.setText(computedText);
+        }
     }
 
     protected CharSequence computeText(String text, boolean annotateAsLink, String language,

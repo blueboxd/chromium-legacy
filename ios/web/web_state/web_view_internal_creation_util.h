@@ -16,6 +16,17 @@
 namespace web {
 class BrowserState;
 
+// Creates a new WKWebView.
+//
+// Preconditions for creation of a WKWebView:
+// 1) |browser_state|, |configuration| are not null.
+// 2) web::BrowsingDataPartition is synchronized.
+// 3) The WKProcessPool of the configuration is the same as the WKProcessPool
+//    of the WKWebViewConfiguration associated with |browser_state|.
+//
+WKWebView* BuildWKWebViewForQueries(WKWebViewConfiguration* configuration,
+                                    BrowserState* browser_state);
+
 // Creates a new WKWebView for displaying regular web content and registers a
 // user agent for it.
 //

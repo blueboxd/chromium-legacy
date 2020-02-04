@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/task_manager/task_manager_tester.h"
@@ -238,4 +239,27 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TaskManagerOrderingOfDependentRows) {
   task_manager::browsertest_util::WaitForTaskManagerRows(
       kNumTabs * kPortalsPerTab, expected_portal_title);
   EXPECT_THAT(GetRendererTaskTitles(tester.get()), expected_titles);
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, PdfViewerLoadsInPortal) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_EQ(true,
+            content::EvalJs(contents,
+                            "new Promise((resolve) => {\n"
+                            "  let portal = document.createElement('portal');\n"
+                            "  portal.src = '/pdf/test.pdf';\n"
+                            "  portal.onload = () => { resolve(true); }\n"
+                            "  document.body.appendChild(portal);\n"
+                            "});"));
+
+  std::vector<WebContents*> inner_web_contents =
+      contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents.size());
+  WebContents* portal_contents = inner_web_contents[0];
+
+  EXPECT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(portal_contents));
 }

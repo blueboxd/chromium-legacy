@@ -6,3 +6,4 @@ android.webkit.WebView focusable focused has_character_locations scrollable name
 ++android.widget.EditText clickable editable_text focusable has_character_locations has_non_empty_value multiline name='Textarea' text_change_added_count=8
 ++android.widget.Image role_description='graphic' name='Image with alt text'
 ++android.view.View role_description='link' clickable focusable link name='Image inside link'
+++++android.widget.Image role_description='graphic' name='Image inside link'

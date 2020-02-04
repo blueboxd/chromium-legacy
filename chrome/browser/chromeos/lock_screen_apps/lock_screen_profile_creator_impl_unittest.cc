@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -225,7 +226,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
         profile_manager.release());
 
     // Needed by note taking helper.
-    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+    arc_session_manager_ = arc::CreateTestArcSessionManager(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(&ArcSessionFactory)));
     chromeos::NoteTakingHelper::Initialize();

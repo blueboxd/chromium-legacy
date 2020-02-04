@@ -212,10 +212,10 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
                        PaintChunk::Id(ViewScrollingBackgroundClient(),
                                       kDocumentBackgroundType),
                        view_contents_properties),
-          IsPaintChunk(2, 3,
-                       PaintChunk::Id(*html.Layer(),
-                                      kNonScrollingContentsBackgroundChunkType),
-                       html.FirstFragment().ContentsProperties())));
+          IsPaintChunk(
+              2, 3,
+              PaintChunk::Id(*html.Layer(), DisplayItem::kLayerChunkWhole),
+              html.FirstFragment().ContentsProperties())));
 
   // The scroll hit test should not be scrolled and should not be clipped.
   const auto& scroll_hit_test_chunk = RootPaintController().PaintChunks()[0];
@@ -313,10 +313,10 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
             IsPaintChunk(
                 2, 4, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
                 scrolling_properties, view_hit_test_data),
-            IsPaintChunk(4, 6,
-                         PaintChunk::Id(*html->Layer(),
-                                        kNonScrollingBackgroundChunkType),
-                         scrolling_properties, html_hit_test_data)));
+            IsPaintChunk(
+                4, 6,
+                PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunkWhole),
+                scrolling_properties, html_hit_test_data)));
   } else {
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
@@ -378,10 +378,10 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
             IsPaintChunk(2, 3,
                          PaintChunk::Id(*view, DisplayItem::kScrollHitTest),
                          non_scrolling_properties, scroll_hit_test_data),
-            IsPaintChunk(3, 5,
-                         PaintChunk::Id(*html->Layer(),
-                                        kNonScrollingBackgroundChunkType),
-                         scrolling_properties, scrolling_hit_test_data)));
+            IsPaintChunk(
+                3, 5,
+                PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunkWhole),
+                scrolling_properties, scrolling_hit_test_data)));
   } else {
     auto& non_scrolling_paint_controller =
         view->Layer()->GraphicsLayerBacking(view)->GetPaintController();

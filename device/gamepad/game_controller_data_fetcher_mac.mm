@@ -4,6 +4,7 @@
 
 #include "device/gamepad/game_controller_data_fetcher_mac.h"
 
+#import <GameController/GameController.h>
 #include <string.h>
 
 #include "base/mac/mac_util.h"
@@ -11,8 +12,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
-
-#import <GameController/GameController.h>
 
 namespace device {
 
@@ -81,7 +80,7 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
     if (!IsSupported(controller))
       continue;
 
-    int player_index = [controller playerIndex];
+    int player_index = controller.playerIndex;
     if (player_index != GCControllerPlayerIndexUnset)
       player_indices[player_index] = true;
   }
@@ -97,7 +96,7 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
     if (!IsSupported(controller))
       continue;
 
-    int player_index = [controller playerIndex];
+    int player_index = controller.playerIndex;
     if (player_index == GCControllerPlayerIndexUnset) {
       player_index = NextUnusedPlayerIndex();
       if (player_index == GCControllerPlayerIndexUnset)
@@ -127,16 +126,8 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
       pad.connected = true;
       connected_[player_index] = true;
 
-// In OS X 10.11, the type of the GCController playerIndex member was
-// changed from NSInteger to a GCControllerPlayerIndex enum. Once Chrome
-// no longer supports OSX 10.10, the integer version can be removed.
-#if !defined(MAC_OS_X_VERSION_10_11) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
-      [controller setPlayerIndex:player_index];
-#else
-      [controller
-          setPlayerIndex:static_cast<GCControllerPlayerIndex>(player_index)];
-#endif
+      controller.playerIndex =
+          static_cast<GCControllerPlayerIndex>(player_index);
     }
 
     pad.timestamp = CurrentTimeInMicroseconds();

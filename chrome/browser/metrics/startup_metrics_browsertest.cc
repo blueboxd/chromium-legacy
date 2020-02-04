@@ -17,8 +17,6 @@ namespace {
 
 constexpr const char* kStartupMetrics[] = {
     "Startup.BrowserMessageLoopStartTime",
-    "Startup.BrowserMessageLoopStartTimeFromMainEntry3",
-    "Startup.BrowserOpenTabs",
     "Startup.BrowserWindow.FirstPaint",
     "Startup.BrowserWindow.FirstPaint.CompositingEnded",
     "Startup.BrowserWindowDisplay",

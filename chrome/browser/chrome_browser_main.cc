@@ -1737,10 +1737,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   variations_service->set_policy_pref_service(profile_->GetPrefs());
 
 #else
-  // Most general initialization is behind us, but opening a
-  // tab and/or session restore and such is still to be done.
-  base::TimeTicks browser_open_start = base::TimeTicks::Now();
-
   // We are in regular browser boot sequence. Open initial tabs and enter the
   // main message loop.
   std::vector<Profile*> last_opened_profiles;
@@ -1786,9 +1782,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     if (parameters().autorelease_pool)
       parameters().autorelease_pool->Recycle();
 #endif  // defined(OS_MACOSX)
-
-    const base::TimeDelta delta = base::TimeTicks::Now() - browser_open_start;
-    startup_metric_utils::RecordBrowserOpenTabsDelta(delta);
 
     // Transfer ownership of the browser's lifetime to the BrowserProcess.
     browser_process_->SetQuitClosure(g_run_loop->QuitWhenIdleClosure());

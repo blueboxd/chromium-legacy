@@ -26,10 +26,6 @@ class EncryptionMigrationScreen : public BaseScreen {
   // destroyed earlier then it has to call SetDelegate(NULL).
   void OnViewDestroyed(EncryptionMigrationScreenView* view);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
   // Sets the UserContext for a user whose cryptohome should be migrated.
   void SetUserContext(const UserContext& user_context);
 
@@ -49,6 +45,10 @@ class EncryptionMigrationScreen : public BaseScreen {
   void SetupInitialView();
 
  private:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   EncryptionMigrationScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(EncryptionMigrationScreen);

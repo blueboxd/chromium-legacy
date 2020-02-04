@@ -209,7 +209,8 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
 
   if (deep_scanning_enabled) {
     UploadForDeepScanning(item, std::move(callback),
-                          DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY);
+                          DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+                          DeepScanningRequest::AllScans());
     return true;
   }
 

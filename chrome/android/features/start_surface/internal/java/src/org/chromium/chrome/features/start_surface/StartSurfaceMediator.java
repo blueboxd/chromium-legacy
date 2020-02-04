@@ -76,6 +76,16 @@ class StartSurfaceMediator
         TabSwitcher.Controller initialize();
     }
 
+    /**
+     * Interface to check the associated activity state.
+     */
+    interface ActivityStateChecker {
+        /**
+         * @return Whether the associated activity is finishing or destroyed.
+         */
+        boolean isFinishingOrDestroyed();
+    }
+
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
     private final TabSwitcher.Controller mController;
     private final TabModelSelector mTabModelSelector;
@@ -112,6 +122,7 @@ class StartSurfaceMediator
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private ChromeFullscreenManager mFullScreenManager;
     private ChromeFullscreenManager.FullscreenListener mFullScreenListener;
+    private ActivityStateChecker mActivityStateChecker;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
@@ -119,7 +130,7 @@ class StartSurfaceMediator
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @SurfaceMode int surfaceMode, @Nullable FakeboxDelegate fakeboxDelegate,
             NightModeStateProvider nightModeStateProvider,
-            ChromeFullscreenManager fullscreenManager) {
+            ChromeFullscreenManager fullscreenManager, ActivityStateChecker activityStateChecker) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
@@ -129,6 +140,7 @@ class StartSurfaceMediator
         mFakeboxDelegate = fakeboxDelegate;
         mNightModeStateProvider = nightModeStateProvider;
         mFullScreenManager = fullscreenManager;
+        mActivityStateChecker = activityStateChecker;
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
@@ -406,7 +418,8 @@ class StartSurfaceMediator
             // Make sure FeedSurfaceCoordinator is built before the explore surface is showing by
             // default.
             if (mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
-                    && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
+                    && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null
+                    && !mActivityStateChecker.isFinishingOrDestroyed()) {
                 mPropertyModel.set(FEED_SURFACE_COORDINATOR,
                         mFeedSurfaceCreator.createFeedSurfaceCoordinator(
                                 mNightModeStateProvider.isInNightMode()));
@@ -524,7 +537,8 @@ class StartSurfaceMediator
         if (isVisible == mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) return;
 
         if (isVisible && mPropertyModel.get(IS_SHOWING_OVERVIEW)
-                && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
+                && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null
+                && !mActivityStateChecker.isFinishingOrDestroyed()) {
             mPropertyModel.set(FEED_SURFACE_COORDINATOR,
                     mFeedSurfaceCreator.createFeedSurfaceCoordinator(
                             mNightModeStateProvider.isInNightMode()));

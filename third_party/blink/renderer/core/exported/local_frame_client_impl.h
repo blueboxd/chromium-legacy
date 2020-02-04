@@ -127,7 +127,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
-      WebContentSecurityPolicyList,
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+          initiator_csp,
+      network::mojom::blink::CSPSourcePtr initiator_self_source,
       network::mojom::IPAddressSpace,
       mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
@@ -203,8 +205,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       WebSandboxFlags,
       const ParsedFeaturePolicy& fp_header,
       const blink::DocumentPolicy::FeatureState& dp_header) override;
-  void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) override;
   void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) override;
 
   bool ShouldBlockWebGL() override;
@@ -230,8 +230,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   WebTextCheckClient* GetTextCheckerClient() const override;
 
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override;
-
-  service_manager::InterfaceProvider* GetInterfaceProvider() override;
 
   blink::BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 

@@ -22,7 +22,7 @@
 
 namespace views {
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 const bool PlatformStyle::kIsOkButtonLeading = true;
 #else
 const bool PlatformStyle::kIsOkButtonLeading = false;

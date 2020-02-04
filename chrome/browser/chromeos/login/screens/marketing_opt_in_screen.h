@@ -21,13 +21,14 @@ class MarketingOptInScreen : public BaseScreen {
                        const base::RepeatingClosure& exit_callback);
   ~MarketingOptInScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-
   // On "All set" button pressed.
   void OnAllSet(bool play_communications_opt_in,
                 bool tips_communications_opt_in);
+
+ protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
 
  private:
   MarketingOptInScreenView* const view_;

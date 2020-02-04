@@ -120,6 +120,19 @@ goma = struct(
 )
 
 
+def xcode_enum(cache_name, cache_path):
+  return swarming.cache(name=cache_name, path=cache_path)
+
+
+# Keep this in-sync with the versions of bots in //ios/build/bots/.
+xcode_cache = struct(
+   x10e1001 = xcode_enum('xcode_ios_10e1001', 'xcode_ios_10e1001.app'),
+   x11a1027 = xcode_enum('xcode_ios_11a1027', 'xcode_ios_11a1027.app'),
+   x11c29 = xcode_enum('xcode_ios_11c29', 'xcode_ios_11c29.app'),
+   x11m382q = xcode_enum('xcode_ios_11m382q', 'xcode_ios_11m382q.app'),
+)
+
+
 ################################################################################
 # Implementation details                                                       #
 ################################################################################
@@ -438,4 +451,5 @@ builders = struct(
     defaults = defaults,
     goma = goma,
     os = os,
+    xcode_cache = xcode_cache,
 )

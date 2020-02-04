@@ -286,4 +286,17 @@ bool ExpandPropertyFile(const base::FilePath& input,
   return true;
 }
 
+bool ExpandPropertyFiles(const base::FilePath& source_path,
+                         const base::FilePath& dest_path) {
+  CrosConfig config;
+  for (const char* file : {"default.prop", "build.prop"}) {
+    if (!ExpandPropertyFile(source_path.Append(file), dest_path.Append(file),
+                            &config)) {
+      LOG(ERROR) << "Failed to expand " << source_path.Append(file);
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace arc

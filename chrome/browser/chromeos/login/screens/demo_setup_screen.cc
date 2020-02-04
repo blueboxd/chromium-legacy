@@ -33,12 +33,12 @@ DemoSetupScreen::~DemoSetupScreen() {
     view_->Bind(nullptr);
 }
 
-void DemoSetupScreen::Show() {
+void DemoSetupScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void DemoSetupScreen::Hide() {
+void DemoSetupScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

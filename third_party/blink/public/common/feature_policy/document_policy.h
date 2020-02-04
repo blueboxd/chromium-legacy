@@ -92,17 +92,11 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   static bool IsPolicyCompatible(const FeatureState& required_policy,
                                  const FeatureState& incoming_policy);
 
-  // Returns the list of features which can be controlled by Document Policy,
-  // and their default values.
-  static const FeatureState& GetFeatureDefaults();
-
   // Serialize document policy according to http_structured_header.
   // returns base::nullopt when http structured header serializer encounters
   // problems, e.g. double value out of the range supported.
   static base::Optional<std::string> Serialize(const FeatureState& policy);
 
-  // Parse document policy header to FeatureState
-  static base::Optional<FeatureState> Parse(const std::string& header);
 
   // Merge two FeatureState map. Take stricter value when there is conflict.
   static FeatureState MergeFeatureState(const FeatureState& policy1,

@@ -59,4 +59,26 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
+void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+    {"urlKeyedAnonymizedDataCollection",
+     IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
+    {"urlKeyedAnonymizedDataCollectionDesc",
+     IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
+    {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
+#if !defined(OS_CHROMEOS)
+    {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
+    {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
+#endif
+    {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
+    {"enablePersonalizationLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
+    {"enablePersonalizationLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
+    {"spellingDescription", IDS_SETTINGS_SPELLING_PREF_DESC},
+    {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
+    {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
+    {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
 }  // namespace settings

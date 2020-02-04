@@ -96,7 +96,7 @@ public class SharedClipboardShareActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mAdapter = new SharingAdapter(SharingSpecificFields.EnabledFeatures.SHARED_CLIPBOARD);
+        mAdapter = new SharingAdapter(SharingSpecificFields.EnabledFeatures.SHARED_CLIPBOARD_V2);
         if (!mAdapter.isEmpty()) {
             findViewById(R.id.device_picker_toolbar).setVisibility(View.VISIBLE);
             SharedClipboardMetrics.recordShowDeviceList();

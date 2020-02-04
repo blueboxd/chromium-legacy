@@ -253,10 +253,6 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
   const char* kLockUma =
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility";
   histograms.ExpectBucketCount(
-      kLockUma,
-      network::InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin,
-      2);
-  histograms.ExpectBucketCount(
       kLockUma, network::InitiatorLockCompatibility::kIncorrectLock, 0);
 }
 

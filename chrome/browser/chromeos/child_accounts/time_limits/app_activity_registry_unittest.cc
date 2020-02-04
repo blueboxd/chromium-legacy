@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -80,8 +81,10 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
 
 void AppActivityRegistryTest::SetUp() {
   ChromeViewsTestBase::SetUp();
+  app_activity_registry().OnAppInstalled(chromeos::app_time::GetChromeAppId());
   app_activity_registry().OnAppInstalled(kApp1);
   app_activity_registry().OnAppInstalled(kApp2);
+  app_activity_registry().OnAppAvailable(chromeos::app_time::GetChromeAppId());
   app_activity_registry().OnAppAvailable(kApp1);
   app_activity_registry().OnAppAvailable(kApp2);
 }
@@ -331,4 +334,50 @@ TEST_F(AppActivityRegistryTest, ResetTimeReached) {
   task_environment().FastForwardBy(kTenMinutes);
   EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kApp2));
   EXPECT_EQ(kApp2Limit, app_activity_registry().GetActiveTime(kApp2));
+}
+
+TEST_F(AppActivityRegistryTest, SharedTimeLimitForChromeAndWebApps) {
+  base::Time start = base::Time::Now();
+  const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
+  const base::TimeDelta kHalfHour = base::TimeDelta::FromMinutes(30);
+
+  const chromeos::app_time::AppId kChromeAppId =
+      chromeos::app_time::GetChromeAppId();
+
+  app_activity_registry().SetAppTimeLimitForTest(kChromeAppId, kOneHour, start);
+  app_activity_registry().SetAppTimeLimitForTest(kApp2, kOneHour, start);
+
+  auto* app2_window = CreateWindowForApp(kApp2);
+
+  // Make chrome active for 30 minutes.
+  app_activity_registry().OnChromeAppActivityChanged(
+      chromeos::app_time::ChromeAppActivityState::kActive, start);
+  task_environment().FastForwardBy(kHalfHour);
+  app_activity_registry().OnChromeAppActivityChanged(
+      chromeos::app_time::ChromeAppActivityState::kInactive, start + kHalfHour);
+
+  // Expect that the active running time for app2 has been updated.
+  EXPECT_EQ(kHalfHour, app_activity_registry().GetActiveTime(kChromeAppId));
+  EXPECT_EQ(kHalfHour, app_activity_registry().GetActiveTime(kApp2));
+
+  // Make |kApp2| active for 30 minutes. Expect that it reaches its time limit.
+  app_activity_registry().OnAppActive(kApp2, app2_window, start + kHalfHour);
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp2, chromeos::app_time::AppNotification::kFiveMinutes))
+      .Times(1);
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp2, chromeos::app_time::AppNotification::kOneMinute))
+      .Times(1);
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp2, chromeos::app_time::AppNotification::kTimeLimitReached))
+      .Times(1);
+
+  task_environment().FastForwardBy(kHalfHour);
+
+  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kApp2));
+  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kChromeAppId));
 }

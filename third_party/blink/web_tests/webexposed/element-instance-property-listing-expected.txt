@@ -462,6 +462,7 @@ html element body
     property onportalactivate
     property onrejectionhandled
     property onstorage
+    property ontimezonechange
     property onunhandledrejection
     property onunload
     property text
@@ -614,6 +615,7 @@ html element frameset
     property onportalactivate
     property onrejectionhandled
     property onstorage
+    property ontimezonechange
     property onunhandledrejection
     property onunload
     property rows

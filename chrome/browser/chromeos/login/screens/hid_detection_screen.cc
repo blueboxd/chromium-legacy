@@ -127,11 +127,10 @@ void HIDDetectionScreen::CheckIsScreenRequired(
                      weak_ptr_factory_.GetWeakPtr(), on_check_done));
 }
 
-void HIDDetectionScreen::Show() {
-  if (showing_)
+void HIDDetectionScreen::ShowImpl() {
+  if (!is_hidden())
     return;
 
-  showing_ = true;
   if (view_)
     view_->SetNumKeysEnteredExpected(false);
   SendPointingDeviceNotification();
@@ -146,11 +145,10 @@ void HIDDetectionScreen::Show() {
     view_->Show();
 }
 
-void HIDDetectionScreen::Hide() {
-  if (!showing_)
+void HIDDetectionScreen::HideImpl() {
+  if (is_hidden())
     return;
 
-  showing_ = false;
   if (discovery_session_.get()) {
     discovery_session_->Stop(base::DoNothing(), base::DoNothing());
   }
@@ -392,7 +390,7 @@ void HIDDetectionScreen::DeviceRemoved(device::BluetoothAdapter* adapter,
 void HIDDetectionScreen::InputDeviceAdded(InputDeviceInfoPtr info) {
   VLOG(1) << "Input device added id = " << info->id << " name = " << info->name;
   const InputDeviceInfoPtr& info_ref = devices_[info->id] = std::move(info);
-  if (!showing_)
+  if (is_hidden())
     return;
 
   // TODO(merkulova): deal with all available device types, e.g. joystick.
@@ -416,7 +414,7 @@ void HIDDetectionScreen::InputDeviceAdded(InputDeviceInfoPtr info) {
 
 void HIDDetectionScreen::InputDeviceRemoved(const std::string& id) {
   devices_.erase(id);
-  if (!showing_)
+  if (is_hidden())
     return;
 
   if (id == keyboard_device_id_) {

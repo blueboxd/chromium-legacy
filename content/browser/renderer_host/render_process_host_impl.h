@@ -163,11 +163,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Special depth used when there are no PriorityClients.
   static const unsigned int kMaxFrameDepthForPriority;
 
-  // Create a new RenderProcessHost.
-  // If |storage_partition_impl| is null, the default partition from the
-  // browser_context is used, using |site_instance| (for which a null value is
-  // legal). |site_instance| is not used if |storage_partition_impl| is not
-  // null.
+  // Create a new RenderProcessHost.  If |storage_partition_impl| is null, the
+  // default partition from the browser_context is used, using |site_instance|
+  // (for which a null value is legal). |site_instance| is not used if
+  // |storage_partition_impl| is not null.
   static RenderProcessHost* CreateRenderProcessHost(
       BrowserContext* browser_context,
       StoragePartitionImpl* storage_partition_impl,
@@ -538,6 +537,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }
+
+  // Sets the internal clock to the one specified, and also updates the
+  // appropriate initialization times appropriately.
+  void SetClockForTesting(base::TickClock* clock);
 
   // Binds |receiver| to the RestrictedCookieManager instance owned by
   // |storage_partition_impl_|, and is used by a service worker via
@@ -952,21 +955,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // widgets the lowest depth of all hidden clients. Initialized to max depth
   // when there are no clients.
   unsigned int frame_depth_ = kMaxFrameDepthForPriority;
-  // |intersects_viewport_| similar to |frame_depth_| can be used to rank
-  // processes of same visibility. It indicates process has frames that
-  // intersect with the viewport.
-  bool intersects_viewport_ = false;
   // Tracks the number of low priority frames currently hosted in this process.
   // Always 0 unless features::kUseFramePriorityInProcessHost is enabled.
   unsigned int low_priority_frames_ = 0;
   // Tracks the total number of frames currently hosted in this process.
   // Always 0 unless features::kUseFramePriorityInProcessHost is enabled.
   unsigned int total_frames_ = 0;
-  // These two variables track whether a low/normal priority frame
-  // (respectively) has been attached to the host at any point during its
-  // lifetime.  Used for UMA metrics recorded in destructor.
-  bool low_priority_frames_seen_ = false;
-  bool normal_priority_frames_seen_ = false;
+  // |intersects_viewport_| similar to |frame_depth_| can be used to rank
+  // processes of same visibility. It indicates process has frames that
+  // intersect with the viewport.
+  bool intersects_viewport_ = false;
 #if defined(OS_ANDROID)
   // Highest importance of all clients that contribute priority.
   ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;
@@ -982,6 +980,27 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // and the process will stay foreground priority; set to false and it will
   // stay background priority.
   base::Optional<bool> priority_override_;
+
+  // Track whether a low/normal priority frame (respectively) has been attached
+  // to the host at any point during its lifetime.  Used for UMA metrics
+  // recorded in destructor.
+  bool low_priority_frames_seen_ = false;
+  bool normal_priority_frames_seen_ = false;
+
+  // Used for tracking how much time out of the total time the process spent in
+  // the background.  For this, we track if the process |is_backgrounded_|
+  // currently as well as the |background_duration_| for the process so far and
+  // the last |background_status_update_time_| for the process as observed in
+  // UpdateProcessPriority.  Total time is obtained by looking at the current
+  // time upon deletion relative to |init_time_|.
+  bool is_backgrounded_ = false;
+  base::TimeTicks background_status_update_time_;
+  base::TimeDelta background_duration_;
+
+  // The tick clock used to get the current time.  Used for determining
+  // |init_time_| and |background_status_update_time_| for metrics.  Can be
+  // replaced by tests.
+  const base::TickClock* clock_;
 
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.

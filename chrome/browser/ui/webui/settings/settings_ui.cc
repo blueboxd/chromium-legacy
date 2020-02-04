@@ -296,6 +296,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("lazy_load.html",
                                IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
+
+  // Only used in Polymer 3, see https://crbug.com/1026426.
+  html_source->AddResourcePath("settings.js", IDR_SETTINGS_SETTINGS_ROLLUP_JS);
 #else
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),

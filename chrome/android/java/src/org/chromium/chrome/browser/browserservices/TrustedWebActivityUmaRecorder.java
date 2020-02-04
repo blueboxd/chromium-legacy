@@ -159,6 +159,6 @@ public class TrustedWebActivityUmaRecorder {
     }
 
     private void doWhenNativeLoaded(Runnable runnable) {
-        mBrowserInitializer.runNowOrAfterNativeInitialization(runnable);
+        mBrowserInitializer.runNowOrAfterFullBrowserStarted(runnable);
     }
 }

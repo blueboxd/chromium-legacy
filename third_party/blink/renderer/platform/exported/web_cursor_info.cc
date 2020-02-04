@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 
 #include "third_party/blink/renderer/platform/cursor.h"
+#include "ui/base/cursor/types/cursor_types.h"
 
 namespace blink {
 
@@ -41,9 +42,11 @@ static SkBitmap GetCursorBitmap(const Cursor& cursor) {
 }
 
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)
-    : type(static_cast<ui::CursorType>(cursor.GetType())),
-      hot_spot(cursor.HotSpot()),
-      image_scale_factor(cursor.ImageScaleFactor()),
-      custom_image(GetCursorBitmap(cursor)) {}
+    : type(cursor.GetType()), image_scale_factor(cursor.ImageScaleFactor()) {
+  if (type == ui::CursorType::kCustom) {
+    hot_spot = cursor.HotSpot();
+    custom_image = GetCursorBitmap(cursor);
+  }
+}
 
 }  // namespace blink

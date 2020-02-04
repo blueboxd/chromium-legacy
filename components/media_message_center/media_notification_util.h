@@ -59,6 +59,10 @@ media_session::mojom::MediaSessionAction GetPictureInPictureIgnoredAction(
 COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
 void RecordConcurrentNotificationCount(size_t count);
 
+// Records the concurrent number of Cast media notifications displayed.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
+void RecordConcurrentCastNotificationCount(size_t count);
+
 }  // namespace media_message_center
 
 #endif  // COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_UTIL_H_

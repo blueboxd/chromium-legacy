@@ -65,6 +65,7 @@ class ASH_EXPORT ShelfNavigationWidget : public TabletModeObserver,
 
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 

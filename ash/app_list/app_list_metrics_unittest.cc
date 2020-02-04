@@ -506,7 +506,7 @@ class AppListShowSourceMetricTest : public AshTestBase {
  protected:
   void ClickHomeButton() {
     HomeButton* home_button =
-        GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+        GetPrimaryShelf()->navigation_widget()->GetHomeButton();
     gfx::Point center = home_button->GetCenterPoint();
     views::View::ConvertPointToScreen(home_button, &center);
     GetEventGenerator()->MoveMouseTo(center);

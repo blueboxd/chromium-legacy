@@ -301,7 +301,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   bool frame_has_alpha =
       current_frame()->root_render_pass->has_transparent_background;
   bool use_stencil = overdraw_feedback_;
-  bool did_reshape = false;
+  bool needs_full_frame_redraw = false;
   if (device_viewport_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
       root_render_pass->color_space != reshape_device_color_space_ ||
@@ -318,7 +318,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
         reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
     if (overlay_processor_)
       overlay_processor_->SetViewportSize(reshape_surface_size_);
-    did_reshape = true;
+    // The entire surface has to be redrawn if reshape is requested.
+    needs_full_frame_redraw = true;
   }
 
   BeginDrawingFrame();
@@ -381,8 +382,13 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     using_dc_layers_ = false;
   }
 
-  if (supports_dc_layers_ && (was_using_dc_layers != using_dc_layers_))
+  if (supports_dc_layers_ && (was_using_dc_layers != using_dc_layers_)) {
     SetEnableDCLayers(using_dc_layers_);
+    // The entire surface has to be redrawn if switching from or to
+    // DirectComposition layers, because the previous contents are discarded
+    // and some contents would otherwise be undefined.
+    needs_full_frame_redraw = true;
+  }
 #endif
 
   // Draw all non-root render passes except for the root render pass.
@@ -392,23 +398,18 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     DrawRenderPassAndExecuteCopyRequests(pass.get());
   }
 
-#if defined(OS_WIN)
-  if (supports_dc_layers_ &&
-      (did_reshape || (was_using_dc_layers != using_dc_layers_))) {
-    // The entire surface has to be redrawn if it was reshaped or if switching
-    // from or to DirectComposition layers, because the previous contents are
-    // discarded and some contents would otherwise be undefined.
-    current_frame()->root_damage_rect = gfx::Rect(device_viewport_size);
-  }
-#endif
-
-  // We can skip all drawing if the damage rect is now empty.
   bool skip_drawing_root_render_pass =
-      current_frame()->root_damage_rect.IsEmpty() && allow_empty_swap_;
+      current_frame()->root_damage_rect.IsEmpty() && allow_empty_swap_ &&
+      !needs_full_frame_redraw;
 
-  // If we have to draw but don't support partial swap, the whole output should
-  // be considered damaged.
-  if (!skip_drawing_root_render_pass && !use_partial_swap_)
+  // If partial swap is not used, and the frame can not be skipped, the whole
+  // frame has to be redrawn.
+  if (!use_partial_swap_ && !skip_drawing_root_render_pass)
+    needs_full_frame_redraw = true;
+
+  // If we need to redraw the frame, the whole output should be considered
+  // damaged.
+  if (needs_full_frame_redraw)
     current_frame()->root_damage_rect = gfx::Rect(device_viewport_size);
 
   if (!skip_drawing_root_render_pass)

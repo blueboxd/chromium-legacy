@@ -151,25 +151,25 @@ class SmbServiceTest : public testing::Test {
   }
 
   void ExpectInvalidUrl(const std::string& url) {
-    SmbMountResult result = SmbMountResult::SUCCESS;
+    SmbMountResult result = SmbMountResult::kSuccess;
     smb_service_->Mount({} /* options */, base::FilePath(url),
                         "" /* username */, "" /* password */,
                         false /* use_chromad_kerberos */,
                         false /* should_open_file_manager_after_mount */,
                         false /* save_credentials */,
                         base::BindOnce(&SaveMountResult, &result));
-    EXPECT_EQ(result, SmbMountResult::INVALID_URL);
+    EXPECT_EQ(result, SmbMountResult::kInvalidUrl);
   }
 
   void ExpectInvalidSsoUrl(const std::string& url) {
-    SmbMountResult result = SmbMountResult::SUCCESS;
+    SmbMountResult result = SmbMountResult::kSuccess;
     smb_service_->Mount({} /* options */, base::FilePath(url),
                         "" /* username */, "" /* password */,
                         true /* use_chromad_kerberos */,
                         false /* should_open_file_manager_after_mount */,
                         false /* save_credentials */,
                         base::BindOnce(&SaveMountResult, &result));
-    EXPECT_EQ(result, SmbMountResult::INVALID_SSO_URL);
+    EXPECT_EQ(result, SmbMountResult::kInvalidSsoUrl);
   }
 
   void WaitForSetupComplete() {
@@ -265,7 +265,7 @@ TEST_F(SmbServiceTest, Mount) {
       false /* should_open_file_manager_after_mount */,
       false /* save_credentials */,
       base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
-        EXPECT_EQ(SmbMountResult::SUCCESS, result);
+        EXPECT_EQ(SmbMountResult::kSuccess, result);
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -312,7 +312,7 @@ TEST_F(SmbServiceTest, MountSaveCredentials) {
       false /* should_open_file_manager_after_mount */,
       true /* save_credentials */,
       base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
-        EXPECT_EQ(SmbMountResult::SUCCESS, result);
+        EXPECT_EQ(SmbMountResult::kSuccess, result);
         run_loop.Quit();
       }));
   run_loop.Run();

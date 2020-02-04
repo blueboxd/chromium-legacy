@@ -742,9 +742,9 @@ void UserSelectionScreen::AttemptEasySignin(const AccountId& account_id,
   }
 }
 
-void UserSelectionScreen::Show() {}
+void UserSelectionScreen::ShowImpl() {}
 
-void UserSelectionScreen::Hide() {}
+void UserSelectionScreen::HideImpl() {}
 
 void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
   view_->SetAuthType(account_id,

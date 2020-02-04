@@ -32,7 +32,7 @@ void BaseScreenHandler::RegisterMessages() {
 
 void BaseScreenHandler::HandleUserAction(const std::string& action_id) {
   if (base_screen_)
-    base_screen_->OnUserAction(action_id);
+    base_screen_->HandleUserAction(action_id);
 }
 
 }  // namespace chromeos

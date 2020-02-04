@@ -138,6 +138,16 @@ void ArcSessionRunner::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ArcSessionRunner::ResumeRunner() {
+  VLOG(1) << "ArcSessionRunner is resumed";
+  resumed_ = true;
+  if (target_mode_) {
+    ArcInstanceMode original_mode = *target_mode_;
+    target_mode_ = base::nullopt;
+    RequestStart(original_mode);
+  }
+}
+
 void ArcSessionRunner::RequestStartMiniInstance() {
   RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
@@ -178,6 +188,12 @@ void ArcSessionRunner::RequestStart(ArcInstanceMode request_mode) {
     // - OnSessionStopped()
     // - RequestStart(FULL_INSTANCE) before RestartArcSession() is called.
     // In such a case, defer the operation to RestartArcSession() called later.
+    return;
+  }
+
+  if (!resumed_) {
+    VLOG(1) << "Deferring to start ARC instance. "
+            << "This runner hasn't been resumed yet.";
     return;
   }
 

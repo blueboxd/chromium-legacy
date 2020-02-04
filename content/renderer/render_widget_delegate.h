@@ -17,9 +17,8 @@ namespace content {
 //
 // RenderWidgetDelegate
 //
-//  An interface implemented by an object owning a RenderWidget. This is
-//  intended to be temporary until the RenderViewImpl and RenderWidget classes
-//  are disentangled; see https://crbug.com/583347 and https://crbug.com/478281.
+//  An interface to provide View-level (and/or Page-level) functionality to
+//  the main frame's RenderWidget.
 class CONTENT_EXPORT RenderWidgetDelegate {
  public:
   virtual ~RenderWidgetDelegate() = default;

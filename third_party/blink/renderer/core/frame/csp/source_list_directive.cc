@@ -796,17 +796,14 @@ bool SourceListDirective::Subsumes(
   return CSPSource::FirstSubsumesSecond(normalized_a, normalized_b);
 }
 
-WebContentSecurityPolicySourceList
+network::mojom::blink::CSPSourceListPtr
 SourceListDirective::ExposeForNavigationalChecks() const {
-  WebContentSecurityPolicySourceList source_list;
-  source_list.allow_self = allow_self_;
-  source_list.allow_star = allow_star_;
-  source_list.allow_redirects = allow_redirects_;
-  WebVector<WebContentSecurityPolicySourceExpression> list(list_.size());
-  for (wtf_size_t i = 0; i < list_.size(); ++i)
-    list[i] = list_[i]->ExposeForNavigationalChecks();
-  source_list.sources.Swap(list);
-  return source_list;
+  WTF::Vector<network::mojom::blink::CSPSourcePtr> sources;
+  for (const auto& source : list_)
+    sources.push_back(source->ExposeForNavigationalChecks());
+
+  return network::mojom::blink::CSPSourceList::New(
+      std::move(sources), allow_self_, allow_star_, allow_redirects_);
 }
 
 bool SourceListDirective::SubsumesNoncesAndHashes(

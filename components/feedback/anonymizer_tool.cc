@@ -70,6 +70,22 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // GAIA IDs
     {"GAIA", R"xxx((\"?\bgaia_id\"?[=:]['\"])(\d+)(\b['\"]))xxx"},
     {"GAIA", R"xxx((\{id: )(\d+)(, email:))xxx"},
+
+    // UUIDs given by the 'blkid' tool. These don't necessarily look like
+    // standard UUIDs, so treat them specially.
+    {"UUID", R"xxx((UUID=")([0-9a-zA-Z-]+)("))xxx"},
+
+    // Volume labels presented in the 'blkid' tool, and as part of removable
+    // media paths shown in various logs such as cros-disks (in syslog).
+    // There isn't a well-defined format for these. For labels in blkid,
+    // capture everything between the open and closing quote.
+    {"Volume Label", R"xxx((LABEL=")([^"]+)("))xxx"},
+    // For paths, this is harder. The only restricted characters are '/' and
+    // NUL, so use a simple heuristic. cros-disks generally quotes paths using
+    // single-quotes, so capture everything until a quote character. For lsblk,
+    // capture everything until the end of the line, since the mount path is the
+    // last field.
+    {"Volume Label", R"xxx((/media/removable/)(.+?)(['"/\n]|$))xxx"},
 };
 
 bool MaybeUnmapAddress(net::IPAddress* addr) {

@@ -150,6 +150,7 @@
 
     sequence<DOMString> userPreferredLanguages();
     void setUserPreferredLanguages(sequence<DOMString> languages);
+    void setSystemTimeZone(DOMString timezone);
 
     unsigned long mediaKeysCount();
     unsigned long mediaKeySessionCount();

@@ -29,11 +29,6 @@ class FileSystemStatusTest : public testing::Test {
   static bool IsAndroidDebuggable(const base::FilePath& json_path) {
     return FileSystemStatus::IsAndroidDebuggableForTesting(json_path);
   }
-  static bool ExpandPropertyFiles(const base::FilePath& source_path,
-                                  const base::FilePath& dest_path) {
-    return FileSystemStatus::ExpandPropertyFilesForTesting(source_path,
-                                                           dest_path);
-  }
   static bool IsSystemImageExtFormat(const base::FilePath& path) {
     return FileSystemStatus::IsSystemImageExtFormatForTesting(path);
   }
@@ -100,47 +95,6 @@ TEST_F(FileSystemStatusTest, IsAndroidDebuggable_CannotRead) {
   base::WriteFile(path, kValidJson, strlen(kValidJson));
   base::SetPosixFilePermissions(path, 0300);  // not readable
   EXPECT_FALSE(IsAndroidDebuggable(path));
-}
-
-TEST_F(FileSystemStatusTest, ExpandPropertyFiles_NoSource) {
-  // Both source and dest are not found.
-  EXPECT_FALSE(ExpandPropertyFiles(base::FilePath("/nonexistent1"),
-                                   base::FilePath("/nonexistent2")));
-
-  // Both source and dest exist, but the source directory is empty.
-  base::FilePath source_dir;
-  ASSERT_TRUE(base::CreateTemporaryDirInDir(GetTempDir(), "test", &source_dir));
-  base::FilePath dest_dir;
-  ASSERT_TRUE(base::CreateTemporaryDirInDir(GetTempDir(), "test", &dest_dir));
-  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir));
-
-  // Add default.prop to the source, but not build.prop.
-  base::FilePath default_prop = source_dir.Append("default.prop");
-  constexpr const char kDefaultProp[] = "ro.foo=bar\n";
-  base::WriteFile(default_prop, kDefaultProp, strlen(kDefaultProp));
-  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir));
-
-  // Add build.prop too. Then the call should succeed.
-  base::FilePath build_prop = source_dir.Append("build.prop");
-  constexpr const char kBuildProp[] = "ro.baz=boo\n";
-  base::WriteFile(build_prop, kBuildProp, strlen(kBuildProp));
-  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir));
-
-  // Verify two dest files are there.
-  EXPECT_TRUE(base::PathExists(dest_dir.Append("default.prop")));
-  EXPECT_TRUE(base::PathExists(dest_dir.Append("build.prop")));
-
-  // Verify their content.
-  // Note: ExpandPropertyFile() adds a trailing LF.
-  std::string content;
-  EXPECT_TRUE(
-      base::ReadFileToString(dest_dir.Append("default.prop"), &content));
-  EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
-  EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
-  EXPECT_EQ(std::string(kBuildProp) + "\n", content);
-
-  // Finally, test the case where source is valid but the dest is not.
-  EXPECT_FALSE(ExpandPropertyFiles(source_dir, base::FilePath("/nonexistent")));
 }
 
 TEST_F(FileSystemStatusTest, IsSystemImageExtFormat_FileMissing) {

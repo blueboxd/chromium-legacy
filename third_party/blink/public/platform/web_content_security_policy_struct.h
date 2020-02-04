@@ -39,11 +39,15 @@
 
 namespace blink {
 
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
 enum WebWildcardDisposition {
   kWebWildcardDispositionNoWildcard,
   kWebWildcardDispositionHasWildcard
 };
 
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
 struct WebContentSecurityPolicySourceExpression {
   WebString scheme;
   WebString host;
@@ -53,6 +57,8 @@ struct WebContentSecurityPolicySourceExpression {
   WebString path;
 };
 
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
 struct WebContentSecurityPolicySourceList {
   bool allow_self;
   bool allow_star;
@@ -60,11 +66,15 @@ struct WebContentSecurityPolicySourceList {
   WebVector<WebContentSecurityPolicySourceExpression> sources;
 };
 
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
 struct WebContentSecurityPolicyDirective {
   WebString name;
   WebContentSecurityPolicySourceList source_list;
 };
 
+// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
+// from blink.
 struct WebContentSecurityPolicy {
   network::mojom::ContentSecurityPolicyType disposition;
   network::mojom::ContentSecurityPolicySource source;
@@ -72,11 +82,6 @@ struct WebContentSecurityPolicy {
   WebVector<WebString> report_endpoints;
   WebString header;
   bool use_reporting_api;
-};
-
-struct WebContentSecurityPolicyList {
-  WebVector<WebContentSecurityPolicy> policies;
-  base::Optional<WebContentSecurityPolicySourceExpression> self_source;
 };
 
 struct WebContentSecurityPolicyViolation {

@@ -30,11 +30,11 @@ class WrongHWIDScreen : public BaseScreen {
   // is destroyed earlier then it has to call SetDelegate(NULL).
   void OnViewDestroyed(WrongHWIDScreenView* view);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
  private:
+  // BaseScreen implementation:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   WrongHWIDScreenView* view_;
   base::RepeatingClosure exit_callback_;
 

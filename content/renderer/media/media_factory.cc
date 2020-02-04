@@ -47,7 +47,7 @@
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
@@ -374,14 +374,18 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   if (base::FeatureList::IsEnabled(media::kMediaPowerExperiment)) {
     // The battery monitor is only available through the blink provider.
     // TODO(liberato): Should we expose this via |remote_interfaces_|?
+    scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+        remote_interfaces =
+            blink::Platform::Current()->GetBrowserInterfaceBroker();
     auto battery_monitor_cb = base::BindRepeating(
-        [](blink::InterfaceProvider* remote_interfaces) {
+        [](scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+               remote_interfaces) {
           mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor;
           remote_interfaces->GetInterface(
               battery_monitor.InitWithNewPipeAndPassReceiver());
           return battery_monitor;
         },
-        blink::Platform::Current()->GetInterfaceProvider());
+        remote_interfaces);
     power_status_helper =
         std::make_unique<PowerStatusHelperImpl>(std::move(battery_monitor_cb));
   }

@@ -354,8 +354,6 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     return active_blob_registry_.get();
   }
 
-  void GrantChildProcessPermissions(int child_process_id);
-
   // Compact is public for testing.
   virtual void Compact();
   virtual leveldb::Status DeleteDatabase(

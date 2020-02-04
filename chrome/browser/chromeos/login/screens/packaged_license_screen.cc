@@ -30,12 +30,12 @@ PackagedLicenseScreen::~PackagedLicenseScreen() {
     view_->Unbind();
 }
 
-void PackagedLicenseScreen::Show() {
+void PackagedLicenseScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void PackagedLicenseScreen::Hide() {
+void PackagedLicenseScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

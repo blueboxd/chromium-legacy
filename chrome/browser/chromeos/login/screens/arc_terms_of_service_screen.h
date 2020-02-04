@@ -32,17 +32,17 @@ class ArcTermsOfServiceScreen : public BaseScreen,
                           const ScreenExitCallback& exit_callback);
   ~ArcTermsOfServiceScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   // ArcTermsOfServiceScreenViewObserver:
   void OnSkip() override;
   void OnAccept(bool review_arc_settings) override;
   void OnViewDestroyed(ArcTermsOfServiceScreenView* view) override;
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:

@@ -34,7 +34,6 @@ class FileSystemStatus {
   const base::FilePath& vendor_image_path() const { return vendor_image_path_; }
   const base::FilePath& guest_kernel_path() const { return guest_kernel_path_; }
   const base::FilePath& fstab_path() const { return fstab_path_; }
-  bool property_files_expanded() const { return property_files_expanded_; }
 
   // Setters for testing.
   void set_android_debuggable_for_testing(bool is_android_debuggable) {
@@ -62,16 +61,9 @@ class FileSystemStatus {
   void set_fstab_path_for_testing(const base::FilePath& fstab_path) {
     fstab_path_ = fstab_path;
   }
-  void set_property_files_expanded_for_testing(bool property_files_expanded) {
-    property_files_expanded_ = property_files_expanded;
-  }
 
   static bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
     return IsAndroidDebuggable(json_path);
-  }
-  static bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
-                                            const base::FilePath& dest_path) {
-    return ExpandPropertyFiles(source_path, dest_path);
   }
   static bool IsSystemImageExtFormatForTesting(const base::FilePath& path) {
     return IsSystemImageExtFormat(path);
@@ -89,12 +81,6 @@ class FileSystemStatus {
   static bool IsHostRootfsWritable();
   static base::FilePath SelectDlcOrBuiltin(const base::FilePath& file);
 
-  // Copies two prop files in /usr/share/arcvm to /run/arcvm/host_generated with
-  // or without modifications (depending on whether the board is unibuild).
-  // Returns true if the copy is successful.
-  static bool ExpandPropertyFiles(const base::FilePath& source_path,
-                                  const base::FilePath& dest_path);
-
   // https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout
   // Super block starts from block 0, offset 0x400.
   // 0x38: Magic signature (Len=16, value=0xEF53) in little-endian order.
@@ -106,7 +92,6 @@ class FileSystemStatus {
   base::FilePath vendor_image_path_;
   base::FilePath guest_kernel_path_;
   base::FilePath fstab_path_;
-  bool property_files_expanded_;
   bool is_system_image_ext_format_;
 };
 

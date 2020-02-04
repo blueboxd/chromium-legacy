@@ -2827,6 +2827,7 @@ interface HTMLBodyElement : HTMLElement
     getter onresize
     getter onscroll
     getter onstorage
+    getter ontimezonechange
     getter onunhandledrejection
     getter onunload
     getter text
@@ -2857,6 +2858,7 @@ interface HTMLBodyElement : HTMLElement
     setter onresize
     setter onscroll
     setter onstorage
+    setter ontimezonechange
     setter onunhandledrejection
     setter onunload
     setter text
@@ -3315,6 +3317,7 @@ interface HTMLFrameSetElement : HTMLElement
     getter onresize
     getter onscroll
     getter onstorage
+    getter ontimezonechange
     getter onunhandledrejection
     getter onunload
     getter rows
@@ -3341,6 +3344,7 @@ interface HTMLFrameSetElement : HTMLElement
     setter onresize
     setter onscroll
     setter onstorage
+    setter ontimezonechange
     setter onunhandledrejection
     setter onunload
     setter rows
@@ -11749,6 +11753,7 @@ interface webkitURL
     getter onsubmit
     getter onsuspend
     getter ontimeupdate
+    getter ontimezonechange
     getter ontoggle
     getter ontouchcancel
     getter ontouchend
@@ -11949,6 +11954,7 @@ interface webkitURL
     setter onsubmit
     setter onsuspend
     setter ontimeupdate
+    setter ontimezonechange
     setter ontoggle
     setter ontouchcancel
     setter ontouchend

@@ -105,6 +105,11 @@ const char kReportDeviceBootMode[] = "cros.device_status.report_boot_mode";
 // included in status reports to the device management server.
 const char kReportDeviceCpuInfo[] = "cros.device_status.report_cpu_info";
 
+// A boolean pref that determines whether the device timezone information should
+// be included in status reports to the device management server.
+const char kReportDeviceTimezoneInfo[] =
+    "cros.device_status.report_timezone_info";
+
 // A boolean pref that indicates whether the current location should be reported
 // along with device policy requests.
 const char kReportDeviceLocation[] = "cros.device_status.report_location";

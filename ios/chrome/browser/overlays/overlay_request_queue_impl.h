@@ -53,7 +53,14 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     // All requests in a queue are cancelled before the queue is destroyed.
     virtual void QueuedRequestCancelled(OverlayRequestQueueImpl* queue,
                                         OverlayRequest* request) {}
+
+    // Called when |queue| is about to be destroyed.
+    virtual void OverlayRequestQueueDestroyed(OverlayRequestQueueImpl* queue) {}
   };
+
+  // Returns the request queue implementation for |web_state| at |modality|.
+  static OverlayRequestQueueImpl* FromWebState(web::WebState* web_state,
+                                               OverlayModality modality);
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);

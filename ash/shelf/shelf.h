@@ -25,7 +25,8 @@ namespace ui {
 class GestureEvent;
 class MouseWheelEvent;
 class MouseEvent;
-}
+class ScrollEvent;
+}  // namespace ui
 
 namespace views {
 class View;
@@ -168,8 +169,13 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Handles a mouse |event| coming from the Shelf.
   void ProcessMouseEvent(const ui::MouseEvent& event);
 
-  // Handles a mousewheel scroll event coming from the shelf.
-  void ProcessMouseWheelEvent(ui::MouseWheelEvent* event);
+  // Handles a scroll |event| coming from the Shelf.
+  void ProcessScrollEvent(ui::ScrollEvent* event);
+
+  // Handles a mousewheel scroll event coming from the shelf. We use
+  // |from_touchpad| to distinguish if an event originated from a touchpad
+  // scroll or a mousewheel scroll.
+  void ProcessMouseWheelEvent(ui::MouseWheelEvent* event, bool from_touchpad);
 
   void AddObserver(ShelfObserver* observer);
   void RemoveObserver(ShelfObserver* observer);

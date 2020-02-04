@@ -1656,6 +1656,10 @@
       name: "TimerThrottlingForHiddenFrames",
       status: "stable",
     },
+    {
+      name: "TimeZoneChangeEvent",
+      status: "experimental",
+    },
     // Many websites disable mouse support when touch APIs are available.  We'd
     // like to enable this always but can't until more websites fix this bug.
     // Chromium sets this conditionally (eg. based on the presence of a

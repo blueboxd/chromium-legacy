@@ -74,6 +74,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void InitializeContentSecurityPolicy(const DocumentInit&);
   void InitializeOrigin(const DocumentInit&);
   void InitializeSandboxFlags(const DocumentInit&);
+  void InitializeDocumentPolicy(const DocumentInit&);
   void InitializeFeaturePolicy(const DocumentInit&);
   void InitializeSecureContextMode(const DocumentInit&);
   void InitializeOriginTrials(const DocumentInit&);
@@ -81,7 +82,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   scoped_refptr<SecurityOrigin> security_origin_;
   WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
-  base::Optional<DocumentPolicy::FeatureState> document_policy_;
+  DocumentPolicy::FeatureState document_policy_;
   bool initialized_feature_policy_state_ = false;
   Vector<String> feature_policy_parse_messages_;
   ParsedFeaturePolicy feature_policy_header_;

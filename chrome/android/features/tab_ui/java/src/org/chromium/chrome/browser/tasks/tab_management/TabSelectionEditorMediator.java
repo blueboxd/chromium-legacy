@@ -148,7 +148,7 @@ class TabSelectionEditorMediator
                 ColorStateList toolbarTintColorList = AppCompatResources.getColorStateList(mContext,
                         isIncognito ? R.color.dark_text_color_list
                                     : R.color.default_text_color_inverse_list);
-                int textAppearance = isIncognito ? R.style.TextAppearance_Headline_Primary_Black
+                int textAppearance = isIncognito ? R.style.TextAppearance_Headline_Primary_Dark
                                                  : R.style.TextAppearance_Headline_Inverse;
 
                 mModel.set(TabSelectionEditorProperties.PRIMARY_COLOR, primaryColor);

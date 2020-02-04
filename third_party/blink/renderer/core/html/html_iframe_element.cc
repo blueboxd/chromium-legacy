@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -284,7 +285,7 @@ void HTMLIFrameElement::ParseAttribute(
 
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
-  return DocumentPolicy::Parse(required_policy_.Ascii())
+  return DocumentPolicyParser::Parse(required_policy_)
       .value_or(DocumentPolicy::FeatureState{});
 }
 

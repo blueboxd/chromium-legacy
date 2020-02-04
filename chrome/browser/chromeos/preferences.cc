@@ -196,16 +196,18 @@ void Preferences::RegisterProfilePrefs(
   // and it should not carry over to sessions were neither of these is set.
   registry->RegisterBooleanPref(prefs::kUnifiedDesktopEnabledByDefault, false,
                                 PrefRegistry::NO_REGISTRATION_FLAGS);
+  // TODO(anasalazar): Finish moving this to ash.
   registry->RegisterBooleanPref(
-      prefs::kNaturalScroll,
+      ash::prefs::kNaturalScroll,
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault),
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(
-      prefs::kPrimaryMouseButtonRight, false,
+      ash::prefs::kMouseReverseScroll, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+
   registry->RegisterBooleanPref(
-      prefs::kMouseReverseScroll, false,
+      prefs::kPrimaryMouseButtonRight, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kMouseAcceleration, true,
@@ -450,12 +452,14 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
                                    prefs, callback);
   unified_desktop_enabled_by_default_.Init(
       prefs::kUnifiedDesktopEnabledByDefault, prefs, callback);
-  natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
+  // TODO(anasalazar): Finish moving this to ash.
+  natural_scroll_.Init(ash::prefs::kNaturalScroll, prefs, callback);
+  mouse_reverse_scroll_.Init(ash::prefs::kMouseReverseScroll, prefs, callback);
+
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
-  mouse_reverse_scroll_.Init(prefs::kMouseReverseScroll, prefs, callback);
   mouse_acceleration_.Init(prefs::kMouseAcceleration, prefs, callback);
   touchpad_acceleration_.Init(prefs::kTouchpadAcceleration, prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
@@ -627,7 +631,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
           unified_desktop_enabled_by_default_.GetValue());
     }
   }
-  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kNaturalScroll) {
+  // TODO(anasalazar): Finish moving this to ash.
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == ash::prefs::kNaturalScroll) {
     // Force natural scroll default if we've sync'd and if the cmd line arg is
     // set.
     ForceNaturalScrollDefault();
@@ -641,6 +647,17 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Started", enabled);
   }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == ash::prefs::kMouseReverseScroll) {
+    const bool enabled = mouse_reverse_scroll_.GetValue();
+    if (user_is_active)
+      mouse_settings.SetReverseScroll(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Started", enabled);
+  }
+
   if (reason != REASON_PREF_CHANGED || pref_name == prefs::kMouseSensitivity) {
     const int sensitivity = mouse_sensitivity_.GetValue();
     if (user_is_active)
@@ -685,16 +702,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       if (prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight) != right)
         prefs->SetBoolean(prefs::kOwnerPrimaryMouseButtonRight, right);
     }
-  }
-  if (reason != REASON_PREF_CHANGED ||
-      pref_name == prefs::kMouseReverseScroll) {
-    const bool enabled = mouse_reverse_scroll_.GetValue();
-    if (user_is_active)
-      mouse_settings.SetReverseScroll(enabled);
-    if (reason == REASON_PREF_CHANGED)
-      UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Changed", enabled);
-    else if (reason == REASON_INITIALIZATION)
-      UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED || pref_name == prefs::kMouseAcceleration) {
     const bool enabled = mouse_acceleration_.GetValue();
@@ -901,11 +908,13 @@ void Preferences::OnIsSyncingChanged() {
   ForceNaturalScrollDefault();
 }
 
+// TODO(anasalazar): Finish moving this to ash::TouchDevicesController.
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault) &&
-      prefs_->IsSyncing() && !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
+      prefs_->IsSyncing() &&
+      !prefs_->GetUserPrefValue(ash::prefs::kNaturalScroll)) {
     DVLOG(1) << "Natural scroll forced to true";
     natural_scroll_.SetValue(true);
     UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Forced", true);

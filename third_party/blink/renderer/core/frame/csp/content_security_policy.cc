@@ -399,16 +399,12 @@ void ContentSecurityPolicy::AddPolicyFromHeaderValue(
   }
 }
 
-void ContentSecurityPolicy::ReportAccumulatedHeaders(
-    LocalFrameClient* client) const {
-  // Notify the embedder about headers that have accumulated before the
-  // navigation got committed.  See comments in
-  // addAndReportPolicyFromHeaderValue for more details and context.
-  DCHECK(client);
-  WebVector<WebContentSecurityPolicy> policies(policies_.size());
-  for (wtf_size_t i = 0; i < policies_.size(); ++i)
-    policies[i] = policies_[i]->ExposeForNavigationalChecks();
-  client->DidAddContentSecurityPolicies(policies);
+void ContentSecurityPolicy::ReportAccumulatedHeaders(LocalFrame* frame) const {
+  WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies;
+  for (const auto& policy : policies_)
+    policies.push_back(policy->ExposeForNavigationalChecks());
+  frame->GetLocalFrameHostRemote().DidAddContentSecurityPolicies(
+      std::move(policies));
 }
 
 void ContentSecurityPolicy::AddAndReportPolicyFromHeaderValue(
@@ -426,15 +422,15 @@ void ContentSecurityPolicy::AddAndReportPolicyFromHeaderValue(
   // TODO(arthursonzogni): policies are actually replicated (1) and some of
   // them are enforced on the browser process (2). Stop doing (1) when (2) is
   // finished.
-  WebVector<WebContentSecurityPolicy> policies(policies_.size() -
-                                               previous_policy_count);
+  WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies(
+      policies_.size() - previous_policy_count);
   for (wtf_size_t i = previous_policy_count; i < policies_.size(); ++i) {
     policies[i - previous_policy_count] =
         policies_[i]->ExposeForNavigationalChecks();
   }
 
   if (delegate_)
-    delegate_->DidAddContentSecurityPolicies(policies);
+    delegate_->DidAddContentSecurityPolicies(std::move(policies));
 }
 
 void ContentSecurityPolicy::SetOverrideAllowInlineStyle(bool value) {
@@ -1679,16 +1675,11 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
   return context_policy->Subsumes(*attr_policy);
 }
 
-WebContentSecurityPolicyList
+WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
 ContentSecurityPolicy::ExposeForNavigationalChecks() const {
-  WebContentSecurityPolicyList list;
-  for (const auto& policy : policies_) {
-    list.policies.emplace_back(policy->ExposeForNavigationalChecks());
-  }
-
-  if (self_source_)
-    list.self_source = self_source_->ExposeForNavigationalChecks();
-
+  WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> list;
+  for (const auto& policy : policies_)
+    list.push_back(policy->ExposeForNavigationalChecks());
   return list;
 }
 

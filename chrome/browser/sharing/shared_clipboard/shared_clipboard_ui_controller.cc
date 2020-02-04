@@ -63,7 +63,7 @@ PageActionIconType SharedClipboardUiController::GetIconType() {
 
 sync_pb::SharingSpecificFields::EnabledFeatures
 SharedClipboardUiController::GetRequiredFeature() {
-  return sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
+  return sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2;
 }
 
 // No need for apps for shared clipboard feature

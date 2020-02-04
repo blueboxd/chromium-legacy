@@ -275,10 +275,17 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       auto* entry = entries.front();
       ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
 
+      size_t num_values = 0;
+
+      EXPECT_NE(ContentSettingTypeToHistogramValue(content_settings_type,
+                                                   &num_values),
+                -1);
+
       EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
                 static_cast<int64_t>(PermissionSourceUI::PROMPT));
       EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
-                static_cast<int64_t>(content_settings_type));
+                static_cast<int64_t>(ContentSettingTypeToHistogramValue(
+                    content_settings_type, &num_values)));
       EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
                 static_cast<int64_t>(action.value()));
 

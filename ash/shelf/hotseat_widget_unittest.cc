@@ -92,7 +92,7 @@ class HotseatWidgetTest
       SwipeUpOnShelf();
 
     views::View* home_button =
-        GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+        GetPrimaryShelf()->navigation_widget()->GetHomeButton();
     auto center_point = home_button->GetBoundsInScreen().CenterPoint();
 
     GetEventGenerator()->set_current_screen_location(center_point);
@@ -701,7 +701,6 @@ TEST_P(HotseatWidgetTest, ShowingOverviewFromShownAnimatesOnce) {
   ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
   const gfx::Point overview_button_center = GetPrimaryShelf()
-                                                ->shelf_widget()
                                                 ->status_area_widget()
                                                 ->overview_button_tray()
                                                 ->GetBoundsInScreen()
@@ -733,7 +732,6 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
 
   // First, try with no windows open.
   const gfx::Point overview_button_center = GetPrimaryShelf()
-                                                ->shelf_widget()
                                                 ->status_area_widget()
                                                 ->overview_button_tray()
                                                 ->GetBoundsInScreen()
@@ -754,7 +752,7 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
   if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     SwipeUpOnShelf();
   views::View* home_button =
-      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+      GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   GetEventGenerator()->GestureTapAt(
       home_button->GetBoundsInScreen().CenterPoint());
   GetAppListTestHelper()->CheckVisibility(true);
@@ -800,7 +798,7 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
-        GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+        GetPrimaryShelf()->navigation_widget()->GetHomeButton();
     GetEventGenerator()->GestureTapAt(
         home_button->GetBoundsInScreen().CenterPoint());
 
@@ -838,7 +836,7 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
-        GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+        GetPrimaryShelf()->navigation_widget()->GetHomeButton();
     GetEventGenerator()->GestureTapAt(
         home_button->GetBoundsInScreen().CenterPoint());
 
@@ -861,7 +859,6 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
   HotseatStateWatcher watcher(GetShelfLayoutManager());
   {
     gfx::Point overview_button_center = GetPrimaryShelf()
-                                            ->shelf_widget()
                                             ->status_area_widget()
                                             ->overview_button_tray()
                                             ->GetBoundsInScreen()
@@ -875,7 +872,7 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   views::View* home_button =
-      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+      GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   GetEventGenerator()->GestureTapAt(
       home_button->GetBoundsInScreen().CenterPoint());
 
@@ -904,7 +901,6 @@ TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
     SwipeUpOnShelf();
 
   gfx::Point overview_button_center = GetPrimaryShelf()
-                                          ->shelf_widget()
                                           ->status_area_widget()
                                           ->overview_button_tray()
                                           ->GetBoundsInScreen()
@@ -955,7 +951,6 @@ TEST_P(HotseatWidgetTest, GoHomeDuringInAppToOverviewTransition) {
     SwipeUpOnShelf();
 
   gfx::Point overview_button_center = GetPrimaryShelf()
-                                          ->shelf_widget()
                                           ->status_area_widget()
                                           ->overview_button_tray()
                                           ->GetBoundsInScreen()
@@ -979,7 +974,7 @@ TEST_P(HotseatWidgetTest, GoHomeDuringInAppToOverviewTransition) {
   // Press home button - expect transition to home (with hotseat in kShown
   // state, and in app shelf hidden).
   views::View* home_button =
-      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+      GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   GetEventGenerator()->GestureTapAt(
       home_button->GetBoundsInScreen().CenterPoint());
 
@@ -1069,14 +1064,13 @@ TEST_P(HotseatWidgetTest,
   wm::ActivateWindow(window.get());
   ASSERT_EQ(1, counter.count());
   views::View* home_button =
-      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+      GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   GetEventGenerator()->GestureTapAt(
       home_button->GetBoundsInScreen().CenterPoint());
 
   {
     OverviewAnimationWaiter waiter;
     gfx::Point overview_button_center = GetPrimaryShelf()
-                                            ->shelf_widget()
                                             ->status_area_widget()
                                             ->overview_button_tray()
                                             ->GetBoundsInScreen()
@@ -1091,7 +1085,6 @@ TEST_P(HotseatWidgetTest,
     OverviewAnimationWaiter waiter;
     // Overview button has moved a bit now that the shelf is in-app.
     gfx::Point overview_button_center = GetPrimaryShelf()
-                                            ->shelf_widget()
                                             ->status_area_widget()
                                             ->overview_button_tray()
                                             ->GetBoundsInScreen()
@@ -1115,7 +1108,7 @@ TEST_P(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
   // Go to the home launcher, work area should not update.
   DisplayWorkAreaChangeCounter counter;
   views::View* home_button =
-      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+      GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   GetEventGenerator()->GestureTapAt(
       home_button->GetBoundsInScreen().CenterPoint());
 
@@ -1143,7 +1136,6 @@ TEST_P(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
   {
     OverviewAnimationWaiter waiter;
     gfx::Point overview_button_center = GetPrimaryShelf()
-                                            ->shelf_widget()
                                             ->status_area_widget()
                                             ->overview_button_tray()
                                             ->GetBoundsInScreen()

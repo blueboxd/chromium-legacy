@@ -31,9 +31,10 @@ class FingerprintSetupScreen : public BaseScreen {
     exit_callback_ = exit_callback;
   }
 
+ protected:
   // BaseScreen:
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
  private:

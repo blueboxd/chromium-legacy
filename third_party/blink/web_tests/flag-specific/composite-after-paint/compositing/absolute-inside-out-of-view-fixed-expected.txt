@@ -13,7 +13,7 @@
       "bounds": [15, 600]
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='wrapper box'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000"

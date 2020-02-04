@@ -179,7 +179,7 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
 
 bool AudioWorkletGlobalScope::Process(
     AudioWorkletProcessor* processor,
-    Vector<AudioBus*>* input_buses,
+    Vector<scoped_refptr<AudioBus>>* input_buses,
     Vector<AudioBus*>* output_buses,
     HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map) {
   CHECK_GE(input_buses->size(), 0u);
@@ -205,7 +205,7 @@ bool AudioWorkletGlobalScope::Process(
   // 1st arg of JS callback: inputs
   v8::Local<v8::Array> inputs = v8::Array::New(isolate, input_buses->size());
   uint32_t input_bus_index = 0;
-  for (auto* const input_bus : *input_buses) {
+  for (auto input_bus : *input_buses) {
     // If |input_bus| is null, then the input is not connected, and
     // the array for that input should have one channel and a length
     // of 0.

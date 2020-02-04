@@ -3608,6 +3608,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter onerror
 [Worker]     getter onlanguagechange
 [Worker]     getter onrejectionhandled
+[Worker]     getter ontimezonechange
 [Worker]     getter onunhandledrejection
 [Worker]     getter origin
 [Worker]     getter performance
@@ -3626,6 +3627,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onlanguagechange
 [Worker]     setter onrejectionhandled
+[Worker]     setter ontimezonechange
 [Worker]     setter onunhandledrejection
 [Worker]     setter origin
 [Worker]     setter performance

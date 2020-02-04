@@ -4858,6 +4858,8 @@
 
   "ReportDeviceCpuInfo": {},
 
+  "ReportDeviceTimezoneInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

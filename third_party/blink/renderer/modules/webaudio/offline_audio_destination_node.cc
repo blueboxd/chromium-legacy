@@ -301,7 +301,8 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
       // This will cause the node(s) connected to us to process, which in turn
       // will pull on their input(s), all the way backwards through the
       // rendering graph.
-      AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
+      scoped_refptr<AudioBus> rendered_bus =
+          Input(0).Pull(destination_bus, number_of_frames);
 
       if (!rendered_bus) {
         destination_bus->Zero();

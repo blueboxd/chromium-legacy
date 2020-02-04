@@ -106,14 +106,14 @@ public class AutoFetchNotifier {
                 return;
             }
 
-            // Chrome may or may not be running. Use runNowOrAfterNativeInitialization() to trigger
-            // the cancellation if Chrome is running. If Chrome isn't running,
-            // runNowOrAfterNativeInitialization() will never call our runnable, so set a pref to
-            // remember to cancel on next startup.
+            // Chrome may or may not be running. Use runNowOrAfterFullBrowserStarted() to trigger
+            // the cancellation if Chrome is running in full browser. If Chrome isn't running in
+            // full browser, runNowOrAfterFullBrowserStarted() will never call our runnable, so set
+            // a pref to remember to cancel on next startup.
             SharedPreferencesManager.getInstance().writeInt(
                     ChromePreferenceKeys.OFFLINE_AUTO_FETCH_USER_CANCEL_ACTION_IN_PROGRESS, action);
             // This will call us back with cancellationComplete().
-            ChromeBrowserInitializer.getInstance().runNowOrAfterNativeInitialization(
+            ChromeBrowserInitializer.getInstance().runNowOrAfterFullBrowserStarted(
                     AutoFetchNotifier::cancelInProgress);
             // Finally, whether chrome is running or not, remove the notification.
             closeInProgressNotification();

@@ -1085,6 +1085,10 @@ typedef void(GL_BINDING_CALL* glMatrixLoadIdentityEXTProc)(GLenum matrixMode);
 typedef void(GL_BINDING_CALL* glMaxShaderCompilerThreadsKHRProc)(GLuint count);
 typedef void(GL_BINDING_CALL* glMemoryBarrierByRegionProc)(GLbitfield barriers);
 typedef void(GL_BINDING_CALL* glMemoryBarrierEXTProc)(GLbitfield barriers);
+typedef void(GL_BINDING_CALL* glMemoryObjectParameterivEXTProc)(
+    GLuint memoryObject,
+    GLenum pname,
+    const GLint* param);
 typedef void(GL_BINDING_CALL* glMinSampleShadingProc)(GLfloat value);
 typedef void(GL_BINDING_CALL* glMultiDrawArraysANGLEProc)(GLenum mode,
                                                           const GLint* firsts,
@@ -2293,6 +2297,7 @@ struct ProcsGL {
   glMaxShaderCompilerThreadsKHRProc glMaxShaderCompilerThreadsKHRFn;
   glMemoryBarrierByRegionProc glMemoryBarrierByRegionFn;
   glMemoryBarrierEXTProc glMemoryBarrierEXTFn;
+  glMemoryObjectParameterivEXTProc glMemoryObjectParameterivEXTFn;
   glMinSampleShadingProc glMinSampleShadingFn;
   glMultiDrawArraysANGLEProc glMultiDrawArraysANGLEFn;
   glMultiDrawArraysInstancedANGLEProc glMultiDrawArraysInstancedANGLEFn;
@@ -3439,6 +3444,9 @@ class GL_EXPORT GLApi {
   virtual void glMaxShaderCompilerThreadsKHRFn(GLuint count) = 0;
   virtual void glMemoryBarrierByRegionFn(GLbitfield barriers) = 0;
   virtual void glMemoryBarrierEXTFn(GLbitfield barriers) = 0;
+  virtual void glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                              GLenum pname,
+                                              const GLint* param) = 0;
   virtual void glMinSampleShadingFn(GLfloat value) = 0;
   virtual void glMultiDrawArraysANGLEFn(GLenum mode,
                                         const GLint* firsts,
@@ -4619,6 +4627,8 @@ class GL_EXPORT GLApi {
 #define glMemoryBarrierByRegion \
   ::gl::g_current_gl_context->glMemoryBarrierByRegionFn
 #define glMemoryBarrierEXT ::gl::g_current_gl_context->glMemoryBarrierEXTFn
+#define glMemoryObjectParameterivEXT \
+  ::gl::g_current_gl_context->glMemoryObjectParameterivEXTFn
 #define glMinSampleShading ::gl::g_current_gl_context->glMinSampleShadingFn
 #define glMultiDrawArraysANGLE \
   ::gl::g_current_gl_context->glMultiDrawArraysANGLEFn

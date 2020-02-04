@@ -31,7 +31,6 @@ import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.ErrorPageCallback;
 import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.FullscreenCallback;
-import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NewTabCallback;
@@ -192,7 +191,6 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void onNewTab(Tab newTab, @NewTabType int type) {
                 setTabCallbacks(newTab, fragment);
-                mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
                 mPreviousTabList.add(mBrowser.getActiveTab());
                 mBrowser.setActiveTab(newTab);
             }
@@ -239,11 +237,6 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         });
         tab.getNavigationController().registerNavigationCallback(new NavigationCallback() {
-            @Override
-            public void onNavigationStarted(Navigation navigation) {
-                mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
-            }
-
             @Override
             public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mLoadProgressBar.setVisibility(

@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/wm_highlight_item_border.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -43,13 +42,6 @@ constexpr int kLabelFontDelta = 2;
 constexpr int kBackdropBorderRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
 
-// Adds |child| as a child of |parent| and set it as paint to layer.
-void AddChildWithLayer(views::View* parent, views::View* child) {
-  parent->AddChildView(child);
-  child->SetPaintToLayer();
-  child->layer()->SetFillsBoundsOpaquely(false);
-}
-
 }  // namespace
 
 WindowMiniView::~WindowMiniView() = default;
@@ -59,10 +51,15 @@ void WindowMiniView::SetBackdropVisibility(bool visible) {
     return;
 
   if (!backdrop_view_) {
-    backdrop_view_ =
-        new RoundedRectView(kBackdropBorderRoundingDp, kBackdropColor);
+    backdrop_view_ = AddChildView(std::make_unique<views::View>());
+    backdrop_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    ui::Layer* layer = backdrop_view_->layer();
+    layer->SetFillsBoundsOpaquely(false);
+    layer->SetColor(kBackdropColor);
+    layer->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(kBackdropBorderRoundingDp));
+    layer->SetIsFastRoundedCorner(true);
     backdrop_view_->set_can_process_events_within_subtree(false);
-    AddChildWithLayer(this, backdrop_view_);
     Layout();
   }
   backdrop_view_->SetVisible(visible);
@@ -82,9 +79,11 @@ void WindowMiniView::SetShowPreview(bool show) {
   if (!source_window_)
     return;
 
-  preview_view_ = new WindowPreviewView(source_window_,
-                                        /*trilinear_filtering_on_init=*/false);
-  AddChildWithLayer(this, preview_view_);
+  preview_view_ = AddChildView(std::make_unique<WindowPreviewView>(
+      source_window_,
+      /*trilinear_filtering_on_init=*/false));
+  preview_view_->SetPaintToLayer();
+  preview_view_->layer()->SetFillsBoundsOpaquely(false);
   Layout();
 }
 
@@ -129,24 +128,24 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
 
   window_observer_.Add(source_window);
 
-  header_view_ = new views::View();
+  header_view_ = AddChildView(std::make_unique<views::View>());
+  header_view_->SetPaintToLayer();
+  header_view_->layer()->SetFillsBoundsOpaquely(false);
   views::BoxLayout* layout =
       header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kHorizontalLabelPaddingDp));
-  AddChildWithLayer(this, header_view_);
 
   UpdateIconView();
 
-  title_label_ =
-      new views::Label(wm::GetTransientRoot(source_window_)->GetTitle());
+  title_label_ = header_view_->AddChildView(std::make_unique<views::Label>(
+      wm::GetTransientRoot(source_window_)->GetTitle()));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   title_label_->SetEnabledColor(kLabelColor);
   title_label_->SetSubpixelRenderingEnabled(false);
   title_label_->SetFontList(gfx::FontList().Derive(
       kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-  AddChildWithLayer(header_view_, title_label_);
   layout->SetFlexForView(title_label_, 1);
 
   auto border =
@@ -156,9 +155,7 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
 }
 
 gfx::Rect WindowMiniView::GetContentAreaBounds() const {
-  const int margin = GetMargin();
-  gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(margin, margin);
+  gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(0, kHeaderHeightDp, 0, 0);
   return bounds;
 }
@@ -216,9 +213,9 @@ void WindowMiniView::UpdateIconView() {
     return;
 
   if (!icon_view_) {
-    icon_view_ = new views::ImageView();
+    icon_view_ =
+        header_view_->AddChildView(std::make_unique<views::ImageView>());
     icon_view_->SetSize(kIconSize);
-    AddChildWithLayer(header_view_, icon_view_);
   }
 
   icon_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(

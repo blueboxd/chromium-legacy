@@ -45,7 +45,9 @@ typedef int (*ChromeMainPtr)(int, char**);
   if (vsnprintf(message, sizeof(message), format, valist) >= 0) {
     if (__builtin_available(macOS 10.11, *)) {
       abort_report_np("%s", message);
-    }
+    } else {
+      printf(message);
+	}
   }
   va_end(valist);
   abort();

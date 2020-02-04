@@ -168,6 +168,16 @@ namespace printing {
                                GetPrinterInfoCallback callback);
   };
 
+  interface Properties {
+    // The maximum number of times that $(ref:submitJob) can be called per
+    // minute.
+    [value=20] static long MAX_SUBMIT_JOB_CALLS_PER_MINUTE();
+
+    // The maximum number of times that $(ref:getPrinterInfo) can be called per
+    // minute.
+    [value=20] static long MAX_GET_PRINTER_INFO_CALLS_PER_MINUTE();
+  };
+
   interface Events {
     // Event fired when the status of the job is changed.
     // This is only fired for the jobs created by this extension.

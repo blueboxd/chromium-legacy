@@ -18,8 +18,8 @@ class MockInstalledAppProvider {
   constructor(interfaceProvider) {
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.InstalledAppProvider);
 
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.InstalledAppProvider.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(blink.mojom.InstalledAppProvider.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

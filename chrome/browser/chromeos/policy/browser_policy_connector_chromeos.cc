@@ -423,10 +423,10 @@ void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
   CHECK(device_cloud_policy_initializer_);
 
   // DeviceCloudPolicyInitializer might still be on the call stack, so we
-  // should release the initializer after this function returns.
+  // should delete the initializer after this function returns.
   device_cloud_policy_initializer_->Shutdown();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, device_cloud_policy_initializer_.release());
+      FROM_HERE, std::move(device_cloud_policy_initializer_));
 }
 
 void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerDisconnected() {

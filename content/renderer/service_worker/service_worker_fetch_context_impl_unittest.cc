@@ -59,7 +59,8 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
     context->WillSendRequest(request);
 
     // Throttles should be created by the provider.
-    auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
+    auto* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
     ASSERT_TRUE(extra_data);
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
         extra_data->TakeURLLoaderThrottles();
@@ -73,7 +74,8 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
     context->WillSendRequest(request);
 
     // Throttles should not be created by the provider.
-    auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
+    auto* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
     ASSERT_TRUE(extra_data);
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
         extra_data->TakeURLLoaderThrottles();

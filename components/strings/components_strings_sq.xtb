@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">Shiko kartat</translation>
 <translation id="3369192424181595722">Gabim i orës</translation>
 <translation id="337363190475750230">Qasja u çaktivizua</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ka aktivizuar Enterprise Service Hooks në shfletuesin tënd. Këta grepa kanë qasje te disa nga të dhënat e tua.</translation>
+<translation id="3377144306166885718">Serveri ka përdorur një version të vjetruar të protokollit TLS.</translation>
 <translation id="3377188786107721145">Gabim i analizimit të politikës</translation>
 <translation id="3377736046129930310">Përdor kyçjen e ekranit për të konfirmuar kartat më shpejt</translation>
 <translation id="3380365263193509176">Gabim i panjohur</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">Adresa e dorëzimit</translation>
 <translation id="3395827396354264108">Mënyra e marrjes</translation>
 <translation id="3399952811970034796">Adresa e dorëzimit</translation>
+<translation id="3402261774528610252">Lidhja e përdorur për të ngarkuar këtë sajt ka përdorur versionin TLS 1.0 ose TLS 1.1, të cilët janë të vjetëruar dhe do të çaktivizohen në të ardhmen. Pasi të çaktivizohen, përdoruesit nuk do të lejohen ta ngarkojnë këtë sajt. Serveri duhet të aktivizojë versionin TLS 1.2 ose një version të mëvonshëm.</translation>
 <translation id="3422248202833853650">Provo të dalësh nga programet e tjera për të liruar memorien.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> nuk është i arritshëm aktualisht.</translation>
 <translation id="3423742043356668186">Specifikuar nga sistemi</translation>
@@ -619,6 +622,7 @@
 <translation id="3745099705178523657">Pasi t'i konfirmosh, detajet e kartës nga "Llogaria jote e Google" do të ndahen me këtë sajt.</translation>
 <translation id="3748148204939282805">Sulmuesit në  <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mund të të mashtrojnë që të bësh diçka të rrezikshme si instalimi i softuerëve ose të zbulosh informacion personal (për shembull, fjalëkalime, numra telefoni ose karta krediti). <ph name="BEGIN_LEARN_MORE_LINK" />Mëso më shumë<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Përkthimi dështoi për shkak të një gabimi të serverit.</translation>
+<translation id="3754210790023674521">Dil nga "Figura brenda figurës"</translation>
 <translation id="3759461132968374835">Nuk ke ndërprerje aksidentale të raportuara së fundi. Ndërprerjet aksidentale që kanë ndodhur kur raportimi i tyre ka qenë i çaktivizuar, nuk do të shfaqen këtu.</translation>
 <translation id="3760561303380396507">Të përdoret Windows Hello në vend të CVC?</translation>
 <translation id="3761718714832595332">Fshihe statusin</translation>
@@ -940,6 +944,7 @@
 <translation id="5179510805599951267">Jo në <ph name="ORIGINAL_LANGUAGE" />? Raportoje këtë gabim</translation>
 <translation id="5190835502935405962">Shiriti i faqeshënuesve</translation>
 <translation id="519422657042045905">Shënimi nuk ofrohet</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Një faqe e integruar në këtë faqe thotë</translation>
 <translation id="5205222826937269299">Emri është i detyrueshëm</translation>
 <translation id="5215116848420601511">Mënyrat e pagesës dhe adresat që përdorin Google Pay</translation>
@@ -969,6 +974,7 @@
 <translation id="5295292838686006428">Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që t’i kontrollosh menjëherë fjalëkalimet e tua të ruajtura.</translation>
 <translation id="5299298092464848405">Gabim gjatë analizimit të politikës</translation>
 <translation id="5300589172476337783">Shfaq</translation>
+<translation id="5306593769196050043">Të dyja fletët</translation>
 <translation id="5308380583665731573">Lidh</translation>
 <translation id="5308689395849655368">Raportimi i ndërprerjes aksidentale është çaktivizuar.</translation>
 <translation id="5314967030527622926">Krijuesi i broshurës</translation>
@@ -1122,7 +1128,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Kontrollo fjalëkalimet e tua</translation>
 <translation id="6015796118275082299">Viti</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Faqja 1}other{Faqja #}}</translation>
 <translation id="6017514345406065928">E gjelbër</translation>
 <translation id="6017850046339264347">Sulmuesit në <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mund të instalojnë aplikacione mashtruese që pretendojnë se janë diçka tjetër ose që mbledhin të dhëna që mund të përdoren për të të gjurmuar. <ph name="BEGIN_LEARN_MORE_LINK" />Mëso më shumë<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinkronizuar)</translation>
@@ -1229,7 +1234,6 @@
 <translation id="6446163441502663861">Kahu (Zarf)</translation>
 <translation id="6446608382365791566">Shto më shumë informacion</translation>
 <translation id="6447842834002726250">Kukit</translation>
-<translation id="644931407731409778">Dokument PDF që përmban {COUNT,plural, =1{1 faqe}other{# faqe}}</translation>
 <translation id="6451458296329894277">Konfirmo ridërgimin e formularit</translation>
 <translation id="6457206614190510200">Qepje në kurrizin e palosjes</translation>
 <translation id="6465306955648956876">Menaxho fjalëkalimet...</translation>
@@ -1341,6 +1345,7 @@
 <translation id="7053983685419859001">Bllokoje</translation>
 <translation id="7062635574500127092">Gurkali</translation>
 <translation id="7064851114919012435">Informacionet e kontaktit</translation>
+<translation id="70705239631109039">Lidhja jote nuk është plotësisht e sigurt</translation>
 <translation id="7075452647191940183">Kërkesa është tepër e madhe</translation>
 <translation id="7079718277001814089">Ky sajt përmban softuerë keqdashës</translation>
 <translation id="7081308185095828845">Kjo veçori nuk ofrohet në pajisjen tënde</translation>
@@ -1360,6 +1365,7 @@
 <translation id="7152423860607593928">Number-14 (Zarf)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tjetër}other{<ph name="PAYMENT_METHOD_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> të tjera}}</translation>
 <translation id="7153618581592392745">Vjollcë e çelur</translation>
+<translation id="7156870133441232244">Serveri duhet të përmirësohet në versionin TLS 1.2 ose një version të mëvonshëm.</translation>
 <translation id="717330890047184534">ID-ja e Gaia:</translation>
 <translation id="7174545416324379297">E shkrirë</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tjetër}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> të tjera}}</translation>
@@ -1385,6 +1391,7 @@ Detaje shtesë:
 <translation id="725866823122871198">Nuk mund të vendoset një lidhje private me <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sepse data dhe ora (<ph name="DATE_AND_TIME" />) e kompjuterit tënd nuk janë të sakta.</translation>
 <translation id="7260504762447901703">Revoko qasjen</translation>
 <translation id="7275334191706090484">Faqeshënuesit e menaxhuar</translation>
+<translation id="7288778322931489286">Administratori yt ka aktivizuar Enterprise Service Hooks në shfletuesin tënd. Këta grepa kanë qasje te disa nga të dhënat e tua.</translation>
 <translation id="7292031607255951991">Emri i marrësit</translation>
 <translation id="7298195798382681320">I rekomanduar</translation>
 <translation id="7300012071106347854">Blu kobalti</translation>
@@ -1709,6 +1716,7 @@ Detaje shtesë:
 <translation id="874918643257405732">Shtoje këtë skedë te faqeshënuesit</translation>
 <translation id="8751426954251315517">Provo përsëri herën tjetër</translation>
 <translation id="8759274551635299824">Kjo kartë ka skaduar</translation>
+<translation id="87601671197631245">Ky sajt përdor një konfigurim të vjetruar të sigurisë, i cili mund t'i ekspozojë informacionet e tua (p.sh. fjalëkalimet, mesazhet ose kartat e kreditit) kur dërgohen te ky sajt.</translation>
 <translation id="8761567432415473239">Shfletimi i sigurt i Google <ph name="BEGIN_LINK" />zbuloi së fundmi programe të dëmshme<ph name="END_LINK" /> në <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Pajisja USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1726,6 +1734,7 @@ Detaje shtesë:
 <translation id="8866481888320382733">Gabim gjatë analizimit të cilësimeve të politikës</translation>
 <translation id="8866928039507595380">Palosje</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Ndaj me administratorin tënd të dhëna për ngjarjet e sigurisë që janë raportuar nga Enterprise Service Hooks. Kjo mund të përfshijë URL-të e faqeve që viziton ti, emrat e skedarëve ose të dhënat meta dhe emrin e përdoruesit që përdor për t'u identifikuar në pajisjen tënde dhe në Chrome.</translation>
 <translation id="8870413625673593573">Të mbyllura së fundi</translation>
 <translation id="8870494189203302833">E njëjta renditje e kthyer poshtë</translation>
 <translation id="8874824191258364635">Fut një numër të vlefshëm karte</translation>

@@ -4,18 +4,43 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.input.PopupItemType;
+import org.chromium.content.browser.input.SelectPopupDialog;
+import org.chromium.content.browser.input.SelectPopupItem;
 
-/** JNI bridge between {@code interaction_handler_android} and android views. */
+import java.util.ArrayList;
+import java.util.List;
+
+/** JNI bridge between {@code interaction_handler_android} and Java. */
 @JNINamespace("autofill_assistant")
 public class AssistantViewInteractions {
     @CalledByNative
-    public static void setOnClickListener(View view, String identifier,
+    private static void setOnClickListener(View view, String identifier,
             @Nullable AssistantValue value, AssistantGenericUiDelegate delegate) {
-        view.setOnClickListener(unused -> { delegate.onViewClicked(identifier, value); });
+        view.setOnClickListener(unused -> delegate.onViewClicked(identifier, value));
+    }
+
+    @CalledByNative
+    private static void showListPopup(Context context, String[] itemNames,
+            @PopupItemType int[] itemTypes, int[] selectedItems, boolean multiple,
+            String identifier, AssistantGenericUiDelegate delegate) {
+        assert (itemNames.length == itemTypes.length);
+        List<SelectPopupItem> popupItems = new ArrayList<>();
+        for (int i = 0; i < itemNames.length; i++) {
+            popupItems.add(new SelectPopupItem(itemNames[i], itemTypes[i]));
+        }
+
+        SelectPopupDialog dialog = new SelectPopupDialog(context,
+                (indices)
+                        -> delegate.onListPopupSelectionChanged(
+                                identifier, new AssistantValue(indices)),
+                popupItems, multiple, selectedItems);
+        dialog.show();
     }
 }

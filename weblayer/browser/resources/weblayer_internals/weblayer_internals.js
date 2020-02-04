@@ -10,8 +10,7 @@
 /* Main entry point. */
 document.addEventListener('DOMContentLoaded', function() {
   // Setup backend mojo.
-  const pageHandler = weblayerInternals.mojom.PageHandler.getRemote(
-      /*useBrowserInterfaceBroker=*/ true);
+  const pageHandler = weblayerInternals.mojom.PageHandler.getRemote();
   if (cr.isAndroid) {
     pageHandler.getRemoteDebuggingEnabled().then((response) => {
         let checkbox = $('remote-debug');

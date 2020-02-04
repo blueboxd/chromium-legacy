@@ -256,11 +256,11 @@ TEST_F(StorageHandlerTest, MyFilesSize) {
       android_files_path));
 
   // Add files in My files and android files.
-  AddFile("random.bin", 8092, my_files_path);      // ~7.9K
-  AddFile("tall.pdf", 15271, android_files_path);  // ~14.9K
+  AddFile("random.bin", 8092, my_files_path);      // ~7.9 KB
+  AddFile("tall.pdf", 15271, android_files_path);  // ~14.9 KB
   // Add file in Downloads and simulate bind mount with
   // [android files]/Download.
-  AddFile("video.ogv", 59943, downloads_path);  // ~58.6K
+  AddFile("video.ogv", 59943, downloads_path);  // ~58.6 KB
   AddFile("video.ogv", 59943, android_files_download_path);
 
   // Calculate My files size.
@@ -273,6 +273,54 @@ TEST_F(StorageHandlerTest, MyFilesSize) {
 
   // Check return value.
   EXPECT_EQ("81.4 KB", callback->GetString());
+}
+
+TEST_F(StorageHandlerTest, AppsExtensionsSize) {
+  // The data for apps and extensions installed from the webstore is stored in
+  // the Extensions folder. Add data at a random location in the Extensions
+  // folder and check UI callback message.
+  const base::FilePath extensions_data_path =
+      profile_->GetPath()
+          .AppendASCII("Extensions")
+          .AppendASCII("fake_extension_id");
+  CHECK(base::CreateDirectory(extensions_data_path));
+  AddFile("id3Audio.mp3", 180999, extensions_data_path);  // ~177 KB
+
+  // Calculate web store apps and extensions size.
+  handler_test_api_->UpdateAppsSize();
+  task_environment_.RunUntilIdle();
+
+  const base::Value* callback =
+      GetWebUICallbackMessage("storage-apps-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-apps-size-changed' callback";
+
+  // Check return value.
+  EXPECT_EQ("177 KB", callback->GetString());
+
+  // Simulate android apps size callback.
+  // 592840 + 25284 + 9987 = 628111  ~613 KB.
+  handler_test_api_->UpdateAndroidAppsSize(592840, 25284, 9987);
+  task_environment_.RunUntilIdle();
+
+  callback = GetWebUICallbackMessage("storage-apps-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-apps-size-changed' callback";
+
+  // Check return value.
+  EXPECT_EQ("790 KB", callback->GetString());
+
+  // Add more data in the Extensions folder to check that the sum of web store
+  // apps and extensions + android apps is correctly updated.
+  AddFile("video_long.ogv", 230096, extensions_data_path);  // ~225 KB
+
+  // Calculate web store apps and extensions size.
+  handler_test_api_->UpdateAppsSize();
+  task_environment_.RunUntilIdle();
+
+  callback = GetWebUICallbackMessage("storage-apps-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-apps-size-changed' callback";
+
+  // Check return value.
+  EXPECT_EQ("1,015 KB", callback->GetString());
 }
 
 }  // namespace

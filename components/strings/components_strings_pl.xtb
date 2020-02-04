@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Wyświetl karty</translation>
 <translation id="3369192424181595722">Błąd zegara</translation>
 <translation id="337363190475750230">Anulowano obsługę</translation>
+<translation id="3376829916920036789">Domena <ph name="ENROLLMENT_DOMAIN" /> włączyła w Twojej przeglądarce punkty zaczepienia usługi firmowej. Mogą one mieć dostęp do niektórych Twoich danych.</translation>
+<translation id="3377144306166885718">Serwer użył przestarzałej wersji protokołu TLS.</translation>
 <translation id="3377188786107721145">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="3377736046129930310">Używaj blokady ekranu, by szybciej potwierdzać karty</translation>
 <translation id="3380365263193509176">Nieznany błąd</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Adres dostawy</translation>
 <translation id="3395827396354264108">Metoda odbioru</translation>
 <translation id="3399952811970034796">Adres dostawy</translation>
+<translation id="3402261774528610252">Do połączenia z tą stroną użyto protokołu TLS 1.0 lub 1.1. Obie te wersje zostały wycofane, a w przyszłości zostaną wyłączone. Po ich wyłączeniu użytkownicy nie będą mogli otwierać tej strony. Serwer powinien korzystać z protokołu TLS w wersji 1.2 lub nowszej.</translation>
 <translation id="3422248202833853650">Zamknij inne programy, by zwolnić pamięć.</translation>
 <translation id="3422472998109090673">Strona <ph name="HOST_NAME" /> jest obecnie nieosiągalna.</translation>
 <translation id="3423742043356668186">Określone przez system</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="3748148204939282805">Osoby atakujące na stronie <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą podstępem nakłonić Cię do wykonania czynności niebezpiecznych takich jak zainstalowanie oprogramowania czy ujawnienie danych osobowych (na przykład haseł, numerów telefonów lub danych kart kredytowych). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Tłumaczenie nie powiodło się z powodu błędu serwera.</translation>
+<translation id="3754210790023674521">Wyłącz tryb obrazu w obrazie</translation>
 <translation id="3759461132968374835">Brak ostatnio zgłoszonych awarii. Awarie, które nastąpiły wówczas, gdy funkcja zgłaszania awarii była wyłączona, nie są tutaj wymienione.</translation>
 <translation id="3760561303380396507">Używać Windows Hello zamiast kodu CVC?</translation>
 <translation id="3761718714832595332">Ukryj stan</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE" />, zgłoś błąd</translation>
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="519422657042045905">Adnotacja niedostępna</translation>
+<translation id="5196187217592847346">Punkty zaczepienia usługi firmowej</translation>
 <translation id="5201306358585911203">Komunikat z elementu umieszczonego na bieżącej stronie</translation>
 <translation id="5205222826937269299">Nazwa jest wymagana</translation>
 <translation id="5215116848420601511">Formy płatności i adresy z Google Pay</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie Twojego hasła. Chrome zaleca natychmiastowe sprawdzenie zapisanych haseł.</translation>
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="5300589172476337783">Pokaż</translation>
+<translation id="5306593769196050043">Oba arkusze</translation>
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5308689395849655368">Funkcja zgłaszania awarii jest wyłączona.</translation>
 <translation id="5314967030527622926">Tworzenie broszur</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Sprawdź swoje hasła</translation>
 <translation id="6015796118275082299">Rok</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Strona 1}few{Strona #}many{Strona #}other{Strona #}}</translation>
 <translation id="6017514345406065928">Zielony</translation>
 <translation id="6017850046339264347">Osoby atakujące stronę <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą instalować wprowadzające w błąd aplikacje, które udają, że są przeznaczone do czegoś innego niż w rzeczywistości, lub zbierają dane, na podstawie których można Cię śledzić. <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (zsynchronizowane)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (koperta)</translation>
 <translation id="6446608382365791566">Dodaj więcej informacji</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
-<translation id="644931407731409778">Dokument PDF zawierający {COUNT,plural, =1{1 stronę}few{# strony}many{# stron}other{# strony}}</translation>
 <translation id="6451458296329894277">Potwierdź ponowne przesłanie formularza</translation>
 <translation id="6457206614190510200">Zszywanie grzbietowe</translation>
 <translation id="6465306955648956876">Zarządzaj hasłami…</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7062635574500127092">Morski</translation>
 <translation id="7064851114919012435">Dane kontaktowe</translation>
+<translation id="70705239631109039">Połączenie nie jest całkowicie bezpieczne</translation>
 <translation id="7075452647191940183">Żądanie jest za duże</translation>
 <translation id="7079718277001814089">Ta strona zawiera złośliwe oprogramowanie</translation>
 <translation id="7081308185095828845">Ta funkcja jest niedostępna na Twoim urządzeniu</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (koperta)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lawendowy</translation>
+<translation id="7156870133441232244">Na serwerze należy przejść na TLS w wersji 1.2 lub nowszej.</translation>
 <translation id="717330890047184534">Identyfikator GAIA:</translation>
 <translation id="7174545416324379297">Wartości scalone</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1402,6 +1408,7 @@ Dodatkowe informacje:
 <translation id="725866823122871198">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na komputerze są nieprawidłowe.</translation>
 <translation id="7260504762447901703">Anuluj dostęp</translation>
 <translation id="7275334191706090484">Zakładki zarządzane</translation>
+<translation id="7288778322931489286">Twój administrator włączył w Twojej przeglądarce punkty zaczepienia usługi firmowej. Mogą one mieć dostęp do niektórych Twoich danych.</translation>
 <translation id="7292031607255951991">Nazwa odbiorcy</translation>
 <translation id="7298195798382681320">Zalecane</translation>
 <translation id="7300012071106347854">Niebieski kobalt</translation>
@@ -1726,6 +1733,7 @@ Dodatkowe informacje:
 <translation id="874918643257405732">Dodaj tę kartę do zakładek</translation>
 <translation id="8751426954251315517">Spróbuj ponownie później</translation>
 <translation id="8759274551635299824">Ta karta straciła ważność</translation>
+<translation id="87601671197631245">Ta strona używa nieaktualnej konfiguracji zabezpieczeń, co oznacza, że Twoje dane (np. hasła, wiadomości i numery kart kredytowych) mogą być zagrożone podczas przesyłania na tę stronę.</translation>
 <translation id="8761567432415473239">Funkcja Bezpieczne przeglądanie Google ostatnio <ph name="BEGIN_LINK" />znalazła szkodliwe<ph name="END_LINK" /> programy na <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Urządzenie USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@ Dodatkowe informacje:
 <translation id="8866481888320382733">Podczas przetwarzania ustawień zasady wystąpił błąd</translation>
 <translation id="8866928039507595380">Składanie</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Udostępniaj administratorowi dane dotyczące zdarzeń związanych z bezpieczeństwem zgłoszonych przez punkty zaczepienia usługi firmowej. Mogą one obejmować adresy URL odwiedzanych przez Ciebie stron, nazwy plików lub metadane oraz nazwę użytkownika, pod którą logujesz się na swoim urządzeniu i w Chrome.</translation>
 <translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8870494189203302833">Ta sama kolejność, strona do drukowania skierowana w dół</translation>
 <translation id="8874824191258364635">Wpisz prawidłowy numer karty</translation>

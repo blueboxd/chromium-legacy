@@ -35,6 +35,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -170,6 +171,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& content_security_policy,
     network::mojom::ContentSecurityPolicyType policy_type,
     network::mojom::IPAddressSpace creation_address_space,
+    const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
     const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
@@ -180,22 +182,22 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // Creates 'outside settings' used in the "Processing model" algorithm in the
   // HTML spec:
   // https://html.spec.whatwg.org/C/#worker-processing-model
-  //
-  // TODO(nhiroki): According to the spec, the 'outside settings' should
-  // correspond to the Document that called 'new SharedWorker()'. The browser
-  // process should pass it up to here.
   scoped_refptr<const SecurityOrigin> starter_origin =
       SecurityOrigin::Create(script_request_url);
+
   auto* outside_settings_object =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
           /*global_object_url=*/script_request_url,
           /*base_url=*/script_request_url, starter_origin,
-          network::mojom::ReferrerPolicy::kDefault,
-          /*outgoing_referrer=*/String(),
+          outside_fetch_client_settings_object.referrer_policy,
+          outside_fetch_client_settings_object.outgoing_referrer.GetString(),
           CalculateHttpsState(starter_origin.get()),
           AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
           creation_address_space,
-          /*insecure_request_policy=*/kBlockAllMixedContent,
+          outside_fetch_client_settings_object.insecure_requests_policy ==
+                  mojom::blink::InsecureRequestsPolicy::kUpgrade
+              ? kUpgradeInsecureRequests | kBlockAllMixedContent
+              : kBlockAllMixedContent,
           FetchClientSettingsObject::InsecureNavigationsSet());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =

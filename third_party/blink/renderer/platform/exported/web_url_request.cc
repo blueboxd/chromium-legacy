@@ -346,11 +346,12 @@ void WebURLRequest::SetPreviewsState(
   return resource_request_->SetPreviewsState(previews_state);
 }
 
-WebURLRequest::ExtraData* WebURLRequest::GetExtraData() const {
+const scoped_refptr<WebURLRequest::ExtraData>& WebURLRequest::GetExtraData()
+    const {
   return resource_request_->GetExtraData();
 }
 
-void WebURLRequest::SetExtraData(std::unique_ptr<ExtraData> extra_data) {
+void WebURLRequest::SetExtraData(scoped_refptr<ExtraData> extra_data) {
   resource_request_->SetExtraData(std::move(extra_data));
 }
 

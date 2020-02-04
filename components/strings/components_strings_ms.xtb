@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Lihat kad</translation>
 <translation id="3369192424181595722">Ralat Jam</translation>
 <translation id="337363190475750230">Nyahperuntukkan</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> telah mendayakan Enterprise Service Hooks pada penyemak imbas anda. Cangkuk ini boleh mengakses sesetengah data anda.</translation>
+<translation id="3377144306166885718">Pelayan menggunakan versi TLS yang sudah lapuk.</translation>
 <translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
 <translation id="3377736046129930310">Gunakan kunci skrin untuk mengesahkan kad dengan lebih cepat</translation>
 <translation id="3380365263193509176">Ralat tidak diketahui</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Alamat penghantaran</translation>
 <translation id="3395827396354264108">Kaedah pengambilan</translation>
 <translation id="3399952811970034796">Alamat Penghantaran</translation>
+<translation id="3402261774528610252">Sambungan yang digunakan untuk memuatkan tapak ini menggunakan TLS 1.0 atau TLS 1.1, yang telah ditamatkan dan akan dilumpuhkan pada masa hadapan. Apabila dilumpuhkan, pengguna akan dihalang daripada memuatkan tapak ini. Pelayan harus mendayakan TLS 1.2 atau yang lebih baharu.</translation>
 <translation id="3422248202833853650">Cuba keluar daripada atur cara lain untuk mengosongkan memori.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> tidak dapat dicapai pada masa ini.</translation>
 <translation id="3423742043356668186">Sistem ditentukan</translation>
@@ -635,6 +638,7 @@
 <translation id="3745099705178523657">Setelah anda membuat pengesahan, butiran kad daripada Akaun Google anda akan dikongsi dengan tapak ini.</translation>
 <translation id="3748148204939282805">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin memperdaya anda agar melakukan sesuatu yang berbahaya seperti memasang perisian atau mendedahkan maklumat peribadi anda (contohnya, kata laluan, nombor telefon atau kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Gagal menterjemah disebabkan ralat pelayan.</translation>
+<translation id="3754210790023674521">Keluar daripada gambar dalam gambar</translation>
 <translation id="3759461132968374835">Tiada laporan nahas yang dibuat baru-baru ini.  Nahas yang berlaku apabila laporan nahas dilumpuhkan tidak akan kelihatan di sini.</translation>
 <translation id="3760561303380396507">Gunakan Windows Hello dan bukan CVC?</translation>
 <translation id="3761718714832595332">Sembunyikan status</translation>
@@ -957,6 +961,7 @@
 <translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE" />? Laporkan ralat ini</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="519422657042045905">Anotasi tidak tersedia</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Halaman terbenam pada halaman ini menyatakan</translation>
 <translation id="5205222826937269299">Nama diperlukan</translation>
 <translation id="5215116848420601511">Kaedah pembayaran dan alamat yang menggunakan Google Pay</translation>
@@ -986,6 +991,7 @@
 <translation id="5295292838686006428">Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda. Chrome mengesyorkan anda menyemak kata laluan yang disimpan sekarang.</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5300589172476337783">Paparkan</translation>
+<translation id="5306593769196050043">Kedua-dua helaian</translation>
 <translation id="5308380583665731573">Sambung</translation>
 <translation id="5308689395849655368">Pelaporan nahas dilumpuhkan.</translation>
 <translation id="5314967030527622926">Pembuat buku kecil</translation>
@@ -1139,7 +1145,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Semak kata laluan anda</translation>
 <translation id="6015796118275082299">Tahun</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Halaman 1}other{Halaman #}}</translation>
 <translation id="6017514345406065928">Hijau</translation>
 <translation id="6017850046339264347">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> boleh memasang apl yang mengelirukan yang menyamar menjadi sesuatu yang lain atau mengumpul data yang boleh digunakan untuk menjejak anda. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (disegerakkan)</translation>
@@ -1247,7 +1252,6 @@
 <translation id="6446163441502663861">Kahu (Sampul Surat)</translation>
 <translation id="6446608382365791566">Tambahkan maklumat lanjut</translation>
 <translation id="6447842834002726250">Kuki</translation>
-<translation id="644931407731409778">Dokumen PDF yang mengandungi {COUNT,plural, =1{1 halaman}other{# halaman}}</translation>
 <translation id="6451458296329894277">Sahkan Penyerahan Semula Borang</translation>
 <translation id="6457206614190510200">Jahitan pelana</translation>
 <translation id="6465306955648956876">Urus kata laluan...</translation>
@@ -1359,6 +1363,7 @@
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7062635574500127092">Hijau kebiruan</translation>
 <translation id="7064851114919012435">Maklumat hubungan</translation>
+<translation id="70705239631109039">Sambungan anda tidak selamat sepenuhnya</translation>
 <translation id="7075452647191940183">Permintaan terlalu besar</translation>
 <translation id="7079718277001814089">Tapak ini mengandungi perisian hasad</translation>
 <translation id="7081308185095828845">Ciri ini tidak tersedia pada peranti anda</translation>
@@ -1378,6 +1383,7 @@
 <translation id="7152423860607593928">Number-14 (Sampul Surat)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}other{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}}</translation>
 <translation id="7153618581592392745">Gandaria</translation>
+<translation id="7156870133441232244">Pelayan harus dikemas kini kepada TLS 1.2 atau yang lebih baharu.</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7174545416324379297">Digabungkan</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}}</translation>
@@ -1403,6 +1409,7 @@ Butiran tambahan:
 <translation id="725866823122871198">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa komputer anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
 <translation id="7260504762447901703">Batalkan akses</translation>
 <translation id="7275334191706090484">Penanda Halaman Terurus</translation>
+<translation id="7288778322931489286">Pentadbir anda telah mendayakan Enterprise Service Hooks pada penyemak imbas anda. Cangkuk ini boleh mengakses sesetengah data anda.</translation>
 <translation id="7292031607255951991">Nama penerima</translation>
 <translation id="7298195798382681320">Disyorkan</translation>
 <translation id="7300012071106347854">Biru Kobalt</translation>
@@ -1728,6 +1735,7 @@ Butiran tambahan:
 <translation id="874918643257405732">Tanda tab ini</translation>
 <translation id="8751426954251315517">Sila cuba lagi nanti</translation>
 <translation id="8759274551635299824">Kad ini telah tamat tempoh</translation>
+<translation id="87601671197631245">Tapak ini menggunakan konfigurasi keselamatan yang sudah lapuk, yang mungkin mendedahkan maklumat anda (contohnya, kata laluan, mesej atau nombor kad kredit) apabila dihantar kepada tapak ini.</translation>
 <translation id="8761567432415473239">Penyemakan Imbas Selamat Google baru-baru ini <ph name="BEGIN_LINK" />menemui atur cara berbahaya<ph name="END_LINK" /> pada <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Peranti USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1745,6 +1753,7 @@ Butiran tambahan:
 <translation id="8866481888320382733">Ralat semasa menghuraikan tetapan dasar</translation>
 <translation id="8866928039507595380">Lipatan</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Kongsi data tentang acara keselamatan yang telah dibenderakan oleh Enterprise Service Hooks dengan Pentadbir anda. Data ini boleh termasuk URL halaman yang anda lawati, nama fail atau metadata dan nama pengguna yang anda gunakan untuk mengelog masuk ke peranti serta Chrome anda.</translation>
 <translation id="8870413625673593573">Ditutup Baru-baru Ini</translation>
 <translation id="8870494189203302833">Susunan sama menghadap ke bawah</translation>
 <translation id="8874824191258364635">Masukkan nombor kad yang sah</translation>

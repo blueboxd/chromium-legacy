@@ -289,7 +289,7 @@ std::string DNSDomainToString(const base::StringPiece& domain) {
     if (static_cast<unsigned>(domain[i]) + i + 1 > domain.size())
       return std::string();
 
-    domain.substr(i + 1, domain[i]).AppendToString(&ret);
+    ret.append(domain.data() + i + 1, domain[i]);
   }
   return ret;
 }

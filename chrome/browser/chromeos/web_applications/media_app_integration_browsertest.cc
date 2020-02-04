@@ -38,6 +38,9 @@ constexpr base::FilePath::CharType kTestFilesFolderInTestData[] =
 // An 800x600 image/png (all blue pixels).
 constexpr char kFilePng800x600[] = "image.png";
 
+// A 640x480 image/jpeg (all green pixels).
+constexpr char kFileJpeg640x480[] = "image3.jpg";
+
 // A 1-second long 648x486 VP9-encoded video with stereo Opus-encoded audio.
 constexpr char kFileVideoVP9[] = "world.webm";
 
@@ -113,6 +116,19 @@ content::EvalJsResult WaitForOpenedImage(content::WebContents* web_ui) {
   return EvalJsInAppFrame(web_ui, kScript);
 }
 
+// Clears the `src` attribute of a blob:-backed <img> in the light DOM.
+content::EvalJsResult ClearOpenedImage(content::WebContents* web_ui) {
+  constexpr char kScript[] = R"(
+      (async () => {
+        const img = await waitForNode('img[src^="blob:"]');
+        img.src = '';
+        return true;
+      })();
+  )";
+
+  return EvalJsInAppFrame(web_ui, kScript);
+}
+
 }  // namespace
 
 // Test that the Media App installs and launches correctly. Runs some spot
@@ -137,7 +153,14 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
 
   EXPECT_EQ("800x600", WaitForOpenedImage(app));
 
-  // TODO(crbug/1027030): Add tests for re-launching with new files.
+  // Clear the image, so that a new load can be reliably detected.
+  EXPECT_EQ(true, ClearOpenedImage(app));
+
+  // Relaunch with a different file. This currently re-uses the existing window.
+  params.launch_files = {TestFile(kFileJpeg640x480)};
+  LaunchApp(params);
+
+  EXPECT_EQ("640x480", WaitForOpenedImage(app));
 }
 
 // Ensures that chrome://media-app is available as a file task for the ChromeOS

@@ -95,11 +95,7 @@ typedef HashMap<unsigned,
                 WTF::IntHash<unsigned>,
                 WTF::UnsignedWithZeroKeyHashTraits<unsigned>>
     SizedFontPlatformDataSet;
-typedef HashMap<FontCacheKey,
-                SizedFontPlatformDataSet,
-                FontCacheKeyHash,
-                FontCacheKeyTraits>
-    FontPlatformDataCache;
+typedef HashMap<FontCacheKey, SizedFontPlatformDataSet> FontPlatformDataCache;
 typedef HashMap<FallbackListCompositeKey,
                 std::unique_ptr<ShapeCache>,
                 FallbackListCompositeKeyHash,

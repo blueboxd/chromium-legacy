@@ -215,6 +215,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/settings_slider_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_textarea_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_toggle_button_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/site_favicon_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_extension_control_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_store.m.js",

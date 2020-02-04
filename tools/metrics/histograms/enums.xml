@@ -20666,6 +20666,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
   <int value="446" label="DECLARATIVE_NET_REQUEST_ON_RULE_MATCHED_DEBUG"/>
   <int value="447" label="TERMINAL_PRIVATE_ON_SETTINGS_CHANGED"/>
+  <int value="448" label="AUTOFILL_ASSISTANT_PRIVATE_ON_ACTIONS_CHANGED"/>
+  <int value="449"
+      label="AUTOFILL_ASSISTANT_PRIVATE_ON_STATUS_MESSAGE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -22170,6 +22173,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1435" label="PRINTING_SUBMITJOB"/>
   <int value="1436" label="IDENTITYPRIVATE_SETCONSENTRESULT"/>
   <int value="1437" label="PRINTING_CANCELJOB"/>
+  <int value="1438" label="AUTOFILLASSISTANTPRIVATE_CREATE"/>
+  <int value="1439" label="AUTOFILLASSISTANTPRIVATE_START"/>
+  <int value="1440" label="AUTOFILLASSISTANTPRIVATE_GETSTATE"/>
+  <int value="1441" label="AUTOFILLASSISTANTPRIVATE_PERFORMACTION"/>
+  <int value="1442" label="AUTOFILLASSISTANTPRIVATE_PROVIDEUSERDATA"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -22726,6 +22734,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="223" label="kPrintingMetrics"/>
   <int value="224" label="kPrinting"/>
   <int value="225" label="kCrashReportPrivate"/>
+  <int value="226" label="kAutofillAssistantPrivate"/>
 </enum>
 
 <enum name="ExtensionPolicyReinstallReason">
@@ -26395,6 +26404,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3156" label="OverlayInterstitialAd"/>
   <int value="3157" label="CSSComparisonFunctions"/>
   <int value="3158" label="FeaturePolicyProposalWouldChangeBehaviour"/>
+  <int value="3159" label="RTCLocalSdpModificationSimulcast"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

@@ -53,8 +53,9 @@ class VirtualAuthenticatorManager {
   constructor() {
     this.virtualAuthenticatorManager_ = new blink.test.mojom.VirtualAuthenticatorManagerRemote;
     Mojo.bindInterface(
-      blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
-      this.virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle, "context", true);
+        blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
+        this.virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver()
+            .handle);
   }
 
   async createAuthenticator(options = {}) {

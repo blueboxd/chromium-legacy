@@ -306,20 +306,19 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
   return inside;
 }
 
-IntSize LayoutImage::GetOverriddenIntrinsicSize() const {
-  if (auto* image_element = DynamicTo<HTMLImageElement>(GetNode())) {
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
-      return image_element->GetOverriddenIntrinsicSize();
-  }
-  return IntSize();
+bool LayoutImage::HasOverriddenIntrinsicSize() const {
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+    return false;
+  auto* image_element = DynamicTo<HTMLImageElement>(GetNode());
+  return image_element && image_element->IsDefaultIntrinsicSize();
 }
 
 FloatSize LayoutImage::ImageSizeOverriddenByIntrinsicSize(
     float multiplier) const {
-  FloatSize overridden_intrinsic_size = FloatSize(GetOverriddenIntrinsicSize());
-  if (overridden_intrinsic_size.IsEmpty())
+  if (!HasOverriddenIntrinsicSize())
     return image_resource_->ImageSize(multiplier);
 
+  FloatSize overridden_intrinsic_size(kDefaultWidth, kDefaultHeight);
   if (multiplier != 1) {
     overridden_intrinsic_size.Scale(multiplier);
     if (overridden_intrinsic_size.Width() < 1.0f)
@@ -333,11 +332,11 @@ FloatSize LayoutImage::ImageSizeOverriddenByIntrinsicSize(
 
 bool LayoutImage::OverrideIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  IntSize overridden_intrinsic_size = GetOverriddenIntrinsicSize();
-  if (overridden_intrinsic_size.IsEmpty())
+  if (!HasOverriddenIntrinsicSize())
     return false;
 
-  intrinsic_sizing_info.size = FloatSize(overridden_intrinsic_size);
+  FloatSize overridden_intrinsic_size(kDefaultWidth, kDefaultHeight);
+  intrinsic_sizing_info.size = overridden_intrinsic_size;
   intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   if (!IsHorizontalWritingMode())
     intrinsic_sizing_info.Transpose();

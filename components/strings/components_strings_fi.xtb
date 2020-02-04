@@ -539,6 +539,8 @@
 <translation id="3366477098757335611">Näytä kortit</translation>
 <translation id="3369192424181595722">Väärä kellonaika</translation>
 <translation id="337363190475750230">Poistettu käytöstä</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> on ottanut Enterprise Service Hooksin käyttöön selaimellesi. Näillä koukuilla on pääsy osaan datastasi.</translation>
+<translation id="3377144306166885718">Palvelin käytti vanhentunutta TLS:n versiota.</translation>
 <translation id="3377188786107721145">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="3377736046129930310">Vahvista kortteja nopeammin näytön lukituksella</translation>
 <translation id="3380365263193509176">Tuntematon virhe</translation>
@@ -547,6 +549,7 @@
 <translation id="3391030046425686457">Toimitusosoite</translation>
 <translation id="3395827396354264108">Noutotapa</translation>
 <translation id="3399952811970034796">Toimitusosoite</translation>
+<translation id="3402261774528610252">Tämä sivusto ladattiin TLS 1.0:lla tai TLS 1.1:llä. Ne ovat vanhentuneet ja poistetaan käytöstä tulevaisuudessa. Kun ne poistetaan käytöstä, käyttäjät eivät voi enää ladata tätä sivustoa. Palvelimen pitäisi ottaa käyttöön TLS 1.2 tai uudempi versio.</translation>
 <translation id="3422248202833853650">Yritä vapauttaa muistia sulkemalla muita ohjelmia.</translation>
 <translation id="3422472998109090673">Sivustoon <ph name="HOST_NAME" /> ei saada tällä hetkellä yhteyttä.</translation>
 <translation id="3423742043356668186">Järjestelmän määrittämä</translation>
@@ -635,6 +638,7 @@
 <translation id="3745099705178523657">Vahvistamisen jälkeen korttitiedot Google-tililtäsi jaetaan tämän sivuston kanssa.</translation>
 <translation id="3748148204939282805">Sivustolle <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää huijata sinua tekemään jotain vaarallista, kuten asentamaan ohjelmia tai paljastamaan henkilötietojasi (esimerkiksi salasanoja, puhelinnumeroita tai luottokorttitietoja). <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Käännös epäonnistui palvelinvirheen vuoksi.</translation>
+<translation id="3754210790023674521">Sulje kuva kuvassa ‑tila</translation>
 <translation id="3759461132968374835">Ei viimeaikaisia kaatumisilmoituksia. Jos selain kaatui kaatumisilmoitusten ollessa pois käytöstä, ilmoituksia ei näytetä täällä.</translation>
 <translation id="3760561303380396507">Käytetäänkö Windows Hellota CVC:n sijaan?</translation>
 <translation id="3761718714832595332">Piilota tila</translation>
@@ -957,6 +961,7 @@
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="519422657042045905">Merkintää ei saatavilla</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Viesti tälle sivulle upotetulta sivulta</translation>
 <translation id="5205222826937269299">Nimi vaaditaan</translation>
 <translation id="5215116848420601511">Maksutavat ja osoitteet Google Paysta</translation>
@@ -986,6 +991,7 @@
 <translation id="5295292838686006428">Jonkin sivuston tai sovelluksen tietosuojaloukkaus paljasti salasanasi. Chrome suosittelee tarkistamaan tallennetut salasanasi nyt.</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="5300589172476337783">Näytä</translation>
+<translation id="5306593769196050043">Molemmat taulukot</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
 <translation id="5314967030527622926">Vihko</translation>
@@ -1139,7 +1145,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Tarkista salasanasi</translation>
 <translation id="6015796118275082299">Vuosi</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Sivu 1}other{Sivu #}}</translation>
 <translation id="6017514345406065928">Vihreä</translation>
 <translation id="6017850046339264347">Sivuston <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökkääjät voivat asentaa harhaanjohtavia sovelluksia, jotka teeskentelevät olevansa jotain muuta tai keräävät tietoja, joiden avulla ne voivat seurata sinua. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synkronoitu)</translation>
@@ -1247,7 +1252,6 @@
 <translation id="6446163441502663861">Kahu (kirjekuori)</translation>
 <translation id="6446608382365791566">Lisää tietoja</translation>
 <translation id="6447842834002726250">Evästeet</translation>
-<translation id="644931407731409778">PDF-dokumentti, jossa on {COUNT,plural, =1{1 sivu}other{# sivua}}</translation>
 <translation id="6451458296329894277">Vahvista lomakkeen uudelleenlähetys</translation>
 <translation id="6457206614190510200">Satulasidonta</translation>
 <translation id="6465306955648956876">Hallinnoi salasanoja…</translation>
@@ -1359,6 +1363,7 @@
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7062635574500127092">Turkoosi</translation>
 <translation id="7064851114919012435">Yhteystiedot</translation>
+<translation id="70705239631109039">Yhteytesi ei ole täysin suojattu</translation>
 <translation id="7075452647191940183">Pyyntö on liian suuri</translation>
 <translation id="7079718277001814089">Tämä sivusto sisältää haittaohjelmia</translation>
 <translation id="7081308185095828845">Ominaisuus ei ole käytettävissä tällä laitteella</translation>
@@ -1378,6 +1383,7 @@
 <translation id="7152423860607593928">Nro 14 (kirjekuori)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> toinen}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muuta}}</translation>
 <translation id="7153618581592392745">Laventeli</translation>
+<translation id="7156870133441232244">Palvelin pitäisi päivittää TLS 1.2:een tai uudempaan versioon.</translation>
 <translation id="717330890047184534">Gaia-tunnus:</translation>
 <translation id="7174545416324379297">Yhdistetty</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> toinen}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> muuta}}</translation>
@@ -1403,6 +1409,7 @@ Lisätietoja:
 <translation id="725866823122871198">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska tietokoneesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
 <translation id="7260504762447901703">Peruuta käyttöoikeus</translation>
 <translation id="7275334191706090484">Hallinnoidut kirjanmerkit</translation>
+<translation id="7288778322931489286">Järjestelmänvalvoja on ottanut Enterprise Service Hooksin käyttöön selaimellesi. Näillä koukuilla on pääsy osaan datastasi.</translation>
 <translation id="7292031607255951991">Vastaanottajan nimi</translation>
 <translation id="7298195798382681320">Suositus</translation>
 <translation id="7300012071106347854">Koboltinsininen</translation>
@@ -1728,6 +1735,7 @@ Lisätietoja:
 <translation id="874918643257405732">Aseta tämä välilehti kirjanmerkiksi</translation>
 <translation id="8751426954251315517">Yritä seuraavalla kerralla uudelleen</translation>
 <translation id="8759274551635299824">Tämä kortti on vanhentunut.</translation>
+<translation id="87601671197631245">Tämä sivusto käyttää vanhentunutta tietoturvamääritystä, joka voi paljastaa tietosi (esim. salasanat, viestit tai credit-kortit), kun ne lähetetään sivustolle.</translation>
 <translation id="8761567432415473239">Google-selaussuoja <ph name="BEGIN_LINK" />löysi hiljattain haitallisia ohjelmia<ph name="END_LINK" /> sivustolta <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-laite</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1745,6 +1753,7 @@ Lisätietoja:
 <translation id="8866481888320382733">Virhe jäsennettäessä käytännön asetuksia</translation>
 <translation id="8866928039507595380">Taite</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Jaa järjestelmänvalvojalle dataa Enterprise Service Hooksin merkitsemistä tietoturvatapahtumista. Tämä voi sisältää avaamiesi sivujen URL-osoitteita, tiedostonimiä tai sisällönkuvaustietoja ja käyttäjänimen, jolla kirjaudut sisään laitteellesi ja Chromeen.</translation>
 <translation id="8870413625673593573">Hiljattain suljetut</translation>
 <translation id="8870494189203302833">Sama järjestys tulostuspuoli alaspäin</translation>
 <translation id="8874824191258364635">Anna kelvollinen kortin numero.</translation>

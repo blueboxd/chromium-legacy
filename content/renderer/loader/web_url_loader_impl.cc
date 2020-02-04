@@ -298,7 +298,7 @@ bool IsBannedCrossSiteAuth(network::ResourceRequest* resource_request,
   bool allow_cross_origin_auth_prompt = false;
   if (request.GetExtraData()) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
     allow_cross_origin_auth_prompt =
         extra_data->allow_cross_origin_auth_prompt();
   }
@@ -601,7 +601,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
@@ -750,12 +750,14 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     DCHECK(!sync_load_response);
   }
 
-  RequestExtraData empty_extra_data;
+  scoped_refptr<RequestExtraData> empty_extra_data;
   RequestExtraData* extra_data;
-  if (request.GetExtraData())
-    extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
-  else
-    extra_data = &empty_extra_data;
+  if (request.GetExtraData()) {
+    extra_data = static_cast<RequestExtraData*>(request.GetExtraData().get());
+  } else {
+    empty_extra_data = base::MakeRefCounted<RequestExtraData>();
+    extra_data = empty_extra_data.get();
+  }
   extra_data->CopyToResourceRequest(resource_request.get());
 
   std::unique_ptr<RequestPeer> peer;

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -86,14 +87,12 @@ bool IsValidHostName(base::StringPiece host,
     return true;
 
   if (subdomain_permission == ALLOW_SUBDOMAIN) {
-    std::string dot_domain(".");
-    domain_in_lower_case.AppendToString(&dot_domain);
+    std::string dot_domain = base::StrCat({".", domain_in_lower_case});
     return base::EndsWith(host_minus_tld, dot_domain,
                           base::CompareCase::INSENSITIVE_ASCII);
   }
 
-  std::string www_domain("www.");
-  domain_in_lower_case.AppendToString(&www_domain);
+  std::string www_domain = base::StrCat({"www.", domain_in_lower_case});
   return base::LowerCaseEqualsASCII(host_minus_tld, www_domain);
 }
 

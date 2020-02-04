@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Bekyk kaarte</translation>
 <translation id="3369192424181595722">Horlosiefout</translation>
 <translation id="337363190475750230">Onvoorsien</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> het Enterprise Service Hooks in jou blaaier geaktiveer. Hierdie hoeke het toegang tot van jou data.</translation>
+<translation id="3377144306166885718">Die bediener gebruik 'n verouderde weergawe van TLS.</translation>
 <translation id="3377188786107721145">Beleidontleedfout</translation>
 <translation id="3377736046129930310">Gebruik skermslot om kaarte vinniger te bevestig</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Afleweringadres</translation>
 <translation id="3395827396354264108">Oplaaimetode</translation>
 <translation id="3399952811970034796">Afleweringadres</translation>
+<translation id="3402261774528610252">Die verbinding wat gebruik word om hierdie werf te laai, gebruik TLS 1.0 of TLS 1.1, wat opgeskort is en in die toekoms gedeaktiveer sal word. Nadat dit gedeaktiveer is, sal gebruikers verhinder word om hierdie werf te laai. Die bediener moet TLS 1.2 of nuwer aktiveer.</translation>
 <translation id="3422248202833853650">Probeer opwindende ander programme om berging beskikbaar te maak.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> is tans onbereikbaar.</translation>
 <translation id="3423742043356668186">Stelsel gespesifiseer</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Nadat jy bevestig het, sal kaartbesonderhede vanaf jou Google-rekening met hierdie werf gedeel word.</translation>
 <translation id="3748148204939282805">Aanvallers op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan jou dalk mislei om iets gevaarlik te doen, soos om sagteware te installeer of jou persoonlike inligting bekend te maak (byvoorbeeld: wagwoorde, foonnommers of kredietkaartinligting). <ph name="BEGIN_LEARN_MORE_LINK" />Kom meer te wete<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Die vertaling het misluk weens 'n bedienerfout.</translation>
+<translation id="3754210790023674521">Verlaat prent-in-prent</translation>
 <translation id="3759461132968374835">Jy het geen omvalle wat onlangs aangemeld is nie. Omvalle wat plaasgevind het toe omvalverslaggewing gedeaktiveer is, sal nie hier verskyn nie.</translation>
 <translation id="3760561303380396507">Gebruik Windows Hello pleks van CVC?</translation>
 <translation id="3761718714832595332">Verberg status</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Nie in <ph name="ORIGINAL_LANGUAGE" /> nie? Meld hierdie fout aan</translation>
 <translation id="5190835502935405962">Boekmerkebalk</translation>
 <translation id="519422657042045905">Annotasie is nie beskikbaar nie</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">'n Ingebedde bladsy op hierdie bladsy sê</translation>
 <translation id="5205222826937269299">Naam word vereis</translation>
 <translation id="5215116848420601511">Betaalmetodes en adresse wat Google Pay gebruik</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">'n Dataskending op 'n werf of program het jou wagwoord blootgestel. Chrome beveel aan dat jy jou gestoorde wagwoorde nou nagaan.</translation>
 <translation id="5299298092464848405">Kon nie beleid ontleed nie</translation>
 <translation id="5300589172476337783">Wys</translation>
+<translation id="5306593769196050043">Albei blaaie</translation>
 <translation id="5308380583665731573">Koppel</translation>
 <translation id="5308689395849655368">Omvalverslaggewing is gedeaktiveer.</translation>
 <translation id="5314967030527622926">Brosjuremaker</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Gaan jou wagwoorde na</translation>
 <translation id="6015796118275082299">Jaar</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Bladsy 1}other{Bladsy #}}</translation>
 <translation id="6017514345406065928">Groen</translation>
 <translation id="6017850046339264347">Aanvallers op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan dalk misleidene programme installeer wat voorgee om iets anders te wees of data insamel wat gebruik word om jou na te spoor. <ph name="BEGIN_LEARN_MORE_LINK" />Kom meer te wete<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (gesinkroniseer)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Voeg meer inligting by</translation>
 <translation id="6447842834002726250">Webkoekies</translation>
-<translation id="644931407731409778">PDF-dokument met {COUNT,plural, =1{1 bladsy}other{# bladsye}}</translation>
 <translation id="6451458296329894277">Bevestig vormherindiening</translation>
 <translation id="6457206614190510200">Saalhegting</translation>
 <translation id="6465306955648956876">Bestuur wagwoorde …</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Blokkeer</translation>
 <translation id="7062635574500127092">Blougroen</translation>
 <translation id="7064851114919012435">Kontakinligting</translation>
+<translation id="70705239631109039">Jou verbinding is nie heeltemal veilig nie</translation>
 <translation id="7075452647191940183">Versoek is te groot</translation>
 <translation id="7079718277001814089">Hierdie werf bevat wanware</translation>
 <translation id="7081308185095828845">Hierdie kenmerk is nie op jou toestel beskikbaar nie</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Ligpers</translation>
+<translation id="7156870133441232244">Die bediener moet opgradeer na TLS 1.2 of nuwer.</translation>
 <translation id="717330890047184534">Gaia-ID:</translation>
 <translation id="7174545416324379297">Saamgevoeg</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1402,6 +1408,7 @@ Bykomende besonderhede:
 <translation id="725866823122871198">'n Private verbinding aan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan nie gevestig word nie omdat jou rekenaar se datum en tyd (<ph name="DATE_AND_TIME" />) verkeerd is.</translation>
 <translation id="7260504762447901703">Herroep toegang</translation>
 <translation id="7275334191706090484">Bestuurde boekmerke</translation>
+<translation id="7288778322931489286">Jou administrateur het Enterprise Service Hooks in jou blaaier geaktiveer. Hierdie hoeke het toegang tot van jou data.</translation>
 <translation id="7292031607255951991">Ontvanger se naam</translation>
 <translation id="7298195798382681320">Aanbevole</translation>
 <translation id="7300012071106347854">Kobaltblou</translation>
@@ -1726,6 +1733,7 @@ Bykomende besonderhede:
 <translation id="874918643257405732">Boekmerk hierdie oortjie</translation>
 <translation id="8751426954251315517">Probeer volgende keer weer</translation>
 <translation id="8759274551635299824">Hierdie kaart het verval</translation>
+<translation id="87601671197631245">Hierdie werf gebruik 'n verouderde sekuriteitopstelling, wat jou inligting (byvoorbeeld, wagwoorde, boodskappe of kredietkaarte) kan blootstel wanneer dit na hierdie werf toe gestuur word.</translation>
 <translation id="8761567432415473239">Google Veiligblaai het onlangs <ph name="BEGIN_LINK" />skadelike programme gevind<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-toestel</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@ Bykomende besonderhede:
 <translation id="8866481888320382733">Kon nie beleidinstellings ontleed nie</translation>
 <translation id="8866928039507595380">Vou</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Deel data oor sekuriteitgeleenthede wat deur Enterprise Service Hooks gevlag is met jou administrateur. Dit kan insluit: URL'e van bladsye wat jy besoek, lêername of metadata en die gebruikernaam wat jy gebruik om op jou toestel en by Chrome aan te meld.</translation>
 <translation id="8870413625673593573">Onlangs toegemaak</translation>
 <translation id="8870494189203302833">Dieselfde volgorde, voorkant na onder</translation>
 <translation id="8874824191258364635">Voer 'n geldige kaartnommer in</translation>

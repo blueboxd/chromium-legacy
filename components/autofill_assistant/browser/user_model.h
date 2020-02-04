@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
@@ -42,6 +43,9 @@ class UserModel {
   void SetValue(const std::string& identifier,
                 const ValueProto& value,
                 bool force_notification = false);
+
+  // Returns the value for |identifier| or nullopt if there is no such value.
+  base::Optional<ValueProto> GetValue(const std::string& identifier);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

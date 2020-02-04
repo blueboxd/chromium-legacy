@@ -35,6 +35,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
   virtual ScriptPromise pull(ScriptState*);
 
+  ScriptPromise cancelWrapper(ScriptState*);
   ScriptPromise cancelWrapper(ScriptState*, ScriptValue reason);
   virtual ScriptPromise Cancel(ScriptState*, ScriptValue reason);
 

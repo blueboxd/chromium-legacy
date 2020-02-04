@@ -627,6 +627,7 @@
 <translation id="3745099705178523657">ካረጋገጡ በኋላ የGoogle መለያዎ ካርድ ዝርዝሮች ለዚህ ጣቢያ ይጋራሉ።</translation>
 <translation id="3748148204939282805">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ ያሉ አጥቂዎች ልክ እንደ ሶፍትዌርን መጫን ወይም የግል መረጃዎችን (ለምሳሌ፦ የይለፍ ቃላትን፣ የስልክ ቁጥሮችን ወይም የክሬዲት ካርዶችን የመሳሰሉ) አጋልጦ መስጠት እንዲያደርጉ ሊያታልለዎት ይችላል። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">በአገልጋይ ስህተት ምክንያት የትርጉም ስራው ተሰናክሏል።</translation>
+<translation id="3754210790023674521">ከሥዕል-ውስጥ-ሥዕል ውጣ</translation>
 <translation id="3759461132968374835">በቅርብ ጊዜ ሪፖርት የተደረጉ ብልሽቶች የለዎትም።  የብልሽት ሪፖርት ማድረግ ተሰናክሎ ሳለ የተከሰቱ ብልሽቶች እዚህ አይታዩም።</translation>
 <translation id="3760561303380396507">ከCVC ይልቅ Windows Helloን ይጠቀሙ?</translation>
 <translation id="3761718714832595332">ሁኔታን ደብቅ</translation>
@@ -1131,7 +1132,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">የእርስዎን የይለፍ ቃላት ይፈትሹ</translation>
 <translation id="6015796118275082299">ዓመት</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{ገጽ 1}one{ገጽ #}other{ገጽ #}}</translation>
 <translation id="6017514345406065928">አረንጓዴ</translation>
 <translation id="6017850046339264347">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ ያሉ አጥቂዎች የሆነ ሌላ ነገር እንደሆነ መስለው የሚቀርቡ አታላይ መተግበሪያዎችን ሊጭኑ ወይም የእርስዎን ዱካ ለመከታተል የሚያስችል ውሂብን ሊሰበስቡ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />፣ <ph name="TYPE_2" />፣ <ph name="TYPE_3" /> (ሰምሯል)</translation>
@@ -1239,7 +1239,6 @@
 <translation id="6446163441502663861">ካሁ (የደብዳቤ ፖስታ)</translation>
 <translation id="6446608382365791566">ተጨማሪ መረጃ ያክሉ</translation>
 <translation id="6447842834002726250">ኩኪዎች</translation>
-<translation id="644931407731409778">ፒዲአፍ ሰነድ {COUNT,plural, =1{1 ገጽ}one{# ገጾች}other{# ገጾች}}</translation>
 <translation id="6451458296329894277">እንደገና ለማስገባት የማረጋገጫ ቅጽ</translation>
 <translation id="6457206614190510200">ኮርቻ ስፌት</translation>
 <translation id="6465306955648956876">የይለፍ ቃላትን ያቀናብሩ...</translation>

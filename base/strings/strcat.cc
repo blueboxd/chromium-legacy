@@ -8,8 +8,8 @@ namespace base {
 
 namespace {
 
-// Reserves an additional amount of size in the given string, growing by at
-// least 2x. Used by StrAppend().
+// Reserves an additional amount of capacity in the given string, growing by at
+// least 2x if necessary. Used by StrAppendT().
 //
 // The "at least 2x" growing rule duplicates the exponential growth of
 // std::string. The problem is that most implementations of reserve() will grow
@@ -18,11 +18,15 @@ namespace {
 // call to StrAppend() would definitely cause a reallocation, and loops with
 // StrAppend() calls would have O(n^2) complexity to execute. Instead, we want
 // StrAppend() to have the same semantics as std::string::append().
-//
-// If the string is empty, we assume that exponential growth is not necessary.
 template <typename String>
-void ReserveAdditional(String* str, typename String::size_type additional) {
-  str->reserve(std::max(str->size() + additional, str->size() * 2));
+void ReserveAdditionalIfNeeded(String* str,
+                               typename String::size_type additional) {
+  const size_t required = str->size() + additional;
+  // Check whether we need to reserve additional capacity at all.
+  if (required <= str->capacity())
+    return;
+
+  str->reserve(std::max(required, str->capacity() * 2));
 }
 
 template <typename DestString, typename InputString>
@@ -30,7 +34,7 @@ void StrAppendT(DestString* dest, span<const InputString> pieces) {
   size_t additional_size = 0;
   for (const auto& cur : pieces)
     additional_size += cur.size();
-  ReserveAdditional(dest, additional_size);
+  ReserveAdditionalIfNeeded(dest, additional_size);
 
   for (const auto& cur : pieces)
     dest->append(cur.data(), cur.size());

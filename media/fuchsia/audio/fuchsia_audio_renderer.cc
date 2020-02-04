@@ -243,17 +243,17 @@ void FuchsiaAudioRenderer::StartTicking() {
     flags = fuchsia::media::AudioConsumerStartFlags::LOW_LATENCY;
   }
 
-  bool send_stop = false;
-  base::TimeDelta media_pos;
-  {
-    base::AutoLock lock(state_lock_);
-    media_pos = media_pos_;
-    send_stop = state_ != PlaybackState::kStopped;
-    state_ = PlaybackState::kStarting;
+  if (GetPlaybackState() != PlaybackState::kStopped) {
+    audio_consumer_->Stop();
   }
 
-  if (send_stop)
-    audio_consumer_->Stop();
+  base::TimeDelta media_pos;
+  {
+    base::AutoLock lock(timeline_lock_);
+    media_pos = media_pos_;
+    SetPlaybackState(PlaybackState::kStarting);
+  }
+
 
   audio_consumer_->Start(flags, fuchsia::media::NO_TIMESTAMP,
                          media_pos.ToZxDuration());
@@ -261,12 +261,12 @@ void FuchsiaAudioRenderer::StartTicking() {
 
 void FuchsiaAudioRenderer::StopTicking() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetPlaybackState() != PlaybackState::kStopped);
 
   audio_consumer_->Stop();
 
-  base::AutoLock lock(state_lock_);
-  DCHECK(state_ != PlaybackState::kStopped);
-  state_ = PlaybackState::kStopped;
+  base::AutoLock lock(timeline_lock_);
+  SetPlaybackState(PlaybackState::kStarting);
   media_pos_ = CurrentMediaTimeLocked();
 }
 
@@ -278,10 +278,10 @@ void FuchsiaAudioRenderer::SetPlaybackRate(double playback_rate) {
 
 void FuchsiaAudioRenderer::SetMediaTime(base::TimeDelta time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetPlaybackState() == PlaybackState::kStopped);
 
   {
-    base::AutoLock lock(state_lock_);
-    DCHECK(state_ == PlaybackState::kStopped);
+    base::AutoLock lock(timeline_lock_);
     media_pos_ = time;
   }
 
@@ -290,7 +290,7 @@ void FuchsiaAudioRenderer::SetMediaTime(base::TimeDelta time) {
 }
 
 base::TimeDelta FuchsiaAudioRenderer::CurrentMediaTime() {
-  base::AutoLock lock(state_lock_);
+  base::AutoLock lock(timeline_lock_);
   if (state_ != PlaybackState::kPlaying)
     return media_pos_;
 
@@ -303,7 +303,7 @@ bool FuchsiaAudioRenderer::GetWallClockTimes(
   wall_clock_times->reserve(media_timestamps.size());
   auto now = base::TimeTicks::Now();
 
-  base::AutoLock lock(state_lock_);
+  base::AutoLock lock(timeline_lock_);
 
   const bool is_time_moving = state_ == PlaybackState::kPlaying;
 
@@ -327,6 +327,16 @@ bool FuchsiaAudioRenderer::GetWallClockTimes(
   }
 
   return is_time_moving;
+}
+
+FuchsiaAudioRenderer::PlaybackState FuchsiaAudioRenderer::GetPlaybackState() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return state_;
+}
+
+void FuchsiaAudioRenderer::SetPlaybackState(PlaybackState state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  state_ = state;
 }
 
 void FuchsiaAudioRenderer::OnError(PipelineStatus status) {
@@ -358,12 +368,15 @@ void FuchsiaAudioRenderer::OnDecryptorInitialized(PipelineStatus status) {
 }
 
 void FuchsiaAudioRenderer::RequestAudioConsumerStatus() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   audio_consumer_->WatchStatus(fit::bind_member(
       this, &FuchsiaAudioRenderer::OnAudioConsumerStatusChanged));
 }
 
 void FuchsiaAudioRenderer::OnAudioConsumerStatusChanged(
     fuchsia::media::AudioConsumerStatus status) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (status.has_error()) {
     LOG(ERROR) << "fuchsia::media::AudioConsumer reported an error";
     OnError(AUDIO_RENDERER_ERROR);
@@ -371,10 +384,10 @@ void FuchsiaAudioRenderer::OnAudioConsumerStatusChanged(
   }
 
   if (status.has_presentation_timeline()) {
-    base::AutoLock lock(state_lock_);
-    if (state_ != PlaybackState::kStopped) {
-      if (state_ == PlaybackState::kStarting) {
-        state_ = PlaybackState::kPlaying;
+    if (GetPlaybackState() != PlaybackState::kStopped) {
+      base::AutoLock lock(timeline_lock_);
+      if (GetPlaybackState() == PlaybackState::kStarting) {
+        SetPlaybackState(PlaybackState::kPlaying);
       }
       reference_time_ = base::TimeTicks::FromZxTime(
           status.presentation_timeline().reference_time);
@@ -416,17 +429,9 @@ void FuchsiaAudioRenderer::OnAudioConsumerStatusChanged(
 void FuchsiaAudioRenderer::ScheduleReadDemuxerStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool at_end_of_stream;
-  {
-    base::AutoLock lock(state_lock_);
-    at_end_of_stream = state_ == PlaybackState::kEndOfStream;
-    // |state_| cannot be changed on any other thread, so |at_end_of_stream|
-    // will be correct after the lock is released. The lock is required only to
-    // appease static thread annotations checker.
-  }
-
   if (!demuxer_stream_ || read_timer_.IsRunning() ||
-      demuxer_stream_->IsReadPending() || at_end_of_stream ||
+      demuxer_stream_->IsReadPending() ||
+      GetPlaybackState() == PlaybackState::kEndOfStream ||
       num_pending_packets_ >= stream_sink_buffers_.size()) {
     return;
   }
@@ -480,8 +485,10 @@ void FuchsiaAudioRenderer::OnDemuxerStreamReadDone(
   }
 
   if (buffer->end_of_stream()) {
-    base::AutoLock lock(state_lock_);
-    state_ = PlaybackState::kEndOfStream;
+    {
+      base::AutoLock lock(timeline_lock_);
+      SetPlaybackState(PlaybackState::kEndOfStream);
+    }
     stream_sink_->EndOfStream();
     return;
   }
@@ -548,10 +555,8 @@ void FuchsiaAudioRenderer::SetBufferState(BufferingState buffer_state) {
 
 void FuchsiaAudioRenderer::FlushInternal() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  {
-    base::AutoLock lock(state_lock_);
-    DCHECK(state_ == PlaybackState::kStopped);
-  }
+  DCHECK(GetPlaybackState() == PlaybackState::kStopped ||
+         GetPlaybackState() == PlaybackState::kEndOfStream);
 
   stream_sink_->DiscardAllPacketsNoReply();
   SetBufferState(BUFFERING_HAVE_NOTHING);

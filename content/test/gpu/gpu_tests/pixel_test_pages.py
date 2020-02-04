@@ -1253,7 +1253,7 @@ class PixelTestPages(object):
             'color': [0, 255, 0],
           }
         ],
-        restart_browser_after_test=True),
+        optional_action='RunLowToHighPowerTest'),
 
       PixelTestPage(
         'pixel_webgl_low_to_high_power_alpha_false.html',
@@ -1268,7 +1268,7 @@ class PixelTestPages(object):
             'color': [0, 255, 0],
           }
         ],
-        restart_browser_after_test=True),
+        optional_action='RunLowToHighPowerTest'),
     ]
 
   @staticmethod

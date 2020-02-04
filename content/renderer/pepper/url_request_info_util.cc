@@ -246,7 +246,7 @@ bool CreateWebURLRequest(PP_Instance instance,
     dest->SetRequestedWithHeader(WebString::FromUTF8(name_version));
 
   if (data->has_custom_user_agent) {
-    auto extra_data = std::make_unique<RequestExtraData>();
+    auto extra_data = base::MakeRefCounted<RequestExtraData>();
     extra_data->set_custom_user_agent(
         WebString::FromUTF8(data->custom_user_agent));
     dest->SetExtraData(std::move(extra_data));

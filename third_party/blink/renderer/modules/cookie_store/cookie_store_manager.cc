@@ -36,7 +36,7 @@ mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
     ExceptionState& exception_state) {
   auto backend_subscription = mojom::blink::CookieChangeSubscription::New();
 
-  if (subscription->hasURL()) {
+  if (subscription->hasUrl()) {
     KURL subscription_url(default_cookie_url, subscription->url());
     if (!subscription_url.GetString().StartsWith(
             default_cookie_url.GetString())) {
@@ -73,7 +73,7 @@ mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
 CookieStoreGetOptions* ToCookieChangeSubscription(
     const mojom::blink::CookieChangeSubscription& backend_subscription) {
   CookieStoreGetOptions* subscription = CookieStoreGetOptions::Create();
-  subscription->setURL(backend_subscription.url);
+  subscription->setUrl(backend_subscription.url);
 
   if (backend_subscription.match_type !=
           network::mojom::blink::CookieMatchType::STARTS_WITH ||

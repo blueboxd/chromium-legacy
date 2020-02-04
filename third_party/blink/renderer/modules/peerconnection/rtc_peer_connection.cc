@@ -353,7 +353,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
     WebVector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
     for (const RTCIceServer* ice_server : configuration->iceServers()) {
       Vector<String> url_strings;
-      if (ice_server->hasURLs()) {
+      if (ice_server->hasUrls()) {
         UseCounter::Count(context, WebFeature::kRTCIceServerURLs);
         const StringOrStringSequence& urls = ice_server->urls();
         if (urls.IsString()) {
@@ -362,7 +362,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
           DCHECK(urls.IsStringSequence());
           url_strings = urls.GetAsStringSequence();
         }
-      } else if (ice_server->hasURL()) {
+      } else if (ice_server->hasUrl()) {
         UseCounter::Count(context, WebFeature::kRTCIceServerURL);
         url_strings.push_back(ice_server->url());
       } else {
@@ -523,6 +523,11 @@ bool FingerprintMismatch(String old_sdp, String new_sdp) {
                            old_fingerprint_end - old_fingerprint_pos) !=
          new_sdp.Substring(new_fingerprint_pos,
                            new_fingerprint_end - new_fingerprint_pos);
+}
+
+bool ContainsLegacySimulcast(String sdp) {
+  // Looks for the non-spec simulcast that іs enabled via SDP munging.
+  return sdp.Find("\na=ssrc-group:SIM") != kNotFound;
 }
 
 enum class SdpFormat {
@@ -698,6 +703,27 @@ RTCPeerConnection* RTCPeerConnection::Create(
   return peer_connection;
 }
 
+RTCPeerConnection* RTCPeerConnection::Create(
+    ExecutionContext* context,
+    const RTCConfiguration* rtc_configuration,
+    const ScriptValue& media_constraints_value,
+    ExceptionState& exception_state) {
+  Dictionary media_constraints(context->GetIsolate(),
+                               media_constraints_value.V8Value(),
+                               exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
+  return Create(context, rtc_configuration, media_constraints, exception_state);
+}
+
+RTCPeerConnection* RTCPeerConnection::Create(
+    ExecutionContext* context,
+    const RTCConfiguration* rtc_configuration,
+    ExceptionState& exception_state) {
+  return Create(context, rtc_configuration, Dictionary(), exception_state);
+}
+
 RTCPeerConnection::RTCPeerConnection(
     ExecutionContext* context,
     webrtc::PeerConnectionInterface::RTCConfiguration configuration,
@@ -833,6 +859,31 @@ ScriptPromise RTCPeerConnection::createOffer(
     ScriptState* script_state,
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback,
+    const ScriptValue& rtc_offer_options_value,
+    ExceptionState& exception_state) {
+  Dictionary rtc_offer_options(script_state->GetIsolate(),
+                               rtc_offer_options_value.V8Value(),
+                               exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise();
+
+  return CreateOffer(script_state, success_callback, error_callback,
+                     rtc_offer_options, exception_state);
+}
+
+ScriptPromise RTCPeerConnection::createOffer(
+    ScriptState* script_state,
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback,
+    ExceptionState& exception_state) {
+  return CreateOffer(script_state, success_callback, error_callback,
+                     Dictionary(), exception_state);
+}
+
+ScriptPromise RTCPeerConnection::CreateOffer(
+    ScriptState* script_state,
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback,
     const Dictionary& rtc_offer_options,
     ExceptionState& exception_state) {
   DCHECK(success_callback);
@@ -925,6 +976,30 @@ ScriptPromise RTCPeerConnection::createAnswer(
     ScriptState* script_state,
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback,
+    const ScriptValue& media_constraints_value,
+    ExceptionState& exception_state) {
+  Dictionary media_constraints(script_state->GetIsolate(),
+                               media_constraints_value.V8Value(),
+                               exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise();
+  return CreateAnswer(script_state, success_callback, error_callback,
+                      media_constraints);
+}
+
+ScriptPromise RTCPeerConnection::createAnswer(
+    ScriptState* script_state,
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback,
+    ExceptionState&) {
+  return CreateAnswer(script_state, success_callback, error_callback,
+                      Dictionary());
+}
+
+ScriptPromise RTCPeerConnection::CreateAnswer(
+    ScriptState* script_state,
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback,
     const Dictionary& media_constraints) {
   DCHECK(success_callback);
   DCHECK(error_callback);
@@ -987,6 +1062,10 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
             DOMExceptionCode::kInvalidModificationError, kModifiedSdpMessage);
       } else {
         UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
+        if (ContainsLegacySimulcast(*sdp)) {
+          UseCounter::Count(context,
+                            WebFeature::kRTCLocalSdpModificationSimulcast);
+        }
         return nullptr;
         // TODO(https://crbug.com/823036): Return failure for all modification.
       }
@@ -1001,6 +1080,10 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
             DOMExceptionCode::kInvalidModificationError, kModifiedSdpMessage);
       } else {
         UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
+        if (ContainsLegacySimulcast(*sdp)) {
+          UseCounter::Count(context,
+                            WebFeature::kRTCLocalSdpModificationSimulcast);
+        }
         return nullptr;
         // TODO(https://crbug.com/823036): Return failure for all modification.
       }
@@ -1519,7 +1602,7 @@ RTCConfiguration* RTCPeerConnection::getConfiguration(
     }
     urls.SetStringSequence(std::move(url_vector));
 
-    ice_server->setURLs(urls);
+    ice_server->setUrls(urls);
     ice_server->setUsername(webrtc_server.username.c_str());
     ice_server->setCredential(webrtc_server.password.c_str());
     ice_servers.push_back(ice_server);
@@ -1879,6 +1962,24 @@ void RTCPeerConnection::restartIce() {
 }
 
 void RTCPeerConnection::addStream(ScriptState* script_state,
+                                  MediaStream* stream,
+                                  const ScriptValue& media_constraints_value,
+                                  ExceptionState& exception_state) {
+  Dictionary media_constraints(script_state->GetIsolate(),
+                               media_constraints_value.V8Value(),
+                               exception_state);
+  if (exception_state.HadException())
+    return;
+  AddStream(script_state, stream, media_constraints, exception_state);
+}
+
+void RTCPeerConnection::addStream(ScriptState* script_state,
+                                  MediaStream* stream,
+                                  ExceptionState& exception_state) {
+  AddStream(script_state, stream, Dictionary(), exception_state);
+}
+
+void RTCPeerConnection::AddStream(ScriptState* script_state,
                                   MediaStream* stream,
                                   const Dictionary& media_constraints,
                                   ExceptionState& exception_state) {

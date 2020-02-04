@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/autofill_assistant/interaction_handler_android.h"
+#include <algorithm>
+#include <vector>
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
@@ -33,6 +36,94 @@ void ShowInfoPopup(const InfoPopupProto& proto,
   ui_controller_android_utils::ShowJavaInfoPopup(
       env, ui_controller_android_utils::CreateJavaInfoPopup(env, proto),
       jcontext_local);
+}
+
+void ShowListPopup(base::WeakPtr<UserModel> user_model,
+                   const ShowListPopupProto& proto,
+                   base::android::ScopedJavaGlobalRef<jobject> jcontext,
+                   base::android::ScopedJavaGlobalRef<jobject> jdelegate,
+                   const ValueProto& ignored) {
+  if (!user_model) {
+    return;
+  }
+
+  auto item_names = user_model->GetValue(proto.item_names_model_identifier());
+  if (!item_names.has_value()) {
+    DVLOG(2) << "Failed to show list popup: '"
+             << proto.item_names_model_identifier() << "' not found in model.";
+    return;
+  }
+  if (item_names->strings().values().size() == 0) {
+    DVLOG(2) << "Failed to show list popup: the list of item names in '"
+             << proto.item_names_model_identifier() << "' was empty.";
+    return;
+  }
+
+  base::Optional<ValueProto> item_types;
+  if (proto.has_item_types_model_identifier()) {
+    item_types = user_model->GetValue(proto.item_types_model_identifier());
+    if (!item_types.has_value()) {
+      DVLOG(2) << "Failed to show list popup: '"
+               << proto.item_types_model_identifier()
+               << "' not found in the model.";
+      return;
+    }
+    if (item_types->ints().values().size() !=
+        item_names->strings().values().size()) {
+      DVLOG(2) << "Failed to show list popup: Expected item_types to contain "
+               << item_names->strings().values().size() << " integers, but got "
+               << item_types->ints().values().size();
+      return;
+    }
+  } else {
+    item_types = ValueProto();
+    for (int i = 0; i < item_names->strings().values().size(); ++i) {
+      item_types->mutable_ints()->add_values(
+          static_cast<int>(ShowListPopupProto::ENABLED));
+    }
+  }
+
+  auto selected_indices =
+      user_model->GetValue(proto.selected_item_indices_model_identifier());
+  if (!selected_indices.has_value()) {
+    DVLOG(2) << "Failed to show list popup: '"
+             << proto.selected_item_indices_model_identifier()
+             << "' not found in model.";
+    return;
+  }
+  if (!(*selected_indices == ValueProto()) &&
+      selected_indices->kind_case() != ValueProto::kInts) {
+    DVLOG(2) << "Failed to show list popup: expected '"
+             << proto.selected_item_indices_model_identifier()
+             << "' to be int[], but was of type "
+             << selected_indices->kind_case();
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto jidentifier = base::android::ConvertUTF8ToJavaString(
+      env, proto.selected_item_indices_model_identifier());
+
+  std::vector<std::string> item_names_vec;
+  std::copy(item_names->strings().values().begin(),
+            item_names->strings().values().end(),
+            std::back_inserter(item_names_vec));
+
+  std::vector<int> item_types_vec;
+  std::copy(item_types->ints().values().begin(),
+            item_types->ints().values().end(),
+            std::back_inserter(item_types_vec));
+
+  std::vector<int> selected_indices_vec;
+  std::copy(selected_indices->ints().values().begin(),
+            selected_indices->ints().values().end(),
+            std::back_inserter(selected_indices_vec));
+
+  Java_AssistantViewInteractions_showListPopup(
+      env, jcontext, base::android::ToJavaArrayOfStrings(env, item_names_vec),
+      base::android::ToJavaIntArray(env, item_types_vec),
+      base::android::ToJavaIntArray(env, selected_indices_vec),
+      proto.allow_multiselect(), jidentifier, jdelegate);
 }
 
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
@@ -73,11 +164,12 @@ base::Optional<InteractionHandlerAndroid::InteractionCallback>
 CreateInteractionCallbackFromProto(
     const CallbackProto& proto,
     UserModel* user_model,
-    base::android::ScopedJavaGlobalRef<jobject> jcontext) {
+    base::android::ScopedJavaGlobalRef<jobject> jcontext,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
     case CallbackProto::kSetValue:
       if (proto.set_value().model_identifier().empty()) {
-        VLOG(1)
+        DVLOG(1)
             << "Error creating SetValue interaction: model_identifier not set";
         return base::nullopt;
       }
@@ -89,8 +181,24 @@ CreateInteractionCallbackFromProto(
           base::BindRepeating(&ShowInfoPopup,
                               proto.show_info_popup().info_popup(), jcontext));
     }
+    case CallbackProto::kShowListPopup:
+      if (proto.show_list_popup().item_names_model_identifier().empty()) {
+        DVLOG(1) << "Error creating ShowListPopup interaction: "
+                    "items_list_model_identifier not set";
+        return base::nullopt;
+      }
+      if (proto.show_list_popup()
+              .selected_item_indices_model_identifier()
+              .empty()) {
+        DVLOG(1) << "Error creating ShowListPopup interaction: "
+                    "selected_item_indices_model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&ShowListPopup, user_model->GetWeakPtr(),
+                              proto.show_list_popup(), jcontext, jdelegate));
     case CallbackProto::KIND_NOT_SET:
-      VLOG(1) << "Error creating interaction: kind not set";
+      DVLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
   }
 }
@@ -134,15 +242,15 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     auto key = CreateEventKeyFromProto(interaction_proto.trigger_event(), env,
                                        views, jdelegate);
     if (!key) {
-      VLOG(1) << "Invalid trigger event for interaction";
+      DVLOG(1) << "Invalid trigger event for interaction";
       return false;
     }
 
     for (const auto& callback_proto : interaction_proto.callbacks()) {
-      auto callback = CreateInteractionCallbackFromProto(callback_proto,
-                                                         user_model, jcontext_);
+      auto callback = CreateInteractionCallbackFromProto(
+          callback_proto, user_model, jcontext_, jdelegate);
       if (!callback) {
-        VLOG(1) << "Invalid callback for interaction";
+        DVLOG(1) << "Invalid callback for interaction";
         return false;
       }
       AddInteraction(*key, *callback);

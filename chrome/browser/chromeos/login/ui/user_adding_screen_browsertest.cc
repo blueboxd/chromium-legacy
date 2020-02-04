@@ -10,9 +10,9 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,7 +24,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
 
 namespace chromeos {
 
@@ -71,22 +70,6 @@ class UserAddingScreenTest : public LoginManagerTest,
 
   void SetUserCanLock(user_manager::User* user, bool can_lock) {
     user->set_can_lock(can_lock);
-  }
-
-  void CheckScreenIsVisible() {
-    auto* login_view = LoginDisplayHost::default_host()->GetWebUILoginView();
-    views::View* web_view = login_view->children().front();
-    for (views::View* current_view = web_view; current_view;
-         current_view = current_view->parent()) {
-      EXPECT_TRUE(current_view->GetVisible());
-      if (current_view->layer())
-        EXPECT_EQ(current_view->layer()->GetCombinedOpacity(), 1.f);
-    }
-    for (aura::Window* window = web_view->GetWidget()->GetNativeWindow();
-         window; window = window->parent()) {
-      EXPECT_TRUE(window->IsVisible());
-      EXPECT_EQ(window->layer()->GetCombinedOpacity(), 1.f);
-    }
   }
 
   int user_adding_started() { return user_adding_started_; }
@@ -257,13 +240,11 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
   StartupUtils::MarkOobeCompleted();
 }
 
-// http://crbug.com/978267
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, DISABLED_ScreenVisibility) {
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
   LoginUser(test_users_[0]);
 
   UserAddingScreen::Get()->Start();
-  content::RunAllPendingInMessageLoop();
-  CheckScreenIsVisible();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
   UserAddingScreen::Get()->Cancel();
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
@@ -285,8 +266,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, DISABLED_ScreenVisibility) {
   }
 
   UserAddingScreen::Get()->Start();
-  content::RunAllPendingInMessageLoop();
-  CheckScreenIsVisible();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
   UserAddingScreen::Get()->Cancel();
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();

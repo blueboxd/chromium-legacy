@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Az érintőceruza beállításai</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
 <translation id="2359808026110333948">Tovább</translation>
-<translation id="2364154243880592194">Állapottálca, idő: <ph name="TIME" />, <ph name="BATTERY" />. Nyomja meg a keresés billentyűt és a balra nyilat az értesítési központ megnyitásához.</translation>
 <translation id="2365393535144473978">A mobiladat-kapcsolat engedélyezésével a Bluetooth is bekapcsol.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Rendelkezésre áll frissítés</translation>
@@ -239,6 +238,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4112140312785995938">Ugrás visszafelé</translation>
 <translation id="4129129681837227511">Ha szeretné látni az értesítéseket a lezárási képernyőn, oldja fel a képernyő zárolását a beállítás módosításához</translation>
 <translation id="4146833061457621061">Zenelejátszás</translation>
+<translation id="4149156641122542261">A(z) <ph name="DEVICE_TYPE" /> kezelője: <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Nyelvek</translation>
 <translation id="4195877955194704651">Automatikus kattintás az adott gombon</translation>
 <translation id="4217571870635786043">Diktálás</translation>
@@ -270,7 +270,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4513946894732546136">Visszajelzés</translation>
 <translation id="4527045527269911712">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> a teljes feltöltésig</translation>
-<translation id="4544944664594876241">Megváltozott a képernyőzárolás billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Felolvasás gomb</translation>
 <translation id="4585337515783392668">Ismeretlen fogadó eszközre történő átküldés leállítása</translation>
@@ -427,7 +426,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6790428901817661496">Játék</translation>
 <translation id="6803622936009808957">A kijelzők tükrözése sikertelen, mivel nem található támogatott felbontás. Ehelyett kiterjesztett asztal módba váltott a rendszer.</translation>
 <translation id="6820676911989879663">Tartson egy kis szünetet!</translation>
-<translation id="683971173229319003">Keresés+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
 <translation id="6878400149835617132">A billentyűparancs ki van kapcsolva</translation>
 <translation id="6910714959251846841">Eszköze frissítéséhez powerwash szükséges. További információ a legújabb <ph name="SYSTEM_APP_NAME" />-frissítésről.</translation>
@@ -451,6 +449,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7143207342074048698">Csatlakozás</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. A Chromebookot újra kell indítani a frissítés alkalmazásához. Ez akár egy percig is eltarthat.</translation>
 <translation id="7256634071279256947">Hátulsó mikrofon</translation>
 <translation id="726276584504105859">Húzza ide az osztott képernyő használatához</translation>
 <translation id="7262906531272962081">Emlékeztető létrehozása</translation>
@@ -465,11 +464,9 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="742594950370306541">A kamera épp használatban van.</translation>
 <translation id="743058460480092004">A kamera és a mikrofon épp használatban van.</translation>
 <translation id="7497767806359279797">Nyelv és billentyűzet kiválasztása</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Elképzelhető, hogy figyelik a hálózatot</translation>
 <translation id="7536035074519304529">IP-cím: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ideje aludni</translation>
-<translation id="7561014039265304140">A(z) <ph name="DISPLAY_NAME" /> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION" />. A felbontás megváltozott erre: <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Hangulatjel-paletta</translation>
 <translation id="7564874036684306347">Az ablakok másik asztalra történő áthelyezése váratlan viselkedést eredményezhet. Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer megoszthatja az asztalok között.</translation>
 <translation id="7568294522609223312">Automatikus kattintások kikapcsolása</translation>
@@ -512,6 +509,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
 <translation id="8098591350844501178">A képernyő „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
 <translation id="8113423164597455979">Bekapcsolva az összes alkalmazásnál</translation>
+<translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8132793192354020517">Csatlakozás a következőhöz megtörtént: <ph name="NAME" /></translation>
 <translation id="813913629614996137">Indítás…</translation>
 <translation id="8142441511840089262">Dupla kattintás</translation>

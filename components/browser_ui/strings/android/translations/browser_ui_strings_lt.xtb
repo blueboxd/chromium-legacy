@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2359808026110333948">Tęskite</translation>
+<translation id="2501278716633472235">Grįžti</translation>
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="3115898365077584848">Rodyti informaciją</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Kop. nuor.</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="4570913071927164677">Išsami informacija</translation>
+<translation id="497421865427891073">Eiti pirmyn</translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
+<translation id="5596627076506792578">Daugiau parinkčių</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">„<ph name="NAME_OF_LIST_ITEM" />“ parinktys</translation>
 <translation id="6527303717912515753">Bendrinti</translation>
 <translation id="6746124502594467657">Perkelti žemyn</translation>
+<translation id="6818926723028410516">Pasirinkite elementus</translation>
 <translation id="6910211073230771657">Ištrintas</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6965382102122355670">Gerai</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Pasirinktas 1 elementas}one{Pasirinktas # elementas}few{Pasirinkti # elementai}many{Pasirinkta # elemento}other{Pasirinkta # elementų}}</translation>
+<translation id="7087918508125750058">Pasirinkta: <ph name="ITEM_COUNT" />. Parinktys pasiekiamos netoli ekrano viršaus</translation>
+<translation id="7250468141469952378">Pasirinkta: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7791543448312431591">Pridėti</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
+<translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8249310407154411074">Perkelti į viršų</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8609465669617005112">Perkelti į viršų</translation>
+<translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8730621377337864115">Atlikta</translation>
 </translationbundle>

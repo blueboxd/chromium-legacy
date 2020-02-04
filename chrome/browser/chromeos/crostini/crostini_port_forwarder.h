@@ -10,6 +10,7 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -27,6 +28,7 @@ class CrostiniPortForwarder : public KeyedService {
     uint16_t port_number;
     Protocol protocol_type;
     std::string input_ifname;
+    ContainerId container_id;
 
     bool operator==(const PortRuleKey& other) const {
       return port_number == other.port_number &&
@@ -46,17 +48,21 @@ class CrostiniPortForwarder : public KeyedService {
   };
 
   using ResultCallback = base::OnceCallback<void(bool)>;
-  void ActivatePort(uint16_t port_number,
+  void ActivatePort(const ContainerId& container_id,
+                    uint16_t port_number,
                     const Protocol& protocol_type,
                     ResultCallback result_callback);
-  void AddPort(uint16_t port_number,
+  void AddPort(const ContainerId& container_id,
+               uint16_t port_number,
                const Protocol& protocol_type,
                const std::string& label,
                ResultCallback result_callback);
-  void DeactivatePort(uint16_t port_number,
+  void DeactivatePort(const ContainerId& container_id,
+                      uint16_t port_number,
                       const Protocol& protocol_type,
                       ResultCallback result_callback);
-  void RemovePort(uint16_t port_number,
+  void RemovePort(const ContainerId& container_id,
+                  uint16_t port_number,
                   const Protocol& protocol_type,
                   ResultCallback result_callback);
 
@@ -84,10 +90,10 @@ class CrostiniPortForwarder : public KeyedService {
                              PortRuleKey key,
                              bool success);
   void TryDeactivatePort(const PortRuleKey& key,
+                         const ContainerId& container_id,
                          base::OnceCallback<void(bool)> result_callback);
-  void TryActivatePort(uint16_t port_number,
-                       const Protocol& protocol_type,
-                       const std::string& ipv4_addr,
+  void TryActivatePort(const PortRuleKey& key,
+                       const ContainerId& container_id,
                        base::OnceCallback<void(bool)> result_callback);
 
   // For each port rule (protocol, port, interface), keep track of the fd which

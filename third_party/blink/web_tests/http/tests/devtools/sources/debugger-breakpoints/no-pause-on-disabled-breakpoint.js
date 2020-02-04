@@ -12,20 +12,24 @@
   await SourcesTestRunner.startDebuggerTestPromise();
   const sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
   TestRunner.addResult('Set breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, false);
-  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  // We expect 1 Breakpoint decoration on line 9.
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(sourceFrame, [[9, 1]], () =>
+    SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, false));
 
   TestRunner.addResult('Run function and check pause');
+  let pausePromise = SourcesTestRunner.waitUntilPausedPromise();
   TestRunner.evaluateInPage('main()//# sourceURL=test.js');
-  SourcesTestRunner.captureStackTrace(await SourcesTestRunner.waitUntilPausedPromise());
+  SourcesTestRunner.captureStackTrace(await pausePromise);
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   TestRunner.addResult('Disable breakpoint');
-  await SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, true);
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(sourceFrame, [[9, 1]], () =>
+    SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, true));
 
   TestRunner.addResult('Run function and check that pause happens after function');
+  pausePromise = SourcesTestRunner.waitUntilPausedPromise();
   TestRunner.evaluateInPage('main(); debugger;//# sourceURL=test.js');
-  SourcesTestRunner.captureStackTrace(await SourcesTestRunner.waitUntilPausedPromise());
+  SourcesTestRunner.captureStackTrace(await pausePromise);
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   SourcesTestRunner.completeDebuggerTest();

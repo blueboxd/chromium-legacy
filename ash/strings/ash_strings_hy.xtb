@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Ստիլուսի կարգավորումներ</translation>
 <translation id="2354174487190027830"><ph name="NAME" />-ի ակտիվացում</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
-<translation id="2364154243880592194">Կարգավիճակի տող, ժամը՝ <ph name="TIME" />, <ph name="BATTERY" /> Սեղմեք Search+ձախ սլաքը՝ ծանուցումների կենտրոն մտնելու համար։</translation>
 <translation id="2365393535144473978">Բջջային ինտերնետը միացնելու դեպքում Bluetooth-ը ևս կակտիվանա:</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Հասանելի է նոր տարբերակը</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Հետ գնալ</translation>
 <translation id="4129129681837227511">Ծանուցումները կողպէկրանին տեսնելու համար ապակողպեք սարքը և փոխեք կարգավորումները:</translation>
 <translation id="4146833061457621061">Միացնել երաժշտություն</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> սարքը կառավարվում է <ph name="DOMAIN" /> կայքի կողմից</translation>
 <translation id="4181841719683918333">Լեզուներ</translation>
 <translation id="4195877955194704651">Ավտոմատ սեղմում</translation>
 <translation id="4217571870635786043">Ձայնային ներածում</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Հետադարձ կապ</translation>
 <translation id="4527045527269911712">«<ph name="DEVICE_NAME" />» Bluetooth սարքը զուգավորվելու թույլտվություն է խնդրում:</translation>
 <translation id="453661520163887813">Լրիվ կլիցքավորվի <ph name="TIME" />-ից</translation>
-<translation id="4544944664594876241">Էկրանի կողպման դյուրանցումը փոխվել է: <ph name="OLD_SHORTCUT" />-ի փոխարեն օգտագործեք <ph name="NEW_SHORTCUT" />:</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">«Ընտրեք և լսեք» կոճակ</translation>
 <translation id="4585337515783392668">Դադարեցնել հեռարձակումը անհայտ սարքին</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Նվագարկել</translation>
 <translation id="6803622936009808957">Չհաջողվեց հայելապատճենել մոնիտորները, քանի որ աջակցվող լուծաչափեր չգտնվեցին: Փոխարենը միացվել է ընդարձակված աշխատասեղանը:</translation>
 <translation id="6820676911989879663">Ընդմիջեք</translation>
-<translation id="683971173229319003">Որոնել+L</translation>
 <translation id="6857811139397017780">Ակտիվացնել <ph name="NETWORKSERVICE" /> ցանցը</translation>
 <translation id="6878400149835617132">Դյուրանցումն անջատված է</translation>
 <translation id="6910714959251846841">Այս թարմացումը տեղադրելու համար անհրաժեշտ է վերակայել սարքի կարգավորումները գործարանային տարբերակով։ Իմանալ ավելին <ph name="SYSTEM_APP_NAME" /> հավելվածի վերջին թարմացման մասին։</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Միացում</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Վերադարձ նախորդ լուծաչափին <ph name="TIMEOUT_SECONDS" /> վայրկյանից</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />։ Այս Chromebook-ը պետք է վերագործարկվի՝ թարմացումը կիրառելու համար։ Դա կարող է տևել մինչև 1 րոպե։</translation>
 <translation id="7256634071279256947">Հետևի խոսափող</translation>
 <translation id="726276584504105859">Քաշեք այստեղ՝ էկրանի տրոհումն օգտագործելու համար</translation>
 <translation id="7262906531272962081">Ստեղծել հիշեցում</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Տեսախցիկն օգտագործվում է:</translation>
 <translation id="743058460480092004">Տեսախցիկն ու խոսափողը օգտագործվում են:</translation>
 <translation id="7497767806359279797">Ընտրել լեզու և ստեղնաշար</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Ցանցը կարող է վերահսկվել</translation>
 <translation id="7536035074519304529">IP հասցե՝ <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Քնելու ժամն է</translation>
-<translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" />-ը չի աջակցվում <ph name="DISPLAY_NAME" />-ի կողմից: Լուծաչափը փոխվել է <ph name="FALLBACK_RESOLUTION" />-ի</translation>
 <translation id="7562368315689366235">Զմայլիկներ</translation>
 <translation id="7564874036684306347">Պատուհանների տեղափոխումն այլ աշխատասեղան կարող է անսպասելի արդյունքներ ունենալ: Հետագա ծանուցումները, պատուհանները և երկխոսությունները կարող են տրոհվել աշխատասեղանների միջև:</translation>
 <translation id="7568294522609223312">Անջատել ավտոմատ սեղմումները</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Բարձր կոնտրաստ</translation>
 <translation id="8098591350844501178">Դադարեցնել էկրանի հեռարձակումը <ph name="RECEIVER_NAME" />-ին</translation>
 <translation id="8113423164597455979">Միացված են բոլոր հավելվածների համար</translation>
+<translation id="8131740175452115882">Հաստատել</translation>
 <translation id="8132793192354020517">Կապակցված է <ph name="NAME" />-ին</translation>
 <translation id="813913629614996137">Նախապատրաստվում է...</translation>
 <translation id="8142441511840089262">Կրկնակի սեղմում</translation>

@@ -536,6 +536,8 @@
 <translation id="3366477098757335611">Ver tarxetas</translation>
 <translation id="3369192424181595722">Erro do reloxo</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> activou Enterprise Service Hooks no navegador. Estes ganchos teñen acceso a algúns dos teus datos.</translation>
+<translation id="3377144306166885718">O servidor utilizou unha versión obsoleta de TLS.</translation>
 <translation id="3377188786107721145">Erro de análise da política</translation>
 <translation id="3377736046129930310">Usar o bloqueo de pantalla para confirmar as tarxetas máis rápido</translation>
 <translation id="3380365263193509176">Erro descoñecido</translation>
@@ -544,6 +546,7 @@
 <translation id="3391030046425686457">Enderezo de entrega</translation>
 <translation id="3395827396354264108">Método de recollida</translation>
 <translation id="3399952811970034796">Enderezo de entrega</translation>
+<translation id="3402261774528610252">A conexión coa que se cargou este sitio utilizou TLS 1.0 ou TLS 1.1, as cales son versións obsoletas que se desactivarán no futuro. Cando se desactiven, evitarase que os usuarios carguen este sitio. O servidor debería activar TLS 1.2 ou unha versión superior.</translation>
 <translation id="3422248202833853650">Proba a saír doutros programas para liberar memoria.</translation>
 <translation id="3422472998109090673">Actualmente non se pode acceder a <ph name="HOST_NAME" />.</translation>
 <translation id="3423742043356668186">Especificado polo sistema</translation>
@@ -632,6 +635,7 @@
 <translation id="3745099705178523657">Unha vez que confirmes os datos, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
 <translation id="3748148204939282805">Os piratas informáticos de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poden enganarte para que realices accións perigosas, como instalar un software ou revelar información persoal (por exemplo, contrasinais, números de teléfono ou tarxetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Non se puido traducir debido a un erro do servidor.</translation>
+<translation id="3754210790023674521">Saír do modo de pantalla superposta</translation>
 <translation id="3759461132968374835">Non informaches de ningún erro recentemente. Os erros producidos mentres estaban desactivados os informes de erros non aparecerán aquí.</translation>
 <translation id="3760561303380396507">Queres usar Windows Hello en lugar do CVC?</translation>
 <translation id="3761718714832595332">Ocultar estado</translation>
@@ -954,6 +958,7 @@
 <translation id="5179510805599951267">Non está en <ph name="ORIGINAL_LANGUAGE" />? Informar deste erro</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="519422657042045905">O modo de anotación non está dispoñible</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Unha páxina inserida nesta páxina di</translation>
 <translation id="5205222826937269299">É obrigatorio introducir o nome</translation>
 <translation id="5215116848420601511">Métodos de pago e enderezos que usan Google Pay</translation>
@@ -983,6 +988,7 @@
 <translation id="5295292838686006428">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que comprobes agora os teus contrasinais gardados.</translation>
 <translation id="5299298092464848405">Erro ao analizar a política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
+<translation id="5306593769196050043">As dúas follas</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5308689395849655368">Os informes de erros están desactivados.</translation>
 <translation id="5314967030527622926">Creador de folletos</translation>
@@ -1136,7 +1142,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Comproba os teus contrasinais</translation>
 <translation id="6015796118275082299">Ano</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Páxina 1}other{Páxina #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6017850046339264347">Os piratas informáticos do sitio <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poderían instalar aplicacións enganosas que se fan pasar por algo que non son ou recompilar datos que poden utilizar para facer un seguimento das túas accións. <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> e <ph name="TYPE_3" /> (sincronizado)</translation>
@@ -1244,7 +1249,6 @@
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Engadir máis información</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="644931407731409778">Documento PDF que contén {COUNT,plural, =1{1 páxina}other{# páxinas}}</translation>
 <translation id="6451458296329894277">Confirmar reenvío do formulario</translation>
 <translation id="6457206614190510200">Costura</translation>
 <translation id="6465306955648956876">Xestiona os contrasinais…</translation>
@@ -1356,6 +1360,7 @@
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062635574500127092">Verde azulado</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
+<translation id="70705239631109039">A túa conexión non é completamente segura</translation>
 <translation id="7075452647191940183">A solicitude é demasiado grande</translation>
 <translation id="7079718277001814089">Este sitio contén software malicioso</translation>
 <translation id="7081308185095828845">Esta función non está dispoñible no teu dispositivo</translation>
@@ -1375,6 +1380,7 @@
 <translation id="7152423860607593928">Number-14 (sobre)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
+<translation id="7156870133441232244">O servidor debería actualizarse a TLS 1.2 ou a unha versión posterior.</translation>
 <translation id="717330890047184534">Código de identificación de GAIA:</translation>
 <translation id="7174545416324379297">Valores combinados</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> máis}other{<ph name="SHIPPING_OPTION_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> máis}}</translation>
@@ -1400,6 +1406,7 @@ Detalles adicionais:
 <translation id="725866823122871198">Non se pode establecer unha conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque a data e a hora do ordenador (<ph name="DATE_AND_TIME" />) non son correctas.</translation>
 <translation id="7260504762447901703">Revogar acceso</translation>
 <translation id="7275334191706090484">Marcadores xestionados</translation>
+<translation id="7288778322931489286">O teu administrador activou Enterprise Service Hooks no navegador. Estes ganchos teñen acceso a algúns dos teus datos.</translation>
 <translation id="7292031607255951991">Nome do destinatario</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7300012071106347854">Azul cobalto</translation>
@@ -1724,6 +1731,7 @@ Detalles adicionais:
 <translation id="874918643257405732">Engadir esta pestana aos marcadores</translation>
 <translation id="8751426954251315517">Téntao de novo a próxima vez</translation>
 <translation id="8759274551635299824">Esta tarxeta caducou</translation>
+<translation id="87601671197631245">Este sitio utiliza unha configuración de seguranza obsoleta que pode poñer en risco a túa información (por exemplo, contrasinais, mensaxes ou números de tarxetas de crédito) cando se lle envía.</translation>
 <translation id="8761567432415473239">A navegación segura de Google <ph name="BEGIN_LINK" />atopou programas prexudiciais<ph name="END_LINK" /> recentemente en <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1741,6 +1749,7 @@ Detalles adicionais:
 <translation id="8866481888320382733">Erro ao analizar a configuración da política</translation>
 <translation id="8866928039507595380">Dobrez</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Comparte co teu administrador datos sobre os eventos de seguranza detectados por Enterprise Service Hooks. Pódense incluír URL de páxinas que visitas, nomes de ficheiros ou metadatos e o nome de usuario que utilizas para iniciar sesión no teu dispositivo e en Chrome.</translation>
 <translation id="8870413625673593573">Pechados recentemente</translation>
 <translation id="8870494189203302833">A mesma orde cara abaixo</translation>
 <translation id="8874824191258364635">Introduce un número de tarxeta válido</translation>

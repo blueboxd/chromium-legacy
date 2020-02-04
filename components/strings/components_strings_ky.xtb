@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Карталарды көрүү</translation>
 <translation id="3369192424181595722">Саат катасы</translation>
 <translation id="337363190475750230">Чыгарылды</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> серепчиңиздеги Enterprise Service Hooks кызматын иштетти. Бул илмектердин айрым маалыматыңызга кирүү мүмкүнчүлүктөрү бар.</translation>
+<translation id="3377144306166885718">Сервер TLS'тин жоюлган версиясын колдонду.</translation>
 <translation id="3377188786107721145">Саясатты талдоо катасы</translation>
 <translation id="3377736046129930310">Карталарды тезирээк ырастоо үчүн экрандын кулпусун колдонуңуз</translation>
 <translation id="3380365263193509176">Белгисиз ката</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Жеткирүү дареги</translation>
 <translation id="3395827396354264108">Алып кетүү ыкмасы</translation>
 <translation id="3399952811970034796">Жеткирүү дареги</translation>
+<translation id="3402261774528610252">Бул сайтты жүктөө үчүн TLS 1.0 же TLS 1.1 версиясы колдонулду. Алар жоюлган жана келечекте өчүрүлөт. Өчүрүлгөндөн кийин колдонуучулар бул сайтты жүктөй албай калышат. Сервер TLS 1.2 же андан кийинки версияны иштетиши керек.</translation>
 <translation id="3422248202833853650">Эстутумду бошотуу үчүн башка программаларды жаап көрүңүз.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> сайты учурда жеткиликсиз.</translation>
 <translation id="3423742043356668186">Тутум белгиленди</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">Сиз ырастагандан кийин, Google аккаунтуңуздагы картанын реквизиттери бул сайтка жөнөтүлөт.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> сайтындагы чабуулчулар программа орнотуп же сырсөздөр, телефон номерлери жана насыя карталарынын дайындары сыяктуу жеке маалыматыңызды уурдашы мүмкүн. <ph name="BEGIN_LEARN_MORE_LINK" />Кеңири маалымат<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Сервер катасынан улам которулбай калды.</translation>
+<translation id="3754210790023674521">Сүрөт ичиндеги сүрөт режиминен чыгуу</translation>
 <translation id="3759461132968374835">Каталар жөнүндө акыркы кабарлар жок. Каталар жөнүндө кабарлоо мүмкүнчүлүгү өчүрүлгөндө, болуп өткөн каталар бул жерде көрүнбөйт.</translation>
 <translation id="3760561303380396507">CVC'нин ордуна Windows Hello колдонулсунбу?</translation>
 <translation id="3761718714832595332">Абалын жашыруу</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> тилинде эмеспи? Бул ката тууралуу кабарлаңыз</translation>
 <translation id="5190835502935405962">Кыстармалар тилкеси</translation>
 <translation id="519422657042045905">Аннотация жеткиликсиз</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Бул веб баракчада кыстарылган барак мындай дейт:</translation>
 <translation id="5205222826937269299">Атын киргизиңиз</translation>
 <translation id="5215116848420601511">Google Pay'ди колдонгон төлөм ыкмалары жана даректер</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">Сайттагы же колдонмодогу сырсөзүңүздү кимдир-бирөө билип алды. Сакталган сырсөздөрүңүздү текшерип коюңуз.</translation>
 <translation id="5299298092464848405">Саясатты талдоо катасы</translation>
 <translation id="5300589172476337783">Көрсөтүү</translation>
+<translation id="5306593769196050043">Эки барак тең</translation>
 <translation id="5308380583665731573">Туташуу</translation>
 <translation id="5308689395849655368">Ката жөнүндө кабарлоо мүмкүнчүлүгү өчүрүлдү.</translation>
 <translation id="5314967030527622926">Буклет жасагыч</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Сырсөздөрүңүздү текшериңиз</translation>
 <translation id="6015796118275082299">Жыл</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1-бет}other{#-бет}}</translation>
 <translation id="6017514345406065928">Жашыл</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> сайтындагы чабуулчулар башка колдонмолордун кейпин кийген жасалма колдонмолорду орнотуп коюшу же сизге көз салуу үчүн дайындарды чогултуп алышы мүмкүн. <ph name="BEGIN_LEARN_MORE_LINK" />Кеңири маалымат<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (шайкештирилген)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (Конверт)</translation>
 <translation id="6446608382365791566">Көбүрөөк маалымат кошуу</translation>
 <translation id="6447842834002726250">Кукилер</translation>
-<translation id="644931407731409778">PDF документинде {COUNT,plural, =1{1 бет}other{# бет}} бар</translation>
 <translation id="6451458296329894277">Форманы кайра тапшырууну ырастоо</translation>
 <translation id="6457206614190510200">Теринин тигиши</translation>
 <translation id="6465306955648956876">Сырсөздөрдү башкаруу...</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">Бөгөттөө</translation>
 <translation id="7062635574500127092">Көгүш жашыл</translation>
 <translation id="7064851114919012435">Байланыш маалыматы</translation>
+<translation id="70705239631109039">Туташуу толугу менен коопсуз эмес</translation>
 <translation id="7075452647191940183">Сурамдын көлөмү өтө чоң</translation>
 <translation id="7079718277001814089">Бул сайтта кесепеттүү программа бар</translation>
 <translation id="7081308185095828845">Бул функция түзмөгүңүздө иштебейт</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (Конверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> жана дагы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ыкма}other{<ph name="PAYMENT_METHOD_PREVIEW" /> жана дагы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ыкма}}</translation>
 <translation id="7153618581592392745">Ач сыя</translation>
+<translation id="7156870133441232244">Серверди TLS 1.2 же андан кийинки версияга жаңыртуу керек.</translation>
 <translation id="717330890047184534">GAIA идентификатору:</translation>
 <translation id="7174545416324379297">Бириктирилди</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> жана дагы <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант}other{<ph name="SHIPPING_OPTION_PREVIEW" /> жана дагы <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант}}</translation>
@@ -1401,6 +1407,7 @@
 <translation id="725866823122871198">Компьютериңиздин күнү жана убакыты (<ph name="DATE_AND_TIME" />) туура эмес болгондуктан <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> менен купуя туташуу мүмкүн болбой жатат.</translation>
 <translation id="7260504762447901703">Мүмкүнчүлүктү жоюу</translation>
 <translation id="7275334191706090484">Башкарылган кыстармалар</translation>
+<translation id="7288778322931489286">Администраторуңуз серепчиңиздеги Enterprise Service Hooks кызматын иштетти. Бул илмектердин айрым маалыматыңызга кирүү мүмкүнчүлүктөрү бар.</translation>
 <translation id="7292031607255951991">Алуучунун аты</translation>
 <translation id="7298195798382681320">Сунушталат</translation>
 <translation id="7300012071106347854">Кочкул көк</translation>
@@ -1725,6 +1732,7 @@
 <translation id="874918643257405732">Бул өтмөктү кыстарып коюңуз</translation>
 <translation id="8751426954251315517">Кийинчерээк кайталаңыз</translation>
 <translation id="8759274551635299824">Бул карточканын мөөнөтү бүткөн</translation>
+<translation id="87601671197631245">Бул сайт эскирген коопсуздук конфигурациясын колдонуп жатат. Маалыматыңыз (мисалы, сырсөздөр, билдирүүлөр же насыя карталары) ушул сайтка жөнөтүлгөндө ачык көрүнүп калышы мүмкүн.</translation>
 <translation id="8761567432415473239">Google Коопсуз серептегич жакында <ph name="SITE" /> дарегинен <ph name="BEGIN_LINK" />зыянкеч программаларды тапты<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB түзмөгү</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1742,6 +1750,7 @@
 <translation id="8866481888320382733">Саясат жөндөөлөрүн талдоо катасы</translation>
 <translation id="8866928039507595380">Бүктөө</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Enterprise Service Hooks аркылуу белгиленген коопсуздук иш-чаралары тууралуу маалыматты администраторуңуз менен бөлүшүңүз. Анда сиз ачкан барактардын URL даректери, файлдардын аталыштары же метадайындар, түзмөгүңүзгө жана Chrome'го кирүүдө колдонгон колдонуучунун аты бар.</translation>
 <translation id="8870413625673593573">Жакында жабылган</translation>
 <translation id="8870494189203302833">Ошол эле иретте алдыңкы бетин ылдый каратып</translation>
 <translation id="8874824191258364635">Жарактуу карточканын номерин киргизиңиз</translation>

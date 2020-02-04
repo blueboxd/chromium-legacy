@@ -30,6 +30,13 @@ public class AssistantGenericUiDelegate {
                 AssistantGenericUiDelegate.this, identifier, value);
     }
 
+    void onListPopupSelectionChanged(String identifier, AssistantValue value) {
+        assert mNativeAssistantGenericUiDelegate != 0;
+        AssistantGenericUiDelegateJni.get().onListPopupSelectionChanged(
+                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, identifier,
+                value);
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantGenericUiDelegate = 0;
@@ -39,5 +46,7 @@ public class AssistantGenericUiDelegate {
     interface Natives {
         void onViewClicked(long nativeAssistantGenericUiDelegate, AssistantGenericUiDelegate caller,
                 String identifier, @Nullable AssistantValue value);
+        void onListPopupSelectionChanged(long nativeAssistantGenericUiDelegate,
+                AssistantGenericUiDelegate caller, String identifier, AssistantValue value);
     }
 }

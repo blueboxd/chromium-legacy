@@ -141,7 +141,6 @@
 <translation id="1187722533808055681">इस्तेमाल नहीं किए जा रहे प्रोसेसर को जगाना</translation>
 <translation id="1188807932851744811">लॉग अपलोड नहीं किया गया.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{अपने कंप्‍यूटर पर स्टोर की गई कोई फ़ाइल एक्सेस करें}one{अपने कंप्‍यूटर पर स्टोर की गई # फ़ाइलें एक्सेस करें}other{अपने कंप्‍यूटर पर स्टोर की गई # फ़ाइलें एक्सेस करें}}</translation>
-<translation id="1190660338026981543"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ने आपके <ph name="DEVICE_TYPE" /> का नाम एंटरप्राइज़ प्रबंधन के लिए दर्ज कर लिया है.</translation>
 <translation id="119092896208640858">ब्राउजिंग डेटा को सिर्फ़ इस डिवाइस से साफ़ करने और अपने 'Google खाते' में रखने के लिए, <ph name="BEGIN_LINK" />साइन आउट करें<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">प्रबंधित सत्र में जाएं</translation>
 <translation id="1195447618553298278">अज्ञात गड़बड़ी.</translation>
@@ -541,7 +540,6 @@
 <translation id="1744060673522309905">डिवाइस को डोमेन से नहीं जोड़ सकते. पक्का करें कि आपने जोड़े जा सकने वाले डिवाइस की संख्या पार नहीं की है.</translation>
 <translation id="1744108098763830590">पेजभूमि पेज</translation>
 <translation id="1745520510852184940">हमेशा ऐसा करें</translation>
-<translation id="1746402432151920942">सुरक्षित सामग्री पहचानकर्ता</translation>
 <translation id="1750172676754093297">आपकी सुरक्षा कुंजी फ़िंगरप्रिंट स्टोर नहीं कर सकती है.</translation>
 <translation id="175196451752279553">बंद किए गए टैब पु&amp;न: खोलें</translation>
 <translation id="1753905327828125965">सबसे ज़्यादा देखे गए</translation>
@@ -612,7 +610,6 @@
 <translation id="1830550083491357902">प्रवेश नहीं है</translation>
 <translation id="1832511806131704864">फ़ोन बदलाव अपडेट किया गया</translation>
 <translation id="1834503245783133039">फ़ाइल डाउनलोड नहीं हो सकी: <ph name="FILE_NAME" /></translation>
-<translation id="1834583737373831634">MIDI डिवाइस</translation>
 <translation id="1835261175655098052">Linux को बेहतर बनाया जा रहा है</translation>
 <translation id="1838374766361614909">खोज साफ़ करें</translation>
 <translation id="1841545962859478868">डिवाइस व्यवस्थापक इन चीज़ों की निगरानी कर सकता है:</translation>
@@ -885,7 +882,6 @@
 <translation id="2220529011494928058">किसी समस्या की रिपोर्ट करें</translation>
 <translation id="2220572644011485463">पिन या पासवर्ड</translation>
 <translation id="2224444042887712269">यह सेटिंग <ph name="OWNER_EMAIL" /> से संबंधित है.</translation>
-<translation id="2224471211857467033">सुलभता इवेंट</translation>
 <translation id="2224551243087462610">फ़ोल्डर के नाम में बदलाव करें</translation>
 <translation id="2226449515541314767">इस साइट को MIDI डिवाइस का पूरा नियंत्रण रखने से ब्लॉक कर दिया गया है.</translation>
 <translation id="2227179592712503583">सुझाव हटाएं</translation>
@@ -1151,7 +1147,6 @@
 <translation id="2587922766792651800">समय खत्म</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> की ओर से डिवाइस</translation>
 <translation id="2594999711683503743">Google पर खोजें या URL टाइप करें</translation>
-<translation id="2600522410036850735">इस डिवाइस को <ph name="MONTH_AND_YEAR" /> तक सॉफ़्टवेयर और सुरक्षा अपडेट अपने-आप मिलेंगे. &lt;a target="_blank" href="<ph name="URL" />"&gt;ज़्यादा जानें&lt;/a&gt;</translation>
 <translation id="2603115962224169880">कंप्यूटर साफ़ करें</translation>
 <translation id="2603463522847370204">&amp;गुप्त विंडो में खोलें</translation>
 <translation id="2604255671529671813">नेटवर्क कनेक्शन गड़बड़ी</translation>
@@ -1828,7 +1823,6 @@
 <translation id="3564848315152754834">USB सुरक्षा चाबी</translation>
 <translation id="3566721612727112615">कोई साइट नहीं जोड़ी गई</translation>
 <translation id="3569382839528428029">क्या आप चाहते हैं कि <ph name="APP_NAME" /> आपकी स्क्रीन को शेयर करे?</translation>
-<translation id="3570985609317741174">वेब सामग्री</translation>
 <translation id="3571734092741541777">सेट करें</translation>
 <translation id="3574210789297084292">साइन इन करें</translation>
 <translation id="3574917942258583917">फिर भी गुप्त मोड से बाहर निकलना चाहते हैं?</translation>
@@ -1965,7 +1959,6 @@
 <translation id="3732530910372558017">पिन में ज़्यादा से ज़्यादा 63 वर्ण हो सकते हैं</translation>
 <translation id="3733127536501031542">स्टेप-अप वाला SSL सर्वर</translation>
 <translation id="3735740477244556633">इसके अनुसार क्रम से लगाएं</translation>
-<translation id="3737274407993947948">Linux इंस्टॉल करने में गड़बड़ी...</translation>
 <translation id="3737536731758327622">आपके डाउनलोड यहां दिखाई देंगे</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> खोलना चाहते हैं?</translation>
@@ -2063,7 +2056,6 @@
 <translation id="3855441664322950881">एक्सटेंशन पैक करें</translation>
 <translation id="3855676282923585394">बुकमार्क और सेटिंग आयात करें...</translation>
 <translation id="3856800405688283469">समय क्षेत्र चुनें</translation>
-<translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">उठाएं, फिर दोबारा छुएं</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: सिंक करना रोका गया</translation>
 <translation id="3862693525629180217">पहले से मौजूद सेंसर के ज़रिए पुष्टि करें</translation>
@@ -2348,7 +2340,6 @@
 <translation id="4268025649754414643">कुंजी कूटलेखन</translation>
 <translation id="4270393598798225102">वर्शन <ph name="NUMBER" /></translation>
 <translation id="4274667386947315930">साइन इन करने के लिए डेटा</translation>
-<translation id="4275663329226226506">मीडिया</translation>
 <translation id="4275830172053184480">अपना डिवाइस फिर से प्रारंभ करें</translation>
 <translation id="4278101229438943600">आपकी Assistant तैयार है</translation>
 <translation id="4278390842282768270">अनुमति है</translation>
@@ -2763,7 +2754,6 @@
 <translation id="4907306957610201395">अनुमति श्रेणी</translation>
 <translation id="4908811072292128752">एक बार में दो साइटें ब्राउज़ करने के लिए नया टैब खोलें</translation>
 <translation id="4909038193460299775">चूंकि यह खाता <ph name="DOMAIN" /> द्वारा प्रबंधित किया जाता है, इसलिए इस डिवाइस से आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग हटा दी जाएंगी. हालांकि, आपका डेटा आपके Google खाते में संग्रहित रहेगा और उसे <ph name="BEGIN_LINK" />Google डैशबोर्ड<ph name="END_LINK" /> से प्रबंधित किया जा सकता है.</translation>
-<translation id="4909359680501173791">आपको सफलतापूर्वक नामांकित कर लिया गया है</translation>
 <translation id="4912643508233590958">इस्तेमाल नहीं किए जा रहे प्रोसेसर को जगाना</translation>
 <translation id="491691592645955587">किसी सुरक्षित ब्राउज़र पर जाएं</translation>
 <translation id="4917385247580444890">सशक्त</translation>
@@ -3407,7 +3397,6 @@
 <translation id="5834581999798853053">करीब <ph name="TIME" /> मिनट शेष हैं</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - कैमरा या माइक्रोफ़ोन रिकॉर्डिंग</translation>
 <translation id="5842497610951477805">ब्लूटूथ चालू है</translation>
-<translation id="5843250171025351504">आपका डिवाइस अब आपके एडमिन के बताए गए कम से कम क्लाइंट वर्शन का पालन नहीं करता है. कृपया लॉगिन करने के लिए अपडेट करें.</translation>
 <translation id="5846200638699387931">रिलेशन सिंटैक्स गड़बड़ी: <ph name="ERROR_LINE" /></translation>
 <translation id="5849212445710944278">पहले ही जोड़ा जा चुका है</translation>
 <translation id="5849570051105887917">'होम' पर काम करने वाली सेवाओं का कोड</translation>
@@ -3717,7 +3706,6 @@
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> पर अपना प्रमाणन करने के लिए किसी प्रमाणपत्र को चुनें</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="PHONE_NAME" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, फ़ोन की बैटरी <ph name="BATTERY_STATUS" />%, कनेक्ट करें</translation>
 <translation id="6268252012308737255"><ph name="APP" /> में खोलें</translation>
-<translation id="6268718011101775129">NFC</translation>
 <translation id="6270391203985052864">साइटें आपको सूचनाएं भेजने के लिए पूछ सकती हैं</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />सिस्टम और ऐप्लिकेशन की जानकारी<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />मेट्रिक<ph name="END_LINK2" /> भेजें</translation>
 <translation id="6272643420381259437">प्लग इन को डाउनलोड करते समय एक गड़बड़ी (<ph name="ERROR" />) हुई थी</translation>

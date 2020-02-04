@@ -443,7 +443,7 @@ cr.define('cr.ui.login', function() {
         if (this.isOobeUI())
           this.showDeviceRequisitionPrompt_();
       } else if (name == ACCELERATOR_DEVICE_REQUISITION_REMORA) {
-        if (this.isOobeUI())
+        if (this.isOobeUI() && !attributes.changeRequisitonProhibited)
           this.showDeviceRequisitionRemoraPrompt_(
               'deviceRequisitionRemoraPromptText', 'remora');
       } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {

@@ -18,7 +18,7 @@
 <translation id="10614374240317010">कहिले पनि बचत नगर्नुहोस्</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">डेस्कटप पृष्ठमञ्जूषाहरू</translation>
-<translation id="1070901266639972381">राती</translation>
+<translation id="1070901266639972381">राति</translation>
 <translation id="1074497978438210769">सुरक्षित छैन</translation>
 <translation id="1080116354587839789">चौडाइमा फिट गर्नुहोस्</translation>
 <translation id="1086953900555227778">Index-5x8</translation>
@@ -527,6 +527,8 @@
 <translation id="3366477098757335611">कार्डहरू हेर्नुहोस्</translation>
 <translation id="3369192424181595722">घडी त्रुटि</translation>
 <translation id="337363190475750230">प्रबन्ध हटाइएको</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको ब्राउजरमा Enterprise Service Hooks सक्षम पारेको छ। यी हुकहरूले तपाईंका केही डेटाहरूमाथि पहुँच राख्न सक्छन्।</translation>
+<translation id="3377144306166885718">सर्भरले TLS को प्रचलनमा नरहेको संस्करण प्रयोग गर्‍यो।</translation>
 <translation id="3377188786107721145">नीति पार्स त्रुटि</translation>
 <translation id="3377736046129930310">कार्डहरू अझ छिटो पुष्टि गर्न स्क्रिन लक सुविधा प्रयोग गर्नुहोस्</translation>
 <translation id="3380365263193509176">अज्ञात त्रुटि</translation>
@@ -535,6 +537,7 @@
 <translation id="3391030046425686457">डेलिभरीको ठेगाना</translation>
 <translation id="3395827396354264108">पिकअप विधि</translation>
 <translation id="3399952811970034796">डेलिभरी गर्ने ठेगाना</translation>
+<translation id="3402261774528610252">यो साइट लोड गर्न प्रयोग गरिएको जडानले प्रचलनबाट हटाइएका TLS १.० वा TLS १.१ प्रयोग गरेको छ र तिनलाई भविष्यमा असक्षम पारिने छ। असक्षम पारेपछि, प्रयोगकर्ताहरू यो साइट लोड गर्न सक्ने छैनन्। सर्भरले TLS १.२ वा त्यसपछिको संस्करण सक्षम पार्नु पर्छ।</translation>
 <translation id="3422248202833853650">मेमोरी खाली गर्न अन्य प्रोग्रामहरूबाट बाहिर निस्की हेर्नुहोस्।</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> हाल पहुँच गर्न सकिँदैन।</translation>
 <translation id="3423742043356668186">प्रणालीले तोकेको</translation>
@@ -618,6 +621,7 @@
 <translation id="3745099705178523657">तपाईंले पुष्टि गरिसकेपछि तपाईंको Google खातामा रहेका कार्डसम्बन्धी विवरणहरू यो साइटसँग आदान प्रदान गरिने छ।</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मा रहेका आक्रमणकारीहरूले तपाईंलाई सफ्टवेयर स्थापना गर्ने वा तपाईंको व्यक्तिगत जानकारी खुलाउने (उदाहरणका लागि पासवर्ड, फोन नम्बर वा क्रेडिट कार्डहरू) लगायतका केही खतरनाक कार्यहरू गर्न लगाएर झुक्याउन सक्छन्। <ph name="BEGIN_LEARN_MORE_LINK" />थप जान्नुहोस्<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">सर्भर त्रुटिको कारणले गर्दा अनुवाद असफल भयो।</translation>
+<translation id="3754210790023674521">Picture-in-picture बाट बाहिरिनुहोस्</translation>
 <translation id="3759461132968374835">तपाईंसँग कुनैपनि हालैमा रिपोर्ट गरिएका क्र्यासहरू छैनन्।  क्र्यास रिपोर्टिङलाई सक्षम बनाइँदा भएका क्र्यासहरू यहाँ देखा पर्नेछैन।</translation>
 <translation id="3760561303380396507">CVC को सट्टामा Windows Hello प्रयोग गर्ने हो?</translation>
 <translation id="3761718714832595332">स्थिति लुकाउनुहोस्</translation>
@@ -630,7 +634,7 @@
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> मा म्याद सकिन्छ</translation>
 <translation id="3789155188480882154">आकार १६</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
-<translation id="3799805948399000906">फन्टको नाम मागियो</translation>
+<translation id="3799805948399000906">मागिएको फन्ट</translation>
 <translation id="3807366285948165054">छविको X सिफ्ट</translation>
 <translation id="3807873520724684969">हानिकारक सामग्रीमाथि रोक लगाइयो।</translation>
 <translation id="3808375843007691220">चेतावनी: अगाडि परीक्षणको चरणमा रहेका सुविधाहरू छन्!</translation>
@@ -939,6 +943,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> मा छैन? यो त्रुटि रिपोर्ट गर्नुहोस्</translation>
 <translation id="5190835502935405962">पृष्ठमञ्जूषा पट्टी</translation>
 <translation id="519422657042045905">एनोटेसन उपलब्ध छैन</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">यो पृष्ठमा इम्बेड गरिएको पृष्ठले यसो भन्छ</translation>
 <translation id="5205222826937269299">नाम आवश्यक छ</translation>
 <translation id="5215116848420601511">Google Pay को प्रयोग गर्ने भुक्तानी विधि र ठेगानाहरू</translation>
@@ -968,6 +973,7 @@
 <translation id="5295292838686006428">कुनै साइट वा अनुप्रयोगमा भएको डेटाको चोरीले तपाईंको पासवर्ड खुलासा गर्‍यो। Chrome ले तपाईंलाई अहिले नै आफ्नो सुरक्षित पासवर्ड जाँच गर्न सिफारिस गर्दछ।</translation>
 <translation id="5299298092464848405">त्रुटि पार्सिङ नीति</translation>
 <translation id="5300589172476337783">देखाउनुहोस्</translation>
+<translation id="5306593769196050043">दुवै पाना</translation>
 <translation id="5308380583665731573">जडान गर्नुहोस्</translation>
 <translation id="5308689395849655368">क्र्यास रिपोर्ट अक्षम छ।</translation>
 <translation id="5314967030527622926">पुस्तिका निर्माता</translation>
@@ -1121,7 +1127,6 @@
 <translation id="6008256403891681546">जेसिबी</translation>
 <translation id="6014801569448771146">आफ्ना पासवर्डहरूको जाँच गर्नुहोस्</translation>
 <translation id="6015796118275082299">वर्ष</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{पृष्ठ १}other{पृष्ठ #}}</translation>
 <translation id="6017514345406065928">हरियो</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मा रहेका आक्रमणकारीहरूले आफूलाई अर्कै रूपमा प्रस्तुत गर्ने भ्रामक अनुप्रयोगहरू स्थापना गर्न वा तपाईंलाई ट्र्याक गर्नसकिने डेटा सङ्कलन गर्न सक्छन्‌। <ph name="BEGIN_LEARN_MORE_LINK" />थप जान्नुहोस्<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक गरिएको)</translation>
@@ -1229,7 +1234,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">थप जानकारी थप्नुहोस्</translation>
 <translation id="6447842834002726250">कुकीहरू</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{१ पृष्ठ}other{# पृष्ठहरू समावेश भएको PDF कागजात}}</translation>
 <translation id="6451458296329894277">फाराम पुन: प्रस्तुतीकरण पक्का गर्नुहोस्</translation>
 <translation id="6457206614190510200">स्याडल स्टिच</translation>
 <translation id="6465306955648956876">पासवर्डहरूको व्यवस्थापन गर्नुहोस्...</translation>
@@ -1341,6 +1345,7 @@
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7062635574500127092">गाढा निलो र हरियो</translation>
 <translation id="7064851114919012435">सम्पर्क बारे जानकारी</translation>
+<translation id="70705239631109039">तपाईंको इन्टरनेट पूर्ण रूपमा सुरक्षित छैन</translation>
 <translation id="7075452647191940183">अनुरोध गरिएको सामग्री धेरै ठुलो छ</translation>
 <translation id="7079718277001814089">यस साइटमा मालवेयर छ</translation>
 <translation id="7081308185095828845">तपाईंको यन्त्रमा यो सुविधा उपलब्ध छैन</translation>
@@ -1360,6 +1365,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">हल्का बैजनी</translation>
+<translation id="7156870133441232244">सर्भरको स्तरोन्नति गरेर TLS १.२ वा त्यसपछिको संस्करण पार्नु पर्छ।</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">मर्ज गरियो</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1385,6 +1391,7 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />मा एक निजी जडान स्थापना गर्न सक्दैन किनकि तपाईँको कम्प्युटरको मिति र समय (<ph name="DATE_AND_TIME" />) गलत छन्।</translation>
 <translation id="7260504762447901703">पहुँच रद्द गर्नुहोस्</translation>
 <translation id="7275334191706090484">व्यवस्थित पृष्ठमञ्जूषाहरू</translation>
+<translation id="7288778322931489286">तपाईंका प्रशासकले तपाईंको ब्राउजरमा Enterprise Service Hooks सक्षम पारेको छ। यी हुकहरूले तपाईंका केही डेटाहरूमाथि पहुँच राख्न सक्छन्।</translation>
 <translation id="7292031607255951991">प्रापकको नाम</translation>
 <translation id="7298195798382681320">सिफारिस गरिएको</translation>
 <translation id="7300012071106347854">कोबाल्ट निलो</translation>
@@ -1709,6 +1716,7 @@
 <translation id="874918643257405732">यो ट्याब बुकमार्क गर्नुहोस्</translation>
 <translation id="8751426954251315517">कृपया अर्को पटक फेरि प्रयास गर्नुहोस्</translation>
 <translation id="8759274551635299824">यो कार्डको म्याद सकिएको छ</translation>
+<translation id="87601671197631245">यो साइटले एउटा अद्यावधिक नभएको सुरक्षा कन्फिगुरेसनको प्रयोग गर्छ जसले यस साइटमा तपाईंको जानकारी (उदाहरणका लागि, पासवर्ड, सन्देश वा क्रेडिट कार्ड) पठाइँदा देखाउन सक्छ।</translation>
 <translation id="8761567432415473239">Google सुरक्षित ब्राउजिङले <ph name="SITE" /> मा हालै  <ph name="BEGIN_LINK" />हानिकारक कार्यक्रमहरू फेला<ph name="END_LINK" /> पार्‍यो।</translation>
 <translation id="8763927697961133303">USB यन्त्र</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1726,6 +1734,7 @@
 <translation id="8866481888320382733">नीति सेटिङहरू पार्स गर्नमा त्रुटि</translation>
 <translation id="8866928039507595380">फोल्ड</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Enterprise Service Hooks ले फ्ल्याग गरेर तपाईंका़ प्रशासकलाई पठाएका सुरक्षासम्बन्धी घटनाका डेटा आदान प्रदान गर्नुहोस्। यसमा तपाईंले हेर्ने पृष्ठका URL, फाइलका नाम वा मेटाडेटा र तपाईंले आफ्नो यन्त्र र Chrome मा साइन इन गर्न प्रयोग गर्ने प्रयोगकर्ताको नाम समावेश हुन सक्छन्।</translation>
 <translation id="8870413625673593573">हालै बन्द गरिएको</translation>
 <translation id="8870494189203302833">उही क्रम तर तलतिर फर्काएर</translation>
 <translation id="8874824191258364635">मान्य कार्ड नम्बर प्रविष्टि गर्नुहोस्</translation>

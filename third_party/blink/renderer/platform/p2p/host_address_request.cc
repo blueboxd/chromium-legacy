@@ -19,7 +19,6 @@ namespace blink {
 P2PAsyncAddressResolver::P2PAsyncAddressResolver(
     P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher), state_(STATE_CREATED) {
-  AddRef();  // Balanced in Destroy().
 }
 
 P2PAsyncAddressResolver::~P2PAsyncAddressResolver() {
@@ -37,7 +36,8 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
       blink::features::kWebRtcHideLocalIpsWithMdns);
   dispatcher_->GetP2PSocketManager()->GetHostAddress(
       String(host_name.hostname().data()), enable_mdns,
-      WTF::Bind(&P2PAsyncAddressResolver::OnResponse, WTF::Unretained(this)));
+      WTF::Bind(&P2PAsyncAddressResolver::OnResponse,
+                scoped_refptr<P2PAsyncAddressResolver>(this)));
 }
 
 void P2PAsyncAddressResolver::Cancel() {

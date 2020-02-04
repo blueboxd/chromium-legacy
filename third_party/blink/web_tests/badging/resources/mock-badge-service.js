@@ -3,8 +3,8 @@
 class MockBadgeService {
   constructor() {
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.BadgeService);
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.BadgeService.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(blink.mojom.BadgeService.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

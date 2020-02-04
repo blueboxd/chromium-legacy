@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Προβολή καρτών</translation>
 <translation id="3369192424181595722">Σφάλμα ρολογιού</translation>
 <translation id="337363190475750230">Κατάργηση παροχής</translation>
+<translation id="3376829916920036789">Ο τομέας <ph name="ENROLLMENT_DOMAIN" /> έχει ενεργοποιήσει το Enterprise Service Hooks στο πρόγραμμα περιήγησής σας. Αυτά τα άγκιστρα έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
+<translation id="3377144306166885718">Ο διακομιστής έχει παρωχημένη έκδοση TLS.</translation>
 <translation id="3377188786107721145">Σφάλμα ανάλυσης πολιτικής</translation>
 <translation id="3377736046129930310">Χρησιμοποιήστε το κλείδωμα οθόνης για πιο γρήγορη επιβεβαίωση καρτών</translation>
 <translation id="3380365263193509176">Άγνωστο σφάλμα</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Διεύθυνση παράδοσης</translation>
 <translation id="3395827396354264108">Τρόπος παραλαβής</translation>
 <translation id="3399952811970034796">Διεύθυνση παράδοσης</translation>
+<translation id="3402261774528610252">Η σύνδεση που χρησιμοποιήθηκε για τη φόρτωση αυτού του ιστοτόπου χρησιμοποίησε το TLS 1.0 ή το TLS 1.1, τα οποία έχουν καταργηθεί και θα απενεργοποιηθούν στο μέλλον. Μετά την απενεργοποίησή τους, οι χρήστες δεν θα μπορούν να φορτώσουν αυτόν τον ιστότοπο. Θα πρέπει να ενεργοποιηθεί η έκδοση TLS 1.2 ή μεταγενέστερη στον διακομιστή.</translation>
 <translation id="3422248202833853650">Δοκιμάστε να εξέλθετε από τα άλλα προγράμματα για να απελευθερώσετε μνήμη.</translation>
 <translation id="3422472998109090673">Προς το παρόν, δεν είναι δυνατή η πρόσβαση στον κεντρικό υπολογιστή <ph name="HOST_NAME" />.</translation>
 <translation id="3423742043356668186">Προσδιορισμός από το σύστημα</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Μετά την επιβεβαίωση, τα στοιχεία της κάρτας από τον Λογαριασμό Google θα κοινοποιηθούν σε αυτόν τον ιστότοπο.</translation>
 <translation id="3748148204939282805">Οι εισβολείς σε αυτόν τον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> μπορεί να σας εξαπατήσουν και να κάνετε κάτι επικίνδυνο, όπως να εγκαταστήσετε κάποιο λογισμικό ή να αποκαλύψετε προσωπικά σας στοιχεία (για παράδειγμα, κωδικούς πρόσβασης, αριθμούς τηλεφώνου ή στοιχεία πιστωτικών καρτών). <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Η μετάφραση απέτυχε λόγω σφάλματος διακομιστή.</translation>
+<translation id="3754210790023674521">Έξοδος από τη λειτουργία picture-in-picture</translation>
 <translation id="3759461132968374835">Δεν έχετε πρόσφατα αναφερθέντα σφάλματα. Τα σφάλματα που προέκυψαν όταν η αναφορά σφαλμάτων ήταν απενεργοποιημένη δεν θα εμφανιστούν εδώ.</translation>
 <translation id="3760561303380396507">Χρήση Windows Hello αντί του CVC;</translation>
 <translation id="3761718714832595332">Απόκρυψη κατάστασης</translation>
@@ -957,6 +961,7 @@
 <translation id="5179510805599951267">Δεν είναι στα <ph name="ORIGINAL_LANGUAGE" />; Αναφέρετε αυτό το σφάλμα</translation>
 <translation id="5190835502935405962">Γραμμή σελιδοδεικτών</translation>
 <translation id="519422657042045905">Ο σχολιασμός δεν διατίθεται</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Μια ενσωματωμένη σελίδα σε αυτήν τη σελίδα λέει</translation>
 <translation id="5205222826937269299">Απαιτείται όνομα</translation>
 <translation id="5215116848420601511">Τρόποι πληρωμής και διευθύνσεις που χρησιμοποιούν το Google Pay</translation>
@@ -986,6 +991,7 @@
 <translation id="5295292838686006428">Μια παραβίαση δεδομένων σε έναν ιστότοπο ή μια εφαρμογή αποκάλυψε τον κωδικό πρόσβασης που χρησιμοποιείτε. To Chrome συνιστά να ελέγξετε άμεσα τους αποθηκευμένους κωδικούς πρόσβασης.</translation>
 <translation id="5299298092464848405">Σφάλμα ανάλυσης πολιτικής</translation>
 <translation id="5300589172476337783">Εμφάνιση</translation>
+<translation id="5306593769196050043">Και τα δύο φύλλα</translation>
 <translation id="5308380583665731573">Σύνδεση</translation>
 <translation id="5308689395849655368">Η αναφορά σφαλμάτων είναι απενεργοποιημένη.</translation>
 <translation id="5314967030527622926">Εργαλείο δημιουργίας φυλλαδίων</translation>
@@ -1139,7 +1145,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Ελέγξτε τους κωδικούς πρόσβασής σας</translation>
 <translation id="6015796118275082299">Έτος</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1 σελίδα}other{# σελίδες}}</translation>
 <translation id="6017514345406065928">Πράσινο</translation>
 <translation id="6017850046339264347">Οι εισβολείς στον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> θα μπορούσαν να εγκαταστήσουν παραπλανητικές εφαρμογές που προσποιούνται ότι είναι κάτι άλλο ή συλλέγουν δεδομένα τα οποία μπορεί να χρησιμοποιηθούν για την παρακολούθησή σας. <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (συγχρονισμένο)</translation>
@@ -1247,7 +1252,6 @@
 <translation id="6446163441502663861">Kahu (Φάκελος)</translation>
 <translation id="6446608382365791566">Προσθήκη περισσότερων πληροφοριών</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="644931407731409778">Έγγραφο PDF που περιέχει {COUNT,plural, =1{1 σελίδα}other{# σελίδες}}</translation>
 <translation id="6451458296329894277">Επιβεβαίωση νέας υποβολής φόρμας</translation>
 <translation id="6457206614190510200">Συρραφή στη ράχη</translation>
 <translation id="6465306955648956876">Διαχείριση κωδικών πρόσβασης…</translation>
@@ -1359,6 +1363,7 @@
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="7062635574500127092">Γαλαζοπράσινο</translation>
 <translation id="7064851114919012435">Στοιχεία επικοινωνίας</translation>
+<translation id="70705239631109039">Η σύνδεσή σας δεν είναι πλήρως ασφαλής</translation>
 <translation id="7075452647191940183">Το αίτημα είναι πολύ μεγάλο</translation>
 <translation id="7079718277001814089">Ο ιστότοπος περιέχει κακόβουλο πρόγραμμα</translation>
 <translation id="7081308185095828845">Αυτή η λειτουργία δεν είναι διαθέσιμη στη συσκευή σας</translation>
@@ -1378,6 +1383,7 @@
 <translation id="7152423860607593928">Number-14 (Φάκελος)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}other{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}}</translation>
 <translation id="7153618581592392745">Λιλά</translation>
+<translation id="7156870133441232244">Ο διακομιστής θα πρέπει να αναβαθμιστεί σε έκδοση TLS 1.2 ή μεταγενέστερη.</translation>
 <translation id="717330890047184534">Αναγνωριστικό Gaia:</translation>
 <translation id="7174545416324379297">Έγινε συγχώνευση</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}other{<ph name="SHIPPING_OPTION_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}}</translation>
@@ -1403,6 +1409,7 @@
 <translation id="725866823122871198">Δεν είναι δυνατή η επίτευξη ιδιωτικής σύνδεσης με τον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> επειδή η ημερομηνία και η ώρα (<ph name="DATE_AND_TIME" />) του υπολογιστή σας είναι λανθασμένες.</translation>
 <translation id="7260504762447901703">Ανάκληση πρόσβασης</translation>
 <translation id="7275334191706090484">Διαχειριζόμενοι σελιδοδείκτες</translation>
+<translation id="7288778322931489286">Ο διαχειριστής ενεργοποίησε το Enterprise Service Hooks στο πρόγραμμα περιήγησής σας. Αυτά τα άγκιστρα έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
 <translation id="7292031607255951991">Όνομα παραλήπτη</translation>
 <translation id="7298195798382681320">Προτεινόμενες</translation>
 <translation id="7300012071106347854">Βαθύ μπλε</translation>
@@ -1728,6 +1735,7 @@
 <translation id="874918643257405732">Προσθήκη αυτής της καρτέλας στους σελιδοδείκτες</translation>
 <translation id="8751426954251315517">Δοκιμάστε ξανά την επόμενη φορά</translation>
 <translation id="8759274551635299824">Αυτή η κάρτα έχει λήξει</translation>
+<translation id="87601671197631245">Αυτός ο ιστότοπος χρησιμοποιεί μια παρωχημένη διαμόρφωση ασφαλείας, η οποία μπορεί να εκθέσει τις πληροφορίες σας (για παράδειγμα, τους κωδικούς πρόσβασης, τα μηνύματα ή τα στοιχεία των πιστωτικών σας καρτών) κατά την αποστολή τους σε αυτόν τον ιστότοπο.</translation>
 <translation id="8761567432415473239">Η ασφαλής περιήγηση Google <ph name="BEGIN_LINK" />εντόπισε επιβλαβή προγράμματα<ph name="END_LINK" /> πρόσφατα στο <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Συσκευή USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1745,6 +1753,7 @@
 <translation id="8866481888320382733">Σφάλμα ανάλυσης ρυθμίσεων πολιτικής</translation>
 <translation id="8866928039507595380">Δίπλωση</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Κοινοποιήστε στον διαχειριστή σας δεδομένα σχετικά με συμβάντα ασφαλείας που έχουν επισημανθεί από το Enterprise Service Hooks. Σε αυτά τα δεδομένα περιλαμβάνονται URL σελίδων που επισκέπτεστε, ονόματα αρχείων ή μεταδεδομένα και το όνομα χρήστη που χρησιμοποιείτε για να συνδεθείτε στη συσκευή σας και το Chrome.</translation>
 <translation id="8870413625673593573">Έκλεισαν πρόσφατα</translation>
 <translation id="8870494189203302833">Ίδια σειρά με την πρόσοψη προς τα κάτω</translation>
 <translation id="8874824191258364635">Εισαγάγετε έναν έγκυρο αριθμό κάρτας</translation>

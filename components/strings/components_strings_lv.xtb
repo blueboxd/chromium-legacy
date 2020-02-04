@@ -536,6 +536,8 @@
 <translation id="3366477098757335611">Skatīt kartes</translation>
 <translation id="3369192424181595722">Pulksteņa kļūda</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
+<translation id="3376829916920036789">Domēns <ph name="ENROLLMENT_DOMAIN" /> iespējoja funkciju “Enterprise Service Hooks” jūsu pārlūkā. Šai funkcijai ir piekļuve daļai jūsu datu.</translation>
+<translation id="3377144306166885718">Serveris izmantoja novecojušu TLS versiju.</translation>
 <translation id="3377188786107721145">Radās politikas parsēšanas kļūda.</translation>
 <translation id="3377736046129930310">Izmantot ekrāna bloķēšanu, lai kartes apstiprinātu ātrāk</translation>
 <translation id="3380365263193509176">Nezināma kļūda</translation>
@@ -544,6 +546,7 @@
 <translation id="3391030046425686457">Piegādes adrese</translation>
 <translation id="3395827396354264108">Saņemšanas veids</translation>
 <translation id="3399952811970034796">Piegādes adrese</translation>
+<translation id="3402261774528610252">Šīs vietnes ielādes savienojumam tika izmantots protokols TLS 1.0 vai TLS 1.1. Šīs versijas ir novecojušas un vēlāk tiks atspējotas. Kad tās būs atspējotas, lietotāji nevarēs ielādēt šo vietni. Serverim ir jāiespējo protokols TLS 1.2 vai jaunāka versija.</translation>
 <translation id="3422248202833853650">Aizveriet citas programmas, lai atbrīvotu vietu atmiņā.</translation>
 <translation id="3422472998109090673">Vietne <ph name="HOST_NAME" /> pašlaik nav sasniedzama.</translation>
 <translation id="3423742043356668186">Sistēmas noteikta</translation>
@@ -631,6 +634,7 @@
 <translation id="3745099705178523657">Pēc apstiprināšanas kartes informācija no Google konta tiks kopīgota ar šo vietni.</translation>
 <translation id="3748148204939282805">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> var mudināt jūs veikt bīstamas darbības, piemēram, instalēt programmatūru vai atklāt personas informāciju (piemēram, paroles, tālruņa numurus vai kredītkaršu datus). <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="375403751935624634">Tulkojums neizdevās servera kļūdas dēļ.</translation>
+<translation id="3754210790023674521">Iziet no režīma “Attēls attēlā”</translation>
 <translation id="3759461132968374835">Pēdējā laikā neesat ziņojis par avārijām. Šeit nebūs redzamas avārijas, kas radās laikā, kad avāriju pārskatu izveide bija atspējota.</translation>
 <translation id="3760561303380396507">Vai vēlaties izmantot Windows Hello, nevis CVC?</translation>
 <translation id="3761718714832595332">Slēpt statusu</translation>
@@ -953,6 +957,7 @@
 <translation id="5179510805599951267">Vai nav valodā: <ph name="ORIGINAL_LANGUAGE" />? Ziņot par šo kļūdu</translation>
 <translation id="5190835502935405962">Grāmatzīmju josla</translation>
 <translation id="519422657042045905">Anotācija nav pieejama</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Šajā lapā iegultā lapā ir rakstīts</translation>
 <translation id="5205222826937269299">Jānorāda vārds vai nosaukums.</translation>
 <translation id="5215116848420601511">Adreses un maksājumu veidi, kuros tiek izmantots pakalpojums Google Pay</translation>
@@ -982,6 +987,7 @@
 <translation id="5295292838686006428">Kādā vietnē vai lietotnē notika datu noplūde un tika atklāta jūsu parole. Chrome iesaka nekavējoties pārbaudīt saglabātās paroles.</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
+<translation id="5306593769196050043">Abas lapas</translation>
 <translation id="5308380583665731573">Pievienošana</translation>
 <translation id="5308689395849655368">Avāriju pārskatu izveide ir atspējota.</translation>
 <translation id="5314967030527622926">Bukletu veidotājs</translation>
@@ -1135,7 +1141,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Paroļu pārbaude</translation>
 <translation id="6015796118275082299">Gads</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1. lapa}zero{#. lapa}one{#. lapa}other{#. lapa}}</translation>
 <translation id="6017514345406065928">Zaļa</translation>
 <translation id="6017850046339264347">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> varētu instalēt maldinošas lietotnes, kas uzdodas par citu saturu, vai ievākt datus, ko izmantot jūsu izsekošanai. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (veikta sinhronizācija)</translation>
@@ -1243,7 +1248,6 @@
 <translation id="6446163441502663861">Kahu (aploksne)</translation>
 <translation id="6446608382365791566">Papildu informācijas pievienošana</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
-<translation id="644931407731409778">PDF dokumentā ir {COUNT,plural, =1{1 lapa}zero{# lapu}one{# lapa}other{# lapas}}</translation>
 <translation id="6451458296329894277">Apstiprināt veidlapas atkārtotu iesniegšanu</translation>
 <translation id="6457206614190510200">Sašuvums iekšlocījumā</translation>
 <translation id="6465306955648956876">Pārvaldīt paroles...</translation>
@@ -1355,6 +1359,7 @@
 <translation id="7053983685419859001">Bloķēt</translation>
 <translation id="7062635574500127092">Zilganzaļa</translation>
 <translation id="7064851114919012435">Kontaktinformācija</translation>
+<translation id="70705239631109039">Jūsu savienojums nav pilnīgi drošs</translation>
 <translation id="7075452647191940183">Pieprasījums ir pārāk liels</translation>
 <translation id="7079718277001814089">Šī vietne satur ļaunprātīgu programmatūru</translation>
 <translation id="7081308185095828845">Šī funkcija jūsu ierīcē nav pieejama</translation>
@@ -1374,6 +1379,7 @@
 <translation id="7152423860607593928">Number-14 (aploksne)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}zero{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lavandas krāsa</translation>
+<translation id="7156870133441232244">Serveris ir jājaunina uz protokolu TLS 1.2 vai jaunāku versiju.</translation>
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7174545416324379297">Apvienota</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}zero{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1399,6 +1405,7 @@ Papildu informācija:
 <translation id="725866823122871198">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu datora datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>
 <translation id="7260504762447901703">Atsaukt piekļuvi</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
+<translation id="7288778322931489286">Administrators jūsu pārlūkā ir iespējojis funkciju “Enterprise Service Hooks”. Šai funkcijai ir piekļuve daļai jūsu datu.</translation>
 <translation id="7292031607255951991">Saņēmēja vārds</translation>
 <translation id="7298195798382681320">Ieteicams</translation>
 <translation id="7300012071106347854">Kobalta zila</translation>
@@ -1724,6 +1731,7 @@ Papildu informācija:
 <translation id="874918643257405732">Saglabāt šo cilni kā grāmatzīmi</translation>
 <translation id="8751426954251315517">Mēģiniet vēlreiz nākamajā reizē</translation>
 <translation id="8759274551635299824">Kartes derīguma termiņš ir beidzies</translation>
+<translation id="87601671197631245">Šajā vietnē tiek izmantota novecojusi drošības konfigurācija, tādēļ var tikt atklāta jūsu informācija (piemēram, paroles, ziņojumi vai kredītkaršu dati), kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="8761567432415473239">Google drošās pārlūkošanas tehnoloģija nesen vietnē <ph name="SITE" /> <ph name="BEGIN_LINK" />atklāja kaitīgas programmas<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ierīce</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1741,6 +1749,7 @@ Papildu informācija:
 <translation id="8866481888320382733">Parsējot politikas iestatījumus, radās kļūda.</translation>
 <translation id="8866928039507595380">Locījums</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Kopīgot ar jūsu administratoru datus par notikumiem, kas ir saistīti ar drošību un ir atzīmēti funkcijā “Enterprise Service Hooks”. Šajos datos var būt ietverti jūsu apmeklēto lapu vietrāži URL, failu nosaukumi vai metadati un lietotājvārds, ar kuru pierakstāties ierīcē un pārlūkā Chrome.</translation>
 <translation id="8870413625673593573">Nesen aizvērtas</translation>
 <translation id="8870494189203302833">Tāda pati secība, virspuse uz leju</translation>
 <translation id="8874824191258364635">Ievadiet derīgu kartes numuru</translation>

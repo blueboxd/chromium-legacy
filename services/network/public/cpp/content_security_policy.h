@@ -17,41 +17,29 @@ class HttpResponseHeaders;
 
 namespace network {
 
-// This class is a thin wrapper around mojom::ContentSecurityPolicy.
-class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
- public:
-  ContentSecurityPolicy();
-  ~ContentSecurityPolicy();
+// Parses the Content-Security-Policy headers specified in |headers| and appends
+// the results into |out|.
+//
+// The |base_url| is used for resolving the URLs in the 'report-uri' directives.
+// See https://w3c.github.io/webappsec-csp/#report-violation.
+COMPONENT_EXPORT(NETWORK_CPP)
+void AddContentSecurityPolicyFromHeaders(
+    const net::HttpResponseHeaders& headers,
+    const GURL& base_url,
+    std::vector<mojom::ContentSecurityPolicyPtr>* out);
 
-  ContentSecurityPolicy(const ContentSecurityPolicy&) = delete;
-  ContentSecurityPolicy& operator=(const ContentSecurityPolicy&) = delete;
+COMPONENT_EXPORT(NETWORK_CPP)
+void AddContentSecurityPolicyFromHeaders(
+    base::StringPiece header,
+    network::mojom::ContentSecurityPolicyType type,
+    const GURL& base_url,
+    std::vector<mojom::ContentSecurityPolicyPtr>* out);
 
-  // Parses the Content-Security-Policy headers specified in |headers| while
-  // requesting |request_url|. The |request_url| is used for violation
-  // reporting, as specified in
-  // https://w3c.github.io/webappsec-csp/#report-violation.
-  void Parse(const GURL& request_url, const net::HttpResponseHeaders& headers);
+COMPONENT_EXPORT(NETWORK_CPP)
+std::string ToString(mojom::CSPDirectiveName name);
 
-  // Parses a Content-Security-Policy |header|.
-  void Parse(const GURL& base_url,
-             network::mojom::ContentSecurityPolicyType type,
-             base::StringPiece header);
-
-  const std::vector<mojom::ContentSecurityPolicyPtr>&
-  content_security_policies() {
-    return content_security_policies_;
-  }
-  std::vector<mojom::ContentSecurityPolicyPtr> TakeContentSecurityPolicy() {
-    return std::move(content_security_policies_);
-  }
-
-  // string <-> enum conversions:
-  static std::string ToString(mojom::CSPDirectiveName);
-  static mojom::CSPDirectiveName ToDirectiveName(const std::string&);
-
- private:
-  std::vector<mojom::ContentSecurityPolicyPtr> content_security_policies_;
-};
+COMPONENT_EXPORT(NETWORK_CPP)
+mojom::CSPDirectiveName ToCSPDirectiveName(const std::string& name);
 
 }  // namespace network
 

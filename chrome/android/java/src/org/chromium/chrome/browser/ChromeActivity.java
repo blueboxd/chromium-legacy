@@ -2013,7 +2013,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (id == R.id.help_id) {
             String url = currentTab != null ? currentTab.getUrl() : "";
             Profile profile = mTabModelSelector.isIncognitoSelected()
-                    ? Profile.getLastUsedProfile().getOffTheRecordProfile()
+                    ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
                     : Profile.getLastUsedProfile().getOriginalProfile();
             startHelpAndFeedback(url, "MobileMenuFeedback", profile);
             return true;

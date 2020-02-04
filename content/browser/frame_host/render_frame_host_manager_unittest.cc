@@ -278,8 +278,16 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
 
 }  // namespace
 
-class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
+class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness,
+                                   public ::testing::WithParamInterface<bool> {
  public:
+  RenderFrameHostManagerTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kRenderDocumentForCrashedFrame);
+    }
+  }
+
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
@@ -420,13 +428,14 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that when you navigate from a chrome:// url to another page, and
 // then do that same thing in another tab, that the two resulting pages have
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
-TEST_F(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
+TEST_P(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
   const GURL kChromeUrl(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
 
@@ -487,7 +496,7 @@ TEST_F(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
 // action on requests from a non-active renderer.  The main exception is
 // for synchronous messages, which cannot be ignored without leaving the
 // renderer in a stuck state.  See http://crbug.com/93427.
-TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
+TEST_P(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   const GURL kChromeURL(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
   std::vector<FaviconURL> icons;
@@ -539,7 +548,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
 // renderer is in the pending deletion state. The favicon code assumes
 // that it only gets FrameHostMsg_UpdateFaviconURL messages for the most
 // recently committed navigation for each WebContentsImpl.
-TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
+TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   const GURL kChromeURL(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
   std::vector<FaviconURL> icons;
@@ -589,7 +598,7 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
 
 // Test if RenderViewHost::GetRenderWidgetHosts() only returns active
 // widgets.
-TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
+TEST_P(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
   CreateInactiveRenderViewHost();
   std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
@@ -607,7 +616,7 @@ TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
 // RenderViewHost::GetRenderWidgetHosts() returns only active widgets, but
 // RenderViewHostImpl::GetAllRenderWidgetHosts() returns everything
 // including inactive ones.
-TEST_F(RenderFrameHostManagerTest,
+TEST_P(RenderFrameHostManagerTest,
        GetRenderWidgetHostsWithinGetAllRenderWidgetHosts) {
   CreateInactiveRenderViewHost();
   std::unique_ptr<RenderWidgetHostIterator> widgets(
@@ -629,7 +638,7 @@ TEST_F(RenderFrameHostManagerTest,
 
 // Test if SiteInstanceImpl::active_frame_count() is correctly updated
 // as frames in a SiteInstance get replaced.
-TEST_F(RenderFrameHostManagerTest, ActiveFrameCountWhileSwappingInAndOut) {
+TEST_P(RenderFrameHostManagerTest, ActiveFrameCountWhileSwappingInAndOut) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -706,7 +715,7 @@ class RenderViewHostDestroyer : public WebContentsObserver {
 // RenderWidget that has been freed while deleting a RenderViewHost in
 // a previous iteration. This is a regression test for
 // http://crbug.com/259859.
-TEST_F(RenderFrameHostManagerTest,
+TEST_P(RenderFrameHostManagerTest,
        DetectUseAfterFreeInShutdownRenderViewHostsInSiteInstance) {
   const GURL kChromeURL(GetWebUIURL("newtab"));
   const GURL kUrl1("http://www.google.com");
@@ -766,7 +775,7 @@ class EnableViewSourceLocalFrame : public content::FakeLocalFrame,
 // mode. See WebFrameImpl::DidFail(). We check by this test that
 // EnableViewSourceMode message is sent on every navigation regardless
 // RenderView is being newly created or reused.
-TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
+TEST_P(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   const GURL kChromeUrl(GetWebUIURL("foo"));
   const GURL kUrl("http://foo/");
   const GURL kViewSourceUrl("view-source:http://foo/");
@@ -832,7 +841,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
 }
 
 // Tests the Init function by checking the initial RenderViewHost.
-TEST_F(RenderFrameHostManagerTest, Init) {
+TEST_P(RenderFrameHostManagerTest, Init) {
   // Using TestBrowserContext.
   scoped_refptr<SiteInstanceImpl> instance =
       SiteInstanceImpl::Create(browser_context());
@@ -855,7 +864,7 @@ TEST_F(RenderFrameHostManagerTest, Init) {
 
 // Tests the Navigate function. We navigate three sites consecutively and check
 // how the pending/committed RenderViewHost are modified.
-TEST_F(RenderFrameHostManagerTest, Navigate) {
+TEST_P(RenderFrameHostManagerTest, Navigate) {
   std::unique_ptr<TestWebContents> web_contents(TestWebContents::Create(
       browser_context(), SiteInstance::Create(browser_context())));
   RenderViewHostChangedObserver change_observer(web_contents.get());
@@ -948,7 +957,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 }
 
 // Tests WebUI creation.
-TEST_F(RenderFrameHostManagerTest, WebUI) {
+TEST_P(RenderFrameHostManagerTest, WebUI) {
   scoped_refptr<SiteInstance> instance =
       SiteInstance::Create(browser_context());
 
@@ -997,7 +1006,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
 // Tests that we can open a WebUI link in a new tab from a WebUI page and still
 // grant the correct bindings.  http://crbug.com/189101.
-TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
+TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   scoped_refptr<SiteInstance> blank_instance =
       SiteInstance::Create(browser_context());
   blank_instance->GetProcess()->Init();
@@ -1069,7 +1078,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
 }
 
 // Tests that a WebUI is correctly reused between chrome:// pages.
-TEST_F(RenderFrameHostManagerTest, WebUIWasReused) {
+TEST_P(RenderFrameHostManagerTest, WebUIWasReused) {
   // Navigate to a WebUI page.
   const GURL kUrl1(GetWebUIURL("foo"));
   contents()->NavigateAndCommit(kUrl1);
@@ -1085,7 +1094,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasReused) {
 
 // Tests that a WebUI is correctly cleaned up when navigating from a chrome://
 // page to a non-chrome:// page.
-TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
+TEST_P(RenderFrameHostManagerTest, WebUIWasCleared) {
   // Navigate to a WebUI page.
   const GURL kUrl1(GetWebUIURL("foo"));
   contents()->NavigateAndCommit(kUrl1);
@@ -1099,7 +1108,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
 
 // Ensure that we can go back and forward even if a unload ACK isn't received.
 // See http://crbug.com/93427.
-TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
+TEST_P(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
   // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
@@ -1141,7 +1150,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
 // Test that we create RenderFrameProxy objects for the opener chain when
 // navigating an opened tab cross-process.  This allows us to support certain
 // cross-process JavaScript calls (http://crbug.com/99202).
-TEST_F(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
+TEST_P(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
   const GURL kChromeUrl(GetWebUIURL("foo"));
@@ -1211,7 +1220,7 @@ TEST_F(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
 }
 
 // Test that a page can disown the opener of the WebContents.
-TEST_F(RenderFrameHostManagerTest, DisownOpener) {
+TEST_P(RenderFrameHostManagerTest, DisownOpener) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1242,7 +1251,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpener) {
 }
 
 // Test that a page can disown a same-site opener of the WebContents.
-TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
+TEST_P(RenderFrameHostManagerTest, DisownSameSiteOpener) {
   const GURL kUrl1("http://www.google.com/");
 
   // Navigate to an initial URL.
@@ -1264,7 +1273,7 @@ TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
 
 // Test that a page can disown the opener just as a cross-process navigation is
 // in progress.
-TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
+TEST_P(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1309,7 +1318,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 
 // Test that a page can disown the opener just after a cross-process navigation
 // commits.
-TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
+TEST_P(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1347,7 +1356,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
 
 // Test that we clean up RenderFrameProxyHosts when a process hosting the
 // associated frames crashes. http://crbug.com/258993
-TEST_F(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
+TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1407,7 +1416,7 @@ TEST_F(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
 }
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
-TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
+TEST_P(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   // Create a custom site URL for the SiteInstance. There is nothing special
   // about this URL other than we expect the resulting SiteInstance to return
   // this exact URL from its GetSiteURL() method.
@@ -1492,7 +1501,7 @@ class WidgetDestructionObserver : public RenderWidgetHostObserver {
 
 // Test that we cancel a pending RVH if we close the tab while it's pending.
 // http://crbug.com/294697.
-TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
+TEST_P(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   scoped_refptr<SiteInstance> instance =
       SiteInstance::Create(browser_context());
 
@@ -1556,7 +1565,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   EXPECT_EQ(host, manager->current_frame_host());
 }
 
-TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
+TEST_P(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1586,7 +1595,7 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
 // FrameHostMsg_Unload_ACK is received. (UnfreezableFrameMsg_Unload and the
 // corresponding FrameHostMsg_Unload_ACK always occur after commit.)
 // Also tests that an early FrameHostMsg_Unload_ACK is properly ignored.
-TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
+TEST_P(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
   // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
@@ -1634,7 +1643,7 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
 // Tests that the RenderFrameHost is properly unloaded when the
 // FrameHostMsg_Unload_ACK is received. (UnfreezableFrameMsg_Unload and the
 // corresponding FrameHostMsg_Unload_ACK always occur after commit.)
-TEST_F(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
+TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
   // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
@@ -1681,7 +1690,7 @@ TEST_F(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
 // old renderer.
 // This simulates a cross-site navigation to a synchronously committing URL
 // (e.g., a data URL) and ensures it works properly.
-TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
+TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
   // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
@@ -1731,7 +1740,7 @@ TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
 
 // Test that a RenderFrameHost is properly deleted when a cross-site navigation
 // is cancelled.
-TEST_F(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
+TEST_P(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
   RenderFrameHostImpl* pending_rfh = nullptr;
@@ -1794,7 +1803,7 @@ class RenderFrameHostManagerTestWithSiteIsolation
 // Test that a pending RenderFrameHost in a non-root frame tree node is properly
 // deleted when the node is detached. Motivated by http://crbug.com/441357 and
 // http://crbug.com/444955.
-TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
+TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   const GURL kUrlA("http://www.google.com/");
   const GURL kUrlB("http://webkit.org/");
 
@@ -1918,7 +1927,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
 // Two tabs in the same process crash. The first tab is reloaded, and the second
 // tab navigates away without reloading. The second tab's navigation shouldn't
 // mess with the first tab's content. Motivated by http://crbug.com/473714.
-TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
        TwoTabsCrashOneReloadsOneLeaves) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://webkit.org/");
@@ -1947,7 +1956,8 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
   EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
-  EXPECT_FALSE(contents1->GetMainFrame()->GetView());
+  EXPECT_EQ((bool)contents1->GetMainFrame()->GetView(),
+            IsRenderDocumentEnabledForCrashedFrame());
   EXPECT_FALSE(contents2->GetMainFrame()->GetView());
 
   // |contents1| creates an out of process iframe.
@@ -1994,7 +2004,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
 // creating proxies for a non-WebUI subframe navigation.  This was possible due
 // to the InitRenderView call from CreateRenderFrameProxy.
 // See https://crbug.com/536145.
-TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
        DontGrantPendingWebUIToSubframe) {
   // Make sure the initial process is live so that the pending WebUI navigation
   // does not commit immediately.  Give the page a subframe as well.
@@ -2039,7 +2049,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
 
 // Test that opener proxies are created properly with a cycle on the opener
 // chain.
-TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
+TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -2104,7 +2114,7 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
 
 // Test that opener proxies are created properly when the opener points
 // to itself.
-TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
+TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -2165,7 +2175,7 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
 // root3) should be put on the list of nodes that will need their frame openers
 // set separately in a second pass, since their opener routing IDs won't be
 // available during the first pass of CreateOpenerProxies.
-TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
+TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   contents()->NavigateAndCommit(GURL("http://tab1.com"));
   FrameTree* tree1 = contents()->GetFrameTree();
   FrameTreeNode* root1 = tree1->root();
@@ -2272,7 +2282,7 @@ class PageFocusRemoteFrame : public content::FakeRemoteFrame {
 //
 // TODO(alexmos): Move this test to FrameTree unit tests once NavigateToEntry
 // is moved to a common place.  See https://crbug.com/547275.
-TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
+TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   // This test only makes sense when cross-site subframes use separate
   // processes.
   if (!AreAllSitesIsolatedForTesting())
@@ -2399,7 +2409,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
 //
 // TODO(alexmos): Move this test to FrameTree unit tests once NavigateToEntry
 // is moved to a common place.  See https://crbug.com/547275.
-TEST_F(RenderFrameHostManagerTest,
+TEST_P(RenderFrameHostManagerTest,
        PageFocusIsPreservedAcrossSubframeNavigations) {
   // This test only makes sense when cross-site subframes use separate
   // processes.
@@ -2470,7 +2480,7 @@ TEST_F(RenderFrameHostManagerTest,
 }
 
 // Checks that a restore navigation to a WebUI works.
-TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
+TEST_P(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   const GURL kInitUrl(GetWebUIURL("foo"));
   scoped_refptr<SiteInstanceImpl> initial_instance =
       SiteInstanceImpl::Create(browser_context());
@@ -2525,7 +2535,7 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
 
 // Simulates two simultaneous navigations involving one WebUI where the current
 // RenderFrameHost commits.
-TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
+TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
@@ -2575,7 +2585,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
 
 // Simulates two simultaneous navigations involving one WebUI where the new,
 // cross-site RenderFrameHost commits.
-TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
+TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
@@ -2621,7 +2631,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
 // tests, accepting a lambda to execute the commit step.
 // Simulates two simultaneous navigations involving two WebUIs where the current
 // RenderFrameHost commits.
-TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
+TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo"));
 
@@ -2675,7 +2685,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
 
 // Simulates two simultaneous navigations involving two WebUIs where the new,
 // cross-site RenderFrameHost commits.
-TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
+TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
@@ -2719,7 +2729,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
   EXPECT_FALSE(GetPendingFrameHost(manager));
 }
 
-TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
+TEST_P(RenderFrameHostManagerTest, CanCommitOrigin) {
   const GURL kUrl("http://a.com/");
   const GURL kUrlBar("http://a.com/bar");
 
@@ -2772,7 +2782,7 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
 
 // Tests that the correct intermediary and final navigation states are reached
 // when navigating from a renderer that is not live to a WebUI URL.
-TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
+TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
 
   RenderFrameHostImpl* initial_host = manager->current_frame_host();
@@ -2841,7 +2851,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
 
 // Tests that the correct intermediary and final navigation states are reached
 // when navigating same-site between two WebUIs of the same type.
-TEST_F(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
+TEST_P(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo"));
 
@@ -2874,7 +2884,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
 
 // Tests that the correct intermediary and final navigation states are reached
 // when navigating cross-site between two different WebUI types.
-TEST_F(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
+TEST_P(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
   // Cross-site navigations will always cause the change of the WebUI instance
   // but for consistency sake different types will be set for each navigation.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
@@ -2911,7 +2921,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
 
 // Tests that frame proxies receive updates when a frame's enforcement
 // of insecure request policy changes.
-TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
        ProxiesReceiveInsecureRequestPolicy) {
   const GURL kUrl1("http://www.google.test");
   const GURL kUrl2("http://www.google2.test");
@@ -3029,7 +3039,7 @@ class StartStopLoadingProxyObserver {
 // Tests that new frame proxies receive an IPC to update their loading state,
 // if they are created for a frame that's currently loading.  See
 // https://crbug.com/916137.
-TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
        NewProxyReceivesLoadingState) {
   StartStopLoadingProxyObserver proxy_observer;
 
@@ -3092,7 +3102,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
 }
 
 // Tests that a BeginNavigation IPC from a no longer active RFH is ignored.
-TEST_F(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
+TEST_P(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
   const GURL kUrl1("http://www.google.com");
   const GURL kUrl2("http://www.chromium.org");
   const GURL kUrl3("http://foo.com");
@@ -3123,7 +3133,7 @@ TEST_F(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
 
 // Tests that sandbox flags received after a navigation away has started do not
 // affect the document being navigated to.
-TEST_F(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
+TEST_P(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
   const GURL kUrl1("http://www.google.com");
   const GURL kUrl2("http://www.chromium.org");
 
@@ -3155,7 +3165,7 @@ TEST_F(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
 
 // Check that after a navigation, the final SiteInstance has the correct
 // original URL that was used to determine its site URL.
-TEST_F(RenderFrameHostManagerTest,
+TEST_P(RenderFrameHostManagerTest,
        SiteInstanceOriginalURLIsPreservedAfterNavigation) {
   const GURL kFooUrl("https://foo.com");
   const GURL kOriginalUrl("https://original.com");
@@ -3307,7 +3317,7 @@ class RenderFrameHostManagerAdTaggingSignalTest
 // Test that when the proxy host is created for the local child frame to be
 // swapped out (which occurs before UnfreezableFrameMsg_SwapOut IPC was sent),
 // the frame replication state should already have the ad status set.
-TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
        AdStatusForLocalChildFrameToBeSwappedOut) {
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -3337,7 +3347,7 @@ TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
 // A page with top frame A that has subframes B and A1. A1 is an ad iframe that
 // does not commit. We expect that the proxy of A1 in B's process will receive
 // an ad tagging signal.
-TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
        AdTagSignalForFrameProxyOfFrameThatDoesNotCommit) {
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -3376,7 +3386,7 @@ TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
 // A page with top frame A that has subframes B and C. C is then navigated to an
 // ad frame D. We expect that both the proxy of D in A's process and the proxy
 // of D in B's process will receive an ad tagging signal.
-TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
        AdTagSignalForFrameProxyOfNewFrame) {
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -3442,7 +3452,7 @@ TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
 // A. We expect that when the proxy host of B in C's process is created, the
 // frame's replication status already has the ad bit set, which will be
 // propagated to the renderer side later.
-TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
        AdStatusForFrameProxyOfExistingFrameToNewFrame) {
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -3472,7 +3482,7 @@ TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
 
 // Test a A(B(C)) setup where B and C are ads. The creation of C will trigger
 // an ad tagging signal for the proxy of C in the process of A.
-TEST_F(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
+TEST_P(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
   if (!AreAllSitesIsolatedForTesting())
     return;
 
@@ -3516,5 +3526,13 @@ TEST_F(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
             blink::mojom::AdFrameType::kChildAd);
   ExpectAdSubframeSignalForFrameProxy(proxy_to_main_frame, true);
 }
+
+INSTANTIATE_TEST_SUITE_P(All, RenderFrameHostManagerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         RenderFrameHostManagerTestWithSiteIsolation,
+                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         RenderFrameHostManagerAdTaggingSignalTest,
+                         ::testing::Bool());
 
 }  // namespace content

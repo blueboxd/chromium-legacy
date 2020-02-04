@@ -615,6 +615,7 @@
 <translation id="3745099705178523657">ನೀವು ಖಚಿತಪಡಿಸಿದ ನಂತರ, ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿನ ಕಾರ್ಡ್ ವಿವರಗಳನ್ನು ಈ ಸೈಟ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ನಲ್ಲಿನ ಆಕ್ರಮಣಕಾರರು ಸಾಫ್ಟ್‌ವೇರ್ ಸ್ಥಾಪಿಸುವಿಕೆ ಅಥವಾ ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ಬಹಿರಂಗ ಪಡಿಸುವಂತಹ ಅಪಾಯಕಾರಿಯಾಗಿ ಏನಾದರೂ ಮಾಡುವಂತಹ ಮೋಸವನ್ನು ಮಾಡಬಹುದು (ಉದಾಹರಣೆಗೆ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಫೋನ್‌ ಸಂಖ್ಯೆಗಳು ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು). <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">ಸರ್ವರ್ ದೋಷದ ಕಾರಣ ಅನುವಾದವು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="3754210790023674521">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="3759461132968374835">ಇತ್ತೀಚೆಗೆ ನೀವು ಯಾವುದೇ ಕ್ರ‍್ಯಾಶ್‌ಗಳನ್ನು ವರದಿ ಮಾಡಿಲ್ಲ. ಕ್ರ‍್ಯಾಶ್‌‌ ಅನ್ನು ವರದಿಮಾಡುವಿಕೆಯನ್ನು ಉಂಟಾಗಿರುವ  ಕ್ರ‍್ಯಾಶ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="3760561303380396507">CVC ಬದಲಿಗೆ Windows Hello ಬಳಸುವಿರಾ?</translation>
 <translation id="3761718714832595332">ಸ್ಥಿತಿಯನ್ನು ಮರೆಮಾಡಿ</translation>
@@ -1118,7 +1119,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="6015796118275082299">ವರ್ಷ</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{ಪುಟ 1}one{ಪುಟ #}other{ಪುಟ #}}</translation>
 <translation id="6017514345406065928">ಹಸಿರು</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ನಲ್ಲಿನ ದಾಳಿಕೋರರು ವಂಚನೆಯ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ, ನಿಮ್ಮನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಬಳಸಬಹುದಾದ ಬೇರೆ ಯಾವುದಾದರೂ ಮಾಹಿತಿ ಅಥವಾ ಡೇಟಾ ಸಂಗ್ರಹಿಸುವ ಸಾಧ್ಯವಿದೆ. <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (ಸಿಂಕ್‌ ಮಾಡಲಾಗಿದೆ)</translation>
@@ -1225,7 +1225,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">ಇನ್ನಷ್ಟು ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="6447842834002726250">ಕುಕೀಸ್</translation>
-<translation id="644931407731409778">PDF ಡಾಕ್ಯುಮೆಂಟ್ ಇವುಗಳನ್ನು ಒಳಗೊಂಡಿದೆ {COUNT,plural, =1{1 ಪುಟ}one{# ಪುಟಗಳು}other{# ಪುಟಗಳು}}</translation>
 <translation id="6451458296329894277">ಮರುಸಲ್ಲಿಕೆ ಫಾರ್ಮ್ ಅನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="6457206614190510200">ಸ್ಯಾಡಲ್ ಮಾದರಿಯ ಹೊಲಿಗೆ ಹಾಕಿ</translation>
 <translation id="6465306955648956876">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>

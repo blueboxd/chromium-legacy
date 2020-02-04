@@ -34,7 +34,7 @@
 <translation id="1830179671306812954">{HOURS,plural, =1{1 сат и }one{# сат и }few{# сата и }other{# сати и }}</translation>
 <translation id="1830308660060964064">Ставка <ph name="ITEM_TITLE" /> је откачена</translation>
 <translation id="1842960171412779397">изабери</translation>
-<translation id="1859234291848436338">Writing Direction (Смер писања)</translation>
+<translation id="1859234291848436338">Смер писања</translation>
 <translation id="1860796786778352021">Затвори обавештење</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>

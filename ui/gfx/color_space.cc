@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkICC.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
 
@@ -494,6 +495,14 @@ ColorSpace ColorSpace::GetAsFullRangeRGB() const {
   result.matrix_ = MatrixID::RGB;
   result.range_ = RangeID::FULL;
   return result;
+}
+
+ContentColorUsage ColorSpace::GetContentColorUsage() const {
+  if (IsHDR())
+    return ContentColorUsage::kHDR;
+  if (IsWide())
+    return ContentColorUsage::kWideColorGamut;
+  return ContentColorUsage::kSRGB;
 }
 
 ColorSpace ColorSpace::GetAsRGB() const {

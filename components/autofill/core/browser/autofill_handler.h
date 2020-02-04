@@ -102,9 +102,6 @@ class AutofillHandler {
   // Invoked when preview autofill value has been shown.
   virtual void OnDidPreviewAutofillFormData() = 0;
 
-  // Invoked when textfeild editing ended
-  virtual void OnDidEndTextFieldEditing() = 0;
-
   // Invoked when popup window should be hidden.
   virtual void OnHidePopup() = 0;
 

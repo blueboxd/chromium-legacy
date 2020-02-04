@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Prikaži kartice</translation>
 <translation id="3369192424181595722">Greška sa satom</translation>
 <translation id="337363190475750230">Poništeno dodjeljivanje</translation>
+<translation id="3376829916920036789">Domena <ph name="ENROLLMENT_DOMAIN" /> je omogućila Udice za usluge preduzeća na vašem pregledniku. Pomoću tih udica je moguće pristupiti nekim vašim podacima.</translation>
+<translation id="3377144306166885718">Server je koristio zastarjelu verziju TLS-a.</translation>
 <translation id="3377188786107721145">Greška prilikom raščlanjivanja pravila</translation>
 <translation id="3377736046129930310">Koristite zaključavanje ekrana da brže potvrdite kartice</translation>
 <translation id="3380365263193509176">Nepoznata greška</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Adresa isporuke</translation>
 <translation id="3395827396354264108">Način preuzimanja</translation>
 <translation id="3399952811970034796">Adresa za isporuku</translation>
+<translation id="3402261774528610252">Veza korištena za učitavanje ove web lokacije je koristila verzije TLS 1.0 ili TLS 1.1, koje su zastarjele i u budućnosti će se onemogućiti. Kada se onemoguće, korisnici neće moću učitati ovu web lokaciju. Server treba omogućiti verziju TLS 1.2 ili noviju.</translation>
 <translation id="3422248202833853650">Pokušajte izaći iz drugih programa da oslobodite memoriju.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> je trenutno nedostupan.</translation>
 <translation id="3423742043356668186">Sistemski navedeno</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Nakon što potvrdite, detalji o kartici s vašeg Google računa će se dijeliti s ovom lokacijom.</translation>
 <translation id="3748148204939282805">Napadači na web lokaciju <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu vas prevarom navesti da uradite nešto opasno kao što je instaliranje softvera ili otkrivanje ličnih informacija (naprimjer lozinki, brojeva telefona ili kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Prijevod nije uspio zbog greške na serveru.</translation>
+<translation id="3754210790023674521">Izađi iz načina rada slike u slici</translation>
 <translation id="3759461132968374835">Nemate nedavno prijavljenih padova aplikacije.  Ovdje se neće prikazati padovi do kojih je došlo kada je izvještavanje o padovima aplikacije bilo onemogućeno.</translation>
 <translation id="3760561303380396507">Koristiti Windows Hello umjesto CVC-a?</translation>
 <translation id="3761718714832595332">Sakrij status</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Jezik nije <ph name="ORIGINAL_LANGUAGE" />? Prijavite ovu grešku</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="519422657042045905">Bilješke nisu dostupne</translation>
+<translation id="5196187217592847346">Udice za usluge preduzeća</translation>
 <translation id="5201306358585911203">Stranica ugrađena u ovu stranicu kaže</translation>
 <translation id="5205222826937269299">Potrebno je ime</translation>
 <translation id="5215116848420601511">Načini plaćanja i adrese iz Google Paya</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je vaša lozinka izložena. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.</translation>
 <translation id="5299298092464848405">Greška u pravilu raščlanjivanja</translation>
 <translation id="5300589172476337783">Prikaži</translation>
+<translation id="5306593769196050043">Obje tabele</translation>
 <translation id="5308380583665731573">Poveži</translation>
 <translation id="5308689395849655368">Izvještaj o padovima aplikacije je onemogućen.</translation>
 <translation id="5314967030527622926">Alat za brošure</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Provjerite svoje lozinke</translation>
 <translation id="6015796118275082299">Godina</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1. stranica}one{#. stranica}few{#. stranica}other{#. stranica}}</translation>
 <translation id="6017514345406065928">Zelena</translation>
 <translation id="6017850046339264347">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogli bi instalirati obmanjujuće aplikacije koje se pretvaraju da su nešto drugo ili prikupljaju podatke na temelju kojih vas je moguće pratiti. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinhronizirano)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (koverta)</translation>
 <translation id="6446608382365791566">Dodajte više informacija</translation>
 <translation id="6447842834002726250">Kolačići</translation>
-<translation id="644931407731409778">PDF dokument sadrži {COUNT,plural, =1{1 stranicu}one{# stranicu}few{# stranice}other{# stranica}}</translation>
 <translation id="6451458296329894277">Potvrdite ponovno slanje obrasca</translation>
 <translation id="6457206614190510200">Uvez kroz sredinu</translation>
 <translation id="6465306955648956876">Upravljajte lozinkama…</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7062635574500127092">Tirkizna</translation>
 <translation id="7064851114919012435">Podaci za kontakt</translation>
+<translation id="70705239631109039">Vaša veza nije u potpunosti sigurna</translation>
 <translation id="7075452647191940183">Zahtjev je prevelik</translation>
 <translation id="7079718277001814089">Ova web lokacija sadrži zlonamjeran softver</translation>
 <translation id="7081308185095828845">Ova funkcija nije dostupna na vašem uređaju</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Broj-14 (koverta)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Svijetloljubičasta</translation>
+<translation id="7156870133441232244">Server se treba nagodgraditi na verziju TLS 1.2 ili noviju.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Spojeno</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1402,6 +1408,7 @@ Dodatni detalji:
 <translation id="725866823122871198">Nije moguće uspostaviti privatnu vezu s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> jer su datum i vrijeme (<ph name="DATE_AND_TIME" />) na vašem računaru netačni.</translation>
 <translation id="7260504762447901703">Opozovi pristup</translation>
 <translation id="7275334191706090484">Upravljane oznake</translation>
+<translation id="7288778322931489286">Administrator je na vašem pregledniku omogućio Udice za usluge preduzeća. Pomoću tih udica je moguće pristupiti nekim vašim podacima.</translation>
 <translation id="7292031607255951991">Ime primaoca</translation>
 <translation id="7298195798382681320">Preporučeno</translation>
 <translation id="7300012071106347854">Kobaltno plava</translation>
@@ -1726,6 +1733,7 @@ Dodatni detalji:
 <translation id="874918643257405732">Označite ovu karticu</translation>
 <translation id="8751426954251315517">Pokušajte ponovo kasnije</translation>
 <translation id="8759274551635299824">Ova kartica je istekla</translation>
+<translation id="87601671197631245">Ova web lokacija koristi zastarjelu konfiguraciju sigurnosti, zbog čega može doći do otkrivanja vaših informacija (naprimjer lozinki, poruka ili kreditnih kartica) kada se šalju na ovu web lokaciju.</translation>
 <translation id="8761567432415473239">Usluga Sigurno pretraživanje na Googleu je nedavno <ph name="BEGIN_LINK" />pronašla štetne programe <ph name="END_LINK" /> na web lokaciji <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB uređaj</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@ Dodatni detalji:
 <translation id="8866481888320382733">Greška prilikom raščlanjivanja postavki pravila</translation>
 <translation id="8866928039507595380">Presavijanje</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Dijeljenje podataka o sigurnosnim događajima koje su prijavile Udice za usluge preduzeća s administratorom. To može obuhvatati URL-ove stranica koje posjetite, nazive fajlova ili metapodatke te korisničko ime koje koristite za prijavu na uređaj i Chrome.</translation>
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8870494189203302833">Isti redoslijed s odštampanom stranom prema dolje</translation>
 <translation id="8874824191258364635">Unesite važeći broj kartice</translation>

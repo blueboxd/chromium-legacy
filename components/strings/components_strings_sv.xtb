@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Visa kort</translation>
 <translation id="3369192424181595722">Fel på klockan</translation>
 <translation id="337363190475750230">Tagen ur bruk</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> har aktiverat Enterprise Service Hooks i webbläsaren. Dessa hook-funktioner har åtkomst till en del av din data.</translation>
+<translation id="3377144306166885718">En föråldrad version av TLS används på servern.</translation>
 <translation id="3377188786107721145">Fel vid analys av policyn</translation>
 <translation id="3377736046129930310">Verifiera kreditkort snabbare med skärmlås</translation>
 <translation id="3380365263193509176">Okänt fel</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Leveransadress</translation>
 <translation id="3395827396354264108">Alternativ för utlämning</translation>
 <translation id="3399952811970034796">Leveransadress</translation>
+<translation id="3402261774528610252">TLS 1.0 eller TLS 1.1 användes för anslutningen när den här webbplatsen lästes in. De versionerna har fasats ut och kommer att inaktiveras i framtiden. Efter inaktiveringen kan användarna inte längre läsa in den här webbplatsen. TLS 1.2 eller senare behöver aktiveras på servern.</translation>
 <translation id="3422248202833853650">Testa att stänga andra program för att frigöra minne.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> kan inte nås för tillfället.</translation>
 <translation id="3423742043356668186">System har angetts</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">När du bekräftar delas kortuppgifter från ditt Google-konto med webbplatsen.</translation>
 <translation id="3748148204939282805">Angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan försöka lura dig att göra något riskfyllt, som att installera programvara eller avslöja personliga uppgifter (t.ex. lösenord, telefonnummer eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Det gick inte att översätta på grund av ett serverfel.</translation>
+<translation id="3754210790023674521">Avsluta bild-i-bild-läge</translation>
 <translation id="3759461132968374835">Inga krascher har rapporterats nyligen. Krascher som uppstod när kraschrapporteringen var inaktiverad visas inte här.</translation>
 <translation id="3760561303380396507">Vill du använda Windows Hello i stället för CVC?</translation>
 <translation id="3761718714832595332">Dölj status</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Inte på <ph name="ORIGINAL_LANGUAGE" />? Rapportera felet</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="519422657042045905">Kommentering är inte tillgängligt</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">På en inbäddad sida på den här sidan står det</translation>
 <translation id="5205222826937269299">Namn måste anges</translation>
 <translation id="5215116848420601511">Betalningsmetoder och adresser som används med Google Pay</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">Ditt lösenord har läckt ut efter ett dataintrång på en webbplats eller i en app. Du rekommenderas att kontrollera dina sparade lösenord nu.</translation>
 <translation id="5299298092464848405">Det uppstod ett fel när policyn analyserades</translation>
 <translation id="5300589172476337783">Visa</translation>
+<translation id="5306593769196050043">Båda</translation>
 <translation id="5308380583665731573">Anslut</translation>
 <translation id="5308689395849655368">Krashrapportering har  inaktiverats.</translation>
 <translation id="5314967030527622926">Broschyrenhet</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Kontrollera lösenorden</translation>
 <translation id="6015796118275082299">År</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Sida 1}other{Sida #}}</translation>
 <translation id="6017514345406065928">Grön</translation>
 <translation id="6017850046339264347">Angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> skulle kunna installera bedrägliga appar som inte gör vad de påstås göra eller samla in data som används för att spåra dig. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synkroniserade)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (kuvert)</translation>
 <translation id="6446608382365791566">Lägg till mer information</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="644931407731409778">PDF-dokument som innehåller {COUNT,plural, =1{1 sida}other{# sidor}}</translation>
 <translation id="6451458296329894277">Bekräfta återsändning av formulär</translation>
 <translation id="6457206614190510200">Rygghäftning</translation>
 <translation id="6465306955648956876">Hantera lösenord …</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7062635574500127092">Blågrön</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
+<translation id="70705239631109039">Anslutningen är inte helt säker</translation>
 <translation id="7075452647191940183">Begäran är för stor</translation>
 <translation id="7079718277001814089">Webbplatsen innehåller skadlig programvara.</translation>
 <translation id="7081308185095828845">Funktionen är inte tillgänglig på din enhet</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (kuvert)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
 <translation id="7153618581592392745">Lavendelfärgad</translation>
+<translation id="7156870133441232244">Servern behöver uppgraderas till TLS 1.2 eller senare.</translation>
 <translation id="717330890047184534">Gaia-id:</translation>
 <translation id="7174545416324379297">Sammanslagen</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}other{<ph name="SHIPPING_OPTION_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}}</translation>
@@ -1402,6 +1408,7 @@ Mer information.
 <translation id="725866823122871198">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom datorns datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
 <translation id="7260504762447901703">Återkalla åtkomst</translation>
 <translation id="7275334191706090484">Hanterade bokmärken</translation>
+<translation id="7288778322931489286">Administratören har aktiverat Enterprise Service Hooks i webbläsaren. Dessa hook-funktioner har åtkomst till en del av din data.</translation>
 <translation id="7292031607255951991">Mottagarens namn</translation>
 <translation id="7298195798382681320">Rekommenderas</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
@@ -1727,6 +1734,7 @@ Mer information:
 <translation id="874918643257405732">Bokmärk den här fliken</translation>
 <translation id="8751426954251315517">Försök igen senare</translation>
 <translation id="8759274551635299824">Kortets giltighetstid har löpt ut</translation>
+<translation id="87601671197631245">Den här webbplatsens säkerhetskonfiguration är inaktuell. Det kan leda till att dina uppgifter (t.ex. lösenord, meddelanden eller kreditkort) exponeras när de skickas till den här webbplatsen.</translation>
 <translation id="8761567432415473239">Googles tjänst Säker webbsökning <ph name="BEGIN_LINK" />hittade skadliga program<ph name="END_LINK" /> på <ph name="SITE" /> nyligen.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1744,6 +1752,7 @@ Mer information:
 <translation id="8866481888320382733">Det uppstod ett fel när policyinställningarna analyserades</translation>
 <translation id="8866928039507595380">Vikning</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Dela data om säkerhetshändelser som flaggats av Enterprise Service Hooks med administratören. Det kan inkludera webbadresser till sidor du besöker, filnamn eller metadata och användarnamnet du loggar in på dina enheter och Chrome med.</translation>
 <translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8870494189203302833">Samma ordning – framsidan nedåt</translation>
 <translation id="8874824191258364635">Ange ett giltigt kortnummer</translation>

@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Lihat kartu</translation>
 <translation id="3369192424181595722">Kesalahan jam</translation>
 <translation id="337363190475750230">Dicabut aksesnya</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> telah mengaktifkan Enterprise Service Hook di browser Anda. Hook ini memiliki akses ke beberapa data Anda.</translation>
+<translation id="3377144306166885718">Server menggunakan versi TLS yang sudah tidak digunakan lagi.</translation>
 <translation id="3377188786107721145">Kesalahan penguraian kebijakan</translation>
 <translation id="3377736046129930310">Gunakan kunci layar untuk mengonfirmasi kartu dengan lebih cepat</translation>
 <translation id="3380365263193509176">Kesalahan tidak dikenal</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Alamat pengiriman</translation>
 <translation id="3395827396354264108">Metode pengambilan</translation>
 <translation id="3399952811970034796">Alamat Pengiriman</translation>
+<translation id="3402261774528610252">Koneksi yang digunakan untuk memuat situs ini menggunakan TLS 1.0 atau TLS 1.1 yang tidak digunakan lagi dan akan dinonaktifkan pada waktu mendatang. Setelah dinonaktifkan, pengguna tidak akan dapat memuat situs ini. Sebaiknya server mengaktifkan TLS 1.2 atau yang lebih baru.</translation>
 <translation id="3422248202833853650">Coba program lain yang ada untuk mengosongkan memori.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> saat ini tidak dapat dijangkau.</translation>
 <translation id="3423742043356668186">Ditentukan sistem</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">Setelah mengonfirmasi, detail kartu dari Akun Google Anda akan dibagikan dengan situs ini.</translation>
 <translation id="3748148204939282805">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> dapat mengelabui Anda agar melakukan tindakan yang berbahaya seperti menginstal software atau mengungkap informasi pribadi Anda (misalnya sandi, nomor telepon, atau kartu kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Terjemahan gagal karena kesalahan server.</translation>
+<translation id="3754210790023674521">Keluar dari mode picture-in-picture</translation>
 <translation id="3759461132968374835">Tidak ada laporan kondisi ngadat saat ini. Kondisi ngadat yang terjadi saat pelaporan kondisi ngadat tidak diaktifkan tidak akan tampil di sini.</translation>
 <translation id="3760561303380396507">Gunakan Windows Hello dan bukan CVC?</translation>
 <translation id="3761718714832595332">Sembunyikan status</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267">Bukan <ph name="ORIGINAL_LANGUAGE" />? Laporkan kesalahan deteksi ini</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="519422657042045905">Anotasi tidak tersedia</translation>
+<translation id="5196187217592847346">Enterprise Service Hook</translation>
 <translation id="5201306358585911203">Halaman tersemat di halaman ini menyatakan</translation>
 <translation id="5205222826937269299">Nama wajib diisi</translation>
 <translation id="5215116848420601511">Metode pembayaran dan alamat yang menggunakan Google Pay</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">Pelanggaran data di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk memeriksa sandi yang tersimpan sekarang.</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
+<translation id="5306593769196050043">Kedua lembar</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="5308689395849655368">Pelaporan kondisi ngadat dinonaktifkan.</translation>
 <translation id="5314967030527622926">Pembuat buklet</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Periksa sandi Anda</translation>
 <translation id="6015796118275082299">Tahun</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Halaman 1}other{Halaman #}}</translation>
 <translation id="6017514345406065928">Hijau</translation>
 <translation id="6017850046339264347">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> dapat menginstal aplikasi penipuan dengan berpura-pura menjadi sesuatu yang lain atau mengumpulkan data yang dapat digunakan untuk melacak Anda. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (disinkronkan)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tambahkan informasi lainnya</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="644931407731409778">Dokumen PDF berisi {COUNT,plural, =1{1 halaman}other{# halaman}}</translation>
 <translation id="6451458296329894277">Konfirmasikan Pengiriman Ulang Formulir</translation>
 <translation id="6457206614190510200">Jahitan kawat</translation>
 <translation id="6465306955648956876">Kelola sandi...</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">Blokir</translation>
 <translation id="7062635574500127092">Hijau kebiruan</translation>
 <translation id="7064851114919012435">Info kontak</translation>
+<translation id="70705239631109039">Koneksi Anda tidak sepenuhnya aman</translation>
 <translation id="7075452647191940183">Permintaan terlalu besar</translation>
 <translation id="7079718277001814089">Situs ini berisi malware</translation>
 <translation id="7081308185095828845">Fitur ini tidak tersedia di perangkat Anda</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lainnya}other{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lainnya}}</translation>
 <translation id="7153618581592392745">Lembayung Muda</translation>
+<translation id="7156870133441232244">Sebaiknya server diupgrade ke TLS 1.2 atau yang lebih baru.</translation>
 <translation id="717330890047184534">ID GAIA:</translation>
 <translation id="7174545416324379297">Digabung</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}}</translation>
@@ -1399,6 +1405,7 @@
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
 <translation id="7260504762447901703">Cabut akses</translation>
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
+<translation id="7288778322931489286">Administrator Anda telah mengaktifkan Enterprise Service Hook di browser Anda. Hook ini memiliki akses ke beberapa data Anda.</translation>
 <translation id="7292031607255951991">Nama penerima</translation>
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="7300012071106347854">Biru Kobalt</translation>
@@ -1721,6 +1728,7 @@
 <translation id="874918643257405732">Bookmark tab ini</translation>
 <translation id="8751426954251315517">Coba lagi lain waktu</translation>
 <translation id="8759274551635299824">Kartu sudah tidak aktif</translation>
+<translation id="87601671197631245">Situs ini menggunakan konfigurasi keamanan yang telah habis masa berlakunya, yang dapat mengekspos informasi Anda (misalnya, sandi, pesan, atau kartu kredit) saat dikirimkan ke situs ini.</translation>
 <translation id="8761567432415473239">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />menemukan program berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Perangkat USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1738,6 +1746,7 @@
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
 <translation id="8866928039507595380">Lipatan</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Bagikan data tentang peristiwa keamanan yang telah ditandai oleh Enterprise Service Hook kepada administrator Anda. Ini dapat mencakup URL halaman yang Anda kunjungi, metadata atau nama file, dan nama pengguna yang Anda gunakan untuk login ke perangkat dan Chrome.</translation>
 <translation id="8870413625673593573">Baru Saja Ditutup</translation>
 <translation id="8870494189203302833">Urutan yang sama menghadap ke bawah</translation>
 <translation id="8874824191258364635">Masukkan nomor kartu yang valid</translation>

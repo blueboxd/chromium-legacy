@@ -253,16 +253,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   // Extra data associated with this request.
-  WebURLRequest::ExtraData* GetExtraData() const {
-    return sharable_extra_data_ ? sharable_extra_data_->data.get() : nullptr;
+  const scoped_refptr<WebURLRequest::ExtraData>& GetExtraData() const {
+    return extra_data_;
   }
-  void SetExtraData(std::unique_ptr<WebURLRequest::ExtraData> extra_data) {
-    if (extra_data) {
-      sharable_extra_data_ =
-          base::MakeRefCounted<SharableExtraData>(std::move(extra_data));
-    } else {
-      sharable_extra_data_ = nullptr;
-    }
+  void SetExtraData(scoped_refptr<WebURLRequest::ExtraData> extra_data) {
+    extra_data_ = extra_data;
   }
 
   bool IsDownloadToNetworkCacheOnly() const { return download_to_cache_only_; }
@@ -457,9 +452,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool CanDisplay(const KURL&) const;
 
  private:
-  using SharableExtraData =
-      base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
-
   ResourceRequest& operator=(const ResourceRequest&);
 
   const CacheControlHeader& GetCacheControlHeader() const;
@@ -499,7 +491,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   int intra_priority_value_;
   int requestor_id_;
   WebURLRequest::PreviewsState previews_state_;
-  scoped_refptr<SharableExtraData> sharable_extra_data_;
+  scoped_refptr<WebURLRequest::ExtraData> extra_data_;
   mojom::RequestContextType request_context_;
   network::mojom::RequestDestination destination_;
   network::mojom::RequestMode mode_;

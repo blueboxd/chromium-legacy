@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">სტილუსის პარამეტრები</translation>
 <translation id="2354174487190027830"><ph name="NAME" />-ის გააქტიურება</translation>
 <translation id="2359808026110333948">გაგრძელება</translation>
-<translation id="2364154243880592194">სტატუსის არე, დრო: <ph name="TIME" />, <ph name="BATTERY" />. შეტყობინებების ცენტრზე წვდომისთვის დააჭირეთ კლავიშთა კომბინაციაზე: search + მარცხნივ მიმართული ისარი.</translation>
 <translation id="2365393535144473978">მობილური ინტერნეტის ჩართვის შემთხვევაში, ჩაირთვება Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">ხელმისაწვდომია განახლება</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">უკან გადახვევა</translation>
 <translation id="4129129681837227511">ჩაკეტილ ეკრანზე შეტყობინებების სანახავად საჭიროა განბლოკვა და პარამეტრის შეცვლა</translation>
 <translation id="4146833061457621061">მუსიკის დაკვრა</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> იმართება <ph name="DOMAIN" />-ის მიერ</translation>
 <translation id="4181841719683918333">ენები</translation>
 <translation id="4195877955194704651">ავტომატური დაწკაპუნებების ღილაკი</translation>
 <translation id="4217571870635786043">კარნახი</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">უკუკავშირი</translation>
 <translation id="4527045527269911712">Bluetooth მოწყობილობა „<ph name="DEVICE_NAME" />“ მოითხოვს დაწყვილების ნებართვას.</translation>
 <translation id="453661520163887813">სრულ დატენვამდე დარჩენილია <ph name="TIME" /></translation>
-<translation id="4544944664594876241">ეკრანის დაბლოკვის მალსახმობი შეიცვალა. გთხოვთ, <ph name="OLD_SHORTCUT" />-ის ნაცვლად გამოიყენოთ <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">წარმოსათქმელად მონიშვნის ღილაკი</translation>
 <translation id="4585337515783392668">ტრანსლირების შეწყვეტა უცნობ მიმღებში</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">დაკვრა</translation>
 <translation id="6803622936009808957">ეკრანების არეკვლა ვერ მოხერხდა, რადგან მხარდაჭერილი გარჩევადობები ვერ მოიძებნა. შეყვანილია გაშლილი სამუშაო დაფა.</translation>
 <translation id="6820676911989879663">შეისვენეთ!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">გაააქტიურეთ <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">მალსახმობი გამოირთო</translation>
 <translation id="6910714959251846841">ეს განახლება საჭიროებს, თქვენს მოწყობილობაზე შესრულდეს Powerwash. შეიტყვეთ მეტი <ph name="SYSTEM_APP_NAME" />-ის ბოლო განახლების შესახებ.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">დაკავშირება</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">დრო ძველ გარჩევადობაზე დაბრუნებამდე: <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. გასაახლებლად ეს Chromebook საჭიროებს გადატვირთვას. ამას შეიძლება 1 წუთამდე დრო დასჭირდეს.</translation>
 <translation id="7256634071279256947">უკანა მიკროფონი</translation>
 <translation id="726276584504105859">ეკრანის გასაყოფად ჩავლებით გადმოიტანეთ ფანჯარა აქ</translation>
 <translation id="7262906531272962081">შეხსენების შექმნა</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">კამერა გამოიყენება.</translation>
 <translation id="743058460480092004">კამერა და მიკროფონი გამოიყენება.</translation>
 <translation id="7497767806359279797">აირჩიეთ ენა და კლავიატურა</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ქსელზე შესაძლოა ხორციელდებოდეს მონიტორინგი</translation>
 <translation id="7536035074519304529">IP მისამართი: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ძილის დროა</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" />-ს არ აქვს <ph name="SPECIFIED_RESOLUTION" />-ის მხარდაჭერა. გარჩევადობა შეიცვალა <ph name="FALLBACK_RESOLUTION" />-ით</translation>
 <translation id="7562368315689366235">Emoji-ების პალიტრა</translation>
 <translation id="7564874036684306347">ფანჯრების სხვა დესკტოპზე გადატანამ შეიძლება მოულოდნელი ქცევა გამოიწვიოს. შემდგომი შეტყობინებები, ფანჯრები და დიალოგები შეიძლება გაიყოს დესკტოპებს შორის.</translation>
 <translation id="7568294522609223312">ავტომატური დაწკაპუნებების გამორთვა</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">მაღალკონტრასტული რეჟიმი</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />-ში ეკრანის ტრანსლირების შეწყვეტა</translation>
 <translation id="8113423164597455979">ჩართული, ყველა აპისთვის</translation>
+<translation id="8131740175452115882">დაადასტურება</translation>
 <translation id="8132793192354020517">დაკავშირებულია <ph name="NAME" />-თან</translation>
 <translation id="813913629614996137">მიმდინარეობს ინიცირება…</translation>
 <translation id="8142441511840089262">ორმაგი დაწკაპუნება</translation>

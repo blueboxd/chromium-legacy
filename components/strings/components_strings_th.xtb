@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">ดูบัตร</translation>
 <translation id="3369192424181595722">ข้อผิดพลาดของนาฬิกา</translation>
 <translation id="337363190475750230">ยกเลิกการจัดเตรียมแล้ว</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ได้เปิดใช้ฮุก Enterprise Service ในเบราว์เซอร์ ฮุกเหล่านี้เข้าถึงข้อมูลบางอย่างของคุณได้</translation>
+<translation id="3377144306166885718">เซิร์ฟเวอร์ใช้ TLS เวอร์ชันที่ล้าสมัย</translation>
 <translation id="3377188786107721145">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="3377736046129930310">ใช้ฟีเจอร์ล็อกหน้าจอเพื่อยืนยันบัตรได้เร็วขึ้น</translation>
 <translation id="3380365263193509176">ข้อผิดพลาดที่ไม่รู้จัก</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">ที่อยู่สำหรับจัดส่ง</translation>
 <translation id="3395827396354264108">วิธีการรับสินค้า</translation>
 <translation id="3399952811970034796">ที่อยู่สำหรับจัดส่ง</translation>
+<translation id="3402261774528610252">การเชื่อมต่อที่ใช้โหลดเว็บไซต์นี้ใช้ TLS 1.0 หรือ TLS 1.1 ซึ่งเลิกใช้งานแล้วและจะถูกปิดใช้ในอนาคต เมื่อปิดใช้แล้ว ระบบจะไม่ให้ผู้ใช้โหลดเว็บไซต์นี้ เซิร์ฟเวอร์ควรเปิดใช้ TLS 1.2 ขึ้นไป</translation>
 <translation id="3422248202833853650">ลองออกจากโปรแกรมอื่นๆ เพื่อเพิ่มหน่วยความจำ</translation>
 <translation id="3422472998109090673">ไม่สามารถเข้าถึง <ph name="HOST_NAME" /> ได้ในขณะนี้</translation>
 <translation id="3423742043356668186">ระบุระบบแล้ว</translation>
@@ -618,6 +621,7 @@
 <translation id="3745099705178523657">เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google กับเว็บไซต์นี้</translation>
 <translation id="3748148204939282805">ผู้โจมตีที่อยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจหลอกล่อให้คุณทำบางสิ่งที่อันตราย เช่น การติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล (ตัวอย่างเช่น รหัสผ่าน หมายเลขโทรศัพท์ หรือบัตรเครดิต) <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">การแปลล้มเหลวเนื่องจากข้อผิดพลาดของเซิร์ฟเวอร์</translation>
+<translation id="3754210790023674521">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="3759461132968374835">คุณไม่ได้รายงานข้อขัดข้องเมื่อเร็วๆ นี้ ข้อขัดข้องที่เกิดขึ้นเมื่อปิดใช้งานการรายงานข้อขัดข้อง จะไม่ปรากฏที่นี่</translation>
 <translation id="3760561303380396507">ใช้ Windows Hello แทน CVC ไหม</translation>
 <translation id="3761718714832595332">ซ่อนสถานะ</translation>
@@ -939,6 +943,7 @@
 <translation id="5179510805599951267">หากไม่มีในภาษา <ph name="ORIGINAL_LANGUAGE" /> ให้รายงานข้อผิดพลาดนี้</translation>
 <translation id="5190835502935405962">แถบบุ๊กมาร์ก</translation>
 <translation id="519422657042045905">โหมดคำอธิบายประกอบไม่พร้อมใช้งาน</translation>
+<translation id="5196187217592847346">ฮุก Enterprise Service</translation>
 <translation id="5201306358585911203">หน้าที่ฝังไว้ในหน้าเว็บนี้บอกว่า</translation>
 <translation id="5205222826937269299">ต้องระบุชื่อ</translation>
 <translation id="5215116848420601511">วิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
@@ -968,6 +973,7 @@
 <translation id="5295292838686006428">การละเมิดข้อมูลในเว็บไซต์หรือแอปเปิดเผยรหัสผ่านของคุณ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้โดยทันที</translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="5300589172476337783">แสดง</translation>
+<translation id="5306593769196050043">ทั้ง 2 แผ่นงาน</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5308689395849655368">การรายงานข้อขัดข้องถูกปิดใช้งาน</translation>
 <translation id="5314967030527622926">เครื่องทำจุลสาร</translation>
@@ -1121,7 +1127,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">ตรวจสอบรหัสผ่านของคุณ</translation>
 <translation id="6015796118275082299">ปี</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{หน้า 1}other{หน้า #}}</translation>
 <translation id="6017514345406065928">สีเขียว</translation>
 <translation id="6017850046339264347">ผู้โจมตี <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> สามารถติดตั้งแอปที่หลอกลวงซึ่งปลอมเป็นเนื้อหาอย่างอื่นหรือรวบรวมข้อมูลที่อาจนำไปใช้ติดตามคุณ <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" /> <ph name="TYPE_2" /> <ph name="TYPE_3" /> (ซิงค์แล้ว)</translation>
@@ -1229,7 +1234,6 @@
 <translation id="6446163441502663861">Kahu (ซองจดหมาย)</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
 <translation id="6447842834002726250">คุกกี้</translation>
-<translation id="644931407731409778">เอกสาร PDF ที่มี {COUNT,plural, =1{1 หน้า}other{# หน้า}}</translation>
 <translation id="6451458296329894277">ยืนยันการส่งแบบฟอร์มอีกครั้ง</translation>
 <translation id="6457206614190510200">เย็บด้วยลวดเย็บกระดาษที่สัน</translation>
 <translation id="6465306955648956876">จัดการรหัสผ่าน...</translation>
@@ -1341,6 +1345,7 @@
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7062635574500127092">น้ำเงินอมเขียว</translation>
 <translation id="7064851114919012435">ข้อมูลติดต่อ</translation>
+<translation id="70705239631109039">การเชื่อมต่อไม่ปลอดภัยอย่างสมบูรณ์</translation>
 <translation id="7075452647191940183">คำขอมีขนาดใหญ่เกินไป</translation>
 <translation id="7079718277001814089">เว็บไซต์นี้มีมัลแวร์</translation>
 <translation id="7081308185095828845">ฟีเจอร์นี้ใช้ไม่ได้ในอุปกรณ์ของคุณ</translation>
@@ -1360,6 +1365,7 @@
 <translation id="7152423860607593928">Number-14 (ซองจดหมาย)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> รายการ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> รายการ}}</translation>
 <translation id="7153618581592392745">ลาเวนเดอร์</translation>
+<translation id="7156870133441232244">ควรอัปเกรดเซิร์ฟเวอร์เป็น TLS 1.2 ขึ้นไป</translation>
 <translation id="717330890047184534">รหัส GAIA:</translation>
 <translation id="7174545416324379297">รวมแล้ว</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> วิธี}other{<ph name="SHIPPING_OPTION_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> วิธี}}</translation>
@@ -1385,6 +1391,7 @@
 <translation id="725866823122871198">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของคอมพิวเตอร์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>
 <translation id="7260504762447901703">เพิกถอนสิทธิ์การเข้าถึง</translation>
 <translation id="7275334191706090484">บุ๊กมาร์กที่มีการจัดการ</translation>
+<translation id="7288778322931489286">ผู้ดูแลระบบได้เปิดใช้ฮุก Enterprise Service ในเบราว์เซอร์ ฮุกเหล่านี้เข้าถึงข้อมูลบางอย่างของคุณได้</translation>
 <translation id="7292031607255951991">ชื่อผู้รับ</translation>
 <translation id="7298195798382681320">แนะนำ</translation>
 <translation id="7300012071106347854">น้ำเงินเข้ม</translation>
@@ -1710,6 +1717,7 @@
 <translation id="874918643257405732">บุ๊กมาร์กแท็บนี้</translation>
 <translation id="8751426954251315517">โปรดลองอีกครั้งในคราวหน้า</translation>
 <translation id="8759274551635299824">บัตรนี้หมดอายุแล้ว</translation>
+<translation id="87601671197631245">เว็บไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจเปิดเผยข้อมูลของคุณ (เช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต) เมื่อมีการส่งไปยังเว็บไซต์นี้</translation>
 <translation id="8761567432415473239">Google Safe Browsing <ph name="BEGIN_LINK" />พบโปรแกรมที่เป็นอันตราย<ph name="END_LINK" />บน <ph name="SITE" /> เมื่อเร็วๆ นี้</translation>
 <translation id="8763927697961133303">อุปกรณ์ USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1727,6 +1735,7 @@
 <translation id="8866481888320382733">ข้อผิดพลาดในการแยกวิเคราะห์การตั้งค่านโยบาย</translation>
 <translation id="8866928039507595380">พับ</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">แชร์ข้อมูลให้ผู้ดูแลระบบทราบเกี่ยวกับการดำเนินการด้านความปลอดภัยที่ฮุก Enterprise Service แจ้งว่าไม่เหมาะสม ข้อมูลนี้อาจมี URL ของหน้าที่คุณเข้าชม ชื่อไฟล์หรือข้อมูลเมตา และชื่อผู้ใช้ที่คุณใช้ลงชื่อเข้าใช้อุปกรณ์และ Chrome</translation>
 <translation id="8870413625673593573">เพิ่งปิด</translation>
 <translation id="8870494189203302833">ลำดับเดียวกันคว่ำหน้าลง</translation>
 <translation id="8874824191258364635">ป้อนหมายเลขบัตรที่ถูกต้อง</translation>

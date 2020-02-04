@@ -28,5 +28,5 @@
 [
     NoInterfaceObject
 ] interface XPathNSResolver {
-    DOMString? lookupNamespaceURI([DefaultValue=Undefined] optional DOMString prefix);
+    DOMString? lookupNamespaceURI(optional DOMString prefix = "undefined");
 };

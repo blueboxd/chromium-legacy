@@ -543,15 +543,6 @@ TEST(StringPieceTest, CheckCustom) {
   StringPiece e;
   std::string s2;
 
-  // AppendToString
-  s2.erase();
-  a.AppendToString(&s2);
-  ASSERT_EQ(s2.size(), 6U);
-  ASSERT_EQ(s2, "foobar");
-  a.AppendToString(&s2);
-  ASSERT_EQ(s2.size(), 12U);
-  ASSERT_EQ(s2, "foobarfoobar");
-
   // starts_with
   ASSERT_TRUE(a.starts_with(a));
   ASSERT_TRUE(a.starts_with("foo"));

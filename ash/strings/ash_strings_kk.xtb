@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Стилус параметрлері</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> белсендіру</translation>
 <translation id="2359808026110333948">Жалғастыру</translation>
-<translation id="2364154243880592194">Күй науасы: <ph name="TIME" />, <ph name="BATTERY" />. Хабарландыру орталығына кіру үшін "Іздеу" + сол жақ көрсеткі түймесін басыңыз.</translation>
 <translation id="2365393535144473978">Мобильдік деректерді қоссаңыз, Bluetooth да іске қосылады.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Жаңартылған нұсқа қолжетімді</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Артқа</translation>
 <translation id="4129129681837227511">Құлып экранында хабарландыруларды көру және параметрді өзгерту үшін құлыпты ашыңыз.</translation>
 <translation id="4146833061457621061">Музыка ойнату</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="DOMAIN" /> басқарады.</translation>
 <translation id="4181841719683918333">Тілдер</translation>
 <translation id="4195877955194704651">Автоматты басу түймесі</translation>
 <translation id="4217571870635786043">Мәтінді дауыспен енгізу</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Пікір жіберу</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптасуға рұқсат сұрайды.</translation>
 <translation id="453661520163887813">Зарядтау аяқталғанға дейін <ph name="TIME" /> қалды</translation>
-<translation id="4544944664594876241">Экранды құлыптайтын пернелер тіркесімі өзгертілді. <ph name="OLD_SHORTCUT" /> орнына <ph name="NEW_SHORTCUT" /> пайдаланыңыз.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Select-to-Speak түймесі</translation>
 <translation id="4585337515783392668">Белгісіз қабылдағышқа трансляциялауды тоқтату</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Ойнату</translation>
 <translation id="6803622936009808957">Қолдау көрсетілген ажыратымдылықтар табылмағандықтан, дисплейлерді бейнелеу мүмкін емес. Оның орнына кеңейтілген жұмыс үстелі енгізілген.</translation>
 <translation id="6820676911989879663">Үзіліс жасаңыз!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> белсендіру</translation>
 <translation id="6878400149835617132">Таңбаша өшірілді</translation>
 <translation id="6910714959251846841">Бұл жаңартылған нұсқаны орнату үшін құрылғыны зауыттық параметрлерге қайтару қажет. <ph name="SYSTEM_APP_NAME" /> қолданбасының ең жаңа нұсқасы туралы толығырақ.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Қосылып жатыр</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> уақыт ішінде ескі ажыратымдылыққа ауысады</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Жаңартылған нұсқаны қолдану үшін бұл Chromebook-ті қайта қосу қажет. Оған 1 минуттай кетуі мүмкін.</translation>
 <translation id="7256634071279256947">Артқы микрофон</translation>
 <translation id="726276584504105859">Бөлінген экранды пайдалану үшін осында сүйреңіз</translation>
 <translation id="7262906531272962081">Еске салғыш жасау</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Камера пайдаланылуда.</translation>
 <translation id="743058460480092004">Камера және микрофон пайдаланылуда.</translation>
 <translation id="7497767806359279797">Тілді және пернетақтаны таңдау</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Желі бақылануы мүмкін</translation>
 <translation id="7536035074519304529">IP мекенжайы: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ұйықтайтын уақыт болды</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> дисплейі <ph name="SPECIFIED_RESOLUTION" /> ажыратымдылығын қолдамайды. Ажыратымждылық <ph name="FALLBACK_RESOLUTION" /> болып өзгертілді</translation>
 <translation id="7562368315689366235">Эмодзилер палитрасы</translation>
 <translation id="7564874036684306347">Терезелерді басқа жұмыс үстеліне ауыстырғанда, күтпеген қате шығуы мүмкін. Хабарландырулар, терезелер мен диалогтік терезелер түрлі жұмыс үстелдерінде көрсетілуі ықтимал.</translation>
 <translation id="7568294522609223312">Автоматты түрде басу функцияларын өшіру</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Жоғары контраст</translation>
 <translation id="8098591350844501178">Экран мазмұнын <ph name="RECEIVER_NAME" /> құрылғысына трансляциялауды тоқтату</translation>
 <translation id="8113423164597455979">Қосулы, барлық қолданбалар</translation>
+<translation id="8131740175452115882">Растау</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> желісіне қосылған</translation>
 <translation id="813913629614996137">Дайындауда…</translation>
 <translation id="8142441511840089262">Екі рет басу</translation>

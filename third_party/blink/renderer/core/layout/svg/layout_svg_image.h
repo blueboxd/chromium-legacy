@@ -80,7 +80,7 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
   }
 
   FloatSize CalculateObjectSize() const;
-  IntSize GetOverriddenIntrinsicSize() const;
+  bool HasOverriddenIntrinsicSize() const;
 
   bool needs_boundaries_update_ : 1;
   bool needs_transform_update_ : 1;

@@ -94,8 +94,7 @@ class CryptAuthController {
         this.showExistingUserNewChromebookNotification_.bind(this);
 
     this.multiDeviceSetup =
-        chromeos.multideviceSetup.mojom.MultiDeviceSetup.getRemote(
-            /*useBrowserInterfaceBroker=*/ true);
+        chromeos.multideviceSetup.mojom.MultiDeviceSetup.getRemote();
   }
 
   /**

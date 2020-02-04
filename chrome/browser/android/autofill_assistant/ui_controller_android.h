@@ -119,6 +119,7 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantGenericUiDelegate:
   void OnViewEvent(const EventHandler::EventKey& key, const ValueProto& value);
+  void OnValueChanged(const std::string& identifier, const ValueProto& value);
 
   // Called by AssistantCollectUserDataDelegate:
   void OnShippingAddressChanged(

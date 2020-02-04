@@ -30,6 +30,7 @@ message CallbackProto {
   oneof kind {
     SetModelValueProto set_value = 1;
     ShowInfoPopupProto show_info_popup = 2;
+    ShowListPopupProto show_list_popup = 3;
   }
 }
 
@@ -63,6 +64,30 @@ message SetModelValueProto {
 // Displays a standard info popup.
 message ShowInfoPopupProto {
   optional InfoPopupProto info_popup = 1;
+}
+
+// Displays a popup showing a list of strings to choose from. Depending on
+// |allow_multiselect|, users will be able to select one or multiple items from
+// the list.
+message ShowListPopupProto {
+  // The popup item type, corresponding to
+  // chromium/content/browser/input/PopupItemType.java.
+  enum ItemType {
+    GROUP = 0;
+    DISABLED = 1;
+    ENABLED = 2;
+  }
+  // The item names to show in the list. Must be a list of strings.
+  optional string item_names_model_identifier = 1;
+  // Optional, must be the same length as the list stored at
+  // |items_list_model_identifier| if specified. Will default to ENABLED for all
+  // items if not specified. Must be a list of int32 |ItemType| if specified.
+  optional string item_types_model_identifier = 2;
+  // The indices of the selected items (both input and output). Must be a list
+  // of integers.
+  optional string selected_item_indices_model_identifier = 3;
+  // Whether to allow the selection of multiple items or not.
+  optional bool allow_multiselect = 4;
 }
 
 // Callback that expects a boolean input value and enables/disables the

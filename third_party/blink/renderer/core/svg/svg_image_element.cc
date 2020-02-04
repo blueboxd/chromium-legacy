@@ -25,9 +25,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
-#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -38,7 +36,8 @@ namespace blink {
 SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(svg_names::kImageTag, document),
       SVGURIReference(this),
-      is_default_overridden_intrinsic_size_(false),
+      is_default_overridden_intrinsic_size_(!document.IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kUnsizedMedia)),
       x_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
           svg_names::kXAttr,
@@ -73,14 +72,6 @@ SVGImageElement::SVGImageElement(Document& document)
   AddToPropertyMap(width_);
   AddToPropertyMap(height_);
   AddToPropertyMap(preserve_aspect_ratio_);
-
-  if (media_element_parser_helpers::IsMediaElement(this) &&
-      !document.IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kUnsizedMedia)) {
-    is_default_overridden_intrinsic_size_ = true;
-    overridden_intrinsic_size_ =
-        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
-  }
 }
 
 void SVGImageElement::Trace(blink::Visitor* visitor) {

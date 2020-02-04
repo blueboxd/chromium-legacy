@@ -78,10 +78,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   // primary profile.
   void InitializePrimaryProfileServices(Profile* primary_profile);
 
-  // Disable the offline interstitial easter egg if the device is enterprise
-  // enrolled.
-  void DisableDinoEasterEggIfEnrolled();
-
   // Used to register a KeepAlive when Ash is initialized, and release it
   // when until Chrome starts exiting. Ensure we stay running the whole time.
   void RegisterKeepAlive();

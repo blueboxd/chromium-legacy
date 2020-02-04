@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/pickle.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -428,11 +429,8 @@ FilePath FilePath::InsertBeforeExtension(StringPieceType suffix) const {
   if (IsEmptyOrSpecialCase(BaseName().value()))
     return FilePath();
 
-  StringType ext = Extension();
-  StringType ret = RemoveExtension().value();
-  suffix.AppendToString(&ret);
-  ret.append(ext);
-  return FilePath(ret);
+  return FilePath(
+      base::StrCat({RemoveExtension().value(), suffix, Extension()}));
 }
 
 FilePath FilePath::InsertBeforeExtensionASCII(StringPiece suffix)
@@ -459,7 +457,7 @@ FilePath FilePath::AddExtension(StringPieceType extension) const {
       *(str.end() - 1) != kExtensionSeparator) {
     str.append(1, kExtensionSeparator);
   }
-  extension.AppendToString(&str);
+  str.append(extension.data(), extension.size());
   return FilePath(str);
 }
 
@@ -485,7 +483,7 @@ FilePath FilePath::ReplaceExtension(StringPieceType extension) const {
   StringType str = no_ext.value();
   if (extension[0] != kExtensionSeparator)
     str.append(1, kExtensionSeparator);
-  extension.AppendToString(&str);
+  str.append(extension.data(), extension.size());
   return FilePath(str);
 }
 
@@ -540,7 +538,7 @@ FilePath FilePath::Append(StringPieceType component) const {
     }
   }
 
-  appended.AppendToString(&new_path.path_);
+  new_path.path_.append(appended.data(), appended.size());
   return new_path;
 }
 

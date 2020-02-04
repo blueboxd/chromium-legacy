@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">സ്റ്റൈലസ് ക്രമീകരണം</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
 <translation id="2359808026110333948">തുടരുക</translation>
-<translation id="2364154243880592194">സ്‌റ്റാറ്റസ് ട്രേ, സമയം <ph name="TIME" />, <ph name="BATTERY" /> അറിയിപ്പ് കേന്ദ്രം ആക്സസ് ചെയ്യാൻ തിരയൽ + ഇടത് അമ്പടയാളം അമർത്തുക.</translation>
 <translation id="2365393535144473978">മൊബൈൽ ഡാറ്റ പ്രവർത്തനക്ഷമമാക്കുമ്പോൾ Bluetooth-ഉം പ്രവർത്തനക്ഷമമാകും.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">അപ്‌ഡേറ്റ് ലഭ്യമാണ്</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">പുറകിലേക്ക് നീക്കുക</translation>
 <translation id="4129129681837227511">നിങ്ങളുടെ ലോക്ക് സ്‌ക്രീനിൽ അറിയിപ്പുകൾ കാണാൻ, ക്രമീകരണം മാറ്റാനായി അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="4146833061457621061">സംഗീതം പ്ലേ ചെയ്യുക</translation>
+<translation id="4149156641122542261"><ph name="DOMAIN" /> മാനേജ് ചെയ്യുന്നത് <ph name="DEVICE_TYPE" /> ആണ്</translation>
 <translation id="4181841719683918333">ഭാഷകൾ‌</translation>
 <translation id="4195877955194704651">സ്വയമേവയുള്ള ക്ലിക്ക് ബട്ടൺ</translation>
 <translation id="4217571870635786043">പറഞ്ഞ് കൊടുക്കൽ</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">ഫീഡ്ബാക്ക്</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="453661520163887813">പൂർത്തിയാകാൻ ശേഷിക്കുന്ന സമയം <ph name="TIME" /></translation>
-<translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്ക് ചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക ബട്ടൺ</translation>
 <translation id="4585337515783392668">അജ്ഞാത റിസീവറിൽ കാസ്‌റ്റ് ചെയ്യുന്നത് നിർത്തുക</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="6820676911989879663">ഒരു ഇടവേള എടുക്കൂ!</translation>
-<translation id="683971173229319003">തിരയൽ+Lത</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
 <translation id="6878400149835617132">കുറുക്കുവഴി ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="6910714959251846841">ഈ അപ്ഡേറ്റിനായി നിങ്ങളുടെ ഉപകരണം powerwash ചെയ്യേണ്ടതുണ്ട്. ഏറ്റവും പുതിയ <ph name="SYSTEM_APP_NAME" /> അപ്‌ഡേറ്റിനെ കുറിച്ച് കൂടുതലറിയുക.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. അപ്‌ഡേറ്റ് നടപ്പിലാക്കാൻ ഈ Chromebook റീസ്‌റ്റാർട്ട് ചെയ്യേണ്ടതുണ്ട്. ഇതിന് ഒരു മിനിറ്റ് വരെ സമയമെടുത്തേക്കാം.</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="726276584504105859">സ്പ്ലിറ്റ് സ്ക്രീൻ ഉപയോഗിക്കുന്നതിന് ഇവിടെ വലിച്ചിടുക</translation>
 <translation id="7262906531272962081">റിമൈൻഡർ സൃഷ്‌ടിക്കുക</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
 <translation id="7497767806359279797">ഭാഷയും കീബോഡും തിരഞ്ഞെടുക്കുക</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">നെറ്റ്‌വർക്ക് നിരീക്ഷിക്കപ്പെടാം</translation>
 <translation id="7536035074519304529">IP വിലാസം: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ഉറങ്ങാൻ സമയമായി</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> എന്നതിനെ പിന്തുണയ്‌ക്കുന്നില്ല. റസലൂഷൻ <ph name="FALLBACK_RESOLUTION" /> എന്നതിലേക്ക് മാറ്റി.</translation>
 <translation id="7562368315689366235">ഇമോജി പാലറ്റ്</translation>
 <translation id="7564874036684306347">മറ്റൊരു ഡെസ്‌ക്‌ടോപ്പിലേക്ക് വിൻഡോകൾ നീക്കുന്നത് അപ്രതീക്ഷിതമായ പ്രവർത്തനരീതിയ്‌ക്ക് ഇടയാക്കാം. തുടർന്നുള്ള അറിയിപ്പുകൾ, വിൻഡോകൾ, ഡയലോഗുകൾ എന്നിവ ഡെസ്‌ക്‌‌ടോപ്പുകൾക്കിടയിൽ വിഭജിക്കപ്പെടാം.</translation>
 <translation id="7568294522609223312">സ്വയമേവയുള്ള ക്ലിക്കുകൾ ഓഫാക്കുക</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">ഉയർന്ന ദൃശ്യ തീവ്രത</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="8113423164597455979">എല്ലാ ആപ്പുകളിലും ഒാണാണ്</translation>
+<translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> എന്നതിലേക്ക് ബന്ധിപ്പിച്ചു</translation>
 <translation id="813913629614996137">ആരംഭിക്കുന്നു...</translation>
 <translation id="8142441511840089262">ഇരട്ട ക്ലിക്ക് ചെയ്യുക</translation>

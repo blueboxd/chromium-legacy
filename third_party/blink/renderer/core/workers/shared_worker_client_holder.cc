@@ -100,10 +100,6 @@ void SharedWorkerClientHolder::Connect(
         headers[0].second);
   }
 
-  mojom::blink::SharedWorkerInfoPtr info(mojom::blink::SharedWorkerInfo::New(
-      url, std::move(options), header, header_type,
-      worker->GetExecutionContext()->GetSecurityContext().AddressSpace()));
-
   mojo::PendingRemote<mojom::blink::SharedWorkerClient> client;
   client_receivers_.Add(std::make_unique<SharedWorkerClient>(worker),
                         client.InitWithNewPipeAndPassReceiver(), task_runner_);
@@ -121,13 +117,16 @@ void SharedWorkerClientHolder::Connect(
           ? mojom::InsecureRequestsPolicy::kUpgrade
           : mojom::InsecureRequestsPolicy::kDoNotUpgrade;
 
-  connector_->Connect(
-      std::move(info),
+  auto info = mojom::blink::SharedWorkerInfo::New(
+      url, std::move(options), header, header_type,
+      worker->GetExecutionContext()->GetSecurityContext().AddressSpace(),
       mojom::blink::FetchClientSettingsObject::New(
           outside_fetch_client_settings_object->GetReferrerPolicy(),
           KURL(outside_fetch_client_settings_object->GetOutgoingReferrer()),
-          insecure_requests_policy),
-      std::move(client),
+          insecure_requests_policy));
+
+  connector_->Connect(
+      std::move(info), std::move(client),
       worker->GetExecutionContext()->IsSecureContext()
           ? mojom::SharedWorkerCreationContextType::kSecure
           : mojom::SharedWorkerCreationContextType::kNonsecure,

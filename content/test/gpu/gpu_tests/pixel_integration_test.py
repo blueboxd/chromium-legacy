@@ -21,6 +21,13 @@ test_harness_script = r"""
   domAutomationController._readyForActions = false;
   domAutomationController._succeeded = false;
   domAutomationController._finished = false;
+  domAutomationController._originalLog = window.console.log;
+  domAutomationController._messages = '';
+
+  domAutomationController.log = function(msg) {
+    domAutomationController._messages += msg + "\n";
+    domAutomationController._originalLog.apply(window.console, [msg]);
+  }
 
   domAutomationController.send = function(msg) {
     domAutomationController._proceed = true;
@@ -134,6 +141,9 @@ class PixelIntegrationTest(
         tab, page,
         build_id_args=build_id_args)
     finally:
+      test_messages = self._TestHarnessMessages(tab)
+      if test_messages:
+        logging.info('Logging messages from the test:\n' + test_messages)
       if do_page_action or page.restart_browser_after_test:
         self._RestartBrowser(
           'Must restart after page actions or if required by test')
@@ -144,6 +154,9 @@ class PixelIntegrationTest(
     # report completion.
     tab.action_runner.WaitForJavaScriptCondition(
       'domAutomationController._finished', timeout=300)
+
+  def _TestHarnessMessages(self, tab):
+    return tab.EvaluateJavaScript('domAutomationController._messages')
 
   #
   # Optional actions pages can take.
@@ -175,7 +188,7 @@ class PixelIntegrationTest(
       # Short-circuit this test.
       logging.info('Short-circuiting test because not running on dual-GPU Mac '
                    'laptop')
-      tab.EvaluateJavaScript('initialize()')
+      tab.EvaluateJavaScript('initialize(false)')
       tab.action_runner.WaitForJavaScriptCondition(
         'domAutomationController._readyForActions', timeout=30)
       tab.EvaluateJavaScript('runToCompletion()')
@@ -195,7 +208,7 @@ class PixelIntegrationTest(
     # Switch back to the main tab and quickly start its rendering, while the
     # high-power GPU is still active.
     tab.Activate()
-    tab.EvaluateJavaScript('initialize()')
+    tab.EvaluateJavaScript('initialize(true)')
     tab.action_runner.WaitForJavaScriptCondition(
       'domAutomationController._readyForActions', timeout=30)
     # Close the high-performance tab.
@@ -205,6 +218,13 @@ class PixelIntegrationTest(
     time.sleep(15)
     # Run the page to completion.
     tab.EvaluateJavaScript('runToCompletion()')
+
+  def _RunLowToHighPowerTest(self, tab, page):
+    is_dual_gpu = self._IsDualGPUMacLaptop()
+    tab.EvaluateJavaScript('initialize(' +
+                           ('true' if is_dual_gpu else 'false') + ')')
+    # The harness above will take care of waiting for the test to
+    # complete with either a success or failure.
 
   @classmethod
   def ExpectationsFiles(cls):

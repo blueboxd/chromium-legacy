@@ -400,7 +400,8 @@ TEST_F(PasswordAutofillManagerTest, ClickOnUnlockPutsPopupInWaitingState) {
       *autofill_client,
       UpdatePopup(
           SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
-              {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+              {autofill::POPUP_ITEM_ID_LOADING_SPINNER,
+               autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
           PopupType::kPasswords));
   EXPECT_CALL(*autofill_client, PinPopupViewUntilUpdate);

@@ -16,8 +16,8 @@
 #include "media/base/waiting.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/test/video.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
-#include "media/gpu/test/video_player/video.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)

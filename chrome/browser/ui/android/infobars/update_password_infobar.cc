@@ -42,19 +42,14 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, update_password_delegate->GetDetailsMessageText());
 
   std::vector<base::string16> usernames;
-  int selected_username = 0;
-  for (const auto& form : update_password_delegate->GetCurrentForms()) {
-    usernames.push_back(GetDisplayUsername(*form));
-    if (form->username_value ==
-        update_password_delegate->get_default_username()) {
-      selected_username = usernames.size() - 1;
-    }
-  }
+  unsigned int selected_username =
+      update_password_delegate->GetDisplayUsernames(&usernames);
+  ScopedJavaLocalRef<jobjectArray> display_usernames =
+      base::android::ToJavaArrayOfStrings(env, usernames);
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
   infobar.Reset(Java_UpdatePasswordInfoBar_show(
-      env, GetEnumeratedIconId(),
-      base::android::ToJavaArrayOfStrings(env, usernames), selected_username,
+      env, GetEnumeratedIconId(), display_usernames, selected_username,
       message_text, details_message_text, ok_button_text));
 
   java_infobar_.Reset(env, infobar.obj());

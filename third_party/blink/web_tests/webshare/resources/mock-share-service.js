@@ -3,8 +3,8 @@
 class MockShareService {
   constructor(interfaceProvider) {
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.ShareService);
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.ShareService.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(blink.mojom.ShareService.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

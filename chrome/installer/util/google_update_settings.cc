@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -512,8 +513,8 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
   if (policy_key.Open(HKEY_LOCAL_MACHINE, kPoliciesKey, KEY_QUERY_VALUE) ==
           ERROR_SUCCESS) {
     DWORD value = 0;
-    base::string16 app_update_override(kUpdateOverrideValuePrefix);
-    app_guid.AppendToString(&app_update_override);
+    base::string16 app_update_override =
+        base::StrCat({kUpdateOverrideValuePrefix, app_guid});
     // First try to read and comprehend the app-specific override.
     found_override = (policy_key.ReadValueDW(app_update_override.c_str(),
                                              &value) == ERROR_SUCCESS &&

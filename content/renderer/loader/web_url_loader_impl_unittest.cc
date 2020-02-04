@@ -473,7 +473,7 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
   response_override->response_head->mime_type = kMimeType;
-  auto extra_data = std::make_unique<RequestExtraData>();
+  auto extra_data = base::MakeRefCounted<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
   request.SetExtraData(std::move(extra_data));
 

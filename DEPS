@@ -247,7 +247,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5bbc191e0e570b197b2b33f8d6b55105e1998f87',
+  'devtools_frontend_revision': '2543c5cbffcaec4c2a629afe6db60fa9d1f782e2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -291,7 +291,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '7a2d408dea60aa1f8d53e123b01277c41b8f83b9',
+  'spv_tools_revision': 'a9624b4d5d0bb1617d6e20dbaba174b07cee18ee',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -952,7 +952,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
 
   'src/third_party/libgav1/src':
-    Var('chromium_git') + '/codecs/libgav1.git' + '@' + '16e312f5066806284b080665545aef1fa51818a4',
+    Var('chromium_git') + '/codecs/libgav1.git' + '@' + '25dc90ee07763b13db1be14e1f2afadc6894c9f3',
 
   # Chrome OS touchpad gestures library.
   'src/third_party/gestures/gestures': {
@@ -961,7 +961,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '5e86b28ffb8124a5ee2a58c640245ee5b285110d',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '540662253ea35e8e75122aac68f8542f993e3396',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1041,7 +1041,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'e96f230bf759bfe46125ca92e0aa3fe72d9f0227',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'dbd3825b31041d782c5b504c59dcfb5ac7dda08c',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '9f4020916eb1f28f3666f018fdcbe6c9a37f0e08',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1262,7 +1262,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8f2b5ba75973eb75547470d97a6afc204dce6e64',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '349930ee9cd34406a3f58c9bde403d9e330ae298',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1463,7 +1463,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3fa2b80e14fa8b9e05ca8efaf539e43a2cc46921',
+    Var('webrtc_git') + '/src.git' + '@' + 'f5d877847faebad151be2e8824a01204351de5e1',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1533,7 +1533,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aae8a22141d08f1f1f686ea35d0c6a2ad5663b05',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7e86a6a616ab79d67305c15dff182e31ee6c776d',
     'condition': 'checkout_src_internal',
   },
 

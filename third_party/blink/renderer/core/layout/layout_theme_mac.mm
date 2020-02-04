@@ -443,8 +443,9 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kWindowframe:
       return GetSystemColor(MacSystemColorID::kWindowFrame);
     case CSSValueID::kWindowtext:
-    case CSSValueID::kCanvastext:
       return GetSystemColor(MacSystemColorID::kWindowFrameText);
+    case CSSValueID::kCanvastext:
+      return GetSystemColor(MacSystemColorID::kText);
     default:
       break;
   }

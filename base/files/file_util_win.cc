@@ -28,6 +28,7 @@
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -94,16 +95,16 @@ void RecordPostOperationState(const FilePath& path,
     }
   }
 
-  std::string histogram_name = "Windows.PostOperationState.";
-  operation.AppendToString(&histogram_name);
+  std::string histogram_name =
+      base::StrCat({"Windows.PostOperationState.", operation});
   UmaHistogramEnumeration(histogram_name, metric, PostOperationState::kCount);
 }
 
 // Records the sample |error| in a histogram named
 // "Windows.FilesystemError.|operation|".
 void RecordFilesystemError(StringPiece operation, DWORD error) {
-  std::string histogram_name = "Windows.FilesystemError.";
-  operation.AppendToString(&histogram_name);
+  std::string histogram_name =
+      base::StrCat({"Windows.FilesystemError.", operation});
   UmaHistogramSparse(histogram_name, error);
 }
 

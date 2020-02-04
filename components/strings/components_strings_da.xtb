@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Se kort</translation>
 <translation id="3369192424181595722">Urfejl</translation>
 <translation id="337363190475750230">Deprovisioneret</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> har aktiveret Enterprise Service Hooks i din browser. Disse hooks har adgang til nogle af dine data.</translation>
+<translation id="3377144306166885718">Serveren benyttede en forældet version af TSL.</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="3377736046129930310">Brug skærmlåsen til at bekræfte kort hurtigere</translation>
 <translation id="3380365263193509176">Ukendt fejl</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Leveringsadresse</translation>
 <translation id="3395827396354264108">Afhentningsmetode</translation>
 <translation id="3399952811970034796">Leveringsadresse</translation>
+<translation id="3402261774528610252">Den forbindelse, der blev brugt til at indlæse dette website, benyttede TSL 1.0 eller TLS 1.1, som er blevet udfaset og deaktiveres inden for den nærmeste fremtid. Når deaktiveringen har fundet sted, kan brugerne ikke indlæse fra dette website. Serveren bør aktivere TLS 1.2 eller nyere.</translation>
 <translation id="3422248202833853650">Prøv at lukke programmer for at frigøre hukommelse.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> kan ikke læses i øjeblikket.</translation>
 <translation id="3423742043356668186">Systemspecificeret</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Når du bekræfter, deles kortoplysningerne på din Google-konto med dette website.</translation>
 <translation id="3748148204939282805">Brugere med ondsindede hensigter <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan narre dig til at gøre noget farligt såsom at installere software eller afsløre dine personlige oplysninger (f.eks. adgangskoder, telefonnumre eller kreditkort). <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Oversættelsen mislykkedes på grund af en serverfejl.</translation>
+<translation id="3754210790023674521">Afslut integreret billede</translation>
 <translation id="3759461132968374835">Du har ingen nyligt rapporterede nedbrud. Nedbrud, der opstod, mens rapportering om nedbrud var deaktiveret, vises ikke her.</translation>
 <translation id="3760561303380396507">Vil du bruge Windows Hello i stedet for kontrolkoden?</translation>
 <translation id="3761718714832595332">Skjul status</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE" />? Rapporter denne fejl</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="519422657042045905">Annotering er ikke tilgængelig</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">En integreret side på denne side siger</translation>
 <translation id="5205222826937269299">Navn påkrævet</translation>
 <translation id="5215116848420601511">Betalingsmetoder og adresser, der bruger Google Pay</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">Som følge af et brud på datasikkerheden på et website eller i en app er din adgangskode blevet afsløret. Chrome anbefaler, at du tjekker dine gemte adgangskoder med det samme.</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="5300589172476337783">Vis</translation>
+<translation id="5306593769196050043">Begge ark</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
 <translation id="5314967030527622926">Brochureværktøj</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Tjek dine adgangskoder</translation>
 <translation id="6015796118275082299">År</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Side 1}one{Side #}other{Side #}}</translation>
 <translation id="6017514345406065928">Grøn</translation>
 <translation id="6017850046339264347">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere vildledende apps, der foregiver at være noget andet, eller som indsamler data, der kan anvendes til at overvåge dig. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synkroniseret)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tilføj flere oplysninger</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="644931407731409778">PDF-dokument, der indeholder {COUNT,plural, =1{1 side}one{# side}other{# sider}}</translation>
 <translation id="6451458296329894277">Bekræft genindsendelse af formular</translation>
 <translation id="6457206614190510200">Samlehæftning</translation>
 <translation id="6465306955648956876">Administrer adgangskoder...</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7062635574500127092">Grønblå</translation>
 <translation id="7064851114919012435">Kontaktoplysninger</translation>
+<translation id="70705239631109039">Din forbindelse er ikke 100 % sikker</translation>
 <translation id="7075452647191940183">Anmodningen er for stor</translation>
 <translation id="7079718277001814089">Dette website indeholder malware</translation>
 <translation id="7081308185095828845">Denne funktion er ikke tilgængelig på din enhed</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> anden}one{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> anden}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> andre}}</translation>
 <translation id="7153618581592392745">Lavendelblå</translation>
+<translation id="7156870133441232244">Serveren skal opgraderes til TLS 1.2 eller nyere.</translation>
 <translation id="717330890047184534">Gaia-id:</translation>
 <translation id="7174545416324379297">Flettet</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> anden}one{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> anden}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andre}}</translation>
@@ -1402,6 +1408,7 @@ Yderligere oplysninger:
 <translation id="725866823122871198">Der kunne ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da dato og tid (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
 <translation id="7260504762447901703">Tilbagekald adgangstilladelsen</translation>
 <translation id="7275334191706090484">Administrerede bogmærker</translation>
+<translation id="7288778322931489286">Din administrator har aktiveret Enterprise Service Hooks i din browser. Disse hooks har adgang til nogle af dine data.</translation>
 <translation id="7292031607255951991">Modtagernavn</translation>
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
@@ -1727,6 +1734,7 @@ Yderligere oplysninger:
 <translation id="874918643257405732">Tilføj denne fane som bogmærke</translation>
 <translation id="8751426954251315517">Prøv igen næste gang</translation>
 <translation id="8759274551635299824">Kortet er udløbet</translation>
+<translation id="87601671197631245">Dette website benytter en forældet sikkerhedskonfiguration, der muligvis afslører dine oplysninger (f.eks. adgangskoder, meddelelser eller betalingskort), når de sendes til dette website.</translation>
 <translation id="8761567432415473239">Beskyttet browsing i Google har for nylig <ph name="BEGIN_LINK" />fundet skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhed</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1744,6 +1752,7 @@ Yderligere oplysninger:
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
 <translation id="8866928039507595380">Fals</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Del data om sikkerhedshændelser, der rapporteres af Enterprise Service Hooks, med din administrator. Dette kan omfatte webadresserne til de sider, du besøger, filnavne eller metadata samt det brugernavn, du brugte, da du loggede ind på din enhed og i Chrome.</translation>
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8870494189203302833">Samme rækkefølge med forside nedad</translation>
 <translation id="8874824191258364635">Angiv et gyldigt kortnummer</translation>

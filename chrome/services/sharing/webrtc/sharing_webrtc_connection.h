@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
+#include "chrome/services/sharing/webrtc/sharing_webrtc_timing_recorder.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -146,6 +147,7 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
   std::vector<mojom::IceCandidatePtr> ice_candidates_;
 
   base::OnceCallback<void(SharingWebRtcConnection*)> on_disconnect_;
+  SharingWebRtcTimingRecorder timing_recorder_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

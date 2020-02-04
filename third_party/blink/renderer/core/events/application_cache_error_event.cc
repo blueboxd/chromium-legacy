@@ -59,7 +59,7 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
     : Event(event_type, initializer), status_(0) {
   if (initializer->hasReason())
     reason_ = initializer->reason();
-  if (initializer->hasURL())
+  if (initializer->hasUrl())
     url_ = initializer->url();
   if (initializer->hasStatus())
     status_ = initializer->status();

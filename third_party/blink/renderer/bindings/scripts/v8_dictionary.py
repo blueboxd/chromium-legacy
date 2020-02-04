@@ -6,13 +6,14 @@
 implementation classes that are used by blink's core/modules.
 """
 
-import operator
+from blinkbuild.name_style_converter import NameStyleConverter
 from idl_types import IdlType
 from utilities import to_snake_case
 from v8_globals import includes
+from v8_utilities import has_extended_attribute_value
+import operator
 import v8_types
 import v8_utilities
-from v8_utilities import has_extended_attribute_value
 
 
 DICTIONARY_H_INCLUDES = frozenset([
@@ -30,24 +31,24 @@ DICTIONARY_CPP_INCLUDES = frozenset([
 
 def getter_name_for_dictionary_member(member):
     name = v8_utilities.cpp_name(member)
-    return name
+    return NameStyleConverter(name).to_lower_camel_case()
 
 
 def setter_name_for_dictionary_member(member):
-    name = v8_utilities.cpp_name(member)
-    return 'set%s' % v8_utilities.capitalize(name)
+    name = 'set_{}'.format(v8_utilities.cpp_name(member))
+    return NameStyleConverter(name).to_lower_camel_case()
 
 
 def null_setter_name_for_dictionary_member(member):
     if member.idl_type.is_nullable:
-        name = v8_utilities.cpp_name(member)
-        return 'set%sToNull' % v8_utilities.capitalize(name)
+        name = 'set_{}_to_null'.format(v8_utilities.cpp_name(member))
+        return NameStyleConverter(name).to_lower_camel_case()
     return None
 
 
 def has_method_name_for_dictionary_member(member):
-    name = v8_utilities.cpp_name(member)
-    return 'has%s' % v8_utilities.capitalize(name)
+    name = NameStyleConverter('has_' + v8_utilities.cpp_name(member))
+    return name.to_lower_camel_case()
 
 
 def unwrap_nullable_if_needed(idl_type):

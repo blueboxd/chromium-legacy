@@ -102,8 +102,7 @@ crbug.com/660461 [ mac ] Pixel_ScissorTestWithPreserveDrawingBuffer [ RetryOnFai
 crbug.com/773293 [ android no-use-gl qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
 crbug.com/773293 [ android qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]
 
-crbug.com/774809 [ highsierra intel-0xa2e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
-crbug.com/774809 [ mojave intel-0xa2e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
+crbug.com/774809 [ mac intel ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
 
 crbug.com/857578 [ highsierra intel-0xa2e ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ RetryOnFailure ]
 

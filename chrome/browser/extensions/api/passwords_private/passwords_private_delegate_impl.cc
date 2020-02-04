@@ -131,11 +131,11 @@ void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
 }
 
 void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
-    const ExceptionEntriesCallback& callback) {
+    ExceptionEntriesCallback callback) {
   if (current_exceptions_initialized_)
-    callback.Run(current_exceptions_);
+    std::move(callback).Run(current_exceptions_);
   else
-    get_password_exception_list_callbacks_.push_back(callback);
+    get_password_exception_list_callbacks_.push_back(std::move(callback));
 }
 
 void PasswordsPrivateDelegateImpl::ChangeSavedPassword(
@@ -306,8 +306,8 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
   current_exceptions_initialized_ = true;
   InitializeIfNecessary();
 
-  for (const auto& callback : get_password_exception_list_callbacks_)
-    callback.Run(current_exceptions_);
+  for (auto& callback : get_password_exception_list_callbacks_)
+    std::move(callback).Run(current_exceptions_);
   get_password_exception_list_callbacks_.clear();
 }
 

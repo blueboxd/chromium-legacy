@@ -721,13 +721,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> ist nur unter Windows und <ph name="SAFARI_VALUE_PLACEHOLDER" /> nur unter Windows und Mac OS X verfügbar.
 
       Wenn für die Richtlinie ein Dateipfad festgelegt ist, wird diese Datei als ausführbare Datei verwendet.</translation>
-<translation id="2111016292707172233">Durch diese Richtlinie wird die Verfügbarkeit von "Zum Suchen tippen" in der Inhaltsansicht von <ph name="PRODUCT_NAME" /> aktiviert.
-
-      Wenn Sie diese Einstellung aktivieren, steht dem Nutzer "Zum Suchen tippen" zur Verfügung und er kann die Funktion aktivieren oder deaktivieren.
-
-      Wenn Sie die Einstellung deaktivieren, wird "Zum Suchen tippen" vollständig deaktiviert.
-
-      Wird die Richtlinie nicht konfiguriert, ist die Funktion aktiviert (siehe Beschreibung oben).</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
@@ -1797,6 +1790,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Wakelock-Anfragen ignorier
       Wenn diese Richtlinie nicht festgelegt ist, werden alle Zertifikate, die über die Zertifikatstransparenz offengelegt werden müssen, als nicht vertrauenswürdig behandelt, sofern sie nicht entsprechend der Zertifikatstransparenz-Richtlinie offengelegt wurden.</translation>
 <translation id="3765260570442823273">Dauer der Warnmeldung zur Abmeldung bei Inaktivität</translation>
 <translation id="377044054160169374">Zwingende Maßnahmen bei irreführenden Inhalten</translation>
+<translation id="3780102107513139202">Nur Variationen für wichtige Fehlerbehebungen aktivieren</translation>
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
 <translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Dreipunkt-Menü und Nutzer können es nicht entfernen.
 
@@ -1905,7 +1899,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Wird die Richtlinie nicht konfiguriert, ist die Bedienungshilfe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
-<translation id="3874773863217952418">"Zum Suchen tippen" aktivieren</translation>
 <translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
 <translation id="3879196885908353077">Heruntergeladene Inhalte auf Verstöße gegen die Richtlinie zum Schutz von sensiblen Daten überprüfen</translation>
 <translation id="3879208481373875102">Liste der Web-Apps konfigurieren, deren Installation erzwungen wurde</translation>
@@ -2031,6 +2024,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4027608872760987929">Standardsuchmaschine aktivieren</translation>
 <translation id="4039085364173654945">Bestimmt, ob untergeordnete Inhalte von Drittanbietern auf einer Seite in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen. In der Regel ist dies zur Abwehr gegen Phishing deaktiviert. Wenn die Richtlinie nicht konfiguriert ist, so ist die Einstellung standardmäßig deaktiviert, sodass untergeordnete Inhalte von Drittanbietern nicht in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen.</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
+<translation id="4061590579642538878">Informationen über Absturzberichte melden.</translation>
 <translation id="4075675819066819571">Ablage auf der linken Seite des Bildschirms anzeigen</translation>
 <translation id="4075864623710596000">In dieser Liste aufgeführte Hostnamen sind vom HSTS-Richtliniencheck ausgenommen, der Anfragen von http auf https upgraden kann. Für diese Richtlinie sind nur Single-Label-Hostnamen zulässig. Hostnamen müssen kanonisiert werden: Alle IDNs müssen in ihr A-Label-Format konvertiert und alle ASCII-Buchstaben kleingeschrieben werden. Diese Richtlinie gilt nur für die angegebenen Hostnamen, aber nicht für Subdomains der angegebenen Namen.</translation>
 <translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
@@ -2543,6 +2537,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4983201894483989687">Ausführung veralteter Plug-ins zulassen</translation>
 <translation id="4986560318567565414">Pfad, um vom alternativen Browser zu Chrome zu wechseln.</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
+<translation id="500149597848135831">Alle Variationen aktivieren</translation>
 <translation id="5032164758660626397">Verhindern, dass Nutzer große Dateien übertragen</translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
@@ -2618,6 +2613,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
 <translation id="5102203758995933166">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen auf <ph name="PRODUCT_OS_NAME" />-Geräten für einzelne Nutzer zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
 <translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
+<translation id="5109383437323376357">Die Verfügbarkeit von Variationen bestimmen</translation>
 <translation id="5112121363469561920">Mit dieser Richtlinie können Sie den Standardtyp der Lupe festlegen, die auf dem Anmeldebildschirm aktiviert ist.
 
           Wenn diese Richtlinie eingerichtet ist, legt sie fest, welcher Lupentyp beim Anzeigen des Anmeldebildschirms aktiviert ist. Wenn Sie die Richtlinie auf "None" setzen, ist die Lupe deaktiviert.
@@ -3342,6 +3338,12 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
+<translation id="6242147107333796512">Informationen im Zusammenhang mit Absturzberichten melden, wie Remote ID,
+      Zeitstempel und Ursache.
+
+      Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, werden keine Informationen zu Absturzberichten
+      gemeldet. Ist die Richtlinie auf "true" gesetzt, werden Informationen zu Absturzberichten
+      gemeldet.</translation>
 <translation id="6244210204546589761">Beim Start zu öffnende URLs</translation>
 <translation id="6247316685259031374">Mit dieser Richtlinie kann die Sandbox für den Audioprozess konfiguriert werden.
       Wenn die Richtlinie aktiviert ist, wird der Audioprozess in einer Sandbox ausgeführt.
@@ -3985,6 +3987,15 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7311458740754205918">Wenn für diese Richtlinie "true" festgelegt wird oder wenn sie nicht konfiguriert wird, werden auf der "Neuer Tab"-Seite unter Umständen Inhaltsvorschläge auf Basis des Browserverlaufs, der Interessen oder des Standorts des Nutzers angezeigt.
 
       Wenn für diese Richtlinie "false" festgelegt wird, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
+<translation id="7323572763274343342">Die Konfiguration dieser Richtlinie ermöglicht die Angabe der Variationen, die in <ph name="PRODUCT_NAME" /> angewendet werden dürfen.
+
+      Variationen sind ein Mittel, um Modifikationen für <ph name="PRODUCT_NAME" /> anzubieten, ohne durch Aktivieren oder Deaktivieren bestehender Funktionen eine neue Version des Browsers herauszubringen.
+
+      Wenn Sie die Option "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfiguriert ist, können alle Variationen für den Browser angewendet werden.
+
+      Wenn Sie die Option "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_NAME" /> angewandt, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
+
+      Wenn Sie die Option "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden keine Variationen auf den Browser angewandt. Dieser Modus kann <ph name="PRODUCT_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er ist daher nicht empfohlen.</translation>
 <translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Ähnlich wie bei den Werkseinstellungen (Wert 2); hier wird jedoch versucht, die Log-in-Tokens zu übernehmen, sodass der Nutzer sich nicht noch einmal anmelden muss.</translation>
 <translation id="7329968046053403405">Legt den Kontotyp für die Konten der Android-Authentifizierungs-App fest, die die Authentifizierung durch <ph name="HTTP_NEGOTIATE" /> unterstützt, z. B. die Kerberos-Authentifizierung. Diese Informationen sollten vom Anbieter der Authentifizierungs-App bereitgestellt werden. Weitere Informationen finden Sie unter https://goo.gl/hajyfN.
@@ -4059,6 +4070,19 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wenn die Richtlinie nicht konfiguriert oder auf "Enabled" festgelegt ist, werden Webinhalte, die als Signed HTTP Exchanges bereitgestellt werden, von Google Chrome akzeptiert.
 
           Ist die Richtlinie auf "Disabled" festgelegt, können Signed HTTP Exchanges nicht geladen werden.</translation>
+<translation id="7509496865303347769">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
+
+          Die Startseite wird über die Schaltfläche "Startseite" geöffnet. Auf dem Desktop werden die Seiten, die beim Hochfahren geöffnet werden, über die Richtlinien "RestoreOnStartup" kontrolliert.
+
+          Der Startseitentyp kann entweder auf eine URL, die Sie hier angeben, oder auf die Seite "Neuer Tab" eingestellt werden. Wenn Sie sich für die Seite "Neuer Tab" entscheiden, wird diese Richtlinie nicht angewendet.
+
+          Wenn Sie diese Einstellung aktivieren, können Nutzer ihre Startseiten-URL in <ph name="PRODUCT_NAME" /> nicht ändern, jedoch weiterhin ihre Startseite auf die Seite "Neuer Tab" umstellen.
+
+          Ist diese Richtlinie nicht konfiguriert, können die Nutzer selbst eine Startseite wählen, sofern "HomepageIsNewTabPage" ebenfalls nicht konfiguriert ist.
+
+          Die URL muss einem Standardschema entsprechen, z. B. "http://example.com" oder "https://example.com".
+
+          Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die zur Geräteverwaltung angemeldet sind.</translation>
 <translation id="7511361072385293666">Wenn diese Richtlinie auf "true" eingestellt oder nicht konfiguriert ist, ist die Verwendung des QUIC-Protokolls in <ph name="PRODUCT_NAME" /> zulässig.
       Ist die Richtlinie auf "false" eingestellt, ist die Verwendung des QUIC-Protokolls nicht zulässig.</translation>
 <translation id="7517845714620372896">Gibt die Displayhelligkeit in % an.
@@ -4217,6 +4241,7 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7731026922044991970">Auf allen Websites das alte "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Verhalten für Cookies wiederherstellen</translation>
 <translation id="7747447585227954402">Geräten erlauben, <ph name="PLUGIN_VM_NAME" /> auf <ph name="PRODUCT_OS_NAME" /> zu verwenden</translation>
+<translation id="7749024457938190837">Erweiterungen, die den Bestätigungsdialog beim Senden von Druckaufträgen über "chrome.printing API" überspringen dürfen</translation>
 <translation id="7749402620209366169">Aktiviert die Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts anstelle einer vom Nutzer angegebenen PIN.
 
           Wenn diese Einstellung aktiviert ist, müssen Nutzer einen gültigen Zwei-Faktor-Code angeben, wenn sie auf einen Host zugreifen möchten.
@@ -4525,6 +4550,9 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
           Bei deaktivierter Einstellung werden die Seiten nach Metatags durchsucht.
 
           Ist die Richtlinie nicht festgelegt, werden die Seiten nach Metatags durchsucht.</translation>
+<translation id="8295496526151576383">Diese Richtlinie gibt die Erweiterungen an, die den Dialog zur Bestätigung des Druckauftrags überspringen dürfen, wenn die <ph name="PRINTING_API" />-Funktion "<ph name="SUBMIT_JOB_FUNCTION" />" zum Senden eines Druckauftrags verwendet wird.
+
+      Steht eine Erweiterung nicht auf der Liste oder ist die Liste nicht konfiguriert, wird dem Nutzer für jeden Aufruf von "<ph name="SUBMIT_JOB_FUNCTION" />" der Bestätigungsdialog für den Druckauftrag angezeigt.</translation>
 <translation id="829641334878002866">Diese Richtlinie ermöglicht, den Zeitraum zwischen der ersten Benachrichtigung zum Neustart eines <ph name="PRODUCT_OS_NAME" />-Geräts, um eine ausstehende Aktualisierung anzuwenden, und dem Ende des durch die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />" vorgegebenen Zeitraums in Millisekunden festzulegen.
 
       Wenn die Richtlinie nicht konfiguriert ist, gilt für <ph name="PRODUCT_OS_NAME" />-Geräte der standardmäßige Zeitraum von 259.200.000 Millisekunden (drei Tage).</translation>
@@ -4659,12 +4687,6 @@ Die Richtlinie wird in M75 entfernt.</translation>
 
           Wird sie nicht konfiguriert, sind die Tastenkombinationen für Bedienungshilfen standardmäßig aktiviert.</translation>
 <translation id="8525526490824335042">Linux-Container</translation>
-<translation id="8538235451413605457">Konfiguriert die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_NAME" />. Versionen unter dem angegebenen Wert werden als veraltet angesehen und der Nutzer kann sich erst anmelden, nachdem das Betriebssystem aktualisiert wurde.
-      Wenn die aktuelle Version sich während einer Nutzersitzung als veraltet herausstellt, wird die Abmeldung des Nutzers erzwungen.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen und der Nutzer kann sich unabhängig von der <ph name="PRODUCT_NAME" />-Version anmelden.
-
-      Mit "Version" ist entweder eine exakte Versionsangabe wie "61.0.3163.120" oder ein Versionspräfix wie "61.0" gemeint.  </translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Zulassen, dass SMS zwischen Smartphone mit Chromebook synchronisiert werden.</translation>
 <translation id="8548832052135586762">Damit wird festgelegt, ob nur in Farbe, nur in Schwarz-Weiß oder ohne Farbmodusbeschränkung gedruckt wird. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
@@ -5103,6 +5125,7 @@ Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer entscheiden, ob die 
 Wenn die Richtlinie auf "false" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" nicht ausgewählt und der Nutzer kann dies nicht ändern.
 
 Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" ausgewählt und der Nutzer kann dies nicht ändern.</translation>
+<translation id="9213751049772256263">Alle Variationen deaktivieren</translation>
 <translation id="9217154963008402249">Häufigkeit von Kontrollnetzwerkpaketen</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>

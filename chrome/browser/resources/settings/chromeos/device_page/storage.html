@@ -207,11 +207,9 @@
     <cr-link-row id="browsingDataSize" class="hr" on-click="onBrowsingDataTap_"
         label="$i18n{storageItemBrowsingData}"
         sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
-    <template is="dom-if" if="[[androidRunning_]]">
-      <cr-link-row id="androidSize" class="hr" on-click="onAndroidTap_"
-          label="$i18n{storageItemAndroid}"
-          sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
-    </template>
+    <cr-link-row id="appsSize" class="hr" on-click="onAppsTap_"
+        label="$i18n{storageItemApps}"
+        sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
     <template is="dom-if" if="[[showCrostiniStorage_]]">
       <cr-link-row id="crostiniSize" class="hr" on-click="onCrostiniTap_"
           label="$i18n{storageItemCrostini}"

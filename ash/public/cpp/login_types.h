@@ -345,7 +345,8 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
 
   // Called when the PIN request UI gets closed. Will not be called when the
   // browser itself requests the UI to be closed.
-  base::OnceClosure pin_ui_closed_callback;
+  using OnUiClosed = base::OnceClosure;
+  OnUiClosed pin_ui_closed_callback;
 };
 
 }  // namespace ash

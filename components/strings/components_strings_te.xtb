@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">కార్డ్‌లను చూడండి</translation>
 <translation id="3369192424181595722">గడియారం ఎర్రర్</translation>
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> మీ బ్రౌజర్‌లో ఎంటర్‌ప్రైజ్ సర్వీస్ హుక్స్‌ను ఎనేబుల్ చేసింది. ఈ హుక్స్‌కు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
+<translation id="3377144306166885718">సర్వర్ వాడుకలో లేని TLS వెర్షన్‌ను ఉపయోగించింది.</translation>
 <translation id="3377188786107721145">విధాన అన్వయ ఎర్రర్</translation>
 <translation id="3377736046129930310">కార్డ్‌లను వేగంగా నిర్ధారించడానికి స్క్రీన్‌లాక్‌ను ఉపయోగించండి</translation>
 <translation id="3380365263193509176">తెలియని ఎర్రర్</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">బట్వాడా చిరునామా</translation>
 <translation id="3395827396354264108">పికప్ పద్ధతి</translation>
 <translation id="3399952811970034796">బట్వాడా చిరునామా</translation>
+<translation id="3402261774528610252">ఈ సైట్‌ను లోడ్ చేయడానికి ఉపయోగించిన కనెక్షన్ TLS 1.0 లేదా TLS 1.1ను ఉపయోగించింది, ఇవి విస్మరించబడ్డాయి, భవిష్యత్తులో నిలిపివేయబడతాయి. ఒక సారి నిలిపివేయబడితే, యూజర్‌లు ఈ సైట్‌ను లోడ్ చేయడం నుండి నివారించబడతారు. సర్వర్ TLS 1.2 లేదా ఆపై వెర్షన్‌లను ఎనేబుల్ చేయాలి.</translation>
 <translation id="3422248202833853650">మెమరీని ఖాళీ చేయడానికి ఇతర ప్రోగ్రామ్‌ల నుండి నిష్క్రమించడాన్ని ప్రయత్నించండి.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" />ని ప్రస్తుతం చేరుకోవడం సాధ్యపడదు.</translation>
 <translation id="3423742043356668186">సిస్టమ్ పేర్కొన్నవి</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">మీరు నిర్ధారించిన తర్వాత, మీ Google ఖాతా నుండి కార్డ్ వివరాలు ఈ సైట్‌తో షేర్ చేయబడతాయి.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మిమ్మల్ని సాఫ్ట్‌వేర్ ఇన్‌స్టాల్ చేసే విధంగా లేదా మీ వ్యక్తిగత సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు, ఫోన్ నంబర్‌లు లేదా క్రెడిట్ కార్డ్‌లు) బహిర్గతం చేసే విధంగా మిమ్మల్ని మాయ చేయవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">సర్వర్ లోపం వల్ల అనువాదం విఫలమైంది.</translation>
+<translation id="3754210790023674521">చిత్రంలో చిత్రం మోడ్ నుండి నిష్క్రమింపజేయి</translation>
 <translation id="3759461132968374835">మీకు ఇటీవల నివేదించిన క్రాష్‌లు లేవు. క్రాష్‌ నివేదన నిలిపివేసినపుడు ఏర్పడే క్రాష్‌లు ఇక్కడ కనిపించవు.</translation>
 <translation id="3760561303380396507">CVCకి బదులుగా Windows Helloను ఉపయోగించాలా?</translation>
 <translation id="3761718714832595332">స్థితిని దాచు</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />లో లేదా? ఈ ఎర్రర్‌ను నివేదించండి</translation>
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
 <translation id="519422657042045905">అదనపు గమనిక అందుబాటులో లేదు</translation>
+<translation id="5196187217592847346">ఎంటర్‌ప్రైజ్ సర్వీస్ హుక్స్</translation>
 <translation id="5201306358585911203">ఈ పేజీలోని పొందుపరిచిన పేజీ ఇలా చెబుతోంది</translation>
 <translation id="5205222826937269299">పేరు ఆవశ్యకం</translation>
 <translation id="5215116848420601511">Google Payని ఉపయోగిస్తున్న చెల్లింపు పద్ధతులు మరియు చిరునామాలు</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">సైట్ లేదా యాప్‌లో జరిగిన డేటా ఉల్లంఘన వల్ల మీ పాస్‌వర్డ్ బహిర్గతం అయింది. సేవ్ చేసిన మీ పాస్‌వర్డ్‌లను చెక్ చేయాల‌ని Chrome సూచిస్తోంది.</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో ఎర్రర్</translation>
 <translation id="5300589172476337783">చూపించు</translation>
+<translation id="5306593769196050043">రెండు షీట్‌లూ</translation>
 <translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
 <translation id="5308689395849655368">క్రాష్ నివేదిక నిలిపివేయ‌బడింది.</translation>
 <translation id="5314967030527622926">బుక్‌లెట్ తయారీ దారు</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">మీ పాస్‌వర్డ్‌లను తనిఖీ చేయండి</translation>
 <translation id="6015796118275082299">సంవత్సరం</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{పేజీ 1}other{పేజీ #}}</translation>
 <translation id="6017514345406065928">ఆకుపచ్చ</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మోసపూరిత యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు. ఇవి వేరే వాటిలా కనిపించవచ్చు లేదా మిమ్మల్ని ట్రాక్ చేయడానికి ఉపయోగించబడే డేటాను సేకరించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (సమకాలీకరించబడ్డాయి)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (ఎన్వలప్)</translation>
 <translation id="6446608382365791566">మరింత సమాచారాన్ని జోడించండి</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{1 పేజీ}other{# పేజీలు}} కలిగి ఉండే PDF డాక్యుమెంట్</translation>
 <translation id="6451458296329894277">ఫారమ్ పునఃసమర్పణను నిర్థారించండి</translation>
 <translation id="6457206614190510200">సాడిల్ స్టిచ్</translation>
 <translation id="6465306955648956876">పాస్‌వర్డ్‌లను నిర్వహించండి...</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7062635574500127092">నీలి పచ్చ రంగు</translation>
 <translation id="7064851114919012435">సంప్రదింపు సమాచారం</translation>
+<translation id="70705239631109039">మీ కనెక్షన్ పూర్తిగా సురక్షితమైనది కాదు</translation>
 <translation id="7075452647191940183">అభ్యర్థన చాలా పెద్దదిగా ఉంది</translation>
 <translation id="7079718277001814089">ఈ సైట్‌లో మాల్వేర్ ఉంది</translation>
 <translation id="7081308185095828845">మీ పరికరంలో ఈ ఫీచర్ అందుబాటులో లేదు</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">నంబర్-14 (ఎన్వలప్)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">లావెండర్ రంగు</translation>
+<translation id="7156870133441232244">సర్వర్‌ను TLS 1.2 లేదా ఆపై వెర్షన్‌లకు అప్‌గ్రేడ్ చేయాలి.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">విలీనం చేయబడ్డాయి</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1402,6 +1408,7 @@
 <translation id="725866823122871198">మీ కంప్యూటర్ తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కు ఒక ప్రైవేట్ కనెక్షన్‌ను ఏర్పాటు చేయడం వీలుకాలేదు.</translation>
 <translation id="7260504762447901703">యాక్సెస్‌ను ఉపసంహరించు</translation>
 <translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
+<translation id="7288778322931489286">మీ నిర్వాహకులు మీ బ్రౌజర్‌లో ఎంటర్‌ప్రైజ్ సర్వీస్ హుక్స్‌ను ఎనేబుల్ చేశారు. ఈ హుక్స్‌కు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
 <translation id="7292031607255951991">గ్రహీత పేరు</translation>
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
 <translation id="7300012071106347854">నల్ల కావిరాయి నీలం</translation>
@@ -1726,6 +1733,7 @@
 <translation id="874918643257405732">ఈ ట్యాబ్‌ను బుక్‌మార్క్ చేయి</translation>
 <translation id="8751426954251315517">దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి</translation>
 <translation id="8759274551635299824">ఈ కార్డ్ గడువు ముగిసింది</translation>
+<translation id="87601671197631245">ఈ సైట్ ఉపయోగిస్తున్న భద్రతా కాన్ఫిగరేషన్ గడువు ముగిసింది, దీని వలన మీరు మీ సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు, మెసేజ్‌లు లేదా క్రెడిట్ కార్డ్‌లు) ఈ సైట్‌కు పంపించినప్పుడు అది బహిర్గతం అవ్వవచ్చు.</translation>
 <translation id="8761567432415473239">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో <ph name="BEGIN_LINK" />హానికర ప్రోగ్రామ్‍లను కనుగొనింది<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB పరికరం</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@
 <translation id="8866481888320382733">విధాన సెట్టింగ్‌లను అన్వయించడంలో ఎర్రర్</translation>
 <translation id="8866928039507595380">ఫోల్డ్</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">ఎంటర్‌ప్రైజ్ సర్వీస్ హుక్స్ ద్వారా ఫ్లాగ్ చేయబడిన భద్రతా ఈవెంట్‌ల గురించిన డేటాను మీ నిర్వాహకుడితో షేర్ చేయండి. ఇందులో మీరు సందర్శించే పేజీలకు సంబంధించిన URLలు, ఫైల్ పేర్లు లేదా మెటాడేటా, అలాగే మీ పరికరం, Chromeలలో సైన్ ఇన్ చేయడానికి మీరు ఉపయోగించే యూజర్‌నేమ్ ఉండవచ్చు.</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8870494189203302833">ఒకే క్రమంలో ఉన్న ఫేస్ డౌన్</translation>
 <translation id="8874824191258364635">చెల్లుబాటు అయ్యే కార్డ్ నంబర్‌ను నమోదు చేయండి</translation>

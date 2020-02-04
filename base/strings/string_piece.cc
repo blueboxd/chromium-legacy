@@ -53,20 +53,6 @@ std::ostream& operator<<(std::ostream& o, const StringPiece16& piece) {
 namespace internal {
 
 template<typename STR>
-void AppendToStringT(const BasicStringPiece<STR>& self, STR* target) {
-  if (!self.empty())
-    target->append(self.data(), self.size());
-}
-
-void AppendToString(const StringPiece& self, std::string* target) {
-  AppendToStringT(self, target);
-}
-
-void AppendToString(const StringPiece16& self, string16* target) {
-  AppendToStringT(self, target);
-}
-
-template<typename STR>
 size_t copyT(const BasicStringPiece<STR>& self,
              typename STR::value_type* buf,
              size_t n,

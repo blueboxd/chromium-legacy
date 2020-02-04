@@ -24,6 +24,7 @@ class PrintingSubmitJobFunction : public ExtensionFunction {
   ~PrintingSubmitJobFunction() override;
 
   // ExtensionFunction:
+  void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
   ResponseAction Run() override;
 
  private:
@@ -61,6 +62,7 @@ class PrintingGetPrinterInfoFunction : public ExtensionFunction {
   ~PrintingGetPrinterInfoFunction() override;
 
   // ExtensionFunction:
+  void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
   ResponseAction Run() override;
 
  private:

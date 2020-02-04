@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">Afficher les cartes</translation>
 <translation id="3369192424181595722">Erreur d'horloge</translation>
 <translation id="337363190475750230">Révoqué</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> a activé Enterprise Service Hooks dans votre navigateur. Ces crochets ont accès à certaines de vos données.</translation>
+<translation id="3377144306166885718">Le serveur a utilisé une version obsolète de TLS.</translation>
 <translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
 <translation id="3377736046129930310">Utiliser le verrouillage d'écran pour vérifier les cartes plus rapidement</translation>
 <translation id="3380365263193509176">Erreur inconnue</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">Adresse de livraison</translation>
 <translation id="3395827396354264108">Mode de ramassage</translation>
 <translation id="3399952811970034796">Adresse de livraison</translation>
+<translation id="3402261774528610252">La connexion utilisée pour charger ce site faisait appel à TLS 1.0 ou à TLS 1.1, qui sont des versions obsolètes et qui seront désactivées à l'avenir. Une fois qu'elles seront désactivées, les utilisateurs ne seront pas en mesure de charger ce site. Le serveur devrait activer TLS 1.2 ou une version ultérieure.</translation>
 <translation id="3422248202833853650">Essayez de quitter d'autres programmes pour libérer de la mémoire.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> est actuellement inaccessible.</translation>
 <translation id="3423742043356668186">Spécifié par le système</translation>
@@ -619,6 +622,7 @@
 <translation id="3745099705178523657">Après votre confirmation, les détails de la carte provenant de votre compte Google seront partagés avec ce site.</translation>
 <translation id="3748148204939282805">Les cyberpirates à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> peuvent vous inciter à faire quelque chose de dangereux comme installer un logiciel ou révéler vos renseignements personnels (par exemple, des mots de passe, des numéros de téléphone ou des numéros de carte de crédit). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">La traduction a échoué en raison d'une erreur de serveur.</translation>
+<translation id="3754210790023674521">Quitter le mode d'incrustation d'image</translation>
 <translation id="3759461132968374835">Aucune erreur n'a été signalée récemment. Les erreurs n'apparaissent ici que lorsque l'envoi de rapports d'erreur est activé.</translation>
 <translation id="3760561303380396507">Utiliser Windows Hello au lieu du code CVC?</translation>
 <translation id="3761718714832595332">Masquer l'état</translation>
@@ -940,6 +944,7 @@
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" />? Signaler l'erreur.</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="519422657042045905">Le mode d'annotation n'est pas accessible</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Une page intégrée de cette page indique</translation>
 <translation id="5205222826937269299">Vous devez indiquer un nom</translation>
 <translation id="5215116848420601511">Modes de paiement et adresses utilisant Google Pay</translation>
@@ -969,6 +974,7 @@
 <translation id="5295292838686006428">Une violation de données sur un site ou dans une application a exposé votre mot de passe. Chrome vous recommande de vérifier vos mots de passe enregistrés maintenant.</translation>
 <translation id="5299298092464848405">Erreur d'analyse de politique</translation>
 <translation id="5300589172476337783">Afficher</translation>
+<translation id="5306593769196050043">Les deux feuilles</translation>
 <translation id="5308380583665731573">Connecter</translation>
 <translation id="5308689395849655368">L'envoi de rapports d'erreur est désactivé.</translation>
 <translation id="5314967030527622926">Créateur de brochures</translation>
@@ -1122,7 +1128,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Vérifier vos mots de passe</translation>
 <translation id="6015796118275082299">Année</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017514345406065928">Vert</translation>
 <translation id="6017850046339264347">Les cyberpirates à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient installer des applications trompeuses qui prétendent être autre chose ou collectent des données pouvant être utilisées pour effectuer le suivi de votre activité. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronisés)</translation>
@@ -1230,7 +1235,6 @@
 <translation id="6446163441502663861">Enveloppe Kahu</translation>
 <translation id="6446608382365791566">Ajouter plus de renseignements</translation>
 <translation id="6447842834002726250">Témoins</translation>
-<translation id="644931407731409778">Document PDF de {COUNT,plural, =1{1 page}one{# page}other{# pages}}</translation>
 <translation id="6451458296329894277">Confirmer le nouvel envoi du formulaire</translation>
 <translation id="6457206614190510200">Agrafage à cheval</translation>
 <translation id="6465306955648956876">Gérer les mots de passe...</translation>
@@ -1342,6 +1346,7 @@
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7062635574500127092">Turquoise</translation>
 <translation id="7064851114919012435">Coordonnées</translation>
+<translation id="70705239631109039">Votre connexion n'est pas parfaitement sécurisée</translation>
 <translation id="7075452647191940183">La taille de la requête est trop grande</translation>
 <translation id="7079718277001814089">Ce site contient des logiciels malveillants</translation>
 <translation id="7081308185095828845">Cette fonctionnalité n'est pas offerte pour votre appareil.</translation>
@@ -1361,6 +1366,7 @@
 <translation id="7152423860607593928">Enveloppe n° 14</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre mode de paiement}one{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre mode de paiement}other{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autres modes de paiement}}</translation>
 <translation id="7153618581592392745">Lavande</translation>
+<translation id="7156870133441232244">Le serveur devrait effectuer la mise à niveau vers TLS 1.2 ou une version ultérieure.</translation>
 <translation id="717330890047184534">Identifiant Gaia :</translation>
 <translation id="7174545416324379297">Fusionnées</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre option de livraison}one{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre option de livraison}other{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autres options de livraison}}</translation>
@@ -1386,6 +1392,7 @@ Détails supplémentaires :
 <translation id="725866823122871198">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, car la date et l'heure de votre ordinateur (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
 <translation id="7260504762447901703">Retirer l'accès</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
+<translation id="7288778322931489286">Votre administrateur a activé la Enterprise Service Hooks dans votre navigateur. Ces crochets ont accès à certaines de vos données.</translation>
 <translation id="7292031607255951991">Nom du destinataire</translation>
 <translation id="7298195798382681320">Recommandé</translation>
 <translation id="7300012071106347854">Cobalt</translation>
@@ -1710,6 +1717,7 @@ Détails supplémentaires :
 <translation id="874918643257405732">Ajouter cet onglet aux favoris</translation>
 <translation id="8751426954251315517">Veuillez réessayer la prochaine fois</translation>
 <translation id="8759274551635299824">Cette carte a expiré</translation>
+<translation id="87601671197631245">Ce site utilise une configuration de sécurité obsolète qui pourrait exposer vos données personnelles (par exemple, vos mots de passe, vos messages ou vos numéros de carte de crédit) lorsqu'elles sont envoyées à ce site.</translation>
 <translation id="8761567432415473239">La navigation sécurisée de Google a récemment <ph name="BEGIN_LINK" />détecté des programmes malveillants<ph name="END_LINK" /> sur <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Appareil USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1727,6 +1735,7 @@ Détails supplémentaires :
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle</translation>
 <translation id="8866928039507595380">Pli</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Partagez avec votre administrateur les données sur les événements relatifs à la sécurité qui ont été signalés par Enterprise Service Hooks. Cela pourrait comprendre les URL des pages que vous visitez, les noms de fichiers ou des métadonnées ainsi que le nom d'utilisateur que vous utilisez pour vous connecter à votre appareil et à Chrome.</translation>
 <translation id="8870413625673593573">Éléments récemment fermés</translation>
 <translation id="8870494189203302833">Même ordre, face vers le bas</translation>
 <translation id="8874824191258364635">Entrez un numéro de carte valide</translation>

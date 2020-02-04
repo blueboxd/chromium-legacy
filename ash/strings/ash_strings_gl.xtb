@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Configuración do lapis óptico</translation>
 <translation id="2354174487190027830">Activando <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2364154243880592194">Bandexa de estado; hora: <ph name="TIME" />; <ph name="BATTERY" /> Preme Buscar + Esquerda para acceder ao centro de notificacións.</translation>
 <translation id="2365393535144473978">Ao activar os datos móbiles tamén se activará o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Hai unha actualización dispoñible</translation>
@@ -239,6 +238,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver notificacións na pantalla de bloqueo, desbloquea o dispositivo e cambia a opción de configuración correspondente</translation>
 <translation id="4146833061457621061">Reproducir música</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> (dispositivo xestionado por <ph name="DOMAIN" />)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botón de clics automáticos</translation>
 <translation id="4217571870635786043">Ditado</translation>
@@ -270,7 +270,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4513946894732546136">Dános a túa opinión</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" quere obter permiso para sincronizarse.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> para completar a carga</translation>
-<translation id="4544944664594876241">Cambiou o atallo para bloquear a pantalla. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Botón Escoitar selección</translation>
 <translation id="4585337515783392668">Deter emisión nun receptor descoñecido</translation>
@@ -427,7 +426,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6803622936009808957">Non se puideron replicar as pantallas porque non se atopou ningunha resolución compatible. No seu lugar accedeuse ao escritorio ampliado.</translation>
 <translation id="6820676911989879663">Fai unha pausa!</translation>
-<translation id="683971173229319003">Busca+L</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Desactivouse o atallo</translation>
 <translation id="6910714959251846841">Esta actualización require executar a función Powerwash do dispositivo. Consulta máis información sobre a última actualización de <ph name="SYSTEM_APP_NAME" />.</translation>
@@ -451,6 +449,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7165278925115064263">Alt+Maiús+K</translation>
 <translation id="7168224885072002358">Volvendo á resolución anterior dentro de <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Tes que reiniciar este Chromebook para aplicar unha actualización. Esta acción pode tardar 1 minuto.</translation>
 <translation id="7256634071279256947">Micrófono traseiro</translation>
 <translation id="726276584504105859">Arrastra aquí a ventá para usar a vista dividida</translation>
 <translation id="7262906531272962081">Crear recordatorio</translation>
@@ -465,11 +464,9 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="742594950370306541">Estase utilizando a cámara.</translation>
 <translation id="743058460480092004">Estanse utilizando a cámara e o micrófono.</translation>
 <translation id="7497767806359279797">Escoller idioma e teclado</translation>
-<translation id="7510334386202674593">Ctrl+Maiúsculas+L</translation>
 <translation id="7526573455193969409">É posible que se controle a rede</translation>
 <translation id="7536035074519304529">Enderezo IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">É hora de deitarse</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> non admite <ph name="SPECIFIED_RESOLUTION" />. A resolución cambiouse a <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7564874036684306347">Ao mover as ventás a outro ordenador pódese provocar un comportamento inesperado. É posible que as notificacións, as ventás e os cadros de diálogo posteriores se dividan entre os ordenadores.</translation>
 <translation id="7568294522609223312">Desactivar clics automáticos</translation>
@@ -512,6 +509,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Deter a emisión da pantalla en: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Opción activada, todas as aplicacións</translation>
+<translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Iniciando...</translation>
 <translation id="8142441511840089262">Dobre clic</translation>

@@ -64,6 +64,7 @@ class CC_EXPORT PictureLayerImpl
   void RecreateTileResources() override;
   Region GetInvalidationRegionForDebugging() override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
+  gfx::ContentColorUsage GetContentColorUsage() const override;
 
   // PictureLayerTilingClient overrides.
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override;
@@ -156,8 +157,6 @@ class CC_EXPORT PictureLayerImpl
   // property to be painted. Used when the value for the property is changed by
   // an animation, at which point the PaintWorklet must be re-painted.
   void InvalidatePaintWorklets(const PaintWorkletInput::PropertyKey& key);
-
-  gfx::ContentColorUsage GetContentColorUsage() const override;
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);

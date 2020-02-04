@@ -36,6 +36,8 @@ struct _GLcolorSpace;
 
 namespace gfx {
 
+enum class ContentColorUsage : uint8_t;
+
 namespace mojom {
 class ColorSpaceDataView;
 }  // namespace mojom
@@ -242,6 +244,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
+
+  // Returns the color space's content color usage category (sRGB, WCG, or HDR).
+  ContentColorUsage GetContentColorUsage() const;
 
   // Return this color space with any YUV to RGB conversion stripped off.
   ColorSpace GetAsRGB() const;

@@ -718,7 +718,7 @@ std::string HttpUtil::AssembleRawHeaders(base::StringPiece input) {
 
   // Copy the status line.
   size_t status_line_end = FindStatusLineEnd(input);
-  input.substr(0, status_line_end).AppendToString(&raw_headers);
+  raw_headers.append(input.data(), status_line_end);
   input.remove_prefix(status_line_end);
 
   // After the status line, every subsequent line is a header line segment.
@@ -737,14 +737,10 @@ std::string HttpUtil::AssembleRawHeaders(base::StringPiece input) {
 
     if (prev_line_continuable && IsLWS(line[0])) {
       // Join continuation; reduce the leading LWS to a single SP.
-      raw_headers.push_back(' ');
-      RemoveLeadingNonLWS(line).AppendToString(&raw_headers);
+      base::StrAppend(&raw_headers, {" ", RemoveLeadingNonLWS(line)});
     } else {
-      // Terminate the previous line.
-      raw_headers.push_back('\n');
-
-      // Copy the raw data to output.
-      line.AppendToString(&raw_headers);
+      // Terminate the previous line and copy the raw data to output.
+      base::StrAppend(&raw_headers, {"\n", line});
 
       // Check if the current line can be continued.
       prev_line_continuable = IsLineSegmentContinuable(line);
@@ -767,8 +763,7 @@ std::string HttpUtil::ConvertHeadersBackToHTTPResponse(const std::string& str) {
   std::string disassembled_headers;
   base::StringTokenizer tokenizer(str, std::string(1, '\0'));
   while (tokenizer.GetNext()) {
-    tokenizer.token_piece().AppendToString(&disassembled_headers);
-    disassembled_headers.append("\r\n");
+    base::StrAppend(&disassembled_headers, {tokenizer.token_piece(), "\r\n"});
   }
   disassembled_headers.append("\r\n");
 

@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="1513352483775369820">Отметки и посетени сайтове</translation>
 <translation id="1513858653616922153">Изтриване на паролата</translation>
-<translation id="1516229014686355813">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Активно днес</translation>
 <translation id="1544826120773021464">За да управлявате профила си в Google, докоснете бутона „Управление на профила“</translation>
 <translation id="1549000191223877751">Преместв. в другия прозорец</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> също има данни в Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Сайтът е на пауза</translation>
-<translation id="2063713494490388661">Търсене с докосване</translation>
 <translation id="2067805253194386918">текст</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Звук</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Влизането в профила не е възможно</translation>
 <translation id="2349710944427398404">Общо място в хранилището, което се използва от Chrome, включително за профили, отметки и запазени настройки</translation>
 <translation id="2353636109065292463">Връзката с интернет се проверява</translation>
+<translation id="2359808026110333948">Напред</translation>
 <translation id="2369533728426058518">отваряне на раздели</translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
 <translation id="2394602618534698961">Изтеглените от вас файлове се показват тук</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">История на сърфирането</translation>
 <translation id="2497852260688568942">Синхронизирането е деактивирано от администратора ви</translation>
 <translation id="2498359688066513246">Помощ и отзиви</translation>
-<translation id="2501278716633472235">Назад</translation>
 <translation id="2513403576141822879">За още настройки за поверителността, сигурността и събирането на данни вижте <ph name="BEGIN_LINK" />Синхронизиране и услуги на Google<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Сканиране</translation>
 <translation id="2518590038762162553">В олекотения режим на Chrome страниците се зареждат по-бързо и се използват до 60 процента по-малко данни. С цел оптимизиране на посещаваните от вас страници Chrome изпраща до Google уеб трафика ви. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
 <translation id="3716182511346448902">Тази страница използва твърде много памет, така че Chrome я постави на пауза.</translation>
 <translation id="3730075448226062617">За да разрешите на Chrome да осъществява достъп до микрофона ви, той трябва да бъде включен и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
 <translation id="3749259744154402564">Не се поддържа</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Разрешаване на „бисквитките“ за конкретен сайт.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ч}other{# ч}}</translation>
 <translation id="4046123991198612571">Следващ запис</translation>
-<translation id="4048707525896921369">Научавайте за темите в уебсайтовете, без да напускате страницата. Функцията за търсене с докосване изпраща до Google Търсене определени думи и заобикалящия ги текст и така извежда определения, снимки, резултати и други подробности.
-
-За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4060598801229743805">Опциите са в горната част на екрана</translation>
 <translation id="4062305924942672200">Правна информация</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK1" />настройките<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
-<translation id="5596627076506792578">Още опции</translation>
 <translation id="5599455543593328020">Режим „инкогнито“</translation>
 <translation id="5620928963363755975">Използвайте бутона „Още опции“, за да намерите файловете и страниците си в „Изтегляния“</translation>
 <translation id="5626134646977739690">Име:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">Изчаква се друго изтегляне…</translation>
 <translation id="5865733239029070421">Автоматично изпраща до Google статистически данни за използването на Chrome и сигнали за сривове</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
+<translation id="5884076754568147479">За да ви помага да изпълнявате задачи, Google ще получава URL адресите и съдържанието на сайтовете, в които използвате Асистент, както и данните, които изпращате чрез услугата</translation>
 <translation id="5902828464777634901">Ще се изтрият всички локални данни, съхранявани от този уебсайт, включително „бисквитките“.</translation>
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
 <translation id="5937580074298050696">Спестени: <ph name="AMOUNT" /></translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">Забраняване на уебсайтовете на трети страни да запазват и четат данни в „бисквитки“</translation>
 <translation id="6790428901817661496">Пускане</translation>
 <translation id="6811034713472274749">Страницата е готова за преглед</translation>
-<translation id="6818926723028410516">Избор на елементи</translation>
 <translation id="6820686453637990663">Код за сигурност</translation>
 <translation id="6831043979455480757">Превод</translation>
 <translation id="6845325883481699275">Помощ за подобряването на сигурността на Chrome</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7055152154916055070">Блокирано бе пренасочване:</translation>
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}other{Избрани са #}}</translation>
 <translation id="7071521146534760487">Управление на профила</translation>
 <translation id="7077143737582773186">SD карта</translation>
-<translation id="7087918508125750058">Избрани: <ph name="ITEM_COUNT" />. Налице са опции близо до горната част на екрана</translation>
 <translation id="7121362699166175603">Изчиства историята и автоматичните довършвания в адресната лента. В профила ви в Google може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Разрешаване за текущата търсеща машина</translation>
 <translation id="7138678301420049075">Друго</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">За да виждате съдържанието в мрежата на своя език, изтеглете най-новата версия на Chrome</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7248069434667874558">Уверете се, че синхронизирането в Chrome е включено за <ph name="TARGET_DEVICE_NAME" /></translation>
-<translation id="7250468141469952378">Избрани: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Блокиран сайт</translation>
 <translation id="7290209999329137901">Преименуването не е възможно</translation>
 <translation id="7291387454912369099">Плащане с помощта на Асистент</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
-<translation id="7846076177841592234">Анулиране на избора</translation>
 <translation id="784934925303690534">Период от време</translation>
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7875915731392087153">Създайте имейл</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">Заглушени</translation>
 <translation id="8127542551745560481">Редактиране на началната страница</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
+<translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">Какви езици четете?</translation>
 <translation id="8168435359814927499">Съдържание</translation>
 <translation id="8186512483418048923">Остават <ph name="FILES" /> файла</translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">Докоснете тук, за да създавате нови раздели и да се връщате към предишните</translation>
 <translation id="8662811608048051533">Ще излезете от повечето сайтове.</translation>
 <translation id="8664979001105139458">Името на файла вече съществува</translation>
-<translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="868929229000858085">Търсене в контактите ви</translation>
 <translation id="8698438463325761328">Блокиране на сайтовете, така че да не осъществят достъп до устройствата и данните за виртуална реалност</translation>

@@ -1665,7 +1665,7 @@ ci.linux_builder(
     triggered_by = ['Linux Builder (dbg)'],
 )
 
-ci.fyi_builder(
+ci.linux_builder(
     name = 'Network Service Linux',
 )
 

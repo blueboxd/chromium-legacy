@@ -153,6 +153,7 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -865,7 +866,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     return;
   }
   CGFloat level = [UIDevice currentDevice].batteryLevel;
-  if (level < 0.2) {
+  if (level < web::features::kLowBatteryLevelThreshold) {
     if (!_animationDisabled) {
       _animationDisabled = YES;
       [UIView setAnimationsEnabled:NO];

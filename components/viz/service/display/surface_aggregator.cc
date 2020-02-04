@@ -77,26 +77,6 @@ bool CalculateQuadSpaceDamageRect(
   return true;
 }
 
-gfx::ContentColorUsage FindWidestContentColorUsage(
-    Surface* root_surface,
-    base::flat_set<SurfaceId> referenced_surfaces,
-    const SurfaceManager& manager) {
-  gfx::ContentColorUsage result = gfx::ContentColorUsage::kSRGB;
-
-  result = std::max(
-      result, root_surface->GetActiveFrame().metadata.content_color_usage);
-
-  for (auto& referenced_surface_id : referenced_surfaces) {
-    Surface* referenced_surface =
-        manager.GetSurfaceForId(referenced_surface_id);
-    result = std::max(
-        result,
-        referenced_surface->GetActiveFrame().metadata.content_color_usage);
-  }
-
-  return result;
-}
-
 }  // namespace
 
 struct SurfaceAggregator::ClipData {
@@ -113,6 +93,7 @@ struct SurfaceAggregator::PrewalkResult {
   // not included in a SurfaceDrawQuad.
   base::flat_set<SurfaceId> undrawn_surfaces;
   bool may_contain_video = false;
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
 };
 
 struct SurfaceAggregator::RoundedCornerInfo {
@@ -599,7 +580,7 @@ void SurfaceAggregator::EmitSurfaceContent(
         source.transform_to_root_target, source.filters,
         source.backdrop_filters, source.backdrop_filter_bounds,
         display_color_spaces_.GetCompositingColorSpace(
-            source.has_transparent_background, display_content_color_usage_),
+            source.has_transparent_background, root_content_color_usage_),
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -1184,7 +1165,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
         remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
         display_color_spaces_.GetCompositingColorSpace(
-            source.has_transparent_background, display_content_color_usage_),
+            source.has_transparent_background, root_content_color_usage_),
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -1538,6 +1519,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   referenced_surfaces_.erase(surface->surface_id());
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
+  result->content_color_usage =
+      std::max(result->content_color_usage, frame.metadata.content_color_usage);
 
   // Repeat this operation until no new render pass with pixel moving backdrop
   // filter intersects with the damage rect.
@@ -1685,14 +1668,12 @@ CompositorFrame SurfaceAggregator::Aggregate(
   PrewalkResult prewalk_result;
   root_damage_rect_ =
       PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
+  root_content_color_usage_ = prewalk_result.content_color_usage;
 
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
-
-  display_content_color_usage_ =
-      FindWidestContentColorUsage(surface, referenced_surfaces_, *manager_);
-  frame.metadata.content_color_usage = display_content_color_usage_;
+  frame.metadata.content_color_usage = prewalk_result.content_color_usage;
 
   CopyUndrawnSurfaces(&prewalk_result);
   referenced_surfaces_.insert(surface_id);

@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">శోధన ఇంజిన్</translation>
 <translation id="1513352483775369820">బుక్‌మార్క్‌లు మరియు వెబ్ చరిత్ర</translation>
 <translation id="1513858653616922153">పాస్‌వర్డ్‌ను తొలగించు</translation>
-<translation id="1516229014686355813">'వెతకడానికి నొక్కండి' ఫీచర్, ఎంచుకున్న పదాన్ని మరియు ప్రస్తుత పేజీని సంబంధిత సందర్భం లాగా Google శోధనకు పంపుతుంది. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో దీనిని ఆఫ్ చేయవచ్చు.</translation>
 <translation id="1521774566618522728">ఈ రోజు యాక్టివ్‌గా ఉంది</translation>
 <translation id="1544826120773021464">మీ Google ఖాతాను నిర్వహించడానికి, "ఖాతాను నిర్వహించు" బటన్‌ను నొక్కండి</translation>
 <translation id="1549000191223877751">వేరే విండోకు తరలించు</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> డేటాను Chromeలో కూడా కలిగి ఉంటుంది</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">సైట్ పాజ్ చేయబడింది</translation>
-<translation id="2063713494490388661">వెతకడానికి నొక్కండి</translation>
 <translation id="2067805253194386918">వచనం</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" />లో <ph name="RESULT_NUMBER" />వ ఫలితం</translation>
 <translation id="2091887806945687916">ధ్వని</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">సైన్ ఇన్ చేయడం సాధ్యపడదు</translation>
 <translation id="2349710944427398404">ఖాతాలు, బుక్‌మార్క్‌లు, సేవ్ చేసిన సెట్టింగ్‌లతో సహా Chrome ఉపయోగించిన మొత్తం డేటా</translation>
 <translation id="2353636109065292463">మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేస్తోంది</translation>
+<translation id="2359808026110333948">కొనసాగించు</translation>
 <translation id="2369533728426058518">తెరిచిన ట్యాబ్‌లు</translation>
 <translation id="2387895666653383613">వచన ప్రమాణం</translation>
 <translation id="2394602618534698961">మీరు డౌన్‌లోడ్ చేసే ఫైల్‌లు ఇక్కడ కనిపిస్తాయి</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">బ్రౌజింగ్ చరిత్ర</translation>
 <translation id="2497852260688568942">సింక్‌ను మీ నిర్వాహకులు నిలిపివేశారు</translation>
 <translation id="2498359688066513246">సహాయం &amp; అభిప్రాయం</translation>
-<translation id="2501278716633472235">వెనుకకు వెళ్ళు</translation>
 <translation id="2513403576141822879">గోప్యత, భద్రత మరియు డేటా సేకరణకు సంబంధించిన మరిన్ని సెట్టింగ్‌ల కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణ మరియు Google సేవలను<ph name="END_LINK" /> చూడండి</translation>
 <translation id="2517472476991765520">స్కాన్ చేయి</translation>
 <translation id="2518590038762162553">లైట్ మోడ్‌లో, Chrome పేజీలను వేగంగా లోడ్ చేస్తుంది, అలాగే 60 శాతం వరకు తక్కువ డేటాను ఉపయోగిస్తుంది. మీరు సందర్శించే పేజీలను ఆప్టిమైజ్ చేయడానికి, Chrome మీ వెబ్ ట్రాఫిక్‌ను Googleకు పంపుతుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">శోధన పట్టీని తెరవండి</translation>
 <translation id="3716182511346448902">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తోంది, కాబట్టి దీన్ని Chrome పాజ్ చేయబడింది.</translation>
 <translation id="3730075448226062617">మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeను అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా మైక్రోఫోన్‌ను ఆన్ చేయండి.</translation>
+<translation id="3738139272394829648">వెతకడానికి తాకండి</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />లో బుక్‌మార్క్ చేయబడింది</translation>
 <translation id="3744111561329211289">బ్యాక్‌గ్రౌండ్ సింక్</translation>
 <translation id="3749259744154402564">మద్దతు లేదు</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">నిర్దిష్ట సైట్ కోసం కుక్కీలను అనుమతించండి.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# గం}other{# గం}}</translation>
 <translation id="4046123991198612571">తరువాత ట్రాక్</translation>
-<translation id="4048707525896921369">పేజీ నుండి నిష్క్రమించకుండానే వెబ్‌సైట్‌లలోని అంశాల గురించి తెలుసుకోండి. 'వెతకడానికి నొక్కండి' అనే ఫీచర్, ఒక పదాన్ని మరియు దాని చుట్టూ ఉన్న సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు, శోధన ఫలితాలు మరియు ఇతర వివరాలు అందించబడతాయి.
-
-మీ శోధన పదాన్ని సర్దుబాటు చేయడం కోసం ఎంచుకోవడానికి ఎక్కువసేపు నొక్కి ఉంచండి. మీ శోధనను మెరుగుపరచడానికి, ప్యానెల్‌ను పూర్తిగా పైకి స్లయిడ్ చేసి, శోధన పెట్టెను నొక్కండి.</translation>
 <translation id="4056223980640387499">సెపియా</translation>
 <translation id="4060598801229743805">ఎంపికలు స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉంటాయి</translation>
 <translation id="4062305924942672200">చట్ట సంబంధిత సమాచారం</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">ఈ చిత్రం కోసం <ph name="SEARCH_ENGINE" />లో వెతకండి</translation>
 <translation id="5581519193887989363">మీరు ఎప్పుడైనా <ph name="BEGIN_LINK1" />సెట్టింగ్‌ల<ph name="END_LINK1" /> ద్వారా వేటిని సింక్ చేయాలో ఎంచుకోవచ్చు.</translation>
 <translation id="5595485650161345191">చిరునామాను సవరించు</translation>
-<translation id="5596627076506792578">మరిన్ని ఎంపికలు</translation>
 <translation id="5599455543593328020">అజ్ఞాత మోడ్</translation>
 <translation id="5620928963363755975">'మరిన్ని ఎంపికలు' బటన్ నొక్కి, డౌన్‌లోడ్‌లలో మీ ఫైల్‌లు మరియు పేజీలను కనుగొనండి</translation>
 <translation id="5626134646977739690">పేరు:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">మరొక డౌన్‌లోడ్ కోసం వేచి ఉంది…</translation>
 <translation id="5865733239029070421">Googleకు ఆటోమేటిక్‌గా వినియోగ గణాంకాలను, క్రాష్ నివేదికలను పంపుతుంది</translation>
 <translation id="5869522115854928033">సేవ్  చేసిన పాస్‌వర్డ్‌లు</translation>
+<translation id="5884076754568147479">టాస్క్‌లు పూర్తి చేయడంలో మీకు సహాయపడటానికి, మీరు అసిస్టెంట్‌ను ఉపయోగించే సైట్‌ల URLలు అలాగే వాటిలోని కంటెంట్‌ను, వీటితో పాటు మీరు అసిస్టెంట్ ద్వారా సమర్పించే సమాచారాన్ని Google పొందుతుంది</translation>
 <translation id="5902828464777634901">కుక్కీలతో సహా ఈ వెబ్‌సైట్ ద్వారా నిల్వ చేయబడిన మొత్తం స్థానిక డేటా తొలగించబడుతుంది.</translation>
 <translation id="5919204609460789179">సింక్‌ను ప్రారంభించడానికి <ph name="PRODUCT_NAME" />ని అప్‌డేట్ చేయండి</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> సేవ్ చేయబడింది</translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">మూడవ పక్షం వెబ్‌సైట్‌లను కుక్కీ డేటా సేవ్ చేయనీయకుండా, చదవనీయకుండా నిరోధించు</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6811034713472274749">పేజీ వీక్షించడానికి సిద్ధంగా ఉంది</translation>
-<translation id="6818926723028410516">అంశాలను ఎంచుకోండి</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
 <translation id="6845325883481699275">Chrome భద్రతను మెరుగుపరచడంలో సహాయం చేయండి</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7055152154916055070">మళ్లింపు బ్లాక్ చేయబడింది:</translation>
 <translation id="7063006564040364415">సింక్ సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ఎంచుకోబడింది}other{# ఎంచుకోబడ్డాయి}}</translation>
 <translation id="7071521146534760487">ఖాతాను నిర్వహిస్తుంది</translation>
 <translation id="7077143737582773186">SD కార్డ్</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి.  ఎంపికలు స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉన్నాయి</translation>
 <translation id="7121362699166175603">చిరునామా బార్‌లో చరిత్ర, స్వీయపూరింపులను తొలగిస్తుంది. మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
 <translation id="7128222689758636196">ప్రస్తుత శోధన ఇంజిన్‌కు అనుమతిస్తుంది</translation>
 <translation id="7138678301420049075">ఇతర</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">మీ భాషలో వెబ్‌ను చూడడానికి, Chrome యొక్క తాజా వెర్షన్‌ను డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="7243308994586599757">స్క్రీన్ దిగువభాగం సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి</translation>
 <translation id="7248069434667874558">Chromeలో <ph name="TARGET_DEVICE_NAME" />కు సింక్ ఆన్ చేయబడి ఉందని నిర్ధారించుకోండి</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
 <translation id="7274013316676448362">బ్లాక్ చేసిన సైట్</translation>
 <translation id="7290209999329137901">పేరు మార్పు అందుబాటులో లేదు</translation>
 <translation id="7291387454912369099">అసిస్టెంట్ ప్రేరేపిత చెక్‌అవుట్</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
 <translation id="7810647596859435254">దీనితో తెరువు…</translation>
 <translation id="7821588508402923572">మీ డేటా పొదుపులు ఇక్కడ కనిపిస్తాయి</translation>
-<translation id="7846076177841592234">ఎంపికను రద్దు చేయి</translation>
 <translation id="784934925303690534">సమయ పరిధి</translation>
 <translation id="7851858861565204677">ఇతర పరికరాలు</translation>
 <translation id="7875915731392087153">ఇమెయిల్‌ను సృష్టించండి</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">మ్యూట్ చేసినవి</translation>
 <translation id="8127542551745560481">హోమ్ పేజీని ఎడిట్ చేయండి</translation>
 <translation id="813082847718468539">సైట్ సమాచారాన్ని చూడండి</translation>
+<translation id="8137558756159375272">'వెతకడానికి తాకండి' ఫీచర్, ఎంచుకున్న పదాన్ని మరియు ప్రస్తుత పేజీని సంబంధిత సందర్భంగా Google శోధనకు పంపుతుంది. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో దీనిని ఆఫ్ చేయవచ్చు.</translation>
 <translation id="8156139159503939589">మీరు ఏ భాషలను చదవగలరు?</translation>
 <translation id="8168435359814927499">కంటెంట్</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> ఫైల్‌లు మిగిలి ఉన్నాయి</translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">కొత్త ట్యాబ్‌లను సృష్టించి, మునుపటి వాటికి తిరిగి రావడానికి ఇక్కడ నొక్కండి</translation>
 <translation id="8662811608048051533">చాలా సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది.</translation>
 <translation id="8664979001105139458">ఫైల్ పేరు ఇప్పటికే ఉంది</translation>
-<translation id="8676374126336081632">ఇన్‌పుట్‌ను తీసివేయండి</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్}other{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్‌లు}}</translation>
 <translation id="868929229000858085">మీ పరిచయాలను వెతకండి</translation>
 <translation id="8698438463325761328">వర్చువల్ రియాలిటీ పరికరం మరియు డేటాను యాక్సెస్ చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>

@@ -99,13 +99,13 @@ static_library("video_player_thumbnail_renderer") {
 static_library("video_player") {
   testonly = true
   sources = [
+    "video.cc",
+    "video.h",
     "video_player/frame_renderer.h",
     "video_player/frame_renderer_dummy.cc",
     "video_player/frame_renderer_dummy.h",
     "video_player/test_vda_video_decoder.cc",
     "video_player/test_vda_video_decoder.h",
-    "video_player/video.cc",
-    "video_player/video.h",
     "video_player/video_decoder_client.cc",
     "video_player/video_decoder_client.h",
     "video_player/video_player.cc",

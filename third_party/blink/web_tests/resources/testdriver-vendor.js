@@ -255,8 +255,8 @@
     }))).then(() => {
       virtualAuthenticatorManager_ = new blink.test.mojom.VirtualAuthenticatorManagerRemote;
       Mojo.bindInterface(
-        blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
-        virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle, "context", true);
+          blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
+          virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle);
       return virtualAuthenticatorManager_;
     });
   }

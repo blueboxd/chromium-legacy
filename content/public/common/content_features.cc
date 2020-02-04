@@ -451,6 +451,10 @@ const base::Feature kReloadHiddenTabsWithCrashedSubframes {
 // navigation. The goal of RenderDocument is to get a new one for each document
 // instead.
 
+// Enable using the RenderDocument when recovering from crashes.
+const base::Feature kRenderDocumentForCrashedFrame{
+    "RenderDocumentForCrashedFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable using the RenderDocument on main frame navigations.
 const base::Feature kRenderDocumentForMainFrame{
     "RenderDocumentForMainFrame", base::FEATURE_DISABLED_BY_DEFAULT};

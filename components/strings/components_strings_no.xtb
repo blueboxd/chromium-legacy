@@ -538,6 +538,8 @@ brukere av denne nettleseren.</translation>
 <translation id="3366477098757335611">Vis kort</translation>
 <translation id="3369192424181595722">Klokkefeil</translation>
 <translation id="337363190475750230">Godkjenningen er opphevet</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> har slått på Enterprise Service Hooks i nettleseren din. Disse hookene har tilgang til noen av dataene dine.</translation>
+<translation id="3377144306166885718">Tjeneren brukte en foreldet versjon av TLS.</translation>
 <translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
 <translation id="3377736046129930310">Bruk skjermlås til å bekrefte kort raskere</translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
@@ -546,6 +548,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3391030046425686457">Leveringsadresse</translation>
 <translation id="3395827396354264108">Hentemetode</translation>
 <translation id="3399952811970034796">Leveringsadresse</translation>
+<translation id="3402261774528610252">Tilkoblingen som ble brukt til å laste inn dette nettstedet, brukte TLS 1.0 eller TLS 1.1, som er foreldet og kommer til å bli slått av i fremtiden. Når det er slått av, blir brukerne hindret i å laste inn dette nettstedet. Tjeneren bør slå på TLS 1.2 eller nyere.</translation>
 <translation id="3422248202833853650">Prøv å lukke andre programmer for å frigjøre minne.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> er ikke tilgjengelig for øyeblikket.</translation>
 <translation id="3423742043356668186">Systemspesifisert</translation>
@@ -634,6 +637,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3745099705178523657">Etter at du har bekreftet, deles kortopplysningene fra Google-kontoen din med dette nettstedet.</translation>
 <translation id="3748148204939282805">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan lure deg til å gjøre farlige ting, deriblant å installere programvare eller oppgi personopplysninger (for eksempel passord, telefonnumre og kredittkortinformasjon). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
+<translation id="3754210790023674521">Avslutt bilde-i-bilde</translation>
 <translation id="3759461132968374835">Du har ingen nylig rapportert programstopp. Programstopp som inntraff når rapportering om programstopp var deaktivert, blir ikke vist her.</translation>
 <translation id="3760561303380396507">Vil du bruke Windows Hello i stedet for CVC?</translation>
 <translation id="3761718714832595332">Skjul statusen</translation>
@@ -956,6 +960,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE" />? Rapportér denne feilen</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
 <translation id="519422657042045905">Annotering er ikke tilgjengelig</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">På en innebygd side på denne siden står det</translation>
 <translation id="5205222826937269299">Navn er obligatorisk</translation>
 <translation id="5215116848420601511">Betalingsmåter og adresser som bruker Google Pay</translation>
@@ -985,6 +990,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5295292838686006428">Et databrudd på et nettsted eller i en app har avdekket passordet ditt. Chrome anbefaler at du sjekker de lagrede passordene dine nå.</translation>
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
 <translation id="5300589172476337783">Vis</translation>
+<translation id="5306593769196050043">Begge arkene</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5308689395849655368">Rapportering av programstopp er deaktivert.</translation>
 <translation id="5314967030527622926">Heftemaker</translation>
@@ -1138,7 +1144,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Kontrollér passordene dine</translation>
 <translation id="6015796118275082299">År</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Side 1}other{Side #}}</translation>
 <translation id="6017514345406065928">Grønn</translation>
 <translation id="6017850046339264347">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere villedende apper som ser ut til å være noe annet, eller samle inn data som kan brukes til å spore deg. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> og <ph name="TYPE_3" /> (synkronisert)</translation>
@@ -1246,7 +1251,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6446163441502663861">Kahu (konvolutt)</translation>
 <translation id="6446608382365791566">Legg til mer informasjon</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
-<translation id="644931407731409778">PDF-dokument som inneholder {COUNT,plural, =1{1 side}other{# sider}}</translation>
 <translation id="6451458296329894277">Bekreft ny innsending av skjema</translation>
 <translation id="6457206614190510200">Ryggstifting</translation>
 <translation id="6465306955648956876">Administrer passord…</translation>
@@ -1358,6 +1362,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7062635574500127092">Blågrønn</translation>
 <translation id="7064851114919012435">Kontaktinformasjon</translation>
+<translation id="70705239631109039">Tilkoblingen er ikke helt sikker</translation>
 <translation id="7075452647191940183">Forespørselen er for stor</translation>
 <translation id="7079718277001814089">Dette nettstedet inneholder skadelig programvare</translation>
 <translation id="7081308185095828845">Denne funksjonen er ikke tilgjengelig på enheten din</translation>
@@ -1377,6 +1382,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7152423860607593928">Number-14 (konvolutt)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}}</translation>
 <translation id="7153618581592392745">Lavendel</translation>
+<translation id="7156870133441232244">Tjeneren bør oppgraderes til TLS 1.2 eller nyere.</translation>
 <translation id="717330890047184534">Gaia-ID:</translation>
 <translation id="7174545416324379297">Slått sammen</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}}</translation>
@@ -1401,6 +1407,7 @@ brukere av denne nettleseren.</translation>
 <translation id="725866823122871198">En privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan ikke opprettes fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på datamaskinen er feil.</translation>
 <translation id="7260504762447901703">Opphev tilgangen</translation>
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
+<translation id="7288778322931489286">Administratoren har slått på Enterprise Service Hooks i nettleseren din. Disse hookene har tilgang til noen av dataene dine.</translation>
 <translation id="7292031607255951991">Mottakerens navn</translation>
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
@@ -1725,6 +1732,7 @@ Mer informasjon:
 <translation id="874918643257405732">Bokmerk denne fanen</translation>
 <translation id="8751426954251315517">Prøv på nytt neste gang</translation>
 <translation id="8759274551635299824">Dette kortet er utløpt</translation>
+<translation id="87601671197631245">Dette nettstedet bruker en utdatert sikkerhetskonfigurasjon, som betyr at informasjonen din (for eksempel passord, meldinger eller kredittkort) kan bli avslørt når den sendes til dette nettstedet.</translation>
 <translation id="8761567432415473239">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1742,6 +1750,7 @@ Mer informasjon:
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
 <translation id="8866928039507595380">Fals</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Del data om sikkerhetshendelser som er rapportert av Enterprise Service Hooks, med administratoren din. Dette kan omfatte nettadressene til sider du besøker, filnavn, metadata og brukernavnet du bruker når du logger på enheten din og Chrome.</translation>
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8870494189203302833">Samme rekkefølge – forsiden ned</translation>
 <translation id="8874824191258364635">Angi et gyldig kortnummer</translation>

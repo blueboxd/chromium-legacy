@@ -719,13 +719,6 @@
       Si se establece esta política en <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="OPERA_VALUE_PLACEHOLDER" /> o <ph name="SAFARI_VALUE_PLACEHOLDER" />, se iniciará el navegador en cuestión en caso de que esté instalado. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> solo está disponible en Windows, y <ph name="SAFARI_VALUE_PLACEHOLDER" /> solo está disponible en Windows y Mac OS X.
 
       Si se establece esta política con una ruta de archivo, ese archivo se usará como uno ejecutable.</translation>
-<translation id="2111016292707172233">Habilita la función "Presionar para buscar" en la vista de contenido de <ph name="PRODUCT_NAME" />.
-
-      Si se habilita esta configuración, "Presionar para buscar" estará disponible para el usuario, quien podrá activar o desactivar la función.
-
-      Si se inhabilita, "Presionar para buscar" se desactivará completamente.
-
-      Si no se establece esta política, es equivalente a que esté habilitada; para obtener más información, consulta la descripción que se encuentra más arriba.</translation>
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
@@ -1783,6 +1776,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, cualquier certificado que deba divulgarse mediante el Certificado de transparencia se considerará que no es de confianza cuando no se divulga según la política del Certificado de transparencia.</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario que saldrá del navegador porque se encuentra inactivo</translation>
 <translation id="377044054160169374">Intervención ante experiencias abusivas</translation>
+<translation id="3780102107513139202">Habilitar variaciones que estén relacionadas únicamente con correcciones críticas</translation>
 <translation id="3780152581321609624">Incluir puerto no estándar en el SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si esta política se establece como verdadera, el ícono de Cast aparecerá siempre en la barra de herramientas o en el menú ampliado, y los usuarios no podrán quitarlo.
 
@@ -1895,7 +1889,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si la estableces, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, la función estará inhabilitada inicialmente, pero el usuario podrá habilitarla en cualquier momento.</translation>
-<translation id="3874773863217952418">Habilitar "Presionar para buscar"</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
 <translation id="3879196885908353077">Revisar las descargas para detectar si se infringen las normas relacionadas con la protección de datos sensibles</translation>
 <translation id="3879208481373875102">Configura la lista de aplicaciones web instaladas de manera automática</translation>
@@ -2028,6 +2021,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4027608872760987929">Habilitar el proveedor de búsqueda predeterminado</translation>
 <translation id="4039085364173654945">Controla si se permite que el subcontenido de terceros en una página muestre cuadros de diálogo emergentes de autenticación básica de HTTP. Normalmente, esto se inhabilita a modo defensa contra la suplantación de identidad. Si esta política no se configura, se inhabilita esta opción y no se permite que el subcontenido de terceros muestre cuadros de diálogo emergentes de autenticación básica de HTTP.</translation>
 <translation id="4056910949759281379">Inhabilitar el protocolo SPDY</translation>
+<translation id="4061590579642538878">Proporciona datos sobre los informes de fallas</translation>
 <translation id="4075675819066819571">Ubicar la biblioteca en el lado izquierdo de la pantalla</translation>
 <translation id="4075864623710596000">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y todas las letras en formato ASCII deben estar en minúscula. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
 <translation id="408029843066770167">Permitir consultas a un servicio de hora de Google</translation>
@@ -2538,6 +2532,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4983201894483989687">Permitir la ejecución de complementos desactualizados</translation>
 <translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>
+<translation id="500149597848135831">Habilitar todas las variaciones</translation>
 <translation id="5032164758660626397">Evita que el usuario transfiera archivos grandes</translation>
 <translation id="5047604665028708335">Permite el acceso a sitios fuera de los paquetes de contenido.</translation>
 <translation id="5052081091120171147">Esta política, si se habilita, fuerza la importación del historial de navegación del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa ningún historial de navegación. Si no se configura, se le puede preguntar al usuario si desea importar el historial de navegación o la importación puede realizarse de forma automática.</translation>
@@ -2610,6 +2605,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5102203758995933166">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration.</translation>
 <translation id="5105313908130842249">Demora de bloqueo de pantalla con batería</translation>
 <translation id="5108031557082757679">Impresoras empresariales inhabilitadas asociadas a dispositivos</translation>
+<translation id="5109383437323376357">Determina la disponibilidad de las variantes</translation>
 <translation id="5112121363469561920">Establece el tipo predeterminado de la lupa habilitada en la pantalla de acceso.
 
           Si se establece esta política, controlará el tipo de lupa que se habilita cuando se muestre la pantalla de acceso. Si la política se configura como "ninguna", se inhabilitará la lupa.
@@ -3345,6 +3341,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6221175752766085998">Permitir los certificados emitidos por anclajes de confianza locales sin la extensión subjectAlternativeName</translation>
 <translation id="6224304369267200483">Las URL y los dominios permiten automáticamente la atestación directa de llaves de seguridad</translation>
 <translation id="6233173491898450179">Establecer el directorio de descarga</translation>
+<translation id="6242147107333796512">Proporciona datos relacionados con informes de fallas, como id remota,
+      marca de tiempo de captura y causa.
+
+      Si se establece la política como falsa o no se establece, no se proporcionarán los datos de
+      los informes de fallas. Si se establece como verdadera, se proporcionarán los datos de
+      los informes de fallas.</translation>
 <translation id="6244210204546589761">Direcciones URL que se abrirán al iniciar.</translation>
 <translation id="6247316685259031374">Esta política controla la zona de pruebas del proceso de audio.
       Si se habilita esta política, se ejecutará el proceso de audio en la zona de pruebas.
@@ -3990,6 +3992,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
+<translation id="7323572763274343342">Si se configura esta política, se podrán especificar las variaciones que se pueden aplicar en <ph name="PRODUCT_NAME" />.
+
+      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_NAME" /> sin necesidad de enviar una nueva versión del navegador. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
+
+      Si se establece <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se establece la política, se podrán aplicar todas las variaciones en el navegador.
+
+      Si se establece <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), se permitirá solo la aplicación de las variaciones que se consideren correcciones de estabilidad o seguridad críticas en <ph name="PRODUCT_NAME" />.
+
+      Si se establece <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá la aplicación de ninguna variación en el navegador. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones de seguridad críticas de manera oportuna.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar a Wipe (valor 2), pero intenta preservar los tokens de acceso para que el usuario no tenga que volver a acceder.</translation>
 <translation id="7329968046053403405">Especifica el tipo de cuenta compatible para la autenticación <ph name="HTTP_NEGOTIATE" /> (p. ej., autenticación Kerberos) de las cuentas que proporciona la app de autenticación de Android. El proveedor de la app de autenticación debe tener esta información disponible. Para obtener más detalles, se puede consultar https://goo.gl/hajyfN.
@@ -4064,6 +4075,19 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si no se establece esta política o se establece como habilitada, Google Chrome aceptará los contenidos web presentados como intercambios HTTP firmados.
 
           Si se establece como inhabilitada, no se podrán cargar los intercambios HTTP firmados.</translation>
+<translation id="7509496865303347769">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
+
+          La página principal es la que se abre con el botón Página principal. En la computadora, las páginas que se abren al inicio se controlan a través de las políticas RestoreOnStartup.
+
+          El tipo de página principal puede configurarse como una URL que se especifica aquí o establecerse en la página Nueva pestaña. Si se selecciona la página Nueva pestaña, no se aplicará esta política.
+
+          Si se habilita esta configuración, los usuarios no podrán cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero podrán elegir la página Nueva pestaña como principal.
+
+          Si no se establecen esta política ni HomepageIsNewTabPage, el usuario podrá elegir la página principal.
+
+          La URL debe tener un esquema estándar, p. ej., "http://ejemplo.com" o "https://ejemplo.com".
+
+          Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="7511361072385293666">Si esta política no se configura o se establece en true, se permite el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si esta política se establece en false, no se permite el uso del protocolo QUIC.</translation>
 <translation id="7517845714620372896">Permite especificar el porcentaje del brillo de pantalla.
@@ -4222,6 +4246,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7717938661004793600">Permite configurar las funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7731026922044991970">Revertir el comportamiento de las cookies en todos los sitios conforme al atributo heredado <ph name="ATTRIBUTE_SAMESITE_NAME" /></translation>
 <translation id="7747447585227954402">Permitir que los dispositivos usen un <ph name="PLUGIN_VM_NAME" /> en <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="7749024457938190837">Incluye las extensiones que pueden omitir el cuadro de diálogo de confirmación cuando envían trabajos de impresión a través de la API chrome.printing</translation>
 <translation id="7749402620209366169">Habilita la autenticación de dos factores para los hosts de acceso remoto en lugar de un PIN especificado por el usuario.
 
           Si esta configuración está habilitada, los usuarios deben proporcionar un código de dos factores válido al acceder a un host.
@@ -4540,6 +4565,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si inhabilitas esta opción, las páginas se explorarán para buscar metaetiquetas.
 
           Si no se establece esta política, las páginas se explorarán para buscar metaetiquetas.</translation>
+<translation id="8295496526151576383">Esta política especifica las extensiones permitidas para omitir el cuadro de diálogo de confirmación de los trabajos de impresión cuando utilizan la función <ph name="SUBMIT_JOB_FUNCTION" /> de <ph name="PRINTING_API" /> para enviar un trabajo de impresión.
+
+      Si no se encuentra una extensión en la lista, o no se establece la lista, el usuario verá el cuadro de diálogo de confirmación de los trabajos de impresión en todas las llamadas a la función <ph name="SUBMIT_JOB_FUNCTION" />.</translation>
 <translation id="829641334878002866">Te permite establecer el período, en milisegundos, entre la primera notificación en la que se solicita reiniciar un dispositivo con <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente y la finalización del período especificado en la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Si no se establece, se utilizará el período predeterminado de 259200000 milisegundos (tres días) para los dispositivos <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -4686,12 +4714,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           De lo contrario las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada.</translation>
 <translation id="8525526490824335042">Contenedor de Linux</translation>
-<translation id="8538235451413605457">Configura los requisitos de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones anteriores se tratan como obsoletas, y es posible que el dispositivo no permita acceder al usuario si no actualiza el SO.
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario, se lo forzará al usuario a salir.
-
-      Si no se establece esta política, no se aplicarán restricciones, y el usuario accederá independientemente de la versión de <ph name="PRODUCT_NAME" />.
-
-      Aquí, la "versión" puede ser una exacta, como "61.0.3163.120" o el prefijo de una versión, como "61.0"  </translation>
 <translation id="8544375438507658205">Procesador HTML predeterminado para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Permite que los mensajes SMS se sincronicen desde el teléfono con la Chromebook</translation>
 <translation id="8548832052135586762">Establece la impresión como solo a color, solo monocromática o sin restricción del modo de color. Si no se configura la política, no se aplicará ninguna restricción.</translation>
@@ -5138,6 +5160,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece como falsa, no aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.
 
       Si se establece como verdadera, aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.</translation>
+<translation id="9213751049772256263">Inhabilitar todas las variaciones</translation>
 <translation id="9217154963008402249">Frecuencia de envío de paquetes de red de control</translation>
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>

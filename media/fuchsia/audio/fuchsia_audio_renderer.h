@@ -75,6 +75,15 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
     bool is_used = false;
   };
 
+  // Returns current PlaybackState. Should be used only on the main thread.
+  PlaybackState GetPlaybackState() NO_THREAD_SAFETY_ANALYSIS;
+
+  // Used to update |state_|. Can be called only in the main thread. This is
+  // necessary to ensure that GetPlaybackState() without locks is safe. Caller
+  // must acquire |timeline_lock_|.
+  void SetPlaybackState(PlaybackState state)
+      EXCLUSIVE_LOCKS_REQUIRED(timeline_lock_);
+
   // Resets AudioConsumer and reports error to the |client_|.
   void OnError(PipelineStatus Status);
 
@@ -110,7 +119,7 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   // Calculates media position based on the TimelineFunction returned from
   // AudioConsumer.
   base::TimeDelta CurrentMediaTimeLocked()
-      EXCLUSIVE_LOCKS_REQUIRED(state_lock_);
+      EXCLUSIVE_LOCKS_REQUIRED(timeline_lock_);
 
   MediaLog* const media_log_;
 
@@ -148,15 +157,16 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   // fields are updated only on the main thread (which corresponds to the
   // |thread_checker_|), so on that thread it's safe to assume that the values
   // don't change even when not holding the lock.
-  base::Lock state_lock_;
+  base::Lock timeline_lock_;
 
-  PlaybackState state_ GUARDED_BY(state_lock_) = PlaybackState::kStopped;
+  // Should be changed by calling SetPlaybackState() on the main thread.
+  PlaybackState state_ GUARDED_BY(timeline_lock_) = PlaybackState::kStopped;
 
   // Values from TimelineFunction returned by AudioConsumer.
-  base::TimeTicks reference_time_ GUARDED_BY(state_lock_);
-  base::TimeDelta media_pos_ GUARDED_BY(state_lock_);
-  int32_t media_delta_ GUARDED_BY(state_lock_) = 1;
-  int32_t reference_delta_ GUARDED_BY(state_lock_) = 1;
+  base::TimeTicks reference_time_ GUARDED_BY(timeline_lock_);
+  base::TimeDelta media_pos_ GUARDED_BY(timeline_lock_);
+  int32_t media_delta_ GUARDED_BY(timeline_lock_) = 1;
+  int32_t reference_delta_ GUARDED_BY(timeline_lock_) = 1;
 
   THREAD_CHECKER(thread_checker_);
 

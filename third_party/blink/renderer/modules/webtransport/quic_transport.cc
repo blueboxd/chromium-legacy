@@ -450,7 +450,7 @@ void QuicTransport::OnConnectionError() {
       received_datagrams_controller_->Error(reason);
       received_datagrams_controller_ = nullptr;
     }
-    WritableStreamDefaultController::Error(
+    WritableStreamDefaultController::ErrorIfNeeded(
         script_state_, outgoing_datagrams_->Controller(), reason);
     ready_resolver_->Reject(reason);
     closed_resolver_->Reject(reason);

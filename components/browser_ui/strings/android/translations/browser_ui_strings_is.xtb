@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Afturkalla</translation>
 <translation id="2148716181193084225">Í dag</translation>
 <translation id="2359808026110333948">Halda áfram</translation>
+<translation id="2501278716633472235">Fara til baka</translation>
 <translation id="2653659639078652383">Senda</translation>
 <translation id="2704606927547763573">Afritað</translation>
 <translation id="3115898365077584848">Sýna upplýsingar</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Afrita tengil</translation>
 <translation id="4002066346123236978">Heiti</translation>
 <translation id="4570913071927164677">Nánar</translation>
+<translation id="497421865427891073">Áfram</translation>
 <translation id="5300589172476337783">Sýna</translation>
 <translation id="5301954838959518834">Ég skil</translation>
 <translation id="5317780077021120954">Vista</translation>
 <translation id="5556459405103347317">Endurhlaða</translation>
+<translation id="5596627076506792578">Fleiri valkostir</translation>
 <translation id="5860033963881614850">Slökkt</translation>
 <translation id="5916664084637901428">Kveikt</translation>
 <translation id="5939518447894949180">Endurstilla</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">Valkostir fyrir <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Deila</translation>
 <translation id="6746124502594467657">Færa niður</translation>
+<translation id="6818926723028410516">Veldu atriði</translation>
 <translation id="6910211073230771657">Eytt</translation>
 <translation id="6945221475159498467">Velja</translation>
 <translation id="6965382102122355670">Í lagi</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valið}one{# valið}other{# valin}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valin.  Valkostir eru ofarlega á skjánum</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> valin</translation>
 <translation id="7649070708921625228">Hjálp</translation>
 <translation id="7658239707568436148">Hætta við</translation>
 <translation id="7781829728241885113">Í gær</translation>
 <translation id="7791543448312431591">Bæta við</translation>
 <translation id="780301667611848630">Nei, takk</translation>
+<translation id="7846076177841592234">Hætta við val</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
 <translation id="8249310407154411074">Færa efst</translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8609465669617005112">Færa upp</translation>
+<translation id="8676374126336081632">Hreinsa innslátt</translation>
 <translation id="8725066075913043281">Reyna aftur</translation>
 <translation id="8730621377337864115">Lokið</translation>
 </translationbundle>

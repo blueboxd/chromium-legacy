@@ -142,7 +142,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [super setUp];
   // Remove closed tab history to make sure the sign-in promo is always visible
   // in recent tabs.
-  [ChromeEarlGreyUI clearAllBrowsingData];
+  [ChromeEarlGrey clearBrowsingHistory];
 }
 
 // Tests that opening the sign-in screen from the Settings and signing in works

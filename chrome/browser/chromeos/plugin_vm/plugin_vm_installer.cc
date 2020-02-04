@@ -182,8 +182,16 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   }
   DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
-  // TODO(b/145814572): As soon as the DLC support is added to the ebuild, we
-  // should make dlcservice::kErrorInvalidDlc fail the installation.
+  if (err == dlcservice::kErrorInvalidDlc) {
+    LOG(ERROR) << "PluginVM DLC is not supported, need to enable PluginVM DLC.";
+    state_ = State::DOWNLOAD_DLC_FAILED;
+    if (observer_)
+      observer_->OnDownloadFailed(FailureReason::DLC_DOWNLOAD_FAILED);
+    RecordPluginVmDlcUseResultHistogram(
+        PluginVmDlcUseResult::kFallbackToRootFsInvalidDlcError);
+    return;
+  }
+
   if (err != dlcservice::kErrorNone) {
     // TODO(b/145814572): Remove this log once PluginVM is converted to DLC and
     // invoke |OnDownloadFailed()|. The temporary passthrough is safe as

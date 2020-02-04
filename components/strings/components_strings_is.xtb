@@ -539,6 +539,8 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3366477098757335611">Skoða kort</translation>
 <translation id="3369192424181595722">Klukkuvilla</translation>
 <translation id="337363190475750230">Úthlutun dregin til baka</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> hefur kveikt á Enterprise Service krækjum í vafranum. Þessar krækjur hafa aðgang að sumum af gögnunum þínum.</translation>
+<translation id="3377144306166885718">Þjónninn notaði úrelta útgáfu af TLS.</translation>
 <translation id="3377188786107721145">Villa við að þátta reglu</translation>
 <translation id="3377736046129930310">Notaðu skjálás til að staðfesta kort hraðar</translation>
 <translation id="3380365263193509176">Óþekkt villa</translation>
@@ -547,6 +549,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3391030046425686457">Sendingarheimilisfang</translation>
 <translation id="3395827396354264108">Afhendingarmáti</translation>
 <translation id="3399952811970034796">Sendingarheimilisfang</translation>
+<translation id="3402261774528610252">Tengingin sem er notuð til að hlaða þessu vefsvæði notaði TLS 1.0 eða TLS 1.1, úreltar útgáfur sem verða gerðar óvirkar í framtíðinni. Þegar þær hafa verið gerðar óvirkar geta notendur ekki hlaðið þessu vefsvæði. Virkja ætti TLS 1.2 eða nýrri útgáfu á þjóninum.</translation>
 <translation id="3422248202833853650">Prófaðu að loka öðrum forritum til að losa um minni.</translation>
 <translation id="3422472998109090673">Ekki næst í <ph name="HOST_NAME" /> að svo stöddu.</translation>
 <translation id="3423742043356668186">Tilgreint af kerfi</translation>
@@ -635,6 +638,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3745099705178523657">Greiðslukortaupplýsingum af reikningnum þínum á Google verður deilt með þessu vefsvæði eftir að þú hefur staðfest.</translation>
 <translation id="3748148204939282805">Þrjótar á <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> gætu reynt að gabba þig til að gera eitthvað varasamt eins og að setja upp hugbúnað eða gefa upp persónuupplýsingar (til dæmis aðgangsorð, símanúmer eða kreditkortanúmer). <ph name="BEGIN_LEARN_MORE_LINK" />Frekari upplýsingar<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Þýðingin mistókst vegna villu á þjóni.</translation>
+<translation id="3754210790023674521">Loka mynd í mynd</translation>
 <translation id="3759461132968374835">Ekkert hrun hefur verið tilkynnt nýlega. Hrun sem varð á meðan slökkt var á tilkynningum um hrun mun ekki birtast hér.</translation>
 <translation id="3760561303380396507">Viltu nota Windows Hello í stað CVC-númers?</translation>
 <translation id="3761718714832595332">Fela stöðu</translation>
@@ -957,6 +961,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="5179510805599951267">Ekki <ph name="ORIGINAL_LANGUAGE" />? Tilkynna þessa villu</translation>
 <translation id="5190835502935405962">Bókamerkjastika</translation>
 <translation id="519422657042045905">Athugasemdir eru ekki tiltækar</translation>
+<translation id="5196187217592847346">Enterprise Service krækjur</translation>
 <translation id="5201306358585911203">Innfelld síða á þessari síðu segir</translation>
 <translation id="5205222826937269299">Heiti er nauðsynlegt</translation>
 <translation id="5215116848420601511">Greiðslumátar og heimilisföng sem nota Google Pay</translation>
@@ -986,6 +991,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="5295292838686006428">Öryggisbrot á vefsvæði eða í forriti afhjúpaði aðgangsorðið þitt. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.</translation>
 <translation id="5299298092464848405">Villa við þáttun stefnu</translation>
 <translation id="5300589172476337783">Sýna</translation>
+<translation id="5306593769196050043">Bæði blöðin</translation>
 <translation id="5308380583665731573">Tengjast</translation>
 <translation id="5308689395849655368">Slökkt er á tilkynningum um hrun.</translation>
 <translation id="5314967030527622926">Bæklingagerð</translation>
@@ -1139,7 +1145,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Athugaðu aðgangsorðin þín</translation>
 <translation id="6015796118275082299">Ár</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Síða 1}one{Síða #}other{Síða #}}</translation>
 <translation id="6017514345406065928">Grænn</translation>
 <translation id="6017850046339264347">Tölvuþrjótar á <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> gætu sett upp villandi forrit sem virðast vera eitthvað annað en þau eru eða safna gögnum sem nota má til að fylgjast með þér. <ph name="BEGIN_LEARN_MORE_LINK" />Frekari upplýsingar<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (samstillt)</translation>
@@ -1247,7 +1252,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="6446163441502663861">Kahu (umslag)</translation>
 <translation id="6446608382365791566">Bæta við fleiri upplýsingum</translation>
 <translation id="6447842834002726250">Fótspor</translation>
-<translation id="644931407731409778">PDF-skjalið inniheldur {COUNT,plural, =1{1 síðu}one{# síðu}other{# síður}}</translation>
 <translation id="6451458296329894277">Staðfesta endursendingu eyðublaðs</translation>
 <translation id="6457206614190510200">Kjalhefting</translation>
 <translation id="6465306955648956876">Stjórna aðgangsorðum...</translation>
@@ -1359,6 +1363,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7053983685419859001">Setja á bannlista</translation>
 <translation id="7062635574500127092">Grænblár</translation>
 <translation id="7064851114919012435">Samskiptaupplýsingar</translation>
+<translation id="70705239631109039">Tengingin er ekki alveg örugg</translation>
 <translation id="7075452647191940183">Beiðnin er of stór</translation>
 <translation id="7079718277001814089">Þetta vefsvæði inniheldur spilliforrit</translation>
 <translation id="7081308185095828845">Þessi eiginleiki er ekki í boði í tækinu þínu</translation>
@@ -1378,6 +1383,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7152423860607593928">Number-14 (umslag)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> í viðbót}one{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> í viðbót}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> í viðbót}}</translation>
 <translation id="7153618581592392745">Ljósfjólublár</translation>
+<translation id="7156870133441232244">Uppfæra ætti þjóninn í TLS 1.2 eða nýrri útgáfu.</translation>
 <translation id="717330890047184534">Gaia-auðkenni:</translation>
 <translation id="7174545416324379297">Sameinað</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}one{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}}</translation>
@@ -1403,6 +1409,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="725866823122871198">Ekki er hægt að koma á lokaðri tengingu við <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vegna þess að dag- og tímasetning tölvunnar (<ph name="DATE_AND_TIME" />) er röng.</translation>
 <translation id="7260504762447901703">Afturkalla aðgang</translation>
 <translation id="7275334191706090484">Stýrð bókamerki</translation>
+<translation id="7288778322931489286">Kerfisstjórinn hefur kveikt á Enterprise Service krækjum í vafranum. Þessar krækjur hafa aðgang að sumum af gögnunum þínum.</translation>
 <translation id="7292031607255951991">Nafn viðtakanda</translation>
 <translation id="7298195798382681320">Ráðlagt</translation>
 <translation id="7300012071106347854">Kóbaltblár</translation>
@@ -1727,6 +1734,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="874918643257405732">Setja þennan flipa í bókamerki</translation>
 <translation id="8751426954251315517">Reyndu aftur síðar</translation>
 <translation id="8759274551635299824">Kortið er útrunnið</translation>
+<translation id="87601671197631245">Þetta vefsvæði notar úrelta öryggisstillingu sem gæti sett upplýsingarnar þínar í hættu (til dæmis aðgangsorð, skilaboð eða kreditkort) þegar þær eru sendar til vefsvæðisins.</translation>
 <translation id="8761567432415473239">Örugg vefskoðun Google <ph name="BEGIN_LINK" />fann skaðleg forrit<ph name="END_LINK" /> á <ph name="SITE" /> nýlega.</translation>
 <translation id="8763927697961133303">USB-tæki</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1744,6 +1752,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="8866481888320382733">Villa við að þátta reglustillingar</translation>
 <translation id="8866928039507595380">Brot</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Deila gögnum um öryggisatvik sem Enterprise Service krækjur hafa tilkynnt með kerfisstjóra. Gögnin gætu falið í sér vefslóðir síðna sem þú opnar, skráarheiti eða lýsigögn og notandanafnið sem þú notar til að skrá þig inn á tækið og í Chrome.</translation>
 <translation id="8870413625673593573">Nýlega lokað</translation>
 <translation id="8870494189203302833">Sama röð, snýr niður</translation>
 <translation id="8874824191258364635">Færðu inn gilt kortanúmer</translation>

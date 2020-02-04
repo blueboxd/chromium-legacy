@@ -72,5 +72,5 @@
     [NewObject, RaisesException, CEReactions, CustomElementCallbacks] DocumentFragment createContextualFragment(HTMLString fragment);
 
     // Non-standard API
-    [RaisesException, DeprecateAs=RangeExpand] void expand([DefaultValue=Undefined] optional DOMString unit);
+    [RaisesException, DeprecateAs=RangeExpand] void expand(optional DOMString unit = "");
 };

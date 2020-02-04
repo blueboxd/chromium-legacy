@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Прагляд картак</translation>
 <translation id="3369192424181595722">Памылка гадзінніка</translation>
 <translation id="337363190475750230">Ініцыялізацыя скасавана</translation>
+<translation id="3376829916920036789">Дамен <ph name="ENROLLMENT_DOMAIN" /> уключыў перахватчыкі падзей Enterprise у вашым браўзеры. У перахватчыкаў падзей ёсць доступ да некаторых вашых даных.</translation>
+<translation id="3377144306166885718">Сервер выкарыстоўвае ўстарэлую версію пратакола TLS.</translation>
 <translation id="3377188786107721145">Памылка аналізу палітыкі</translation>
 <translation id="3377736046129930310">Выкарыстоўваць блакіроўку экрана для хутчэйшага пацвярджэння картак</translation>
 <translation id="3380365263193509176">Невядомая памылка</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Адрас дастаўкі</translation>
 <translation id="3395827396354264108">Спосаб прыняцця</translation>
 <translation id="3399952811970034796">Адрас дастаўкі</translation>
+<translation id="3402261774528610252">Для загрузкі гэтага сайта выкарыстоўвалася падключэнне з выкарыстаннем устарэлага пратакола TLS 1.0 або TLS 1.1, які ў далейшым будзе адключаны. Пасля яго адключэння карыстальнікі не змогуць загружаць гэты сайт. На серверы трэба ўключыць пратакол TLS версіі 1.2 або навейшай.</translation>
 <translation id="3422248202833853650">Каб вызваліць памяць, выйдзіце з іншых праграм.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> зараз недаступны.</translation>
 <translation id="3423742043356668186">Указваецца сістэмай</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">Пасля вашага пацвярджэння даныя карткі з Уліковага запісу Google будуць абагулены з гэтым сайтам.</translation>
 <translation id="3748148204939282805">Зламыснікі на сайце <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могуць падмануць вас і прымусіць зрабіць што-небудзь небяспечнае – напрыклад, усталяваць ПЗ або выдаць асабістую інфармацыю (паролі, нумары тэлефонаў або даныя крэдытных картак і падобнае). <ph name="BEGIN_LEARN_MORE_LINK" />Даведацца больш<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Не ўдалося перакласці: памылка сервера.</translation>
+<translation id="3754210790023674521">Выйсці з рэжыму "Відарыс у відарысе"</translation>
 <translation id="3759461132968374835">Няма даных аб нядаўніх збоях.  Інфармацыя пра збоі, якія адбываюцца, калі стварэнне справаздач аб збоях выключана, тут не паказваецца.</translation>
 <translation id="3760561303380396507">Выкарыстоўваць Windows Hello замест CVC?</translation>
 <translation id="3761718714832595332">Схаваць стан</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267">Мова старонкі – не <ph name="ORIGINAL_LANGUAGE" />? Паведаміце пра памылку</translation>
 <translation id="5190835502935405962">Панэль закладак</translation>
 <translation id="519422657042045905">Анатацыя недаступная</translation>
+<translation id="5196187217592847346">Перахватчыкі падзей Enterprise</translation>
 <translation id="5201306358585911203">Убудаваная старонка на гэтай старонцы паведамляе</translation>
 <translation id="5205222826937269299">Увядзіце імя</translation>
 <translation id="5215116848420601511">Спосабы аплаты і адрасы, якія выкарыстоўваюць Google Pay</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">У выніку ўцечкі даных на сайце або ў праграме ваш пароль быў раскрыты. Chrome рэкамендуе неадкладна праверыць захаваныя паролі.</translation>
 <translation id="5299298092464848405">Не ўдалося прааналізаваць правіла</translation>
 <translation id="5300589172476337783">Паказаць</translation>
+<translation id="5306593769196050043">Абодва аркушы</translation>
 <translation id="5308380583665731573">Падключыцца</translation>
 <translation id="5308689395849655368">Справаздачы аб збоях выключаны.</translation>
 <translation id="5314967030527622926">Стварэнне брашур</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Праверце свае паролі</translation>
 <translation id="6015796118275082299">Год</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Старонка 1}one{Старонка #}few{Старонка #}many{Старонка #}other{Старонка #}}</translation>
 <translation id="6017514345406065928">Зялёны</translation>
 <translation id="6017850046339264347">Зламыснікі на сайце <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могуць усталяваць падманныя праграмы, якія спрабуюць выдаваць сябе за нешта іншае або збіраюць даныя, што могуць быць выкарыстаны для сачэння за вамі. <ph name="BEGIN_LEARN_MORE_LINK" />Даведацца больш<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (сінхранізаваныя)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (канверт)</translation>
 <translation id="6446608382365791566">Дадаць болей звестак</translation>
 <translation id="6447842834002726250">Файлы cookie</translation>
-<translation id="644931407731409778">Дакумент PDF: {COUNT,plural, =1{1 старонка}one{# старонка}few{# старонкі}many{# старонак}other{# старонкі}}</translation>
 <translation id="6451458296329894277">Пацвердзіце паўторную адпраўку формы</translation>
 <translation id="6457206614190510200">Брашуроўка скобамі па спінцы</translation>
 <translation id="6465306955648956876">Кіраваць паролямі...</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">Заблакіраваць</translation>
 <translation id="7062635574500127092">Сіне-зялёны</translation>
 <translation id="7064851114919012435">Кантактная інфармацыя</translation>
+<translation id="70705239631109039">Ваша падключэнне не цалкам бяспечнае</translation>
 <translation id="7075452647191940183">Запыт занадта вялікі</translation>
 <translation id="7079718277001814089">Гэты сайт мае шкоднае змесціва</translation>
 <translation id="7081308185095828845">На жаль, гэта функцыя на прыладзе недаступная</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (канверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Бледна-ліловы</translation>
+<translation id="7156870133441232244">Сервер патрабуе абнаўлення пратакола TLS да версіі 1.2 або навейшай.</translation>
 <translation id="717330890047184534">Ідэнтыфікатар GAIA:</translation>
 <translation id="7174545416324379297">Аб'яднана</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1401,6 +1407,7 @@
 <translation id="725866823122871198">Памылка прыватнага падключэння да дамена <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />: дата і час на вашым камп'ютары (<ph name="DATE_AND_TIME" />) няправільныя.</translation>
 <translation id="7260504762447901703">Адклікаць дазвол на доступ</translation>
 <translation id="7275334191706090484">Кіруемыя закладкі</translation>
+<translation id="7288778322931489286">Адміністратар уключыў перахватчыкі падзей Enterprise. У перахватчыкаў падзей ёсць доступ да некаторых вашых даных.</translation>
 <translation id="7292031607255951991">Імя атрымальніка</translation>
 <translation id="7298195798382681320">Рэкамендавана</translation>
 <translation id="7300012071106347854">Кобальтавы</translation>
@@ -1726,6 +1733,7 @@
 <translation id="874918643257405732">Дадаць гэту ўкладку ў закладкі</translation>
 <translation id="8751426954251315517">Паўтарыце спробу пазней</translation>
 <translation id="8759274551635299824">Тэрмін дзеяння гэтай карткі скончыўся</translation>
+<translation id="87601671197631245">Гэты сайт выкарыстоўвае ўстарэлую канфігурацыю бяспекі, таму звесткі пра вас (напрыклад, паролі, паведамленні або нумары крэдытных картак) пры іх адпраўцы на гэты сайт могуць быць раскрыты.</translation>
 <translation id="8761567432415473239">Google Бяспечны прагляд нядаўна <ph name="BEGIN_LINK" />выявіў шкодныя праграмы<ph name="END_LINK" /> на сайце <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Прылада USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@
 <translation id="8866481888320382733">Не ўдалося прааналізаваць налады палітыкі</translation>
 <translation id="8866928039507595380">Згіб</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Абагульванне даных пра падзеі бяспекі, адзначаныя адміністратарам з выкарыстаннем перахватчыкаў падзей Enterprise. Сярод даных могуць быць URL-адрасы старонак, якія вы наведваеце, назвы файлаў або метаданыя, а таксама імя карыстальніка, якое вы выкарыстоўваеце для ўваходу на сваю прыладу або ў Chrome.</translation>
 <translation id="8870413625673593573">Нядаўна закрытыя</translation>
 <translation id="8870494189203302833">У тым жа парадку, рабочым бокам уніз</translation>
 <translation id="8874824191258364635">Увядзіце сапраўдны нумар карткі</translation>

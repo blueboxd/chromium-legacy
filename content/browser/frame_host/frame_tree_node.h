@@ -255,12 +255,12 @@ class CONTENT_EXPORT FrameTreeNode {
     return render_manager_.current_frame_host();
   }
 
-  // Return the node immediately preceding this node in its parent's
-  // |children_|, or nullptr if there is no such node.
+  // Return the node immediately preceding this node in its parent's children,
+  // or nullptr if there is no such node.
   FrameTreeNode* PreviousSibling() const;
 
-  // Return the node immediately following this node in its parent's
-  // |children_|, or nullptr if there is no such node.
+  // Return the node immediately following this node in its parent's children,
+  // or nullptr if there is no such node.
   FrameTreeNode* NextSibling() const;
 
   // Returns true if this node is in a loading state.
@@ -453,10 +453,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // of the frame tree.
   scoped_refptr<Navigator> navigator_;
 
-  // Manages creation and swapping of RenderFrameHosts for this frame.  This
-  // must be declared before |children_| so that it gets deleted after them.
-  // That's currently necessary so that RenderFrameHostImpl's destructor can
-  // call GetProcess.
+  // Manages creation and swapping of RenderFrameHosts for this frame.
   RenderFrameHostManager render_manager_;
 
   // A browser-global identifier for the frame in the page, which stays stable

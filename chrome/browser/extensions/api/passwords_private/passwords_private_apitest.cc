@@ -73,9 +73,8 @@ class TestDelegate : public PasswordsPrivateDelegate {
     std::move(callback).Run(current_entries_);
   }
 
-  void GetPasswordExceptionsList(
-      const ExceptionEntriesCallback& callback) override {
-    callback.Run(current_exceptions_);
+  void GetPasswordExceptionsList(ExceptionEntriesCallback callback) override {
+    std::move(callback).Run(current_exceptions_);
   }
 
   void ChangeSavedPassword(int id,

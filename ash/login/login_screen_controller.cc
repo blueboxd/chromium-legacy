@@ -207,6 +207,15 @@ bool LoginScreenController::ValidateParentAccessCode(
   return client_->ValidateParentAccessCode(account_id, code, validation_time);
 }
 
+void LoginScreenController::OnSecurityTokenPinRequestCancelledByUser() {
+  security_token_pin_request_cancelled_ = true;
+  std::move(on_request_security_token_ui_closed_).Run();
+}
+
+bool LoginScreenController::GetSecurityTokenPinRequestCancelled() const {
+  return security_token_pin_request_cancelled_;
+}
+
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
   if (!client_)
     return;
@@ -397,13 +406,24 @@ LoginScreenController::GetScopedGuestButtonBlocker() {
 
 void LoginScreenController::RequestSecurityTokenPin(
     SecurityTokenPinRequest request) {
-  if (!LockScreen::HasInstance()) {
-    // Corner case: the PIN request is made at inappropriate time, racing with
-    // the lock screen showing/hiding.
+  if (LockScreen::HasInstance() && !security_token_pin_request_cancelled_) {
+    // The caller must ensure that there is no unresolved pin request currently
+    // in progress.
+    on_request_security_token_ui_closed_ =
+        std::move(request.pin_ui_closed_callback);
+    // base::Unretained(this) could lead to errors if this controller is
+    // destroyed before the callback happens. This will be fixed by
+    // crbug.com/1001288 by using a UI owned by the controller.
+    request.pin_ui_closed_callback = base::BindOnce(
+        &LoginScreenController::OnSecurityTokenPinRequestCancelledByUser,
+        base::Unretained(this));
+    LockScreen::Get()->RequestSecurityTokenPin(std::move(request));
+  } else {
+    // The user closed the PIN UI on a previous request that was part of the
+    // same smart card login attempt, or the PIN request is made at an
+    // inappropriate time, racing with the lock screen showing/hiding.
     std::move(request.pin_ui_closed_callback).Run();
-    return;
   }
-  LockScreen::Get()->RequestSecurityTokenPin(std::move(request));
 }
 
 void LoginScreenController::ClearSecurityTokenPinRequest() {
@@ -477,6 +497,8 @@ void LoginScreenController::OnAuthenticateComplete(
     bool success) {
   authentication_stage_ = AuthenticationStage::kUserCallback;
   std::move(callback).Run(base::make_optional<bool>(success));
+  security_token_pin_request_cancelled_ = false;
+  on_request_security_token_ui_closed_.Reset();
   authentication_stage_ = AuthenticationStage::kIdle;
 }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
+<translation id="1065672644894730302">لا يمكن قراءة إعداداتك المفضّلة. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في الإعدادات المفضّلة.</translation>
 <translation id="1104942323762546749">‏يرغب Chromium في تصدير كلمات المرور، لذا يُرجى كتابة كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="113122355610423240">‏Chromium هو متصفحك التلقائي</translation>
 <translation id="1185134272377778587">‏حول Chromium</translation>
@@ -155,7 +155,7 @@
 <translation id="7223968959479464213">‏إدارة المهام - Chromium</translation>
 <translation id="731644333568559921">‏تحديث ن&amp;ظام التشغيل Chromium</translation>
 <translation id="731795002583552498">‏تحديث Chromium</translation>
-<translation id="7318036098707714271">‏ملف التفضيلات تالف أو غير صالح.
+<translation id="7318036098707714271">‏ملف الإعدادات المفضّلة تالف أو غير صالح.
 
 يتعذر على Chromium استعادة إعداداتك.</translation>
 <translation id="7337881442233988129">Chromium</translation>

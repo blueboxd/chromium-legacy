@@ -80,11 +80,11 @@ String GetUrl(v8::Local<v8::Context> context) {
 MeasureMemoryEntry* CreateMeasureMemoryEntry(size_t estimate,
                                              size_t unattributed) {
   MeasureMemoryEntry* result = MeasureMemoryEntry::Create();
-  result->setJSMemoryEstimate(estimate);
+  result->setJsMemoryEstimate(estimate);
   Vector<uint64_t> range;
   range.push_back(estimate);
   range.push_back(estimate + unattributed);
-  result->setJSMemoryRange(range);
+  result->setJsMemoryRange(range);
   return result;
 }
 
@@ -92,7 +92,7 @@ MeasureMemoryEntry* CreateMeasureMemoryEntry(size_t estimate,
                                              size_t unattributed,
                                              const String& url) {
   MeasureMemoryEntry* result = CreateMeasureMemoryEntry(estimate, unattributed);
-  result->setURL(url);
+  result->setUrl(url);
   return result;
 }
 }  // anonymous namespace

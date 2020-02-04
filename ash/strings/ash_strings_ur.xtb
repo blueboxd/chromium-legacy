@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">اسٹائلس کی ترتیبات</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> کو فعال کیا جا رہا ہے</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
-<translation id="2364154243880592194">اطلاع کے مرکز تک رسائی کے لیے صورتحال کی ٹرے،<ph name="TIME" /> وقت، <ph name="BATTERY" /> تلاش + بائیں تیر والی بٹن کو دبائيں۔</translation>
 <translation id="2365393535144473978">موبائل ڈیٹا فعال کرنے سے بلوٹوتھ فعال ہو جائے گا۔</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">اپ ڈیٹ دستیاب ہے</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">پیچھے کریں</translation>
 <translation id="4129129681837227511">اپنی مقفل اسکرین پر اطلاعات دیکھنے کیلئے، ترتیب تبدیل کرنے کیلئے غیر مقفل کریں</translation>
 <translation id="4146833061457621061">موسیقی چلائیں</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> کے زیر انتظام ہے</translation>
 <translation id="4181841719683918333">زبانیں</translation>
 <translation id="4195877955194704651">خودکار کلکس بٹن</translation>
 <translation id="4217571870635786043">املاء</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">تاثرات</translation>
 <translation id="4527045527269911712">بلوٹوتھ آلہ "<ph name="DEVICE_NAME" />" جوڑا بنانے کی اجازت چاہتا ہے۔</translation>
 <translation id="453661520163887813">مکمل ہونے میں <ph name="TIME" /> باقی</translation>
-<translation id="4544944664594876241">اسکرین لاک کرنے کے شارٹ کٹ کو تبدیل کر دیا گیا ہے۔ براہ کرم <ph name="OLD_SHORTCUT" /> کی بجائے <ph name="NEW_SHORTCUT" /> استعمال کریں۔</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">سننے کیلئے منتخب کریں بٹن</translation>
 <translation id="4585337515783392668">کسی نامعلوم موصول کنندہ پر کاسٹ کرنا بند کریں</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">چلائیں</translation>
 <translation id="6803622936009808957">ڈسپلیز کی عکاسی نہیں کر سکا کیونکہ کوئی تعاون یافتہ ریزولیوشنز نہیں ملے۔اس کی بجائے توسیع کردہ ڈیسک ٹاپ داخل کیا گیا۔</translation>
 <translation id="6820676911989879663">تھوڑا وقفہ لیں!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> فعال کریں</translation>
 <translation id="6878400149835617132">شارٹ کٹ آف ہے</translation>
 <translation id="6910714959251846841">اس اپ ڈیٹ کیلئے آپ کے آلے کی پاور واشنگ درکار ہے۔ تازہ ترین <ph name="SYSTEM_APP_NAME" /> اپ ڈیٹ کے بارے میں مزید جانیں۔</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">منسلک ہو رہا ہے</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> میں پرانی ریزولیوشن پر لوٹایا جا رہا ہے</translation>
+<translation id="7246071203293827765">‏<ph name="UPDATE_TEXT" />۔ اپ ڈیٹ کو لاگو کرنے کے لیے Chromebook کو ری سٹارٹ کرنے کی ضرورت ہے۔ اس میں 1 منٹ تک لگ سکتا ہے۔</translation>
 <translation id="7256634071279256947">پیچھے کا مائیکروفون</translation>
 <translation id="726276584504105859">اسپلٹ اسکرین استعمال کرنے کیلئے یہاں گھسیٹیں</translation>
 <translation id="7262906531272962081">یاد دہانی تخلیق کریں</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">کیمرا زیر استعمال ہے۔</translation>
 <translation id="743058460480092004">کیمرا اور مائیکروفون زیر استعمال ہیں۔</translation>
 <translation id="7497767806359279797">زبان اور کی بورڈ منتخب کریں</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ممکن ہے نیٹ ورک کو مانیٹر کیا جا رہا ہو</translation>
 <translation id="7536035074519304529">‏IP پتہ: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">سونے کا وقت ہو گیا</translation>
-<translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> کا <ph name="DISPLAY_NAME" /> تعاون نہیں کرتا ہے۔ ریزولیوشن کو تبدیل کر کے <ph name="FALLBACK_RESOLUTION" /> کر دیا گیا</translation>
 <translation id="7562368315689366235">‏Emoji پیلٹ</translation>
 <translation id="7564874036684306347">ونڈوز کو کسی دوسرے ڈیسک ٹاپ پر منتقل کرنا غیر متوقع برتاؤ کا سبب بن سکتا ہے۔ بعد کی اطلاعات، ونڈوز اور ڈائیلاگز ڈیسک ٹاپ کے بیچ منقسم ہو سکتے ہیں۔</translation>
 <translation id="7568294522609223312">خودکار کلکس کو آف کریں</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">اعلی تناسب امتزاج</translation>
 <translation id="8098591350844501178">اسکرین کو <ph name="RECEIVER_NAME" /> پر کاسٹ کرنا بند کریں</translation>
 <translation id="8113423164597455979">آن، سبھی ایپس</translation>
+<translation id="8131740175452115882">توثیق کریں</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> سے منسلک ہو گیا</translation>
 <translation id="813913629614996137">آغاز کیا جا رہا ہے…</translation>
 <translation id="8142441511840089262">دو بار کلک کریں</translation>

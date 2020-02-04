@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/html_source_element.h"
-#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -102,16 +101,13 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
+      is_default_overridden_intrinsic_size_(
+          !document.IsImageDocument() &&
+          !document.IsFeatureEnabled(
+              mojom::blink::FeaturePolicyFeature::kUnsizedMedia)),
       is_legacy_format_or_unoptimized_image_(false),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
   SetHasCustomStyleCallbacks();
-  if (media_element_parser_helpers::IsMediaElement(this) &&
-      !document.IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kUnsizedMedia)) {
-    is_default_overridden_intrinsic_size_ = true;
-    overridden_intrinsic_size_ =
-        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
-  }
 }
 
 HTMLImageElement::~HTMLImageElement() = default;
@@ -492,9 +488,10 @@ unsigned HTMLImageElement::height() {
 }
 
 LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
-  IntSize overridden_intrinsic_size = GetOverriddenIntrinsicSize();
-  if (!overridden_intrinsic_size.IsEmpty())
-    return LayoutSize(overridden_intrinsic_size);
+  if (IsDefaultIntrinsicSize()) {
+    return LayoutSize(LayoutReplaced::kDefaultWidth,
+                      LayoutReplaced::kDefaultHeight);
+  }
   ImageResourceContent* image_resource = GetImageLoader().GetContent();
   if (!image_resource || !image_resource->HasImage())
     return LayoutSize();
@@ -580,10 +577,6 @@ bool HTMLImageElement::draggable() const {
 
 void HTMLImageElement::setHeight(unsigned value) {
   SetUnsignedIntegralAttribute(html_names::kHeightAttr, value);
-}
-
-IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
-  return overridden_intrinsic_size_;
 }
 
 void HTMLImageElement::setWidth(unsigned value) {

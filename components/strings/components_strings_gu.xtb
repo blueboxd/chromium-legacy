@@ -536,6 +536,8 @@
 <translation id="3366477098757335611">કાર્ડ જુઓ</translation>
 <translation id="3369192424181595722">ઘડિયાળ ભૂલ</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારા બ્રાઉઝર પર Enterprise Service Hooks વિભાગ ચાલુ કરવામાં આવ્યો છે. આ હુકને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
+<translation id="3377144306166885718">સર્વર TLSના જૂના વર્ઝનનો ઉપયોગ કરે છે.</translation>
 <translation id="3377188786107721145">નીતિ વિશ્લેષણ ભૂલ</translation>
 <translation id="3377736046129930310">કાર્ડને વધુ ઝડપથી કન્ફર્મ કરવા માટે સ્ક્રીન લૉકનો ઉપયોગ કરો</translation>
 <translation id="3380365263193509176">અજ્ઞાત ભૂલ</translation>
@@ -544,6 +546,7 @@
 <translation id="3391030046425686457">વિતરણ માટેનું સરનામું</translation>
 <translation id="3395827396354264108">પિકઅપ પદ્ધતિ</translation>
 <translation id="3399952811970034796">વિતરણ માટેનું સરનામું</translation>
+<translation id="3402261774528610252">આ સાઇટને લોડ કરવા માટે ઉપયોગમાં લેવાયેલા કનેક્શનમાં TLS 1.0 અથવા TLS 1.1નો ઉપયોગ કરવામાં આવે છે, જે જૂના છે અને ભવિષ્યમાં બંધ કરવામાં આવશે. એકવાર બંધ કરી દીધા, પછી વપરાશકર્તાઓને આ સાઇટ લોડ કરવાથી રોકવામાં આવશે. સર્વરે TLS 1.2 અથવા તે પછીનું વર્ઝન ચાલુ કરવું જોઈએ.</translation>
 <translation id="3422248202833853650">મેમરી ખાલી કરવા માટે અન્ય પ્રોગ્રામથી બહાર નીકળવાનો પ્રયાસ કરો.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> હાલમાં પહોંચવા યોગ્ય નથી.</translation>
 <translation id="3423742043356668186">સિસ્ટમ દ્વારા ઉલ્લેખિત</translation>
@@ -631,6 +634,7 @@
 <translation id="3745099705178523657">તમે કન્ફર્મ કરી લો, પછી આ સાઇટ સાથે તમારા Google એકાઉન્ટમાંથી કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો તમને કંઈક જોખમકારક પ્રવૃત્તિ જેમ કે સૉફ્ટવેર ઇન્સ્ટૉલ કરવા અથવા તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, ફોન નંબર અથવા ક્રેડિટ કાર્ડ) જણાવવા ફસાવી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">સર્વર ભૂલને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
+<translation id="3754210790023674521">ચિત્રમાં ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="3759461132968374835">તમે હાલમાં ક્રૅશની જાણ કરી નથી. ક્રૅશની જાણ કરવાનું બંધ હતું ત્યારે થયેલા ક્રૅશ અહીં દેખાશે નહિ.</translation>
 <translation id="3760561303380396507">CVCને બદલે Windows Helloનો ઉપયોગ કરીએ?</translation>
 <translation id="3761718714832595332">સ્ટેટસ છુપાવો</translation>
@@ -952,6 +956,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> માં નથી? આ ભૂલની જાણ કરો </translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="519422657042045905">ટીકાટિપ્પણી ઉપલબ્ધ નથી</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">આ પેજ પરનું શામેલ કરેલ પેજ કહે છે કે</translation>
 <translation id="5205222826937269299">નામ આવશ્યક છે</translation>
 <translation id="5215116848420601511">Google Payનો ઉપયોગ કરતી ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ</translation>
@@ -981,6 +986,7 @@
 <translation id="5295292838686006428">કોઈ સાઇટ અથવા ઍપ પર થયેલા ડેટા બ્રીચમાં તમારો પાસવર્ડ ઉઘાડો પાડી દેવામાં આવ્યો છે. Chrome સુઝાવ આપે છે કે તમે હમણાં જ તમારા સાચવેલા પાસવર્ડની તપાસ કરો.</translation>
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
 <translation id="5300589172476337783">બતાવો</translation>
+<translation id="5306593769196050043">બન્ને શીટ</translation>
 <translation id="5308380583665731573">કનેક્ટ કરો</translation>
 <translation id="5308689395849655368">ક્રૅશની જાણ કરવાનું બંધ કર્યું છે.</translation>
 <translation id="5314967030527622926">બુકલેટ માર્કર</translation>
@@ -1134,7 +1140,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">તમારા પાસવર્ડ તપાસો</translation>
 <translation id="6015796118275082299">વર્ષ</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{પૃષ્ઠ 1}one{પૃષ્ઠ #}other{પૃષ્ઠ #}}</translation>
 <translation id="6017514345406065928">લીલો</translation>
 <translation id="6017850046339264347">હુમલાખોરો <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પર ભ્રામક ઍપ્લિકેશન ઇન્સ્ટૉલ કરી શકે છે જે કંઈક બીજું હોવાનો ડોળ કરે છે અથવા તમને ટ્રૅક કરવા માટે ઉપયોગમાં લઈ શકાય તેવો ડેટા એકત્રિત કરી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (સમન્વયિત)</translation>
@@ -1242,7 +1247,6 @@
 <translation id="6446163441502663861">Kahu (એન્વલપ)</translation>
 <translation id="6446608382365791566">વધુ માહિતી ઉમેરો</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
-<translation id="644931407731409778">PDF દસ્તાવેજ જેમાં {COUNT,plural, =1{1 પેજ}one{# પેજ}other{# પેજ}} શામેલ છે</translation>
 <translation id="6451458296329894277">ફોર્મનાં ફરી સબમિશનની પુષ્ટિ કરો</translation>
 <translation id="6457206614190510200">સૅડલ સ્ટિચ</translation>
 <translation id="6465306955648956876">બધા પાસવર્ડ મેનેજ કરો…</translation>
@@ -1354,6 +1358,7 @@
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7062635574500127092">મોરપીંછ</translation>
 <translation id="7064851114919012435">સંપર્ક માહિતી</translation>
+<translation id="70705239631109039">તમારું કનેક્શન પૂર્ણપણે સુરક્ષિત નથી</translation>
 <translation id="7075452647191940183">વિનંતી ખૂબ મોટી છે.</translation>
 <translation id="7079718277001814089">આ સાઇટમાં માલવેર છે</translation>
 <translation id="7081308185095828845">તમારા ડિવાઇસમાં આ સુવિધા ઉપલબ્ધ નથી</translation>
@@ -1373,6 +1378,7 @@
 <translation id="7152423860607593928">નંબર-14 (એન્વલપ)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}}</translation>
 <translation id="7153618581592392745">આછો જાંબલી</translation>
+<translation id="7156870133441232244">સર્વરને TLS 1.2 અથવા તે પછીના વર્ઝન પર અપગ્રેડ કરવું જોઈએ.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">મર્જ કર્યાં</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}}</translation>
@@ -1398,6 +1404,7 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.</translation>
 <translation id="7260504762447901703">ઍક્સેસ રદબાતલ કરો</translation>
 <translation id="7275334191706090484">સંચાલિત બુકમાર્ક્સ</translation>
+<translation id="7288778322931489286">તમારા વ્યવસ્થાપક દ્વારા તમારા બ્રાઉઝર પર Enterprise Service Hooks વિભાગ ચાલુ કરવામાં આવ્યો છે. આ હુકને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="7292031607255951991">પ્રાપ્તકર્તાનું નામ</translation>
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="7300012071106347854">ઘેરો વાદળી</translation>
@@ -1722,6 +1729,7 @@
 <translation id="874918643257405732">આ ટૅબને બુકમાર્ક કરો</translation>
 <translation id="8751426954251315517">કૃપા કરીને આગલી વખતે ફરી પ્રયાસ કરો</translation>
 <translation id="8759274551635299824">આ કાર્ડની સમયસીમા સમાપ્ત થઈ ગઈ છે</translation>
+<translation id="87601671197631245">આ સાઇટ હજી પણ જૂના સુરક્ષા કન્ફિગ્યુરેશનનો ઉપયોગ કરે છે, જેને લીધે તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, સંદેશ અથવા ક્રેડિટ કાર્ડ) જ્યારે આ સાઇટને મોકલવામાં આવે, ત્યારે તે જોખમમાં આવી શકે છે.</translation>
 <translation id="8761567432415473239">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />હાનિકારક પ્રોગ્રામ્સ મળ્યાં<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ઉપકરણ</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1739,6 +1747,7 @@
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="8866928039507595380">ફોલ્ડ</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Enterprise Service Hooks દ્વારા ચિહ્નિત કરવામાં આવેલી સુરક્ષા ઇવેન્ટ વિશેનો ડેટા તમારા વ્યવસ્થાપક સાથે શેર કરો. આમાં તમે મુલાકાત લીધી હોય તે પેજના URLs, ફાઇલના નામ અથવા મેટાડેટાનો અને તમે તમારા ડિવાઇસ અને Chromeમાં સાઇન ઇન કરવા માટે ઉપયોગ કરો છો તે વપરાશકર્તાના નામનો સમાવેશ હોઈ શકે છે.</translation>
 <translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8870494189203302833">નીચે તરફ તે જ ક્રમમાં</translation>
 <translation id="8874824191258364635">એક માન્ય કાર્ડ નંબર દાખલ કરો</translation>

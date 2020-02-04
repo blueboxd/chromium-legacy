@@ -666,8 +666,13 @@ TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenUnsupported) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInvalidDlc);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
+
   StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram,
+      PluginVmDlcUseResult::kFallbackToRootFsInvalidDlcError, 1);
 }
 
 }  // namespace plugin_vm

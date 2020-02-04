@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2359808026110333948">Продовжити</translation>
+<translation id="2501278716633472235">Назад</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="3115898365077584848">Показати інформацію</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Копіювати</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4570913071927164677">Деталі</translation>
+<translation id="497421865427891073">Перейти вперед</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
+<translation id="5596627076506792578">Інші опції</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5939518447894949180">Скинути</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: опції</translation>
 <translation id="6527303717912515753">Надіслати</translation>
 <translation id="6746124502594467657">Вниз</translation>
+<translation id="6818926723028410516">Виберіть елементи</translation>
 <translation id="6910211073230771657">Видалено</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
+<translation id="7087918508125750058">Вибрано <ph name="ITEM_COUNT" />. Панель інструментів розташовано вгорі екрана</translation>
+<translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
+<translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8249310407154411074">На початок</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8609465669617005112">Угору</translation>
+<translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>
 </translationbundle>

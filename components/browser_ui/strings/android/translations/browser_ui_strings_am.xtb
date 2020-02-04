@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
+<translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2704606927547763573">ተቀድቷል</translation>
 <translation id="3115898365077584848">መረጃ አሳይ</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">አገናኝ ቅዳ</translation>
 <translation id="4002066346123236978">ርዕስ</translation>
 <translation id="4570913071927164677">ዝርዝሮች</translation>
+<translation id="497421865427891073">ወደ ፊት ሂድ</translation>
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5301954838959518834">እሺ፣ ገባኝ</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
+<translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">የ<ph name="NAME_OF_LIST_ITEM" /> አማራጮች</translation>
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="6746124502594467657">ወደታች አውርድ</translation>
+<translation id="6818926723028410516">ንጥሎችን ይምረጡ</translation>
 <translation id="6910211073230771657">ተሰርዟል</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6965382102122355670">እሺ</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ተመርጧል}one{# ተመርጠዋል}other{# ተመርጠዋል}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ተመርጠዋል።  አማራጮች ከማያ ገጹ አናት አጠገብ ይገኛሉ</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ተመርጠዋል</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7781829728241885113">ትናንት</translation>
 <translation id="7791543448312431591">አክል</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
+<translation id="7846076177841592234">ምርጫ ሰርዝ</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
 <translation id="8249310407154411074">ወደ ላይ ውሰድ</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
+<translation id="8676374126336081632">ግቤቱን አጽዳ</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
 </translationbundle>

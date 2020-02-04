@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">खोज इन्जिन</translation>
 <translation id="1513352483775369820">बुकमार्कहरू र वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड मेट्नुहोस्</translation>
-<translation id="1516229014686355813">खोज्नका लागि ट्याप गर्नुहोस् नामक सुविधाले चयन गरिएको शब्द र हालको पृष्ठलाई सन्दर्भका रूपमा Google खोजमा पठाउँछ। तपाईं <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" />मा गई यसलाई निष्क्रिय पार्न सक्नुहुन्छ।</translation>
 <translation id="1521774566618522728">आज सक्रिय गरिएको समय</translation>
 <translation id="1544826120773021464">आफ्नो Google खाताको व्यवस्थापन गर्न "खाताको व्यवस्थापन गर्नुहोस्" नामक बटनमा क्लिक गर्नुहोस्</translation>
 <translation id="1549000191223877751">अर्को विन्डोमा सार्नुहोस्</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> ले Chrome मा पनि डेटा राखेको छ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">साइट पज गरियो</translation>
-<translation id="2063713494490388661">खोज्नको लागि ट्याप गर्नुहोस्</translation>
 <translation id="2067805253194386918">पाठ</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> को <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2091887806945687916">आवाज</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">साइन इन गर्न सकिएन</translation>
 <translation id="2349710944427398404">खाता, पुस्तक चिन्ह र सुरक्षित गरिएका सेटिङहरू सहित Chrome ले प्रयोग गरेको कुल डेटा</translation>
 <translation id="2353636109065292463">तपाईंको इन्टरनेट जडानको जाँच गर्दै</translation>
+<translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2369533728426058518">ट्याबहरू खोल्नुहोस्</translation>
 <translation id="2387895666653383613">पाठ स्केलिङ</translation>
 <translation id="2394602618534698961">तपाईंले डाउनलोड गर्ने फाइलहरू यहाँ देखिन्छन्</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">ब्राउजिङ इतिहास</translation>
 <translation id="2497852260688568942">तपाईंको प्रशासकले सिंंक असक्षम पार्नुभएको छ।</translation>
 <translation id="2498359688066513246">मद्दत र प्रतिक्रिया</translation>
-<translation id="2501278716633472235">पछाडि जानुहोस्</translation>
 <translation id="2513403576141822879">गोपनीयता, सुरक्षा र डेटाको सङ्कलनसँग सम्बन्धित थप सेटिङहरूका लागि <ph name="BEGIN_LINK" />सिंक तथा वैयक्तीकरण<ph name="END_LINK" /> नामक खण्ड हेर्नुहोस्</translation>
 <translation id="2517472476991765520">स्क्यान गर्नुहोस्</translation>
 <translation id="2518590038762162553">लाइट मोडमा हुँदा Chrome ले पृष्ठहरू अझ छिटो लोड गर्नाका साथै ६० प्रतिशतसम्म कम डेटा प्रयोग गर्छ। तपाईंले भ्रमण गर्ने पृष्ठहरू अप्टिमाइज गर्न, Chrome ले तपाईंको वेबसम्बन्धी ट्राफिक Google मा पठाउँछ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">खोजको पट्टी खोल्नुहोस्</translation>
 <translation id="3716182511346448902">यस पृष्ठले अत्यधिक मेमोरी प्रयोग गर्ने भएकाले Chromium ले यसलाई पज गर्‍यो।</translation>
 <translation id="3730075448226062617">Chrome लाई तपाईंको माइक्रोफोनमाथि पहुँच राख्न दिन <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई माइक्रोफोन पनि सक्रिय गर्नुहोस्।</translation>
+<translation id="3738139272394829648">खोज गर्न छुनुहोस्</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> मा पुस्तक चिन्ह लगाइयो</translation>
 <translation id="3744111561329211289">पृष्ठभूमिमा सिंक गर्ने सुविधा</translation>
 <translation id="3749259744154402564">असमर्थित</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# घन्टा}other{# घन्टा}}</translation>
 <translation id="4046123991198612571">अर्को ट्र्याक</translation>
-<translation id="4048707525896921369">वेबसाइटहरूमा भएका शीर्षकहरूबारे जान्न उक्त पृष्ठबाट बाहिर निस्किराख्नु पर्दैन। खोज्नका लागि ट्याप गर्नुहोस् नामक सुविधाले कुनै शब्द र त्यसको छेउछाउको सन्दर्भलाई Google खोजमा पठाउँछ र त्यहाँबाट परिभाषा, तस्बिर, खोजको परिणाम र अन्य विवरणहरूमा फिर्ता ल्याउँछ।
-
-आफ्नो खोज पद समायोजन गर्न उक्त पदमा केही बेरसम्म छोएर त्यसलाई चयन गर्नुहोस्। आफ्नो खोज परिष्कृत गर्न प्यानललाई सबैभन्दा माथिसम्म स्लाइड गरी खोज बाकसमा ट्याप गर्नुहोस्।</translation>
 <translation id="4056223980640387499">सेपिया</translation>
 <translation id="4060598801229743805">स्क्रिनको शीर्ष भाग नजिकै विकल्पहरू उपलब्ध छन्</translation>
 <translation id="4062305924942672200">कानूनी जानकारी</translation>
@@ -608,7 +604,6 @@
 <translation id="5578795271662203820">यस छविको लागि <ph name="SEARCH_ENGINE" /> खोज्नुहोस्</translation>
 <translation id="5581519193887989363">तपाईं जुनसुकै बेला <ph name="BEGIN_LINK1" />सेटिङहरू<ph name="END_LINK1" /> मा गई सिंक गर्ने कुरा छनौट गर्न सक्नुहुन्छ।</translation>
 <translation id="5595485650161345191">ठेगाना सम्पादन गर्नुहोस्</translation>
-<translation id="5596627076506792578">अन्य विकल्पहरू</translation>
 <translation id="5599455543593328020">इन्कोग्निटो मोड</translation>
 <translation id="5620928963363755975">थप विकल्पहरू नामक बटनमार्फत डाउनलोडरू नाम फोल्डरमा भएका आफ्ना फाइल र पृष्ठहरू भेट्टाउनुहोस्</translation>
 <translation id="5626134646977739690">नाम:</translation>
@@ -651,6 +646,7 @@
 <translation id="5864419784173784555">अर्को डाउनलोडको प्रतीक्षा गर्दै…</translation>
 <translation id="5865733239029070421">प्रयोगसम्बन्धी तथ्याङ्क र क्र्यास रिपोर्टहरू स्वतः Google मा पठाउँछ</translation>
 <translation id="5869522115854928033">बचत गरिएका पासवर्डहरू</translation>
+<translation id="5884076754568147479">तपाईंलाई काम सम्पन्न गर्न मद्दत गर्न Google ले तपाईंले सहायक प्रयोग गर्ने साइटका URL र सामग्रीहरूका साथै तपाईंले सहायकमार्फत पेस गर्न जानकारी प्राप्त गर्ने छ</translation>
 <translation id="5902828464777634901">कुकीहरू सहित यो वेबसाइटद्वारा संग्रहित सबै स्थानीय डेटा मेटिने छन्।</translation>
 <translation id="5919204609460789179">सिंक सुरु गर्न <ph name="PRODUCT_NAME" /> लाई अद्यावधिक गर्नुहोस्</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> बचत गरियो</translation>
@@ -774,7 +770,6 @@
 <translation id="6782111308708962316">तेस्रो पक्षीय वेबसाइटहरूलाई कुकी सम्बन्धी डेटा सुरक्षित गर्न र पढ्न नदिनुहोस्</translation>
 <translation id="6790428901817661496">प्ले गर्नुहोस्</translation>
 <translation id="6811034713472274749">पृष्ठ हेर्नका लागि तयार छ</translation>
-<translation id="6818926723028410516">वस्तुहरू छनाैट गर्नुहोस्</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">अनुवाद गर्नुहोस्</translation>
 <translation id="6845325883481699275">Chrome को सुरक्षामा सुधार गर्न मद्दत गर्नुहोस्</translation>
@@ -807,10 +802,8 @@
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7055152154916055070">रिडिरेक्ट नामक सुविधामाथि रोक लगाइयो:</translation>
 <translation id="7063006564040364415">समक्रमण सर्भरमा जडान गर्न सकेन।</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{१ चयन गरियो}other{# चयन गरिए}}</translation>
 <translation id="7071521146534760487">खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चयन गरिए।  विकल्पहरू स्क्रिनको शीर्षभागको नजिकै उपलब्ध छन्</translation>
 <translation id="7121362699166175603">ठेगाना पट्टीका इतिहास र स्वतः पूर्णताहरूलाई खाली गर्छ। तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा अन्य किसिमका ब्राउजिङ इतिहास रहेका हुन सक्छन्।</translation>
 <translation id="7128222689758636196">हालको खोज इन्जिनका लागि अनुमति दिनुहोस्</translation>
 <translation id="7138678301420049075">अन्य</translation>
@@ -826,7 +819,6 @@
 <translation id="7233236755231902816">आफ्नो भाषामा वेब हेर्न Chrome को नवीनतम संस्करण प्राप्त गर्नुहोस्</translation>
 <translation id="7243308994586599757">विकल्पहरू स्क्रिनको तल नजिकै उपलब्ध छ</translation>
 <translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" /> को Chrome मा सिंक सुविधा सक्रिय गरिएको छ भन्ने कुरा सुनिश्चित गर्नुहोस्</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चयन गरिए</translation>
 <translation id="7274013316676448362">रोक लगाइएका साइटहरू</translation>
 <translation id="7290209999329137901">नाम बदल्ने सुविधा उपलब्ध छैन</translation>
 <translation id="7291387454912369099">सहायकले ट्रिगर गरेको चेकआउट</translation>
@@ -908,7 +900,6 @@
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7810647596859435254">निम्नमार्फत खोल्नुहोस्…</translation>
 <translation id="7821588508402923572">तपाईंले बचत गर्नुभएको डेटा यहाँ देखिने छ</translation>
-<translation id="7846076177841592234">चयन रद्द गर्नुहोस्</translation>
 <translation id="784934925303690534">समयको दायरा</translation>
 <translation id="7851858861565204677">अन्य यन्त्रहरू</translation>
 <translation id="7875915731392087153">इमेल सिर्जना गर्नुहोस्</translation>
@@ -956,6 +947,7 @@
 <translation id="8116925261070264013">म्युट गरियो</translation>
 <translation id="8127542551745560481">गृहपृष्ठ सम्पदान गर्नुहोस्</translation>
 <translation id="813082847718468539">साइट जानकारी हेर्नुहोस्</translation>
+<translation id="8137558756159375272">खोजी गर्न छुनुहोस् कार्यले चयन गरेको शब्द र सोही पृष्ठलाई सन्दर्भको रूपमा Google खोजीमा पठाउँछ।  तपाईं यसलाई  <ph name="BEGIN_LINK" /> सेटिङ <ph name="END_LINK" /> मा बन्द गर्न सक्नुहुन्छ।</translation>
 <translation id="8156139159503939589">तपाईं कुन कुन भाषा पढ्नुहुन्छ?</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> फाइलहरू बाँकी छन्</translation>
@@ -1023,7 +1015,6 @@
 <translation id="8655599981421006542">नयाँ ट्याबहरू सिर्जना गर्न यहाँ ट्याप गरी अघिल्ला ट्याबहरूमा फर्कनुहोस्</translation>
 <translation id="8662811608048051533">तपाईंलाई प्रायः जसो साइटहरूबाट साइन आउट गर्दछ।</translation>
 <translation id="8664979001105139458">यो नामको फाइल पहिलेदेखि नै विद्यमान छ</translation>
-<translation id="8676374126336081632">आगत मेटाउनुहोस्</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{सङ्केतको क्षमता स्तर: # बार}other{सङ्केतको क्षमता स्तर: # बारहरू}}</translation>
 <translation id="868929229000858085">आफ्ना सम्पर्कहरू खोज्नुहोस्</translation>
 <translation id="8698438463325761328">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंका यन्त्र र डेटामाथि पहुँच राख्न दिनुहोस्</translation>

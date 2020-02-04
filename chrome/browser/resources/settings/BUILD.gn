@@ -235,8 +235,7 @@ js_type_check("closure_compile_local_module") {
 
     #":search_settings.m",
     ":settings_routes.m",
-
-    #":site_favicon.m",
+    ":site_favicon.m",
   ]
 }
 
@@ -339,7 +338,8 @@ js_library("site_favicon.m") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/settings/site_favicon.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:icon.m",
   ]
   extra_deps = [ ":site_favicon_module" ]
 }
@@ -414,6 +414,8 @@ polymer_modulizer("site_favicon") {
   js_file = "site_favicon.js"
   html_file = "site_favicon.html"
   html_type = "dom-module"
+  auto_imports =
+      [ "ui/webui/resources/html/icon.html|getFavicon,getFaviconForPageURL" ]
 }
 
 js_modulizer("modulize") {

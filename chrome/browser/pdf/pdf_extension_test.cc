@@ -2413,7 +2413,7 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
         // Previous node pointed to us, so we are part of the same line.
         EXPECT_EQ(previous_node_id, prev_id)
             << "Expect this node to point to previous node.";
-        trimmed_name.AppendToString(&line);
+        line.append(trimmed_name.data(), trimmed_name.size());
       } else {
         // Not linked with the previous node; this is a new line.
         EXPECT_EQ(previous_node_next_id, 0)

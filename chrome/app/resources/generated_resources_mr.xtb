@@ -141,7 +141,6 @@
 <translation id="1187722533808055681">निष्क्रियता समाप्त करणे</translation>
 <translation id="1188807932851744811">लॉग अपलोड झाला नाही.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{आपल्या संगणकावर संचयित केलेल्या फाईलवर प्रवेश करा}other{आपल्या संगणकावर संचयित केलेल्या # फायलींवर प्रवेश करा}}</translation>
-<translation id="1190660338026981543">एंटरप्राइझ व्यवस्थापनासाठी <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ने तुमच्या  <ph name="DEVICE_TYPE" /> ची यशस्वीरीत्या नोंदणी केली आहे.</translation>
 <translation id="119092896208640858">तुमच्या Google खात्यामध्ये डेटा तसाच ठेवून फक्त या डिव्हाइसमधून ब्राउझ केलेला डेटा साफ करण्यासाठी, <ph name="BEGIN_LINK" />साइन आउट करा<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">व्यवस्थापित केलेल्या सेशनमध्ये एंटर करा</translation>
 <translation id="1195447618553298278">अज्ञात एरर.</translation>
@@ -542,7 +541,6 @@
 <translation id="1744060673522309905">डिव्हाइस डोमेनशी जोडू शकत नाही. तुम्हाला जोडता येऊ शकणाऱ्या डिव्हाइसची संख्या तुम्ही ओलांडलेली नाही याची खात्री करा.</translation>
 <translation id="1744108098763830590">पार्श्वभूमी पृष्ठ</translation>
 <translation id="1745520510852184940">हे नेहमी करा</translation>
-<translation id="1746402432151920942">संरक्षित मीडिया आयडेंटिफायर</translation>
 <translation id="1750172676754093297">तुमची सिक्युरिटी की फिंगरप्रिंट स्टोअर करू शकत नाही</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
@@ -615,7 +613,6 @@
 <translation id="1830550083491357902">साइन इन केलेले नाही</translation>
 <translation id="1832511806131704864">फोन बदल अपडेट झाला</translation>
 <translation id="1834503245783133039">डाउनलोड करता आले नाही: <ph name="FILE_NAME" /></translation>
-<translation id="1834583737373831634">MIDI डिव्हाइस</translation>
 <translation id="1835261175655098052">Linux अपग्रेड करत आहे</translation>
 <translation id="1838374766361614909">शोध साफ करा</translation>
 <translation id="1841545962859478868">डिव्हाइस प्रशासक कदाचित खालील गोष्टींचे परीक्षण करू शकतो:</translation>
@@ -889,7 +886,6 @@
 <translation id="2220529011494928058">समस्येची तक्रार करा</translation>
 <translation id="2220572644011485463">पिन किंवा पासवर्ड</translation>
 <translation id="2224444042887712269">ही सेटिंग <ph name="OWNER_EMAIL" /> च्या मालकीची आहे.</translation>
-<translation id="2224471211857467033">ॲक्सेसिबिलिटी इव्हेंट</translation>
 <translation id="2224551243087462610">फोल्डर नाव संपादित करा</translation>
 <translation id="2226449515541314767">MIDI डिव्हाइसचे पूर्ण नियंत्रण असण्यापासून ही साइट अवरोधित केली गेली आहे.</translation>
 <translation id="222704500187107962">तुम्ही सध्याच्या गुप्त सेशनमधून बाहेर पडल्यानंतर हे एक्सेप्शन आपोआप काढून टाकले जाईल</translation>
@@ -1160,7 +1156,6 @@
 <translation id="2587922766792651800">वेळ संपली</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> कडील डिव्हाइस</translation>
 <translation id="2594999711683503743">Google वर शोधा किंवा URL टाइप करा</translation>
-<translation id="2600522410036850735"><ph name="MONTH_AND_YEAR" /> पर्यंत या डिव्हाइसवर ऑटोमॅटिक सॉफ्टवेअर आणि सुरक्षा अपडेट मिळतील. &lt;a target="_blank" href="<ph name="URL" />"&gt;अधिक जाणून घ्या&lt;/a&gt;</translation>
 <translation id="2603115962224169880">काँप्युटर साफ करा</translation>
 <translation id="2603463522847370204">&amp;गुप्त विंडोमध्ये उघडा</translation>
 <translation id="2604255671529671813">नेटवर्क कनेक्शन एरर</translation>
@@ -1843,7 +1838,6 @@
 <translation id="3564848315152754834">USB सिक्युरिटी की</translation>
 <translation id="3566721612727112615">कोणत्याही साइट जोडल्या नाहीत</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> नी तुमची स्क्रीन शेअर करावी असे तुम्ही इच्छिता?</translation>
-<translation id="3570985609317741174">वेब आशय</translation>
 <translation id="3571734092741541777">सेट अप</translation>
 <translation id="3574210789297084292">साइन इन करा</translation>
 <translation id="3574917942258583917">गुप्त मोडमधून कसेही बाहेर पडायचे?</translation>
@@ -1982,7 +1976,6 @@
 <translation id="3732530910372558017">पिन जास्तीत जास्त ६३ वर्णांचा असायला हवा</translation>
 <translation id="3733127536501031542">स्टेप-अप सह SSL सर्व्हर</translation>
 <translation id="3735740477244556633">यानुसार क्रमाने लावा</translation>
-<translation id="3737274407993947948">Linux इंस्टॉल करताना एरर...</translation>
 <translation id="3737536731758327622">तुमचे डाउनलोड येथे दिसतील</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> उघडायचा?</translation>
@@ -2080,7 +2073,6 @@
 <translation id="3855441664322950881">पॅक एक्स्टेंशन</translation>
 <translation id="3855676282923585394">बुकमार्क आणि सेटिंग्ज इंपोर्ट करा...</translation>
 <translation id="3856800405688283469">टाइम झोन निवडा</translation>
-<translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">उचला, नंतर पुन्हा स्पर्श करा</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: सिंक करणे थांबवले</translation>
 <translation id="3862693525629180217">बिल्ट-इन सेन्सर वापरून पडताळणी करा</translation>
@@ -2364,7 +2356,6 @@
 <translation id="4268025649754414643">की एनसिफरमेन्ट</translation>
 <translation id="4270393598798225102">आवृत्ती <ph name="NUMBER" /></translation>
 <translation id="4274667386947315930">साइन-इन डेटा</translation>
-<translation id="4275663329226226506">माध्यम</translation>
 <translation id="4275830172053184480">तुमचा डिव्हाइस रीस्टार्ट करा</translation>
 <translation id="4278101229438943600">तुमचा असिस्टंट तयार आहे</translation>
 <translation id="4278390842282768270">अनुमत</translation>
@@ -2785,7 +2776,6 @@
 <translation id="4907306957610201395">परवानगी वर्गवारी</translation>
 <translation id="4908811072292128752">एकाच वेळी दोन साइट ब्राउझ करण्यासाठी एक नवीन टॅब उघडा</translation>
 <translation id="4909038193460299775">हे खाते <ph name="DOMAIN" /> ने व्यवस्थापित केले असल्याने, तुमचे बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज या डिव्हाइस वरून साफ केल्या जातील. तथापि, तुमचा डेटा आपल्या Google खात्यामध्ये संचयित केलेला असेल आणि <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> वर व्यवस्थापित केला जाऊ शकतो.</translation>
-<translation id="4909359680501173791">तुमची यशस्वीरीत्या नोंदणी करण्यात आली</translation>
 <translation id="4912643508233590958">निष्क्रियता समाप्त करणे</translation>
 <translation id="491691592645955587">सुरक्षित ब्राउझरवर बदला</translation>
 <translation id="4917385247580444890">मजबूत</translation>
@@ -3433,7 +3423,6 @@
 <translation id="5834581999798853053">सुमारे <ph name="TIME" /> मिनिटे बाकी</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - कॅमेरा किंवा मायक्रोफोन रेकॉर्डिंग</translation>
 <translation id="5842497610951477805">ब्लूटूथ सक्षम आहे</translation>
-<translation id="5843250171025351504">तुमच्या ॲडमिनिस्ट्रेटरने नमूद केलेल्या किमान क्लायंट आवृत्तीसह तुमचे डिव्हाइस आता सुसंगत नाही. कृपया लॉग इन करण्यासाठी अपडेट करा.</translation>
 <translation id="5846200638699387931">रिलेशन सिंटॅक्स एरर: <ph name="ERROR_LINE" /></translation>
 <translation id="5849212445710944278">आधीच जोडला आहे</translation>
 <translation id="5849570051105887917">होम प्रोव्हाइडर कोड</translation>
@@ -3745,7 +3734,6 @@
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> वर तुमच्या स्वतःस प्रमाणीकृत करण्यासाठी एक सर्टिफिकेट निवडा</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="PHONE_NAME" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, फोन बॅटरी <ph name="BATTERY_STATUS" />%, कनेक्ट करा</translation>
 <translation id="6268252012308737255"><ph name="APP" /> सह उघडा</translation>
-<translation id="6268718011101775129">NFC</translation>
 <translation id="6270391203985052864">साइट सूचना पाठवण्यास सांगू शकतात</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />सिस्टम आणि ॲप माहिती<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />मेट्रिक्स<ph name="END_LINK2" /> पाठवा</translation>
 <translation id="6272643420381259437">प्लग-इन डाउनलोड करताना (<ph name="ERROR" />) एरर आली</translation>

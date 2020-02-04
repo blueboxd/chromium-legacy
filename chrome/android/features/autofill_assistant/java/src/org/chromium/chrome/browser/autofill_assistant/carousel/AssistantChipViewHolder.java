@@ -49,9 +49,6 @@ public class AssistantChipViewHolder extends ViewHolder {
 
         view.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        if (viewType >= AssistantChip.Type.NUM_ENTRIES) {
-            view.setEnabled(false);
-        }
 
         return new AssistantChipViewHolder(view, viewType);
     }
@@ -63,7 +60,6 @@ public class AssistantChipViewHolder extends ViewHolder {
         if (chip.isDisabled()) {
             return chip.getType() + AssistantChip.Type.NUM_ENTRIES;
         }
-
         return chip.getType();
     }
 
@@ -76,6 +72,8 @@ public class AssistantChipViewHolder extends ViewHolder {
     }
 
     public void bind(AssistantChip chip) {
+        mView.setEnabled(!chip.isDisabled());
+
         String text = chip.getText();
         if (text.isEmpty()) {
             mView.getPrimaryTextView().setVisibility(View.GONE);

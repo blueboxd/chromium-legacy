@@ -64,7 +64,7 @@ bool HasFiles(const ShareData& share_data) {
 String CheckForTypeError(const Document& doc,
                          const ShareData& share_data,
                          KURL* full_url) {
-  if (!share_data.hasTitle() && !share_data.hasText() && !share_data.hasURL() &&
+  if (!share_data.hasTitle() && !share_data.hasText() && !share_data.hasUrl() &&
       !HasFiles(share_data)) {
     return "No known share data fields supplied. If using only new fields "
            "(other than title, text and url), you must feature-detect "

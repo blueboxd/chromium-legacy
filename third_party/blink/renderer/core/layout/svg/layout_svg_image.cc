@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
@@ -78,18 +79,20 @@ static float ResolveHeightForRatio(float width,
   return width * intrinsic_ratio.Height() / intrinsic_ratio.Width();
 }
 
-IntSize LayoutSVGImage::GetOverriddenIntrinsicSize() const {
-  if (auto* svg_image = DynamicTo<SVGImageElement>(GetElement())) {
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
-      return svg_image->GetOverriddenIntrinsicSize();
-  }
-  return IntSize();
+bool LayoutSVGImage::HasOverriddenIntrinsicSize() const {
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+    return false;
+  auto* svg_image_element = DynamicTo<SVGImageElement>(GetElement());
+  return svg_image_element && svg_image_element->IsDefaultIntrinsicSize();
 }
 
 FloatSize LayoutSVGImage::CalculateObjectSize() const {
-  FloatSize intrinsic_size = FloatSize(GetOverriddenIntrinsicSize());
+  FloatSize intrinsic_size;
   ImageResourceContent* cached_image = image_resource_->CachedImage();
-  if (intrinsic_size.IsEmpty()) {
+  if (HasOverriddenIntrinsicSize()) {
+    intrinsic_size = FloatSize(LayoutReplaced::kDefaultWidth,
+                               LayoutReplaced::kDefaultHeight);
+  } else {
     if (!cached_image || cached_image->ErrorOccurred() ||
         !cached_image->IsSizeAvailable())
       return object_bounding_box_.Size();

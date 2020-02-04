@@ -200,6 +200,10 @@ void TextureLayerImpl::ReleaseResources() {
   // all) instead.
 }
 
+gfx::ContentColorUsage TextureLayerImpl::GetContentColorUsage() const {
+  return transferable_resource_.color_space.GetContentColorUsage();
+}
+
 void TextureLayerImpl::SetPremultipliedAlpha(bool premultiplied_alpha) {
   premultiplied_alpha_ = premultiplied_alpha;
 }

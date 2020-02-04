@@ -40,8 +40,7 @@ cr.define('bluetooth_internals', function() {
   let userRequestedScanStop = false;
 
   /** @type {!mojom.BluetoothInternalsHandlerRemote} */
-  const bluetoothInternalsHandler = mojom.BluetoothInternalsHandler.getRemote(
-      /*useBrowserInterfaceBroker=*/ true);
+  const bluetoothInternalsHandler = mojom.BluetoothInternalsHandler.getRemote();
 
   /**
    * Observer for page changes. Used to update page title header.

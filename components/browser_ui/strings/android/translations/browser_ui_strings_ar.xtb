@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2359808026110333948">متابعة</translation>
+<translation id="2501278716633472235">الرجوع</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="3115898365077584848">عرض المعلومات</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">نسخ الرابط</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4570913071927164677">التفاصيل</translation>
+<translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5556459405103347317">إعادة التحميل</translation>
+<translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="5916664084637901428">مفعّل</translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">خيارات <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">مشاركة</translation>
 <translation id="6746124502594467657">الانتقال إلى الأسفل</translation>
+<translation id="6818926723028410516">اختيار عناصر</translation>
 <translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6965382102122355670">موافق</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
+<translation id="7087918508125750058">تم تحديد <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
+<translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
+<translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="8131740175452115882">التأكيد</translation>
 <translation id="8249310407154411074">نقل إلى الأعلى</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8609465669617005112">الانتقال إلى الأعلى</translation>
+<translation id="8676374126336081632">محو الإرسال</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8730621377337864115">تم</translation>
 </translationbundle>

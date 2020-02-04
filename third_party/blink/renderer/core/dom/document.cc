@@ -6489,7 +6489,7 @@ base::Optional<Color> Document::ThemeColor() const {
   for (HTMLMetaElement& meta_element :
        Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
     Color color;
-    if (DeprecatedEqualIgnoringCase(meta_element.GetName(), "theme-color") &&
+    if (EqualIgnoringASCIICase(meta_element.GetName(), "theme-color") &&
         CSSParser::ParseColor(
             color, meta_element.Content().GetString().StripWhiteSpace(), true))
       return color;

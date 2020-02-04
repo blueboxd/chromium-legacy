@@ -779,10 +779,8 @@ void LayoutBox::UpdateAfterLayout() {
   // We also want to make sure that if our entrance point into layout changes,
   // e.g. an OOF-positioned object is laid out by an NG containing block, then
   // Legacy, then NG again, NG won't use a stale layout result.
-  if (IsOutOfFlowPositioned() && !IsLayoutNGObject()) {
-    measure_result_.reset();
-    layout_results_.clear();
-  }
+  if (IsOutOfFlowPositioned() && !IsLayoutNGObject())
+    ClearLayoutResults();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {

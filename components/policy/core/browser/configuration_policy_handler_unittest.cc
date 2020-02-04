@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -716,7 +715,6 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueInvalid) {
-  base::HistogramTester histogram_tester;
   std::string error;
   static const char kSchemaJson[] =
       "{"
@@ -768,12 +766,9 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueInvalid) {
   EXPECT_TRUE(dict->GetInteger("OneToThree", &int_value));
   EXPECT_EQ(2, int_value);
   EXPECT_FALSE(dict->HasKey("Colors"));
-  histogram_tester.ExpectUniqueSample("Enterprise.SchemaMismatchedValueIgnored",
-                                      /*ignored=*/true, /*amount=*/1);
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
-  base::HistogramTester histogram_tester;
   std::string error;
   static const char kSchemaJson[] =
       "{"
@@ -825,8 +820,6 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
   EXPECT_TRUE(dict->GetInteger("OneToThree", &int_value));
   EXPECT_EQ(2, int_value);
   EXPECT_FALSE(dict->HasKey("Apples"));
-  histogram_tester.ExpectUniqueSample("Enterprise.SchemaMismatchedValueIgnored",
-                                      /*ignored=*/false, /*amount=*/1);
 }
 
 TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {

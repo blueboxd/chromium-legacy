@@ -2562,7 +2562,9 @@ def make_install_properties(cg_context, function_name, class_name,
     return func_decl, func_def, trampoline_def
 
 
-def make_cross_component_init(cg_context, function_name, class_name):
+def make_cross_component_init(
+        cg_context, function_name, class_name, has_unconditional_props,
+        has_context_independent_props, has_context_dependent_props):
     """
     Returns:
         A triplet of CodeNode of:
@@ -2573,32 +2575,45 @@ def make_cross_component_init(cg_context, function_name, class_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
     assert isinstance(class_name, str)
+    assert isinstance(has_unconditional_props, bool)
+    assert isinstance(has_context_independent_props, bool)
+    assert isinstance(has_context_dependent_props, bool)
 
     T = TextNode
     F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
-    trampoline_var_decls = ListNode([
-        F("static InstallInterfaceTemplateFuncType {};",
-          TP_INSTALL_INTERFACE_TEMPLATE),
-        F("static InstallUnconditionalPropertiesFuncType {};",
-          TP_INSTALL_UNCONDITIONAL_PROPS),
-        F("static InstallContextIndependentPropertiesFuncType {};",
-          TP_INSTALL_CONTEXT_INDEPENDENT_PROPS),
-        F("static InstallContextDependentPropertiesFuncType {};",
-          TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
-    ])
+    def filter_four_trampolines(nodes):
+        assert len(nodes) == 4
+        flags = (True, has_unconditional_props, has_context_independent_props,
+                 has_context_dependent_props)
+        return [node for node, flag in zip(nodes, flags) if flag]
 
-    trampoline_var_defs = ListNode([
-        F(("${class_name}::InstallInterfaceTemplateFuncType "
-           "${class_name}::{} = nullptr;"), TP_INSTALL_INTERFACE_TEMPLATE),
-        F(("${class_name}::InstallUnconditionalPropertiesFuncType "
-           "${class_name}::{} = nullptr;"), TP_INSTALL_UNCONDITIONAL_PROPS),
-        F(("${class_name}::InstallContextIndependentPropertiesFuncType "
-           "${class_name}::{} = nullptr;"),
-          TP_INSTALL_CONTEXT_INDEPENDENT_PROPS),
-        F(("${class_name}::InstallContextDependentPropertiesFuncType "
-           "${class_name}::{} = nullptr;"), TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
-    ])
+    trampoline_var_decls = ListNode(
+        filter_four_trampolines([
+            F("static InstallInterfaceTemplateFuncType {};",
+              TP_INSTALL_INTERFACE_TEMPLATE),
+            F("static InstallUnconditionalPropertiesFuncType {};",
+              TP_INSTALL_UNCONDITIONAL_PROPS),
+            F("static InstallContextIndependentPropertiesFuncType {};",
+              TP_INSTALL_CONTEXT_INDEPENDENT_PROPS),
+            F("static InstallContextDependentPropertiesFuncType {};",
+              TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
+        ]))
+
+    trampoline_var_defs = ListNode(
+        filter_four_trampolines([
+            F(("${class_name}::InstallInterfaceTemplateFuncType "
+               "${class_name}::{} = nullptr;"), TP_INSTALL_INTERFACE_TEMPLATE),
+            F(("${class_name}::InstallUnconditionalPropertiesFuncType "
+               "${class_name}::{} = nullptr;"),
+              TP_INSTALL_UNCONDITIONAL_PROPS),
+            F(("${class_name}::InstallContextIndependentPropertiesFuncType "
+               "${class_name}::{} = nullptr;"),
+              TP_INSTALL_CONTEXT_INDEPENDENT_PROPS),
+            F(("${class_name}::InstallContextDependentPropertiesFuncType "
+               "${class_name}::{} = nullptr;"),
+              TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
+        ]))
     trampoline_var_defs.set_base_template_vars(cg_context.template_bindings())
 
     func_decl = CxxFuncDeclNode(
@@ -2612,16 +2627,17 @@ def make_cross_component_init(cg_context, function_name, class_name):
     func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.extend([
-        F("${class_name}::{} = {};", TP_INSTALL_INTERFACE_TEMPLATE,
-          FN_INSTALL_INTERFACE_TEMPLATE),
-        F("${class_name}::{} = {};", TP_INSTALL_UNCONDITIONAL_PROPS,
-          FN_INSTALL_UNCONDITIONAL_PROPS),
-        F("${class_name}::{} = {};", TP_INSTALL_CONTEXT_INDEPENDENT_PROPS,
-          FN_INSTALL_CONTEXT_INDEPENDENT_PROPS),
-        F("${class_name}::{} = {};", TP_INSTALL_CONTEXT_DEPENDENT_PROPS,
-          FN_INSTALL_CONTEXT_DEPENDENT_PROPS),
-    ])
+    body.extend(
+        filter_four_trampolines([
+            F("${class_name}::{} = {};", TP_INSTALL_INTERFACE_TEMPLATE,
+              FN_INSTALL_INTERFACE_TEMPLATE),
+            F("${class_name}::{} = {};", TP_INSTALL_UNCONDITIONAL_PROPS,
+              FN_INSTALL_UNCONDITIONAL_PROPS),
+            F("${class_name}::{} = {};", TP_INSTALL_CONTEXT_INDEPENDENT_PROPS,
+              FN_INSTALL_CONTEXT_INDEPENDENT_PROPS),
+            F("${class_name}::{} = {};", TP_INSTALL_CONTEXT_DEPENDENT_PROPS,
+              FN_INSTALL_CONTEXT_DEPENDENT_PROPS),
+        ]))
 
     return func_decl, func_def, trampoline_var_decls, trampoline_var_defs
 
@@ -2916,9 +2932,6 @@ def generate_interface(interface):
         tp_install_context_independent_props = (
             TP_INSTALL_CONTEXT_INDEPENDENT_PROPS)
         tp_install_context_dependent_props = TP_INSTALL_CONTEXT_DEPENDENT_PROPS
-        (cross_component_init_decl, cross_component_init_def,
-         trampoline_var_decls, trampoline_var_defs) = make_cross_component_init(
-             cg_context, "Init", class_name=impl_class_name)
     else:
         tp_install_interface_template = None
         tp_install_unconditional_props = None
@@ -3024,6 +3037,21 @@ def generate_interface(interface):
          install_context_dependent_func_name=(
              install_context_dependent_props_def
              and FN_INSTALL_CONTEXT_DEPENDENT_PROPS))
+
+    # Cross-component trampolines
+    if is_cross_components:
+        (cross_component_init_decl, cross_component_init_def,
+         trampoline_var_decls,
+         trampoline_var_defs) = make_cross_component_init(
+             cg_context,
+             "Init",
+             class_name=impl_class_name,
+             has_unconditional_props=bool(
+                 install_unconditional_props_trampoline),
+             has_context_independent_props=bool(
+                 install_context_independent_props_trampoline),
+             has_context_dependent_props=bool(
+                 install_context_dependent_props_trampoline))
 
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([

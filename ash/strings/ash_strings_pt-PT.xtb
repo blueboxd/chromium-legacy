@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Definições da caneta stylus</translation>
 <translation id="2354174487190027830">A ativar <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2364154243880592194">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" />. Prima Pesquisa + seta para a esquerda para aceder ao centro de notificações.</translation>
 <translation id="2365393535144473978">A ativação dos dados móveis ativa o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Procurar para trás</translation>
 <translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
 <translation id="4146833061457621061">Tocar música</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gerido por <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4217571870635786043">Ditado</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Comentários</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> até estar totalmente carregada</translation>
-<translation id="4544944664594876241">O atalho para bloquear o ecrã foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Botão Selecionar para falar</translation>
 <translation id="4585337515783392668">Parar a transmissão para um recetor desconhecido</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
-<translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Atalho desativado</translation>
 <translation id="6910714959251846841">Para efetuar esta atualização, é necessário efetuar o Powerwash do dispositivo. Saiba mais sobre a mais recente atualização do <ph name="SYSTEM_APP_NAME" />.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">A ligar</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. É necessário reiniciar o Chromebook para aplicar uma atualização. Esta ação pode demorar até 1 minuto.</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
 <translation id="7262906531272962081">Criar lembrete</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">A câmara está a ser utilizada.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
 <translation id="7497767806359279797">Escolher idioma e teclado</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">A rede pode ser monitorizada</translation>
 <translation id="7536035074519304529">Endereço IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Hora de dormir</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7564874036684306347">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado. É possível dividir as notificações, as janelas e as caixas de diálogo subsequentes entre ambientes de trabalho.</translation>
 <translation id="7568294522609223312">Desative os cliques automáticos</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Parar a transmissão do ecrã para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Ativado, todas as aplicações</translation>
+<translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Ligado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">A inicializar...</translation>
 <translation id="8142441511840089262">Clicar duas vezes</translation>

@@ -8,6 +8,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.PositionAssertions.isLeftAlignedWith;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -17,6 +18,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.iterableWithSize;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
@@ -50,6 +52,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.EventProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.GenericUserInterfaceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ImageViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
 import org.chromium.chrome.browser.autofill_assistant.proto.InteractionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InteractionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.LinearLayoutProto;
@@ -62,6 +65,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowInfoPopupProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowListPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.StringList;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
@@ -220,8 +224,6 @@ public class AutofillAssistantGenericUiTest {
                                          .setGenericUserInterfacePrepended(
                                                  GenericUserInterfaceProto.newBuilder().setRootView(
                                                          rootView))
-                                         .setPrivacyNoticeText(
-                                                 "Chrome will send selected data to example.com")
                                          .setRequestTermsAndConditions(false))
                          .build());
         list.add((ActionProto) ActionProto.newBuilder()
@@ -344,8 +346,6 @@ public class AutofillAssistantGenericUiTest {
                                                  genericUserInterfacePrepended)
                                          .setGenericUserInterfaceAppended(
                                                  genericUserInterfaceAppended)
-                                         .setPrivacyNoticeText(
-                                                 "Chrome will send selected data to example.com")
                                          .setRequestTermsAndConditions(false))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
@@ -481,8 +481,6 @@ public class AutofillAssistantGenericUiTest {
                                                          .setModel(ModelProto.newBuilder()
                                                                            .addAllValues(
                                                                                    modelValues)))
-                                         .setPrivacyNoticeText(
-                                                 "Chrome will send selected data to example.com")
                                          .setRequestTermsAndConditions(false))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
@@ -588,8 +586,6 @@ public class AutofillAssistantGenericUiTest {
                                                                  InteractionsProto.newBuilder()
                                                                          .addAllInteractions(
                                                                                  interactions)))
-                                         .setPrivacyNoticeText(
-                                                 "Chrome will send selected data to example.com")
                                          .setRequestTermsAndConditions(false))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
@@ -610,5 +606,115 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("Some title")).check(matches(isDisplayed()));
         onView(withText("Info message here")).check(matches(isDisplayed()));
         onView(withText(mTestRule.getActivity().getString(R.string.close))).perform(click());
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testListPopup() {
+        ViewProto clickableView = (ViewProto) ViewProto.newBuilder()
+                                          .setTextView(TextViewProto.newBuilder().setText(
+                                                  "Shows a list popup when clicked"))
+                                          .setIdentifier("clickableView")
+                                          .build();
+
+        ViewProto rootView =
+                (ViewProto) ViewProto.newBuilder()
+                        .setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(clickableView))
+                        .build();
+
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                                 "clickableView")))
+                                 .addCallbacks(CallbackProto.newBuilder().setShowListPopup(
+                                         ShowListPopupProto.newBuilder()
+                                                 .setItemNamesModelIdentifier("items")
+                                                 .setSelectedItemIndicesModelIdentifier(
+                                                         "selected_items_indices")
+                                                 .setAllowMultiselect(false)))
+                                 .build());
+
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("items")
+                        .setValue(ValueProto.newBuilder().setStrings(
+                                StringList.newBuilder().addAllValues(Arrays.asList("08:00 AM",
+                                        "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM"))))
+                        .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("selected_items_indices")
+                                .build());
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setGenericUserInterfacePrepended(
+                                                 GenericUserInterfaceProto.newBuilder()
+                                                         .setRootView(rootView)
+                                                         .setInteractions(
+                                                                 InteractionsProto.newBuilder()
+                                                                         .addAllInteractions(
+                                                                                 interactions))
+                                                         .setModel(ModelProto.newBuilder()
+                                                                           .addAllValues(
+                                                                                   modelValues)))
+                                         .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+
+        onView(withText("Shows a list popup when clicked")).perform(click());
+        onView(withText("09:30 AM")).inRoot(isDialog()).perform(click());
+
+        // Finish action, wait for response and prepare next set of actions.
+        List<ActionProto> nextActions = new ArrayList<>();
+        nextActions.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setPrompt(PromptProto.newBuilder()
+                                           .setMessage("Finished")
+                                           .addChoices(PromptProto.Choice.newBuilder().setChip(
+                                                   ChipProto.newBuilder()
+                                                           .setType(ChipType.DONE_ACTION)
+                                                           .setText("End"))))
+                        .build());
+        testService.setNextActions(nextActions);
+        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withText("Continue")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions, iterableWithSize(1));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        CollectUserDataResultProto result = processedActions.get(0).getCollectUserDataResult();
+        List<ModelProto.ModelValue> resultModelValues = result.getModel().getValuesList();
+        assertThat(resultModelValues, iterableWithSize(2));
+        assertThat((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                           .setIdentifier("selected_items_indices")
+                           .setValue(ValueProto.newBuilder().setInts(
+                                   IntList.newBuilder().addValues(3)))
+                           .build(),
+                isIn(resultModelValues));
     }
 }

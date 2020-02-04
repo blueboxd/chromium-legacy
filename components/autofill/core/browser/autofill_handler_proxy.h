@@ -26,7 +26,6 @@ class AutofillHandlerProxy : public AutofillHandler {
                                  const base::TimeTicks timestamp) override;
 
   void OnDidPreviewAutofillFormData() override;
-  void OnDidEndTextFieldEditing() override;
   void OnHidePopup() override;
   void OnSetDataList(const std::vector<base::string16>& values,
                      const std::vector<base::string16>& labels) override;

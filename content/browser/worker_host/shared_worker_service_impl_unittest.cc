@@ -54,7 +54,10 @@ void ConnectToSharedWorker(
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       url, std::move(options), std::string(),
       network::mojom::ContentSecurityPolicyType::kReport,
-      network::mojom::IPAddressSpace::kPublic));
+      network::mojom::IPAddressSpace::kPublic,
+      blink::mojom::FetchClientSettingsObject::New(
+          network::mojom::ReferrerPolicy::kDefault, GURL(),
+          blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade)));
 
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));
@@ -62,9 +65,7 @@ void ConnectToSharedWorker(
   mojo::PendingRemote<blink::mojom::SharedWorkerClient> client_proxy;
   client->Bind(client_proxy.InitWithNewPipeAndPassReceiver());
 
-  connector->Connect(std::move(info),
-                     blink::mojom::FetchClientSettingsObject::New(),
-                     std::move(client_proxy),
+  connector->Connect(std::move(info), std::move(client_proxy),
                      blink::mojom::SharedWorkerCreationContextType::kSecure,
                      std::move(message_pipe.handle1), mojo::NullRemote());
 }

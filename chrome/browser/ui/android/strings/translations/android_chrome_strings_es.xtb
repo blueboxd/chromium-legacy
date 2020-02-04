@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Buscador</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
 <translation id="1513858653616922153">Eliminar contraseña</translation>
-<translation id="1516229014686355813">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Activo hoy</translation>
 <translation id="1544826120773021464">Para gestionar tu cuenta de Google, toca el botón Gestionar cuenta</translation>
 <translation id="1549000191223877751">Mover a otra ventana</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> también tiene datos en Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Sitio web en pausa</translation>
-<translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2067805253194386918">texto</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Sonido</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">No se puede iniciar sesión</translation>
 <translation id="2349710944427398404">Datos totales utilizados por Chrome, incluidos los marcadores, las cuentas y la configuración guardada</translation>
 <translation id="2353636109065292463">Comprobar tu conexión a Internet</translation>
+<translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">pestañas abiertas</translation>
 <translation id="2387895666653383613">Ajuste de texto</translation>
 <translation id="2394602618534698961">Los archivos que descargues aparecerán aquí</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2497852260688568942">El administrador ha inhabilitado la sincronización</translation>
 <translation id="2498359688066513246">Ayuda y sugerencias</translation>
-<translation id="2501278716633472235">Volver</translation>
 <translation id="2513403576141822879">Para ver más opciones relacionadas con la privacidad, la seguridad y la recogida de datos, accede a <ph name="BEGIN_LINK" />Servicios de Google y sincronización<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Buscar</translation>
 <translation id="2518590038762162553">En el modo básico, Chrome carga las páginas más rápido y reduce el uso de datos hasta un 60 %. Chrome también envía tu tráfico web a Google para optimizar las páginas que visitas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memoria y Chrome la ha pausado.</translation>
 <translation id="3730075448226062617">Para que Chrome pueda acceder a tu micrófono, activa el micrófono en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3749259744154402564">No admitido</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Permitir cookies en un sitio web específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
-<translation id="4048707525896921369">Obtén información sobre los temas que aparecen en los sitios web sin salir de la página. La función Tocar para buscar envía una palabra y el contexto que la rodea a la Búsqueda de Google y te muestra definiciones, imágenes, resultados de búsqueda y más información.
-
-Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionarlo. Para restringir la búsqueda, desliza el panel hasta arriba y toca el cuadro de búsqueda.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opciones disponibles junto a la parte superior de la pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
@@ -609,7 +605,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Siempre puedes seleccionar qué contenido quieres sincronizar desde <ph name="BEGIN_LINK1" />Ajustes<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
-<translation id="5596627076506792578">Más opciones</translation>
 <translation id="5599455543593328020">Modo de incógnito</translation>
 <translation id="5620928963363755975">Encuentra tus archivos y páginas en la sección Descargas con el botón Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
@@ -652,6 +647,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5864419784173784555">Esperando otra descarga…</translation>
 <translation id="5865733239029070421">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
+<translation id="5884076754568147479">Para ayudarte a completar tareas, Google recibirá las URL y los contenidos de los sitios web en los que uses el Asistente, así como la información que envíes a través del Asistente.</translation>
 <translation id="5902828464777634901">Se eliminarán todos los datos locales almacenados por este sitio web, incluidas las cookies.</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>
 <translation id="5937580074298050696">Ahorro: <ph name="AMOUNT" /></translation>
@@ -775,7 +771,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6782111308708962316">Impedir que los sitios web de terceros guarden y consulten datos de cookies</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6811034713472274749">Ya se puede ver la página</translation>
-<translation id="6818926723028410516">Seleccionar elementos</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6845325883481699275">Ayudar a mejorar la seguridad de Chrome</translation>
@@ -808,10 +803,8 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7055152154916055070">Redirección bloqueada:</translation>
 <translation id="7063006564040364415">No se ha podido conectar con el servidor de sincronización.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
 <translation id="7071521146534760487">Gestionar cuenta</translation>
 <translation id="7077143737582773186">Tarjeta SD</translation>
-<translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Hay opciones disponibles en la parte superior de la pantalla</translation>
 <translation id="7121362699166175603">Borra el historial y los autocompletados de la barra de direcciones. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Permitir para el motor de búsqueda actual</translation>
 <translation id="7138678301420049075">Otro</translation>
@@ -827,7 +820,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7233236755231902816">Si quieres ver la Web en tu idioma, consigue la última versión de Chrome</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
 <translation id="7248069434667874558">Asegúrate de que la sincronización de tu <ph name="TARGET_DEVICE_NAME" /> está activada en Chrome</translation>
-<translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
 <translation id="7290209999329137901">El cambio de nombre no está disponible</translation>
 <translation id="7291387454912369099">Pago con el Asistente activado</translation>
@@ -909,7 +901,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">El ahorro de datos aparecerá aquí</translation>
-<translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7875915731392087153">Crear correo electrónico</translation>
@@ -957,6 +948,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="8127542551745560481">Editar página principal</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
+<translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">¿Qué idiomas puedes leer?</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8186512483418048923">Archivos restantes: <ph name="FILES" /></translation>
@@ -1024,7 +1016,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8655599981421006542">Toca aquí para crear pestañas y volver a las anteriores</translation>
 <translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
 <translation id="8664979001105139458">El nombre del archivo ya existe</translation>
-<translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidad de la señal: # barra}other{Nivel de intensidad de la señal: # barras}}</translation>
 <translation id="868929229000858085">Buscar en tus contactos</translation>
 <translation id="8698438463325761328">Impedir que los sitios web accedan a tu dispositivo y tus datos de realidad virtual</translation>

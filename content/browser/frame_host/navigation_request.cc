@@ -784,8 +784,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
                            : mojom::NavigationType::DIFFERENT_DOCUMENT,
           NavigationDownloadPolicy(), params.should_replace_current_entry,
           params.base_url, params.base_url, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now(), params.method, nullptr,
-          base::Optional<SourceLocation>(),
+          base::TimeTicks::Now(), params.method, nullptr, SourceLocation(),
           false /* started_from_context_menu */,
           params.gesture == NavigationGestureUser, CreateInitiatorCSPInfo(),
           std::vector<int>() /* initiator_origin_trial_features */,
@@ -1751,7 +1750,7 @@ void NavigationRequest::OnResponseStarted(
     // Reset the source location information if the navigation will not commit
     // in the current renderer process. This information originated in another
     // process (the current one), it should not be transferred to the new one.
-    common_params_->source_location.reset();
+    common_params_->source_location = SourceLocation();
 
     // Allow the embedder to cancel the cross-process commit if needed.
     // TODO(clamy): Rename ShouldTransferNavigation.
@@ -2614,10 +2613,10 @@ bool NavigationRequest::IsAllowedByCSPDirective(
   } else {
     url = common_params_->url;
   }
-  return context->IsAllowedByCsp(
-      directive, url, has_followed_redirect, is_response_check,
-      common_params_->source_location.value_or(SourceLocation()), disposition,
-      begin_params_->is_form_submission);
+  return context->IsAllowedByCsp(directive, url, has_followed_redirect,
+                                 is_response_check,
+                                 common_params_->source_location, disposition,
+                                 begin_params_->is_form_submission);
 }
 
 net::Error NavigationRequest::CheckCSPDirectives(

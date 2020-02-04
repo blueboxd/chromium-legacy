@@ -5,6 +5,7 @@
 #include "ui/gl/gl_version_info.h"
 
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
@@ -167,11 +168,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
     if (parts.size() != 2)
       return;
     driver_vendor = "ARM";
-    driver_version.assign(numbers[0].data(), numbers[0].size());
-    driver_version += ".";
-    numbers[1].AppendToString(&driver_version);
-    driver_version += ".";
-    parts[0].AppendToString(&driver_version);
+    driver_version = base::StrCat({numbers[0], ".", numbers[1], ".", parts[0]});
     return;
   }
   for (size_t ii = 1; ii < pieces.size(); ++ii) {

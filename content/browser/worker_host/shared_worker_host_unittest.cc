@@ -117,7 +117,11 @@ class SharedWorkerHostTest : public testing::Test {
     host->Start(std::move(factory), std::move(main_script_load_params),
                 std::move(subresource_loader_factories),
                 nullptr /* controller */,
-                nullptr /* controller_service_worker_object_host */);
+                nullptr /* controller_service_worker_object_host */,
+                blink::mojom::FetchClientSettingsObject::New(
+                    network::mojom::ReferrerPolicy::kDefault,
+                    GURL() /* outgoing_referrer */,
+                    blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade));
   }
 
   MessagePortChannel AddClient(

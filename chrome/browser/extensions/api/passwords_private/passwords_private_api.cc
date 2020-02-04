@@ -25,13 +25,20 @@
 
 namespace extensions {
 
-////////////////////////////////////////////////////////////////////////////////
+namespace {
+
+using ResponseAction = ExtensionFunction::ResponseAction;
+
+PasswordsPrivateDelegate* GetDelegate(
+    content::BrowserContext* browser_context) {
+  return PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context,
+                                                               /*create=*/true);
+}
+
+}  // namespace
+
 // PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction
-
-PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction::
-    ~PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction() {}
-
-ExtensionFunction::ResponseAction
+ResponseAction
 PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction::Run() {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ManagePasswordsReferrer",
@@ -48,21 +55,13 @@ PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateChangeSavedPasswordFunction
+ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
+  auto parameters =
+      api::passwords_private::ChangeSavedPassword::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
-PasswordsPrivateChangeSavedPasswordFunction::
-    ~PasswordsPrivateChangeSavedPasswordFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateChangeSavedPasswordFunction::Run() {
-  std::unique_ptr<api::passwords_private::ChangeSavedPassword::Params>
-      parameters =
-          api::passwords_private::ChangeSavedPassword::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-
-  PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                        true /* create */)
+  GetDelegate(browser_context())
       ->ChangeSavedPassword(
           parameters->id, base::UTF8ToUTF16(parameters->new_username),
           parameters->new_password ? base::make_optional(base::UTF8ToUTF16(
@@ -72,88 +71,44 @@ PasswordsPrivateChangeSavedPasswordFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRemoveSavedPasswordFunction
-
-PasswordsPrivateRemoveSavedPasswordFunction::
-    ~PasswordsPrivateRemoveSavedPasswordFunction() {}
-
-ExtensionFunction::ResponseAction
-    PasswordsPrivateRemoveSavedPasswordFunction::Run() {
-  std::unique_ptr<api::passwords_private::RemoveSavedPassword::Params>
-      parameters =
-          api::passwords_private::RemoveSavedPassword::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-
-  delegate->RemoveSavedPassword(parameters->id);
-
+ResponseAction PasswordsPrivateRemoveSavedPasswordFunction::Run() {
+  auto parameters =
+      api::passwords_private::RemoveSavedPassword::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+  GetDelegate(browser_context())->RemoveSavedPassword(parameters->id);
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRemovePasswordExceptionFunction
-
-PasswordsPrivateRemovePasswordExceptionFunction::
-    ~PasswordsPrivateRemovePasswordExceptionFunction() {}
-
-ExtensionFunction::ResponseAction
-    PasswordsPrivateRemovePasswordExceptionFunction::Run() {
-  std::unique_ptr<api::passwords_private::RemovePasswordException::Params>
-      parameters =
-          api::passwords_private::RemovePasswordException::Params::Create(
-              *args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->RemovePasswordException(parameters->id);
-
+ResponseAction PasswordsPrivateRemovePasswordExceptionFunction::Run() {
+  auto parameters =
+      api::passwords_private::RemovePasswordException::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+  GetDelegate(browser_context())->RemovePasswordException(parameters->id);
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction
-
-PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction::
-    ~PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction() {}
-
-ExtensionFunction::ResponseAction
+ResponseAction
 PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction::Run() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->UndoRemoveSavedPasswordOrException();
-
+  GetDelegate(browser_context())->UndoRemoveSavedPasswordOrException();
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRequestPlaintextPasswordFunction
+ResponseAction PasswordsPrivateRequestPlaintextPasswordFunction::Run() {
+  auto parameters =
+      api::passwords_private::RequestPlaintextPassword::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
-PasswordsPrivateRequestPlaintextPasswordFunction::
-    ~PasswordsPrivateRequestPlaintextPasswordFunction() {}
-
-ExtensionFunction::ResponseAction
-    PasswordsPrivateRequestPlaintextPasswordFunction::Run() {
-  std::unique_ptr<api::passwords_private::RequestPlaintextPassword::Params>
-      parameters =
-          api::passwords_private::RequestPlaintextPassword::Params::Create(
-              *args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->RequestShowPassword(
-      parameters->id,
-      base::BindOnce(
-          &PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword, this),
-      GetSenderWebContents());
+  GetDelegate(browser_context())
+      ->RequestShowPassword(
+          parameters->id,
+          base::BindOnce(
+              &PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword,
+              this),
+          GetSenderWebContents());
 
   // GotPassword() might respond before we reach this point.
   return did_respond() ? AlreadyResponded() : RespondLater();
@@ -167,14 +122,8 @@ void PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword(
     Respond(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateGetSavedPasswordListFunction
-
-PasswordsPrivateGetSavedPasswordListFunction::
-    ~PasswordsPrivateGetSavedPasswordListFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateGetSavedPasswordListFunction::Run() {
+ResponseAction PasswordsPrivateGetSavedPasswordListFunction::Run() {
   // GetList() can immediately call GotList() (which would Respond() before
   // RespondLater()). So we post a task to preserve order.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -185,11 +134,9 @@ PasswordsPrivateGetSavedPasswordListFunction::Run() {
 }
 
 void PasswordsPrivateGetSavedPasswordListFunction::GetList() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->GetSavedPasswordsList(base::BindOnce(
-      &PasswordsPrivateGetSavedPasswordListFunction::GotList, this));
+  GetDelegate(browser_context())
+      ->GetSavedPasswordsList(base::BindOnce(
+          &PasswordsPrivateGetSavedPasswordListFunction::GotList, this));
 }
 
 void PasswordsPrivateGetSavedPasswordListFunction::GotList(
@@ -198,14 +145,8 @@ void PasswordsPrivateGetSavedPasswordListFunction::GotList(
       api::passwords_private::GetSavedPasswordList::Results::Create(list)));
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateGetPasswordExceptionListFunction
-
-PasswordsPrivateGetPasswordExceptionListFunction::
-    ~PasswordsPrivateGetPasswordExceptionListFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateGetPasswordExceptionListFunction::Run() {
+ResponseAction PasswordsPrivateGetPasswordExceptionListFunction::Run() {
   // GetList() can immediately call GotList() (which would Respond() before
   // RespondLater()). So we post a task to preserve order.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -216,11 +157,9 @@ PasswordsPrivateGetPasswordExceptionListFunction::Run() {
 }
 
 void PasswordsPrivateGetPasswordExceptionListFunction::GetList() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->GetPasswordExceptionsList(base::Bind(
-      &PasswordsPrivateGetPasswordExceptionListFunction::GotList, this));
+  GetDelegate(browser_context())
+      ->GetPasswordExceptionsList(base::BindOnce(
+          &PasswordsPrivateGetPasswordExceptionListFunction::GotList, this));
 }
 
 void PasswordsPrivateGetPasswordExceptionListFunction::GotList(
@@ -230,37 +169,20 @@ void PasswordsPrivateGetPasswordExceptionListFunction::GotList(
           entries)));
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateImportPasswordsFunction
-
-PasswordsPrivateImportPasswordsFunction::
-    ~PasswordsPrivateImportPasswordsFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateImportPasswordsFunction::Run() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->ImportPasswords(GetSenderWebContents());
+ResponseAction PasswordsPrivateImportPasswordsFunction::Run() {
+  GetDelegate(browser_context())->ImportPasswords(GetSenderWebContents());
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateExportPasswordsFunction
-
-PasswordsPrivateExportPasswordsFunction::
-    ~PasswordsPrivateExportPasswordsFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateExportPasswordsFunction::Run() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->ExportPasswords(
-      base::BindOnce(
-          &PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted,
-          this),
-      GetSenderWebContents());
+ResponseAction PasswordsPrivateExportPasswordsFunction::Run() {
+  GetDelegate(browser_context())
+      ->ExportPasswords(
+          base::BindOnce(
+              &PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted,
+              this),
+          GetSenderWebContents());
   return RespondLater();
 }
 
@@ -272,34 +194,17 @@ void PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted(
     Error(error);
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateCancelExportPasswordsFunction
-
-PasswordsPrivateCancelExportPasswordsFunction::
-    ~PasswordsPrivateCancelExportPasswordsFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateCancelExportPasswordsFunction::Run() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  delegate->CancelExportPasswords();
+ResponseAction PasswordsPrivateCancelExportPasswordsFunction::Run() {
+  GetDelegate(browser_context())->CancelExportPasswords();
   return RespondNow(NoArguments());
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRequestExportProgressStatusFunction
-
-PasswordsPrivateRequestExportProgressStatusFunction::
-    ~PasswordsPrivateRequestExportProgressStatusFunction() {}
-
-ExtensionFunction::ResponseAction
-PasswordsPrivateRequestExportProgressStatusFunction::Run() {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
-                                                            true /* create */);
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      ToString(delegate->GetExportProgressStatus()))));
+ResponseAction PasswordsPrivateRequestExportProgressStatusFunction::Run() {
+  return RespondNow(ArgumentList(
+      api::passwords_private::RequestExportProgressStatus::Results::Create(
+          GetDelegate(browser_context())->GetExportProgressStatus())));
 }
 
 }  // namespace extensions

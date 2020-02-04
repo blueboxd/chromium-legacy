@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Arkatzaren ezarpenak</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktibatzen</translation>
 <translation id="2359808026110333948">Jarraitu</translation>
-<translation id="2364154243880592194">Egoera-erretilua. Ordua <ph name="TIME" />. Bateria <ph name="BATTERY" />. Jakinarazpen-zentroa atzitzeko, sakatu Bilatu + ezkerrera gezia.</translation>
 <translation id="2365393535144473978">Datu-konexioa aktibatzen baduzu, Bluetooth konexioa ere aktibatuko da.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Eguneratu egin daiteke</translation>
@@ -239,6 +238,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4112140312785995938">Atzeratu</translation>
 <translation id="4129129681837227511">Pantaila blokeatuan jakinarazpenak ikusteko, desblokeatu gailua eta aldatu ezarpena</translation>
 <translation id="4146833061457621061">Erreproduzitu musika</translation>
+<translation id="4149156641122542261"><ph name="DOMAIN" /> da <ph name="DEVICE_TYPE" /> gailuaren kudeatzailea</translation>
 <translation id="4181841719683918333">Hizkuntzak</translation>
 <translation id="4195877955194704651">Klik automatikoen botoia</translation>
 <translation id="4217571870635786043">Diktaketa</translation>
@@ -270,7 +270,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4513946894732546136">Iritzia</translation>
 <translation id="4527045527269911712">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> geratzen dira guztiz kargatu arte</translation>
-<translation id="4544944664594876241">Aldatu egin da pantaila blokeatzeko lasterbidea. Erabili <ph name="NEW_SHORTCUT" />, eta ez <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">"Hautatu ozen irakurtzeko" botoia</translation>
 <translation id="4585337515783392668">Utzi hargailu ezezagun batera igortzeari</translation>
@@ -427,7 +426,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6790428901817661496">Erreproduzitu</translation>
 <translation id="6803622936009808957">Ezin izan dira islatu pantailan ez delako onartutako bereizmenik aurkitu. Horren ordez, mahaigain hedatuan sartu zara.</translation>
 <translation id="6820676911989879663">Hartu atseden</translation>
-<translation id="683971173229319003">Bilaketa + L</translation>
 <translation id="6857811139397017780">Aktibatu <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Lasterbidea desaktibatu da</translation>
 <translation id="6910714959251846841">Eguneratu ahal izateko, gailuaren fabrikako ezarpenak berrezarri behar dira. Lortu informazio gehiago <ph name="SYSTEM_APP_NAME" /> aplikazioaren azken eguneratzeari buruz.</translation>
@@ -451,6 +449,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7143207342074048698">Konektatzen</translation>
 <translation id="7165278925115064263">Alt+Maius+K</translation>
 <translation id="7168224885072002358">Aurreko bereizmenera leheneratuko da <ph name="TIMEOUT_SECONDS" /> ondoren</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Chromebook hau berrabiarazi egin behar da eguneratzea aplikatzeko. Baliteke minutu bateraino behar izatea.</translation>
 <translation id="7256634071279256947">Atzeko mikrofonoa</translation>
 <translation id="726276584504105859">Arrastatu hona pantaila zatitzeko</translation>
 <translation id="7262906531272962081">Sortu abisua</translation>
@@ -465,11 +464,9 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="742594950370306541">Norbait kamera erabiltzen ari da.</translation>
 <translation id="743058460480092004">Norbait kamera eta mikrofonoa erabiltzen ari da.</translation>
 <translation id="7497767806359279797">Aukeratu hizkuntza eta teklatua</translation>
-<translation id="7510334386202674593">Ktrl + Maius + L</translation>
 <translation id="7526573455193969409">Baliteke sarea gainbegiratuta egotea</translation>
 <translation id="7536035074519304529">IP helbidea: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Ohera joateko garaia da</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> pantailak ez du onartzen <ph name="SPECIFIED_RESOLUTION" /> bereizmena. <ph name="FALLBACK_RESOLUTION" /> ezarri da bereizmen gisa</translation>
 <translation id="7562368315689366235">Emojien panela</translation>
 <translation id="7564874036684306347">Leihoak beste mahaigain batera eramaten badira, baliteke ustekabeko portaerak izatea. Aurrerantzeko jakinarazpenak, baliteke leihoak eta elkarrizketa-koadroak bi mahaigainen artean banatuta agertzea.</translation>
 <translation id="7568294522609223312">Desaktibatu klik automatikoak</translation>
@@ -512,6 +509,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8061464966246066292">Kontraste handia</translation>
 <translation id="8098591350844501178">Utzi pantaila <ph name="RECEIVER_NAME" /> izeneko gailura igortzeari</translation>
 <translation id="8113423164597455979">Aplikazio guztietan aktibatuta</translation>
+<translation id="8131740175452115882">Berretsi</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> sarera konektatuta</translation>
 <translation id="813913629614996137">Hasieratzen…</translation>
 <translation id="8142441511840089262">Egin klik bikoitza</translation>

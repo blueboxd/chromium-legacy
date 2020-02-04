@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2359808026110333948">Turpināt</translation>
+<translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2704606927547763573">Nokopēts</translation>
 <translation id="3115898365077584848">Rādīt informāciju</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Saites kopēšana</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4570913071927164677">Detalizēta informācija</translation>
+<translation id="497421865427891073">Doties uz priekšu</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5301954838959518834">Labi, sapratu</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
+<translation id="5596627076506792578">Citas opcijas</translation>
 <translation id="5860033963881614850">Izsl.</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: iespējas</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
+<translation id="6818926723028410516">Vienumu atlase</translation>
 <translation id="6910211073230771657">Dzēsts</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6965382102122355670">Labi</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Atlasīts 1 vienums}zero{Atlasīti # vienumi}one{Atlasīts # vienums}other{Atlasīti # vienumi}}</translation>
+<translation id="7087918508125750058">Atlasīti vienumi: <ph name="ITEM_COUNT" />. Opcijas ir pieejamas ekrāna augšdaļā.</translation>
+<translation id="7250468141469952378">Atlasīti vienumi: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7791543448312431591">Pievienot</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
+<translation id="7846076177841592234">Atcelt atlasi</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8249310407154411074">Pārvietot uz augšdaļu</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8609465669617005112">Virziet uz augšu</translation>
+<translation id="8676374126336081632">Notīrīt ievadi</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8730621377337864115">Gatavs</translation>
 </translationbundle>

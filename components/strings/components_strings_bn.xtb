@@ -539,6 +539,8 @@
 <translation id="3366477098757335611">কার্ড দেখুন</translation>
 <translation id="3369192424181595722">ঘড়ির ত্রুটি</translation>
 <translation id="337363190475750230">প্রদান করবে না</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> আপনার ব্রাউজারে Enterprise Service Hooks চালু করেছেন। এই হুকগুলি আপনার কিছু ডেটা অ্যাক্সেস করতে পারে।</translation>
+<translation id="3377144306166885718">সার্ভার TLS-এর.একটি অপ্রচলিত ভার্সন ব্যবহার করেছে।</translation>
 <translation id="3377188786107721145">নীতি বিশ্লেষণ ত্রুটি</translation>
 <translation id="3377736046129930310">কার্ড আরও দ্রুত কনফার্ম করতে স্ক্রিন লক ব্যবহার করুন</translation>
 <translation id="3380365263193509176">অজানা ত্রুটি</translation>
@@ -547,6 +549,7 @@
 <translation id="3391030046425686457">পৌঁছে দেওয়ার ঠিকানা</translation>
 <translation id="3395827396354264108">পিকআপের পদ্ধতি</translation>
 <translation id="3399952811970034796">ডেলিভারির ঠিকানা</translation>
+<translation id="3402261774528610252">এই সাইট লোড করার জন্য যে কানেকশন ব্যবহার করা হয়েছে সেটি TLS 1.0 বা TLS 1.1 ব্যবহার করেছে যা শীঘ্রই বন্ধ করা হবে এবং ভবিষ্যতে আর পাওয়া যাবে না। একবার বন্ধ হয়ে যাওয়ার পরে, ব্যবহারকারীরা আর এই সাইটটি লোড করতে পারবেন না। সার্ভারে TLS 1.2 বা আরও উন্নত ভার্সন চালু করতে হবে।</translation>
 <translation id="3422248202833853650">মেমরি ফাঁকা করতে অন্যান্য প্রোগ্রাম থেকে বেরিয়ে যাওয়ার চেষ্টা করুন।</translation>
 <translation id="3422472998109090673">বর্তমানে <ph name="HOST_NAME" /> পাওয়া যাচ্ছে না।</translation>
 <translation id="3423742043356668186">সিস্টেমের নির্দিষ্ট করা</translation>
@@ -635,6 +638,7 @@
 <translation id="3745099705178523657">আপনি কনফার্ম করার পর আপনার Google অ্যাকাউন্ট থেকে কার্ডের বিবরণ এই সাইটে শেয়ার করা হবে।</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-এর আক্রমণকারীরা আপনাকে সফ্টওয়্যার ইনস্টলেশন বা আপনার ব্যক্তিগত তথ্য (যেমন পাসওয়ার্ড, ফোন নম্বর বা ক্রেডিট কার্ড) প্রকাশ করার মত বিপজ্জনক কাজ করার জন্য আপনাকে প্রতারিত করতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">একটি সার্ভার ত্রুটির কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
+<translation id="3754210790023674521">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="3759461132968374835">আপনার কাছে সাম্প্রতিক প্রতিবেদন করা কোনও ক্র্যাশ নেই৷ ক্র্যাশ প্রতিবেদন অক্ষম থাকাকালীন ঘটা ক্র্যাশ এখানে উপস্থিত হবে না৷</translation>
 <translation id="3760561303380396507">সিভিসি কোডের পরিবর্তে Windows Hello ব্যবহার করবেন?</translation>
 <translation id="3761718714832595332">স্ট্যাটাসটি লুকান</translation>
@@ -957,6 +961,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="5190835502935405962">বুকমার্ক বার</translation>
 <translation id="519422657042045905">ব্যাখ্যা নেই</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">এই পৃষ্ঠার এম্বেডেড করা একটি পৃষ্ঠায় এটি দেখানো হচ্ছে</translation>
 <translation id="5205222826937269299">নাম প্রয়োজন</translation>
 <translation id="5215116848420601511">Google Pay ব্যবহার করে এমন পেমেন্টের পদ্ধতি এবং ঠিকানা</translation>
@@ -986,6 +991,7 @@
 <translation id="5295292838686006428">কোনও সাইট বা অ্যাপে ডেটার নিরাপত্তা লঙ্ঘন হওয়ার ফলে আপনার পাসওয়ার্ডের সুরক্ষা বিঘ্নিত হয়েছে। Chrome এখনই আপনার সেভ করা পাসওয়ার্ড চেক করে নিতে সাজেস্ট করছে।</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="5300589172476337783">দেখান</translation>
+<translation id="5306593769196050043">উভয় শিট</translation>
 <translation id="5308380583665731573">সংযুক্ত করুন</translation>
 <translation id="5308689395849655368">ক্র্যাশ প্রতিবেদন অক্ষম আছে৷</translation>
 <translation id="5314967030527622926">বুকলেট প্রস্তুতকারী</translation>
@@ -1139,7 +1145,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">আপনার পাসওয়ার্ড চেক করুন</translation>
 <translation id="6015796118275082299">বছর</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{পৃষ্ঠা ১}one{পৃষ্ঠা #}other{পৃষ্ঠা #}}</translation>
 <translation id="6017514345406065928">সবুজ</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-এ সক্রিয় থাকা আক্রমণকারীরা এমন প্রতারণামূলক অ্যাপ ইনস্টল করে দিতে পারে যেগুলি অন্যান্য আপের থেকে আলাদা করা যায় না অথবা যেগুলি এমন ডেটা সংগ্রহ করে যা দিয়ে আপনার উপরে নজর রাখা যাবে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (সিঙ্ক হয়েছে)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">আরও তথ্য যোগ করুন</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
-<translation id="644931407731409778">পিডিএফ ডকুমেন্টে {COUNT,plural, =1{১টি পৃষ্ঠা}one{#টি পৃষ্ঠা}other{#টি পৃষ্ঠা}} আছে</translation>
 <translation id="6451458296329894277">ফর্ম পুনঃজমা নিশ্চিত করুন</translation>
 <translation id="6457206614190510200">স্যাডল স্টিচ</translation>
 <translation id="6465306955648956876">পাসওয়ার্ড পরিচালনা করুন...</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7062635574500127092">নীলচে সবুজ</translation>
 <translation id="7064851114919012435">পরিচিতি তথ্য</translation>
+<translation id="70705239631109039">এই কানেকশন সম্পূর্ণরূপে নিরাপদ নয়</translation>
 <translation id="7075452647191940183">অনুরোধ অত্যন্ত বড়</translation>
 <translation id="7079718277001814089">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
 <translation id="7081308185095828845">এই ফিচারটি আপনার ডিভাইসে পাওয়া যাবে না</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}one{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}other{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}}</translation>
 <translation id="7153618581592392745">ল্যাভেণ্ডার</translation>
+<translation id="7156870133441232244">সার্ভারটিকে TLS 1.2 বা আরও উন্নত ভার্সনে আপগ্রেড করতে হবে।</translation>
 <translation id="717330890047184534">Gaia আইডি:</translation>
 <translation id="7174545416324379297">মার্জ করা হয়েছে</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}one{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}other{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}}</translation>
@@ -1402,6 +1408,7 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার কম্পিউটারের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
 <translation id="7260504762447901703">অ্যাক্সেস প্রত্যাহার করুন</translation>
 <translation id="7275334191706090484">পরিচালিত বুকমার্কগুলি</translation>
+<translation id="7288778322931489286">আপনার অ্যাডমিনিস্ট্রেটর ব্রাউজারে Enterprise Service Hooks চালু করেছেন। এই হুকগুলি আপনার কিছু ডেটা অ্যাক্সেস করতে পারে।</translation>
 <translation id="7292031607255951991">প্রাপকের নাম</translation>
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
 <translation id="7300012071106347854">কোবাল্ট নীল</translation>
@@ -1726,6 +1733,7 @@
 <translation id="874918643257405732">এই ট্যাব বুকমার্ক করুন</translation>
 <translation id="8751426954251315517">পরে আবার চেষ্টা করুন</translation>
 <translation id="8759274551635299824">এই কার্ডটির মেয়াদ শেষ হয়েছে</translation>
+<translation id="87601671197631245">এই সাইটটি পুরনো সিকিউরিটি কনফিগারেশন ব্যবহার করে তাই আপনার তথ্য (যেমন, পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ডের নম্বর) এই সাইটে পাঠানোর সময় এইসব তথ্যের নিরাপত্তা বিঘ্নিত হতে পারে।</translation>
 <translation id="8761567432415473239">Google নিরাপদ ব্রাউজিং সম্প্রতি <ph name="SITE" /> এ <ph name="BEGIN_LINK" />ক্ষতিকারক প্রোগ্রামগুলি খুঁজে পেয়েছে<ph name="END_LINK" />৷</translation>
 <translation id="8763927697961133303">USB ডিভাইস</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@
 <translation id="8866481888320382733">নীতি সেটিংস বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="8866928039507595380">ফোল্ড</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Enterprise Service Hooks-এর চিহ্নিত করা সুরক্ষা ইভেন্ট সম্পর্কিত ডেটা আপনার অ্যাডমিনিস্ট্রেটরের সাথে শেয়ার করুন। ডিভাইসে এবং Chrome-এ সাইন-ইন করার সময় আপনার দেখা পৃষ্ঠাগুলির ইউআরএল, ফাইলের নাম অথবা মেটাডেটা এবং আপনি যে ইউজারনেম ব্যবহার করেন সেগুলিও এতে অন্তর্ভুক্ত থাকতে পারে।</translation>
 <translation id="8870413625673593573">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="8870494189203302833">একই অর্ডার, সামনের দিক নীচে</translation>
 <translation id="8874824191258364635">একটি সঠিক কার্ড নম্বর লিখুন</translation>

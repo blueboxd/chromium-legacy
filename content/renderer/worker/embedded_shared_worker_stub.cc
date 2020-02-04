@@ -13,12 +13,14 @@
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
+#include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
 #include "url/origin.h"
@@ -104,6 +106,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
+      FetchClientSettingsObjectFromMojomToWeb(
+          info->outside_fetch_client_settings_object),
       appcache_host_id, devtools_worker_token, content_settings.PassPipe(),
       browser_interface_broker.PassPipe(), pause_on_start);
 

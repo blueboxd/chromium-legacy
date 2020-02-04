@@ -37,12 +37,6 @@ Polymer({
     androidEnabled: Boolean,
 
     /** @private */
-    androidRunning_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
     showCrostiniStorage_: {
       type: Boolean,
       value: false,
@@ -85,8 +79,7 @@ Polymer({
         'storage-browsing-data-size-changed',
         this.handleBrowsingDataSizeChanged_.bind(this));
     this.addWebUIListener(
-        'storage-android-size-changed',
-        this.handleAndroidSizeChanged_.bind(this));
+        'storage-apps-size-changed', this.handleAppsSizeChanged_.bind(this));
     this.addWebUIListener(
         'storage-crostini-size-changed',
         this.handleCrostiniSizeChanged_.bind(this));
@@ -95,9 +88,6 @@ Polymer({
           'storage-other-users-size-changed',
           this.handleOtherUsersSizeChanged_.bind(this));
     }
-    this.addWebUIListener(
-        'storage-android-running-changed',
-        this.handleAndroidRunningChanged_.bind(this));
   },
 
   ready() {
@@ -151,11 +141,11 @@ Polymer({
   },
 
   /**
-   * Handler for tapping the "Android storage" item.
+   * Handler for tapping the "Apps and Extensions" item.
    * @private
    */
-  onAndroidTap_() {
-    chrome.send('openArcStorage');
+  onAppsTap_() {
+    window.location = 'chrome://os-settings/app-management';
   },
 
   /**
@@ -216,14 +206,12 @@ Polymer({
   },
 
   /**
-   * @param {string} size Formatted string representing the size of Android
-   *     storage.
+   * @param {string} size Formatted string representing the size of Apps and
+   *     extensions storage.
    * @private
    */
-  handleAndroidSizeChanged_(size) {
-    if (this.androidRunning_) {
-      this.$$('#androidSize').subLabel = size;
-    }
+  handleAppsSizeChanged_(size) {
+    this.$$('#appsSize').subLabel = size;
   },
 
   /**
@@ -245,14 +233,6 @@ Polymer({
     if (!this.isGuest_) {
       this.$$('#otherUsersSize').subLabel = size;
     }
-  },
-
-  /**
-   * @param {boolean} running True if Android (ARC) is running.
-   * @private
-   */
-  handleAndroidRunningChanged_(running) {
-    this.androidRunning_ = running;
   },
 
   /**

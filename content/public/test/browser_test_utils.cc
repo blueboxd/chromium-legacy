@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -1495,9 +1496,9 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
 
         size_t max_length = 80 - indent.length();
         if (source_line.length() > max_length) {
-          source_line =
-              source_line.substr(0, max_length - elision_mark.length());
-          elision_mark.AppendToString(&source_line);
+          source_line = base::StrCat(
+              {source_line.substr(0, max_length - elision_mark.length()),
+               elision_mark});
         }
 
         annotated_error << base::JoinString(error_line_parts, ":") << ":"

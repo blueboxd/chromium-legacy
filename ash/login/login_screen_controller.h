@@ -73,6 +73,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   bool ValidateParentAccessCode(const AccountId& account_id,
                                 const std::string& code,
                                 base::Time validation_time);
+  void OnSecurityTokenPinRequestCancelledByUser();
+  bool GetSecurityTokenPinRequestCancelled() const;
   void HardlockPod(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);
   void OnNoPodFocused();
@@ -158,6 +160,12 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
 
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
+
+  // Original OnUiClosed callback of a pending security token pin request.
+  // Invoked by OnSecurityTokenPinRequestCancelledByUser.
+  SecurityTokenPinRequest::OnUiClosed on_request_security_token_ui_closed_;
+
+  bool security_token_pin_request_cancelled_ = false;
 
   base::WeakPtrFactory<LoginScreenController> weak_factory_{this};
 

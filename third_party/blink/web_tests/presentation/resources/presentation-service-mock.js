@@ -14,8 +14,8 @@ class PresentationServiceMock {
     this.controllerConnectionPtr_ = null;
     this.receiverConnectionRequest_ = null;
 
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.PresentationService.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(blink.mojom.PresentationService.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

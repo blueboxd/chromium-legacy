@@ -30,7 +30,6 @@ namespace content {
 class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
  public:
   RequestExtraData();
-  ~RequestExtraData() override;
 
   // |custom_user_agent| is used to communicate an overriding custom user agent
   // to |RenderViewImpl::willSendRequest()|; set to a null string to indicate no
@@ -80,6 +79,8 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   void CopyToResourceRequest(network::ResourceRequest* request) const;
 
  private:
+  ~RequestExtraData() override;
+
   blink::WebString custom_user_agent_;
   std::unique_ptr<NavigationResponseOverrideParameters>
       navigation_response_override_;

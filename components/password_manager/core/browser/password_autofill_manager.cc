@@ -206,6 +206,12 @@ autofill::Suggestion CreateAccountStorageOptInEntry() {
   return suggestion;
 }
 
+autofill::Suggestion CreateLoadingSpinner() {
+  autofill::Suggestion suggestion;
+  suggestion.frontend_id = autofill::POPUP_ITEM_ID_LOADING_SPINNER;
+  return suggestion;
+}
+
 bool ContainsOtherThanManagePasswords(
     const std::vector<autofill::Suggestion> suggestions) {
   return std::any_of(suggestions.begin(), suggestions.end(),
@@ -224,9 +230,10 @@ bool AreSuggestionForPasswordField(
                      });
 }
 
-std::vector<autofill::Suggestion> CopyWithoutUnlockButton(
+std::vector<autofill::Suggestion> ReplaceUnlockButtonWithLoadingIndicator(
     base::span<const autofill::Suggestion> suggestions) {
   std::vector<autofill::Suggestion> new_suggestions;
+  new_suggestions.push_back(CreateLoadingSpinner());
   std::copy_if(suggestions.begin(), suggestions.end(),
                std::back_inserter(new_suggestions),
                [](const autofill::Suggestion& suggestion) {
@@ -298,9 +305,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     }
   } else if (identifier ==
              autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN) {
-    // TODO(https://crbug.com/1043963): Add loading spinner.
-    UpdatePopup(
-        CopyWithoutUnlockButton(autofill_client_->GetPopupSuggestions()));
+    UpdatePopup(ReplaceUnlockButtonWithLoadingIndicator(
+        autofill_client_->GetPopupSuggestions()));
     autofill_client_->PinPopupViewUntilUpdate();
     password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
     return;  // Do not hide the popup while loading data.

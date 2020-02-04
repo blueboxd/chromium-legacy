@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Rašiklio nustatymai</translation>
 <translation id="2354174487190027830">Aktyvinamas „<ph name="NAME" />“</translation>
 <translation id="2359808026110333948">Tęskite</translation>
-<translation id="2364154243880592194">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /> Paspauskite „Ieškoti“ ir kairėn, kad pasiektumėte pranešimų centrą.</translation>
 <translation id="2365393535144473978">Įgalinus mobiliojo ryšio duomenis bus įgalintas „Bluetooth“.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Pasiekiamas naujinys</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Prasukti atgal</translation>
 <translation id="4129129681837227511">Jei norite matyti pranešimus užrakinimo ekrane, atrakinkite ir pakeiskite nustatymą</translation>
 <translation id="4146833061457621061">„Play music“ (Leisk muziką)</translation>
+<translation id="4149156641122542261">„<ph name="DEVICE_TYPE" />“ tvarko <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Kalbos</translation>
 <translation id="4195877955194704651">Automatinis paspaudimų mygtukas</translation>
 <translation id="4217571870635786043">Diktavimas</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Atsiliepimai</translation>
 <translation id="4527045527269911712">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti.</translation>
 <translation id="453661520163887813">Liko <ph name="TIME" />, kol bus visiškai įkrautas</translation>
-<translation id="4544944664594876241">Pakeistas ekrano užrakinimo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Funkcijos „Teksto ištarimas“ mygtukas</translation>
 <translation id="4585337515783392668">Sustabdyti perdavimą į nežinomą imtuvą</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Žaisti</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
 <translation id="6820676911989879663">Padarykite pertrauką!</translation>
-<translation id="683971173229319003">Paieškos klavišas + L</translation>
 <translation id="6857811139397017780">Suaktyvinti „<ph name="NETWORKSERVICE" />“</translation>
 <translation id="6878400149835617132">Spartusis klavišas išjungtas</translation>
 <translation id="6910714959251846841">Norint pritaikyti šį naujinį, reikia naudoti funkciją „Powerwash“ jūsų įrenginyje. Sužinokite daugiau apie naujausią „<ph name="SYSTEM_APP_NAME" />“ naujinį.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Jungiama</translation>
 <translation id="7165278925115064263">„Alt“ + „Shift“ + K</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kad būtų pritaikytas naujinys, šį „Chromebook“ reikia paleisti iš naujo. Tai gali užtrukti iki minutės</translation>
 <translation id="7256634071279256947">Užpakalinis mikrofonas</translation>
 <translation id="726276584504105859">Vilkite čia, kad naudotumėte skaidytą ekraną</translation>
 <translation id="7262906531272962081">Sukurti priminimą</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Kamera naudojama.</translation>
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
 <translation id="7497767806359279797">Pasirinkti kalbą ir klaviatūros išdėstymą</translation>
-<translation id="7510334386202674593">„Ctrl“ + „Shift“ + L</translation>
 <translation id="7526573455193969409">Tinklas gali būti stebimas</translation>
 <translation id="7536035074519304529">IP adresas: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Laikas eiti miegoti</translation>
-<translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra pakeista į <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Jaustukų paletė</translation>
 <translation id="7564874036684306347">Perkėlus langus į kitą darbalaukį gali pasireikšti nenumatyta elgsena. Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose darbalaukiuose.</translation>
 <translation id="7568294522609223312">Išjungti automatinius paspaudimus</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Didelis kontrastas</translation>
 <translation id="8098591350844501178">Sustabdyti ekrano perdavimą į: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Visų programų pranešimai įjungti</translation>
+<translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME" />“</translation>
 <translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8142441511840089262">Dukart spustelėti</translation>

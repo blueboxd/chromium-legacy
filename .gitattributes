@@ -25,6 +25,7 @@
 *.md text eol=lf
 *.mm text eol=lf
 *.mojom text eol=lf
+*.pdf -diff
 *.sh text eol=lf
 *.sql   text eol=lf
 *.txt   text eol=lf

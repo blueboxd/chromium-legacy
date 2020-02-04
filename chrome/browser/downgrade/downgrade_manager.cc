@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
@@ -210,8 +211,8 @@ void MoveCache(const base::FilePath& disk_cache_dir) {
 // Deletes all subdirectories in |dir| named |name|*.CHROME_DELETE.
 void DeleteAllRenamedUserDirectories(const base::FilePath& dir,
                                      const base::FilePath& name) {
-  base::FilePath::StringType pattern = name.value() + FILE_PATH_LITERAL("*");
-  kDowngradeDeleteSuffix.AppendToString(&pattern);
+  base::FilePath::StringType pattern = base::StrCat(
+      {name.value(), FILE_PATH_LITERAL("*"), kDowngradeDeleteSuffix});
   base::FileEnumerator enumerator(dir, false, base::FileEnumerator::DIRECTORIES,
                                   pattern);
   for (base::FilePath to_delete = enumerator.Next(); !to_delete.empty();

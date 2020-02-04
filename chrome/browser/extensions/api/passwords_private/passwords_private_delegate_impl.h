@@ -45,8 +45,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // PasswordsPrivateDelegate implementation.
   void GetSavedPasswordsList(UiEntriesCallback callback) override;
-  void GetPasswordExceptionsList(
-      const ExceptionEntriesCallback& callback) override;
+  void GetPasswordExceptionsList(ExceptionEntriesCallback callback) override;
   void ChangeSavedPassword(
       int id,
       base::string16 new_username,

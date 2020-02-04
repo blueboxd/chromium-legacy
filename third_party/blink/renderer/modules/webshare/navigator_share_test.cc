@@ -142,7 +142,7 @@ TEST_F(NavigatorShareTest, ShareText) {
   ShareData share_data;
   share_data.setTitle(title);
   share_data.setText(message);
-  share_data.setURL(url);
+  share_data.setUrl(url);
   Share(share_data);
 
   EXPECT_EQ(mock_share_service().title(), title);

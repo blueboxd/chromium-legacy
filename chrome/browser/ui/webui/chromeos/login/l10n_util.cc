@@ -345,6 +345,7 @@ std::string CalculateSelectedLanguage(const std::string& requested_locale,
 }
 
 void ResolveLanguageListInThreadPool(
+    const std::string& locale,
     std::unique_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
     const scoped_refptr<base::TaskRunner> task_runner,
@@ -353,14 +354,7 @@ void ResolveLanguageListInThreadPool(
                                                 base::BlockingType::MAY_BLOCK);
 
   std::string selected_language;
-  if (!language_switch_result) {
-    if (!g_browser_process->GetApplicationLocale().empty()) {
-      selected_language = g_browser_process->GetApplicationLocale();
-    } else {
-      selected_language =
-          StartupCustomizationDocument::GetInstance()->initial_locale_default();
-    }
-  } else {
+  if (language_switch_result) {
     if (language_switch_result->success) {
       if (language_switch_result->requested_locale ==
           language_switch_result->loaded_locale) {
@@ -373,14 +367,17 @@ void ResolveLanguageListInThreadPool(
     } else {
       selected_language = language_switch_result->loaded_locale;
     }
+  } else {
+    selected_language = !locale.empty()
+                            ? locale
+                            : StartupCustomizationDocument::GetInstance()
+                                  ->initial_locale_default();
   }
   const std::string selected_code =
-      selected_language.empty() ? g_browser_process->GetApplicationLocale()
-                                : selected_language;
+      selected_language.empty() ? locale : selected_language;
 
   const std::string list_locale =
-      language_switch_result ? language_switch_result->loaded_locale
-                             : g_browser_process->GetApplicationLocale();
+      language_switch_result ? language_switch_result->loaded_locale : locale;
   std::unique_ptr<base::ListValue> language_list(
       chromeos::GetUILanguageList(nullptr, selected_code));
 
@@ -433,7 +430,8 @@ void ResolveUILanguageList(
   base::PostTask(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&ResolveLanguageListInThreadPool,
-                     base::Passed(&language_switch_result),
+                     g_browser_process->GetApplicationLocale(),
+                     std::move(language_switch_result),
                      base::SequencedTaskRunnerHandle::Get(), callback));
 }
 

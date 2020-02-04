@@ -267,6 +267,7 @@ class APIPermission {
     kPrintingMetrics = 223,
     kPrinting = 224,
     kCrashReportPrivate = 225,
+    kAutofillAssistantPrivate = 226,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml
     // (by running update_extension_permission.py).

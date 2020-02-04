@@ -41,6 +41,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
@@ -77,6 +78,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
       const WebString& content_security_policy,
       network::mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
+      const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
       const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,

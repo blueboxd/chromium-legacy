@@ -94,13 +94,15 @@
         SourcesTestRunner.undoSourceEditing(javaScriptSourceFrame);
       }
 
-      async function breakpointResolvedAgain() {
+      function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
-
-        dumpBreakpointStorageAndLocations();
-        next();
+        TestRunner.addSniffer(
+          Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didRemoveFromDebugger', () => {
+            dumpBreakpointStorageAndLocations();
+            next();
+          });
+        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
       }
     },
 
@@ -147,13 +149,15 @@
         SourcesTestRunner.commitSource(javaScriptSourceFrame);
       }
 
-      async function breakpointResolvedAgain() {
+      function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
-
-        dumpBreakpointStorageAndLocations();
-        next();
+        TestRunner.addSniffer(
+          Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didRemoveFromDebugger', () => {
+            dumpBreakpointStorageAndLocations();
+            next();
+          });
+        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
       }
     },
 
@@ -212,13 +216,15 @@
         SourcesTestRunner.commitSource(javaScriptSourceFrame);
       }
 
-      async function breakpointResolvedAgain() {
+      function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
-
-        dumpBreakpointStorageAndLocations();
-        next();
+        TestRunner.addSniffer(
+          Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didRemoveFromDebugger', () => {
+            dumpBreakpointStorageAndLocations();
+            next();
+          });
+        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
       }
     },
 
@@ -277,13 +283,15 @@
         SourcesTestRunner.commitSource(javaScriptSourceFrame);
       }
 
-      async function breakpointResolvedAgain() {
+      function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
-
-        dumpBreakpointStorageAndLocations();
-        next();
+        TestRunner.addSniffer(
+          Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didRemoveFromDebugger', () => {
+            dumpBreakpointStorageAndLocations();
+            next();
+          });
+        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
       }
     },
   ]);

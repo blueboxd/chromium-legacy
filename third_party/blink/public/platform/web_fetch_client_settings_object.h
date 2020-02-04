@@ -23,6 +23,9 @@ namespace blink {
 struct WebFetchClientSettingsObject {
   network::mojom::ReferrerPolicy referrer_policy =
       network::mojom::ReferrerPolicy::kDefault;
+  // outgoing_referrer must be either invalid (!IsValid()) or a valid, non-empty
+  // WebURL (IsValid() && !IsEmpty()).
+  // See https://crbug.com/1047612.
   WebURL outgoing_referrer;
   mojom::InsecureRequestsPolicy insecure_requests_policy =
       blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade;
@@ -32,14 +35,26 @@ struct WebFetchClientSettingsObject {
       WebURL outgoing_referrer,
       mojom::InsecureRequestsPolicy insecure_requests_policy)
       : referrer_policy(referrer_policy),
-        outgoing_referrer(outgoing_referrer),
+        // As per the comment on the |outgoing_referrer| member, it cannot be
+        // set to a valid, empty WebURL. But the given |outgoing_referrer| may
+        // be a valid, empty WebURL, for example, due to conversion from
+        // mojom::Url that doesn't distinguish between null and empty. We
+        // canonicalize it to an invalid WebURL if it's empty.
+        outgoing_referrer(outgoing_referrer.IsEmpty() ? WebURL()
+                                                      : outgoing_referrer),
         insecure_requests_policy(insecure_requests_policy) {}
 
 #if INSIDE_BLINK
   explicit WebFetchClientSettingsObject(
       const FetchClientSettingsObject& settings_object)
       : referrer_policy(settings_object.GetReferrerPolicy()),
-        outgoing_referrer(KURL(settings_object.GetOutgoingReferrer())),
+        // As per the comment on the |outgoing_referrer| member, it cannot be
+        // set to a valid, empty WebURL. But the given |outgoing_referrer| may
+        // be a non-null empty String since the caller may pass one.
+        // We canonicalize it to an invalid WebURL if it's empty.
+        outgoing_referrer(settings_object.GetOutgoingReferrer().IsEmpty()
+                              ? KURL()
+                              : KURL(settings_object.GetOutgoingReferrer())),
         insecure_requests_policy(
             settings_object.GetInsecureRequestsPolicy() &
                     blink::kUpgradeInsecureRequests

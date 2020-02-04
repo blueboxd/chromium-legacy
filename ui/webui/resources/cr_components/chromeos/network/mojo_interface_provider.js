@@ -19,8 +19,8 @@ cr.define('network_config', function() {
     /** @override */
     getMojoServiceRemote() {
       if (!this.remote_) {
-        this.remote_ = chromeos.networkConfig.mojom.CrosNetworkConfig.getRemote(
-            /*useBrowserInterfaceBroker=*/ true);
+        this.remote_ =
+            chromeos.networkConfig.mojom.CrosNetworkConfig.getRemote();
       }
 
       return this.remote_;

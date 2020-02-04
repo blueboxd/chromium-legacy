@@ -649,7 +649,7 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
 
 AsyncAddressResolverImpl::AsyncAddressResolverImpl(
     P2PSocketDispatcher* dispatcher)
-    : resolver_(new P2PAsyncAddressResolver(dispatcher)) {}
+    : resolver_(base::MakeRefCounted<P2PAsyncAddressResolver>(dispatcher)) {}
 
 AsyncAddressResolverImpl::~AsyncAddressResolverImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -94,8 +94,7 @@ Polymer({
 
   /** @override */
   ready() {
-    this.graphDump_ =
-        discards.mojom.GraphDump.getRemote(/*useBrowserInterfaceBroker=*/ true);
+    this.graphDump_ = discards.mojom.GraphDump.getRemote();
   },
 
   /** @override */

@@ -181,13 +181,13 @@
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
     [Replaceable, MeasureAs=WindowEvent, Custom=Getter, NotEnumerable] readonly attribute Event event;
-    [MeasureAs=WindowFind] boolean find([DefaultValue=Undefined] optional DOMString string,
-                                        [DefaultValue=Undefined] optional boolean caseSensitive,
-                                        [DefaultValue=Undefined] optional boolean backwards,
-                                        [DefaultValue=Undefined] optional boolean wrap,
-                                        [DefaultValue=Undefined] optional boolean wholeWord,
-                                        [DefaultValue=Undefined] optional boolean searchInFrames,
-                                        [DefaultValue=Undefined] optional boolean showDialog);
+    [MeasureAs=WindowFind] boolean find(optional DOMString string = "",
+                                        optional boolean caseSensitive = false,
+                                        optional boolean backwards = false,
+                                        optional boolean wrap = false,
+                                        optional boolean wholeWord = false,
+                                        optional boolean searchInFrames = false,
+                                        optional boolean showDialog = false);
     [MeasureAs=WindowOffscreenBuffering, Replaceable, NotEnumerable] readonly attribute boolean offscreenBuffering;
     [HighEntropy, MeasureAs=WindowScreenLeft, Replaceable] readonly attribute long screenLeft;
     [HighEntropy, MeasureAs=WindowScreenTop, Replaceable] readonly attribute long screenTop;

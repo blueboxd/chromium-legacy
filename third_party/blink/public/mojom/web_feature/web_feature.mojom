@@ -2531,6 +2531,7 @@ enum WebFeature {
   // use of a feature to be denied in a document in which it is currently
   // allowed. See https://crbug.com/937131.
   kFeaturePolicyProposalWouldChangeBehaviour = 3158,
+  kRTCLocalSdpModificationSimulcast = 3159,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

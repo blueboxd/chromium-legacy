@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Mga setting ng stylus</translation>
 <translation id="2354174487190027830">Ina-activate ang <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
-<translation id="2364154243880592194">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /> Pindutin ang maghanap + kaliwa para i-access ang notification center.</translation>
 <translation id="2365393535144473978">Kapag na-enable ang mobile data, mae-enable din ang Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">May available na update</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Mag-seek Pabalik</translation>
 <translation id="4129129681837227511">Para makakita ng mga notification sa iyong screen ng lock, i-unlock para baguhin ang setting</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
+<translation id="4149156641122542261">Pinapamahalaan ng <ph name="DOMAIN" /> ang <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4195877955194704651">Button ng mga awtomatikong pag-click</translation>
 <translation id="4217571870635786043">Pagdidikta</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" na magpares.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> na lang bago mapuno</translation>
-<translation id="4544944664594876241">Napalitan na ang shortcut para sa pagla-lock sa screen. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Button ng Select-to-Speak</translation>
 <translation id="4585337515783392668">Ihinto ang pag-cast sa isang hindi pa natutukoy na tagatanggap</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">I-play</translation>
 <translation id="6803622936009808957">Hindi ma-mirror ang mga display dahil walang mga sinusuportahang resolusyon na nakita. Pumasok na lang sa pinalawak na desktop.</translation>
 <translation id="6820676911989879663">Magpahinga!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Naka-off ang shortcut</translation>
 <translation id="6910714959251846841">Kinakailangang i-powerwash ang iyong device para sa update na ito. Matuto pa tungkol sa pinakabagong update sa <ph name="SYSTEM_APP_NAME" />.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kailangang i-restart ang Chromebook na ito para mailapat ang isang update. Puwede itong umabot nang hanggang 1 minuto</translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
 <translation id="726276584504105859">I-drag dito upang magamit ang split screen</translation>
 <translation id="7262906531272962081">Gumawa ng paalala</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Ginagamit ang camera.</translation>
 <translation id="743058460480092004">Ginagamit ang camera at mikropono.</translation>
 <translation id="7497767806359279797">Pumili ng wika at keyboard</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Maaaring sinusubaybayan ang network</translation>
 <translation id="7536035074519304529">IP address: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Oras nang matulog</translation>
-<translation id="7561014039265304140">Hindi sinusuportahan ng <ph name="DISPLAY_NAME" /> ang <ph name="SPECIFIED_RESOLUTION" />. Ang resolution ay ginawang <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji palette</translation>
 <translation id="7564874036684306347">Kapag inilipat ang mga window sa isa pang desktop, maaari itong magresulta sa hindi inaasahang gawi. Maaaring hatiin ang mga susunod na notification, window, at dialog sa pagitan ng mga desktop.</translation>
 <translation id="7568294522609223312">I-off ang mga awtomatikong pag-click</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Mataas na contrast</translation>
 <translation id="8098591350844501178">Ihinto ang pag-cast ng screen sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Naka-on sa lahat ng app</translation>
+<translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8132793192354020517">Kumukonekta sa <ph name="NAME" /></translation>
 <translation id="813913629614996137">Sinisimulan...</translation>
 <translation id="8142441511840089262">I-double click</translation>

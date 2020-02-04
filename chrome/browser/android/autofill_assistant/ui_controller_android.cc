@@ -471,6 +471,11 @@ void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key,
   ui_delegate_->DispatchEvent(key, value);
 }
 
+void UiControllerAndroid::OnValueChanged(const std::string& identifier,
+                                         const ValueProto& value) {
+  ui_delegate_->GetUserModel()->SetValue(identifier, value);
+}
+
 void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
   client_->Shutdown(reason);
 }

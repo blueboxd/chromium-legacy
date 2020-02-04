@@ -1506,44 +1506,47 @@ unsigned AXNodeObject::HierarchicalLevel() const {
       return level;
   }
 
-  // Only tree item and list item will calculate its level through the DOM
-  // currently.
-  if (RoleValue() == ax::mojom::Role::kTreeItem) {
-    // Hierarchy leveling starts at 1, to match the aria-level spec.
-    // We measure tree hierarchy by the number of groups that the item is
-    // within.
-    level = 1;
+  // Helper lambda for calculating hierarchical levels by counting ancestor
+  // nodes that match a target role.
+  auto accumulateLevel = [&](int initial_level, ax::mojom::Role target_role) {
+    int level = initial_level;
     for (AXObject* parent = ParentObject(); parent;
          parent = parent->ParentObject()) {
-      ax::mojom::Role parent_role = parent->RoleValue();
-      if (parent_role == ax::mojom::Role::kGroup)
+      if (parent->RoleValue() == target_role)
         level++;
-      else if (parent_role == ax::mojom::Role::kTree)
-        break;
     }
     return level;
-  } else if (RoleValue() == ax::mojom::Role::kListItem) {
-    level = 0;
-    for (AXObject* parent = ParentObject(); parent;
-         parent = parent->ParentObject()) {
-      ax::mojom::Role parent_role = parent->RoleValue();
-      if (parent_role == ax::mojom::Role::kList)
-        level++;
-    }
+  };
 
-    // When level count is 0 due to this list item not having an ancestor of
-    // Role::kList, not nested in list groups, this list item has a level of 1.
-    return level == 0 ? 1 : level;
-  } else if (RoleValue() == ax::mojom::Role::kComment) {
-    // Comment: level is based on counting comment ancestors until the root.
-    level = 1;
-    for (AXObject* parent = ParentObject(); parent;
-         parent = parent->ParentObject()) {
-      ax::mojom::Role parent_role = parent->RoleValue();
-      if (parent_role == ax::mojom::Role::kComment)
-        level++;
+  switch (RoleValue()) {
+    case ax::mojom::Role::kComment:
+      // Comment: level is based on counting comment ancestors until the root.
+      return accumulateLevel(1, ax::mojom::Role::kComment);
+    case ax::mojom::Role::kListItem:
+      level = accumulateLevel(0, ax::mojom::Role::kList);
+      // When level count is 0 due to this list item not having an ancestor of
+      // Role::kList, not nested in list groups, this list item has a level
+      // of 1.
+      return level == 0 ? 1 : level;
+    case ax::mojom::Role::kTabList:
+      return accumulateLevel(1, ax::mojom::Role::kTabList);
+    case ax::mojom::Role::kTreeItem: {
+      // Hierarchy leveling starts at 1, to match the aria-level spec.
+      // We measure tree hierarchy by the number of groups that the item is
+      // within.
+      level = 1;
+      for (AXObject* parent = ParentObject(); parent;
+           parent = parent->ParentObject()) {
+        ax::mojom::Role parent_role = parent->RoleValue();
+        if (parent_role == ax::mojom::Role::kGroup)
+          level++;
+        else if (parent_role == ax::mojom::Role::kTree)
+          break;
+      }
+      return level;
     }
-    return level;
+    default:
+      return 0;
   }
 
   return 0;

@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">查看付款卡</translation>
 <translation id="3369192424181595722">時鐘錯誤</translation>
 <translation id="337363190475750230">已取消佈建</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> 已在您的瀏覽器上啟用 Enterprise Service Hooks，這些 Hooks 可存取您部分資料。</translation>
+<translation id="3377144306166885718">伺服器的 TLS 版本已過時。</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="3377736046129930310">使用螢幕鎖定即可加快確認付款卡</translation>
 <translation id="3380365263193509176">未知的錯誤</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">送貨地址</translation>
 <translation id="3395827396354264108">取貨方式</translation>
 <translation id="3399952811970034796">送貨地址</translation>
+<translation id="3402261774528610252">用於載入此網站的連線使用 TLS 1.0 或 TLS 1.1 版本現已被淘汰，並會於日後停用。停用後，使用者將無法載入此網站。伺服器應啟用 TLS 1.2 或以上版本。</translation>
 <translation id="3422248202833853650">嘗試關閉其他程式以釋出記憶體。</translation>
 <translation id="3422472998109090673">目前無法存取 <ph name="HOST_NAME" />。</translation>
 <translation id="3423742043356668186">指定的系統</translation>
@@ -618,6 +621,7 @@
 <translation id="3745099705178523657">確認後，您的 Google 帳戶會與這個網站共用您的信用卡資料。</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻擊者可能會誘使您採取一些危險的行動，例如安裝軟件或洩漏您的個人資料 (包括密碼、電話號碼或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">伺服器錯誤，翻譯操作失敗。</translation>
+<translation id="3754210790023674521">退出畫中畫</translation>
 <translation id="3759461132968374835">最近沒有收到當機資訊。當機報告功能停用時發生的當機不會在這裡顯示。</translation>
 <translation id="3760561303380396507">要使用 Windows Hello 取代 CVC 嗎？</translation>
 <translation id="3761718714832595332">隱藏狀態</translation>
@@ -939,6 +943,7 @@
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請報告此錯誤</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="519422657042045905">無法使用註解模式</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">此網頁上的嵌入式頁面顯示</translation>
 <translation id="5205222826937269299">需要提供名稱</translation>
 <translation id="5215116848420601511">使用 Google Pay 儲存的付款方法和地址</translation>
@@ -968,6 +973,7 @@
 <translation id="5295292838686006428">由於您使用的網站或應用程式發生資料外洩，密碼已被洩露。Chrome 建議您立即檢查已儲存的密碼。</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="5300589172476337783">顯示</translation>
+<translation id="5306593769196050043">兩張工作表</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5308689395849655368">當機報告功能已停用。</translation>
 <translation id="5314967030527622926">手冊製作工具</translation>
@@ -1121,7 +1127,6 @@
 <translation id="6008256403891681546">JCB 卡</translation>
 <translation id="6014801569448771146">請檢查您的密碼</translation>
 <translation id="6015796118275082299">年</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{第 1 頁}other{第 # 頁}}</translation>
 <translation id="6017514345406065928">綠色</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻擊者可能會安裝欺詐應用程式來冒充其他內容，或收集可能用於追蹤您的資料。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /> (已同步)</translation>
@@ -1229,7 +1234,6 @@
 <translation id="6446163441502663861">Kahu (信封)</translation>
 <translation id="6446608382365791566">新增更多資料</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="644931407731409778">有 {COUNT,plural, =1{1 頁}other{# 頁}}嘅 PDF 文件</translation>
 <translation id="6451458296329894277">確認重新提交表格</translation>
 <translation id="6457206614190510200">騎馬釘</translation>
 <translation id="6465306955648956876">管理密碼…</translation>
@@ -1341,6 +1345,7 @@
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7062635574500127092">藍綠色</translation>
 <translation id="7064851114919012435">聯絡人資訊</translation>
+<translation id="70705239631109039">您的連線並非完全安全</translation>
 <translation id="7075452647191940183">要求過大</translation>
 <translation id="7079718277001814089">此網站含有惡意軟件</translation>
 <translation id="7081308185095828845">您的裝置不支援此功能</translation>
@@ -1360,6 +1365,7 @@
 <translation id="7152423860607593928">Number-14 (信封)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方法}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方法}}</translation>
 <translation id="7153618581592392745">淡紫色</translation>
+<translation id="7156870133441232244">伺服器應升級至 TLS 1.2 或以上版本。</translation>
 <translation id="717330890047184534">GAIA ID：</translation>
 <translation id="7174545416324379297">已合併</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}}</translation>
@@ -1385,6 +1391,7 @@
 <translation id="725866823122871198">您電腦的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法建立私人連線至 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />。</translation>
 <translation id="7260504762447901703">撤銷存取權</translation>
 <translation id="7275334191706090484">受管理書籤</translation>
+<translation id="7288778322931489286">管理員已在您的瀏覽器上啟用了 Enterprise Service Hooks 功能。這些 Hooks 可存取您部分資料。</translation>
 <translation id="7292031607255951991">收件者名稱</translation>
 <translation id="7298195798382681320">建議</translation>
 <translation id="7300012071106347854">鈷藍色</translation>
@@ -1709,6 +1716,7 @@
 <translation id="874918643257405732">將此分頁加入書籤</translation>
 <translation id="8751426954251315517">請稍候再試</translation>
 <translation id="8759274551635299824">此信用卡已過期</translation>
+<translation id="87601671197631245">此網站的安全性設定過舊，因此您傳送給此網站的資料 (例如密碼、訊息或信用卡資料) 可能會外洩。</translation>
 <translation id="8761567432415473239">Google 安全瀏覽最近在「<ph name="SITE" />」<ph name="BEGIN_LINK" />發現有害程式<ph name="END_LINK" />。</translation>
 <translation id="8763927697961133303">USB 裝置</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1726,6 +1734,7 @@
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
 <translation id="8866928039507595380">對摺</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">與管理員分享 Enterprise Service Hooks 所標記的安全性事件相關資料。這些資料可能包括您瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8870494189203302833">相同順序 (正面朝下)</translation>
 <translation id="8874824191258364635">請輸入有效的信用卡號碼</translation>

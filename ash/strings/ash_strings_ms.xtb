@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Tetapan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Teruskan</translation>
-<translation id="2364154243880592194">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /> Tekan cari + kiri untuk mengakses pusat pemberitahuan.</translation>
 <translation id="2365393535144473978">Tindakan mendayakan data mudah alih akan turut mendayakan Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
@@ -239,6 +238,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4112140312785995938">Cari Ke Belakang</translation>
 <translation id="4129129681837227511">Untuk melihat pemberitahuan pada skrin kunci anda, buka kunci untuk menukar tetapan</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Mengklik butang secara automatik</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
@@ -270,7 +270,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4513946894732546136">Maklum balas</translation>
 <translation id="4527045527269911712">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> sehingga penuh</translation>
-<translation id="4544944664594876241">Pintasan untuk mengunci skrin telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Butang Pilih untuk Bercakap</translation>
 <translation id="4585337515783392668">Berhenti menghantar pada penerima yang tidak diketahui</translation>
@@ -427,7 +426,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>
 <translation id="6820676911989879663">Berehatlah!</translation>
-<translation id="683971173229319003">Carian+L</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Pintasan dimatikan</translation>
 <translation id="6910714959251846841">Kemas kini ini memerlukan powerwash dijalankan pada peranti anda. Ketahui lebih lanjut tentang kemas kini <ph name="SYSTEM_APP_NAME" /> yang terbaharu.</translation>
@@ -451,6 +449,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7143207342074048698">Menyambung</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Chromebook ini perlu dimulakan semula untuk menerapkan kemas kini. Proses ini boleh mengambil masa sehingga 1 minit.</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Seret ke sini untuk menggunakan skrin pisah</translation>
 <translation id="7262906531272962081">Buat peringatan</translation>
@@ -465,11 +464,9 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="742594950370306541">Kamera sedang digunakan.</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
 <translation id="7497767806359279797">Pilih bahasa dan papan kekunci</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Rangkaian mungkin dipantau</translation>
 <translation id="7536035074519304529">Alamat IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Masa untuk tidur</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Resolusi telah ditukar kepada <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7564874036684306347">Tindakan memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka. Pemberitahuan, tetingkap dan dialog yang seterusnya mungkin dipisahkan antara desktop.</translation>
 <translation id="7568294522609223312">Matikan klik automatik</translation>
@@ -512,6 +509,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Dihidupkan, semua apl</translation>
+<translation id="8131740175452115882">Sahkan</translation>
 <translation id="8132793192354020517">Disambungkan ke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Memulakan...</translation>
 <translation id="8142441511840089262">Klik dua kali</translation>

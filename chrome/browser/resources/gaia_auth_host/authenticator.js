@@ -605,9 +605,7 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'flow', data.flow);
       }
       if (data.emailDomain) {
-        url = appendParam(url, 'emaildomain', data.emailDomain);
-        // ChromeOS embedded signin page uses 'hd' (hosted domain) as the query
-        // argument to show an email domain.
+        // Use 'hd' (hosted domain) as the argument to show an email domain.
         url = appendParam(url, 'hd', data.emailDomain);
       }
       if (data.showTos) {

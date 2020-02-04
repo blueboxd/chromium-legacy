@@ -22,8 +22,8 @@ class MockVibrationManager {
     this.bindingSet_ =
         new mojo.BindingSet(device.mojom.VibrationManager);
 
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        device.mojom.VibrationManager.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(device.mojom.VibrationManager.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();
@@ -37,7 +37,7 @@ class MockVibrationManager {
   attachToWindow(otherWindow) {
     otherWindow.vibrationManagerInterceptor =
         new otherWindow.MojoInterfaceInterceptor(
-            device.mojom.VibrationManager.name, "context", true);
+            device.mojom.VibrationManager.name);
     otherWindow.vibrationManagerInterceptor.oninterfacerequest =
         e => this.crossFrameHandleProxy_.forwardHandle(e.handle);
     otherWindow.vibrationManagerInterceptor.start();

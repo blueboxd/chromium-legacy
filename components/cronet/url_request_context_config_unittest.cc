@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
@@ -38,12 +39,7 @@ namespace cronet {
 namespace {
 
 std::string WrapJsonHeader(base::StringPiece value) {
-  std::string result;
-  result.reserve(value.size() + 2);
-  result.push_back('[');
-  value.AppendToString(&result);
-  result.push_back(']');
-  return result;
+  return base::StrCat({"[", value, "]"});
 }
 
 // Returns whether two JSON-encoded headers contain the same content, ignoring

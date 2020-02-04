@@ -443,7 +443,7 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
                                "1");
   }
 
-  auto extra_data = std::make_unique<RequestExtraData>();
+  auto extra_data = base::MakeRefCounted<RequestExtraData>();
   extra_data->set_render_frame_id(ancestor_frame_id_);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
   if (throttle_provider_) {

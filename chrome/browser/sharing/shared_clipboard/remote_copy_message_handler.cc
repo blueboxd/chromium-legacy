@@ -143,10 +143,13 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
 
   LogRemoteCopyReceivedTextSize(text.size());
 
+  base::ElapsedTimer write_timer;
   {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(base::UTF8ToUTF16(text));
   }
+  LogRemoteCopyWriteTextTime(write_timer.Elapsed());
+
   ShowNotification(GetTextNotificationTitle(device_name_), SkBitmap());
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledText);
 }
@@ -277,10 +280,12 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
   if (original_image.dimensions() != resized_image.dimensions())
     LogRemoteCopyResizeImageTime(timer_.Elapsed());
 
+  base::ElapsedTimer write_timer;
   {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteImage(original_image);
   }
+  LogRemoteCopyWriteImageTime(write_timer.Elapsed());
 
   ShowNotification(GetImageNotificationTitle(device_name_), resized_image);
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledImage);

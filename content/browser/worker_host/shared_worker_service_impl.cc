@@ -111,8 +111,6 @@ void SharedWorkerServiceImpl::SetURLLoaderFactoryForTesting(
 void SharedWorkerServiceImpl::ConnectToWorker(
     GlobalFrameRoutingId client_render_frame_host_id,
     blink::mojom::SharedWorkerInfoPtr info,
-    blink::mojom::FetchClientSettingsObjectPtr
-        outside_fetch_client_settings_object,
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     const blink::MessagePortChannel& message_port,
@@ -190,7 +188,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       info->options->credentials, info->options->name, constructor_origin,
       info->content_security_policy, info->content_security_policy_type,
       info->creation_address_space, creation_context_type);
-  host = CreateWorker(instance, std::move(outside_fetch_client_settings_object),
+  host = CreateWorker(instance,
+                      std::move(info->outside_fetch_client_settings_object),
                       client_render_frame_host_id, storage_domain, message_port,
                       std::move(blob_url_loader_factory));
   host->AddClient(std::move(client), client_render_frame_host_id, message_port);
@@ -307,6 +306,9 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       creator_render_frame_host->frame_tree_node()->current_origin());
 
   base::WeakPtr<SharedWorkerHost> weak_host = host->AsWeakPtr();
+  // Cloning before std::move() so that the object can be used in two functions.
+  auto cloned_outside_fetch_client_settings_object =
+      outside_fetch_client_settings_object.Clone();
   WorkerScriptFetchInitiator::Start(
       worker_process_host->GetID(), host->instance().url(),
       creator_render_frame_host, host->instance().constructor_origin(),
@@ -318,7 +320,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       storage_partition_, storage_domain,
       base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
                      weak_factory_.GetWeakPtr(), instance, weak_host,
-                     message_port));
+                     message_port,
+                     std::move(cloned_outside_fetch_client_settings_object)));
 
   // Ensures that WorkerScriptFetchInitiator::Start() doesn't synchronously
   // destroy the SharedWorkerHost.
@@ -331,6 +334,8 @@ void SharedWorkerServiceImpl::StartWorker(
     const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
     const blink::MessagePortChannel& message_port,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -375,7 +380,8 @@ void SharedWorkerServiceImpl::StartWorker(
 
   host->Start(std::move(factory), std::move(main_script_load_params),
               std::move(subresource_loader_factories), std::move(controller),
-              std::move(controller_service_worker_object_host));
+              std::move(controller_service_worker_object_host),
+              std::move(outside_fetch_client_settings_object));
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindMatchingSharedWorkerHost(

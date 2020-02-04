@@ -4983,6 +4983,14 @@ should be able to be added at any place in this file.
   <description>The cookie controls UI was opened.</description>
 </action>
 
+<action name="CookieControls.Bubble.TooltipShown">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    The user looked at the tooltip inside the cookie controls bubble.
+  </description>
+</action>
+
 <action name="CookieControls.Bubble.TurnOff">
   <owner>dullweber@chromium.org</owner>
   <owner>huanzhong@chromium.org</owner>

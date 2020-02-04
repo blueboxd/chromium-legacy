@@ -97,8 +97,7 @@ MojoCreateSharedBufferResult* Mojo::createSharedBuffer(unsigned num_bytes) {
 void Mojo::bindInterface(ScriptState* script_state,
                          const String& interface_name,
                          MojoHandle* request_handle,
-                         const String& scope,
-                         bool use_browser_interface_broker) {
+                         const String& scope) {
   std::string name = interface_name.Utf8();
   auto handle =
       mojo::ScopedMessagePipeHandle::From(request_handle->TakeHandle());
@@ -109,11 +108,9 @@ void Mojo::bindInterface(ScriptState* script_state,
     return;
   }
 
-  if (use_browser_interface_broker) {
-    ExecutionContext::From(script_state)
-        ->GetBrowserInterfaceBroker()
-        .GetInterface(name, std::move(handle));
-  }
+  ExecutionContext::From(script_state)
+      ->GetBrowserInterfaceBroker()
+      .GetInterface(name, std::move(handle));
 }
 
 }  // namespace blink

@@ -123,6 +123,13 @@ class MODULES_EXPORT RTCPeerConnection final
                                    const RTCConfiguration*,
                                    const Dictionary&,
                                    ExceptionState&);
+  static RTCPeerConnection* Create(ExecutionContext*,
+                                   const RTCConfiguration*,
+                                   const ScriptValue&,
+                                   ExceptionState&);
+  static RTCPeerConnection* Create(ExecutionContext*,
+                                   const RTCConfiguration*,
+                                   ExceptionState&);
 
   RTCPeerConnection(ExecutionContext*,
                     webrtc::PeerConnectionInterface::RTCConfiguration,
@@ -137,6 +144,15 @@ class MODULES_EXPORT RTCPeerConnection final
   ScriptPromise createOffer(ScriptState*,
                             V8RTCSessionDescriptionCallback*,
                             V8RTCPeerConnectionErrorCallback*,
+                            const ScriptValue&,
+                            ExceptionState&);
+  ScriptPromise createOffer(ScriptState*,
+                            V8RTCSessionDescriptionCallback*,
+                            V8RTCPeerConnectionErrorCallback*,
+                            ExceptionState&);
+  ScriptPromise CreateOffer(ScriptState*,
+                            V8RTCSessionDescriptionCallback*,
+                            V8RTCPeerConnectionErrorCallback*,
                             const Dictionary&,
                             ExceptionState&);
 
@@ -144,6 +160,15 @@ class MODULES_EXPORT RTCPeerConnection final
                              const RTCAnswerOptions*,
                              ExceptionState&);
   ScriptPromise createAnswer(ScriptState*,
+                             V8RTCSessionDescriptionCallback*,
+                             V8RTCPeerConnectionErrorCallback*,
+                             const ScriptValue&,
+                             ExceptionState&);
+  ScriptPromise createAnswer(ScriptState*,
+                             V8RTCSessionDescriptionCallback*,
+                             V8RTCPeerConnectionErrorCallback*,
+                             ExceptionState&);
+  ScriptPromise CreateAnswer(ScriptState*,
                              V8RTCSessionDescriptionCallback*,
                              V8RTCPeerConnectionErrorCallback*,
                              const Dictionary&);
@@ -210,6 +235,11 @@ class MODULES_EXPORT RTCPeerConnection final
   bool IsRemoteStream(MediaStream* stream) const;
 
   void addStream(ScriptState*,
+                 MediaStream*,
+                 const ScriptValue& media_constraints,
+                 ExceptionState&);
+  void addStream(ScriptState*, MediaStream*, ExceptionState&);
+  void AddStream(ScriptState*,
                  MediaStream*,
                  const Dictionary& media_constraints,
                  ExceptionState&);

@@ -98,7 +98,7 @@ void InstalledAppController::OnFilterInstalledApps(
   for (const auto& res : result) {
     auto* app = MakeGarbageCollected<RelatedApplication>();
     app->setPlatform(res->platform);
-    app->setURL(res->url);
+    app->setUrl(res->url);
     app->setId(res->id);
     app->setVersion(res->version);
     applications.push_back(app);

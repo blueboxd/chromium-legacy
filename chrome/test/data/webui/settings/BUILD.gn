@@ -12,6 +12,7 @@ js_modulizer("modulize") {
     "dropdown_menu_tests.js",
     "extension_controlled_indicator_tests.js",
     "pref_util_tests.js",
+    "site_favicon_test.js",
     "settings_slider_tests.js",
     "settings_textarea_tests.js",
     "settings_toggle_button_tests.js",

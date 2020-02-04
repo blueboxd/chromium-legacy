@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">Mostra les targetes</translation>
 <translation id="3369192424181595722">Error de rellotge</translation>
 <translation id="337363190475750230">No administrat</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ha activat Enterprise Service Hooks al navegador. Aquests hooks tenen accés a algunes de les teves dades.</translation>
+<translation id="3377144306166885718">El servidor ha utilitzat una versió obsoleta de TLS.</translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
 <translation id="3377736046129930310">Fes servir el bloqueig de pantalla per confirmar les targetes més ràpidament</translation>
 <translation id="3380365263193509176">Error desconegut</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">Adreça d'entrega</translation>
 <translation id="3395827396354264108">Mètode de recollida</translation>
 <translation id="3399952811970034796">Adreça d'entrega</translation>
+<translation id="3402261774528610252">La connexió utilitzada per carregar aquest lloc web ha fet servir TLS 1.0 o 1.1, estàndards que estan obsolets i es desactivaran en el futur. Un cop desactivats, els usuaris no podran carregar aquest lloc web. El servidor ha d'activar TLS 1.2 o una versió posterior.</translation>
 <translation id="3422248202833853650">Prova de sortir d'altres programes per alliberar memòria.</translation>
 <translation id="3422472998109090673">Actualment no es pot accedir a <ph name="HOST_NAME" />.</translation>
 <translation id="3423742043356668186">Especificat pel sistema</translation>
@@ -619,6 +622,7 @@
 <translation id="3745099705178523657">Un cop confirmada, la informació de la targeta del Compte de Google es compartirà amb aquest lloc web.</translation>
 <translation id="3748148204939282805">Els atacants del lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> et poden enganyar perquè facis alguna acció perillosa, com ara instal·lar programari o revelar informació personal (per exemple, contrasenyes, números de telèfon o targetes de crèdit). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">S'ha produït un error en el procés de traducció a causa d'un error del servidor.</translation>
+<translation id="3754210790023674521">Surt del mode de pantalla en pantalla</translation>
 <translation id="3759461132968374835">No has informat de cap error recentment. Els errors que s'hagin produït mentre la creació d'informes d'error estava desactivada no es mostraran aquí.</translation>
 <translation id="3760561303380396507">Vols utilitzar Windows Hello en lloc del CVC?</translation>
 <translation id="3761718714832595332">Amaga l'estat</translation>
@@ -940,6 +944,7 @@
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa d'aquest error</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="519422657042045905">L'anotació no està disponible</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Una pàgina inserida en aquesta pàgina diu</translation>
 <translation id="5205222826937269299">El nom és obligatori</translation>
 <translation id="5215116848420601511">Formes de pagament i adreces que fan servir Google Pay</translation>
@@ -969,6 +974,7 @@
 <translation id="5295292838686006428">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que comprovis les contrasenyes desades ara.</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="5300589172476337783">Mostra</translation>
+<translation id="5306593769196050043">Tots dos fulls</translation>
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5314967030527622926">Creador de fullets</translation>
@@ -1122,7 +1128,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Comprova les contrasenyes</translation>
 <translation id="6015796118275082299">Any</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Pàgina 1}other{Pàgina #}}</translation>
 <translation id="6017514345406065928">Verd</translation>
 <translation id="6017850046339264347">Pot ser que els atacants que es troben a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> instal·lin aplicacions enganyoses que es facin passar per d'altres o que recullin dades que podrien utilitzar-se per fer un seguiment de la teva activitat. <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (informació sincronitzada)</translation>
@@ -1230,7 +1235,6 @@
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Afegeix més informació</translation>
 <translation id="6447842834002726250">Galetes</translation>
-<translation id="644931407731409778">Document PDF que conté {COUNT,plural, =1{1 pàgina}other{# pàgines}}</translation>
 <translation id="6451458296329894277">Confirma el reenviament del formulari</translation>
 <translation id="6457206614190510200">Cosit al llom</translation>
 <translation id="6465306955648956876">Gestiona les contrasenyes...</translation>
@@ -1342,6 +1346,7 @@
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="7062635574500127092">Verd blavós</translation>
 <translation id="7064851114919012435">Informació de contacte</translation>
+<translation id="70705239631109039">La connexió no és del tot segura</translation>
 <translation id="7075452647191940183">La sol·licitud és massa llarga</translation>
 <translation id="7079718277001814089">Aquest lloc web conté programari maliciós</translation>
 <translation id="7081308185095828845">Aquesta funció no està disponible al teu dispositiu</translation>
@@ -1361,6 +1366,7 @@
 <translation id="7152423860607593928">Number-14 (sobre)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> més}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> més}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
+<translation id="7156870133441232244">El servidor s'ha d'actualitzar a TLS 1.2 o una versió posterior.</translation>
 <translation id="717330890047184534">Identificador de Gaia:</translation>
 <translation id="7174545416324379297">Combinats</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}}</translation>
@@ -1386,6 +1392,7 @@ Detalls addicionals:
 <translation id="725866823122871198">No s'ha pogut establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) de l'ordinador no són correctes.</translation>
 <translation id="7260504762447901703">Revoca l'accés</translation>
 <translation id="7275334191706090484">Adreces d'interès gestionades</translation>
+<translation id="7288778322931489286">L'administrador ha activat Enterprise Service Hooks al navegador. Aquests hooks tenen accés a algunes de les teves dades.</translation>
 <translation id="7292031607255951991">Nom del destinatari</translation>
 <translation id="7298195798382681320">Recomanada</translation>
 <translation id="7300012071106347854">Blau de cobalt</translation>
@@ -1710,6 +1717,7 @@ Detalls addicionals:
 <translation id="874918643257405732">Afegeix aquesta pestanya a les adreces d'interès</translation>
 <translation id="8751426954251315517">Torna-ho a provar la propera vegada</translation>
 <translation id="8759274551635299824">Aquesta targeta ha caducat</translation>
+<translation id="87601671197631245">Aquest lloc web utilitza una configuració de seguretat obsoleta i, per tant, la informació que hi enviïs podria quedar exposada (per exemple, les contrasenyes, els missatges o les targetes de crèdit).</translation>
 <translation id="8761567432415473239">Recentment, amb Navegació segura de Google s'han <ph name="BEGIN_LINK" />detectat programes perjudicials<ph name="END_LINK" /> al lloc <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositiu USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1727,6 +1735,7 @@ Detalls addicionals:
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
 <translation id="8866928039507595380">Plegat</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Comparteix amb el teu administrador les dades sobre esdeveniments de seguretat que marqui Enterprise Service Hooks. Per exemple, URL de pàgines que visites, noms o metadades de fitxers i el nom d'usuari que fas servir per iniciar la sessió al dispositiu i a Chrome.</translation>
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8870494189203302833">Ordre idèntic de cara avall</translation>
 <translation id="8874824191258364635">Introdueix un número de targeta vàlid</translation>

@@ -20,12 +20,17 @@ const fragmentShader = [
 
 let gl;
 
+function logOutput(s) {
+  if (window.domAutomationController)
+    window.domAutomationController.log(s);
+  else
+    console.log(s);
+}
+
 function sendResult(status, detail) {
-  console.log(detail);
+  logOutput(status + ' ' + detail);
   if (window.domAutomationController) {
     window.domAutomationController.send(status);
-  } else {
-    console.log(status);
   }
 }
 
@@ -108,7 +113,8 @@ function setup(opt_attribs)
   initGL(canvas, opt_attribs);
   if (gl && setupGL(gl))
     return true;
-  domAutomationController.send("FAILURE");
+  if (window.domAutomationController)
+    window.domAutomationController.send('FAILURE');
   return false;
 }
 
@@ -126,4 +132,63 @@ function drawSomeFrames(callback)
   }
 
   window.requestAnimationFrame(drawSomeFramesHelper);
+}
+
+let _runningOnDualGPUSystem = false;
+
+function setRunningOnDualGpuSystem() {
+  _runningOnDualGPUSystem = true;
+}
+
+function isRunningOnDualGpuSystem() {
+  return _runningOnDualGPUSystem;
+}
+
+function getUnmaskedVendor() {
+  let ext = gl.getExtension('WEBGL_debug_renderer_info');
+  return gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
+}
+
+function getSplitUnmaskedVendor() {
+  let vendor = getUnmaskedVendor().toLowerCase();
+  // Like:
+  //  Intel Inc.
+  //  ATI Technologies Inc.
+  // Renderer would be like:
+  //  Intel(R) HD Graphics 630
+  //  AMD Radeon Pro 560 OpenGL Engine
+  // Handle parentheses just in case.
+  return vendor.split(/[ ()]/);
+}
+
+function assertRunningOnLowPowerGpu() {
+  if (!isRunningOnDualGpuSystem())
+    return false;
+  let tokens = getSplitUnmaskedVendor();
+  if (tokens.includes('intel')) {
+    logOutput('System was correctly running on Intel integrated GPU');
+    return true;
+  }
+  sendResult(
+      'FAIL',
+      'System wasn\'t running on Intel integrated GPU: vendor = ' +
+          getUnmaskedVendor());
+  return false;
+}
+
+function assertRunningOnHighPerformanceGpu() {
+  if (!isRunningOnDualGpuSystem())
+    return false;
+  let tokens = getSplitUnmaskedVendor();
+  if (tokens.includes('ati') || tokens.includes('amd') ||
+      tokens.includes('nvidia')) {
+    logOutput(
+        'System was correctly running on discrete GPU: ' + getUnmaskedVendor());
+    return true;
+  }
+  sendResult(
+      'FAIL',
+      'System wasn\'t running on discrete GPU: vendor = ' +
+          getUnmaskedVendor());
+  return false;
 }

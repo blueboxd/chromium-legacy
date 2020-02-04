@@ -98,6 +98,18 @@ TEST_F('CrSettingsPrefUtilV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsSiteFaviconV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_favicon_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSiteFaviconV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsSliderV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {

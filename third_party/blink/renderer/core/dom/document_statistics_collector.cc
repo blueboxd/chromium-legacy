@@ -169,7 +169,7 @@ bool HasOpenGraphArticle(const Element& head) {
 
     if (meta->GetName() == og_type ||
         meta->getAttribute(property_attr) == og_type) {
-      if (DeprecatedEqualIgnoringCase(meta->Content(), "article")) {
+      if (EqualIgnoringASCIICase(meta->Content(), "article")) {
         return true;
       }
     }

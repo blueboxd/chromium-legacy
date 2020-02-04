@@ -541,6 +541,8 @@
 <translation id="3366477098757335611">មើលកាត</translation>
 <translation id="3369192424181595722">កំហុសម៉ោង</translation>
 <translation id="337363190475750230">បានផ្តាច់ការផ្តល់ជូន</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> បានបើក Enterprise Service Hooks នៅលើកម្មវិធី​រុករកតាមអ៊ីនធឺណិតរបស់អ្នក។ ទំពក់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
+<translation id="3377144306166885718">ម៉ាស៊ីនមេបានប្រើ​កំណែ TLS ដែលលែងប្រើ។</translation>
 <translation id="3377188786107721145">កំហុសឆ្គងការវិភាគគោលការណ៍</translation>
 <translation id="3377736046129930310">ប្រើ​ការចាក់​សោ​អេក្រង់ ដើម្បី​បញ្ជាក់​បណ្ណ​ឱ្យ​បានរហ័ស​ជាងមុន</translation>
 <translation id="3380365263193509176">កំហុសឆ្គងមិនស្គាល់</translation>
@@ -549,6 +551,7 @@
 <translation id="3391030046425686457">អាសយដ្ឋានបញ្ជូន</translation>
 <translation id="3395827396354264108">មធ្យោបាយទៅយក</translation>
 <translation id="3399952811970034796">អាសយដ្ឋាន​ចែកចាយ</translation>
+<translation id="3402261774528610252">បានប្រើការតភ្ជាប់ ដើម្បីផ្ទុកគេហទំព័រនេះ ដែលប្រើ TLS 1.0 ឬ TLS 1.1 ដែលបានបញ្ឈប់ ហើយនឹងត្រូវបិទក្នុងពេលអនាគត។ បន្ទាប់ពីបិទហើយ អ្នកប្រើប្រាស់​នឹងត្រូវបានទប់ស្កាត់​មិនឱ្យផ្ទុកគេហទំព័រនេះ។ ម៉ាស៊ីនមេនេះគួរតែបើក TLS 1.2 ឬខ្ពស់ជាងនេះ។</translation>
 <translation id="3422248202833853650">សាកល្បងចាកចេញពីកម្មវិធីផ្សេងទៀត ដើម្បីបង្កើនទំហំអង្គចងចាំ។</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> មិនអាចទៅកាន់បានទេនៅពេលនេះ</translation>
 <translation id="3423742043356668186">បានបញ្ជាក់​ប្រព័ន្ធ</translation>
@@ -637,6 +640,7 @@
 <translation id="3745099705178523657">បន្ទាប់​ពីអ្នក​បញ្ជាក់​ហើយ ព័ត៌មាន​លម្អិត​អំពី​កាតដែល​បានមកពីគណនី Google របស់អ្នក​នឹងត្រូវ​បាន​ចែករំលែក​ជាមួយ​គេហទំព័រ​នេះ។</translation>
 <translation id="3748148204939282805">អ្នកវាយប្រហារទៅលើ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> អាច​នឹង​បញ្ឆោត​ឲ្យ​អ្នក​ធ្វើ​អ្វី​មួយ​ដែល​គ្រោះថ្នាក់ ដូចជាដំឡើងកម្មវិធី ឬបង្ហាញព័ត៌មានផ្ទាល់ខ្លួនជាដើម (ឧទាហរណ៍៖ ពាក្យសម្ងាត់ លេខទូរសព្ទ ឬបណ្ណឥណទាន)។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">ការបកប្រែបានបរាជ័យពីព្រោះកំហុសឆ្គងម៉ាស៊ីនមេ។</translation>
+<translation id="3754210790023674521">ចាកចេញ​ពីមុខងារ​រូបក្នុងរូប</translation>
 <translation id="3759461132968374835">អ្នកមិនបានរាយការណ៍ពីការគាំងទេកន្លងទៅថ្មីៗនេះ។ ការគាំងដែលបាន កើតឡើង នៅពេលការរាយការណ៍ការគាំងត្រូវបានបិទដំណើរការ នឹងមិនលេចឡើងនៅទីនេះទេ។</translation>
 <translation id="3760561303380396507">ប្រើ Windows Hello ជំនួសឱ្យ CVC?</translation>
 <translation id="3761718714832595332">លាក់ស្ថានភាព</translation>
@@ -960,6 +964,7 @@
 <translation id="5179510805599951267">មិនមែនជា <ph name="ORIGINAL_LANGUAGE" /> ទេ? រាយការណ៍កំហុសឆ្គងនេះ</translation>
 <translation id="5190835502935405962">របាចំណាំ</translation>
 <translation id="519422657042045905">មិនមាន​ចំណារទេ</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">ទំព័របង្កប់​នៅលើ​ទំព័រ​នេះ​និយាយ​ថា</translation>
 <translation id="5205222826937269299">តម្រូវឲ្យមានឈ្មោះ</translation>
 <translation id="5215116848420601511">វិធី​បង់ប្រាក់ និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
@@ -989,6 +994,7 @@
 <translation id="5295292838686006428">ការបំពានទិន្នន័យ​នៅលើគេហទំព័រ ឬកម្មវិធី​មួយបានធ្វើឱ្យបែកធ្លាយពាក្យសម្ងាត់របស់អ្នក។ Chrome សូមណែនាំឱ្យ​ពិនិត្យមើល​ពាក្យសម្ងាត់​ដែលអ្នកបានរក្សាទុក​ឥឡូវនេះ។</translation>
 <translation id="5299298092464848405">កំហុសឆ្គងគោលការណ៍ការវិភាគ</translation>
 <translation id="5300589172476337783">បង្ហាញ</translation>
+<translation id="5306593769196050043">សន្លឹក​ទាំងពីរ</translation>
 <translation id="5308380583665731573">ភ្ជាប់</translation>
 <translation id="5308689395849655368">ការរាយការណ៍ការគាំងត្រូវបានបិទ។</translation>
 <translation id="5314967030527622926">ឧបករណ៍​ធ្វើកូន​សៀវភៅ</translation>
@@ -1142,7 +1148,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">ពិនិត្យពាក្យសម្ងាត់​របស់អ្នក</translation>
 <translation id="6015796118275082299">ឆ្នាំ</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{ទំព័រទី 1}other{ទំព័រទី #}}</translation>
 <translation id="6017514345406065928">បៃតង</translation>
 <translation id="6017850046339264347">អ្នក​វាយ​ប្រហារ​នៅលើ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> អាច​ដំឡើង​កម្មវិធី​បញ្ឆោត​ដែល​ក្លែង​ធ្វើជាអ្វីម្យ៉ាង ឬ​ប្រមូល​ទិន្នន័យ​ដែល​អាច​នឹងត្រូវ​បាន​ប្រើ​ដើម្បី​តាម​ដានអ្នក។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (បានធ្វើសមកាលកម្ម)</translation>
@@ -1250,7 +1255,6 @@
 <translation id="6446163441502663861">Kahu (ស្រោម​សំបុត្រ)</translation>
 <translation id="6446608382365791566">បញ្ចូលព័ត៌មានបន្ថែម</translation>
 <translation id="6447842834002726250">ខុកឃី</translation>
-<translation id="644931407731409778">ឯកសារ PDF ដែលមាន {COUNT,plural, =1{1 ទំព័រ}other{# ទំព័រ}}</translation>
 <translation id="6451458296329894277">អះអាងការដាក់ស្នើបែបបទឡើងវិញ</translation>
 <translation id="6457206614190510200">កិប​ភ្ជាប់​តាម​ផ្នត់កណ្ដាល</translation>
 <translation id="6465306955648956876">គ្រប់គ្រង​ពាក្យសម្ងាត់...</translation>
@@ -1362,6 +1366,7 @@
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
 <translation id="7062635574500127092">បៃតងចាស់</translation>
 <translation id="7064851114919012435">ព័ត៌មានទំនាក់ទំនង</translation>
+<translation id="70705239631109039">ការតភ្ជាប់របស់អ្នក​មិនមានសុវត្ថិភាពពេញលេញទេ</translation>
 <translation id="7075452647191940183">សំណើមាន​ទំហំធំពេក</translation>
 <translation id="7079718277001814089">ទំព័រនេះមានផ្ទុកមេរោគ</translation>
 <translation id="7081308185095828845">មិនអាច​ប្រើ​មុខងារ​នេះ​នៅលើ​ឧបករណ៍​របស់អ្នក​បានទេ</translation>
@@ -1381,6 +1386,7 @@
 <translation id="7152423860607593928">Number-14 (ស្រោម​សំបុត្រ)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}other{<ph name="PAYMENT_METHOD_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}}</translation>
 <translation id="7153618581592392745">ឡាវិនឌ័រ</translation>
+<translation id="7156870133441232244">ម៉ាស៊ីនមេគួរតែដំឡើង​កំណែទៅ TLS 1.2 ឬខ្ពស់ជាងនេះ។</translation>
 <translation id="717330890047184534">លេខ​សម្គាល់ Gaia៖</translation>
 <translation id="7174545416324379297">បានបញ្ចូលគ្នា</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}other{<ph name="SHIPPING_OPTION_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}}</translation>
@@ -1406,6 +1412,7 @@
 <translation id="725866823122871198">ការភ្ជាប់ឯកជនទៅ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> មិនអាចធ្វើឡើងទេ ពីព្រោះកាលបរិច្ឆេទ និងម៉ោងកុំព្យូទ័ររបស់អ្នក (<ph name="DATE_AND_TIME" />)មិនត្រឹមត្រូវ។</translation>
 <translation id="7260504762447901703">ដកលទ្ធភាពចូលប្រើ</translation>
 <translation id="7275334191706090484">ចំណាំដែលត្រូវបានគ្រប់គ្រង</translation>
+<translation id="7288778322931489286">អ្នកគ្រប់គ្រងរបស់អ្នក​បានបើក Enterprise Service Hooks នៅលើកម្មវិធីរុករកតាមអ៊ីនធឺណិតរបស់អ្នក។ ទំពក់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
 <translation id="7292031607255951991">ឈ្មោះ​អ្នក​ទទួល</translation>
 <translation id="7298195798382681320">បានណែនាំ</translation>
 <translation id="7300012071106347854">ខៀវថ្លា</translation>
@@ -1731,6 +1738,7 @@
 <translation id="874918643257405732">ចំណាំ​ផ្ទាំងនេះ</translation>
 <translation id="8751426954251315517">សូមព្យាយាម​ម្ដងទៀត​នៅពេលក្រោយ</translation>
 <translation id="8759274551635299824">បណ្ណនេះផុតកំណត់ហើយ</translation>
+<translation id="87601671197631245">គេហទំព័រ​នេះ​ប្រើ​ការកំណត់​រចនាសម្ព័ន្ធ​សុវត្ថិភាព​​ហួសសម័យ ដែលអាចធ្វើឱ្យ​បែកធ្លាយ​ព័ត៌មាន​របស់អ្នក (ឧទាហរណ៍ ពាក្យសម្ងាត់ សារ ឬ​បណ្ណ​ឥណទាន) នៅពេល​ផ្ញើ​ទៅ​គេហទំព័រ​នេះ។</translation>
 <translation id="8761567432415473239">ការរុករកសុវត្ថិភាព Google <ph name="BEGIN_LINK" />បានរកឃើញកម្មវិធីបង្កគ្រោះថ្នាក់<ph name="END_LINK" /> នៅលើ <ph name="SITE" /> កន្លងទៅថ្មីៗនេះ។</translation>
 <translation id="8763927697961133303">ឧបករណ៍ USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1748,6 +1756,7 @@
 <translation id="8866481888320382733">កំហុសឆ្គងការកំណត់គោលការណ៍ការវិភាគ</translation>
 <translation id="8866928039507595380">បត់</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">ចែករំលែក​ទិន្នន័យ​អំពី​ព្រឹត្តិការណ៍​ទាក់ទងនឹង​សុវត្ថិភាព​ដែល Enterprise Service Hooks បាន​រាយការណ៍ទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក​។ នេះអាចរួមបញ្ចូល URL នៃទំព័រដែលអ្នកចូលមើល ឈ្មោះឯកសារ ឬទិន្នន័យ​មេតា និងឈ្មោះអ្នកប្រើប្រាស់ ដែលអ្នកប្រើ​ ដើម្បីចូលឧបករណ៍របស់អ្នក និង Chrome។</translation>
 <translation id="8870413625673593573">បានបិទកន្លងទៅថ្មីៗ</translation>
 <translation id="8870494189203302833">ផ្កាប់ចុះតាមលំដាប់លំដោយ​ដូចគ្នា</translation>
 <translation id="8874824191258364635">បញ្ចូលលេខបណ្ណដែលត្រឹមត្រូវ</translation>

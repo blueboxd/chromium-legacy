@@ -59,6 +59,10 @@ extern const base::Feature kPreserveScrollViewProperties;
 // TODO(crbug.com/1006012): Clean up this flag after experiment.
 bool UseWKWebViewLoading();
 
+// Level at which battery power is considered low, and some cosmetic features
+// can be turned off.
+const float kLowBatteryLevelThreshold = 0.2;
+
 }  // namespace features
 }  // namespace web
 

@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
-<translation id="2364154243880592194">স্ট্যাটাস ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /> বিজ্ঞপ্তি কেন্দ্র অ্যাক্সেস করতে 'সার্চ করুন' এবং 'বাঁদিকে যান' বোতামে একসাথে প্রেস করুন।</translation>
 <translation id="2365393535144473978">মোবাইল ডেটা সক্ষম করলে ব্লুটুথও সক্ষম হয়ে যাবে।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">পিছিয়ে যান</translation>
 <translation id="4129129681837227511">আপনার লক স্ক্রিনে বিজ্ঞপ্তি দেখার জন্য সেটিংস পরিবর্তন করতে আনলক করুন</translation>
 <translation id="4146833061457621061">মিউজিক চালান</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> ম্যানেজ করে</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4195877955194704651">অটোমেটিক ক্লিক বোতাম</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">প্রতিক্রিয়া</translation>
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
-<translation id="4544944664594876241">স্ক্রিন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">বাছুন ও শুনুন বোতাম</translation>
 <translation id="4585337515783392668">অজানা ডিভাইসে কাস্ট করা বন্ধ করুন</translation>
@@ -427,7 +426,6 @@
 <translation id="6790428901817661496">চালু করুন</translation>
 <translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় প্রদর্শনগুলি মিরর মানে প্রতিবিম্বিত করতে পারেনি। এর পরিবর্তে প্রসারিত ডেস্কটপে প্রবেশ করেছে।</translation>
 <translation id="6820676911989879663">বিরতি নিন!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">শর্টকাট বন্ধ করা আছে</translation>
 <translation id="6910714959251846841">এই আপডেটটির জন্য আপনার ডিভাইস পাওয়ারওয়াশ করা প্রয়োজন। সাম্প্রতিক <ph name="SYSTEM_APP_NAME" /> আপডেট সম্পর্কে আরও জানুন।</translation>
@@ -451,6 +449,7 @@
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> -এ পুরনো রেজোলিউশানে ফেরানো হচ্ছে</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। কোনও আপডেট প্রয়োগ করতে হলে, এই Chromebook-কে রিস্টার্ট করতে হবে। এতে ১ মিনিট পর্যন্ত সময় লাগতে।</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="726276584504105859">বিভক্ত স্ক্রিন ব্যবহার করতে এখানে টেনে আনুন</translation>
 <translation id="7262906531272962081">রিমাইন্ডার তৈরি করুন</translation>
@@ -465,11 +464,9 @@
 <translation id="742594950370306541">ক্যামেরা ব্যবহার করা হচ্ছে।</translation>
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
 <translation id="7497767806359279797">ভাষা এবং কীবোর্ড বেছে নিন</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">নেটওয়ার্কের উপরে নজর রাখা হতে পারে</translation>
 <translation id="7536035074519304529">আইপি অ্যাড্রেস: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">শুতে যাওয়ার সময় হয়েছে</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" />-এ পরিবর্তিত হয়েছে</translation>
 <translation id="7562368315689366235">ইমোজি প্যালেট</translation>
 <translation id="7564874036684306347">কোনও উইন্ডো অন্য ডেস্কটপে সরানো হলে সেটির আচরণে অপ্রত্যাশিত পরিবর্তন হতে পারে। পরবর্তী বিজ্ঞপ্তি, উইন্ডো এবং ডায়ালগ দুটি ডেস্কটপ মিলিয়ে দেখানো হতে পারে।</translation>
 <translation id="7568294522609223312">অটোমেটিক ক্লিক বিকল্প বন্ধ করুন</translation>
@@ -512,6 +509,7 @@
 <translation id="8061464966246066292">উচ্চ বৈসাদৃশ্য</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> এ স্ক্রিন কাস্ট করা বন্ধ করুন</translation>
 <translation id="8113423164597455979">সমস্ত অ্যাপের জন্য চালু আছে</translation>
+<translation id="8131740175452115882">নিশ্চিত হন</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> তে সংযুক্ত</translation>
 <translation id="813913629614996137">আরম্ভ হচ্ছে…</translation>
 <translation id="8142441511840089262">ডবল ক্লিক করুন</translation>

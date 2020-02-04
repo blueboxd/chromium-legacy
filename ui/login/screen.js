@@ -144,7 +144,7 @@ cr.define('login', function() {
      * @param {(function()|Object)} proto Prototype of object or function that
      *     returns prototype.
      */
-    createScreen: function(name, id, template) {
+    createScreen: function(name, id, template, attributes) {
       if (typeof template == 'function')
         template = template();
 
@@ -198,7 +198,7 @@ cr.define('login', function() {
           screen.deferredInitialization = function() { screen.initialize(); }
         else
           screen.initialize();
-        Oobe.getInstance().registerScreen(screen);
+        Oobe.getInstance().registerScreen(screen, attributes);
       };
 
       // See also c/b/r/chromeos/login/login_screen_behavior.js

@@ -278,7 +278,6 @@ class QuickViewController {
 
     // Create a delete confirm dialog if needed.
     if (!this.deleteConfirmDialog_) {
-      // TODO(crbug.com/803259): style this element to make it lighter.
       const dialogElement = document.createElement('dialog');
       this.quickView_.shadowRoot.appendChild(dialogElement);
       dialogElement.id = 'delete-confirm-dialog';

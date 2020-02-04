@@ -46,6 +46,7 @@
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
@@ -235,11 +236,7 @@ class PamHandle {
 
   // Sets a PAM environment variable.
   int PutEnv(base::StringPiece name, base::StringPiece value) {
-    std::string name_value;
-    name_value.reserve(name.size() + value.size() + 1);
-    name.AppendToString(&name_value);
-    name_value.push_back('=');
-    value.AppendToString(&name_value);
+    std::string name_value = base::StrCat({name, "=", value});
     return last_return_code_ = pam_putenv(pam_handle_, name_value.c_str());
   }
 

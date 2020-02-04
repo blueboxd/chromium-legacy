@@ -48,6 +48,7 @@ class MessagePortChannel;
 class WebString;
 class WebSharedWorkerClient;
 class WebURL;
+struct WebFetchClientSettingsObject;
 
 // This is the interface to a SharedWorker thread.
 class BLINK_EXPORT WebSharedWorker {
@@ -67,6 +68,7 @@ class BLINK_EXPORT WebSharedWorker {
       const WebString& content_security_policy,
       network::mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
+      const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
       const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,

@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Xem thẻ</translation>
 <translation id="3369192424181595722">Lỗi đồng hồ</translation>
 <translation id="337363190475750230">Đã hủy cấp phép</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> đã bật Enterprise Service Hooks trên trình duyệt của bạn. Các hook này có quyền truy cập vào một số dữ liệu của bạn.</translation>
+<translation id="3377144306166885718">Máy chủ sử dụng phiên bản TLS lỗi thời.</translation>
 <translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="3377736046129930310">Dùng phương thức khóa màn hình để xác nhận các thẻ nhanh hơn</translation>
 <translation id="3380365263193509176">Lỗi không xác định</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Địa chỉ giao hàng</translation>
 <translation id="3395827396354264108">Phương thức nhận hàng</translation>
 <translation id="3399952811970034796">Địa chỉ giao hàng</translation>
+<translation id="3402261774528610252">Đường kết nối dùng để tải trang web này đã sử dụng TLS 1.0 hoặc TLS 1.1. Các phiên bản này không được dùng nữa và sẽ bị vô hiệu hóa trong tương lai. Sau khi phiên bản bị vô hiệu hóa, người dùng sẽ không thể tải trang web này. Máy chủ cần bật phiên bản TLS 1.2 trở lên.</translation>
 <translation id="3422248202833853650">Thử thoát các chương trình khác để giải phóng bộ nhớ.</translation>
 <translation id="3422472998109090673">Hiện không thể truy cập <ph name="HOST_NAME" />.</translation>
 <translation id="3423742043356668186">Do hệ thống chỉ định</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Sau khi bạn xác nhận, thông tin chi tiết thẻ trong Tài khoản Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="3748148204939282805">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn làm việc gì đó nguy hiểm như cài đặt phần mềm hoặc tiết lộ thông tin cá nhân (ví dụ: mật khẩu, số điện thoại hoặc thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
+<translation id="3754210790023674521">Thoát chế độ hình trong hình</translation>
 <translation id="3759461132968374835">Bạn không nhận được báo cáo sự cố nào gần đây. Sự cố xảy ra khi báo cáo sự cố đã bị tắt sẽ không xuất hiện ở đây.</translation>
 <translation id="3760561303380396507">Sử dụng Windows Hello thay cho CVC?</translation>
 <translation id="3761718714832595332">Ẩn trạng thái</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE" />? Báo cáo lỗi này</translation>
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="519422657042045905">Không có chú thích</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Một trang được nhúng trên trang này cho biết</translation>
 <translation id="5205222826937269299">Cần có tên</translation>
 <translation id="5215116848420601511">Địa chỉ và phương thức thanh toán lưu trong Google Pay</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">Một sự cố rò rỉ dữ liệu xảy ra trên một trang web hoặc ứng dụng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra các mật khẩu đã lưu ngay bây giờ.</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
+<translation id="5306593769196050043">Cả hai trang tính</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5308689395849655368">Báo cáo sự cố bị tắt.</translation>
 <translation id="5314967030527622926">Máy tạo cuốn sách nhỏ</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Kiểm tra mật khẩu của bạn</translation>
 <translation id="6015796118275082299">Năm</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Trang 1}other{Trang #}}</translation>
 <translation id="6017514345406065928">Xanh lục</translation>
 <translation id="6017850046339264347">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cài đặt ứng dụng lừa đảo giả vờ là nội dung khác hoặc thu thập dữ liệu có thể dùng để theo dõi bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (được đồng bộ hóa)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (Phong bì)</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="644931407731409778">Tài liệu PDF gồm {COUNT,plural, =1{1 trang}other{# trang}}</translation>
 <translation id="6451458296329894277">Xác nhận việc Gửi lại Biểu mẫu</translation>
 <translation id="6457206614190510200">Đóng kim lồng</translation>
 <translation id="6465306955648956876">Quản lý mật khẩu...</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="7062635574500127092">Xanh mòng két</translation>
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
+<translation id="70705239631109039">Kết nối của bạn không đủ an toàn</translation>
 <translation id="7075452647191940183">Yêu cầu quá lớn</translation>
 <translation id="7079718277001814089">Trang web này có chứa phần mềm độc hại</translation>
 <translation id="7081308185095828845">Thiết bị của bạn không dùng được tính năng này</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (Phong bì)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> phương thức thanh toán khác}other{<ph name="PAYMENT_METHOD_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> phương thức thanh toán khác}}</translation>
 <translation id="7153618581592392745">Tím oải hương</translation>
+<translation id="7156870133441232244">Cần nâng cấp máy chủ lên phiên bản TLS 1.2 trở lên.</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7174545416324379297">Đã hợp nhất</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}other{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}}</translation>
@@ -1402,6 +1408,7 @@ Thông tin chi tiết bổ sung:
 <translation id="725866823122871198">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên máy tính của bạn không đúng.</translation>
 <translation id="7260504762447901703">Thu hồi quyền truy cập</translation>
 <translation id="7275334191706090484">Dấu trang được quản lý</translation>
+<translation id="7288778322931489286">Quản trị viên đã bật Enterprise Service Hooks trên trình duyệt của bạn. Các hook này có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="7292031607255951991">Tên người nhận</translation>
 <translation id="7298195798382681320">Được đề xuất</translation>
 <translation id="7300012071106347854">Xanh thẩm</translation>
@@ -1727,6 +1734,7 @@ Thông tin chi tiết bổ sung:
 <translation id="874918643257405732">Đánh dấu tab này</translation>
 <translation id="8751426954251315517">Vui lòng thử lại vào lần tiếp theo</translation>
 <translation id="8759274551635299824">Thẻ này đã hết hạn</translation>
+<translation id="87601671197631245">Trang web này dùng cấu hình bảo mật lỗi thời nên có thể làm lộ thông tin của bạn (chẳng hạn như mật khẩu, thư hoặc thẻ tín dụng) trong quá trình gửi các thông tin này đến trang web này.</translation>
 <translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Thiết bị USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1744,6 +1752,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
 <translation id="8866928039507595380">Gấp</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Chia sẻ dữ liệu về các sự kiện bảo mật đã bị Enterprise Service Hooks gắn cờ với quản trị viên của bạn. Các dữ liệu này có thể bao gồm URL của các trang bạn truy cập, tên tệp hoặc siêu dữ liệu, cũng như tên người dùng mà bạn sử dụng để đăng nhập vào thiết bị của bạn và Chrome.</translation>
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
 <translation id="8870494189203302833">Cùng thứ tự hướng xuống</translation>
 <translation id="8874824191258364635">Nhập số thẻ hợp lệ</translation>

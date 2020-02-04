@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 common_namespace_rewrites_polymer = [
+  "cr.icon.getFavicon|getFavicon",
   "cr.ui.FocusOutlineManager|FocusOutlineManager",
+  "cr.ui.FocusRowBehavior|FocusRowBehavior",
   "cr.ui.focusWithoutInk|focusWithoutInk",
   "Polymer.IronA11yAnnouncer|IronA11yAnnouncer",
   "Polymer.PaperRippleBehavior|PaperRippleBehavior",
@@ -18,6 +20,7 @@ common_auto_imports = [
   "ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_behavior.html|CrRadioButtonBehavior",
   "ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.html|CrPolicyPrefBehavior",
   "ui/webui/resources/html/cr/ui/focus_outline_manager.html|FocusOutlineManager",
+  "ui/webui/resources/html/cr/ui/focus_row_behavior.html|FocusRowBehavior",
   "ui/webui/resources/html/cr/ui/focus_without_ink.html|focusWithoutInk",
   "ui/webui/resources/html/i18n_behavior.html|I18nBehavior",
   "ui/webui/resources/html/load_time_data.html|loadTimeData",

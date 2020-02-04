@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
+<translation id="2501278716633472235">Gå tilbage</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2704606927547763573">Kopieret</translation>
 <translation id="3115898365077584848">Vis info</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Kopiér linket</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4570913071927164677">Info</translation>
+<translation id="497421865427891073">Gå fremad</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5301954838959518834">OK, det er forstået</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
+<translation id="5596627076506792578">Flere valgmuligheder</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5939518447894949180">Nulstil</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">Valgmuligheder for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6746124502594467657">Flyt ned</translation>
+<translation id="6818926723028410516">Vælg elementer</translation>
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}one{# er valgt}other{# er valgt}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er markeret. De tilgængelige valgmuligheder er øverst på skærmen</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er markeret</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
+<translation id="7846076177841592234">Annuller valg</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8249310407154411074">Flyt til toppen</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8609465669617005112">Flyt op</translation>
+<translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8730621377337864115">Udfør</translation>
 </translationbundle>

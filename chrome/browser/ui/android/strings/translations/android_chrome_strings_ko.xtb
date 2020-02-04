@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="1513352483775369820">북마크 및 방문 기록</translation>
 <translation id="1513858653616922153">비밀번호 삭제</translation>
-<translation id="1516229014686355813">탭하여 검색을 사용하면 선택한 단어와 현재 페이지가 Google 검색에 전송되어 맥락으로 사용됩니다. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="1521774566618522728">오늘 사용</translation>
 <translation id="1544826120773021464">Google 계정을 관리하려면 '계정 관리' 버튼을 탭하세요.</translation>
 <translation id="1549000191223877751">다른 창으로 이동</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" />도 Chrome에서 데이터를 보유하고 있습니다</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">사이트 일시중지됨</translation>
-<translation id="2063713494490388661">탭하여 검색</translation>
 <translation id="2067805253194386918">텍스트</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
 <translation id="2091887806945687916">소리</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">로그인할 수 없음</translation>
 <translation id="2349710944427398404">계정, 북마크, 저장된 설정 등 Chrome에서 사용한 전체 데이터</translation>
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
+<translation id="2359808026110333948">계속</translation>
 <translation id="2369533728426058518">열린 탭</translation>
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="2394602618534698961">다운로드한 파일이 여기 표시됩니다.</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">인터넷 사용 기록</translation>
 <translation id="2497852260688568942">관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="2498359688066513246">고객센터</translation>
-<translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2513403576141822879">개인정보 보호, 보안, 데이터 수집에 관한 설정을 더 보려면 <ph name="BEGIN_LINK" />동기화 및 Google 서비스<ph name="END_LINK" />를 참조하세요.</translation>
 <translation id="2517472476991765520">검색</translation>
 <translation id="2518590038762162553">Chrome의 라이트 모드를 사용하면 페이지가 더 빠르게 로드되고 데이터가 최대 60퍼센트 절약됩니다. Chrome에서는 사용자가 방문하는 페이지를 최적화하기 위해 웹 트래픽을 Google에 전송합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
 <translation id="3730075448226062617">Chrome에서 마이크에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 마이크를 사용 설정하세요.</translation>
+<translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3749259744154402564">지원되지 않음</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">특정 사이트의 쿠키를 허용합니다.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{#시간}other{#시간}}</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
-<translation id="4048707525896921369">페이지에서 나가지 않고도 웹사이트에 언급된 주제에 관해 자세히 알아보세요. 탭하여 검색 기능은 단어와 관련 맥락을 Google 검색으로 전송하여 정의, 사진, 검색결과 및 기타 세부정보를 제공합니다.
-
-검색어를 조정하려면 길게 눌러 선택하세요. 더욱 상세히 검색하려면 패널을 위로 끝까지 슬라이드한 다음 검색창을 탭하세요.</translation>
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4060598801229743805">화면 상단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="4062305924942672200">법적 정보</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="5581519193887989363">언제든지 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="5595485650161345191">주소 수정</translation>
-<translation id="5596627076506792578">옵션 더보기</translation>
 <translation id="5599455543593328020">시크릿 모드</translation>
 <translation id="5620928963363755975">옵션 더보기 버튼을 눌러 다운로드에서 파일 및 페이지를 찾아보세요.</translation>
 <translation id="5626134646977739690">이름:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">다른 다운로드 대기 중…</translation>
 <translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
+<translation id="5884076754568147479">작업 처리를 돕기 위해 내가 어시스턴트를 통해 제출한 정보뿐만 아니라 어시스턴트를 이용한 사이트의 URL과 콘텐츠가 Google에 전송됩니다.</translation>
 <translation id="5902828464777634901">쿠키를 포함하여 이 웹사이트에 의해 저장된 모든 로컬 데이터가 삭제됩니다.</translation>
 <translation id="5919204609460789179"><ph name="PRODUCT_NAME" />을(를) 업데이트하여 동기화를 시작합니다.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 저장됨</translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">타사 웹사이트에서 쿠키 데이터를 저장하거나 읽을 수 없도록 방지</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="6811034713472274749">페이지를 볼 수 있음</translation>
-<translation id="6818926723028410516">항목 선택</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">번역</translation>
 <translation id="6845325883481699275">Chrome 보안 강화 개선에 참여하기</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">차단</translation>
 <translation id="7055152154916055070">다음 주소로의 리디렉션이 차단됨:</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
 <translation id="7071521146534760487">계정 관리</translation>
 <translation id="7077143737582773186">SD 카드</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" />개 선택됨. 화면 상단에서 옵션 선택 가능</translation>
 <translation id="7121362699166175603">검색주소창에 저장된 방문 기록과 자동 완성 내역을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="7128222689758636196">현재 검색엔진에 허용</translation>
 <translation id="7138678301420049075">기타</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">내가 사용하는 언어로 웹을 보려면 최신 버전의 Chrome을 사용하세요.</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" />에서 Chrome 동기화가 사용 설정되어 있는지 확인하세요.</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" />개 선택됨</translation>
 <translation id="7274013316676448362">차단된 사이트</translation>
 <translation id="7290209999329137901">이름 변경 불가</translation>
 <translation id="7291387454912369099">어시스턴트 트리거 확인</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>
 <translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
-<translation id="7846076177841592234">선택 취소</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>
 <translation id="7875915731392087153">이메일 만들기</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">음소거됨</translation>
 <translation id="8127542551745560481">홈페이지 수정</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
+<translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="8156139159503939589">어떤 언어로 읽을 수 있으신가요?</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
 <translation id="8186512483418048923">파일 <ph name="FILES" />개가 남았습니다.</translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">새 탭을 만들고 이전 탭으로 돌아가려면 여기를 탭하세요.</translation>
 <translation id="8662811608048051533">대부분의 사이트에서 로그아웃됩니다.</translation>
 <translation id="8664979001105139458">이미 존재하는 이름입니다.</translation>
-<translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{신호 강도: 막대 #개}other{신호 강도: 막대 #개}}</translation>
 <translation id="868929229000858085">연락처 검색</translation>
 <translation id="8698438463325761328">사이트에서 가상 현실 기기 및 데이터에 액세스하지 못하도록 차단</translation>

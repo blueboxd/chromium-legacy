@@ -198,9 +198,9 @@ struct CommonNavigationParams {
 
   // Information about the Javascript source for this navigation. Used for
   // providing information in console error messages triggered by the
-  // navigation. If the navigation was not caused by Javascript, this should
-  // not be set.
-  SourceLocation? source_location;
+  // navigation. If the navigation is not caused by Javascript, the
+  // SourceLocation's URL is empty.
+  SourceLocation source_location;
 
   // Whether or not this navigation was started from a context menu.
   bool started_from_context_menu = false;

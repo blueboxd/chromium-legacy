@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -122,10 +124,17 @@ void CrostiniPortForwarder::OnRemovePortCompleted(
 }
 
 void CrostiniPortForwarder::TryActivatePort(
-    uint16_t port_number,
-    const Protocol& protocol_type,
-    const std::string& ipv4_addr,
+    const PortRuleKey& key,
+    const ContainerId& container_id,
     base::OnceCallback<void(bool)> result_callback) {
+  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
+      container_id.vm_name, container_id.container_name);
+  if (!info) {
+    // TODO(matterchen): Change preferences directly (container inactive).
+    std::move(result_callback).Run(true);
+    return;
+  }
+
   chromeos::PermissionBrokerClient* client =
       chromeos::PermissionBrokerClient::Get();
   if (!client) {
@@ -141,34 +150,37 @@ void CrostiniPortForwarder::TryActivatePort(
     return;
   }
 
-  PortRuleKey port_key = {
-      .port_number = port_number,
-      .protocol_type = protocol_type,
-      .input_ifname = kDefaultInterfaceToForward,
-  };
-
   base::ScopedFD lifeline_local(lifeline[0]);
   base::ScopedFD lifeline_remote(lifeline[1]);
 
-  forwarded_ports_[port_key] = std::move(lifeline_local);
+  forwarded_ports_[key] = std::move(lifeline_local);
 
-  switch (protocol_type) {
+  switch (key.protocol_type) {
     case Protocol::TCP:
       client->RequestTcpPortForward(
-          port_number, kDefaultInterfaceToForward, ipv4_addr, port_number,
-          std::move(lifeline_remote.get()), std::move(result_callback));
+          key.port_number, kDefaultInterfaceToForward, info->ipv4_address,
+          key.port_number, lifeline_remote.get(), std::move(result_callback));
       break;
     case Protocol::UDP:
       client->RequestUdpPortForward(
-          port_number, kDefaultInterfaceToForward, ipv4_addr, port_number,
-          std::move(lifeline_remote.get()), std::move(result_callback));
+          key.port_number, kDefaultInterfaceToForward, info->ipv4_address,
+          key.port_number, lifeline_remote.get(), std::move(result_callback));
       break;
   }
 }
 
 void CrostiniPortForwarder::TryDeactivatePort(
     const PortRuleKey& key,
+    const ContainerId& container_id,
     base::OnceCallback<void(bool)> result_callback) {
+  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
+      container_id.vm_name, container_id.container_name);
+  if (!info) {
+    // TODO(matterchen): Change preferences directly (container inactive).
+    std::move(result_callback).Run(true);
+    return;
+  }
+
   if (forwarded_ports_.find(key) == forwarded_ports_.end()) {
     LOG(ERROR) << "Trying to deactivate a non-active port.";
     std::move(result_callback).Run(false);
@@ -194,7 +206,8 @@ void CrostiniPortForwarder::TryDeactivatePort(
   }
 }
 
-void CrostiniPortForwarder::AddPort(uint16_t port_number,
+void CrostiniPortForwarder::AddPort(const ContainerId& container_id,
+                                    uint16_t port_number,
                                     const Protocol& protocol_type,
                                     const std::string& label,
                                     ResultCallback result_callback) {
@@ -202,6 +215,7 @@ void CrostiniPortForwarder::AddPort(uint16_t port_number,
       .port_number = port_number,
       .protocol_type = protocol_type,
       .input_ifname = kDefaultInterfaceToForward,
+      .container_id = container_id,
   };
 
   if (forwarded_ports_.find(new_port_key) != forwarded_ports_.end()) {
@@ -215,18 +229,26 @@ void CrostiniPortForwarder::AddPort(uint16_t port_number,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      label, new_port_key);
 
-  // TODO(matterchen): Extract container IPv4 address.
-  TryActivatePort(port_number, protocol_type, "PLACEHOLDER_IP_ADDRESS",
-                  std::move(on_add_port_completed));
+  TryActivatePort(new_port_key, container_id, std::move(on_add_port_completed));
 }
 
-void CrostiniPortForwarder::ActivatePort(uint16_t port_number,
+void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
+                                         uint16_t port_number,
                                          const Protocol& protocol_type,
                                          ResultCallback result_callback) {
+  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
+      container_id.vm_name, container_id.container_name);
+  if (!info) {
+    // TODO(matterchen): Change preference to active.
+    std::move(result_callback).Run(true);
+    return;
+  }
+
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
       .input_ifname = kDefaultInterfaceToForward,
+      .container_id = container_id,
   };
 
   if (forwarded_ports_.find(existing_port_key) != forwarded_ports_.end()) {
@@ -240,19 +262,27 @@ void CrostiniPortForwarder::ActivatePort(uint16_t port_number,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      existing_port_key);
 
-  // TODO(matterchen): Extract container IPv4 address.
-  CrostiniPortForwarder::TryActivatePort(port_number, protocol_type,
-                                         "PLACEHOLDER_IP_ADDRESS",
+  CrostiniPortForwarder::TryActivatePort(existing_port_key, container_id,
                                          std::move(on_activate_port_completed));
 }
 
-void CrostiniPortForwarder::DeactivatePort(uint16_t port_number,
+void CrostiniPortForwarder::DeactivatePort(const ContainerId& container_id,
+                                           uint16_t port_number,
                                            const Protocol& protocol_type,
                                            ResultCallback result_callback) {
+  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
+      container_id.vm_name, container_id.container_name);
+  if (!info) {
+    // TODO(matterchen): Change port preference for inactive container.
+    std::move(result_callback).Run(true);
+    return;
+  }
+
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
       .input_ifname = kDefaultInterfaceToForward,
+      .container_id = container_id,
   };
 
   base::OnceCallback<void(bool)> on_deactivate_port_completed =
@@ -261,10 +291,11 @@ void CrostiniPortForwarder::DeactivatePort(uint16_t port_number,
                      existing_port_key);
 
   CrostiniPortForwarder::TryDeactivatePort(
-      existing_port_key, std::move(on_deactivate_port_completed));
+      existing_port_key, container_id, std::move(on_deactivate_port_completed));
 }
 
-void CrostiniPortForwarder::RemovePort(uint16_t port_number,
+void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
+                                       uint16_t port_number,
                                        const Protocol& protocol_type,
                                        ResultCallback result_callback) {
   // TODO(matterchen): Check if port is active in preferences, if active,
@@ -274,6 +305,7 @@ void CrostiniPortForwarder::RemovePort(uint16_t port_number,
       .port_number = port_number,
       .protocol_type = protocol_type,
       .input_ifname = kDefaultInterfaceToForward,
+      .container_id = container_id,
   };
 
   base::OnceCallback<void(bool)> on_remove_port_completed =
@@ -281,7 +313,7 @@ void CrostiniPortForwarder::RemovePort(uint16_t port_number,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      existing_port_key);
 
-  CrostiniPortForwarder::TryDeactivatePort(existing_port_key,
+  CrostiniPortForwarder::TryDeactivatePort(existing_port_key, container_id,
                                            std::move(on_remove_port_completed));
 }
 

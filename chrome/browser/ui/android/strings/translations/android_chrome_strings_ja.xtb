@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">検索エンジン</translation>
 <translation id="1513352483775369820">ブックマークとウェブ履歴</translation>
 <translation id="1513858653616922153">パスワードを削除</translation>
-<translation id="1516229014686355813">「タップして検索」では選択した単語と現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>
 <translation id="1521774566618522728">最終同期: 今日</translation>
 <translation id="1544826120773021464">Google アカウントを管理するには、[アカウントを管理] をタップします。</translation>
 <translation id="1549000191223877751">他のウィンドウに移動</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529">Chrome にも <ph name="APP_NAME" /> のデータがあります</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">サイト一時停止中</translation>
-<translation id="2063713494490388661">タップして検索</translation>
 <translation id="2067805253194386918">テキスト</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2091887806945687916">音声</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">ログインできません</translation>
 <translation id="2349710944427398404">Chrome が使用するデータ全体（アカウント、ブックマーク、保存済みの設定など）</translation>
 <translation id="2353636109065292463">インターネット接続を確認しています</translation>
+<translation id="2359808026110333948">続行</translation>
 <translation id="2369533728426058518">開いているタブ</translation>
 <translation id="2387895666653383613">テキストの拡大と縮小</translation>
 <translation id="2394602618534698961">ダウンロードしたファイルがここに表示されます</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="2497852260688568942">同期は管理者により無効にされています</translation>
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
-<translation id="2501278716633472235">戻る</translation>
 <translation id="2513403576141822879">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK" />同期と Google サービス<ph name="END_LINK" />をご覧ください</translation>
 <translation id="2517472476991765520">スキャン</translation>
 <translation id="2518590038762162553">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60% 抑えることができます。アクセスするページを最適化するため、ウェブ トラフィックが Chrome から Google に送信されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">検索バーを開く</translation>
 <translation id="3716182511346448902">このページは大量のメモリを使用しているため、Chrome により一時停止されました。</translation>
 <translation id="3730075448226062617">Chrome にマイクへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもマイクをオンにしてください。</translation>
+<translation id="3738139272394829648">タップして検索</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3749259744154402564">サポートされていません</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">特定のサイトの Cookie を許可します。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
 <translation id="4046123991198612571">次のトラック</translation>
-<translation id="4048707525896921369">ウェブサイト上のトピックについてページを移動せずに調べられます。「タップして検索」では、単語とその周囲のコンテキストが Google 検索に送信され、定義、画像、検索結果などの情報が返されます。
-
-検索用語を長押しするとその用語が選択され、選択範囲を調整できます。検索結果を絞り込むには、パネルを上にスライドして検索ボックスをタップします。</translation>
 <translation id="4056223980640387499">セピア</translation>
 <translation id="4060598801229743805">画面の上部にあるオプション</translation>
 <translation id="4062305924942672200">法的情報</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="5581519193887989363">同期する項目はいつでも [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
 <translation id="5595485650161345191">住所の編集</translation>
-<translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5599455543593328020">シークレット モード</translation>
 <translation id="5620928963363755975">[その他のオプション] から [ダウンロード] を開いて自分のファイルやページを探すことができます</translation>
 <translation id="5626134646977739690">名前:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">別のダウンロードの完了待ちです…</translation>
 <translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
+<translation id="5884076754568147479">タスクを完了するため、アシスタントを使用したサイトの URL とコンテンツ、およびアシスタントで送信した情報が Google に送られます。</translation>
 <translation id="5902828464777634901">このウェブサイトで保存したすべてのローカルデータ（Cookie を含む）を削除します。</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 節約</translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="6811034713472274749">ページを表示できます</translation>
-<translation id="6818926723028410516">アイテムを選択</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6845325883481699275">Chrome のセキュリティ改善に協力する</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7055152154916055070">リダイレクトがブロックされました</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 件のアイテムを選択済み}other{# 件のアイテムを選択済み}}</translation>
 <translation id="7071521146534760487">アカウントを管理</translation>
 <translation id="7077143737582773186">SD カード</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> 件選択されています。オプションは画面上部にあります</translation>
 <translation id="7121362699166175603">アドレスバーの履歴とオートコンプリートを削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="7128222689758636196">現在の検索エンジンに対して許可</translation>
 <translation id="7138678301420049075">その他</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">お使いの言語でウェブを表示するには、Chrome の最新バージョンを入手してください</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7248069434667874558">Chrome で <ph name="TARGET_DEVICE_NAME" /> の同期がオンになっていることを確認してください</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7274013316676448362">ブロック中のサイト</translation>
 <translation id="7290209999329137901">名前の変更はできません</translation>
 <translation id="7291387454912369099">アシスタントによる購入手続き</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7810647596859435254">アプリで開く…</translation>
 <translation id="7821588508402923572">データ節約量がここに表示されます</translation>
-<translation id="7846076177841592234">選択解除</translation>
 <translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">他のデバイス</translation>
 <translation id="7875915731392087153">メールを作成</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">ミュート中</translation>
 <translation id="8127542551745560481">ホームページを編集</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
+<translation id="8137558756159375272">「タップして検索」では選択したキーワードと現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>
 <translation id="8156139159503939589">どの言語で閲覧しますか？</translation>
 <translation id="8168435359814927499">コンテンツ</translation>
 <translation id="8186512483418048923">残り <ph name="FILES" /> ファイル</translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">ここをタップすると、新しいタブを開いたり、前のタブに戻ったりすることができます</translation>
 <translation id="8662811608048051533">ほとんどのサイトからログアウトします。</translation>
 <translation id="8664979001105139458">同じ名前のファイルが存在します</translation>
-<translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{電波強度: レベル #}other{電波強度: レベル #}}</translation>
 <translation id="868929229000858085">連絡先を検索</translation>
 <translation id="8698438463325761328">サイトによるバーチャル リアリティ デバイスとデータへのアクセスをブロックします</translation>

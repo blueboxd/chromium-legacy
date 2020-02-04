@@ -9,8 +9,8 @@ class PaymentRequestMock {
     this.pendingResponse_ = null;
     this.bindings_ = new mojo.BindingSet(payments.mojom.PaymentRequest);
 
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        payments.mojom.PaymentRequest.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(payments.mojom.PaymentRequest.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindings_.addBinding(this, e.handle);
     this.interceptor_.start();

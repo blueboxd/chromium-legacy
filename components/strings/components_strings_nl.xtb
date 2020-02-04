@@ -525,6 +525,8 @@
 <translation id="3366477098757335611">Passen bekijken</translation>
 <translation id="3369192424181595722">Klokfout</translation>
 <translation id="337363190475750230">Uitgeschreven</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> heeft Enterprise Service Hooks ingeschakeld in je browser. Deze hooks hebben toegang tot sommige van je gegevens.</translation>
+<translation id="3377144306166885718">De server gebruikte een verouderde versie van TLS.</translation>
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
 <translation id="3377736046129930310">Gebruik schermvergrendeling om kaarten sneller te bevestigen</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
@@ -533,6 +535,7 @@
 <translation id="3391030046425686457">Afleveradres</translation>
 <translation id="3395827396354264108">Ophaalmethode</translation>
 <translation id="3399952811970034796">Bezorgadres</translation>
+<translation id="3402261774528610252">De verbinding waarmee deze site is geladen, gebruikte TLS 1.0 of TLS 1.1. Deze versies zijn verouderd en worden in de toekomst uitgeschakeld. Nadat ze zijn uitgeschakeld, kunnen gebruikers deze site niet meer laden. Voor de server moet TLS 1.2 of hoger worden ingeschakeld.</translation>
 <translation id="3422248202833853650">Probeer andere programma's af te sluiten om geheugen vrij te maken.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> is momenteel niet bereikbaar.</translation>
 <translation id="3423742043356668186">Systeem opgegeven</translation>
@@ -614,6 +617,7 @@
 <translation id="3745099705178523657">Nadat je hebt bevestigd, worden de kaartgegevens uit je Google-account gedeeld met deze site.</translation>
 <translation id="3748148204939282805">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kunnen proberen om je te misleiden zodat je iets gevaarlijks doet, bijvoorbeeld software installeren of je persoonlijke informatie bekendmaken (zoals wachtwoorden, telefoonnummers of creditcardgegevens). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
+<translation id="3754210790023674521">Scherm-in-scherm afsluiten</translation>
 <translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
 <translation id="3760561303380396507">Windows Hello gebruiken in plaats van CVC?</translation>
 <translation id="3761718714832595332">Status verbergen</translation>
@@ -935,6 +939,7 @@
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="519422657042045905">Annotatie niet beschikbaar</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="5205222826937269299">Naam vereist</translation>
 <translation id="5215116848420601511">Betaalmethoden en adressen die Google Pay gebruiken</translation>
@@ -964,6 +969,7 @@
 <translation id="5295292838686006428">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5300589172476337783">Weergeven</translation>
+<translation id="5306593769196050043">Beide bladen</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5314967030527622926">Boekjesmaker</translation>
@@ -1117,7 +1123,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Je wachtwoorden controleren</translation>
 <translation id="6015796118275082299">Jaar</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
 <translation id="6017514345406065928">Groen</translation>
 <translation id="6017850046339264347">Aanvallers op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kunnen misleidende apps installeren die zich voordoen als iets anders of gegevens verzamelen die kunnen worden gebruikt om je te volgen. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (gesynchroniseerd)</translation>
@@ -1224,7 +1229,6 @@
 <translation id="6446163441502663861">Kahu (envelop)</translation>
 <translation id="6446608382365791566">Meer informatie toevoegen</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="644931407731409778">Pdf-document met {COUNT,plural, =1{1 pagina}other{# pagina's}}</translation>
 <translation id="6451458296329894277">Opnieuw indienen bevestigen</translation>
 <translation id="6457206614190510200">Zadelsteek</translation>
 <translation id="6465306955648956876">Wachtwoorden beheren...</translation>
@@ -1336,6 +1340,7 @@
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7062635574500127092">Blauwgroen</translation>
 <translation id="7064851114919012435">Contactgegevens</translation>
+<translation id="70705239631109039">Je verbinding is niet volledig beveiligd</translation>
 <translation id="7075452647191940183">Verzoek is te groot</translation>
 <translation id="7079718277001814089">Deze site bevat malware</translation>
 <translation id="7081308185095828845">Deze functie is niet beschikbaar op je apparaat</translation>
@@ -1355,6 +1360,7 @@
 <translation id="7152423860607593928">Number-14 (envelop)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lavendel</translation>
+<translation id="7156870133441232244">De server moet worden geüpgraded naar TLS 1.2 of hoger.</translation>
 <translation id="717330890047184534">Gaia-ID:</translation>
 <translation id="7174545416324379297">Samengevoegd</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1380,6 +1386,7 @@ Aanvullende informatie:
 <translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="7260504762447901703">Toegang intrekken</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
+<translation id="7288778322931489286">Je beheerder heeft Enterprise Service Hooks ingeschakeld in je browser. Deze hooks hebben toegang tot sommige van je gegevens.</translation>
 <translation id="7292031607255951991">Naam van ontvanger</translation>
 <translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="7300012071106347854">Kobaltblauw</translation>
@@ -1704,6 +1711,7 @@ Aanvullende informatie:
 <translation id="874918643257405732">Bladwijzer toevoegen voor dit tabblad</translation>
 <translation id="8751426954251315517">Probeer het de volgende keer opnieuw</translation>
 <translation id="8759274551635299824">Deze pas is verlopen</translation>
+<translation id="87601671197631245">Deze site gebruikt een verouderde beveiligingsconfiguratie, waardoor je gegevens (zoals wachtwoorden, berichten of creditcardnummers) openbaar kunnen worden gemaakt als ze naar deze site worden gestuurd.</translation>
 <translation id="8761567432415473239">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke programma's gevonden<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-apparaat</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1721,6 +1729,7 @@ Aanvullende informatie:
 <translation id="8866481888320382733">Fout bij het parseren van beleidsinstellingen</translation>
 <translation id="8866928039507595380">Vouwen</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Deel gegevens over door Enterprise Service Hooks gemarkeerde beveiligingsgebeurtenissen met je beheerder. Deze gegevens zijn bijvoorbeeld URL's van pagina's die je hebt bezocht, bestandsnamen of metadata en de gebruikersnaam die je gebruikt om in te loggen op je apparaat en bij Chrome.</translation>
 <translation id="8870413625673593573">Recent gesloten</translation>
 <translation id="8870494189203302833">Dezelfde volgorde met de bedrukte zijde omlaag</translation>
 <translation id="8874824191258364635">Geef een geldig kaartnummer op</translation>

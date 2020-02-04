@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/test/video_player/video.h"
+#include "media/gpu/test/video.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "

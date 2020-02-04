@@ -77,7 +77,9 @@ public class IncognitoNotificationService extends IntentService {
             if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                             .isFullBrowserStarted()) {
                 if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) {
-                    Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
+                    Profile.getLastUsedRegularProfile()
+                            .getOffTheRecordProfile()
+                            .destroyWhenAppropriate();
                 }
             }
         });

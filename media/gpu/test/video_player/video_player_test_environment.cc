@@ -8,7 +8,7 @@
 
 #include "base/system/sys_info.h"
 #include "media/base/video_types.h"
-#include "media/gpu/test/video_player/video.h"
+#include "media/gpu/test/video.h"
 
 namespace media {
 namespace test {

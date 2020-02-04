@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/ui/request_pin_view.h"
 #include "chrome/browser/extensions/api/certificate_provider/certificate_provider_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -36,6 +37,10 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -170,6 +175,8 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
     command_request_listener_.reset();
     CertificateProviderApiTest::TearDownOnMainThread();
   }
+
+  std::string pin_request_extension_id() const { return extension_->id(); }
 
   void AddFakeSignRequest(int sign_request_id) {
     cert_provider_service_->pin_dialog_manager()->AddSignRequestId(
@@ -661,4 +668,50 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 
     EXPECT_TRUE(SendCommand("IncrementRequestId"));
   }
+}
+
+// Test that disabling the extension closes its PIN dialog.
+IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ExtensionDisable) {
+  AddFakeSignRequest(kFakeSignRequestId);
+  NavigateTo("operated.html");
+
+  EXPECT_TRUE(SendCommandAndWaitForMessage("Request", "request1:begun"));
+  EXPECT_TRUE(GetActivePinDialogView());
+
+  extensions::TestExtensionRegistryObserver registry_observer(
+      extensions::ExtensionRegistry::Get(profile()),
+      pin_request_extension_id());
+  extensions::ExtensionSystem::Get(profile())
+      ->extension_service()
+      ->DisableExtension(pin_request_extension_id(),
+                         extensions::disable_reason::DISABLE_USER_ACTION);
+  registry_observer.WaitForExtensionUnloaded();
+  // Let the events from the extensions subsystem propagate to the code that
+  // manages the PIN dialog.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(GetActivePinDialogView());
+}
+
+// Test that reloading the extension closes its PIN dialog.
+IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ExtensionReload) {
+  AddFakeSignRequest(kFakeSignRequestId);
+  NavigateTo("operated.html");
+
+  EXPECT_TRUE(SendCommandAndWaitForMessage("Request", "request1:begun"));
+  EXPECT_TRUE(GetActivePinDialogView());
+
+  // Create a second browser, in order to suppress Chrome shutdown logic when
+  // reloading the extension (as the tab with the extension's file gets closed).
+  CreateBrowser(profile());
+
+  // Trigger the chrome.runtime.reload() call from the extension.
+  extensions::TestExtensionRegistryObserver registry_observer(
+      extensions::ExtensionRegistry::Get(profile()),
+      pin_request_extension_id());
+  EXPECT_TRUE(SendCommand("Reload"));
+  registry_observer.WaitForExtensionUnloaded();
+  registry_observer.WaitForExtensionLoaded();
+
+  EXPECT_FALSE(GetActivePinDialogView());
 }

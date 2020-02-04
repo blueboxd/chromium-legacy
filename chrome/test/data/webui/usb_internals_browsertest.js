@@ -268,8 +268,7 @@ UsbInternalsTest.prototype = {
 
     window.setupFn = () => {
       this.pageHandlerInterceptor = new MojoInterfaceInterceptor(
-          mojom.UsbInternalsPageHandler.$interfaceName, 'context',
-          /*useBrowserInterfaceBroker=*/ true);
+          mojom.UsbInternalsPageHandler.$interfaceName);
       this.pageHandlerInterceptor.oninterfacerequest = (e) => {
         this.pageHandler = new FakePageHandlerRemote(e.handle);
       };

@@ -330,13 +330,7 @@ int64_t PerformanceManagerTabHelper::LastNavigationId() const {
 FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
-  if (it == frames_.end()) {
-    // Avoid dereferencing an invalid iterator because it produces hard to debug
-    // crashes.
-    NOTREACHED();
-    return nullptr;
-  }
-  return it->second.get();
+  return it != frames_.end() ? it->second.get() : nullptr;
 }
 
 void PerformanceManagerTabHelper::AddObserver(Observer* observer) {

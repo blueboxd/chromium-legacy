@@ -535,6 +535,8 @@
 <translation id="3366477098757335611">Kartalarni ko‘rish</translation>
 <translation id="3369192424181595722">Soat xatoligi</translation>
 <translation id="337363190475750230">O‘chirib qo‘yilgan</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> brauzeringizda Enterprise Service Hooks xizmatini yoqdi. U ayrim axborotlaringizdan foydalana oladi.</translation>
+<translation id="3377144306166885718">Server eskirgan TLS versiyasidan foydalanadi.</translation>
 <translation id="3377188786107721145">Siyosatni tekshirib chiqish vaqtida xatolik yuz berdi</translation>
 <translation id="3377736046129930310">Kartalarni tezda tasdiqlash uchun ekran qulfidan foydalaning</translation>
 <translation id="3380365263193509176">Noma’lum xatolik</translation>
@@ -543,6 +545,7 @@
 <translation id="3391030046425686457">Yetkazib berish manzili</translation>
 <translation id="3395827396354264108">Olib ketish usuli</translation>
 <translation id="3399952811970034796">Yetkazib berish manzili</translation>
+<translation id="3402261774528610252">Bu sayt eskirgan TLS 1.0 yoki TLS 1.1 ishlatadi, shuning uchun keyingi versiyalarda faolsizlantiriladi. Faolsizlantirilsa, foydalanuvchilar bu saytni ocha olmaydi. Serverda TLS 1.2 yoki yuqoriroq versiya yoqilishi lozim.</translation>
 <translation id="3422248202833853650">Xotirani bo‘shatish uchun boshqa dasturlarni yopib ko‘ring.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> sayti ayni vaqtda ish faoliyatida emas.</translation>
 <translation id="3423742043356668186">Tizimda belgilangan</translation>
@@ -629,6 +632,7 @@
 <translation id="3745099705178523657">Tasdiqlasangiz, Google hisobingizdagi bank karta maʼlumotlari bu saytda saqlanib qoladi.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sayti orqali firibgarlar dasturlarni o‘rnatish yoki shaxsiy ma’lumotlaringizni (masalan, parollar, telefon raqamlari yoki kredit karta ma’lumotlari kabilarni) o‘g‘irlash uchun ba’zi bir xavfli ishlarni amalga oshirishga urnishlari mumkin. <ph name="BEGIN_LEARN_MORE_LINK" />Batafsil<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Serverdagi xatolik tufayli tarjima amalga oshmadi.</translation>
+<translation id="3754210790023674521">Tasvir ustida tasvir rejimidan chiqish</translation>
 <translation id="3759461132968374835">Yaqinda yuz bergan ishdan chiqishlar haqidagi yozuvlar yo‘q. Ishdan chiqishlar jurnali o‘chiqligida yuz bergan ishdan chiqishlar bu yerda ko‘rsatilmaydi.</translation>
 <translation id="3760561303380396507">CVC oʻrniga Windows Hello ishlatilsinmi?</translation>
 <translation id="3761718714832595332">Holatini yopish</translation>
@@ -951,6 +955,7 @@
 <translation id="5179510805599951267">Bu <ph name="ORIGINAL_LANGUAGE" /> tili emasmi? Xatolik haqida xabar yuboring</translation>
 <translation id="5190835502935405962">Xatcho‘plar paneli</translation>
 <translation id="519422657042045905">Annotatsiya qilish imkonsiz.</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Amalni tasdiqlang</translation>
 <translation id="5205222826937269299">Nom kiriting</translation>
 <translation id="5215116848420601511">Google Pay xizmatidagi bank kartalari va manzillar</translation>
@@ -980,6 +985,7 @@
 <translation id="5295292838686006428">Siz ishlatadigan sayt yoki ilovada axborot sizib chiqishi yuz bergan. Chrome saqlangan parollaringizni hoziroq tekshirishni tavsiya qiladi.</translation>
 <translation id="5299298092464848405">Siyosatni analiz qilishda xatolik yuz berdi</translation>
 <translation id="5300589172476337783">Ko‘rsatish</translation>
+<translation id="5306593769196050043">Har ikki varaq</translation>
 <translation id="5308380583665731573">Ulanish</translation>
 <translation id="5308689395849655368">Xatoliklar haqidagi hisobotlar o‘chiq.</translation>
 <translation id="5314967030527622926">Buklet yasash vositasi</translation>
@@ -1133,7 +1139,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Parollarni tekshiring</translation>
 <translation id="6015796118275082299">Yil</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1-sahifa}other{#-sahifa}}</translation>
 <translation id="6017514345406065928">Yashil</translation>
 <translation id="6017850046339264347">Firibgarlar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saytida soxta ilovalarni o‘rnatgan bo‘lishlari mumkin. Bu ilovalar sizni kuzatishi yoki ma’lumot yig‘ishi mumkin. <ph name="BEGIN_LEARN_MORE_LINK" />Batafsil<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinxronlandi)</translation>
@@ -1240,7 +1245,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Batafsil qo‘shing</translation>
 <translation id="6447842834002726250">Cookie fayllari</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{1 sahifali}other{# sahifali}} PDF hujjat</translation>
 <translation id="6451458296329894277">Forma qayta jo‘natilishini tasdiqlang</translation>
 <translation id="6457206614190510200">Ikkala chekkasini tikish</translation>
 <translation id="6465306955648956876">Parollarni boshqarish...</translation>
@@ -1352,6 +1356,7 @@
 <translation id="7053983685419859001">Taqiqlash</translation>
 <translation id="7062635574500127092">Moviy</translation>
 <translation id="7064851114919012435">Aloqa ma’lumoti</translation>
+<translation id="70705239631109039">Saytga ulanish butunlay xavfsiz emas</translation>
 <translation id="7075452647191940183">Yuborilgan soʻrov juda katta</translation>
 <translation id="7079718277001814089">Ehtiyot bo‘ling! Bu sayt zararli.</translation>
 <translation id="7081308185095828845">Bu funksiya qurilmangizda ishlamaydi</translation>
@@ -1371,6 +1376,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ta}other{<ph name="PAYMENT_METHOD_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ta}}</translation>
 <translation id="7153618581592392745">Och binafsharang</translation>
+<translation id="7156870133441232244">Server TLS 1.2 yoki yuqorirogʻiga yangilanishi lozim.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Birlashtirildi</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ta}other{<ph name="SHIPPING_OPTION_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ta}}</translation>
@@ -1396,6 +1402,7 @@ Batafsil axborot:
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeni bilan tizimdagi sana va vaqt sozlamalari (<ph name="DATE_AND_TIME" />) noto‘g‘ri bo‘lganligi uchun havfsiz aloqa o‘rnatib bo'lmadi.</translation>
 <translation id="7260504762447901703">Kirishni taqiqlash</translation>
 <translation id="7275334191706090484">Boshqariladigan xatcho‘plar</translation>
+<translation id="7288778322931489286">Brauzeringizda administrator tomonidan Enterprise Service Hooks faollashtirildi. U ayrim axborotlaringizdan foydalana oladi.</translation>
 <translation id="7292031607255951991">Oluvchining ismi</translation>
 <translation id="7298195798382681320">Tavsiya etiladi</translation>
 <translation id="7300012071106347854">Koʻk kobalt</translation>
@@ -1720,6 +1727,7 @@ Batafsil axborot:
 <translation id="874918643257405732">Bu varaqni bukmarklash</translation>
 <translation id="8751426954251315517">Keyingi safar qayta urining</translation>
 <translation id="8759274551635299824">Kredit kartaning amal qilish muddati tugagan</translation>
+<translation id="87601671197631245">Bu sayt eskirgan xavfsizlik sozlamasidan foydalanadi. maʼlumotlaringiz (masalan, parollar, xabarlar va kredit kartalari) shu saytga yuborilganda ular xavf ostida qolishi mumkin.</translation>
 <translation id="8761567432415473239">Google saytlar xavfsizligini tekshirish tizimi yaqinda <ph name="SITE" /> saytida <ph name="BEGIN_LINK" />zararli dasturlarni topdi<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB qurilma</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1737,6 +1745,7 @@ Batafsil axborot:
 <translation id="8866481888320382733">Siyosat sozlamalarini tahlil qilib bo‘lmadi</translation>
 <translation id="8866928039507595380">Taxlash</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Administratoringizga Enterprise Service Hooks tomonidan belgilangan xavfsizlik hodisalari haqidagi axborotlarni ulashing. Bu ochilgan sahifalarning URL manzillari, fayl nomlari yoki meta axborotlar, qurilma va Chrome foydalanuvchilari nomlaridan iborat boʻlishi mumkin.</translation>
 <translation id="8870413625673593573">Yaqinda yopilganlar</translation>
 <translation id="8870494189203302833">Bir xil tartibda orqa tomonida</translation>
 <translation id="8874824191258364635">Karta raqamini xatosiz kiriting</translation>

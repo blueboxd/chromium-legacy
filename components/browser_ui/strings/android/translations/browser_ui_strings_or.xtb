@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">ପୂର୍ବବତ୍</translation>
 <translation id="2148716181193084225">ଆଜି</translation>
 <translation id="2359808026110333948">ଜାରି ରଖନ୍ତୁ</translation>
+<translation id="2501278716633472235">ଫେରନ୍ତୁ</translation>
 <translation id="2653659639078652383">ଉପସ୍ଥାପନ</translation>
 <translation id="2704606927547763573">କପି କରାଯାଇଛି</translation>
 <translation id="3115898365077584848">ସୂଚନା ଦେଖାନ୍ତୁ</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">ଲିଙ୍କ୍ କପି କରନ୍ତୁ</translation>
 <translation id="4002066346123236978">ଆଖ୍ୟା</translation>
 <translation id="4570913071927164677">ବିବରଣୀ</translation>
+<translation id="497421865427891073">ଆଗକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="5300589172476337783">ପ୍ରଦର୍ଶନ କରନ୍ତୁ</translation>
 <translation id="5301954838959518834">ଠିକ୍ ଅଛି, ବୁଝିଗଲି</translation>
 <translation id="5317780077021120954">ସଞ୍ଚୟ</translation>
 <translation id="5556459405103347317">ପୁନଃ ଲୋଡ୍ କରନ୍ତୁ</translation>
+<translation id="5596627076506792578">ଅଧିକ ବିକଳ୍ପ</translation>
 <translation id="5860033963881614850">ବନ୍ଦ ଅଛି</translation>
 <translation id="5916664084637901428">ଚାଲୁ</translation>
 <translation id="5939518447894949180">ପୁନଃସେଟ୍</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ବିକଳ୍ପ</translation>
 <translation id="6527303717912515753">ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="6746124502594467657">ତଳକୁ ଚାଳନ କରନ୍ତୁ</translation>
+<translation id="6818926723028410516">ଆଇଟମ୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="6910211073230771657">ଡିଲିଟ୍ କରାଗଲା</translation>
 <translation id="6945221475159498467">ଚୟନ କରନ୍ତୁ</translation>
 <translation id="6965382102122355670">ଓକେ ବଟନ୍</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1ଟି ଚୟନ କରାଯାଇଛି}other{#ଟି ଚୟନ କରାଯାଇଛି}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" />ଟି ଚୟନ କରାଯାଇଛି।  ସ୍କ୍ରିନ୍‌ର ଶୀର୍ଷଭାଗରେ ବିକଳ୍ପଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ଚୟନିତ</translation>
 <translation id="7649070708921625228">ସହାୟତା</translation>
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
 <translation id="7781829728241885113">ଗତକଲି</translation>
 <translation id="7791543448312431591">ଯୋଡନ୍ତୁ</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>
+<translation id="7846076177841592234">ଚୟନିତ ଆଇଟମ୍ ବାତିଲ୍ କରନ୍ତୁ</translation>
 <translation id="8131740175452115882">ନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="8249310407154411074">ଉପରକୁ ଘୁଞ୍ଚାନ୍ତୁ</translation>
 <translation id="8261506727792406068">ବିଲୋପ</translation>
 <translation id="8609465669617005112">ଉପରକୁ ଚଳନ କରନ୍ତୁ</translation>
+<translation id="8676374126336081632">ଇନ୍‌ପୁଟ୍ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="8725066075913043281">ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="8730621377337864115">ସମାପ୍ତ ହୋଇଛି</translation>
 </translationbundle>

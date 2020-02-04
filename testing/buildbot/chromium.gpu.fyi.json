@@ -3714,7 +3714,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -4234,7 +4234,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -4736,7 +4736,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -5310,7 +5310,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -5904,7 +5904,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -6454,7 +6454,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -6599,7 +6599,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -7389,7 +7389,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -8138,7 +8138,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -8696,7 +8696,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -9293,7 +9293,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -9911,7 +9911,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -11648,7 +11648,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -12318,7 +12318,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -12967,7 +12967,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -13598,7 +13598,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -14123,7 +14123,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -14643,7 +14643,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -15317,7 +15317,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -16053,7 +16053,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -19054,7 +19054,7 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -19818,7 +19818,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -20643,7 +20643,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -21396,7 +21396,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -22278,7 +22278,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -23143,7 +23143,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -24179,7 +24179,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -25541,174 +25541,6 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
-            }
-          ]
-        },
-        "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn:dawn_end2end_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--skip-validation"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "dawn_end2end_skip_validation_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
-            }
-          ]
-        },
-        "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn:dawn_end2end_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--use-spvc"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "dawn_end2end_use_spvc_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
-            }
-          ]
-        },
-        "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn:dawn_end2end_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--enable-backend-validation"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "dawn_end2end_validation_layers_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
-            }
-          ]
-        },
-        "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn:dawn_end2end_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--use-wire"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "dawn_end2end_wire_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
-            }
-          ]
-        },
-        "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn:dawn_end2end_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -26056,7 +25888,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -26901,7 +26733,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -27558,7 +27390,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -28441,7 +28273,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",
@@ -29485,7 +29317,7 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",

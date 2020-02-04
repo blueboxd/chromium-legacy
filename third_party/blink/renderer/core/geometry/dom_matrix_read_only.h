@@ -30,7 +30,7 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
  public:
   static DOMMatrixReadOnly* Create(ExecutionContext*, ExceptionState&);
   static DOMMatrixReadOnly* Create(ExecutionContext*,
-                                   StringOrUnrestrictedDoubleSequence&,
+                                   const StringOrUnrestrictedDoubleSequence&,
                                    ExceptionState&);
   static DOMMatrixReadOnly* fromFloat32Array(NotShared<DOMFloat32Array>,
                                              ExceptionState&);

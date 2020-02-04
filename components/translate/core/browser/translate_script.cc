@@ -155,7 +155,7 @@ void TranslateScript::OnScriptFetchComplete(bool success,
         "try {"
         "  __gCrWeb.translate.installCallbacks();"
         "} catch (error) {};";
-    base::StringPiece(install_callbacks).AppendToString(&data_);
+    data_.append(install_callbacks);
 #endif  // defined(OS_IOS)
 
     // Wrap |data| in try/catch block to handle unexpected script errors.

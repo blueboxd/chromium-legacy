@@ -331,7 +331,7 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
   crostini_manager->AddRunningContainerForTesting(
       crostini::kCrostiniDefaultVmName,
       crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                              "testuser", "/home/testuser"));
+                              "testuser", "/home/testuser", "PLACEHOLDER_IP"));
   //
   // Register crostini, downloads, drive, android.
   mount_points->RegisterFileSystem(GetCrostiniMountPointName(profile_.get()),

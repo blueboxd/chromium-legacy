@@ -700,13 +700,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questo criterio è impostato su <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> o<ph name="OPERA_VALUE_PLACEHOLDER" />, verrà avviato il browser corrispondente, se installato. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> è disponibile solo su Windows e <ph name="SAFARI_VALUE_PLACEHOLDER" /> è disponibile solo su Windows e Mac OS X.
 
       Se questo criterio è impostato su un percorso file, tale file viene usato come eseguibile.</translation>
-<translation id="2111016292707172233">Consente di attivare la disponibilità della funzione Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
-
-      Se attivi questa impostazione, la funzione Tocca per cercare sarà a disposizione degli utenti, che potranno scegliere se attivarla o disattivarla.
-
-      Se disattivi questa impostazione, la funzione Tocca per cercare verrà disattivata completamente.
-
-      Non impostare questa norma equivale ad attivarla; leggi la descrizione precedente.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
@@ -1879,7 +1872,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione dell'elemento attivo tramite tastiera è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
-<translation id="3874773863217952418">Attiva Tocca per cercare</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
 <translation id="3879196885908353077">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili dei download</translation>
 <translation id="3879208481373875102">Configura l'elenco delle app web con installazione forzata</translation>
@@ -3972,7 +3964,7 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7311458740754205918">Se questa norma viene impostata su true o non viene impostata, nella pagina Nuova scheda potrebbero essere mostrati suggerimenti di contenuti basati sulla cronologia di navigazione, sugli interessi o sulla posizione dell'utente.
 
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
-<translation id="7323572763274343342">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in<ph name="PRODUCT_NAME" />.
+<translation id="7323572763274343342">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in <ph name="PRODUCT_NAME" />.
 
       Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser attivando o disattivando in modo selettivo le funzionalità già esistenti.
 
@@ -4670,12 +4662,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Se questo criterio non viene impostato, le scorciatoie delle funzioni di accessibilità saranno attive per impostazione predefinita.</translation>
 <translation id="8525526490824335042">Container Linux</translation>
-<translation id="8538235451413605457">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />. Le versioni inferiori vengono trattate come obsolete e il dispositivo non consente agli utenti di accedere, se prima non viene aggiornato il sistema operativo.
-      Se la versione corrente diventa obsoleta durante una sessione utente, l'utente verrà forzatamente scollegato.
-
-      Se questa norma non viene applicata, non vengono applicate restrizioni e l'utente può accedere a prescindere dalla sua versione di <ph name="PRODUCT_NAME" />.
-
-      Qui per "versione" si intende sia una versione esatta come "61.0.3163.120", sia un prefisso per la versione, come "61.0".  </translation>
 <translation id="8544375438507658205">Renderer HTML predefinito per <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Consente la sincronizzazione di messaggi SMS dal telefono al Chromebook</translation>
 <translation id="8548832052135586762">Consente di impostare solo la stampa a colori, solo la stampa monocromatica oppure nessuna limitazione per la modalità a colori. Se la norma non viene impostata non vengono applicate limitazioni.</translation>

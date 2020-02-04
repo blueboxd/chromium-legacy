@@ -1006,13 +1006,13 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     }
   }
 
+  // Parse the Content-Security-Policy headers.
   if (base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors)) {
-    // Parse the Content-Security-Policy headers.
-    ContentSecurityPolicy policy;
-    if (url_request_->response_headers())
-      policy.Parse(url_request_->url(), *url_request_->response_headers());
-    response_->content_security_policy = policy.TakeContentSecurityPolicy();
+          network::features::kOutOfBlinkFrameAncestors) &&
+      url_request_->response_headers()) {
+    AddContentSecurityPolicyFromHeaders(*url_request_->response_headers(),
+                                        url_request_->url(),
+                                        &(response_->content_security_policy));
   }
 
   if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation)) {

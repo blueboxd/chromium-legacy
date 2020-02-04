@@ -684,13 +684,6 @@
       如果此政策设为 <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />、<ph name="FIREFOX_VALUE_PLACEHOLDER" />、<ph name="SAFARI_VALUE_PLACEHOLDER" /> 或 <ph name="OPERA_VALUE_PLACEHOLDER" />，系统会启动对应的浏览器（前提是已安装）。<ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> 仅在 Windows 上可用，<ph name="SAFARI_VALUE_PLACEHOLDER" /> 仅在 Windows 和 Mac OS X 上可用。
 
       如果此政策设为文件路径，系统会将相应文件用作可执行文件。</translation>
-<translation id="2111016292707172233">在 <ph name="PRODUCT_NAME" /> 的内容视图中启用“点按搜索”功能。
-
-      如果您启用了此设置，用户将能够使用“点按搜索”功能，并可选择开启或关闭该功能。
-
-      如果您停用了此设置，“点按搜索”功能将会被完全停用。
-
-      如果您未设置此政策，则等同于已启用此政策，请参见上述说明。</translation>
 <translation id="2113068765175018713">通过自动重启限制设备的正常运行时间</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
@@ -1745,6 +1738,7 @@
       如果此政策未设置，则对于任何需要通过证书透明化操作予以披露的证书，如果并未根据证书透明化政策进行披露，系统都会将其视为不可信证书。</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
 <translation id="377044054160169374">针对误导性体验的强制干预政策</translation>
+<translation id="3780102107513139202">仅启用与重要修复程序有关的变体</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3780319008680229708">如果此政策设为 true，Cast 工具栏图标将始终显示在工具栏或菜单中，用户无法将其移除。
 
@@ -1855,7 +1849,6 @@
           如果您设置了此政策，用户便无法更改或覆盖它。
 
           如果未设置此政策，则“键盘焦点突出显示”最初会处于停用状态，但用户可以随时启用该功能。</translation>
-<translation id="3874773863217952418">启用“点按搜索”</translation>
 <translation id="3877517141460819966">集成的双重身份验证模式</translation>
 <translation id="3879196885908353077">检查下载内容是否违反敏感数据保护规则</translation>
 <translation id="3879208481373875102">配置强制安装的 Web 应用的列表</translation>
@@ -1978,6 +1971,7 @@
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
 <translation id="4039085364173654945">控制是否允许网页上的第三方子内容弹出 HTTP 基本身份认证对话框。通常情况下，为了防止网上诱骗，此设置是停用的。如果未设置此政策，就会停用此设置，而不允许第三方子内容弹出 HTTP 基本身份认证对话框。</translation>
 <translation id="4056910949759281379">停用 SPDY 协议</translation>
+<translation id="4061590579642538878">报告有关崩溃报告的信息。</translation>
 <translation id="4075675819066819571">将文件架放置到屏幕左侧</translation>
 <translation id="4075864623710596000">此列表中指定的主机名将免受 HSTS 政策检查，该检查可能会将请求从 HTTP 升级到 HTTPS。此政策只允许使用单标签主机名。必须使用规范化主机名：任何 IDN 都必须转换为对应的 A 标签格式，并且所有 ASCII 字母都必须小写。此政策只适用于指定的特定主机名，不适用于指定名称的子网域。</translation>
 <translation id="408029843066770167">允许向 Google 时间服务发出查询</translation>
@@ -2490,6 +2484,7 @@
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
+<translation id="500149597848135831">启用所有变体</translation>
 <translation id="5032164758660626397">阻止用户传输大型文件</translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
@@ -2562,6 +2557,7 @@
 <translation id="5102203758995933166">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，由开放网络配置格式定义。</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5108031557082757679">已停用企业设备打印机</translation>
+<translation id="5109383437323376357">确定变体的可用情况</translation>
 <translation id="5112121363469561920">设置登录屏幕上启用的默认放大镜类型。
 
           如果设置了此政策，它就会控制在显示登录屏幕时启用的放大镜类型。如果将此政策设为“None”，则会停用放大镜。
@@ -3276,6 +3272,9 @@
 <translation id="6221175752766085998">允许使用由本地信任锚颁发的缺少 subjectAlternativeName 扩展项的证书</translation>
 <translation id="6224304369267200483">自动允许直接安全密钥认证的网址/网域</translation>
 <translation id="6233173491898450179">设置下载目录</translation>
+<translation id="6242147107333796512">报告与崩溃报告相关的信息，例如远程 ID、捕获时间戳和原因。
+
+      如果此政策设为 false 或未设置，系统将不会报告崩溃报告信息。如果此政策设为 true，系统将会报告崩溃报告信息。</translation>
 <translation id="6244210204546589761">启动时打开的网址</translation>
 <translation id="6247316685259031374">此政策用于控制音频进程是否会采用沙盒机制。
       如果启用了此政策，音频进程在运行时将会采用沙盒机制。
@@ -3917,6 +3916,15 @@
 <translation id="7311458740754205918">如果此政策设为 true 或未设置，“打开新的标签页”页面可能会根据用户的浏览记录、兴趣或位置信息显示内容建议。
 
       如果此政策设为 false，“打开新的标签页”页面上不会显示自动生成的内容建议。</translation>
+<translation id="7323572763274343342">通过配置此政策，您可以指定允许在 <ph name="PRODUCT_NAME" /> 中应用哪些变体。
+
+      变体可通过有选择地启用/停用现有功能（无需推出新版浏览器）提供对 <ph name="PRODUCT_NAME" /> 的修改。
+
+      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于该浏览器。
+
+      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_NAME" />。
+
+      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会阻止将所有变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会阻止 <ph name="PRODUCT_NAME" /> 开发者及时提供重要的安全性修复程序。</translation>
 <translation id="7323896582714668701">适用于 <ph name="PRODUCT_NAME" />的其他命令行参数</translation>
 <translation id="7326394567531622570">与 Wipe（值 2）类似，但该选项会尝试保留登录令牌，以使用户无需再次登录。</translation>
 <translation id="7329968046053403405">指定由支持 <ph name="HTTP_NEGOTIATE" />身份验证（例如 Kerberos 身份验证）的 Android 身份验证应用提供的帐号所属的类型。您应该可以从身份验证应用的供应商处获得此信息。如需更多详细信息，请访问 https://goo.gl/hajyfN。
@@ -3991,6 +3999,19 @@
           如果此政策设为“Enabled”或未设置，Google Chrome 将会接受作为 Signed HTTP Exchange 提供的内容。
 
           如果此政策设为“Disabled”，则无法加载 Signed HTTP Exchange。</translation>
+<translation id="7509496865303347769">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
+
+          主页是由“主页”按钮打开的网页。在桌面设备上，启动时打开的网页是由 RestoreOnStartup 政策控制的。
+
+          您既可将主页类型设为在此处指定的网址，也可将其设为“新标签页”。如果您选择“新标签页”，此政策将不会产生任何效力。
+
+          如果您启用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 中的主页网址，但仍可选择“新标签页”作为主页。
+
+          如果您未设置此政策，并且也未设置 HomepageIsNewTabPage，用户将能自行选择主页。
+
+          此网址必须是采用标准架构的网址，例如“http://example.com”或“https://example.com”。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例。</translation>
 <translation id="7511361072385293666">如果此政策设为 true 或未设置，则允许在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 协议。
       如果此政策设为 false，则禁止使用 QUIC 协议。</translation>
 <translation id="7517845714620372896">指定屏幕亮度百分比。
@@ -4149,6 +4170,7 @@
 <translation id="7717938661004793600">配置 <ph name="PRODUCT_OS_NAME" />辅助功能。</translation>
 <translation id="7731026922044991970">将所有网站上的 Cookie 都恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为</translation>
 <translation id="7747447585227954402">允许设备在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>
+<translation id="7749024457938190837">能够在通过 chrome.printing API 发送打印任务时跳过确认对话框的扩展程序</translation>
 <translation id="7749402620209366169">为远程访问主机启用双重身份验证，而不是采用用户指定的 PIN。
 
           如果启用该设置，那么用户在访问主机时必须提供有效的双重代码。
@@ -4455,6 +4477,9 @@
           如果停用了该设置，将扫描网页的元标记。
 
           如果未设置该政策，将扫描网页的元标记。</translation>
+<translation id="8295496526151576383">此政策旨在以列表形式指定：哪些扩展程序能够在使用 <ph name="PRINTING_API" /> 函数 <ph name="SUBMIT_JOB_FUNCTION" /> 发送打印任务时跳过打印任务确认对话框。
+
+      如果此列表不含任何扩展程序，或者未设置此列表，系统将针对每次 <ph name="SUBMIT_JOB_FUNCTION" /> 函数调用向用户显示打印任务确认对话框。</translation>
 <translation id="829641334878002866">您可以设置一个时间段（以毫秒为单位），从而指定第一条通知（提示用户必须重启 <ph name="PRODUCT_OS_NAME" />设备以安装更新）的发出时间应与 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策所设时间段的结束时间相隔多久。
 
       如果未做设置，系统将会在 <ph name="PRODUCT_OS_NAME" />设备上使用默认时间段，即 259200000 毫秒（3 天）。</translation>
@@ -4589,12 +4614,6 @@
 
           如果未设置此政策，默认情况下，无障碍功能快捷方式会处于启用状态。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
-<translation id="8538235451413605457">配置对允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的要求。低于指定值的版本将被视为过时；在这种情况下，如果用户不更新操作系统，相应设备就不会允许其登录。
-      如果当前版本在用户会话期间变为过时版本，系统将会强制用户退出。
-
-      如果未设置此政策，系统便不会应用任何限制；在这种情况下，用户无论使用哪个 <ph name="PRODUCT_NAME" /> 版本都可以登录。
-
-      这里的“版本”既可以是确切的版本（例如“61.0.3163.120”），也可以是版本前缀（例如“61.0”）。  </translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="8544465954173828789">允许将短信从手机同步到 Chromebook。</translation>
 <translation id="8548832052135586762">将打印模式设置为仅限彩色打印、仅限单色打印或无颜色模式限制。如果未设置此政策，则会被视为无限制。</translation>
@@ -5009,6 +5028,7 @@
       如果此政策设为 false，系统将不会在打印预览对话框内选中“页眉和页脚”，并且用户将无法更改此设置。
 
       如果此政策设为 true，系统会在打印预览对话框内选中“页眉和页脚”，并且用户将无法更改此设置。</translation>
+<translation id="9213751049772256263">停用所有变体</translation>
 <translation id="9217154963008402249">发送监控网络数据包的频率</translation>
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>

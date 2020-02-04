@@ -115,21 +115,18 @@ void ReportViolation(CSPContext* context,
       {ElideURLForReportViolation(blocked_url), ToString(directive)}, nullptr);
 
   if (directive->name != directive_name) {
-    message << " Note that '"
-            << network::ContentSecurityPolicy::ToString(directive_name)
+    message << " Note that '" << network::ToString(directive_name)
             << "' was not explicitly set, so '"
-            << network::ContentSecurityPolicy::ToString(directive->name)
-            << "' is used as a fallback.";
+            << network::ToString(directive->name) << "' is used as a fallback.";
   }
 
   message << "\n";
 
   context->ReportContentSecurityPolicyViolation(CSPViolationParams(
-      network::ContentSecurityPolicy::ToString(directive->name),
-      network::ContentSecurityPolicy::ToString(directive_name), message.str(),
-      blocked_url, policy->report_endpoints, policy->use_reporting_api,
-      policy->header->header_value, policy->header->type, has_followed_redirect,
-      safe_source_location));
+      network::ToString(directive->name), network::ToString(directive_name),
+      message.str(), blocked_url, policy->report_endpoints,
+      policy->use_reporting_api, policy->header->header_value,
+      policy->header->type, has_followed_redirect, safe_source_location));
 }
 
 bool AllowDirective(CSPContext* context,
@@ -213,7 +210,7 @@ bool ShouldUpgradeInsecureRequest(
 }
 
 std::string ToString(const network::mojom::CSPDirectivePtr& directive) {
-  return network::ContentSecurityPolicy::ToString(directive->name) + " " +
+  return network::ToString(directive->name) + " " +
          ToString(directive->source_list);
 }
 

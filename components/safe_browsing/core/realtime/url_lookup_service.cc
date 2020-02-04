@@ -88,9 +88,9 @@ void RealTimeUrlLookupService::StartLookup(
             "and browsing better (Sends URLs of pages you visit to Google)' in "
             "Chromium settings under Privacy."
           chrome_policy {
-            SafeBrowsingRealTimeLookupEnabled {
+            UrlKeyedAnonymizedDataCollectionEnabled {
               policy_options {mode: MANDATORY}
-              SafeBrowsingRealTimeLookupEnabled: false
+              UrlKeyedAnonymizedDataCollectionEnabled: false
             }
           }
         })");

@@ -74,10 +74,7 @@ void UpdateRendererOnMixedContentFound(NavigationRequest* navigation_request,
   params.request_context_type = navigation_request->request_context_type();
   params.was_allowed = was_allowed;
   params.had_redirect = for_redirect;
-  if (navigation_request->common_params().source_location) {
-    params.source_location =
-        navigation_request->common_params().source_location.value();
-  }
+  params.source_location = navigation_request->common_params().source_location;
 
   rfh->Send(new FrameMsg_MixedContentFound(rfh->GetRoutingID(), params));
 }

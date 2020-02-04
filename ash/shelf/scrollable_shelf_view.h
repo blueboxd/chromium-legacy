@@ -312,6 +312,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // different from the actual values.
   void MaybeUpdateGradientZone();
 
+  void PaintGradientZone(const FadeZone& start_gradient_zone,
+                         const FadeZone& end_gradient_zone);
+
+  bool ShouldApplyMaskLayerGradientZone() const;
+
   // Returns the actual scroll offset for the given scroll distance along the
   // main axis under the specific layout strategy. When the left arrow button
   // shows, |shelf_view_| is translated due to the change in

@@ -445,6 +445,7 @@
 }
 
 - (void)showDownloadsFolder {
+  // TODO(crbug.com/1046329): Directly open Chrome's folder.
   base::FilePath download_dir;
   if (!GetDownloadsDirectory(&download_dir)) {
     return;
@@ -454,11 +455,6 @@
           initWithDocumentTypes:@[ @"public.data" ]
                          inMode:UIDocumentPickerModeImport];
   documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-  if (@available(iOS 13, *)) {
-    NSURL* URL =
-        [NSURL fileURLWithPath:base::SysUTF8ToNSString(download_dir.value())];
-    documentPicker.directoryURL = URL;
-  }
   [self.viewController presentViewController:documentPicker
                                     animated:YES
                                   completion:nil];

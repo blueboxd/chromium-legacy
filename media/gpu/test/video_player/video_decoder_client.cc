@@ -14,10 +14,10 @@
 #include "media/base/waiting.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/test/video.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/test_vda_video_decoder.h"
-#include "media/gpu/test/video_player/video.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"

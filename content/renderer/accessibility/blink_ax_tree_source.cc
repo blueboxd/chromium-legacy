@@ -871,10 +871,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     if (ui::IsHeading(dst->role) && src.HeadingLevel()) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
                            src.HeadingLevel());
-    } else if ((dst->role == ax::mojom::Role::kTreeItem ||
-                dst->role == ax::mojom::Role::kComment ||
-                dst->role == ax::mojom::Role::kListItem ||
-                dst->role == ax::mojom::Role::kRow) &&
+    } else if (ui::SupportsHierarchicalLevel(dst->role) &&
                src.HierarchicalLevel()) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
                            src.HierarchicalLevel());

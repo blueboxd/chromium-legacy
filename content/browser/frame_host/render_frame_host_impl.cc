@@ -1863,6 +1863,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   SetLastCommittedUrl(GURL());
   web_bundle_handle_.reset();
 
+  must_be_replaced_ = IsRenderDocumentEnabledForCrashedFrame();
   has_committed_any_navigation_ = false;
 
   // Execute any pending AX tree snapshot callbacks with an empty response,
@@ -4938,7 +4939,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       data_url, base::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, mojom::NavigationType::DIFFERENT_DOCUMENT,
       download_policy, false, GURL(), GURL(), PREVIEWS_OFF,
-      base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
+      base::TimeTicks::Now(), "GET", nullptr, SourceLocation(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());

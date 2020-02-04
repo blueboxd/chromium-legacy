@@ -4950,7 +4950,7 @@
 
           Automatic playback is only allowed for domains explictly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME">PluginsAllowedForUrls</ph> policy. If you want to enabled automatic playback for all sites consider adding http://* and https://* to this list.
 
-          If this policy is left not set, the user will be able to change this setting manually.''',
+          If this policy is left not set, 'BlockPlugins' will be used and the user will be able to change this setting manually.''',
     },
     {
       'name': 'DefaultPopupsSetting',
@@ -6022,9 +6022,9 @@
       'tags': [],
       'desc': '''Specifies the maximum delay in milliseconds between receiving a policy invalidation and fetching the new policy from the device management service.
 
-      Setting this policy overrides the default value of 5000 milliseconds. Valid values for this policy are in the range from 1000 (1 second) to 300000 (5 minutes). Any values not in this range will be clamped to the respective boundary.
+      Setting this policy overrides the default value of 10000 milliseconds. Valid values for this policy are in the range from 1000 (1 second) to 300000 (5 minutes). Any values not in this range will be clamped to the respective boundary.
 
-      Leaving this policy not set will make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the default value of 5000 milliseconds.''',
+      Leaving this policy not set will make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the default value of 10000 milliseconds.''',
     },
     {
       'name': 'ChromeFrameRendererSettings',

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "crypto/hkdf.h"
@@ -116,8 +117,7 @@ class WebPushEncryptionDraft03
     std::string record;
     record.reserve(sizeof(uint16_t) + plaintext.size());
     record.append(sizeof(uint16_t), '\x00');
-
-    plaintext.AppendToString(&record);
+    record.append(plaintext.data(), plaintext.size());
     return record;
   }
 
@@ -188,14 +188,9 @@ class WebPushEncryptionDraft08
 
     const char kInfo[] = "WebPush: info";
 
-    std::string info;
-    info.reserve(sizeof(kInfo) + 65 + 65);
-
     // This deliberately copies over the NUL terminus.
-    info.append(kInfo, sizeof(kInfo));
-
-    recipient_public_key.AppendToString(&info);
-    sender_public_key.AppendToString(&info);
+    std::string info = base::StrCat({base::StringPiece(kInfo, sizeof(kInfo)),
+                                     recipient_public_key, sender_public_key});
 
     return crypto::HkdfSha256(ecdh_shared_secret, auth_secret, info, 32);
   }
@@ -232,8 +227,7 @@ class WebPushEncryptionDraft08
   std::string CreateRecord(const base::StringPiece& plaintext) override {
     std::string record;
     record.reserve(plaintext.size() + sizeof(uint8_t));
-    plaintext.AppendToString(&record);
-
+    record.append(plaintext.data(), plaintext.size());
     record.append(sizeof(uint8_t), '\x02');
     return record;
   }

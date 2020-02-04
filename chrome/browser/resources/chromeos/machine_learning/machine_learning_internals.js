@@ -16,8 +16,7 @@ cr.define('machine_learning_internals', function() {
       /**
        * @type {!chromeos.machineLearning.mojom.PageHandlerRemote}
        */
-      this.pageHandler = chromeos.machineLearning.mojom.PageHandler.getRemote(
-          /*useBrowserInterfaceBroker=*/ true);
+      this.pageHandler = chromeos.machineLearning.mojom.PageHandler.getRemote();
       /**
        * @private {!Map<BuiltinModelId,
        *     !chromeos.machineLearning.mojom.GraphExecutorRemote>}

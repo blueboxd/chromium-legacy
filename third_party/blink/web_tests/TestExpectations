@@ -6444,9 +6444,6 @@ crbug.com/1047208 http/tests/serviceworker/update-served-from-cache.html [ Pass 
 crbug.com/1047293 [ Mac ] editing/pasteboard/pasteboard_with_unfocused_selection.html [ Pass Failure ]
 crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 
-# Color difference on MacOS 10.14
-crbug.com/1047126 [ Mac10.14 ] external/wpt/css/css-color/color-initial-canvastext.html [ Failure ]
-
 # Sheriff 2020-01-31
 crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
 

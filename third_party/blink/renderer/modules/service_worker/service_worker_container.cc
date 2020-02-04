@@ -355,11 +355,6 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
       execution_context->Fetcher()
           ->GetProperties()
           .GetFetchClientSettingsObject());
-  // The outgoing referrer is a required parameter. Use |script_url| if the
-  // ResourceFetcher doesn't provide it.
-  if (fetch_client_settings_object.outgoing_referrer.IsEmpty()) {
-    fetch_client_settings_object.outgoing_referrer = script_url;
-  }
 
   provider_->RegisterServiceWorker(
       scope_url, script_url, *script_type, update_via_cache,

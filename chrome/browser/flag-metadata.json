@@ -2133,7 +2133,7 @@
   {
     "name": "enable-webrtc-pipewire-capturer",
     "owners": [ "tomas.popela@gmail.com" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 82
   },
   {
     "name": "enable-webrtc-remote-event-log",
@@ -3612,7 +3612,7 @@
   },
   {
     "name": "update-notification-scheduling-integration",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/updates/OWNERS" ],
+    "owners": [ "//chrome/browser/updates/OWNERS" ],
     "expiry_milestone": 86
   },
   {

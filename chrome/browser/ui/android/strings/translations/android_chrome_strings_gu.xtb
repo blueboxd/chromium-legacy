@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">શોધ એન્જિન</translation>
 <translation id="1513352483775369820">બુકમાર્ક્સ અને વેબ ઇતિહાસ</translation>
 <translation id="1513858653616922153">પાસવર્ડ ડિલીટ કરો</translation>
-<translation id="1516229014686355813">શોધવા માટે ટૅપ કરો પસંદ કરાયેલ શબ્દ અને હાલના પેજને સંદર્ભ તરીકે Google શોધને મોકલે છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં બંધ કરી શકો છો.</translation>
 <translation id="1521774566618522728">આજે સક્રિય છે</translation>
 <translation id="1544826120773021464">તમારું Google એકાઉન્ટ મેનેજ કરવા માટે, "એકાઉન્ટ મેનેજ કરો" બટન પર ટૅપ કરો</translation>
 <translation id="1549000191223877751">અન્ય વિંડો પર ખસેડો</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> નો ડેટા Chromeમાં પણ છે</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">સાઇટ રોકવામાં આવી</translation>
-<translation id="2063713494490388661">શોધવા માટે ટેપ કરો</translation>
 <translation id="2067805253194386918">ટેક્સ્ટ</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> માંથી <ph name="RESULT_NUMBER" /> પરિણામ</translation>
 <translation id="2091887806945687916">ધ્વનિ</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">સાઇન ઇન કરી શકાતું નથી</translation>
 <translation id="2349710944427398404">Chrome દ્વારા ઉપયોગમાં લેવાયેલ કુલ સ્ટોરેજ, એકાઉન્ટ્સ, બુકમાર્ક્સ અને સાચવેલ સેટિંગ્સ સહિત</translation>
 <translation id="2353636109065292463">તમારું ઇન્ટરનેટ કનેક્શન તપાસી રહ્યાં છીએ</translation>
+<translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2369533728426058518">ટૅબ્સ ખોલો</translation>
 <translation id="2387895666653383613">ટેક્સ્ટ માપન</translation>
 <translation id="2394602618534698961">તમે ડાઉનલોડ કરો તે ફાઇલો અહીં દેખાશે</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">બ્રાઉઝિંગ ઇતિહાસ</translation>
 <translation id="2497852260688568942">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે</translation>
 <translation id="2498359688066513246">સહાય અને પ્રતિસાદ</translation>
-<translation id="2501278716633472235">પાછા જાઓ</translation>
 <translation id="2513403576141822879">ગોપનીયતા, સુરક્ષા, અને ડેટા સંગ્રહથી સંબંધિત વધુ સેટિંગ માટે, <ph name="BEGIN_LINK" />સિંક અને Google સેવાઓ<ph name="END_LINK" /> જુઓ</translation>
 <translation id="2517472476991765520">સ્કૅન કરો</translation>
 <translation id="2518590038762162553">લાઇટ મોડમાં, Chrome પેજને વધુ ઝડપથી લોડ કરે છે અને તે 60 ટકા ઓછા ડેટાનો વપરાશ કરે છે. તમે જે પેજની મુલાકાત લેતા હો તેને ઑપ્ટિમાઇઝ કરવા માટે, Chrome તમારો વેબ ટ્રાફિક Googleને મોકલે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">શોધો બાર ખોલો</translation>
 <translation id="3716182511346448902">આ પેજ ઘણી વધુ મેમરીનો ઉપયોગ કરે છે, તેથી Chromeએ તેને થોભાવ્યું છે.</translation>
 <translation id="3730075448226062617">Chrome તમારું માઇક્રોફોન ઍક્સેસ કરી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ માઇક્રોફોન ચાલુ કરો.</translation>
+<translation id="3738139272394829648">શોધવા માટે ટચ કરો</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> માં બુકમાર્ક કર્યું</translation>
 <translation id="3744111561329211289">પૃષ્ઠભૂમિ સમન્વયન</translation>
 <translation id="3749259744154402564">અનસપોર્ટેડ</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">કોઈ ચોક્કસ સાઇટ માટે કુકીને મંજૂરી આપો.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# કલાક}one{# કલાક}other{# કલાક}}</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
-<translation id="4048707525896921369">પેજ છોડ્યાં વગર વેબસાઇટ પરના મુદ્દાઓ વિશે જાણો. શોધને ટૅપ કરવાથી એક શબ્દ અને તેની આસપાસનો સંદર્ભ Google શોધને મોકલે છે, જે વ્યાખ્યાઓ, ફોટોો, શોધ પરિણામો અને અન્ય વિગતો પરત કરે છે.
-
-તમારા શોધ શબ્દને બંધબેસતો કરવા, પસંદ કરવા માટે થોડીવાર દબાવી રાખવું. તમારી શોધને સુધારવા માટે, પૅનલને આખી ઉપર સ્લાઇડ કરો અને શોધ બૉક્સને ટૅપ કરો.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">સ્ક્રીનની ટોચ પર વિકલ્પો ઉપલબ્ધ છે</translation>
 <translation id="4062305924942672200">કાનુની માહિતી</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">આ છબી માટે <ph name="SEARCH_ENGINE" /> માં શોધો</translation>
 <translation id="5581519193887989363">શું સિંક કરવું તે હંમેશાં તમે <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" />માં પસંદ કરી શકો છો.</translation>
 <translation id="5595485650161345191">ઍડ્રેસમાં ફેરફાર કરો</translation>
-<translation id="5596627076506792578">વધુ વિકલ્પો</translation>
 <translation id="5599455543593328020">છૂપો મોડ</translation>
 <translation id="5620928963363755975">વધુ વિકલ્પો બટનની મદદથી ડાઉનલોડ કરેલમાંથી તમારી ફાઇલો અને પેજ શોધો</translation>
 <translation id="5626134646977739690">નામ:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">બીજા ડાઉનલોડ માટે રાહ જોઈ રહ્યાં છે…</translation>
 <translation id="5865733239029070421">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ ઑટોમૅટિક રીતે મોકલે છે</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
+<translation id="5884076754568147479">કામને પૂર્ણ કરવામાં તમારી સહાય માટે, Googleને તમે જેના પર આસિસ્ટંટનો ઉપયોગ કરો છો તે URLs અને સાઇટના કન્ટેન્ટ તેમજ તમે આસિસ્ટંટ મારફતે સબમિટ કરો છો તે માહિતી મળશે</translation>
 <translation id="5902828464777634901">કૂકીઝ સહિતનો આ વેબસાઇટ દ્વારા સ્ટોર કરેલો બધો સ્થાનિક ડેટા કાઢી નાખવામાં આવશે.</translation>
 <translation id="5919204609460789179">સમન્વયન પ્રારંભ કરવા માટે <ph name="PRODUCT_NAME" /> અપડેટ કરો</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ડેટા બચાવ્યો</translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">તૃતીય-પક્ષ વેબસાઇટને કુકી ડેટા સાચવવા અને વાંચવાથી અટકાવો</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6811034713472274749">પેજ જોવા માટે તૈયાર છે</translation>
-<translation id="6818926723028410516">આઇટમ પસંદ કરો</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6845325883481699275">Chrome સુરક્ષાને વધુ સારી બનાવવામાં સહાય કરો</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7055152154916055070">રીડાયરેક્ટ કરવાનું બ્લૉક કરવામાં આવ્યું છે:</translation>
 <translation id="7063006564040364415">સમન્વયન સર્વર સાથે કનેક્ટ કરી શકાયું નથી</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 પસંદ કરી}one{# પસંદ કરી}other{# પસંદ કરી}}</translation>
 <translation id="7071521146534760487">એકાઉન્ટને મેનેજ કરો</translation>
 <translation id="7077143737582773186">SD કાર્ડ</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" />ની પસંદગી કરી. સ્ક્રીનના ટોચની નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
 <translation id="7121362699166175603">ઍડ્રેસ બારમાં ઇતિહાસ અને ઑટોમૅટિક રીતે પૂર્ણતા સાફ કરે છે. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="7128222689758636196">હાલનાં શોધ એંજિન માટે પરવાનગી આપો</translation>
 <translation id="7138678301420049075">અન્ય</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">વેબ તમારી ભાષામાં જોવા માટે Chromeનું એકદમ નવું વર્ઝન મેળવો</translation>
 <translation id="7243308994586599757">સ્ક્રીનના તળિયા નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
 <translation id="7248069434667874558">ખાતરી કરો કે <ph name="TARGET_DEVICE_NAME" />માં Chromeમાં સિંક ચાલુ કરેલું છે</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" />ની પસંદગી કરી</translation>
 <translation id="7274013316676448362">અવરોધિત સાઇટ</translation>
 <translation id="7290209999329137901">નામ બદલવું ઉપલબ્ધ નથી</translation>
 <translation id="7291387454912369099">આસિસ્ટંટે ચેકઆઉટ ટ્રિગર કર્યું</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7810647596859435254">આની સાથે ખોલો…</translation>
 <translation id="7821588508402923572">તમારી ડેટા બચત અહીં દેખાશે</translation>
-<translation id="7846076177841592234">પસંદગી રદ કરો</translation>
 <translation id="784934925303690534">સમય શ્રેણી</translation>
 <translation id="7851858861565204677">અન્ય ઉપકરણો</translation>
 <translation id="7875915731392087153">ઇમેઇલ બનાવો</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
 <translation id="8127542551745560481">હોમપેજમાં ફેરફાર કરો</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
+<translation id="8137558756159375272">શોધો ને ટચ પસંદ કરાયેલ શબ્દ અને હાલના પૃષ્ઠને સંદર્ભ તરીકે Google શોધને મોકલે છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" /> માં બંધ કરી શકો છો.</translation>
 <translation id="8156139159503939589">તમે કઈ ભાષાઓ વાંચી શકો છો?</translation>
 <translation id="8168435359814927499">કન્ટેન્ટ</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> ફાઇલ બાકી છે</translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">નવા ટૅબ બનાવવા માટે અહીં ટૅપ કરો અને પાછલા ટૅબ પર પાછા જાઓ</translation>
 <translation id="8662811608048051533">તમને મોટાભાગની સાઇટોમાંથી સાઇન આઉટ કરે છે.</translation>
 <translation id="8664979001105139458">ફાઇલનું નામ પહેલેથી અસ્તિત્વમાં છે</translation>
-<translation id="8676374126336081632">ઇનપુટ સાફ કરો</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}one{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}other{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}}</translation>
 <translation id="868929229000858085">તમારા સંપર્કો શોધો</translation>
 <translation id="8698438463325761328">સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટા ઍક્સેસ કરવાથી બ્લૉક કરો</translation>

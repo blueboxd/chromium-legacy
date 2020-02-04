@@ -253,12 +253,15 @@ SharingWebRtcConnection::~SharingWebRtcConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CloseConnection();
   peer_connection_->Close();
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kClosed);
 }
 
 void SharingWebRtcConnection::OnOfferReceived(
     const std::string& offer,
     OnOfferReceivedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kOfferReceived);
+
   std::unique_ptr<webrtc::SessionDescriptionInterface> description(
       webrtc::CreateSessionDescription(webrtc::SdpType::kOffer, offer,
                                        nullptr));
@@ -282,6 +285,8 @@ void SharingWebRtcConnection::OnIceCandidatesReceived(
   if (ice_candidates.empty())
     return;
 
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kIceCandidateReceived);
+
   // Store received ICE candidates until the signalling state is stable and
   // there is no offer / answer exchange in progress anymore.
   if (!peer_connection_->local_description() ||
@@ -299,6 +304,8 @@ void SharingWebRtcConnection::OnIceCandidatesReceived(
 void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
                                           SendMessageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kQueuingMessage);
+
   if (message.empty()) {
     LogWebRtcSendMessageResult(WebRtcSendMessageResult::kEmptyMessage);
     std::move(callback).Run(mojom::SendMessageResult::kError);
@@ -347,6 +354,8 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
     return;
   }
 
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kSendingMessage);
+
   if (!channel_->Send(std::move(buffer))) {
     LogWebRtcSendMessageResult(WebRtcSendMessageResult::kInternalError);
     CloseConnection();
@@ -358,7 +367,10 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
 }
 
 void SharingWebRtcConnection::OnSignalingChange(
-    webrtc::PeerConnectionInterface::SignalingState new_state) {}
+    webrtc::PeerConnectionInterface::SignalingState new_state) {
+  if (new_state == webrtc::PeerConnectionInterface::SignalingState::kStable)
+    timing_recorder_.LogEvent(WebRtcTimingEvent::kSignalingStable);
+}
 
 void SharingWebRtcConnection::OnDataChannel(
     rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
@@ -404,6 +416,7 @@ void SharingWebRtcConnection::OnIceCandidate(
 void SharingWebRtcConnection::OnStateChange() {
   switch (channel_->state()) {
     case webrtc::DataChannelInterface::DataState::kOpen:
+      timing_recorder_.LogEvent(WebRtcTimingEvent::kDataChannelOpen);
       // Post a task here as we might end up sending a new message which is not
       // allowed from observer callbacks.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -423,6 +436,7 @@ void SharingWebRtcConnection::OnStateChange() {
 
 void SharingWebRtcConnection::OnMessage(const webrtc::DataBuffer& buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kMessageReceived);
   std::vector<uint8_t> data(buffer.size());
   memcpy(data.data(), buffer.data.cdata(), buffer.size());
   delegate_->OnMessageReceived(data);
@@ -495,6 +509,8 @@ void SharingWebRtcConnection::OnAnswerCreated(OnOfferReceivedCallback callback,
     return;
   }
 
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kAnswerCreated);
+
   AddIceCandidates(std::move(ice_candidates_));
   ice_candidates_.clear();
   std::move(callback).Run(sdp);
@@ -539,6 +555,8 @@ void SharingWebRtcConnection::OnOfferCreated(const std::string& sdp,
     return;
   }
 
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kOfferCreated);
+
   signalling_sender_->SendOffer(
       sdp, base::BindOnce(&SharingWebRtcConnection::OnAnswerReceived,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -555,6 +573,8 @@ void SharingWebRtcConnection::OnAnswerReceived(const std::string& answer) {
     CloseConnection();
     return;
   }
+
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kAnswerReceived);
 
   peer_connection_->SetRemoteDescription(
       SetSessionDescriptionObserverWrapper::Create(
@@ -609,6 +629,8 @@ void SharingWebRtcConnection::OnNetworkConnectionLost() {
 void SharingWebRtcConnection::CloseConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kClosing);
+
   // Call all queued callbacks.
   while (!queued_messages_.empty()) {
     LogWebRtcSendMessageResult(WebRtcSendMessageResult::kConnectionClosed);
@@ -652,6 +674,8 @@ void SharingWebRtcConnection::MaybeSendQueuedMessages() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (channel_->state() != webrtc::DataChannelInterface::DataState::kOpen)
     return;
+
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kSendingMessage);
 
   // Send all queued messages. All of them should fit into the DataChannel
   // buffer as we checked the total size before accepting new messages.

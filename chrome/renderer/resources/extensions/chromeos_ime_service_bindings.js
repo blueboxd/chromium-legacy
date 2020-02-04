@@ -280,7 +280,7 @@ class ImeService {
 
 (function() {
   let ptr = new chromeos.ime.mojom.InputEngineManagerPtr;
-  Mojo.bindInterface(chromeos.ime.mojom.InputEngineManager.name,
-                     mojo.makeRequest(ptr).handle, "context", true);
+  Mojo.bindInterface(
+      chromeos.ime.mojom.InputEngineManager.name, mojo.makeRequest(ptr).handle);
   exports.$set('returnValue', new ImeService(ptr));
 })();

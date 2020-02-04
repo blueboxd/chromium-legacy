@@ -81,6 +81,10 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   // |controller| contains information about the service worker controller. Once
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
+  //
+  // |outside_fetch_client_settings_object| is used for loading the shared
+  // worker main script by the browser process, sent to the renderer process,
+  // and then used to load the script.
   void Start(
       mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -88,7 +92,9 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller,
       base::WeakPtr<ServiceWorkerObjectHost>
-          controller_service_worker_object_host);
+          controller_service_worker_object_host,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object);
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);

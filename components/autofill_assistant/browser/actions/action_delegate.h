@@ -152,7 +152,7 @@ class ActionDelegate {
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&,
                               const autofill::FormData&,
-                              const autofill::FormFieldData&)> callback);
+                              const autofill::FormFieldData&)> callback) = 0;
 
   // Select the option given by |selector| and the value of the option to be
   // picked.

@@ -671,7 +671,7 @@ void RenderViewTest::Reload(const GURL& url) {
       url, base::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, mojom::NavigationType::RELOAD,
       NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
+      base::TimeTicks::Now(), "GET", nullptr, SourceLocation(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
@@ -820,7 +820,7 @@ void RenderViewTest::GoToOffset(int offset,
       ui::PAGE_TRANSITION_FORWARD_BACK,
       mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
       NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
+      base::TimeTicks::Now(), "GET", nullptr, SourceLocation(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());

@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2359808026110333948">Напред</translation>
+<translation id="2501278716633472235">Назад</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="3115898365077584848">Показване на информацията</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Връзка: Коп.</translation>
 <translation id="4002066346123236978">Заглавие</translation>
 <translation id="4570913071927164677">Подробности</translation>
+<translation id="497421865427891073">Преминаване напред</translation>
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5301954838959518834">Добре, разбрах</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
+<translation id="5596627076506792578">Още опции</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5939518447894949180">Нулиране</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="6746124502594467657">Придвижване надолу</translation>
+<translation id="6818926723028410516">Избор на елементи</translation>
 <translation id="6910211073230771657">Изтрито</translation>
 <translation id="6945221475159498467">Избиране</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}other{Избрани са #}}</translation>
+<translation id="7087918508125750058">Избрани: <ph name="ITEM_COUNT" />. Налице са опции близо до горната част на екрана</translation>
+<translation id="7250468141469952378">Избрани: <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
+<translation id="7846076177841592234">Анулиране на избора</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>
 <translation id="8249310407154411074">Преместване най-горе</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8609465669617005112">Придвижване нагоре</translation>
+<translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8730621377337864115">Готово</translation>
 </translationbundle>

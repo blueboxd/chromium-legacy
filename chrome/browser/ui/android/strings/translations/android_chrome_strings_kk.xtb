@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Іздеу жүйесі</translation>
 <translation id="1513352483775369820">Бетбелгілер мен веб-журнал</translation>
 <translation id="1513858653616922153">Құпия сөзді жою</translation>
-<translation id="1516229014686355813">"Іздеу үшін түрту" функциясы таңдалған сөз бен ағымдағы бетті мәнмәтін ретінде Google Search қызметіне жібереді. Оны <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> бөлімінде өшіріп тастауыңызға болады.</translation>
 <translation id="1521774566618522728">Бүгін белсенді болды</translation>
 <translation id="1544826120773021464">Google есептік жазбасын басқару үшін "Есептік жазбаны басқару" түймесін түртіңіз.</translation>
 <translation id="1549000191223877751">Басқа терезеге өту</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> қолданбасының да Chrome браузерінде деректері бар</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Сайттың жұмысы уақытша тоқтады.</translation>
-<translation id="2063713494490388661">Іздеу үшін түрту</translation>
 <translation id="2067805253194386918">мәтін</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> ішінен <ph name="RESULT_NUMBER" /> нәтиже</translation>
 <translation id="2091887806945687916">Дыбыс</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Кіру мүмкін емес</translation>
 <translation id="2349710944427398404">Chrome пайдаланатын жалпы деректер, соның ішінде есептік жазбалар, бетбелгілер және сақталған параметрлер</translation>
 <translation id="2353636109065292463">Интернет байланысы тексерілуде.</translation>
+<translation id="2359808026110333948">Жалғастыру</translation>
 <translation id="2369533728426058518">қойындыларды ашу</translation>
 <translation id="2387895666653383613">Мәтін масштабтау</translation>
 <translation id="2394602618534698961">Жүктеп алынған файлдар осы жерде тұрады.</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Шолу журналы</translation>
 <translation id="2497852260688568942">Синхрондау мүмкіндігін әкімші өшіріп қойған</translation>
 <translation id="2498359688066513246">Анықтама және пікір</translation>
-<translation id="2501278716633472235">Артқа қайту</translation>
 <translation id="2513403576141822879">Құпиялылық, қауіпсіздік және дерек жинағына қатысты басқа да параметрлерді <ph name="BEGIN_LINK" />Синхрондау және Google қызметтері<ph name="END_LINK" /> бөлімінен қараңыз</translation>
 <translation id="2517472476991765520">Іздеу</translation>
 <translation id="2518590038762162553">Lite режимінде Chrome браузері беттерді жылдамырақ жүктейді және трафикті 60%-ға дейін аз жұмсайды. Кірген беттерді оңтайландыру үшін Chrome интернет трафигін Google-ға жібереді. <ph name="BEGIN_LINK" />Толығырақ<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Іздеу жолағын ашу</translation>
 <translation id="3716182511346448902">Бұл парақша тым көп жадты пайдаланатындықтан, Chromе оны тоқтатып қойды.</translation>
 <translation id="3730075448226062617">Chrome браузері микрофонды пайдалануы үшін, оны <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> де іске қосыңыз.</translation>
+<translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> қолданбасында бетбелгі қойылды</translation>
 <translation id="3744111561329211289">Фондық синхрондау</translation>
 <translation id="3749259744154402564">Қолдау көрсетілмейді</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Белгілі бір сайт үшін cookie файлдарына рұқсат беріңіз.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# сағ}other{# сағ}}</translation>
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
-<translation id="4048707525896921369">Беттен шықпай веб-сайттардағы тақырыптар туралы мәлімет алыңыз. "Іздеу үшін түрту" функциясы Google Search қызметіне сөзді және оның айналасындағы мәнмәтінді жібереді, сонда анықтамалар, суреттер, іздеу нәтижелері және басқа мәліметтер көрсетіледі.
-
-Іздеу шартын реттеу үшін басып тұрыңыз. Іздеу шартын нақтылау үшін панельді барынша жоғарыға сырғытып, іздеу өрісін түртіңіз.</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4060598801229743805">Опциялар экранның жоғарғы жағында тұрады</translation>
 <translation id="4062305924942672200">Құқықтық ақпарат</translation>
@@ -609,7 +605,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5578795271662203820">Бұл кескін үшін <ph name="SEARCH_ENGINE" /> іздеу</translation>
 <translation id="5581519193887989363">Синхрондалатын мазмұндарды <ph name="BEGIN_LINK1" />Параметрлер<ph name="END_LINK1" /> бөлімінде кез келген уақытта таңдай аласыз.</translation>
 <translation id="5595485650161345191">Мекенжайды өзгерту</translation>
-<translation id="5596627076506792578">Қосымша опциялар</translation>
 <translation id="5599455543593328020">Инкогнито режимі</translation>
 <translation id="5620928963363755975">"Қосымша опциялар" түймесі арқылы "Жүктеп алулар" ішінен файлдар мен беттерді табыңыз</translation>
 <translation id="5626134646977739690">Аты:</translation>
@@ -652,6 +647,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5864419784173784555">Басқа мазмұн жүктеп алынуда...</translation>
 <translation id="5865733239029070421">Қолданыс статистикасын және жаңылыс туралы есептерді Google жүйесіне автоматты түрде жібереді</translation>
 <translation id="5869522115854928033">Сақталған құпия сөздер</translation>
+<translation id="5884076754568147479">Жұмыстарыңызға көмектесу үшін Assistant қызметі қолданылған сайттардың URL мекенжайлары және мазмұны, сонымен қатар Assistant арқылы жіберілген ақпарат Google-ға жіберіледі.</translation>
 <translation id="5902828464777634901">Cookie файлдарын қоса, осы сайт арқылы сақталған барлық жергілікті деректер жойылады.</translation>
 <translation id="5919204609460789179">Синхрондауды бастау үшін <ph name="PRODUCT_NAME" /> өнімін жаңартыңыз</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> үнемделді</translation>
@@ -775,7 +771,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6782111308708962316">Үшінші тараптық вебсайттардың cookie деректерін сақтауына және оқуына жол бермеу</translation>
 <translation id="6790428901817661496">Ойнату</translation>
 <translation id="6811034713472274749">Бетті көре беруге болады.</translation>
-<translation id="6818926723028410516">Элементтерді таңдаңыз</translation>
 <translation id="6820686453637990663">CVC коды</translation>
 <translation id="6831043979455480757">Аудару</translation>
 <translation id="6845325883481699275">Chrome қауіпсіздігін жетілдіруге көмектесу</translation>
@@ -808,10 +803,8 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7053983685419859001">Бөгеу</translation>
 <translation id="7055152154916055070">Бағыттау функциясына тыйым салынды.</translation>
 <translation id="7063006564040364415">Синхрондау серверіне қосылу мүмкін емес.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 таңдалды}other{# таңдалды}}</translation>
 <translation id="7071521146534760487">Есептік жазбаны басқару</translation>
 <translation id="7077143737582773186">SD картасы</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> таңдалды. Опциялар экранның жоғарғы жағында тұр</translation>
 <translation id="7121362699166175603">Мекенжай жолағында тарих пен автотолтыруларды өшіреді. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> сайтында Google есептік жазбасымен шолу тарихының басқа да үлгілері болуы мүмкін.</translation>
 <translation id="7128222689758636196">Ағымдағы іздеу жүйесіне рұқсат беру</translation>
 <translation id="7138678301420049075">Басқа</translation>
@@ -827,7 +820,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7233236755231902816">Интернетті өз тіліңізде қолдану үшін Chrome браузерінің соңғы нұсқасын орнатыңыз.</translation>
 <translation id="7243308994586599757">Опциялар экранның төменгі жағында тұрады</translation>
 <translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" /> құрылғысындағы Chrome браузерінде синхронизация қосулы екеніне көз жеткізіңіз.</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> таңдалды</translation>
 <translation id="7274013316676448362">Бөгелген сайт</translation>
 <translation id="7290209999329137901">Атын өзгерту мүмкін емес.</translation>
 <translation id="7291387454912369099">Assistant арқылы төлеу</translation>
@@ -909,7 +901,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="780301667611848630">Жоқ, рақмет</translation>
 <translation id="7810647596859435254">Ашу әдісі…</translation>
 <translation id="7821588508402923572">Деректерді үнемдеу ақпараты осы жерде көрсетіледі</translation>
-<translation id="7846076177841592234">Таңдаудан бас тарту</translation>
 <translation id="784934925303690534">Уақыт ауқымы</translation>
 <translation id="7851858861565204677">Басқа құрылғылар</translation>
 <translation id="7875915731392087153">Электрондық пошта жасау</translation>
@@ -957,6 +948,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8116925261070264013">Дыбысы өшірулі</translation>
 <translation id="8127542551745560481">Негізгі бетті өзгерту</translation>
 <translation id="813082847718468539">Сайт ақпаратын көру</translation>
+<translation id="8137558756159375272">Touch to Search таңдалған сөз бен ағымдағы бетті мәнмәтін ретінде Google іздеу қызметіне жібереді. Оны <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> ішінен өшіруіңізге болады.</translation>
 <translation id="8156139159503939589">Қай тілде оқисыз?</translation>
 <translation id="8168435359814927499">Мазмұн</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> файл қалды</translation>
@@ -1024,7 +1016,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8655599981421006542">Жаңа қойындылар жасау және бұған дейінгі қойындыларға өту үшін осы жерді түртіңіз.</translation>
 <translation id="8662811608048051533">Көп сайттардан шығарады.</translation>
 <translation id="8664979001105139458">Мұндай атаулы файл бұрыннан бар</translation>
-<translation id="8676374126336081632">Енгізілгенді өшіру</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сигнал деңгейі: # сызықша}other{Сигнал деңгейі: # сызықша}}</translation>
 <translation id="868929229000858085">Контактілеріңізді іздеңіз</translation>
 <translation id="8698438463325761328">Сайттардың виртуалды шындық құрылғыңызды және деректеріңізді пайдалануына тыйым салады.</translation>

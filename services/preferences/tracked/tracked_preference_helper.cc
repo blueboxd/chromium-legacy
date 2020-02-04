@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "services/preferences/public/cpp/tracked/tracked_preference_histogram_names.h"
 
 using ValueState =
@@ -96,8 +97,7 @@ void TrackedPreferenceHelper::ReportValidationResult(
 
   std::string full_histogram_name(histogram_name);
   if (!validation_type_suffix.empty()) {
-    full_histogram_name.push_back('.');
-    validation_type_suffix.AppendToString(&full_histogram_name);
+    base::StrAppend(&full_histogram_name, {".", validation_type_suffix});
   }
 
   // Using FactoryGet to allow dynamic histogram names. This is equivalent to

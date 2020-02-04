@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">ເບິ່ງບັດ</translation>
 <translation id="3369192424181595722">ໂມງ​ຜິດ​ພາດ</translation>
 <translation id="337363190475750230">ຖອນການຈັດໃຫ້ແລ້ວ</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ໄດ້ເປີດການນຳໃຊ້ Enterprise Service Hooks ໃນໂປຣແກຣມທ່ອງເວັບຂອງທ່ານແລ້ວ. Hook ເຫຼົ່ານີ້ມີສິດເຂົ້າເຖິງບາງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
+<translation id="3377144306166885718">ເຊີບເວີໃຊ້ TLS ເວີຊັນເກົ່າ.</translation>
 <translation id="3377188786107721145">ຄວາມ​ຜິດ​ພາດກະຈາຍນະ​ໂຍ​ບາຍ</translation>
 <translation id="3377736046129930310">ໃຊ້ລັອກໜ້າຈໍເພື່ອຢືນຢັນບັດໄດ້ໄວຂຶ້ນ</translation>
 <translation id="3380365263193509176">ຄວາມຜິດພາດທີ່ບໍ່ຮູ້ຈັກ</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">ທີ່ຢູ່ການຈັດສົ່ງ</translation>
 <translation id="3395827396354264108">ວິທີການຮັບເຄື່ອງ</translation>
 <translation id="3399952811970034796">ທີ່ຢູ່ການຈັດສົ່ງ</translation>
+<translation id="3402261774528610252">ການເຊື່ອມຕໍ່ທີ່ໃຊ້ເພື່ອໂຫຼດເວັບໄຊນີ້ໃຊ້ TLS 1.0 ຫຼື TLS 1.1, ເຊິ່ງເຊົາຮອງຮັບແລ້ວ ແລະ ຈະຖືກປິດການນຳໃຊ້ໃນອະນາຄົດ. ເມື່ອປິດການນຳໃຊ້ແລ້ວ, ລະບົບຈະປ້ອງກັນບໍ່ໃຫ້ຜູ້ໃຊ້ໂຫຼດເວັບໄຊນີ້. ເຊີບເວີຄວນເປີດການນຳໃຊ້ TLS 1.2 ຫຼື ໃໝ່ກວ່າ.</translation>
 <translation id="3422248202833853650">ລອງອອກຈາກໂປຣແກຣມອື່ນເພື່ອຂະຫຍາຍຄວາມຈຳ.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> ບໍ່ສາມາດເຂົ້າເຖິງໄດ້ໃນຂະນະນີ້.</translation>
 <translation id="3423742043356668186">ລະບຸລະບົບແລ້ວ</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">ຫຼັງຈາກທີ່ທ່ານຢືນຢັນ, ລະບົບຈະແບ່ງປັນລາຍລະອຽດບັດຈາກບັນຊີ Google ຂອງທ່ານກັບເວັບໄຊນີ້.</translation>
 <translation id="3748148204939282805">ຜູ້ໂຈມຕີໃນ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ອາດຈະຫຼອກໃຫ້ທ່ານເຮັດບາງຢ່າງທີ່ອັນຕະລາຍ ເຊັ່ນວ່າ ຕິດຕັ້ງຊອບແວ ຫຼື ເປີດເຜີຍຂໍ້ມູນສ່ວນຕົວຂອງທ່ານ (ຕົວຢ່າງ: ລະຫັດຜ່ານ, ເບີໂທລະສັບ ຫຼື ບັດເຄຣດິດ). <ph name="BEGIN_LEARN_MORE_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">ການແປບໍ່ສໍາເລັດ ເພາະວ່າເຊີບເວີຜິດພາດ.</translation>
+<translation id="3754210790023674521">ອອກຈາກໂໝດສະແດງຜົນຊ້ອນກັນ</translation>
 <translation id="3759461132968374835">ທ່ານບໍ່ໄດ້ລາຍງານກາ​ນຂັດຂ້ອງເມື່ອບໍ່ດົນມານີ້. ການ​ຂັດຂ້ອງທີ່ເກີດຂຶ້ນເມື່ອການລາຍງານກາ​ນຂັດຂ້ອງຖືກປິດໃຊ້ງານ ຈະບໍ່ປະກົດຂຶ້ນທີ່ນີ້.</translation>
 <translation id="3760561303380396507">ໃຊ້ Windows Hello ແທນ CVC ບໍ?</translation>
 <translation id="3761718714832595332">ເຊື່ອງສະຖານະ</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267">ບໍ່ເປັນ <ph name="ORIGINAL_LANGUAGE" /> ບໍ? ລາຍງານຄວາມຜິດພາດນີ້</translation>
 <translation id="5190835502935405962">ແຖບບຸກມາກສ໌</translation>
 <translation id="519422657042045905">ຄຳອະທິບາຍປະກອບບໍ່ສາມາດໃຊ້ໄດ້</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">ໜ້າຝັງຕິດໃນໜ້ານີ້ບອກວ່າ</translation>
 <translation id="5205222826937269299">ຈຳເປັນຕ້ອງມີຊື່</translation>
 <translation id="5215116848420601511">ວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ທີ່ໃຊ້ Google Pay</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">ການລະເມີດຂໍ້ມູນໃນເວັບໄຊ ຫຼື ແອັບເຮັດໃຫ້ລະຫັດຜ່ານຂອງທ່ານຮົ່ວໄຫຼ. Chrome ແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ດຽວນີ້.</translation>
 <translation id="5299298092464848405">ນະໂຍບາຍການກະຈາຍຜິດພາດ</translation>
 <translation id="5300589172476337783">ສະ​ແດງ​</translation>
+<translation id="5306593769196050043">ທັງສອງແຜ່ນ</translation>
 <translation id="5308380583665731573">​ເຊື່ອມ​ຕໍ່</translation>
 <translation id="5308689395849655368">ການລາຍງານການຂັດຂ້ອງປິດໃຊ້ງານແລ້ວ.</translation>
 <translation id="5314967030527622926">ເຄື່ອງສ້າງປຶ້ມນ້ອຍ</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">ກວດເບິ່ງລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="6015796118275082299">ປີ</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{ໜ້າ 1}other{ໜ້າ #}}</translation>
 <translation id="6017514345406065928">ສີ​ຂຽວ</translation>
 <translation id="6017850046339264347">ຜູ້ໂຈມຕີຢູ່ໃນ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ສາມາດຕິດຕັ້ງແອັບຫຼອກລວງທີ່ຫຼອກເປັນບາງຢ່າງອື່ນ ຫຼື ເກັບເອົາຂໍ້ມູນທີ່ອາດຈະຖືກໃຊ້ເພື່ອຕິດຕາມທ່ານ. <ph name="BEGIN_LEARN_MORE_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (ຊິ້ງຂໍ້ມູນແລ້ວ)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (ຊອງຈົດໝາຍ)</translation>
 <translation id="6446608382365791566">ເພີ່ມຂໍ້ມູນເພີ່ມເຕີມ</translation>
 <translation id="6447842834002726250">ຄຸກກີ້</translation>
-<translation id="644931407731409778">ເອກະສານ PDF ທີ່ປະກອບມີ {COUNT,plural, =1{1 ໜ້າ}other{# ໜ້າ}}</translation>
 <translation id="6451458296329894277">ຢືນຢັນການສົ່ງແບບຟອມຄືນໃໝ່</translation>
 <translation id="6457206614190510200">ຫຍິບທີ່ສັນປຶ້ມ</translation>
 <translation id="6465306955648956876">ຈັດການລະຫັດຜ່ານ...</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">ບລັອກ</translation>
 <translation id="7062635574500127092">ສີຂຽວຫົວເປັດ</translation>
 <translation id="7064851114919012435">ຂໍ້​ມູນ​ຕິດ​ຕໍ່</translation>
+<translation id="70705239631109039">ການເຊື່ອມຕໍ່ຂອງທ່ານບໍ່ປອດໄພຢ່າງສົມບູນ</translation>
 <translation id="7075452647191940183">ຄຳຂໍໃຫຍ່ເກີນໄປ</translation>
 <translation id="7079718277001814089">ເວັບໄຊນີ້ປະກອບມີມາລແວ</translation>
 <translation id="7081308185095828845">ຄຸນສົມບັດນີ້ບໍ່ສາມາດໃຊ້ໄດ້ໃນອຸປະກອນຂອງທ່ານ</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (ຊອງຈົດໝາຍ)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ທີ່ຢູ່}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ທີ່ຢູ່}}</translation>
 <translation id="7153618581592392745">ສີມ່ວງລາເວນເດີ</translation>
+<translation id="7156870133441232244">ເຊີບເວີຄວນອັບເກຣດເປັນ TLS 1.2 ຫຼື ໃໝ່ກວ່າ.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">ຮວມເຂົ້າກັນແລ້ວ</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ທີ່ຢູ່}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ທີ່ຢູ່}}</translation>
@@ -1401,6 +1407,7 @@
 <translation id="725866823122871198">ບໍ່​ສາ​ມາດ​ຕັ້ງ​ການ​ເຊື່ອມ​ຕໍ່​ສ່ວນ​ຕົວ​ກັບ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ໄດ້ ເພາະ​ວ່າ​ວັນ​ທີ ແລະ​ເວ​ລາ​ຄອມ​ພິວ​ເຕີ​ຂອງ​ທ່ານ (<ph name="DATE_AND_TIME" />) ບໍ່​ຖືກ​ຕ້ອງ.</translation>
 <translation id="7260504762447901703">ຖອດຖອນການເຂົ້າເຖິງ</translation>
 <translation id="7275334191706090484">ບຸກມາກສ໌ທີ່ຄຸ້ມຄອງ:</translation>
+<translation id="7288778322931489286">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ເປີດການນຳໃຊ້ Enterprise Service Hooks ໃນໂປຣແກຣມທ່ອງເວັບຂອງທ່ານແລ້ວ. Hook ເຫຼົ່ານີ້ມີສິດເຂົ້າເຖິງບາງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
 <translation id="7292031607255951991">ຊື່ຜູ້ຮັບ</translation>
 <translation id="7298195798382681320">ແນະ​ນໍາ​ໃຫ້</translation>
 <translation id="7300012071106347854">ສີ​ຟ້າ​ໂກ​ບາ​ລ​ທ໌</translation>
@@ -1725,6 +1732,7 @@
 <translation id="874918643257405732">ບຸກມາກແຖບນີ້</translation>
 <translation id="8751426954251315517">ກະລຸນາລອງໃໝ່ໃນເທື່ອໜ້າ</translation>
 <translation id="8759274551635299824">ບັດນີ້ໝົດອາຍຸແລ້ວ</translation>
+<translation id="87601671197631245">ເວັບໄຊນີ້ໃຊ້ການຕັ້ງຄ່າຄວາມປອດໄພທີ່ເກົ່າແລ້ວ, ເຊິ່ງອາດຈະເຮັດໃຫ້ຂໍ້ມູນຂອງທ່ານມີຄວາມສ່ຽງ (ຕົວຢ່າງ: ລະຫັດຜ່ານ, ຂໍ້ຄວາມ ຫຼື ບັດເຄຣດິດ) ເມື່ອມັນຖືກສົ່ງໃຫ້ເວັບໄຊນີ້.</translation>
 <translation id="8761567432415473239">ການທ່ອງເນັດທີ່ປອດໄພຂອງ Google <ph name="BEGIN_LINK" />ພົບໂປຣແກຣມອັນຕະລາຍ<ph name="END_LINK" /> ຢູ່ໃນ <ph name="SITE" /> ແລ້ວເມື່ອບໍ່ດົນມານີ້.</translation>
 <translation id="8763927697961133303">ອຸປະກອນ USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1742,6 +1750,7 @@
 <translation id="8866481888320382733">ການຕັ້ງຄ່ານະໂຍບາຍການກະຈາຍຜິດພາດ</translation>
 <translation id="8866928039507595380">ພັບ</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">ແບ່ງປັນຂໍ້ມູນກ່ຽວກັບເຫດການຄວາມປອດໄພທີ່ຖືກຕິດທຸງໄວ້ໂດຍ Enterprise Service Hooks ກັບຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ. ນີ້ອາດຮວມມີ URL ຂອງໜ້າທີ່ທ່ານເຂົ້າເບິ່ງ, ຊື່ ຫຼື ເມຕາເດຕາຂອງໄຟລ໌ ແລະ ຊື່ຜູ້ໃຊ້ທີ່ທ່ານໃຊ້ເພື່ອເຂົ້າສູ່ລະບົບອຸປະກອນ ແລະ Chrome ຂອງທ່ານ.</translation>
 <translation id="8870413625673593573">ປິດ​ບໍ່​ດົນ​ມາ​ນີ້</translation>
 <translation id="8870494189203302833">ລຳດັບດຽວກັນຂວ້າມໜ້າລົງ</translation>
 <translation id="8874824191258364635">ປ້ອນເລກບັດທີ່ຖືກຕ້ອງ</translation>

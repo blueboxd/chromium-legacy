@@ -188,9 +188,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TwoClientAutofillProfileSyncTest,
-    AddDuplicateProfiles_OneIsVerified_NonverifiedComesLater) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
+                       AddDuplicateProfiles_OneAtStart_OtherComesLater) {
   ASSERT_TRUE(SetupClients());
 
   AutofillProfile profile0 = autofill::test::GetFullProfile();
@@ -198,25 +197,21 @@ IN_PROC_BROWSER_TEST_F(
       autofill::test::GetVerifiedProfile();  // I.e. Full + Verified.
   std::string verified_origin = profile1.origin();
 
-  // We start by having the verified profile.
-  AddProfile(1, profile1);
+  AddProfile(0, profile0);
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
-  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
-  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
-
-  // Add the same (but non-verified) profile on the other client, afterwards.
-  AddProfile(0, profile0);
+  // Add the same (but verified) profile on the other client, afterwards.
+  AddProfile(1, profile1);
   EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
-  // The profiles should de-duplicate via sync on both other client, the
-  // verified one should win.
+  // The latter addition is caught in deduplication logic in PDM to sync. As a
+  // result, both clients end up with the non-verified profile.
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
-  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
-  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
+  EXPECT_NE(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
+  EXPECT_NE(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
 }
 
 // Tests that a null profile does not get synced across clients.

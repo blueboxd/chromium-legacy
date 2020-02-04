@@ -134,7 +134,7 @@ class FakeHidConnection {
 class FakeHidService {
   constructor() {
     this.interceptor_ =
-        new MojoInterfaceInterceptor(blink.mojom.HidService.name, "context", true);
+        new MojoInterfaceInterceptor(blink.mojom.HidService.name);
     this.interceptor_.oninterfacerequest = e => this.bind(e.handle);
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.HidService);
     this.nextGuidValue_ = 0;

@@ -187,6 +187,13 @@ void VideoLayerImpl::ReleaseResources() {
   updater_ = nullptr;
 }
 
+gfx::ContentColorUsage VideoLayerImpl::GetContentColorUsage() const {
+  gfx::ColorSpace frame_color_space;
+  if (frame_)
+    frame_color_space = frame_->ColorSpace();
+  return frame_color_space.GetContentColorUsage();
+}
+
 void VideoLayerImpl::SetNeedsRedraw() {
   UnionUpdateRect(gfx::Rect(bounds()));
   layer_tree_impl()->SetNeedsRedraw();

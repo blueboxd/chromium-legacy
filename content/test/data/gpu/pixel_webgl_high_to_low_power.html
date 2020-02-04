@@ -16,16 +16,27 @@ function ready() {
   sendResult("READY", "Ready for second tab to be launched");
 }
 
-function initialize() {
+function initialize(runningOnDualGPUMacBookPro) {
+  if (runningOnDualGPUMacBookPro)
+    setRunningOnDualGpuSystem();
   if (setup())
     drawSomeFrames(notifyHarness);
 }
 
 function notifyHarness() {
+  if (!assertRunningOnHighPerformanceGpu())
+    return;
   sendResult("READY", "Ready for second tab to be closed");
 }
 
 function runToCompletion() {
+  if (!assertRunningOnLowPowerGpu()) {
+    // This test expects to be notified even on non-dual-GPU systems.
+    if (isRunningOnDualGpuSystem()) {
+      // Failure has been reported.
+      return;
+    }
+  }
   drawSomeFrames(waitForFinish);
 }
 

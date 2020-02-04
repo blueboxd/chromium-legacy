@@ -166,7 +166,7 @@ KURL CookieUrlForRead(const CookieStoreGetOptions* options,
                       ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  if (!options->hasURL())
+  if (!options->hasUrl())
     return default_cookie_url;
 
   KURL cookie_url = KURL(default_cookie_url, options->url());

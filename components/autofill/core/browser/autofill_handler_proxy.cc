@@ -86,8 +86,6 @@ void AutofillHandlerProxy::OnDidFillAutofillFormData(
 
 void AutofillHandlerProxy::OnDidPreviewAutofillFormData() {}
 
-void AutofillHandlerProxy::OnDidEndTextFieldEditing() {}
-
 void AutofillHandlerProxy::OnHidePopup() {}
 
 void AutofillHandlerProxy::OnSetDataList(

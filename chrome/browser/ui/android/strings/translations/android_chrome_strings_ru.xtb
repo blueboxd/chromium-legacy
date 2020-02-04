@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
 <translation id="1513858653616922153">Удалить пароль</translation>
-<translation id="1516229014686355813">Быстрый поиск отправляет в Google выбранное слово, а также – в качестве контекста – текущую страницу. Отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Последние действия: сегодня</translation>
 <translation id="1544826120773021464">Чтобы перейти к управлению аккаунтом Google, нажмите кнопку "Настройки аккаунта"</translation>
 <translation id="1549000191223877751">Перейти к другому окну</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529">Приложение "<ph name="APP_NAME" />" также хранит свои данные в Chrome</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
 <translation id="2056878612599315956">Доступ к сайту приостановлен</translation>
-<translation id="2063713494490388661">Нажмите для поиска</translation>
 <translation id="2067805253194386918">текст</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Звук</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Не удается войти</translation>
 <translation id="2349710944427398404">Общее количество данных Chrome, включая аккаунты, закладки и сохраненные настройки</translation>
 <translation id="2353636109065292463">Проверка подключения к Интернету</translation>
+<translation id="2359808026110333948">Продолжить</translation>
 <translation id="2369533728426058518">открыть вкладки</translation>
 <translation id="2387895666653383613">Масштабирование текста</translation>
 <translation id="2394602618534698961">Здесь появляются скачанные файлы.</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">История браузера</translation>
 <translation id="2497852260688568942">Ваш администратор отключил синхронизацию</translation>
 <translation id="2498359688066513246">Справка/отзыв</translation>
-<translation id="2501278716633472235">Назад</translation>
 <translation id="2513403576141822879">Остальные настройки конфиденциальности, безопасности и сбора данных вы можете найти в разделе <ph name="BEGIN_LINK" />Синхронизация сервисов Google<ph name="END_LINK" />.</translation>
 <translation id="2517472476991765520">Искать</translation>
 <translation id="2518590038762162553">В упрощенном режиме Chrome быстрее загружает страницы и экономит до 60 % трафика. Чтобы оптимизировать страницы, которые вы посещаете, Chrome отправляет ваш интернет-трафик в Google. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Открыть панель поиска</translation>
 <translation id="3716182511346448902">Эта страница расходовала слишком много памяти, поэтому работа ее скриптов была приостановлена.</translation>
 <translation id="3730075448226062617">Чтобы Chrome получил доступ к микрофону, включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3749259744154402564">Действие не поддерживается.</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Разрешить определенному сайту сохранять файлы cookie.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
-<translation id="4048707525896921369">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
-
-Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь окна поиска.</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4060598801229743805">Меню доступно в верхней части экрана</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
-<translation id="5596627076506792578">Ещё</translation>
 <translation id="5599455543593328020">Режим инкогнито</translation>
 <translation id="5620928963363755975">Чтобы найти скачанные файлы и веб-страницы, нажмите кнопку "Ещё" и выберите соответствующий пункт</translation>
 <translation id="5626134646977739690">Имя:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">Завершение предыдущего скачивания…</translation>
 <translation id="5865733239029070421">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
+<translation id="5884076754568147479">Чтобы помочь вам выполнять действия в Интернете, Google получает контент и URL сайтов, на которых вы используете Ассистента, а также сами запросы.</translation>
 <translation id="5902828464777634901">Все данные этого веб-сайта, включая файлы cookie, будут удалены.</translation>
 <translation id="5919204609460789179">Обновите <ph name="PRODUCT_NAME" />, чтобы начать синхронизацию</translation>
 <translation id="5937580074298050696">Сохранено: <ph name="AMOUNT" /></translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">Запретить сторонним веб-сайтам сохранять и просматривать файлы cookie</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="6811034713472274749">Страница загружена</translation>
-<translation id="6818926723028410516">Выберите объекты</translation>
 <translation id="6820686453637990663">Код CVC</translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6845325883481699275">Помочь Chrome стать ещё безопаснее</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7055152154916055070">Заблокирована попытка переадресации:</translation>
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
 <translation id="7071521146534760487">Настройки аккаунта</translation>
 <translation id="7077143737582773186">SD-карта</translation>
-<translation id="7087918508125750058">Выбрано: <ph name="ITEM_COUNT" />. Меню находится в верхней части экрана.</translation>
 <translation id="7121362699166175603">Удаление истории и вариантов автозаполнения в адресной строке. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Открыть доступ текущей поисковой системе</translation>
 <translation id="7138678301420049075">Другое</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">Чтобы просматривать веб-страницы на своем языке, обновите Chrome до последней версии.</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7248069434667874558">Убедитесь, что в браузере Chrome на устройстве <ph name="TARGET_DEVICE_NAME" /> включена синхронизация.</translation>
-<translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Заблокированный сайт</translation>
 <translation id="7290209999329137901">Переименование невозможно</translation>
 <translation id="7291387454912369099">Оплата через Ассистента</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
 <translation id="7821588508402923572">Здесь появятся данные об экономии трафика</translation>
-<translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="784934925303690534">Временной диапазон</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
 <translation id="7875915731392087153">Написать письмо</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
 <translation id="8127542551745560481">Изменить главную страницу</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
+<translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">На каких языках вы читаете?</translation>
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8186512483418048923">Осталось файлов: <ph name="FILES" /></translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">Нажмите на этот значок, чтобы перейти к уже открытой вкладке или создать новую.</translation>
 <translation id="8662811608048051533">Вы автоматически выйдете из учетных записей на большинстве сайтов.</translation>
 <translation id="8664979001105139458">Файл с таким именем уже существует.</translation>
-<translation id="8676374126336081632">Очистить</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Уровень сигнала: # линия}one{Уровень сигнала: # линия}few{Уровень сигнала: # линии}many{Уровень сигнала: # линий}other{Уровень сигнала: # линии}}</translation>
 <translation id="868929229000858085">Поиск контактов</translation>
 <translation id="8698438463325761328">Закрыть сайтам доступ к устройствам и данным виртуальной реальности</translation>

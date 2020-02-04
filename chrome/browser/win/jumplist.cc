@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -197,8 +198,8 @@ bool UpdateTaskCategory(
 base::FilePath GenerateJumplistIconDirName(
     const base::FilePath& profile_dir,
     const base::FilePath::StringPieceType& suffix) {
-  base::FilePath::StringType dir_name(chrome::kJumpListIconDirname);
-  suffix.AppendToString(&dir_name);
+  base::FilePath::StringType dir_name =
+      base::StrCat({chrome::kJumpListIconDirname, suffix});
   return profile_dir.Append(dir_name);
 }
 

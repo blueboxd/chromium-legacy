@@ -28,10 +28,10 @@ const INITIAL_ASPECT_RATIO = 1.7777777777;
 const TOPBAR_COLOR = '#000000';
 
 /**
- * The id of the test app used in Tast.
+ * The origin of the test app used in Tast.
  * @type {string}
  */
-const TEST_API_ID = 'behllobkkfkfnphdnhnkndlbkcpglgmj';
+const TEST_API_ORIGIN = 'chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj';
 
 /**
  * It's used in test to ensure that we won't connect to the main.html target
@@ -489,7 +489,7 @@ class Background {
  *     asynchronously.
  */
 function handleExternalMessageFromTest(message, sender, sendResponse) {
-  if (sender.id !== TEST_API_ID) {
+  if (sender.origin !== TEST_API_ORIGIN) {
     console.warn(`Unknown sender id: ${sender.id}`);
     return;
   }
@@ -507,7 +507,7 @@ function handleExternalMessageFromTest(message, sender, sendResponse) {
  * @param {Port} port The port that used to do two-way communication.
  */
 function handleExternalConnectionFromTest(port) {
-  if (port.sender.id !== TEST_API_ID) {
+  if (port.sender.origin !== TEST_API_ORIGIN) {
     console.warn(`Unknown sender id: ${port.sender.id}`);
     return;
   }

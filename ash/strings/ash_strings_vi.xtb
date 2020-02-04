@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Cài đặt bút cảm ứng</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
-<translation id="2364154243880592194">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /> Nhấn phím Tìm kiếm + mũi tên trái để truy cập vào trung tâm thông báo.</translation>
 <translation id="2365393535144473978">Bật dữ liệu di động sẽ bật Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Đã có bản cập nhật</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Tua lùi</translation>
 <translation id="4129129681837227511">Để xem thông báo trên màn hình khóa, hãy mở khóa thiết bị để thay đổi tùy chọn cài đặt này</translation>
 <translation id="4146833061457621061">Phát nhạc</translation>
+<translation id="4149156641122542261"><ph name="DOMAIN" /> quản lý <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4195877955194704651">Nút Lượt nhấp tự động</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Phản hồi</translation>
 <translation id="4527045527269911712">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"muốn được phép ghép nối.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> cho đến khi đầy</translation>
-<translation id="4544944664594876241">Phím tắt để khóa màn hình đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Nút Chọn để nói</translation>
 <translation id="4585337515783392668">Dừng truyền trên bộ thu không xác định</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Phát</translation>
 <translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
 <translation id="6820676911989879663">Hãy nghỉ giải lao!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Đã tắt phím tắt</translation>
 <translation id="6910714959251846841">Bản cập nhật này yêu cầu phải powerwash (đặt lại toàn bộ) thiết bị của bạn. Hãy tìm hiểu thêm về bản cập nhật <ph name="SYSTEM_APP_NAME" /> mới nhất.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Cần khởi động lại Chromebook này để áp dụng bản cập nhật. Quá trình này có thể mất tối đa 1 phút.</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
 <translation id="7262906531272962081">Tạo lời nhắc</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Máy ảnh đang được sử dụng.</translation>
 <translation id="743058460480092004">Máy ảnh và micrô đang được sử dụng.</translation>
 <translation id="7497767806359279797">Chọn ngôn ngữ và bàn phím</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Mạng có thể được giám sát</translation>
 <translation id="7536035074519304529">Địa chỉ IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Giờ đi ngủ</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
 <translation id="7564874036684306347">Di chuyển cửa sổ sang màn hình khác có thể gây ra hoạt động không mong muốn. Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân tách giữa các màn hình.</translation>
 <translation id="7568294522609223312">Tắt tính năng tự động nhấp</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Độ tương phản cao</translation>
 <translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Đang bật trên tất cả ứng dụng</translation>
+<translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
 <translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8142441511840089262">Nhấp đúp</translation>

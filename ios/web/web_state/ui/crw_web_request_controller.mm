@@ -433,6 +433,18 @@ enum class BackForwardNavigationType {
       UMA_HISTOGRAM_TIMES("PLT.iOS.BrowserInitiatedPageLoadTime",
                           context->GetElapsedTimeSinceCreation());
     }
+    if ([UIDevice currentDevice].batteryLevel <
+        web::features::kLowBatteryLevelThreshold) {
+      if (context->IsRendererInitiated()) {
+        UMA_HISTOGRAM_TIMES(
+            "PLT.iOS.RendererInitiatedPageLoadTimeWithLowBattery",
+            context->GetElapsedTimeSinceCreation());
+      } else {
+        UMA_HISTOGRAM_TIMES(
+            "PLT.iOS.BrowserInitiatedPageLoadTimeWithLowBattery",
+            context->GetElapsedTimeSinceCreation());
+      }
+    }
   }
 }
 

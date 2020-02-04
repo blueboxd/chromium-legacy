@@ -738,13 +738,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 
       Si elle est définie sur un chemin d'accès à un fichier, ce dernier est utilisé comme fichier
       exécutable.</translation>
-<translation id="2111016292707172233">Active la fonctionnalité "Appuyer pour rechercher" dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
-
-      Si vous activez ce paramètre, l'utilisateur sera en mesure d'activer ou de désactiver la fonctionnalité "Appuyer pour rechercher".
-
-      Si vous désactivez ce paramètre, l'utilisateur n'aura pas accès à la fonctionnalité "Appuyer pour rechercher".
-
-      Si cette règle n'est pas configurée, la fonctionnalité sera activée, conformément à la description ci-dessus.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
@@ -1950,7 +1943,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
 
           Si cette règle n'est pas configurée, la mise en surbrillance au clavier est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
-<translation id="3874773863217952418">Activer la fonctionnalité "Appuyer pour rechercher"</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
 <translation id="3879196885908353077">Vérifier que les téléchargements respectent les règles de protection des données sensibles</translation>
 <translation id="3879208481373875102">Configurer la liste des applications Web installées d'office</translation>
@@ -4816,12 +4808,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Si elle n'est pas configurée, les raccourcis des fonctionnalités d'accessibilité sont activés par défaut.</translation>
 <translation id="8525526490824335042">Conteneur Linux</translation>
-<translation id="8538235451413605457">Définit la configuration requise de la version minimale autorisée pour <ph name="PRODUCT_NAME" />. Les versions antérieures sont traitées comme obsolètes et ne permettent pas à l'utilisateur de se connecter à l'appareil sans effectuer une mise à jour préalable du système d'exploitation.
-      Si la version actuelle devient obsolète lors de la session utilisateur, une déconnexion forcée a lieu.
-
-      Si cette règle n'est pas définie, aucune restriction ne s'applique. L'utilisateur peut donc se connecter indépendamment de la version de <ph name="PRODUCT_NAME" />.
-
-      Notez que le terme "version" désigne autant les versions exactes (telles que 61.0.3163.120) que les préfixes de version (tels que 61.0).  </translation>
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Autoriser la synchronisation des SMS entre le téléphone et le Chromebook</translation>
 <translation id="8548832052135586762">Définit l'impression couleur seulement, monochrome seulement ou sans restriction de couleur. Si aucune règle n'est définie, on considère qu'il n'y a aucune restriction.</translation>

@@ -66,7 +66,6 @@ class CORE_EXPORT InspectorTaskRunner final
   Mutex mutex_;
   scoped_refptr<base::SingleThreadTaskRunner> isolate_task_runner_;
   v8::Isolate* isolate_ GUARDED_BY(mutex_) = nullptr;
-  Deque<Task> queue_;
   Deque<Task> interrupting_task_queue_;
   bool disposed_ GUARDED_BY(mutex_) = false;
   DISALLOW_COPY_AND_ASSIGN(InspectorTaskRunner);

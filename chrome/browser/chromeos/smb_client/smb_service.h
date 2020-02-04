@@ -63,7 +63,6 @@ class SmbService : public KeyedService,
   // Starts the process of mounting an SMB file system.
   // |use_kerberos| indicates whether the share should be mounted with a user's
   // chromad kerberos tickets.
-  // Calls SmbProviderClient::Mount().
   void Mount(const file_system_provider::MountOptions& options,
              const base::FilePath& share_path,
              const std::string& username,
@@ -75,20 +74,6 @@ class SmbService : public KeyedService,
 
   // Unmounts the SmbFs share mounted at |mount_path|.
   void UnmountSmbFs(const base::FilePath& mount_path);
-
-  // Completes the mounting of an SMB file system, passing |options| on to
-  // file_system_provider::Service::MountFileSystem(). Passes error status to
-  // callback.
-  void OnMountResponse(MountResponse callback,
-                       const file_system_provider::MountOptions& options,
-                       const base::FilePath& share_path,
-                       bool is_kerberos_chromad,
-                       bool should_open_file_manager_after_mount,
-                       const std::string& username,
-                       const std::string& workgroup,
-                       bool save_credentials,
-                       smbprovider::ErrorType error,
-                       int32_t mount_id);
 
   // Gathers the hosts in the network using |share_finder_| and gets the shares
   // for each of the hosts found. |discovery_callback| is called as soon as host
@@ -134,11 +119,43 @@ class SmbService : public KeyedService,
  private:
   friend class SmbServiceTest;
 
+  using MountInternalCallback =
+      base::OnceCallback<void(SmbMountResult result,
+                              const base::FilePath& mount_path)>;
+
+  // Callback passed to MountInternal().
+  void MountInternalDone(MountResponse callback,
+                         bool should_open_file_manager_after_mount,
+                         SmbMountResult result,
+                         const base::FilePath& mount_path);
+
+  // Mounts an SMB share with url |share_url| using either smbprovider or smbfs
+  // based on feature flags.
+  // Calls SmbProviderClient::Mount() or start the smbfs mount process.
+  void MountInternal(const file_system_provider::MountOptions& options,
+                     const SmbUrl& share_url,
+                     const std::string& display_name,
+                     const std::string& username,
+                     const std::string& workgroup,
+                     const std::string& password,
+                     bool use_kerberos,
+                     bool save_credentials,
+                     MountInternalCallback callback);
+
+  // Handles the response from mounting an SMB share using smbprovider.
+  // Completes the mounting of an SMB file system, passing |options| on to
+  // file_system_provider::Service::MountFileSystem(). Passes error status to
+  // callback.
+  void OnProviderMountDone(MountInternalCallback callback,
+                           const file_system_provider::MountOptions& options,
+                           bool save_credentials,
+                           smbprovider::ErrorType error,
+                           int32_t mount_id);
+
   // Handles the response from mounting an smbfs share. Passes |result| onto
   // |callback|.
   void OnSmbfsMountDone(const std::string& smbfs_mount_id,
-                        bool should_open_file_manager_after_mount,
-                        MountResponse callback,
+                        MountInternalCallback callback,
                         SmbMountResult result);
 
   // Retrieves the mount_id for |file_system_info|.
@@ -197,9 +214,6 @@ class SmbService : public KeyedService,
   // Handles the response from attempting to update Kerberos credentials.
   void OnUpdateKerberosCredentialsResponse(bool success);
 
-  // Fires |callback| with |result|.
-  void FireMountCallback(MountResponse callback, SmbMountResult result);
-
   // Registers host locators for |share_finder_|.
   void RegisterHostLocators();
 
@@ -208,10 +222,6 @@ class SmbService : public KeyedService,
 
   // Set up NetBios host locator.
   void SetUpNetBiosHostLocator();
-
-  // Opens |file_system_id| in the File Manager. Must only be called on a
-  // mounted share.
-  void OpenFileManager(const std::string& file_system_id);
 
   // Whether NetBios discovery should be used. Controlled via policy.
   bool IsNetBiosDiscoveryEnabled() const;

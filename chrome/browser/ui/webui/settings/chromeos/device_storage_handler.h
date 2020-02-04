@@ -70,6 +70,14 @@ class StorageHandler
     // Simulate a request to update MyFiles size.
     void UpdateMyFilesSize();
 
+    // Simulate a request to update apps and extensions size.
+    void UpdateAppsSize();
+
+    // Simulate android apps size callback.
+    void UpdateAndroidAppsSize(uint64_t total_code_bytes,
+                               uint64_t total_data_bytes,
+                               uint64_t total_cache_bytes);
+
    private:
     StorageHandler* handler_;  // Not owned.
   };
@@ -128,14 +136,21 @@ class StorageHandler
   // Callback to update the UI about the size of browsing data.
   void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
 
-  // Requests updating the flag that hides the Android size UI.
-  void UpdateAndroidRunning();
+  // Requests updating the size of web store apps and extensions.
+  void UpdateAppsSize();
 
-  // Requests updating the space size used by Android apps and cache.
-  void UpdateAndroidSize();
+  // Callback to update web store apps and extensions size.
+  void OnGetAppsSize(int64_t total_bytes);
 
-  // Callback to update the UI about Android apps and cache.
-  void OnGetAndroidSize(bool succeeded, arc::mojom::ApplicationsSizePtr size);
+  // Requests updating the size of android apps.
+  void UpdateAndroidAppsSize();
+
+  // Callback to update Android apps and cache.
+  void OnGetAndroidAppsSize(bool succeeded,
+                            arc::mojom::ApplicationsSizePtr size);
+
+  // Callback to update the UI about apps and extensions.
+  void UpdateAppsAndExtensionsSize();
 
   // Requests updating the space size used by Crostini VMs and their apps and
   // cache.
@@ -169,6 +184,12 @@ class StorageHandler
   // True if we have already received the size of site data.
   bool has_browser_site_data_size_;
 
+  // Total size of apps and extensions
+  int64_t apps_extensions_size_;
+
+  // Total size of android apps
+  int64_t android_apps_size_;
+
   // Helper to compute the total size of all types of site date.
   std::unique_ptr<SiteDataSizeCollector> site_data_size_collector_;
 
@@ -182,7 +203,8 @@ class StorageHandler
   // Flags indicating fetch operations for storage sizes are ongoing.
   bool updating_my_files_size_;
   bool updating_browsing_data_size_;
-  bool updating_android_size_;
+  bool updating_apps_size_;
+  bool updating_android_apps_size_;
   bool updating_crostini_size_;
   bool updating_other_users_size_;
 

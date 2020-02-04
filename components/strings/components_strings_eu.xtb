@@ -531,6 +531,8 @@
 <translation id="3366477098757335611">Ikusi txartelak</translation>
 <translation id="3369192424181595722">Erlojuaren errorea</translation>
 <translation id="337363190475750230">Hornitu gabe</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> domeinuak Enterprise Service Hooks izeneko amuak gaitu dizkizu arakatzailean. Amu horiek zure datu batzuetarako sarbidea dute.</translation>
+<translation id="3377144306166885718">Zerbitzariak TLSren bertsio zaharkitu bat erabili du.</translation>
 <translation id="3377188786107721145">Errore bat gertatu da errorea analizatzean</translation>
 <translation id="3377736046129930310">Erabili pantailaren blokeoa txartelak bizkorrago berresteko</translation>
 <translation id="3380365263193509176">Errore ezezaguna</translation>
@@ -539,6 +541,7 @@
 <translation id="3391030046425686457">Entrega-helbidea</translation>
 <translation id="3395827396354264108">Jasotze-metodoa</translation>
 <translation id="3399952811970034796">Entregatzeko helbidea</translation>
+<translation id="3402261774528610252">Webgunea kargatzeko erabilitako konexioa TLS 1.0 edo TLS 1.1 da, baina hura zaharkituta dago eta desgaitu egingo da etorkizunean. Desgaitu ondoren, erabiltzaileek ezingo dute kargatu webgunea. Zerbitzariak TLS 1.2 bertsioa edo berriago bat gaitu behar du.</translation>
 <translation id="3422248202833853650">Saiatu beste programa batzuk ixten memoria gehiago uzteko erabilgarri.</translation>
 <translation id="3422472998109090673">Une honetan ezin gara konektatu <ph name="HOST_NAME" /> webgunera.</translation>
 <translation id="3423742043356668186">Zehaztutako sistema</translation>
@@ -624,6 +627,7 @@
 <translation id="3745099705178523657">Datuok berresten dituzunean, webgune honekin partekatuko dira Google-ko kontuarekin lotutako txartelaren xehetasunak.</translation>
 <translation id="3748148204939282805">Baliteke <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webguneko erasotzaileak zu iruzurtzen saiatzea arriskutsua izan litekeen zerbait egin dezazun; besteak beste, segurua ez den softwarea instalatzea edo informazio pertsonala ezagutaraztea (adibidez, pasahitzak, telefono-zenbakiak edo kreditu-txartelen datuak) izan liteke hori. <ph name="BEGIN_LEARN_MORE_LINK" />Lortu informazio gehiago<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Ezin izan da itzuli zerbitzariko errore bat dela-eta.</translation>
+<translation id="3754210790023674521">Irten pantaila txikiko modutik</translation>
 <translation id="3759461132968374835">Ez da hutsegiterik izan azken aldian. Ez dira hemen agertuko jakinarazpenak desgaituta zeudenean gertatutako hutsegiteak.</translation>
 <translation id="3760561303380396507">Windows Hello erabili nahi duzu CVC kodearen ordez?</translation>
 <translation id="3761718714832595332">Ezkutatu egoera</translation>
@@ -946,6 +950,7 @@
 <translation id="5179510805599951267">Hizkuntza ez al da <ph name="ORIGINAL_LANGUAGE" />? Eman errorearen berri</translation>
 <translation id="5190835502935405962">Laster-marken barra</translation>
 <translation id="519422657042045905">Oharpena ez dago erabilgarri</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Orriko orri kapsulatu batek hau dio:</translation>
 <translation id="5205222826937269299">Nahitaez zehaztu behar duzu izena</translation>
 <translation id="5215116848420601511">Google Pay-rekin erabiltzen dituzun ordainketa-metodoak eta helbideak</translation>
@@ -975,6 +980,7 @@
 <translation id="5295292838686006428">Erabiltzen duzun webgune edo aplikazio batean datuen isilpekotasuna urratu denez, zure pasahitza atzitzeko aukera izan dute. Gordetako pasahitzak seguru daudela egiaztatzea gomendatzen du Chrome-k.</translation>
 <translation id="5299298092464848405">Errore bat gertatu da gidalerroak analizatzean</translation>
 <translation id="5300589172476337783">Erakutsi</translation>
+<translation id="5306593769196050043">Bi orriak</translation>
 <translation id="5308380583665731573">Konektatu</translation>
 <translation id="5308689395849655368">Hutsegite-txostenak bidaltzeko aukera desgaituta dago.</translation>
 <translation id="5314967030527622926">Koadernagailua</translation>
@@ -1128,7 +1134,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Egiaztatu pasahitzak</translation>
 <translation id="6015796118275082299">Urtea</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Lehenengo orria}other{#garren orria}}</translation>
 <translation id="6017514345406065928">Berdea</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webguneko erasotzaileek beste zerbaiten plantak egiten dituzten aplikazio iruzurtiak instala ditzakete edo datuak bil ditzakete zure jarraipena egiteko. <ph name="BEGIN_LEARN_MORE_LINK" />Lortu informazio gehiago<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinkronizatuta)</translation>
@@ -1235,7 +1240,6 @@
 <translation id="6446163441502663861">Kahu (gutun-azala)</translation>
 <translation id="6446608382365791566">Gehitu informazio gehiago</translation>
 <translation id="6447842834002726250">Cookieak</translation>
-<translation id="644931407731409778">PDF dokumentua: {COUNT,plural, =1{1 orrialde}other{# orrialde}}</translation>
 <translation id="6451458296329894277">Berretsi inprimakia berriro bidali nahi duzula</translation>
 <translation id="6457206614190510200">Grapa bidezko koadernatzea</translation>
 <translation id="6465306955648956876">Kudeatu pasahitzak…</translation>
@@ -1347,6 +1351,7 @@
 <translation id="7053983685419859001">Blokeatu</translation>
 <translation id="7062635574500127092">Anila</translation>
 <translation id="7064851114919012435">Harremanetarako informazioa</translation>
+<translation id="70705239631109039">Konexioa ez da guztiz segurua</translation>
 <translation id="7075452647191940183">Eskaera handiegia da</translation>
 <translation id="7079718277001814089">Webguneak malwarea dauka</translation>
 <translation id="7081308185095828845">Eginbidea ez dago erabilgarri zure gailuan</translation>
@@ -1366,6 +1371,7 @@
 <translation id="7152423860607593928">Number-14 (gutun-azala)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Izpilikua</translation>
+<translation id="7156870133441232244">Zerbitzaria TLS 1.2 bertsiora edo berriago batera eguneratu behar da.</translation>
 <translation id="717330890047184534">GAIA IDa:</translation>
 <translation id="7174545416324379297">Bateratuta</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1391,6 +1397,7 @@ Xehetasun gehiago:
 <translation id="725866823122871198">Ezin izan da ezarri <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeinurako konexio pribatua ordenagailuaren data eta ordua (<ph name="DATE_AND_TIME" />) okerrak direlako.</translation>
 <translation id="7260504762447901703">Kendu sarbidea</translation>
 <translation id="7275334191706090484">Kudeatutako laster-markak</translation>
+<translation id="7288778322931489286">Administratzaileak Enterprise Service Hooks izeneko amuak gaitu dizkizu arakatzailean. Amu horiek zure datu batzuetarako sarbidea dute.</translation>
 <translation id="7292031607255951991">Hartzailearen izena</translation>
 <translation id="7298195798382681320">Gomendatuak</translation>
 <translation id="7300012071106347854">Kobaltoa</translation>
@@ -1715,6 +1722,7 @@ Xehetasun gehiago:
 <translation id="874918643257405732">Egin fitxa honen laster-marka</translation>
 <translation id="8751426954251315517">Saiatu berriro geroago</translation>
 <translation id="8759274551635299824">Iraungita dago txartela</translation>
+<translation id="87601671197631245">Webgune honek segurtasun-konfigurazio zaharkitu bat erabiltzen du; ondorioz, baliteke zure informazioa (adibidez, pasahitzak, mezuak edo kreditu-txartelak) agerian uztea webgune honetara bidaltzen duzunean.</translation>
 <translation id="8761567432415473239">Google-ren Arakatze seguruak <ph name="BEGIN_LINK" />programa kaltegarriak aurkitu ditu<ph name="END_LINK" /> <ph name="SITE" /> webgunean.</translation>
 <translation id="8763927697961133303">USB bidezko gailua</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1732,6 +1740,7 @@ Xehetasun gehiago:
 <translation id="8866481888320382733">Errore bat gertatu da gidalerro-ezarpenak analizatzean</translation>
 <translation id="8866928039507595380">Tolestu</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Partekatu administratzailearekin Enterprise Service Hooks zerbitzuak markatutako segurtasun-gertaerei buruzko datuak. Datu horien artean baliteke hauek agertzea: bisitatzen dituzun orrien URLak, fitxategien izenak edo metadatuak, eta gailuan nahiz Chrome-n saioa hasteko erabiltzen duzun erabiltzaile-izena.</translation>
 <translation id="8870413625673593573">Itxitako azkenak</translation>
 <translation id="8870494189203302833">Ordena berean, ahuspez</translation>
 <translation id="8874824191258364635">Idatzi balio duen txartel-zenbaki bat</translation>

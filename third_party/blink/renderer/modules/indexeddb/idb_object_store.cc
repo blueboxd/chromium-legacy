@@ -339,12 +339,28 @@ static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
 
 IDBRequest* IDBObjectStore::add(ScriptState* script_state,
                                 const ScriptValue& value,
+                                ExceptionState& exception_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  return add(script_state, value, ScriptValue(isolate, v8::Undefined(isolate)),
+             exception_state);
+}
+
+IDBRequest* IDBObjectStore::add(ScriptState* script_state,
+                                const ScriptValue& value,
                                 const ScriptValue& key,
                                 ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::addRequestSetup", "store_name",
              metadata_->name.Utf8());
   return DoPut(script_state, mojom::IDBPutMode::AddOnly, value, key,
                exception_state);
+}
+
+IDBRequest* IDBObjectStore::put(ScriptState* script_state,
+                                const ScriptValue& value,
+                                ExceptionState& exception_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  return put(script_state, value, ScriptValue(isolate, v8::Undefined(isolate)),
+             exception_state);
 }
 
 IDBRequest* IDBObjectStore::put(ScriptState* script_state,

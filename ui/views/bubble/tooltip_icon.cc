@@ -25,6 +25,8 @@ TooltipIcon::TooltipIcon(const base::string16& tooltip, int tooltip_icon_size)
 }
 
 TooltipIcon::~TooltipIcon() {
+  for (auto& observer : observers_)
+    observer.OnTooltipIconDestroying(this);
   HideBubble();
 }
 
@@ -65,6 +67,14 @@ void TooltipIcon::MouseMovedOutOfHost() {
   HideBubble();
 }
 
+void TooltipIcon::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TooltipIcon::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void TooltipIcon::SetDrawAsHovered(bool hovered) {
   SetImage(gfx::CreateVectorIcon(
       vector_icons::kInfoOutlineIcon, tooltip_icon_size_,
@@ -95,6 +105,9 @@ void TooltipIcon::ShowBubble() {
         std::make_unique<MouseWatcherViewHost>(frame, gfx::Insets()), this);
     mouse_watcher_->Start(GetWidget()->GetNativeWindow());
   }
+
+  for (auto& observer : observers_)
+    observer.OnTooltipBubbleShown(this);
 }
 
 void TooltipIcon::HideBubble() {

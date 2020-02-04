@@ -525,6 +525,8 @@
 <translation id="3366477098757335611">Zobrazit karty</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
 <translation id="337363190475750230">Vyřazeno</translation>
+<translation id="3376829916920036789">Doména <ph name="ENROLLMENT_DOMAIN" /> ve vašem prohlížeči zapnula funkci Enterprise Service Hooks. Tyto háky mají přístup k některým vašim datům.</translation>
+<translation id="3377144306166885718">Server použil zastaralou verzi protokolu TLS.</translation>
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
 <translation id="3377736046129930310">Potvrzovat karty rychleji pomocí zámku obrazovky</translation>
 <translation id="3380365263193509176">Neznámá chyba</translation>
@@ -533,6 +535,7 @@
 <translation id="3391030046425686457">Adresa doručení</translation>
 <translation id="3395827396354264108">Způsob vyzvednutí</translation>
 <translation id="3399952811970034796">Adresa doručení</translation>
+<translation id="3402261774528610252">Připojení použité k načtení tohoto webu použilo protokol TLS 1.0 nebo TLS 1.1, který již není podporován a v budoucnu bude deaktivován. Po deaktivaci již uživatelé nebudou moci tento web načíst. Na serveru je třeba aktivovat protokol TLS 1.2 nebo novější.</translation>
 <translation id="3422248202833853650">Zkuste uvolnit paměť ukončením jiných programů.</translation>
 <translation id="3422472998109090673">Web <ph name="HOST_NAME" /> momentálně není dostupný.</translation>
 <translation id="3423742043356668186">Určeno systémem</translation>
@@ -615,6 +618,7 @@
 <translation id="3745099705178523657">Po potvrzení budou údaje o kartě z vašeho účtu Google poskytnuty tomuto webu.</translation>
 <translation id="3748148204939282805">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vás mohou podvodem přimět k nebezpečnému chování, jako je instalace softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Z důvodu chyby serveru se překlad nezdařil.</translation>
+<translation id="3754210790023674521">Ukončit režim obrazu v obraze</translation>
 <translation id="3759461132968374835">Nemáte žádná nedávno hlášená selhání. Selhání, ke kterým došlo, když byla služba hlášení o selháních vypnutá, se zde nezobrazují.</translation>
 <translation id="3760561303380396507">Použít Windows Hello namísto CVC?</translation>
 <translation id="3761718714832595332">Skrýt stav</translation>
@@ -936,6 +940,7 @@
 <translation id="5179510805599951267">Nejedná se o jazyk <ph name="ORIGINAL_LANGUAGE" />? Nahlaste tuto chybu.</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="519422657042045905">Poznámky nejsou k dispozici</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Stránka vložená na této stránce říká</translation>
 <translation id="5205222826937269299">Je nutné zadat jméno</translation>
 <translation id="5215116848420601511">Platební metody a adresy pomocí služby Google Pay</translation>
@@ -965,6 +970,7 @@
 <translation id="5295292838686006428">Vaše heslo bylo vyzrazeno při porušení zabezpečení webu nebo aplikace. Chrome doporučuje okamžitě zkontrolovat uložená hesla.</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
+<translation id="5306593769196050043">Oba listy</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5308689395849655368">Zprávy o selhání jsou zakázány.</translation>
 <translation id="5314967030527622926">Brožura</translation>
@@ -1118,7 +1124,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Kontrola hesel</translation>
 <translation id="6015796118275082299">Rok</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Stránka 1}few{Stránka #}many{Stránka #}other{Stránka #}}</translation>
 <translation id="6017514345406065928">Zelená</translation>
 <translation id="6017850046339264347">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> by vám do zařízení mohli nainstalovat klamavé aplikace, které se vydávají za něco jiného nebo shromažďují data ke sledování vaší aktivity. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronizováno)</translation>
@@ -1225,7 +1230,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6446163441502663861">Kahu (obálka)</translation>
 <translation id="6446608382365791566">Přidání dalších informací</translation>
 <translation id="6447842834002726250">Soubory cookie</translation>
-<translation id="644931407731409778">Dokument PDF s {COUNT,plural, =1{1 stránkou}few{# stránkami}many{# stránky}other{# stránkami}}</translation>
 <translation id="6451458296329894277">Potvrdit nové odeslání formuláře</translation>
 <translation id="6457206614190510200">Sešitová vazba</translation>
 <translation id="6465306955648956876">Spravovat hesla...</translation>
@@ -1337,6 +1341,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7062635574500127092">Šedozelená</translation>
 <translation id="7064851114919012435">Kontaktní údaje</translation>
+<translation id="70705239631109039">Vaše připojení není plně zabezpečené</translation>
 <translation id="7075452647191940183">Požadavek je příliš velký</translation>
 <translation id="7079718277001814089">Tento web obsahuje malware</translation>
 <translation id="7081308185095828845">Tato funkce ve vašem zařízení není k dispozici</translation>
@@ -1356,6 +1361,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7152423860607593928">Number-14 (obálka)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}few{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}many{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}other{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> dalších}}</translation>
 <translation id="7153618581592392745">Levandulová</translation>
+<translation id="7156870133441232244">Server je třeba upgradovat na protokol TLS 1.2 nebo novější.</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7174545416324379297">Sloučeno</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}few{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}many{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}other{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> dalších}}</translation>
@@ -1380,6 +1386,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="725866823122871198">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v počítači nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zrušit přístup</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
+<translation id="7288778322931489286">Administrátor ve vašem prohlížeči zapnul funkci Enterprise Service Hooks. Tyto háky mají přístup k některým vašim datům.</translation>
 <translation id="7292031607255951991">Jméno příjemce</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
 <translation id="7300012071106347854">Sytě modrá</translation>
@@ -1705,6 +1712,7 @@ Další podrobnosti:
 <translation id="874918643257405732">Přidat tuto kartu do záložek</translation>
 <translation id="8751426954251315517">Zkuste to znovu později</translation>
 <translation id="8759274551635299824">Platnost této karty vypršela</translation>
+<translation id="87601671197631245">Tento web používá zastaralou konfiguraci zabezpečení, která vaše informace odesílané na tento web (například hesla, zprávy nebo kreditní karty) vystavuje riziku odhalení.</translation>
 <translation id="8761567432415473239">Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />nalezlo škodlivé programy<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">Zařízení USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1722,6 +1730,7 @@ Další podrobnosti:
 <translation id="8866481888320382733">Při analýze nastavení zásady došlo k chybě</translation>
 <translation id="8866928039507595380">Přeložení</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Sdílejte s administrátorem údaje o událostech týkajících se zabezpečení nahlášených funkcí Enterprise Service Hooks. Mohou být zahrnuty adresy URL stránek, které navštěvujete, názvy souborů metadat a uživatelské jméno, pomocí něhož se přihlašujete do svého zařízení a do Chromu.</translation>
 <translation id="8870413625673593573">Nedávno zavřené</translation>
 <translation id="8870494189203302833">Stejné pořadí lícem dolů</translation>
 <translation id="8874824191258364635">Zadejte platné číslo karty</translation>

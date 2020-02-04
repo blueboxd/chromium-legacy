@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">ಸ್ಟೈಲಸ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
-<translation id="2364154243880592194">ಸ್ಥಿತಿ ಟ್ರೇ, ಸಮಯ <ph name="TIME" />, <ph name="BATTERY" /> ಅಧಿಸೂಚನೆ ಕೇಂದ್ರವನ್ನು ಪ್ರವೇಶಿಸಲು ಹುಡುಕಾಟ + ಎಡ ಬಟನ್ ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="2365393535144473978">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುವುದರಿಂದ ಬ್ಲೂಟೂತ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">ಅಪ್‌ಡೇಟ್‌‌ ಲಭ್ಯವಿದೆ</translation>
@@ -269,7 +268,6 @@
 <translation id="4513946894732546136">ಪ್ರತಿಕ್ರಿಯೆ</translation>
 <translation id="4527045527269911712">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
-<translation id="4544944664594876241">ಸ್ಕ್ರೀನ್ ಅನ್ನು ಲಾಕ್ ಮಾಡುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">'ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ಆಲಿಸಿ' ಬಟನ್‌</translation>
 <translation id="4585337515783392668">"ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರು" ನಲ್ಲಿ ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
@@ -427,7 +425,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
-<translation id="683971173229319003">ಹುಡುಕಾಟ+L</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">ಶಾರ್ಟ್‌ಕಟ್ ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="6910714959251846841">ಈ ಅಪ್‌ಡೇಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಪವರ್‌ವಾಷ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ಇತ್ತೀಚಿನ <ph name="SYSTEM_APP_NAME" /> ಅಪ್‌ಡೇಟ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಿ.</translation>
@@ -465,11 +462,9 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
 <translation id="7497767806359279797">ಭಾಷೆ ಮತ್ತು ಕೀಬೋರ್ಡ್ ಆರಿಸಿ</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ನೆಟ್‌ವರ್ಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದಾಗಿದೆ</translation>
 <translation id="7536035074519304529">ಐಪಿ ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ಮಲಗುವ ಸಮಯ</translation>
-<translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ಅನ್ನು <ph name="DISPLAY_NAME" /> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ರೆಸಲ್ಯೂಶನ್‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION" /> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="7562368315689366235">ಎಮೋಜಿ ಪ್ಯಾಲೆಟ್</translation>
 <translation id="7564874036684306347">ವಿಂಡೋಗಳನ್ನು ಬೇರೊಂದು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸರಿಸಿದರೆ, ಅದು ಅನಿರೀಕ್ಷಿತ ವರ್ತನೆಗೆ ಕಾರಣವಾಗಬಹುದು. ಆನಂತರ ಬರುವ ಅಧಿಸೂಚನೆಗಳು, ವಿಂಡೋಗಳು ಮತ್ತು ಡೈಲಾಗ್‌ಗಳು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗಳ ನಡುವೆ ವಿಭಜನೆಯಾಗಬಹುದು.</translation>
 <translation id="7568294522609223312">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳನ್ನು ಆಫ್ ಮಾಡಿ</translation>
@@ -512,6 +507,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8061464966246066292">ಉನ್ನತ ಕಾಂಟ್ರಾಸ್ಟ್</translation>
 <translation id="8098591350844501178">ಪರದೆಯನ್ನು <ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="8113423164597455979">ಆನ್, ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ</translation>
+<translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="813913629614996137">ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8142441511840089262">ಡಬಲ್‌ ಕ್ಲಿಕ್</translation>

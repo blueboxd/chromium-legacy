@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Motor de cerca</translation>
 <translation id="1513352483775369820">Adreces interès i historial web</translation>
 <translation id="1513858653616922153">Suprimeix la contrasenya</translation>
-<translation id="1516229014686355813">La funció Toca per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La pots desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Actiu avui</translation>
 <translation id="1544826120773021464">Per gestionar el teu Compte de Google, toca el botó Gestiona el compte</translation>
 <translation id="1549000191223877751">Mou a l'altra finestra</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> també té dades a Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">El lloc web s'ha posat en pausa</translation>
-<translation id="2063713494490388661">Toca per cercar</translation>
 <translation id="2067805253194386918">text</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">So</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">No es pot iniciar la sessió</translation>
 <translation id="2349710944427398404">Dades totals utilitzades per Chrome, com ara comptes, adreces d'interès i opcions de configuració desades</translation>
 <translation id="2353636109065292463">S'està comprovant la connexió a Internet</translation>
+<translation id="2359808026110333948">Continua</translation>
 <translation id="2369533728426058518">pestanyes obertes</translation>
 <translation id="2387895666653383613">Canvia la mida del text</translation>
 <translation id="2394602618534698961">Els fitxers que baixes es mostren aquí</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Historial de navegació</translation>
 <translation id="2497852260688568942">L'administrador ha desactivat la sincronització</translation>
 <translation id="2498359688066513246">Ajuda i suggeriments </translation>
-<translation id="2501278716633472235">Torna</translation>
 <translation id="2513403576141822879">Per trobar més opcions de configuració relacionades amb la privadesa, la seguretat i la recollida de dades, consulta <ph name="BEGIN_LINK" />Sincronització i serveis de Google<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Cerca</translation>
 <translation id="2518590038762162553">En el mode bàsic, Chrome carrega les pàgines més ràpidament i utilitza fins a un 60 per cent menys de dades. Per optimitzar les pàgines que visites, Chrome envia el teu trànsit web a Google. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Obre la barra de cerca</translation>
 <translation id="3716182511346448902">Com que aquesta pàgina fa servir massa memòria, Chrome l'ha posat en pausa.</translation>
 <translation id="3730075448226062617">Perquè Chrome pugui accedir al micròfon, també has d'activar el micròfon a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="3739899004075612870">Afegit a les adreces de: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
 <translation id="3749259744154402564">No s'admet</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Permet les galetes d'un lloc web concret.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4046123991198612571">Pista següent</translation>
-<translation id="4048707525896921369">Obtén informació sobre temes dels llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el context que l'envolta a la Cerca de Google i torna definicions, imatges, resultats de la cerca i altres detalls.
-
-Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir millor la cerca, fes lliscar el tauler cap amunt tot el que puguis i toca el quadre de cerca.</translation>
 <translation id="4056223980640387499">Sèpia</translation>
 <translation id="4060598801229743805">Hi ha opcions disponibles a prop de la part superior de la pantalla</translation>
 <translation id="4062305924942672200">Informació legal</translation>
@@ -609,7 +605,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Sempre pots anar a la <ph name="BEGIN_LINK1" />configuració<ph name="END_LINK1" /> per decidir què vols sincronitzar.</translation>
 <translation id="5595485650161345191">Edita l'adreça</translation>
-<translation id="5596627076506792578">Més opcions</translation>
 <translation id="5599455543593328020">Mode d'incògnit</translation>
 <translation id="5620928963363755975">Per veure els teus fitxers i les teves pàgines, toca el botó Més opcions i ves a la secció Baixades</translation>
 <translation id="5626134646977739690">Nom:</translation>
@@ -652,6 +647,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5864419784173784555">S'està esperant que finalitzi una altra baixada…</translation>
 <translation id="5865733239029070421">Envia automàticament a Google estadístiques d'ús i informes d'error</translation>
 <translation id="5869522115854928033">Contrasenyes desades</translation>
+<translation id="5884076754568147479">Per ajudar-te a dur a terme tasques, Google rebrà els URL i el contingut dels llocs web en què facis servir l'Assistent, així com la informació que enviïs amb l'Assistent</translation>
 <translation id="5902828464777634901">Se suprimiran totes les dades que aquest lloc web hagi emmagatzemat, incloses les galetes.</translation>
 <translation id="5919204609460789179">Actualitza <ph name="PRODUCT_NAME" /> per iniciar la sincronització</translation>
 <translation id="5937580074298050696">Dades estalviades: <ph name="AMOUNT" /></translation>
@@ -775,7 +771,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6782111308708962316">Impedeix que els llocs web de tercers desin i llegeixin les dades de les galetes</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6811034713472274749">Ja es pot veure la pàgina</translation>
-<translation id="6818926723028410516">Selecciona elements</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="6845325883481699275">Ajuda a millorar la seguretat de Chrome</translation>
@@ -808,10 +803,8 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="7055152154916055070">S'ha bloquejat la redirecció:</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionat}other{# seleccionats}}</translation>
 <translation id="7071521146534760487">Gestiona el compte</translation>
 <translation id="7077143737582773186">Targeta Secure Digital</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elements seleccionats. Hi ha opcions disponibles a prop de la part superior de la pantalla.</translation>
 <translation id="7121362699166175603">Esborra l'historial i les complecions automàtiques a la barra d'adreces. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> trobaràs altres maneres d'explorar l'historial de navegació del Compte de Google.</translation>
 <translation id="7128222689758636196">Permet al motor de cerca actual</translation>
 <translation id="7138678301420049075">Altres</translation>
@@ -827,7 +820,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7233236755231902816">Per veure el web en el teu idioma, actualitza Chrome a la versió més recent.</translation>
 <translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
 <translation id="7248069434667874558">Comprova que <ph name="TARGET_DEVICE_NAME" /> tingui la sincronització activada a Chrome</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elements seleccionats</translation>
 <translation id="7274013316676448362">Lloc bloquejat</translation>
 <translation id="7290209999329137901">No es pot canviar el nom</translation>
 <translation id="7291387454912369099">Pagament activat per l'Assistent</translation>
@@ -909,7 +901,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7810647596859435254">Obre amb…</translation>
 <translation id="7821588508402923572">Les dades que estalviïs es mostraran aquí</translation>
-<translation id="7846076177841592234">Cancel·la la selecció</translation>
 <translation id="784934925303690534">Interval de temps</translation>
 <translation id="7851858861565204677">Altres dispositius</translation>
 <translation id="7875915731392087153">Crea una adreça electrònica</translation>
@@ -957,6 +948,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8116925261070264013">Silenciats</translation>
 <translation id="8127542551745560481">Edita la pàgina d'inici</translation>
 <translation id="813082847718468539">Mostra la informació del lloc</translation>
+<translation id="8137558756159375272">La funció Toca per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La podeu desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">En quins idiomes pots llegir?</translation>
 <translation id="8168435359814927499">Contingut</translation>
 <translation id="8186512483418048923">Queden <ph name="FILES" /> fitxers</translation>
@@ -1024,7 +1016,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8655599981421006542">Toca aquí per crear pestanyes i per tornar a les anteriors</translation>
 <translation id="8662811608048051533">Et tanca la sessió de la majoria de llocs.</translation>
 <translation id="8664979001105139458">El nom del fitxer ja existeix</translation>
-<translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensitat del senyal: # barra}other{Intensitat del senyal: # barres}}</translation>
 <translation id="868929229000858085">Cerca als contactes</translation>
 <translation id="8698438463325761328">Impedeix que els llocs web accedeixin al teu dispositiu i a les teves dades de realitat virtual</translation>

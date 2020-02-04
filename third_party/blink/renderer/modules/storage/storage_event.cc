@@ -76,7 +76,7 @@ StorageEvent::StorageEvent(const AtomicString& type,
     old_value_ = initializer->oldValue();
   if (initializer->hasNewValue())
     new_value_ = initializer->newValue();
-  if (initializer->hasURL())
+  if (initializer->hasUrl())
     url_ = initializer->url();
   if (initializer->hasStorageArea())
     storage_area_ = initializer->storageArea();

@@ -17,8 +17,7 @@ export class BrowserProxy {
     this.handler = new chromeos.crostiniInstaller.mojom.PageHandlerRemote();
 
     const factory =
-        chromeos.crostiniInstaller.mojom.PageHandlerFactory.getRemote(
-            /*useBrowserInterfaceBroker=*/ true);
+        chromeos.crostiniInstaller.mojom.PageHandlerFactory.getRemote();
     factory.createPageHandler(
         this.callbackRouter.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());

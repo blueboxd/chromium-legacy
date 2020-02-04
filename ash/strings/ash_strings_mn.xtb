@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Мэдрэгч үзэгний тохиргоо</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> идэвхжүүлж байна</translation>
 <translation id="2359808026110333948">Цааш</translation>
-<translation id="2364154243880592194">Статусын мэдээллийн хэсэг, цаг <ph name="TIME" />, <ph name="BATTERY" /> Мэдэгдлийн төвд хандахын тулд хайх + зүүн сумыг дарна уу.</translation>
 <translation id="2365393535144473978">Мобайл датаг идэвхжүүлснээр Bluetooth мөн идэвхжинэ.</translation>
 <translation id="2391579633712104609">180 °</translation>
 <translation id="2412593942846481727">Шинэчлэх боломжтой</translation>
@@ -239,6 +238,7 @@
 <translation id="4112140312785995938">Ухраах</translation>
 <translation id="4129129681837227511">Мэдэгдлийг түгжигдсэн дэлгэц дээрээ харахын тулд төхөөрөмжийн түгжээг тайлж, тохиргоог өөрчилнө үү</translation>
 <translation id="4146833061457621061">Хөгжим тоглуулах</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" />-г <ph name="DOMAIN" />-с удирддаг</translation>
 <translation id="4181841719683918333">Хэл</translation>
 <translation id="4195877955194704651">Автомат даралтын товчлуур</translation>
 <translation id="4217571870635786043">Заавар</translation>
@@ -270,7 +270,6 @@
 <translation id="4513946894732546136">Санал дүгнэлт</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth төхөөрөмж хослох зөвшөөрөл хүсч байна.</translation>
 <translation id="453661520163887813">Дүүртэл <ph name="TIME" /> үлдсэн</translation>
-<translation id="4544944664594876241">Дэлгэцийг түгжих товчлол өөрчлөгдсөн. <ph name="OLD_SHORTCUT" />-н оронд <ph name="NEW_SHORTCUT" />-г ашиглана уу.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Ярихаар сонгох товчлуур</translation>
 <translation id="4585337515783392668">Үл мэдэгдэх хүлээн авагч руу дамжуулахаа зогсоох</translation>
@@ -427,7 +426,6 @@
 <translation id="6790428901817661496">Тоглуулах</translation>
 <translation id="6803622936009808957">Ямар нэг холбогдох шийдэл олдоогүй учраас дэлгэцүүдийг ойлгож чадахгүй байна. Оронд нь сунгасан десктопыг орууллаа.</translation>
 <translation id="6820676911989879663">Завсарлага аваарай!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />-ийг идэвхжүүл</translation>
 <translation id="6878400149835617132">Товчлол унтраалттай байна</translation>
 <translation id="6910714959251846841">Тус шинэчлэлт нь таны төхөөрөмжийг үйлдвэрийн тохиргоонд буцааж оруулахыг шаарддаг. Хамгийн сүүлийн үеийн <ph name="SYSTEM_APP_NAME" /> шинэчлэлтийн талаар нэмэлт мэдээлэл авна уу.</translation>
@@ -451,6 +449,7 @@
 <translation id="7143207342074048698">Холбогдож байна</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-д хуучин хэмэжээнд нь буцааж оруулах</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Энэ Chromebook-д шинэчлэлтийг хэрэгжүүлэхийн тулд үүнийг дахин эхлүүлэх шаардлагатай. Үүнд 1 минут хүртэл хугацаа шаардагдаж болно.</translation>
 <translation id="7256634071279256947">Арын микрофон</translation>
 <translation id="726276584504105859">Хуваасан дэлгэцийг ашиглахын тулд энд чирэх</translation>
 <translation id="7262906531272962081">Сануулагч үүсгэх</translation>
@@ -465,11 +464,9 @@
 <translation id="742594950370306541">Камерыг ашиглаж байна.</translation>
 <translation id="743058460480092004">Камер болон микрофоныг ашиглаж байна.</translation>
 <translation id="7497767806359279797">Хэл болон гарыг сонгох</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Сүлжээг хянаж байж болзошгүй</translation>
 <translation id="7536035074519304529">IP хаяг: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Унтах цаг</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> нь <ph name="SPECIFIED_RESOLUTION" />-ыг дэмждэггүй. Хэмжээг <ph name="FALLBACK_RESOLUTION" /> болгож өөрчилсөн байна.</translation>
 <translation id="7562368315689366235">Эможи оролт</translation>
 <translation id="7564874036684306347">Цонхыг өөр дэлгэцэд зөөснөөр гэнэтийн асуудал үүсэж болзошгүй. Дараагийн мэдэгдэл, цонх болон харилцах цонх нь дэлгэцийн хооронд хуваагдаж болзошгүй.</translation>
 <translation id="7568294522609223312">Автомат даралтыг унтраах</translation>
@@ -512,6 +509,7 @@
 <translation id="8061464966246066292">Өндөр ялгарал</translation>
 <translation id="8098591350844501178">Дэлгэцийг <ph name="RECEIVER_NAME" />-д дамжуулахыг зогсоох</translation>
 <translation id="8113423164597455979">Бүх аппад идэвхтэй</translation>
+<translation id="8131740175452115882">Батлах</translation>
 <translation id="8132793192354020517"><ph name="NAME" />-д холбогдсон</translation>
 <translation id="813913629614996137">Эхлүүлж байна…</translation>
 <translation id="8142441511840089262">2 товших</translation>

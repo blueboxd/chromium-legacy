@@ -20,7 +20,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
@@ -105,7 +104,7 @@ CookieControlsBubbleView::CookieControlsBubbleView(
     CookieControlsController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
-  observer_.Add(controller);
+  controller_observer_.Add(controller);
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 }
 
@@ -126,7 +125,9 @@ void CookieControlsBubbleView::UpdateUi() {
     text_->SetVisible(true);
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION));
-    extra_view_ = SetExtraView(CreateInfoIcon());
+    auto tooltip_icon = CreateInfoIcon();
+    tooltip_observer_.Add(tooltip_icon.get());
+    extra_view_ = SetExtraView(std::move(tooltip_icon));
     show_cookies_link_->SetVisible(true);
   } else if (status_ == CookieControlsController::Status::kEnabled) {
     header_view_->SetVisible(true);
@@ -294,4 +295,13 @@ void CookieControlsBubbleView::NotWorkingLinkClicked() {
   // is only relevant for the bubble UI.
   intermediate_step_ = IntermediateStep::kTurnOffButton;
   UpdateUi();
+}
+
+void CookieControlsBubbleView::OnTooltipBubbleShown(views::TooltipIcon* icon) {
+  base::RecordAction(UserMetricsAction("CookieControls.Bubble.TooltipShown"));
+}
+
+void CookieControlsBubbleView::OnTooltipIconDestroying(
+    views::TooltipIcon* icon) {
+  tooltip_observer_.Remove(icon);
 }

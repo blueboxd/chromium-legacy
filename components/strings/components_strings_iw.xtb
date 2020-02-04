@@ -536,6 +536,8 @@
 <translation id="3366477098757335611">הצגת כרטיסים</translation>
 <translation id="3369192424181595722">שגיאת שעון</translation>
 <translation id="337363190475750230">ניהול התצורה בוטל</translation>
+<translation id="3376829916920036789">‏הדומיין <ph name="ENROLLMENT_DOMAIN" /> הפעיל את Enterprise Service Hooks בדפדפן שלך. להוקים (hooks) האלה יש גישה לחלק מהנתונים שלך.</translation>
+<translation id="3377144306166885718">‏בשרת נעשה שימוש בגרסה מיושנת של TLS.</translation>
 <translation id="3377188786107721145">שגיאה בניתוח המדיניות</translation>
 <translation id="3377736046129930310">נעילת המסך מאפשרת לך לאשר כרטיסים מהר יותר</translation>
 <translation id="3380365263193509176">שגיאה לא ידועה</translation>
@@ -544,6 +546,7 @@
 <translation id="3391030046425686457">כתובת למשלוח</translation>
 <translation id="3395827396354264108">שיטת איסוף</translation>
 <translation id="3399952811970034796">כתובת למשלוח</translation>
+<translation id="3402261774528610252">‏החיבור ששימש לצורך טעינת האתר הזה היה מבוסס על הפרוטוקול TLS 1.0 או TLS 1.1, שהוצא משימוש ויושבת בעתיד. אחרי שהפרוטוקול יושבת, משתמשים לא יוכלו לטעון את האתר הזה. יש להפעיל בשרת את הפרוטוקול TLS 1.2 ואילך.</translation>
 <translation id="3422248202833853650">מומלץ לצאת מתוכניות אחרות וכך לפנות מקום בזיכרון.</translation>
 <translation id="3422472998109090673">לא ניתן לגשת כרגע אל <ph name="HOST_NAME" />.</translation>
 <translation id="3423742043356668186">צוין על-ידי המערכת</translation>
@@ -632,6 +635,7 @@
 <translation id="3745099705178523657">‏אחרי שנקבל ממך אישור, נשתף עם האתר הזה את פרטי הכרטיס מחשבון Google.</translation>
 <translation id="3748148204939282805">תוקפים באתר <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להונות אותך כדי לגרום לך לבצע פעולות מסוכנות, כמו התקנת תוכנה או חשיפת מידע אישי (לדוגמה, סיסמאות, מספרי טלפון או כרטיסי אשראי). <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">התרגום נכשל עקב שגיאת שרת.</translation>
+<translation id="3754210790023674521">יציאה ממצב תמונה בתוך תמונה</translation>
 <translation id="3759461132968374835">לא התקבלו דיווחים על קריסות לאחרונה. קריסות שהתרחשו בזמן שאפשרות הדיווח על קריסות היתה מושבתת לא יופיעו כאן.</translation>
 <translation id="3760561303380396507">‏האם להשתמש ב-Windows Hello במקום ב-CVC?</translation>
 <translation id="3761718714832595332">הסתרת הסטטוס</translation>
@@ -958,6 +962,7 @@ Del</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דיווח על שגיאה זו</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="519422657042045905">ההערה לא זמינה</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">דף מוטמע בדף הזה אומר</translation>
 <translation id="5205222826937269299">שם (חובה)</translation>
 <translation id="5215116848420601511">‏אמצעי תשלום וכתובות שנשמרו ב-Google Pay</translation>
@@ -987,6 +992,7 @@ Del</translation>
 <translation id="5295292838686006428">‏הסיסמה שלך נחשפה בעקבות פרצת אבטחת מידע באתר או באפליקציה. ההמלצה של Chrome היא לבדוק עכשיו את הסיסמאות השמורות שלך.</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="5300589172476337783">הצגה</translation>
+<translation id="5306593769196050043">שני הגיליונות</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
 <translation id="5314967030527622926">יצירת חוברת</translation>
@@ -1141,7 +1147,6 @@ Del</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">בדיקת הסיסמאות</translation>
 <translation id="6015796118275082299">שנה</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{דף 1}two{דף #}many{דף #}other{דף #}}</translation>
 <translation id="6017514345406065928">ירוק</translation>
 <translation id="6017850046339264347">תוקפים שמשתמשים ב-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להתקין יישומים מטעים שמתחזים לאחרים או לאסוף נתונים שאפשר להשתמש בהם כדי לעקוב אחריך. <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (מסונכרנים)</translation>
@@ -1249,7 +1254,6 @@ Del</translation>
 <translation id="6446163441502663861">Kahu (Envelope)‎</translation>
 <translation id="6446608382365791566">הוסף מידע</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
-<translation id="644931407731409778">מסמך PDF המכיל {COUNT,plural, =1{עמוד אחד}two{# עמודים}many{# עמודים}other{# עמודים}}</translation>
 <translation id="6451458296329894277">אשר שליחה-מחדש של הטופס</translation>
 <translation id="6457206614190510200">קיפול והידוק של כפולות עמודים</translation>
 <translation id="6465306955648956876">ניהול סיסמאות...</translation>
@@ -1361,6 +1365,7 @@ Del</translation>
 <translation id="7053983685419859001">חסימה</translation>
 <translation id="7062635574500127092">כחול-ירקרק</translation>
 <translation id="7064851114919012435">פרטים ליצירת קשר</translation>
+<translation id="70705239631109039">החיבור שלך לא מאובטח לחלוטין</translation>
 <translation id="7075452647191940183">הבקשה גדולה מידי</translation>
 <translation id="7079718277001814089">האתר הזה מכיל תוכנה זדונית</translation>
 <translation id="7081308185095828845">התכונה הזו לא זמינה במכשיר שלך</translation>
@@ -1380,6 +1385,7 @@ Del</translation>
 <translation id="7152423860607593928">Number-14 (Envelope)‎</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">לבנדר</translation>
+<translation id="7156870133441232244">‏יש לשדרג את השרת ל-TLS 1.2 ואילך.</translation>
 <translation id="717330890047184534">‏מזהה GAIA:</translation>
 <translation id="7174545416324379297">משולבת</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1405,6 +1411,7 @@ Del</translation>
 <translation id="725866823122871198">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במחשב שלך שגויים.</translation>
 <translation id="7260504762447901703">בטל גישה</translation>
 <translation id="7275334191706090484">סימניות מנוהלות</translation>
+<translation id="7288778322931489286">‏מנהל המערכת הפעיל את Enterprise Service Hooks בדפדפן שלך. להוקים (hooks) האלה יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="7292031607255951991">שם הנמען</translation>
 <translation id="7298195798382681320">מומלצים</translation>
 <translation id="7300012071106347854">כחול קובלט</translation>
@@ -1730,6 +1737,7 @@ Del</translation>
 <translation id="874918643257405732">הוספת הכרטיסייה לסימניות</translation>
 <translation id="8751426954251315517">אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="8759274551635299824">פג תוקפו של הכרטיס</translation>
+<translation id="87601671197631245">באתר הזה נעשה שימוש בתצורת הגנה מיושנת, כך שמידע נשלח אליו עשוי להיחשף (למשל סיסמאות, הודעות או כרטיסי אשראי).</translation>
 <translation id="8761567432415473239">‏גלישה בטוחה של Google <ph name="BEGIN_LINK" />איתרה לאחרונה תוכניות מזיקות<ph name="END_LINK" /> באתר <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">‏התקן USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1747,6 +1755,7 @@ Del</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
 <translation id="8866928039507595380">קיפול</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">‏שיתוף נתונים לגבי אירועי אבטחה שסומנו על ידי Enterprise Service Hooks עם מנהל המערכת שלך. נתונים אלה עשויים לכלול כתובות URL של דפים שביקרת בהם, שמות של קבצים או מטא-נתונים, ואת שם המשתמש שנכנסת באמצעותו אל המכשיר ואל Chrome.</translation>
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8870494189203302833">באותו סדר עם הפנים כלפי מטה</translation>
 <translation id="8874824191258364635">עליך להזין מספר כרטיס חוקי</translation>

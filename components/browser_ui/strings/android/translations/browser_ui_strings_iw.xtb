@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="2148716181193084225">היום</translation>
 <translation id="2359808026110333948">המשך</translation>
+<translation id="2501278716633472235">חזרה</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="3115898365077584848">הצג פרטים</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">העתק קישור</translation>
 <translation id="4002066346123236978">כותרת</translation>
 <translation id="4570913071927164677">פרטים</translation>
+<translation id="497421865427891073">המשך קדימה</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
+<translation id="5596627076506792578">אפשרויות נוספות</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5939518447894949180">אפס</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">אפשרויות בשביל <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">שיתוף</translation>
 <translation id="6746124502594467657">הזז למטה</translation>
+<translation id="6818926723028410516">בחירת פריטים</translation>
 <translation id="6910211073230771657">נמחק</translation>
 <translation id="6945221475159498467">בחירה</translation>
 <translation id="6965382102122355670">אישור</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{נבחר אחד}two{נבחרו #}many{נבחרו #}other{נבחרו #}}</translation>
+<translation id="7087918508125750058">נבחרו <ph name="ITEM_COUNT" />. האפשרויות מוצגות בחלק העליון של המסך</translation>
+<translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="7791543448312431591">הוספה</translation>
 <translation id="780301667611848630">לא תודה</translation>
+<translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8249310407154411074">העברה לראש הרשימה</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8609465669617005112">הזז למעלה</translation>
+<translation id="8676374126336081632">ניקוי קלט</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
 </translationbundle>

@@ -189,8 +189,7 @@ BluetoothInternalsTest.prototype = {
 
     window.setupFn = () => {
       this.internalsHandlerInterceptor = new MojoInterfaceInterceptor(
-          mojom.BluetoothInternalsHandler.$interfaceName, 'context',
-          /*useBrowserInterfaceBroker=*/ true);
+          mojom.BluetoothInternalsHandler.$interfaceName);
       this.internalsHandlerInterceptor.oninterfacerequest = (e) => {
         this.internalsHandler = new TestBluetoothInternalsHandler(e.handle);
 

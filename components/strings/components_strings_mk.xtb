@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Прикажи ги картичките</translation>
 <translation id="3369192424181595722">Грешка на часовникот</translation>
 <translation id="337363190475750230">Со оневозможен пристап</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ја овозможи Enterprise Service Hooks на вашиот прелистувач. Овие елементи за привлекување имаат пристап до дел од вашите податоци.</translation>
+<translation id="3377144306166885718">Серверот користеше застарена верзија на TLS.</translation>
 <translation id="3377188786107721145">Грешка при анализа на правило</translation>
 <translation id="3377736046129930310">Користете заклучување екран за побрзо потврдување на картичките</translation>
 <translation id="3380365263193509176">Непозната грешка</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Адреса на испорака</translation>
 <translation id="3395827396354264108">Метод за подигнување</translation>
 <translation id="3399952811970034796">Адреса за испорака</translation>
+<translation id="3402261774528610252">Врската за вчитување на сајтов користеше TLS 1.0 или TLS 1.1, што се застарени и ќе бидат оневозможени во иднина. Штом ќе се оневозможат, корисниците нема да можат да го вчитуваат сајтов. Серверот треба да овозможи TLS 1.2 или понова верзија.</translation>
 <translation id="3422248202833853650">Обидете се да излезете од другите програми за да ослободите меморија.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> е моментално недостапен.</translation>
 <translation id="3423742043356668186">Одредено од системот</translation>
@@ -634,6 +637,7 @@
 <translation id="3745099705178523657">Откако ќе потврдите, деталите за картичката од вашата сметка на Google ќе се споделат со сајтов.</translation>
 <translation id="3748148204939282805">Напаѓачите на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> може да ве измамат да направите нешто опасно, како што е инсталирање софтвер или откривање лични информации (на пример, лозинки, телефонски броеви или кредитни картички). <ph name="BEGIN_LEARN_MORE_LINK" />Дознајте повеќе<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Преводот не успеа поради серверска грешка.</translation>
+<translation id="3754210790023674521">Излези од „Слика во слика“</translation>
 <translation id="3759461132968374835">Немате неодамна пријавени падови. Падовите што настанале кога било исклучено пријавувањето падови нема да се појават тука.</translation>
 <translation id="3760561303380396507">Да се користи Windows Hello наместо CVC?</translation>
 <translation id="3761718714832595332">Сокри го статусот</translation>
@@ -956,6 +960,7 @@
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Пријави ја грешката.</translation>
 <translation id="5190835502935405962">Лента со обележувачи</translation>
 <translation id="519422657042045905">Прибелешката не е достапна</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Вметнатата страница во страницава вели</translation>
 <translation id="5205222826937269299">Потребно е име</translation>
 <translation id="5215116848420601511">Начини на плаќање и адреси преку Google Pay</translation>
@@ -985,6 +990,7 @@
 <translation id="5295292838686006428">Упад во податоците на сајт или апликација ја откри вашата лозинка. Chrome ви препорачува да ги проверите зачуваните лозинки веднаш.</translation>
 <translation id="5299298092464848405">Грешка при разложување на правилото</translation>
 <translation id="5300589172476337783">Прикажи</translation>
+<translation id="5306593769196050043">Двата листа</translation>
 <translation id="5308380583665731573">Поврзи</translation>
 <translation id="5308689395849655368">Пријавување пад е оневозможено.</translation>
 <translation id="5314967030527622926">Производител на брошури</translation>
@@ -1138,7 +1144,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Проверете ги лозинките</translation>
 <translation id="6015796118275082299">Година</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}other{Страница #}}</translation>
 <translation id="6017514345406065928">Зелена</translation>
 <translation id="6017850046339264347">Напаѓачите што се на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> може да инсталираат лажни апликации што се преправаат дека се нешто друго или собираат податоци што може да ги користат за да ве следат. <ph name="BEGIN_LEARN_MORE_LINK" />Дознајте повеќе<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /> (синхронизирани)</translation>
@@ -1246,7 +1251,6 @@
 <translation id="6446163441502663861">Kahu (плик)</translation>
 <translation id="6446608382365791566">Додајте повеќе информации</translation>
 <translation id="6447842834002726250">Колачиња</translation>
-<translation id="644931407731409778">PDF-документ што содржи {COUNT,plural, =1{1 страница}one{# страница}other{# страници}}</translation>
 <translation id="6451458296329894277">Потврди повторно поднесување на формулар</translation>
 <translation id="6457206614190510200">Шиење на работ од превиткувањето</translation>
 <translation id="6465306955648956876">Управувајте со лозинките…</translation>
@@ -1358,6 +1362,7 @@
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7062635574500127092">Синозелена</translation>
 <translation id="7064851114919012435">Информации за контакт</translation>
+<translation id="70705239631109039">Вашата врска не е потполно безбедна</translation>
 <translation id="7075452647191940183">Барањето е предолго</translation>
 <translation id="7079718277001814089">Сајтов содржи злонамерен софтвер</translation>
 <translation id="7081308185095828845">Функцијава не е достапна на вашиот уред</translation>
@@ -1377,6 +1382,7 @@
 <translation id="7152423860607593928">Number-14 (плик)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Боја на лаванда</translation>
+<translation id="7156870133441232244">Серверот треба да се надгради на TLS 1.2 или понова верзија.</translation>
 <translation id="717330890047184534">ID на Gaia:</translation>
 <translation id="7174545416324379297">Споена</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1402,6 +1408,7 @@
 <translation id="725866823122871198">Не може да се воспостави приватна врска до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> бидејќи датумот и времето на вашиот компјутер (<ph name="DATE_AND_TIME" />) се погрешни.</translation>
 <translation id="7260504762447901703">Отповикај пристап</translation>
 <translation id="7275334191706090484">Управувани обележувачи</translation>
+<translation id="7288778322931489286">Администраторот ја овозможи Enterprise Service Hooks на вашиот прелистувач. Овие елементи за привлекување имаат пристап до дел од вашите податоци.</translation>
 <translation id="7292031607255951991">Име на примач</translation>
 <translation id="7298195798382681320">Препорачано</translation>
 <translation id="7300012071106347854">Сина како кобалт</translation>
@@ -1726,6 +1733,7 @@
 <translation id="874918643257405732">Обележете ја картичкава</translation>
 <translation id="8751426954251315517">Обидете се повторно следниот пат</translation>
 <translation id="8759274551635299824">Картичкава е истечена</translation>
+<translation id="87601671197631245">Сајтов користи застарена конфигурација за безбедност, што може да ги изложи вашите информации (на пример, лозинките, пораките или кредитните картички) кога се испраќаат на овој сајт.</translation>
 <translation id="8761567432415473239">Безбедното прелистување на Google неодамна <ph name="BEGIN_LINK" />најде штетни програми<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-уред</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@
 <translation id="8866481888320382733">Грешка при разложување поставки на политиката</translation>
 <translation id="8866928039507595380">Превиткување</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Споделувајте податоци со администраторот за безбедносните настани што ги пријавила Enterprise Service Hooks. Тука спаѓаат URL-адресите на страниците што ги посетувате, имињата или метаподатоците на датотеките и корисничкото име што го користите за најавување на вашиот уред и Chrome.</translation>
 <translation id="8870413625673593573">Неодамна затворено</translation>
 <translation id="8870494189203302833">Ист редослед со лицето надолу</translation>
 <translation id="8874824191258364635">Внесете важечки број на картичка</translation>

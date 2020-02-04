@@ -10,6 +10,7 @@ import './controls/settings_dropdown_menu.m.js';
 import './controls/settings_slider.m.js';
 import './controls/settings_textarea.m.js';
 import './controls/settings_toggle_button.m.js';
+import './site_favicon.m.js';
 
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';

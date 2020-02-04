@@ -337,27 +337,31 @@ void ParseReportEndpoint(const mojom::ContentSecurityPolicyPtr& policy,
 
 }  // namespace
 
-ContentSecurityPolicy::ContentSecurityPolicy() = default;
-ContentSecurityPolicy::~ContentSecurityPolicy() = default;
-
-void ContentSecurityPolicy::Parse(const GURL& base_url,
-                                  const net::HttpResponseHeaders& headers) {
+void AddContentSecurityPolicyFromHeaders(
+    const net::HttpResponseHeaders& headers,
+    const GURL& base_url,
+    std::vector<mojom::ContentSecurityPolicyPtr>* out) {
   size_t iter = 0;
   std::string header_value;
   while (headers.EnumerateHeader(&iter, "content-security-policy",
                                  &header_value)) {
-    Parse(base_url, mojom::ContentSecurityPolicyType::kEnforce, header_value);
+    AddContentSecurityPolicyFromHeaders(
+        header_value, mojom::ContentSecurityPolicyType::kEnforce, base_url,
+        out);
   }
   iter = 0;
   while (headers.EnumerateHeader(&iter, "content-security-policy-report-only",
                                  &header_value)) {
-    Parse(base_url, mojom::ContentSecurityPolicyType::kReport, header_value);
+    AddContentSecurityPolicyFromHeaders(
+        header_value, mojom::ContentSecurityPolicyType::kReport, base_url, out);
   }
 }
 
-void ContentSecurityPolicy::Parse(const GURL& base_url,
-                                  mojom::ContentSecurityPolicyType type,
-                                  base::StringPiece header_value) {
+void AddContentSecurityPolicyFromHeaders(
+    base::StringPiece header_value,
+    network::mojom::ContentSecurityPolicyType type,
+    const GURL& base_url,
+    std::vector<mojom::ContentSecurityPolicyPtr>* out) {
   // RFC7230, section 3.2.2 specifies that headers appearing multiple times can
   // be combined with a comma. Walk the header string, and parse each comma
   // separated chunk as a separate header.
@@ -389,12 +393,11 @@ void ContentSecurityPolicy::Parse(const GURL& base_url,
                           policy->use_reporting_api);
     }
 
-    content_security_policies_.push_back(std::move(policy));
+    out->push_back(std::move(policy));
   }
 }
 
-// static
-std::string ContentSecurityPolicy::ToString(mojom::CSPDirectiveName name) {
+std::string ToString(mojom::CSPDirectiveName name) {
   switch (name) {
     case mojom::CSPDirectiveName::DefaultSrc:
       return "default-src";
@@ -417,9 +420,7 @@ std::string ContentSecurityPolicy::ToString(mojom::CSPDirectiveName name) {
   return "";
 }
 
-// static
-mojom::CSPDirectiveName ContentSecurityPolicy::ToDirectiveName(
-    const std::string& name) {
+mojom::CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
   if (name == "default-src")
     return mojom::CSPDirectiveName::DefaultSrc;
   if (name == "child-src")

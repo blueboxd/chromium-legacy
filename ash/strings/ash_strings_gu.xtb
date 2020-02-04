@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">સ્ટાઇલસની સેટિંગ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
-<translation id="2364154243880592194">સ્ટેટસ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /> નોટિફિકેશન કેન્દ્ર ઍક્સેસ કરવા માટે 'શોધો' + ડાબી ઍરો કી દબાવો.</translation>
 <translation id="2365393535144473978">મોબાઇલ ડેટા ચાલુ કરવાથી બ્લૂટૂથ ચાલુ થશે.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">પાછળ કરો</translation>
 <translation id="4129129681837227511">તમારી લૉક સ્ક્રીન પર નોટિફિકેશન જોવા માટે, સેટિંગને બદલવા માટે અનલૉક કરો</translation>
 <translation id="4146833061457621061">મ્યુઝિક વગાડો</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="4181841719683918333">ભાષાઓ</translation>
 <translation id="4195877955194704651">ઑટોમૅટિક ક્લિક બટન</translation>
 <translation id="4217571870635786043">ડિક્ટેશન</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">પ્રતિસાદ</translation>
 <translation id="4527045527269911712">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
 <translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>
-<translation id="4544944664594876241">સ્ક્રીનને લૉક કરવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" /> ને બદલે <ph name="NEW_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">સાંભળવા માટે પસંદ કરો બટન</translation>
 <translation id="4585337515783392668">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરવાનું રોકો</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6803622936009808957">કોઈ સમર્થિત રિઝોલ્યૂશન મળ્યું ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયા નથી. તેને બદલે વિસ્તૃત ડેસ્કટૉપ દાખલ કર્યું.</translation>
 <translation id="6820676911989879663">વિરામ લો!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">સક્રિય કરો <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">શૉર્ટકટ બંધ કર્યો</translation>
 <translation id="6910714959251846841">આ અપડેટ માટે તમારા ઉપકરણને પાવરવોશ કરવું જરૂરી છે. નવીનતમ <ph name="SYSTEM_APP_NAME" /> અપડેટ વિશે વધુ જાણો.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. અપડેટ લાગુ કરવા માટે આ Chromebookને ફરી શરૂ કરવાની જરૂર છે. આમાં 1 મિનિટ જેટલો સમય લાગી શકે છે.</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
 <translation id="726276584504105859">વિભાજિત સ્ક્રીનનો ઉપયોગ કરવા માટે અહીં ખેંચો</translation>
 <translation id="7262906531272962081">રિમાઇન્ડર બનાવો</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
 <translation id="7497767806359279797">ભાષા અને કીબોર્ડ પસંદ કરો</translation>
-<translation id="7510334386202674593">ctrl + shift + L</translation>
 <translation id="7526573455193969409">નેટવર્કને મોનિટર કરવામાં આવી શકે છે</translation>
 <translation id="7536035074519304529">IP સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">સૂવાનો સમય</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" />ને સહાય આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION" /> પર બદલાયું હતું</translation>
 <translation id="7562368315689366235">ઇમોજી પૅલેટ</translation>
 <translation id="7564874036684306347">વિંડોને બીજા ડેસ્કટૉપમાં ખસેડવું તે અનપેક્ષિત વર્તણૂકનું કારણ બની શકે છે. અનુગામી નોટિફિકેશન, વિંડો અને સંવાદો ડેસ્કટૉપ વચ્ચે વિભાજિત થઈ શકે છે.</translation>
 <translation id="7568294522609223312">ઑટોમૅટિક ક્લિક બંધ કરો</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">ઉચ્ચ કોન્ટ્રાસ્ટ</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> પર સ્ક્રીન કાસ્ટ કરવાનું રોકો</translation>
 <translation id="8113423164597455979">ચાલુ, બધી ઍપ</translation>
+<translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> થી કનેક્ટેડ છે</translation>
 <translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>
 <translation id="8142441511840089262">ડબલ ક્લિક કરો</translation>

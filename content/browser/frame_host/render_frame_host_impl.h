@@ -1254,6 +1254,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return has_committed_any_navigation_;
   }
 
+  // Return true if the process this RenderFrameHost is using has crashed and we
+  // are replacing RenderFrameHosts for crashed frames rather than reusing them.
+  //
+  // This is not exactly the opposite of IsRenderFrameLive().
+  // IsRenderFrameLive() is false when the RenderProcess died, but it is also
+  // false when it hasn't been initialized.
+  bool must_be_replaced() const { return must_be_replaced_; }
+
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
   CreateCrossOriginPrefetchLoaderFactoryBundle();
 
@@ -2297,6 +2305,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the RenderFrame when the first CommitNavigation message is sent to the
   // RenderFrame. It is reset after a renderer process crash.
   bool has_committed_any_navigation_ = false;
+  bool must_be_replaced_ = false;
 
   mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{
       this};

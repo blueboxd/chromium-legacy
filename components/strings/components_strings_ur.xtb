@@ -535,6 +535,8 @@
 <translation id="3366477098757335611">کارڈز دیکھیں</translation>
 <translation id="3369192424181595722">گھڑی کی خرابی</translation>
 <translation id="337363190475750230">کالعدم کردہ</translation>
+<translation id="3376829916920036789">‏<ph name="ENROLLMENT_DOMAIN" /> نے آپ کے براؤزر پر Enterprise Service Hooks کو فعال کر دیا ہے۔ ان ہُکس کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
+<translation id="3377144306166885718">‏سرور نے TLS کا متروک ورژن استعمال کیا۔</translation>
 <translation id="3377188786107721145">پالیسی پارس کرنے کی خرابی</translation>
 <translation id="3377736046129930310">تیزی سے کارڈز کی تصدیق کرنے کیلئے اسکرین لاک استعمال کریں</translation>
 <translation id="3380365263193509176">نامعلوم خرابی</translation>
@@ -543,6 +545,7 @@
 <translation id="3391030046425686457">ڈیلیوری پتہ</translation>
 <translation id="3395827396354264108">پِک اپ کا طریقہ</translation>
 <translation id="3399952811970034796">ڈیلیوری کا پتہ</translation>
+<translation id="3402261774528610252">‏اس سائٹ کو لوڈ کرنے کے لئے استعمال ہونے والے کنکشن میں TLS 1.0 یا TLS 1.1 استعمال کیا گیا تھا، جو فرسودہ ہیں اور مستقبل میں بھی غیر فعال کر دیے جائیں گے۔ ایک بار غیر فعال ہوجانے پر، صارفین کو اس سائٹ کو لوڈ کرنے سے روکا جائے گا۔ سرور کو TLS 1.2 یا اس سے اعلی ورژن کو فعال کرنا چاہیے۔</translation>
 <translation id="3422248202833853650">میموری خالی کرنے کیلئے دیگر پروگرامز سے باہر نکلنے کی کوشش کریں۔</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> فی الحال ناقابل رسائی ہے۔</translation>
 <translation id="3423742043356668186">سسٹم کا متعین کردہ</translation>
@@ -626,6 +629,7 @@
 <translation id="3745099705178523657">‏آپ کے توثیق کرنے کے بعد، آپ کے Google اکاؤنٹ سے کارڈ کی تفصیلات کا اس سائٹ کے ساتھ اشتراک کر دیا جائے گا۔</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> پر موجود حملہ آور کوئی خطرناک کام انجام دینے، جیسے سافٹ ویئر انسٹال کرنے یا آپ کی ذاتی معلومات (مثلاً، پاس ورڈز، فون نمبرز، یا کریڈٹ کارڈز) کو افشاء کرنے میں آپ کو پھنسا سکتے ہیں۔ <ph name="BEGIN_LEARN_MORE_LINK" />مزید جانیں<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">سرور کی ایک خرابی کی وجہ سے ترجمہ ناکام ہو گیا۔</translation>
+<translation id="3754210790023674521">تصویر میں تصویر سے باہر نکلیں</translation>
 <translation id="3759461132968374835">آپ کے پاس فی الحال کوئی اطلاع کردہ کریشز نہیں ہیں۔  کریش رپورٹنگ غیر فعال ہونے پر پیش آنے والے کریشز یہاں ظاہر نہیں ہوں گے۔</translation>
 <translation id="3760561303380396507">‏CVC کے بجائے Windows Hello کا استعمال کریں؟</translation>
 <translation id="3761718714832595332">اسٹیٹس چھپائیں</translation>
@@ -947,6 +951,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> میں نہیں ہے؟ اس خرابی کی اطلاع دیں</translation>
 <translation id="5190835502935405962">بُک مارکس بار</translation>
 <translation id="519422657042045905">تشریح دستیاب نہیں ہے</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">اس صفحے پر انضمام کردہ ایک صفحے کے مطابق</translation>
 <translation id="5205222826937269299">نام مطلوب ہے</translation>
 <translation id="5215116848420601511">‏Google Pay استعمال کرنے والے ادائیگی کے طریقے اور پتے</translation>
@@ -976,6 +981,7 @@
 <translation id="5295292838686006428">‏کسی سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی کے باعث آپ کا پاس ورڈ بے نقاب ہوا ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="5299298092464848405">پالیسی کو پارس کرنے میں خرابی</translation>
 <translation id="5300589172476337783">دکھائیں</translation>
+<translation id="5306593769196050043">دونوں شیٹیں</translation>
 <translation id="5308380583665731573">منسلک کریں</translation>
 <translation id="5308689395849655368">کریش رپورٹنگ کو غیر فعال کر دیا گیا ہے۔</translation>
 <translation id="5314967030527622926">کتابچہ بنانے والا</translation>
@@ -1129,7 +1135,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">اپنے پاس ورڈز چیک کریں</translation>
 <translation id="6015796118275082299">سال</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{صفحہ 1}other{صفحہ #}}</translation>
 <translation id="6017514345406065928">سبز</translation>
 <translation id="6017850046339264347">حملہ آور <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> پر فریب ایپس انسٹال کر سکتے ہیں جو کچھ اور ہونے کا دکھاوا کرتی ہیں یا آپ کا پتہ لگانے کیلئے استعمال کئے جانے والے ڈیٹا جمع کرتی ہیں۔<ph name="BEGIN_LEARN_MORE_LINK" />مزید جانیں<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /> (مطابقت پذیری کردہ)</translation>
@@ -1238,7 +1243,6 @@
 <translation id="6446163441502663861">Kahu ‎(Envelope‎)‎</translation>
 <translation id="6446608382365791566">مزید معلومات شامل کریں</translation>
 <translation id="6447842834002726250">کوکیز</translation>
-<translation id="644931407731409778">PDF دستاویز {COUNT,plural, =1{1 صفحہ}other{# صفحات}} پر مشتمل ہے</translation>
 <translation id="6451458296329894277">فارم دوبارہ جمع کرانے کی توثیق کریں</translation>
 <translation id="6457206614190510200">سیڈل سلائی</translation>
 <translation id="6465306955648956876">پاسورڈز کا نظم کریں...</translation>
@@ -1350,6 +1354,7 @@
 <translation id="7053983685419859001">مسدود کریں</translation>
 <translation id="7062635574500127092">نیلگوں سبز</translation>
 <translation id="7064851114919012435">رابطہ کی معلومات</translation>
+<translation id="70705239631109039">آپ کا کنکشن مکمل طور پر محفوظ نہیں ہے</translation>
 <translation id="7075452647191940183">درخواست کافی بڑی ہے</translation>
 <translation id="7079718277001814089">یہ سائٹ میلویئر پر مشتمل ہے</translation>
 <translation id="7081308185095828845">یہ خصوصیت آپ کے آلے پر دستیاب نہیں ہے</translation>
@@ -1369,6 +1374,7 @@
 <translation id="7152423860607593928">Number-14 ‎(Envelope‎)‎</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}other{<ph name="PAYMENT_METHOD_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}}</translation>
 <translation id="7153618581592392745">ارغوانی</translation>
+<translation id="7156870133441232244">‏سرور TLS 1.2 یا اس نئے ورژن پر اپ گریڈ ہونا چاہیے۔</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">ضم کردہ</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> مزید}other{<ph name="SHIPPING_OPTION_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> مزید}}</translation>
@@ -1394,6 +1400,7 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> سے ایک نجی کنکشن تشکیل نہیں دیا جا سکتا ہے کیونکہ آپ کے کمپیوٹر کی تاریخ اور وقت (<ph name="DATE_AND_TIME" />) غلط ہیں۔</translation>
 <translation id="7260504762447901703">رسائی کالعدم کریں</translation>
 <translation id="7275334191706090484">منظم کردہ بُک مارکس</translation>
+<translation id="7288778322931489286">‏آپ کے منتظم نے آپ کے براؤزر پر Enterprise Service Hooks کو فعال کر دیا ہے۔ ان ہُکس کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
 <translation id="7292031607255951991">وصول کنندہ کا نام</translation>
 <translation id="7298195798382681320">تجویز کردہ</translation>
 <translation id="7300012071106347854">کوبالٹ نیلا</translation>
@@ -1718,6 +1725,7 @@
 <translation id="874918643257405732">اس ٹیب کو بُک مارک کریں</translation>
 <translation id="8751426954251315517">براہ کرم اگلی بار دوبارہ کوشش کریں</translation>
 <translation id="8759274551635299824">اس کارڈ کی میعاد ختم ہو گئی ہے</translation>
+<translation id="87601671197631245">یہ سائٹ پرانی سیکیورٹی کنفیگریشن کو استعمال کر رہی ہے جو اس سائٹ پر بھیجے جانے پر آپ کی معلومات (مثلاً، پاس ورڈز، پیغامات یا کریڈٹ کارڈز) کو ظاہر کر سکتی ہے۔</translation>
 <translation id="8761567432415473239">‏Google محفوظ براؤزنگ کو حال ہی میں <ph name="SITE" /> پر <ph name="BEGIN_LINK" />نقصاندہ پروگرامز ملے<ph name="END_LINK" />۔</translation>
 <translation id="8763927697961133303">‏USB آلہ</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1735,6 +1743,7 @@
 <translation id="8866481888320382733">پالیسی کی ترتیبات کو پارس کرنے میں خرابی</translation>
 <translation id="8866928039507595380">فولڈ</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">‏ان سیکیورٹی ایونٹس کے بارے میں ڈیٹا کا اشتراک کریں جن کے بارے میں Enterprise Service Hooks نے آپ کے منتظم کو اطلاع دی ہے۔ اس میں آپ کے ذریعے ملاحظہ کیے جانے والے صفحات کے URLs، فائلوں کے نام یا میٹا ڈیٹا اور وہ صارف نام جس کا استعمال آپ اپنے آلہ اور Chrome میں سائن ان کرنے کے لیے استعمال کرتے ہیں، شامل ہو سکتے ہیں۔</translation>
 <translation id="8870413625673593573">حال ہی میں بند کردہ</translation>
 <translation id="8870494189203302833">اسی ترتیب میں، صفحات کا رُخ نیچے کی جانب</translation>
 <translation id="8874824191258364635">ایک درست کارڈ نمبر درج کریں</translation>

@@ -108,7 +108,7 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
     ExecutionContext* execution_context,
-    StringOrUnrestrictedDoubleSequence& init,
+    const StringOrUnrestrictedDoubleSequence& init,
     ExceptionState& exception_state) {
   if (init.IsString()) {
     if (!execution_context->IsDocument()) {

@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">ရှာဖွေရေး အင်ဂျင်</translation>
 <translation id="1513352483775369820">စာညှပ်များ နှင့် ဝဘ် မှတ်တမ်း</translation>
 <translation id="1513858653616922153">စကားဝှက်ကို ဖျက်ရန်</translation>
-<translation id="1516229014686355813">'တို့၍ ရှာဖွေခြင်း' သည် ရွေးချယ်ထားသည့် စာလုံးနှင့် လက်ရှိစာမျက်နှာကို Google Search သို့ အကြောင်းအရာတစ်ခုအဖြစ် ပို့ပါသည်။ ၎င်းကို <ph name="BEGIN_LINK" />ဆက်တင်များ<ph name="END_LINK" /> ထဲတွင် ပိတ်နိုင်သည်။</translation>
 <translation id="1521774566618522728">ယနေ့ အသုံးပြုထားသည်</translation>
 <translation id="1544826120773021464">သင့် Google အကောင့်ကို စီမံခန့်ခွဲရန် "အကောင့် စီမံခန့်ခွဲရန်" ခလုတ်ကို တို့ပါ</translation>
 <translation id="1549000191223877751">အခြားဝင်းဒိုးသို့ ရွှေ့ပါ</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> သည် Chrome တွင်လည်း ဒေတာများရှိသည်</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">ဝဘ်ဆိုက် ခဏရပ်ထားသည်</translation>
-<translation id="2063713494490388661">ရှာဖွေရန် ပုတ်ပါ</translation>
 <translation id="2067805253194386918">စာသား</translation>
 <translation id="2082238445998314030">အဖြေ <ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">အသံ</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">လက်မှတ်ထိုးဝင်၍ မရပါ</translation>
 <translation id="2349710944427398404">အကောင့်များ၊ ဝဘ်လိပ်စာများနှင့် သိမ်းဆည်းထားသည့် ဆက်တင်များအပါအဝင် Chrome မှ သိမ်းဆည်းထားသည့် စုစုပေါင်းဒေတာများ ပါဝင်ပါသည်</translation>
 <translation id="2353636109065292463">သင်၏ အင်တာနက်ချိတ်ဆက်မှုကို စစ်ဆေးခြင်း</translation>
+<translation id="2359808026110333948">ဆက်လုပ်ရန်</translation>
 <translation id="2369533728426058518">တဘ်များကို ဖွင့်ရန်</translation>
 <translation id="2387895666653383613">စာသား စကေး</translation>
 <translation id="2394602618534698961">သင်ဒေါင်းလုဒ်လုပ်ထားသော ဖိုင်များကို ဤနေရာတွင် တွေ့ရပါမည်</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">အသုံးပြုခြင်း မှတ်တမ်း</translation>
 <translation id="2497852260688568942">စင့်ခ်ပြုလုပ်ခြင်းကို သင့်စီမံခန့်ခွဲသူက ပိတ်ဆို့ထားပါသည်</translation>
 <translation id="2498359688066513246">အကူအညီ &amp; အကြံပြုချက်</translation>
-<translation id="2501278716633472235">နောက်သို့ ပြန်ရန်</translation>
 <translation id="2513403576141822879">ပုဂ္ဂိုလ်ရေးရာ၊ လုံခြုံမှုနှင့် ဒေတာစုဆောင်းမှုတို့နှင့် ဆက်စပ်နေသည့် နောက်ထပ် ဆက်တင်များအတွက် <ph name="BEGIN_LINK" />စင့်ခ်လုပ်ခြင်းနှင့် Google ဝန်ဆောင်မှုများ<ph name="END_LINK" /> ကို ကြည့်ပါ</translation>
 <translation id="2517472476991765520">ရှာဖွေရန်</translation>
 <translation id="2518590038762162553">'အပေါ့စားမုဒ်' တွင် Chrome သည် စာမျက်နှာများကို ပိုမိုမြန်ဆန်စွာဖွင့်ပြီး ဒေတာကို ၆၀ ရာခိုင်နှုန်းအထိ လျှော့သုံးပါသည်။ သင်ဝင်ကြည့်သည့် စာမျက်နှာများကို အကောင်းဆုံးချိန်ညှိရန် Chrome သည် သင့်ဝဘ် ဒေတာအသွားအလာများကို Google သို့ ပို့ပါသည်။ <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">ရှာဖွေမှုဘားတန်းကို ဖွင့်ရန်</translation>
 <translation id="3716182511346448902">ဤစာမျက်နှာက မှတ်ဉာဏ်အများအပြား အသုံးပြုနေသောကြောင့် Chrome က ၎င်းကို ခေတ္တရပ်ထားပါသည်။</translation>
 <translation id="3730075448226062617">Chrome က သင့်မိုက်ခရိုဖုန်းကို သုံးနိုင်ရန် <ph name="BEGIN_LINK" />Android ဆက်တင်များ<ph name="END_LINK" /> တွင် မိုက်ခရိုဖုန်းကိုလည်း ဖွင့်ပါ။</translation>
+<translation id="3738139272394829648">ရှာရန် ထိပါ</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> တွင် လိပ်စာအဖြစ် သိမ်းဆည်းပါ</translation>
 <translation id="3744111561329211289">နောက်ခံတွင် စင့်ခ်လုပ်ခြင်း</translation>
 <translation id="3749259744154402564">ပံ့ပိုးမထားပါ</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">အချို့ဝဘ်ဆိုက်များအတွက် ကွတ်ကီးများ ခွင့်ပြုသည်။</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# နာရီ}other{# နာရီ}}</translation>
 <translation id="4046123991198612571">နောက်တစ်ပုဒ်</translation>
-<translation id="4048707525896921369">စာမျက်နှာကို ပိတ်ခြင်းမရှိဘဲ ဝဘ်ဆိုက်များရှိ အကြောင်းအရာ ခေါင်းစဉ်များအကြောင်း လေ့လာပါ။ 'တို့၍ ရှာဖွေခြင်း' သည် စာလုံးနှင့် ပတ်ပတ်လည်ရှိ အကြောင်းအရာများကို Google Search သို့ ပို့ပေးပြီး အဓိပ္ပာယ်ဖွင့်ဆိုချက်၊ ဓာတ်ပုံ၊ ရှာဖွေမှု ရလဒ်နှင့် အခြားအသေးစိတ်များကို ဖော်ပြပေးပါသည်။
-
-သင်၏ ရှာဖွေမှု ဝေါဟာရကို ချိန်ဆရန်အတွက် ရွေးချယ်ရန် ဖိထားပါ။ သင်၏ ရှာဖွေမှုကို ပြန်လည်သတ်မှတ်ရန် အကွက်ကို အပေါ်ဆုံးအထိ ပွတ်ဆွဲလိုက်ပြီး ရှာဖွေမှုအကွက်ကို တို့ပါ။</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">မျက်နှာပြင်၏ ထိပ်ပိုင်းတွင် ရွေးချယ်စရာများ ရှိပါသည်</translation>
 <translation id="4062305924942672200">တရားဝင် သိသင့်စရာများ</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE" /> က ဒီပုံအတွက် ရှာဖွေနေ</translation>
 <translation id="5581519193887989363">စင့်ခ်လုပ်မည့်အရာကို <ph name="BEGIN_LINK1" />ဆက်တင်များ<ph name="END_LINK1" />တွင် အချိန်မရွေး ရွေးချယ်နိုင်သည်။</translation>
 <translation id="5595485650161345191">လိပ်စာ တည်းဖြတ်ရန်</translation>
-<translation id="5596627076506792578">ပိုမို ရွေးချယ်စရာများ</translation>
 <translation id="5599455543593328020">ရုပ်ဖျက် မုဒ်</translation>
 <translation id="5620928963363755975">သင့်ဖိုင်များနှင့် စာမျက်နှာများကို 'နောက်ထပ်ရွေးချယ်စရာများ' ခလုတ်မှ ဒေါင်းလုဒ်များထဲတွင် ရှာဖွေပါ</translation>
 <translation id="5626134646977739690">အမည်:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">အခြားဒေါင်းလုဒ်လုပ်ခြင်းကို စောင့်နေသည်…</translation>
 <translation id="5865733239029070421">သုံးစွဲမှုဆိုင်ရာ အချက်အလက် ကိန်းဂဏန်းများနှင့် ပျက်စီးမှု အစီရင်ခံစာများကို Google သို့ အလိုအလျောက် ပို့သည်</translation>
 <translation id="5869522115854928033">သိမ်းဆည်းထားသည့် စကားဝှက်များ</translation>
+<translation id="5884076754568147479">သင်၏လုပ်ဆောင်စရာများ ပြီးမြောက်အောင် ကူညီရန် Assistant ကို အသုံးပြုထားသည့် ဝဘ်ဆိုက်များ၏ URL နှင့် အကြောင်းအရာများအပြင် Assistant ဖြင့် ပေးပို့ထားသည့် အချက်အလက်များကို Google က ရရှိပါမည်။</translation>
 <translation id="5902828464777634901">ကွက်ကီးများ အပါအဝင်၊ ဤဝက်ဘ်ဆိုက်မှ သိမ်းဆည်းထားသော ဒေတာများအား၊ ဖျက်မည်။</translation>
 <translation id="5919204609460789179">စင့်ခ်လုပ်ရန် <ph name="PRODUCT_NAME" /> ကို အပ်ဒိတ်လုပ်ပါ</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ကို သိမ်းပြီးပါပြီ</translation>
@@ -774,7 +770,6 @@
 <translation id="6782111308708962316">ကွတ်ကီးဒေတာများကို ပြင်ပကုမ္ပဏီဝဘ်ဆိုက်များက သိမ်းဆည်းခြင်းနှင့် ဖတ်ခြင်းများ ပြုလုပ်၍မရနိုင်အောင် တားဆီးပါ</translation>
 <translation id="6790428901817661496">ဖွင့်ရန်</translation>
 <translation id="6811034713472274749">စာမျက်နှာကိုကြည့်ရန် အသင့်ဖြစ်ပါပြီ</translation>
-<translation id="6818926723028410516">စာရင်းမှ ရွေးရန်</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ဘာသာပြန်ရန်</translation>
 <translation id="6845325883481699275">Chrome လုံခြုံရေးကောင်းမွန်လာအောင် ကူညီပါ</translation>
@@ -807,10 +802,8 @@
 <translation id="7053983685419859001">ပိတ်ဆို့ရန်</translation>
 <translation id="7055152154916055070">တစ်ဆင့်ပြန်ညွှန်ခြင်းကို ပိတ်ထားသည်−</translation>
 <translation id="7063006564040364415">စင့်ခ်ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{၁ ခု ရွေးချယ်ထားပါသည်}other{# ခု ရွေးချယ်ထားပါသည်}}</translation>
 <translation id="7071521146534760487">အကောင့်ကို စီမံရန်</translation>
 <translation id="7077143737582773186">SD ကတ်</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ခု ရွေးထားသည်။ မျက်နှာပြင်၏ ထိပ်နားတွင် ရွေးချယ်စရာများ ရှိသည်</translation>
 <translation id="7121362699166175603">လိပ်စာဘားရှိ မှတ်တမ်းနှင့် အလိုအလျောက်ဖြည့်ပေးခြင်းများကို ဖျက်လိုက်ပါလိမ့်မည်။ သင့်  Google အကောင့်က ဖွင့်ကြည့်ထားသောမှတ်တမ်းသည် <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> တွင် အခြားပုံစံများဖြင့် ရှိနေနိုင်ပါသည်။</translation>
 <translation id="7128222689758636196">လက်ရှိရှာဖွေမှု အင်ဂျင်အတွက် ခွင့်ပြုပါ</translation>
 <translation id="7138678301420049075">အခြား</translation>
@@ -826,7 +819,6 @@
 <translation id="7233236755231902816">ဝဘ်ကို သင့်ဘာသာစကားနှင့် ကြည့်ရန် Chrome နောက်ဆုံးဗားရှင်းကို ရယူပါ</translation>
 <translation id="7243308994586599757">ရွေးစရာများမှာ မျက်နှာပြင်၏ အောက်ခြေပိုင်းနားမှာ ရှိကြသည်</translation>
 <translation id="7248069434667874558">Chrome တွင် <ph name="TARGET_DEVICE_NAME" /> က စင့်ခ်ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးပါ</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ခု ရွေးထားသည်</translation>
 <translation id="7274013316676448362">ပိတ်ထားသည့်ဆိုက်</translation>
 <translation id="7290209999329137901">အမည်ပြောင်း၍ မရပါ</translation>
 <translation id="7291387454912369099">Assistant ဖြင့် ငွေရှင်းခြင်း</translation>
@@ -908,7 +900,6 @@
 <translation id="780301667611848630">မလို ကျေးဇူးပဲ</translation>
 <translation id="7810647596859435254">… ဖြင့် ဖွင့်ရန်</translation>
 <translation id="7821588508402923572">သင်၏ဒေတာချွေတာမှုများကို ဤနေရာတွင် မြင်ရပါမည်</translation>
-<translation id="7846076177841592234">ရွေးချယ်ထားသောဖိုင်များကို ပြန်ဖျက်ပါ</translation>
 <translation id="784934925303690534">အချိန်အကန့်အသတ်</translation>
 <translation id="7851858861565204677">အခြား ကိရိယာများ</translation>
 <translation id="7875915731392087153">အီးမေးလ်ရေးပါ</translation>
@@ -956,6 +947,7 @@
 <translation id="8116925261070264013">ဖျောက်ထားသည်</translation>
 <translation id="8127542551745560481">ပင်မစာမျက်နှာအား တည်းဖြတ်ရန်</translation>
 <translation id="813082847718468539">ဆိုက် အချက်အလက်များကို ကြည့်ရန်</translation>
+<translation id="8137558756159375272">ရွေးချယ်ထားသော စာလုံးနှင့် လက်ရှိစာမျက်နှာအား အကြောင်းအရာတစ်ခု အဖြစ် Google Search သို့ Touch to Search ပို့ပေးသည်။ <ph name="BEGIN_LINK" />ဆက်တင်များ<ph name="END_LINK" />တွင် ၎င်းအား ပိတ်ထားနိုင်သည်။</translation>
 <translation id="8156139159503939589">သင် မည်သည့်ဘာသာစကားများကို ဖတ်တတ်သလဲ။</translation>
 <translation id="8168435359814927499">ပါဝင်သောအကြောင်းအရာ</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> ဖိုင် ကျန်ပါသည်</translation>
@@ -1023,7 +1015,6 @@
 <translation id="8655599981421006542">တဘ်အသစ်ပြုလုပ်ပြီး ယခင်တဘ်များသို့ ပြန်သွားရန် ဤနေရာတွင် နှိပ်ပါ</translation>
 <translation id="8662811608048051533">သင့်ကို ဝက်ဆိုက်အများစုမှ ထွက်သွားစေပါမည်။</translation>
 <translation id="8664979001105139458">ဖိုင်အမည် ရှိပြီးသားဖြစ်သည်</translation>
-<translation id="8676374126336081632">ထည့်သွင်းမှု ရှင်းရန်</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{လိုင်းဆွဲအားအဆင့်- # ဘား}other{လိုင်းဆွဲအားအဆင့်- # ဘား}}</translation>
 <translation id="868929229000858085">သင်၏အဆက်အသွယ်များကို ရှာရန်</translation>
 <translation id="8698438463325761328">သင်၏ ပကတိအသွင်စက်ပစ္စည်းနှင့် ဒေတာများကို ဝဘ်ဆိုက်များက အသုံးမပြုနိုင်အောင် ပိတ်ရန်</translation>

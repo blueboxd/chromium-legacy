@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Axtarış mühərriki</translation>
 <translation id="1513352483775369820">Əlfəcin və veb tarixçəsi</translation>
 <translation id="1513858653616922153">Parolu silin</translation>
-<translation id="1516229014686355813">"Axtarmaq üçün Klikləyin" funksiyası seçilmiş sözü və cari səhifəni Google Axtarışa göndərir. <ph name="BEGIN_LINK" />Ayarlarda<ph name="END_LINK" /> onu deaktiv edə bilərsiniz.</translation>
 <translation id="1521774566618522728">Bu gün aktivdir</translation>
 <translation id="1544826120773021464">Google hesabınızı idarə etmək üçün "Hesabı idarə edin" düyməsinə toxunun</translation>
 <translation id="1549000191223877751">Başqa pəncərəyə keçin</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529">Həmçinin, <ph name="APP_NAME" /> tətbiqinin Chrome'da datası var</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Sayt dayandırıldı</translation>
-<translation id="2063713494490388661">Axtarış etmək üçün klikləyin</translation>
 <translation id="2067805253194386918">mətn</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> nəticədən <ph name="RESULT_NUMBER" /></translation>
 <translation id="2091887806945687916">Səs</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Daxil olmaq mümkün deyil</translation>
 <translation id="2349710944427398404">Hesablar, əlfəcinlər və yadda saxlanılan ayarlar daxil olmaqla, Chrome tərəfindən istifadə olunmuş ümumi data</translation>
 <translation id="2353636109065292463">İnternet bağlantısının yoxlanması</translation>
+<translation id="2359808026110333948">Davam edin</translation>
 <translation id="2369533728426058518">panelləri açın</translation>
 <translation id="2387895666653383613">Mətn miqyası</translation>
 <translation id="2394602618534698961">Endirdiyiniz fayllar burada görünəcək</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Brauzer tarixçəsi</translation>
 <translation id="2497852260688568942">Sinxronizasiya administratorunuz tərəfindən deaktiv edilib</translation>
 <translation id="2498359688066513246">Yardım və geri əlaqə</translation>
-<translation id="2501278716633472235">Geri qayıdın</translation>
 <translation id="2513403576141822879">Məxfilik, təhlükəsizlik və data toplanması ilə bağlı daha çox ayarlar üçün <ph name="BEGIN_LINK" />Sinxronizasiya və Google xidmətləri<ph name="END_LINK" /> səhifəsinə daxil olun</translation>
 <translation id="2517472476991765520">Skan edin</translation>
 <translation id="2518590038762162553">Layt rejimində Chrome səhifələri daha tez yükləyir və dataya 60 faizədək qənaət edir. Daxil olduğunuz səhifəni optimallaşdırmaq üçün Chrome, veb trafiki Google'a göndərir. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Tapma Barını açın</translation>
 <translation id="3716182511346448902">Bu səhifə həddindən çox yaddaş istifadə etdiyinə görə Chrome tərəfindən dayandırıldı.</translation>
 <translation id="3730075448226062617">Həmçinin, Chrome'un mikrofona daxil olmasına icazə vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> mikrofonu aktiv edin.</translation>
+<translation id="3738139272394829648">Axtarmaq üçün toxunun</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> məhsulunda əlfəcinlənib</translation>
 <translation id="3744111561329211289">Arxa fon sinx</translation>
 <translation id="3749259744154402564">Dəstəklənmir</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Xüsusi sayt üçün kukilərə icazə verin.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# saat}other{# saat}}</translation>
 <translation id="4046123991198612571">Növbəti trek</translation>
-<translation id="4048707525896921369">Səhifədən çıxmadan saytlardakı başlıqlar haqqında öyrənin. Axtarış üçün Klikləyin funksiyası sözü və onun ətrafındakı konteksti Google Axtarışa göndərir, əvəzində izahlar, təriflər, şəkillər, axtarış nəticələri və digər detallar alır.
-
-Axtarış terminini nizamlamaq üçün basıb saxlamaqla seçim edin. Axtarışınızı dəqiqləşdirmək üçün paneli yuxarıda çəkin və axtarış sahəsinə klikləyin.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Seçənəklər ekranın yuxarısına yaxın yerdə əlçatandır</translation>
 <translation id="4062305924942672200">Leqal informasiya</translation>
@@ -609,7 +605,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5578795271662203820">Bu şəkil üçün <ph name="SEARCH_ENGINE" /> axtarın</translation>
 <translation id="5581519193887989363">Sinxronizasiya seçimlərini <ph name="BEGIN_LINK1" />ayarlarda<ph name="END_LINK1" /> edə bilərsiniz.</translation>
 <translation id="5595485650161345191">Ünvana düzəliş edin</translation>
-<translation id="5596627076506792578">Əlavə seçimlər</translation>
 <translation id="5599455543593328020">Anonim rejim</translation>
 <translation id="5620928963363755975">Fayl və səhifələri Digər Seçimlər düyməsindəki Endirilənlər bölməsində tapın</translation>
 <translation id="5626134646977739690">Ad:</translation>
@@ -652,6 +647,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5864419784173784555">Başqa endirmə gözlənilir…</translation>
 <translation id="5865733239029070421">İstifadə statistikası və qəza raportlarını avtomatik Google'a göndərir</translation>
 <translation id="5869522115854928033">Saxlanılmış parollar</translation>
+<translation id="5884076754568147479">Tapşırıqları tamamlamaqda sizə kömək etmək üçün Google Assistentdən istifadə etdiyiniz saytların URL və məzmunlarını, eləcə də Assistent vasitəsilə təqdim etdiyiniz məlumatları əldə edəcək</translation>
 <translation id="5902828464777634901">Bu sayt tərəfindən saxlanmış bütün lokal data silinəcək.</translation>
 <translation id="5919204609460789179">Sinxronizasiyanı başlatmaq üçün <ph name="PRODUCT_NAME" /> məhsulunu yeniləyin</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> istifadə edildi</translation>
@@ -773,7 +769,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6782111308708962316">Üçüncü tərəf veb saytları tərəfindən kuki datasının yadda saxlanılması və oxunmasının qarşısını alın</translation>
 <translation id="6790428901817661496">Oxudun</translation>
 <translation id="6811034713472274749">Səhifəyə baxa bilərsiniz</translation>
-<translation id="6818926723028410516">Element seçin</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tərcümə et</translation>
 <translation id="6845325883481699275">Chrome təhlükəsizliyini təkmilləşdirin</translation>
@@ -806,10 +801,8 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7053983685419859001">Bloklayın</translation>
 <translation id="7055152154916055070">Yönləndirmə blok edildi:</translation>
 <translation id="7063006564040364415">Sinxronizasiya serverinə qoşula bilmədi.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seçildi}other{# element seçildi}}</translation>
 <translation id="7071521146534760487">Hesabı idarə edin</translation>
 <translation id="7077143737582773186">SD Kart</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> seçildi. Seçimlər ekranın yuxarısında əlçatandır</translation>
 <translation id="7121362699166175603">Ünvan penelindəki tarixçə və avtomatik tamamlamanı silir. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> linkində Google Hesabına məxsus axtarış tarixçəsinin başqa formaları ola bilər.</translation>
 <translation id="7128222689758636196">Cari axtarış sistemi üçün icazə verin</translation>
 <translation id="7138678301420049075">Digər</translation>
@@ -825,7 +818,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7233236755231902816">Vebə öz dilinizdə baxmaq üçün Chrome'un ən son versiyasını quraşdırın</translation>
 <translation id="7243308994586599757">Seçənəklər ekranın aşağısına yaxın yerdə əlçatandır</translation>
 <translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" /> adlı cihazının Chrome tətbiqində sinxronizasiyanın aktiv edildiyinə əmin olun</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> seçildi</translation>
 <translation id="7274013316676448362">Blok edilmiş sayt</translation>
 <translation id="7290209999329137901">Adı dəyişmək mümkün deyil</translation>
 <translation id="7291387454912369099">Assistentin Aktivliyini Yoxlamaq</translation>
@@ -907,7 +899,6 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7810647596859435254">Bununla açın...</translation>
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
-<translation id="7846076177841592234">Seçimi ləğv edin</translation>
 <translation id="784934925303690534">Vaxt aralığı</translation>
 <translation id="7851858861565204677">Digər cihazlar</translation>
 <translation id="7875915731392087153">E-poçt yaradın</translation>
@@ -955,6 +946,7 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8116925261070264013">Səssiz</translation>
 <translation id="8127542551745560481">Əsas səhifəni redaktə edin</translation>
 <translation id="813082847718468539">Sayt məlumatına baxın</translation>
+<translation id="8137558756159375272">"Axtarmaq üçün Toxunun" funksiyası seçilmiş sözü və cari səhifəni Google Axtarışa göndərir. <ph name="BEGIN_LINK" />Ayarlarda<ph name="END_LINK" /> onu deaktiv edə bilərsiniz.</translation>
 <translation id="8156139159503939589">Hansı dilləri oxuyursunuz?</translation>
 <translation id="8168435359814927499">Kontent</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> fayl qalır</translation>
@@ -1022,7 +1014,6 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8655599981421006542">Yeni tabellər yaratmaq və əvvəlkilərə qayıtmaq üçün bura toxunun</translation>
 <translation id="8662811608048051533">Bununla əksər saytlardan çıxacaqsınız.</translation>
 <translation id="8664979001105139458">Fayl adı artıq mövcuddur</translation>
-<translation id="8676374126336081632">Daxiletməni silin</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Siqnal Gücü Səviyyəsi: # panel}other{Siqnal Gücü Səviyyəsi: # panel}}</translation>
 <translation id="868929229000858085">Kontaktlarda axtarın</translation>
 <translation id="8698438463325761328">Saytların virtual reallıq cihazınıza və datanıza girişini bloklayın</translation>

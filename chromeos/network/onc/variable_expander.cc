@@ -4,6 +4,7 @@
 
 #include "chromeos/network/onc/variable_expander.h"
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -41,8 +42,7 @@ bool ParseRange(base::StringPiece range, size_t* start, size_t* count) {
 bool Expand(base::StringPiece variable_name,
             base::StringPiece replacement,
             std::string* str) {
-  std::string token("${");
-  variable_name.AppendToString(&token);
+  std::string token = base::StrCat({"${", variable_name});
   size_t token_start = 0;
   bool no_error = true;
   int count = 0;

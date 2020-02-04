@@ -9,10 +9,21 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
+#include "extensions/browser/quota_service.h"
 
 namespace extensions {
 
 PrintingSubmitJobFunction::~PrintingSubmitJobFunction() = default;
+
+void PrintingSubmitJobFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  QuotaLimitHeuristic::Config config = {
+      api::printing::MAX_SUBMIT_JOB_CALLS_PER_MINUTE,
+      base::TimeDelta::FromMinutes(1)};
+  heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
+      config, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>(),
+      "MAX_SUBMIT_JOB_CALLS_PER_MINUTE"));
+}
 
 ExtensionFunction::ResponseAction PrintingSubmitJobFunction::Run() {
   std::unique_ptr<api::printing::SubmitJob::Params> params(
@@ -64,6 +75,16 @@ ExtensionFunction::ResponseAction PrintingGetPrintersFunction::Run() {
 }
 
 PrintingGetPrinterInfoFunction::~PrintingGetPrinterInfoFunction() = default;
+
+void PrintingGetPrinterInfoFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  QuotaLimitHeuristic::Config config = {
+      api::printing::MAX_GET_PRINTER_INFO_CALLS_PER_MINUTE,
+      base::TimeDelta::FromMinutes(1)};
+  heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
+      config, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>(),
+      "MAX_GET_PRINTER_INFO_CALLS_PER_MINUTE"));
+}
 
 ExtensionFunction::ResponseAction PrintingGetPrinterInfoFunction::Run() {
   std::unique_ptr<api::printing::GetPrinterInfo::Params> params(

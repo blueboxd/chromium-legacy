@@ -452,7 +452,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट <ph name="DOMAIN2" /> वरील आहे. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
 <translation id="2948083400971632585">तुम्हे सेटिंग्ज पेजवरून एका कनेक्शनसाठी कॉन्फिगर केलेले कोणत्याही प्रॉक्सी अक्षम करू शकता.</translation>
-<translation id="2951588413176968965">माझे मेलबॉक्स</translation>
+<translation id="2951588413176968965">माझा मेलबॉक्स</translation>
 <translation id="295526156371527179">चेतावणी: धोरणामध्ये नमूद केल्याप्रमाणे हे धोरण शब्दकोश म्हणून विलीन केले नाही कारण तो एखादा शब्दकोश नाही.</translation>
 <translation id="2955913368246107853">शोध बार बंद करा</translation>
 <translation id="2969319727213777354">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, तुमचे घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरलेली ती सर्टिफिकेटे केवळ नमूद केलेल्‍या कालावधीसाठी वैध असल्याने हे असू शकते. तुमच्या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Google Chrome ला सर्टिफिकेट पडताळणी करता आली नाही.</translation>
@@ -633,6 +633,7 @@
 <translation id="3745099705178523657">तुम्ही निश्चित केल्यानंतर, तुमच्या Google खात्यामधील कार्ड तपशील या साइटसोबत शेअर केला जाईल.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वरील हल्लेखोर कदाचित तुम्हाला सॉफ्टवेअर इंस्टॉल करणे किंवा तुमची वैयक्तिक माहिती (उदाहरणार्थ, पासवर्ड, फोन नंबर किंवा क्रेडिट कार्डे) उघड करणे यासारख्या काही धोकादायक गोष्टी करण्यासाठी तुम्हाला फसवू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">सर्व्हर एररमुळे भाषांतर अयशस्वी झाले.</translation>
+<translation id="3754210790023674521">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="3759461132968374835">तुम्ही अलीकडे कोणतेही क्रॅश नोंदवले नाहीत. क्रॅश नोंदवणे अक्षम असताना झालेले क्रॅश येथे दिसून येणार नाहीत.</translation>
 <translation id="3760561303380396507">CVC ऐवजी Windows Hello वापरायचे का?</translation>
 <translation id="3761718714832595332">स्थिती लपवा</translation>
@@ -1137,7 +1138,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">तुमचे पासवर्ड तपासा</translation>
 <translation id="6015796118275082299">वर्ष</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{पृष्ठ 1}other{पेज #}}</translation>
 <translation id="6017514345406065928">हिरवा</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />वर असलेले आक्रमणकर्ता फसवणारे ॲप्स इंस्टॉल करू शकतात जे दुसरे काहीतरी असल्याचे भासवू शकतात किंवा तुम्हाला शोधण्यासाठी डेटा वापरू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक केलेले)</translation>
@@ -1177,7 +1177,7 @@
 <translation id="6157877588268064908">शिपिंग पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6177128806592000436">या साइटवरील तुमचे कनेक्शन सुरक्षित नाही</translation>
-<translation id="6180316780098470077">पुन्हा प्रयत्न करण्याचे मध्‍यांतर</translation>
+<translation id="6180316780098470077">दोन प्रयत्नांमधील मध्यांतर</translation>
 <translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
 <translation id="6203231073485539293">तुमचे इंटरनेट कनेक्शन तपासा</translation>
 <translation id="6218753634732582820">Chromium वरून पत्ता काढून टाकायचा?</translation>
@@ -1246,7 +1246,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">अधिक माहिती जोडा</translation>
 <translation id="6447842834002726250">कुकीज</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{1 पेज}other{# पेज}} समाविष्ट असलेला पीडीएफ दस्तऐवज</translation>
 <translation id="6451458296329894277">फॉर्म रीसबमिशनची पुष्टी करा</translation>
 <translation id="6457206614190510200">साडल स्टिच</translation>
 <translation id="6465306955648956876">पासवर्ड व्यवस्थापित करा...</translation>

@@ -595,7 +595,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           !ReadUTF8String(&stack_unused)) {
         return nullptr;
       }
-      return DOMException::Create(name, message);
+      // DOMException::Create takes its arguments in the opposite order.
+      return DOMException::Create(message, name);
     }
     default:
       break;

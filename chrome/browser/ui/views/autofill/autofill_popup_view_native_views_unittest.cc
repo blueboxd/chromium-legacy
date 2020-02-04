@@ -164,12 +164,13 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
   CreateAndShowView({autofill::POPUP_ITEM_ID_DATALIST_ENTRY,
                      autofill::POPUP_ITEM_ID_SEPARATOR,
                      autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
-                     autofill::POPUP_ITEM_ID_AUTOFILL_OPTIONS});
+                     autofill::POPUP_ITEM_ID_AUTOFILL_OPTIONS,
+                     autofill::POPUP_ITEM_ID_LOADING_SPINNER});
 
   // Select first item.
   view()->GetRowsForTesting()[0]->SetSelected(true);
 
-  EXPECT_EQ(view()->GetRowsForTesting().size(), 4u);
+  EXPECT_EQ(view()->GetRowsForTesting().size(), 5u);
 
   // Item 0.
   ui::AXNodeData node_data_0;
@@ -206,6 +207,15 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
   EXPECT_EQ(ax::mojom::Role::kListBoxOption, node_data_3.role);
   EXPECT_FALSE(
       node_data_3.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+
+  // Item 4 (loading spinner).
+  ui::AXNodeData node_data_4;
+  view()->GetRowsForTesting()[1]->GetAccessibleNodeData(&node_data_4);
+  EXPECT_FALSE(node_data_4.HasIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_FALSE(node_data_4.HasIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(ax::mojom::Role::kSplitter, node_data_4.role);
+  EXPECT_FALSE(
+      node_data_4.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
 TEST_F(AutofillPopupViewNativeViewsTest, Gestures) {

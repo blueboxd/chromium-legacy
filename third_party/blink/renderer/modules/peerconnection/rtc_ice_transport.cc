@@ -292,13 +292,13 @@ static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
   webrtc::PeerConnectionInterface::IceServer converted_ice_server;
   // Prefer standardized 'urls' field over deprecated 'url' field.
   Vector<String> url_strings;
-  if (ice_server->hasURLs()) {
+  if (ice_server->hasUrls()) {
     if (ice_server->urls().IsString()) {
       url_strings.push_back(ice_server->urls().GetAsString());
     } else if (ice_server->urls().IsStringSequence()) {
       url_strings = ice_server->urls().GetAsStringSequence();
     }
-  } else if (ice_server->hasURL()) {
+  } else if (ice_server->hasUrl()) {
     url_strings.push_back(ice_server->url());
   }
   for (const String& url_string : url_strings) {

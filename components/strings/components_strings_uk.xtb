@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">Переглянути картки</translation>
 <translation id="3369192424181595722">Помилка годинника</translation>
 <translation id="337363190475750230">Деініціалізовано</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> вмикає Enterprise Service Hooks у веб-переглядачі. Ці хуки мають доступ до деяких ваших даних.</translation>
+<translation id="3377144306166885718">Сервер використовував застарілу версію TLS.</translation>
 <translation id="3377188786107721145">Помилка аналізу правила</translation>
 <translation id="3377736046129930310">Використовувати блокування екрана, щоб швидше підтверджувати картки</translation>
 <translation id="3380365263193509176">Невідома помилка</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">Адреса доставки</translation>
 <translation id="3395827396354264108">Спосіб отримання</translation>
 <translation id="3399952811970034796">Адреса доставки</translation>
+<translation id="3402261774528610252">Цей веб-сайт використовує TLS версії 1.0 або 1.1, які вже не підтримуються. Згодом їх вимкнуть. Тоді користувачі не зможуть завантажувати цей сайт. На сервері потрібно ввімкнути TLS 1.2 або новішої версії.</translation>
 <translation id="3422248202833853650">Щоб звільнити пам’ять, закрийте інші програми.</translation>
 <translation id="3422472998109090673">Хост <ph name="HOST_NAME" /> зараз недоступний.</translation>
 <translation id="3423742043356668186">Вказано системою</translation>
@@ -619,6 +622,7 @@
 <translation id="3745099705178523657">Щойно ви підтвердите дані картки з облікового запису Google, цей сайт отримає доступ до них.</translation>
 <translation id="3748148204939282805">Зловмисники можуть використовувати сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, щоб обманом змусити вас виконати небезпечну дію, наприклад, установити шкідливе програмне забезпечення або повідомити особисту інформацію (пароль, номер телефону, дані кредитної картки тощо). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Не вдалося виконати переклад через помилку сервера.</translation>
+<translation id="3754210790023674521">Вийти з режиму "Картинка в картинці"</translation>
 <translation id="3759461132968374835">У вас немає останніх повідомлень про аварійне завершення роботи. Тут не відображатимуться випадки аварійного завершення роботи, які сталися, коли повідомлення про аварійне завершення роботи було вимкнено.</translation>
 <translation id="3760561303380396507">Використовувати Windows Hello замість коду CVC?</translation>
 <translation id="3761718714832595332">Сховати статус</translation>
@@ -940,6 +944,7 @@
 <translation id="5179510805599951267">Це не <ph name="ORIGINAL_LANGUAGE" />? Повідомте про помилку</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="519422657042045905">Анотація недоступна</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Повідомлення з вбудованої сторінки на цій сторінці</translation>
 <translation id="5205222826937269299">Укажіть ім’я</translation>
 <translation id="5215116848420601511">Способи оплати й адреси, пов’язані з Google Pay</translation>
@@ -969,6 +974,7 @@
 <translation id="5295292838686006428">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить негайно перевірити збережені паролі.</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
 <translation id="5300589172476337783">Показати</translation>
+<translation id="5306593769196050043">Обидва аркуші</translation>
 <translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5308689395849655368">Повідомлення про аварійне завершення роботи вимкнено.</translation>
 <translation id="5314967030527622926">Виробник буклетів</translation>
@@ -1122,7 +1128,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Перевірте свої паролі</translation>
 <translation id="6015796118275082299">Рік</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Сторінка 1}one{Сторінка #}few{Сторінка #}many{Сторінка #}other{Сторінка #}}</translation>
 <translation id="6017514345406065928">Зелений</translation>
 <translation id="6017850046339264347">Зловмисники можуть використати сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, щоб установити на ваш пристрій оманливі додатки, які видають себе за інші або збирають дані для відстеження ваших дій. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (синхронізовано)</translation>
@@ -1230,7 +1235,6 @@
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Додати більше інформації</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
-<translation id="644931407731409778">Документ PDF містить {COUNT,plural, =1{1 сторінку}one{# сторінку}few{# сторінки}many{# сторінок}other{# сторінки}}</translation>
 <translation id="6451458296329894277">Підтвердити повторне надсилання форми</translation>
 <translation id="6457206614190510200">Скріпити по згину</translation>
 <translation id="6465306955648956876">Керувати паролями…</translation>
@@ -1342,6 +1346,7 @@
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7062635574500127092">Бірюзовий</translation>
 <translation id="7064851114919012435">Контактна інформація</translation>
+<translation id="70705239631109039">З'єднання не повністю захищене</translation>
 <translation id="7075452647191940183">Запит завеликий</translation>
 <translation id="7079718277001814089">Цей сайт містить зловмисне програмне забезпечення</translation>
 <translation id="7081308185095828845">Ця функція недоступна на вашому пристрої</translation>
@@ -1361,6 +1366,7 @@
 <translation id="7152423860607593928">Number-14 (конверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Лавандовий</translation>
+<translation id="7156870133441232244">Оновіть сервер до TLS 1.2 або новішої версії.</translation>
 <translation id="717330890047184534">Ідентифікатор GAIA:</translation>
 <translation id="7174545416324379297">Об'єднано</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1386,6 +1392,7 @@
 <translation id="725866823122871198">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на комп’ютері встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Скасувати доступ</translation>
 <translation id="7275334191706090484">Закладки, якими керує адміністратор</translation>
+<translation id="7288778322931489286">Ваш адміністратор увімкнув Enterprise Service Hooks у веб-переглядачі. Ці хуки мають доступ до деяких ваших даних.</translation>
 <translation id="7292031607255951991">Ім'я отримувача</translation>
 <translation id="7298195798382681320">Рекомендоване</translation>
 <translation id="7300012071106347854">Кобальтовий</translation>
@@ -1711,6 +1718,7 @@
 <translation id="874918643257405732">Зробити закладку для цієї вкладки</translation>
 <translation id="8751426954251315517">Повторіть спробу пізніше</translation>
 <translation id="8759274551635299824">Термін дії цієї картки минув</translation>
+<translation id="87601671197631245">На цьому сайті використовується застаріла конфігурація безпеки. Через це ваші дані (зокрема кредитних карток, а також паролі й повідомлення) може бути розкрито, коли вони надсилаються на нього.</translation>
 <translation id="8761567432415473239">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила шкідливі програми<ph name="END_LINK" /> на сайті <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Пристрій USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1728,6 +1736,7 @@
 <translation id="8866481888320382733">Помилка аналізу налаштувань правила</translation>
 <translation id="8866928039507595380">Зігнути</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Надавати адміністратору доступ до даних про події системи безпеки, про які повідомляють хуки Enterprise Service Hooks. Вони можуть містити URL-адреси відвіданих сторінок, назви файлів або метаданих, а також ім'я користувача, через яке ви входите в обліковий запис на пристрої або в Chrome.</translation>
 <translation id="8870413625673593573">Нещодавно закриті</translation>
 <translation id="8870494189203302833">Однаковий порядок лицевою стороною вниз</translation>
 <translation id="8874824191258364635">Введіть дійсний номер картки</translation>

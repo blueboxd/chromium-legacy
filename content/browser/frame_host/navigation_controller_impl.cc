@@ -3190,9 +3190,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           should_replace_current_entry, params.base_url_for_data_url,
           history_url_for_data_url, previews_state, navigation_start,
           params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
-          params.post_data, base::Optional<SourceLocation>(),
-          params.started_from_context_menu, has_user_gesture,
-          CreateInitiatorCSPInfo(), std::vector<int>(), params.href_translate,
+          params.post_data, SourceLocation(), params.started_from_context_menu,
+          has_user_gesture, CreateInitiatorCSPInfo(), std::vector<int>(),
+          params.href_translate,
           false /* is_history_navigation_in_new_child_frame */,
           params.input_start);
 

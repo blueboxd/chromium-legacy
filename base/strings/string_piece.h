@@ -47,9 +47,6 @@ namespace base {
 // template internal to the .cc file.
 namespace internal {
 
-BASE_EXPORT void AppendToString(const StringPiece& self, std::string* target);
-BASE_EXPORT void AppendToString(const StringPiece16& self, string16* target);
-
 BASE_EXPORT size_t copy(const StringPiece& self,
                         char* buf,
                         size_t n,
@@ -250,10 +247,6 @@ template <typename STRING_TYPE> class BasicStringPiece {
 
   size_type max_size() const { return length_; }
   size_type capacity() const { return length_; }
-
-  void AppendToString(STRING_TYPE* target) const {
-    internal::AppendToString(*this, target);
-  }
 
   size_type copy(value_type* buf, size_type n, size_type pos = 0) const {
     return internal::copy(*this, buf, n, pos);

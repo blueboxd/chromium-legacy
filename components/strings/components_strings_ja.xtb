@@ -528,6 +528,8 @@
 <translation id="3366477098757335611">カードを表示</translation>
 <translation id="3369192424181595722">時計のエラー</translation>
 <translation id="337363190475750230">プロビジョニングが解除されました</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> により、お使いのブラウザで Enterprise Service Hook が有効化されています。これらのフックには、一部のユーザーデータへのアクセスが許可されます。</translation>
+<translation id="3377144306166885718">このサーバーは TLS の廃止されたバージョンを使用しています。</translation>
 <translation id="3377188786107721145">ポリシー解析エラーです</translation>
 <translation id="3377736046129930310">画面ロックを使用してカードをすばやく確認する</translation>
 <translation id="3380365263193509176">不明なエラー</translation>
@@ -536,6 +538,7 @@
 <translation id="3391030046425686457">配送先住所</translation>
 <translation id="3395827396354264108">受け取り方法</translation>
 <translation id="3399952811970034796">配達先住所</translation>
+<translation id="3402261774528610252">このサイトの読み込みで、TLS 1.0 または TLS 1.1 の接続が使用されました。これらの TLS バージョンのサポートは終了し、今後無効となる予定です。無効になると、このサイトは読み込めなくなります。サーバーで TLS 1.2 以降を有効にする必要があります。</translation>
 <translation id="3422248202833853650">メモリを解放するために、他のプログラムを終了してみてください。</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> は現在アクセスできません。</translation>
 <translation id="3423742043356668186">システムの指定</translation>
@@ -619,6 +622,7 @@
 <translation id="3745099705178523657">確認後、Google アカウントのカード情報がこのサイトと共有されます。</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって、ソフトウェアのインストールや個人情報（パスワード、電話番号、クレジット カードなど）の入力といった危険な操作を行うよう誘導される可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
+<translation id="3754210790023674521">ピクチャー イン ピクチャーを終了</translation>
 <translation id="3759461132968374835">最近発生した障害はありません。障害レポートが無効になっているときに発生した障害は、ここには表示されません。</translation>
 <translation id="3760561303380396507">CVC の代わりに Windows Hello を使用しますか？</translation>
 <translation id="3761718714832595332">ステータスを表示しない</translation>
@@ -940,6 +944,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="519422657042045905">注釈は使用できません</translation>
+<translation id="5196187217592847346">Enterprise Service Hook</translation>
 <translation id="5201306358585911203">このページに埋め込まれているページの内容</translation>
 <translation id="5205222826937269299">名前は必須です</translation>
 <translation id="5215116848420601511">Google Pay のお支払い方法と住所</translation>
@@ -969,6 +974,7 @@
 <translation id="5295292838686006428">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードを今すぐ確認することをおすすめします。</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>
+<translation id="5306593769196050043">両方のシート</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5314967030527622926">ブックレット メーカー</translation>
@@ -1122,7 +1128,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">パスワードの確認</translation>
 <translation id="6015796118275082299">年</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{ページ 1}other{ページ #}}</translation>
 <translation id="6017514345406065928">緑</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって詐欺的なアプリ（他のものに成りすましたり、ユーザーの追跡などに使用可能なデータを収集したりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" />（同期済み）</translation>
@@ -1230,7 +1235,6 @@
 <translation id="6446163441502663861">Kahu（封筒）</translation>
 <translation id="6446608382365791566">他の情報を追加</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="644931407731409778">PDF ドキュメント（{COUNT,plural, =1{1 ページ}other{# ページ}}）</translation>
 <translation id="6451458296329894277">フォーム再送信の確認</translation>
 <translation id="6457206614190510200">中綴じ</translation>
 <translation id="6465306955648956876">パスワードを管理...</translation>
@@ -1342,6 +1346,7 @@
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7062635574500127092">青緑</translation>
 <translation id="7064851114919012435">連絡先情報</translation>
+<translation id="70705239631109039">接続は完全には保護されていません</translation>
 <translation id="7075452647191940183">リクエストが大きすぎます</translation>
 <translation id="7079718277001814089">このサイトには不正なソフトウェアが含まれています</translation>
 <translation id="7081308185095828845">この機能はお使いのデバイスではご利用いただけません</translation>
@@ -1361,6 +1366,7 @@
 <translation id="7152423860607593928">Number-14（封筒）</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}other{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}}</translation>
 <translation id="7153618581592392745">ラベンダー</translation>
+<translation id="7156870133441232244">サーバーを TLS 1.2 以降にアップグレードする必要があります。</translation>
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7174545416324379297">統合された値</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}other{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}}</translation>
@@ -1386,6 +1392,7 @@
 <translation id="725866823122871198">パソコンの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="7260504762447901703">アクセス権を取り消します</translation>
 <translation id="7275334191706090484">管理対象のブックマーク</translation>
+<translation id="7288778322931489286">管理者により、お使いのブラウザで Enterprize Service Hook が有効化されています。これらのフックには、一部のユーザーデータへのアクセスが許可されます。</translation>
 <translation id="7292031607255951991">受取人の氏名</translation>
 <translation id="7298195798382681320">推奨</translation>
 <translation id="7300012071106347854">コバルトブルー</translation>
@@ -1711,6 +1718,7 @@
 <translation id="874918643257405732">このタブをブックマークに追加します</translation>
 <translation id="8751426954251315517">後でもう一度お試しください。</translation>
 <translation id="8759274551635299824">このカードは有効期限が切れています</translation>
+<translation id="87601671197631245">このサイトでは古いセキュリティ設定を使用しています。このサイトにパスワード、メッセージ、クレジット カードなどの情報を送信すると流出する恐れがあります。</translation>
 <translation id="8761567432415473239"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより<ph name="BEGIN_LINK" />有害なプログラムが検出<ph name="END_LINK" />されました。</translation>
 <translation id="8763927697961133303">USB デバイス</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1728,6 +1736,7 @@
 <translation id="8866481888320382733">ポリシー設定の解析中にエラーが発生しました</translation>
 <translation id="8866928039507595380">折りたたみ</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Enterprise Service Hook によって報告されたセキュリティ イベントに関するデータを管理者と共有します。共有されるデータには、アクセスしたページの URL、ファイルの名前やメタデータ、デバイスと Chrome へのログインに使用したユーザー名が含まれることがあります。</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8870494189203302833">同じ順序（下向き）</translation>
 <translation id="8874824191258364635">有効なクレジット カード番号を入力してください</translation>

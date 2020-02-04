@@ -1437,7 +1437,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     crostini_manager->AddRunningContainerForTesting(
         crostini::kCrostiniDefaultVmName,
         crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                                "testuser", "/home/testuser"));
+                                "testuser", "/home/testuser",
+                                "PLACEHOLDER_IP"));
     chromeos::DBusThreadManager* dbus_thread_manager =
         chromeos::DBusThreadManager::Get();
     static_cast<chromeos::FakeCrosDisksClient*>(

@@ -846,7 +846,7 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source) {
       {"storageItemAvailable", IDS_SETTINGS_STORAGE_ITEM_AVAILABLE},
       {"storageItemMyFiles", IDS_SETTINGS_STORAGE_ITEM_MY_FILES},
       {"storageItemBrowsingData", IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA},
-      {"storageItemAndroid", IDS_SETTINGS_STORAGE_ITEM_ANDROID},
+      {"storageItemApps", IDS_SETTINGS_STORAGE_ITEM_APPS},
       {"storageItemCrostini", IDS_SETTINGS_STORAGE_ITEM_CROSTINI},
       {"storageItemOtherUsers", IDS_SETTINGS_STORAGE_ITEM_OTHER_USERS},
       {"storageSizeComputing", IDS_SETTINGS_STORAGE_SIZE_CALCULATING},

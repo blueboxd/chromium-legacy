@@ -714,13 +714,6 @@ Quando esta política não for definida, um padrão específico da plataforma se
 Quando esta política for definida como <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> ou <ph name="OPERA_VALUE_PLACEHOLDER" />, o navegador correspondente será iniciado, caso esteja instalado. O <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> está disponível apenas no Windows, e o <ph name="SAFARI_VALUE_PLACEHOLDER" /> está disponível apenas no Windows e no Mac OS X.
 
 Quando esta política for definida como um caminho de arquivo, esse arquivo será usado como um executável.</translation>
-<translation id="2111016292707172233">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
-
-      Se ativar esta configuração, o recurso "Tocar para pesquisar" ficará disponível para o usuário e ele poderá optar por ativá-lo ou desativá-lo.
-
-      Se desativar esta configuração, o recurso "Tocar para pesquisar" será completamente desativado.
-
-      Não configurar esta política é o mesmo que ativá-la (veja a descrição acima).</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
@@ -1894,7 +1887,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o destaque do foco no teclado ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
-<translation id="3874773863217952418">Ativar "Tocar para pesquisar"</translation>
 <translation id="3877517141460819966">Modo de autenticação de segundo fator integrado</translation>
 <translation id="3879196885908353077">Verifica violações da regra de proteção de dados confidenciais em downloads</translation>
 <translation id="3879208481373875102">Configurar a lista de apps da Web de instalação forçada</translation>
@@ -3987,7 +3979,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 
       Definir <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1) permite que apenas as variações consideradas como correções críticas de segurança ou estabilidade sejam aplicadas ao <ph name="PRODUCT_NAME" />.
 
-      Definir <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2) impede que qualquer variação seja aplicada ao navegador Esse modo não é recomendado, porque pode impedir que os desenvolvedores do <ph name="PRODUCT_NAME" /> forneçam correções críticas de segurança de maneira rápida.</translation>
+      Definir <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2) impede que qualquer variação seja aplicada ao navegador. Esse modo não é recomendado, porque pode impedir que os desenvolvedores do <ph name="PRODUCT_NAME" /> forneçam correções críticas de segurança de maneira rápida.</translation>
 <translation id="7323896582714668701">Parâmetros de linha de comando adicionais para o <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Semelhante a Wipe (valor 2), mas tenta preservar os tokens de login para que o usuário não precise fazer login novamente.</translation>
 <translation id="7329968046053403405">Especifica o tipo de conta fornecida pelo app de autenticação Android compatível com a autenticação <ph name="HTTP_NEGOTIATE" /> (por exemplo, autenticação Kerberos). Essa informação deve ser disponibilizada pelo fornecedor do app de autenticação. Para ver outros detalhes, consulte https://goo.gl/hajyfN.
@@ -4684,12 +4676,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
           Se esta política não for definida, os atalhos de recursos de acessibilidade serão ativados por padrão.</translation>
 <translation id="8525526490824335042">Contêiner Linux</translation>
-<translation id="8538235451413605457">Configura o requisito da versão mínima permitida de <ph name="PRODUCT_NAME" />. As versões abaixo são tratadas como obsoletas, e o dispositivo não permitiria o login do usuário antes que o SO fosse atualizado.
-      Se a versão atual se tornar obsoleta durante a sessão, o usuário será forçadamente desconectado.
-
-      Se esta política não estiver definida, nenhuma restrição será aplicada, e o usuário poderá fazer login independentemente da versão do <ph name="PRODUCT_NAME" />.
-
-      Aqui, "versão" pode ser uma versão exata como "61.0.3163.120" ou um prefixo de versão, como "61.0"  </translation>
 <translation id="8544375438507658205">Renderizador padrão de HTML para o <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Permite a sincronização de mensagens SMS do smartphone com o Chromebook.</translation>
 <translation id="8548832052135586762">Define a impressão para apenas em cores, apenas monocromática ou sem restrição de modo de cor. Se a política não for definida, não haverá restrição.</translation>

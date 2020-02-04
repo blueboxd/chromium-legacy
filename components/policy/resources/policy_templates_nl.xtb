@@ -728,13 +728,6 @@
       <ph name="OPERA_VALUE_PLACEHOLDER" />, wordt die browser gestart als deze is geïnstalleerd. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> is alleen beschikbaar in Windows en <ph name="SAFARI_VALUE_PLACEHOLDER" /> is alleen beschikbaar in Windows en Mac OS X.
 
       Als dit beleid is ingesteld op een bestandspad, wordt dat bestand gebruikt als uitvoerbaar bestand.</translation>
-<translation id="2111016292707172233">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de contentweergave van <ph name="PRODUCT_NAME" />.
-
-      Als je deze instelling inschakelt, is 'Tikken om te zoeken' beschikbaar voor de gebruiker en kan de gebruiker de functie in- of uitschakelen.
-
-      Als je deze instelling uitschakelt, wordt 'Tikken om te zoeken' volledig uitgeschakeld.
-
-      Als er geen instelling voor dit beleid is opgegeven, staat dit gelijk aan het inschakelen van het beleid (zie de beschrijving hierboven).</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
@@ -1937,7 +1930,6 @@
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor markeren via toetsenbordfocus in eerste instantie uitgeschakeld. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
-<translation id="3874773863217952418">'Tikken om te zoeken' inschakelen</translation>
 <translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
 <translation id="3879196885908353077">Downloads controleren op schendingen van de beveiligingsregels voor gevoelige gegevens</translation>
 <translation id="3879208481373875102">Lijst met afgedwongen geïnstalleerde web-apps instellen</translation>
@@ -4783,13 +4775,6 @@ Dit beleid wordt verwijderd in M75.</translation>
 
           Als dit beleid niet is ingesteld, zijn snelkoppelingen voor toegankelijkheidsfuncties standaard ingeschakeld.</translation>
 <translation id="8525526490824335042">Linux-container</translation>
-<translation id="8538235451413605457">Hiermee wordt de vereiste van de minimaal toegestane versie van <ph name="PRODUCT_NAME" /> geconfigureerd. Eerdere versies worden behandeld als verouderd en gebruikers kunnen pas op het apparaat inloggen nadat het besturingssysteem is geüpdatet.
-
-Als de huidige versie tijdens een gebruikerssessie verouderd raakt, wordt de gebruiker gedwongen uitgelogd.
-
-Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de gebruiker altijd inloggen, ongeacht de versie van <ph name="PRODUCT_NAME" />.
-
-'Versie' kan hier een exacte versie zijn, zoals '61.0.3163.120', of een versievoorvoegsel, zoals '61.0'.  </translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Toestaan dat sms-berichten worden gesynchroniseerd tussen telefoon en Chromebook.</translation>
 <translation id="8548832052135586762">Hiermee bepaal je of je alleen in kleur, alleen in monochroom of zonder kleurbeperking wilt afdrukken. Als er geen beleid is ingesteld, gelden er geen beperkingen.</translation>

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 
@@ -13,17 +14,14 @@ namespace installer {
 
 namespace {
 
-constexpr base::StringPiece16::value_type kNameValueSeparator = L'=';
-constexpr base::StringPiece16::value_type kValueExpirationSeparator = L'|';
-constexpr base::StringPiece16::value_type kLabelSeparator = L';';
+constexpr base::StringPiece16 kNameValueSeparator = STRING16_LITERAL("=");
+constexpr base::StringPiece16 kValueExpirationSeparator = STRING16_LITERAL("|");
+constexpr base::StringPiece16 kLabelSeparator = STRING16_LITERAL(";");
 
 // Returns a vector of string pieces, one for each "name=value|expiration"
 // group in |value|.
 std::vector<base::StringPiece16> Parse(base::StringPiece16 value) {
-  static constexpr base::char16 kLabelSeparatorString[] = {kLabelSeparator,
-                                                           L'\0'};
-  return base::SplitStringPiece(value, kLabelSeparatorString,
-                                base::TRIM_WHITESPACE,
+  return base::SplitStringPiece(value, kLabelSeparator, base::TRIM_WHITESPACE,
                                 base::SPLIT_WANT_NONEMPTY);
 }
 
@@ -64,13 +62,8 @@ void AppendLabel(base::StringPiece16 label_name,
                  base::StringPiece16 label_value,
                  base::Time expiration,
                  base::string16* label) {
-  // 29 characters for the expiration date plus the two separators makes 31.
-  label->reserve(label->size() + label_name.size() + label_value.size() + 31);
-  label_name.AppendToString(label);
-  label->push_back(kNameValueSeparator);
-  label_value.AppendToString(label);
-  label->push_back(kValueExpirationSeparator);
-  label->append(FormatDate(expiration));
+  base::StrAppend(label, {label_name, kNameValueSeparator, label_value,
+                          kValueExpirationSeparator, FormatDate(expiration)});
 }
 
 }  // namespace
@@ -105,7 +98,7 @@ void ExperimentLabels::SetValueForLabel(base::StringPiece16 label_name,
   if (label_and_value.first.empty()) {
     // This label doesn't already exist -- append it to the raw value.
     if (!value_.empty())
-      value_.push_back(kLabelSeparator);
+      value_.push_back(kLabelSeparator[0]);
     AppendLabel(label_name, label_value, expiration, &value_);
   } else {
     // Replace the existing value and expiration.
@@ -116,7 +109,7 @@ void ExperimentLabels::SetValueForLabel(base::StringPiece16 label_name,
     AppendLabel(label_name, label_value, expiration, &new_label);
     // Find the stuff after the old label and append it.
     size_t next_separator = value_.find(
-        kLabelSeparator,
+        kLabelSeparator[0],
         (label_and_value.second.data() + label_and_value.second.size()) -
             value_.data());
     if (next_separator != base::string16::npos)
@@ -134,7 +127,7 @@ ExperimentLabels::LabelAndValue ExperimentLabels::FindLabel(
   for (const auto& label : labels) {
     if (label.size() < label_name.size() + 2 ||
         !label.starts_with(label_name) ||
-        label[label_name.size()] != kNameValueSeparator) {
+        label[label_name.size()] != kNameValueSeparator[0]) {
       continue;
     }
     size_t value_start = label_name.size() + 1;

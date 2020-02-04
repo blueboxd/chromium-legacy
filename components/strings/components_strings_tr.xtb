@@ -534,6 +534,8 @@
 <translation id="3366477098757335611">Kartları göster</translation>
 <translation id="3369192424181595722">Saat hatası</translation>
 <translation id="337363190475750230">Temel hazırlık iptal edildi</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" />, tarayıcınızda Enterprise Service Hooks özelliğini etkinleştirdi. Bu kancaların verilerinizin bir kısmına erişimi vardır.</translation>
+<translation id="3377144306166885718">Sunucu TLS'nin eski bir sürümünü kullandı.</translation>
 <translation id="3377188786107721145">Politika ayrıştırma hatası</translation>
 <translation id="3377736046129930310">Kartları daha hızlı onaylamak için ekran kilidini kullanın</translation>
 <translation id="3380365263193509176">Bilinmeyen hata</translation>
@@ -542,6 +544,7 @@
 <translation id="3391030046425686457">Teslimat adresi</translation>
 <translation id="3395827396354264108">Alım yöntemi</translation>
 <translation id="3399952811970034796">Teslimat Adresi</translation>
+<translation id="3402261774528610252">Bu siteyi yüklemek için kullanılan bağlantı, kullanımdan kaldırılan ve ileride devre dışı bırakılacak olan TLS 1.0 veya TLS 1.1 kullandı. Devre dışı bırakıldığında, kullanıcıların bu siteyi yüklemeleri engellenir. Sunucu TLS 1.2 veya sonraki sürümleri etkinleştirmelidir.</translation>
 <translation id="3422248202833853650">Bellekte yer açmak için diğer programlardan çıkmayı deneyin.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> ana makinesine şu anda ulaşılamıyor.</translation>
 <translation id="3423742043356668186">Sistem tarafından belirtilen</translation>
@@ -629,6 +632,7 @@
 <translation id="3745099705178523657">Onayladığınızda Google Hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesine saldıranlar sizi yanıltarak yazılım yüklemek veya kişisel bilgilerinizi (örneğin, şifreler, telefon numaraları veya kredi kartları) ifşa etmek gibi tehlikeli bir şey yapmanızı sağlayabilirler. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Çeviri, bir sunucu hatası nedeniyle başarısız oldu.</translation>
+<translation id="3754210790023674521">Pencere içinde pencere modundan çık</translation>
 <translation id="3759461132968374835">Son zamanda herhangi bir kilitlenme bildirmediniz. Kilitlenme bildirme özelliği devre dışıyken oluşan kilitlenmeler burada görünmez.</translation>
 <translation id="3760561303380396507">CVC yerine Windows Hello kullanılsın mı?</translation>
 <translation id="3761718714832595332">Durumu gizle</translation>
@@ -951,6 +955,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="519422657042045905">Ek açıklama kullanılamıyor</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Bu sayfadaki yerleşik bir sayfanın mesajı</translation>
 <translation id="5205222826937269299">Ad gerekli</translation>
 <translation id="5215116848420601511">Google Pay'i kullanan ödeme yöntemleri ve adresler</translation>
@@ -980,6 +985,7 @@
 <translation id="5295292838686006428">Bir site veya uygulamadaki veri ihlali nedeniyle şifreniz ifşa oldu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi öneriyor.</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
 <translation id="5300589172476337783">Göster</translation>
+<translation id="5306593769196050043">Her iki sayfa</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="5308689395849655368">Kilitlenme bildirme devre dışı.</translation>
 <translation id="5314967030527622926">Kitapçık yapıcı</translation>
@@ -1133,7 +1139,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Şifrelerinizi kontrol edin</translation>
 <translation id="6015796118275082299">Yıl</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1. sayfa}other{#. sayfa}}</translation>
 <translation id="6017514345406065928">Yeşil</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> öğesini kullanan saldırganlar başka bir şeyi taklit eden aldatıcı uygulamalar yükleyebilir veya sizi izlemek için kullanılabilecek veriler toplayabilirler. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (senkronize edildi)</translation>
@@ -1241,7 +1246,6 @@
 <translation id="6446163441502663861">Kahu (Zarf)</translation>
 <translation id="6446608382365791566">Daha fazla bilgi ekleyin</translation>
 <translation id="6447842834002726250">Çerezler</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{1 sayfa}other{# sayfa}} içeren PDF dokümanı</translation>
 <translation id="6451458296329894277">Yeniden Form Gönderme İşlemini Onayla</translation>
 <translation id="6457206614190510200">Ortada tel zımba</translation>
 <translation id="6465306955648956876">Şifreleri yönet...</translation>
@@ -1353,6 +1357,7 @@
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7062635574500127092">Turkuaz</translation>
 <translation id="7064851114919012435">İletişim bilgileri</translation>
+<translation id="70705239631109039">Bağlantınız tam olarak güvenli değil</translation>
 <translation id="7075452647191940183">İstek çok büyük</translation>
 <translation id="7079718277001814089">Bu site kötü amaçlı yazılım içeriyor</translation>
 <translation id="7081308185095828845">Bu özellik cihazınızda kullanılamıyor</translation>
@@ -1372,6 +1377,7 @@
 <translation id="7152423860607593928">Number-14 (Zarf)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> yöntem daha}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> yöntem daha}}</translation>
 <translation id="7153618581592392745">Lavanta</translation>
+<translation id="7156870133441232244">Sunucu, TLS 1.2 veya daha yeni bir sürüme geçmeli.</translation>
 <translation id="717330890047184534">Gaia Kimliği:</translation>
 <translation id="7174545416324379297">Birleştirildi</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> seçenek daha}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> seçenek daha}}</translation>
@@ -1397,6 +1403,7 @@ Ek ayrıntılar:
 <translation id="725866823122871198">Bilgisayarınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
 <translation id="7260504762447901703">Erişimi iptal et</translation>
 <translation id="7275334191706090484">Yönetilen Yer İşaretleri</translation>
+<translation id="7288778322931489286">Yöneticiniz, tarayıcınızda Enterprise Service Hooks özelliğini etkinleştirdi. Bu kancaların verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="7292031607255951991">Alıcı adı</translation>
 <translation id="7298195798382681320">Önerilenler</translation>
 <translation id="7300012071106347854">Çini Mavisi</translation>
@@ -1722,6 +1729,7 @@ Ek ayrıntılar:
 <translation id="874918643257405732">Bu sekmeye yer işareti koy</translation>
 <translation id="8751426954251315517">Lütfen bir dahaki sefer tekrar deneyin</translation>
 <translation id="8759274551635299824">Bu kartın kullanım süresi doldu</translation>
+<translation id="87601671197631245">Bu site, eski bir güvenlik yapılandırması kullanıyor. Bu siteye gönderildiğinde bilgileriniz (ör. şifreler, mesajlar veya kredi kartları) gösterilebilir.</translation>
 <translation id="8761567432415473239">Google Güvenli Tarama, yakın zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />zararlı programlar buldu<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB cihaz</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1739,6 +1747,7 @@ Ek ayrıntılar:
 <translation id="8866481888320382733">Politika ayarlarını ayrıştırma hatası</translation>
 <translation id="8866928039507595380">Kat</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Enterprise Service Hooks tarafından işaretlenen güvenlik işlemleri hakkında yöneticiniz ile veri paylaşın. Bu veriler ziyaret ettiğiniz sayfaların URL'leri, dosya adları veya meta verilerinin yanı sıra cihazınızda ve Chrome'da oturum açmak için kullandığınız kullanıcı adını içerebilir.</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8870494189203302833">Aynı sırada ön yüz aşağı bakacak şekilde</translation>
 <translation id="8874824191258364635">Geçerli bir kart numarası girin</translation>

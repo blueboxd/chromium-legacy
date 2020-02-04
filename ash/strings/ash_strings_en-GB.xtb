@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Stylus settings</translation>
 <translation id="2354174487190027830">Activating <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continue</translation>
-<translation id="2364154243880592194">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /> Press search + left to access the notification centre.</translation>
 <translation id="2365393535144473978">Enabling mobile data will enable Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update available</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Seek backwards</translation>
 <translation id="4129129681837227511">To see notifications on your lock screen, unlock to change the setting</translation>
 <translation id="4146833061457621061">Play music</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> managed by <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4195877955194704651">Automatic clicks button</translation>
 <translation id="4217571870635786043">Dictation</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> until full</translation>
-<translation id="4544944664594876241">The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Select-to-Speak button</translation>
 <translation id="4585337515783392668">Stop casting on an unknown receiver</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="6820676911989879663">Take a break!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Shortcut turned off</translation>
 <translation id="6910714959251846841">This update requires powerwashing of your device. Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. This Chromebook needs to restart to apply an update. This can take up to one minute.</translation>
 <translation id="7256634071279256947">Rear microphone</translation>
 <translation id="726276584504105859">Drag here to use split screen</translation>
 <translation id="7262906531272962081">Create reminder</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Camera is in use.</translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
 <translation id="7497767806359279797">Choose language and keyboard</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Network may be monitored</translation>
 <translation id="7536035074519304529">IP address: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Time for bed</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> doesn't support <ph name="SPECIFIED_RESOLUTION" />. The resolution was changed to <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji palette</translation>
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
 <translation id="7568294522609223312">Turn off automatic clicks</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">High contrast</translation>
 <translation id="8098591350844501178">Stop casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">On, all apps</translation>
+<translation id="8131740175452115882">Confirm</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialising...</translation>
 <translation id="8142441511840089262">Double click</translation>

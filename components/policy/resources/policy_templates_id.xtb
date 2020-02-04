@@ -714,13 +714,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika kebijakan ini ditetapkan ke jalur file, file tersebut akan digunakan sebagai file
       executable.</translation>
-<translation id="2111016292707172233">Mengaktifkan ketersediaan Ketuk untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
-
-Jika Anda mengaktifkan setelan ini, Ketuk untuk Menelusuri akan tersedia untuk pengguna dan mereka dapat memilih untuk mengaktifkan atau menonaktifkannya.
-
-Jika Anda menonaktifkan setelan ini, Ketuk untuk Menelusuri akan dinonaktifkan sepenuhnya.
-
-Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat deskripsi di atas.</translation>
 <translation id="2113068765175018713">Membatasi waktu operasi perangkat dengan melakukan booting ulang secara otomatis</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
@@ -1787,6 +1780,7 @@ Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan
       Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
 <translation id="377044054160169374">Penerapan Pencegahan Pengalaman yang Menyinggung</translation>
+<translation id="3780102107513139202">Aktifkan variasi tentang perbaikan penting saja</translation>
 <translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
 <translation id="3780319008680229708">Jika kebijakan ini disetel ke true, ikon toolbar Cast akan selalu ditampilkan di toolbar atau menu tambahan, dan pengguna tidak dapat menghapusnya.
 
@@ -1899,7 +1893,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
 
           Jika kebijakan ini tidak ditetapkan, penyorotan fokus keyboard mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
-<translation id="3874773863217952418">Aktifkan Ketuk untuk Menelusuri</translation>
 <translation id="3877517141460819966">Mode autentikasi faktor kedua yang terintegrasi</translation>
 <translation id="3879196885908353077">Memeriksa pelanggaran aturan perlindungan data sensitif pada download</translation>
 <translation id="3879208481373875102">Konfigurasi daftar Aplikasi Web yang diinstal otomatis</translation>
@@ -2030,6 +2023,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4027608872760987929">Aktifkan penyedia penelusuran default</translation>
 <translation id="4039085364173654945">Mengontrol apakah sub-konten pihak ketiga pada halaman diizinkan untuk memunculkan kotak dialog HTTP Otorisasi Dasar. Biasanya, kebijakan ini dinonaktifkan sebagai pertahanan atas phishing. Jika tidak disetel, kebijakan ini akan dinonaktifkan dan sub-konten pihak ketiga tidak akan diizinkan untuk memunculkan kotak dialog HTTP Otorisasi Dasar.</translation>
 <translation id="4056910949759281379">Nonaktifkan protokol SPDY</translation>
+<translation id="4061590579642538878">Laporkan informasi tentang laporan kerusakan.</translation>
 <translation id="4075675819066819571">Posisikan rak di sisi kiri layar</translation>
 <translation id="4075864623710596000">Hostname yang ditentukan dalam daftar ini akan dikecualikan dari pemeriksaan kebijakan HSTS yang berpotensi mengupgrade permintaan dari http ke https. Hanya hostname berlabel tunggal yang diizinkan dalam kebijakan ini. Hostname harus dikanonikalisasi: semua IDN harus dikonversi ke format berlabel A, dan semua huruf ASCII harus berupa huruf kecil. Kebijakan ini hanya berlaku untuk hostname tertentu yang sudah ditentukan; tidak berlaku untuk subdomain dari nama yang ditentukan.</translation>
 <translation id="408029843066770167">Izinkan kueri ke layanan waktu Google</translation>
@@ -2544,6 +2538,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4986560318567565414">Jalur ke Chrome untuk beralih dari browser alternatif.</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
+<translation id="500149597848135831">Aktifkan semua variasi</translation>
 <translation id="5032164758660626397">Mencegah pengguna mentransfer file berukuran besar</translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
@@ -2616,6 +2611,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5102203758995933166">Memungkinkan pendorongan konfigurasi jaringan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka.</translation>
 <translation id="5105313908130842249">Penundaan penguncian layar saat menggunakan daya baterai</translation>
 <translation id="5108031557082757679">Menonaktifkan printer yang merupakan perangkat perusahaan</translation>
+<translation id="5109383437323376357">Menentukan ketersediaan variasi</translation>
 <translation id="5112121363469561920">Menetapkan jenis default kaca pembesar layar yang diaktifkan pada layar login.
 
           Jika ditetapkan, kebijakan ini akan mengontrol jenis kaca pembesar layar yang diaktifkan saat layar login ditampilkan. Jika ditetapkan ke "Tidak ada", kebijakan ini akan menonaktifkan kaca pembesar layar.
@@ -3336,6 +3332,12 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6221175752766085998">Mengizinkan sertifikat yang dikeluarkan oleh sumber tepercaya setempat tanpa ekstensi subjectAlternativeName</translation>
 <translation id="6224304369267200483">URL/domain otomatis mengizinkan pengesahan langsung Kunci Keamanan</translation>
 <translation id="6233173491898450179">Setel direktori download</translation>
+<translation id="6242147107333796512">Melaporkan informasi terkait laporan kerusakan, seperti id remote,
+      stempel waktu perekaman, dan penyebabnya.
+
+      Jika kebijakan ditetapkan ke false atau tidak ditetapkan, informasi laporan kerusakan
+      tidak akan dilaporkan. Jika ditetapkan ke true, informasi laporan kerusakan akan
+      dilaporkan.</translation>
 <translation id="6244210204546589761">URL untuk membuka saat permulaan</translation>
 <translation id="6247316685259031374">Kebijakan ini mengontrol proses audio dalam sandbox.
       Jika kebijakan ini diaktifkan, proses audio akan berjalan dalam sandbox.
@@ -3979,6 +3981,15 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7311458740754205918">Jika kebijakan ini disetel ke true atau tidak disetel, halaman Tab Baru dapat menampilkan saran konten berdasarkan histori penjelajahan, minat, dan lokasi pengguna.
 
       Jika kebijakan disetel ke false, saran konten yang dibuat secara otomatis tidak akan ditampilkan di halaman Tab Baru.</translation>
+<translation id="7323572763274343342">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan pada <ph name="PRODUCT_NAME" />.
+
+      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_NAME" /> tanpa mengirimkan versi baru browser, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
+
+      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan ini tidak ditetapkan, semua variasi akan dapat diterapkan ke browser.
+
+      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan dapat diterapkan ke <ph name="PRODUCT_NAME" />.
+
+      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan dapat diterapkan ke browser. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Serupa dengan Wipe (nilai 2), namun mencoba untuk mempertahankan token login sehingga pengguna tidak perlu login lagi.</translation>
 <translation id="7329968046053403405">Menentukan jenis akun untuk akun yang diberikan oleh aplikasi autentikasi Android, yang mendukung autentikasi <ph name="HTTP_NEGOTIATE" /> (misalnya autentikasi Kerberos). Informasi ini seharusnya tersedia dari penyedia aplikasi autentikasi. Untuk detail selengkapnya, lihat https://goo.gl/hajyfN.
@@ -4053,6 +4064,19 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
           Jika kebijakan ini tidak ditetapkan atau ditetapkan ke Aktif, Google Chrome akan menerima konten web yang ditayangkan sebagai Signed HTTP Exchange.
 
           Jika kebijakan ini ditetapkan ke Nonaktif, Signed HTTP Exchange tidak dapat dimuat.</translation>
+<translation id="7509496865303347769">Mengonfigurasi URL halaman beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
+
+          Halaman beranda adalah halaman yang dibuka oleh tombol Layar Utama. Di desktop, halaman yang terbuka saat browser diluncurkan dikontrol oleh kebijakan RestoreOnStartup.
+
+          Jenis halaman beranda dapat disetel ke URL yang Anda tentukan di sini atau disetel ke Halaman Tab Baru. Jika Anda memilih Halaman Tab Baru, kebijakan ini tidak akan berpengaruh.
+
+          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL halaman beranda di <ph name="PRODUCT_NAME" />, tetapi mereka tetap dapat memilih Halaman Tab Baru sebagai halaman beranda.
+
+          Jika kebijakan ini tidak ditetapkan dan HomepageIsNewTabPage tidak disetel, pengguna akan dapat memilih halaman berandanya sendiri.
+
+          URL harus berisi skema standar, misalnya "http://example.com" atau "https://example.com".
+
+          Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="7511361072385293666">Jika kebijakan ini disetel ke True atau tidak disetel, penggunaan protokol QUIC di <ph name="PRODUCT_NAME" /> akan diizinkan.
       Jika kebijakan ini disetel ke False, penggunaan protokol QUIC tidak diizinkan.</translation>
 <translation id="7517845714620372896">Menentukan persentase kecerahan layar.
@@ -4211,6 +4235,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="7717938661004793600">Mengonfigurasikan fitur aksesibilitas <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7731026922044991970">Kembalikan cookie di semua situs ke perilaku <ph name="ATTRIBUTE_SAMESITE_NAME" /> lama</translation>
 <translation id="7747447585227954402">Izinkan perangkat menggunakan <ph name="PLUGIN_VM_NAME" /> di <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="7749024457938190837">Ekstensi diizinkan melewati dialog konfirmasi ketika mengirimkan pekerjaan cetak melalui API chrome.printing</translation>
 <translation id="7749402620209366169">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh sebagai ganti PIN yang ditentukan pengguna.
 
           Jika setelan ini diaktifkan, maka pengguna harus memberikan kode dua faktor yang valid saat mengakses hosting.
@@ -4515,6 +4540,9 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Jika Anda menonaktifkan setelan ini, meta tag halaman akan dipindai.
 
           Jika kebijakan ini tidak disetel, meta tag halaman akan dipindai.</translation>
+<translation id="8295496526151576383">Kebijakan ini menentukan ekstensi yang diizinkan untuk melewati dialog konfirmasi pekerjaan cetak ketika menggunakan fungsi <ph name="PRINTING_API" /> <ph name="SUBMIT_JOB_FUNCTION" /> untuk mengirimkan pekerjaan cetak.
+
+      Jika ekstensi tidak berada dalam daftar, atau daftar tidak ditetapkan, dialog konfirmasi pekerjaan cetak akan ditampilkan ke pengguna untuk setiap panggilan fungsi <ph name="SUBMIT_JOB_FUNCTION" />.</translation>
 <translation id="829641334878002866">Memungkinkan Anda menentukan jangka waktu, dalam milidetik, antara notifikasi pertama bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update tertunda dan akhir dari jangka waktu yang ditentukan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Jika tidak ditetapkan, jangka waktu default selama 259200000 milidetik (tiga hari) akan digunakan untuk perangkat <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -4647,12 +4675,6 @@ Kebijakan akan dihapus pada M75.</translation>
 
           Jika kebijakan ini tidak ditetapkan, pintasan fitur aksesibilitas akan diaktifkan secara default.</translation>
 <translation id="8525526490824335042">Container Linux</translation>
-<translation id="8538235451413605457">Mengonfigurasi persyaratan versi minimum <ph name="PRODUCT_NAME" /> yang diizinkan. Penggunaan versi yang lebih rendah dari versi yang ditentukan dianggap sebagai sudah usang dan perangkat tidak akan mengizinkan pengguna login sebelum OS diupdate.
-      Jika versi saat ini menjadi usang selama sesi pengguna, pengguna akan dipaksa logout.
-
-      Jika kebijakan ini tidak disetel, tidak ada batasan yang diterapkan, dan pengguna dapat login menggunakan <ph name="PRODUCT_NAME" /> versi apa pun.
-
-      "Versi" di sini dapat berarti versi yang tepat seperti '61.0.3163.120' atau awalan versi, seperti '61.0'  </translation>
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Izinkan SMS disinkronkan dari ponsel ke Chromebook.</translation>
 <translation id="8548832052135586762">Menyetel pencetakan ke hanya warna, hanya monokrom, atau tanpa batasan mode warna. Kebijakan yang tidak disetel diperlakukan sebagai tidak ada batasan.</translation>
@@ -5084,6 +5106,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan disetel ke false, 'Header dan footer' tidak dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.
 
       Jika kebijakan disetel ke true, 'Header dan footer' dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.</translation>
+<translation id="9213751049772256263">Nonaktifkan semua variasi</translation>
 <translation id="9217154963008402249">Frekuensi paket jaringan pemantauan</translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>

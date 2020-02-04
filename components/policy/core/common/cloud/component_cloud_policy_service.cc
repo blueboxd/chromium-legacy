@@ -320,7 +320,7 @@ ComponentCloudPolicyService::~ComponentCloudPolicyService() {
   if (core_->client())
     Disconnect();
 
-  backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
+  backend_task_runner_->DeleteSoon(FROM_HERE, std::move(backend_));
 }
 
 // static

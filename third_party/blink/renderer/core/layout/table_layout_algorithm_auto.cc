@@ -538,8 +538,11 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
           layout_struct_[pos].effective_min_logical_width =
               std::max(layout_struct_[pos].effective_min_logical_width,
                        column_min_logical_width);
+          column_max_logical_width =
+              std::max(column_max_logical_width, column_min_logical_width);
           layout_struct_[pos].effective_max_logical_width =
-              column_max_logical_width;
+              std::max(layout_struct_[pos].effective_max_logical_width,
+                       column_max_logical_width);
           allocated_min_logical_width += column_min_logical_width;
           allocated_max_logical_width += column_max_logical_width;
         }

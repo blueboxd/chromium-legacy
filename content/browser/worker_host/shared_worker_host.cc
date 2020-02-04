@@ -134,7 +134,9 @@ void SharedWorkerHost::Start(
         subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     base::WeakPtr<ServiceWorkerObjectHost>
-        controller_service_worker_object_host) {
+        controller_service_worker_object_host,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!started_);
   DCHECK(main_script_load_params);
@@ -148,7 +150,8 @@ void SharedWorkerHost::Start(
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       instance_.url(), std::move(options), instance_.content_security_policy(),
       instance_.content_security_policy_type(),
-      instance_.creation_address_space()));
+      instance_.creation_address_space(),
+      std::move(outside_fetch_client_settings_object)));
 
   // Register with DevTools.
   bool pause_on_start;

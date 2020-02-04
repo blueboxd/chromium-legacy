@@ -878,7 +878,7 @@ void ScrollableShelfView::Layout() {
 
   // Layer::Clone(), which may be triggered by screen rotation, does not copy
   // the mask layer. So we may need to reset the mask layer.
-  if (!layer()->layer_mask_layer()) {
+  if (ShouldApplyMaskLayerGradientZone() && !layer()->layer_mask_layer()) {
     DCHECK(!gradient_layer_delegate_->layer()->layer_mask_back_link());
     layer()->SetMaskLayer(gradient_layer_delegate_->layer());
   }
@@ -942,8 +942,10 @@ void ScrollableShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (gradient_layer_delegate_->layer()->bounds() != layer()->bounds())
+  if (ShouldApplyMaskLayerGradientZone() &&
+      gradient_layer_delegate_->layer()->bounds() != layer()->bounds()) {
     gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
+  }
 
   const gfx::Insets old_padding_insets = padding_insets_;
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;
@@ -1768,6 +1770,9 @@ void ScrollableShelfView::UpdateGradientZoneState() {
 }
 
 void ScrollableShelfView::MaybeUpdateGradientZone() {
+  if (!ShouldApplyMaskLayerGradientZone())
+    return;
+
   // Fade zones should be updated if:
   // (1) Fade zone's visibility changes.
   // (2) Fade zone should show and the arrow button's location changes.
@@ -1786,13 +1791,19 @@ void ScrollableShelfView::MaybeUpdateGradientZone() {
   if (!should_update_start_fade_zone && !should_update_end_fade_zone)
     return;
 
-  if (should_update_start_fade_zone)
-    gradient_layer_delegate_->set_start_fade_zone(target_start_fade_zone);
+  PaintGradientZone(CalculateStartGradientZone(), CalculateEndGradientZone());
+}
 
-  if (should_update_end_fade_zone)
-    gradient_layer_delegate_->set_end_fade_zone(target_end_fade_zone);
+void ScrollableShelfView::PaintGradientZone(const FadeZone& start_rect,
+                                            const FadeZone& end_rect) {
+  gradient_layer_delegate_->set_start_fade_zone(start_rect);
+  gradient_layer_delegate_->set_end_fade_zone(end_rect);
 
   SchedulePaint();
+}
+
+bool ScrollableShelfView::ShouldApplyMaskLayerGradientZone() const {
+  return layout_strategy_ != LayoutStrategy::kNotShowArrowButtons;
 }
 
 int ScrollableShelfView::GetActualScrollOffset(
@@ -2141,6 +2152,15 @@ void ScrollableShelfView::UpdateScrollOffset(float target_offset) {
   const bool strategy_needs_update = (layout_strategy_ != new_strategy);
   if (strategy_needs_update) {
     layout_strategy_ = new_strategy;
+    const bool has_gradient_zone = layer()->layer_mask_layer();
+    const bool should_have_gradient_zone = ShouldApplyMaskLayerGradientZone();
+    if (has_gradient_zone && !should_have_gradient_zone) {
+      PaintGradientZone(FadeZone(), FadeZone());
+      layer()->SetMaskLayer(nullptr);
+    } else if (!has_gradient_zone && should_have_gradient_zone) {
+      gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
+      layer()->SetMaskLayer(gradient_layer_delegate_->layer());
+    }
     InvalidateLayout();
   }
 

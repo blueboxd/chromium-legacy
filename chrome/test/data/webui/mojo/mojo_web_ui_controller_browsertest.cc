@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest, BindingsAccess) {
   EXPECT_EQ("foobarfoo",
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let fooRemote = test.mojom.Foo.getRemote(true);"
+                            "  let fooRemote = test.mojom.Foo.getRemote();"
                             "  let resp = await fooRemote.getFoo();"
                             "  return resp.value;"
                             "})()"));
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest, BindingsAccess) {
   EXPECT_EQ("foobarbar",
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let barRemote = test.mojom.Bar.getRemote(true);"
+                            "  let barRemote = test.mojom.Bar.getRemote();"
                             "  let resp = await barRemote.getBar();"
                             "  return resp.value;"
                             "})()"));
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest,
   EXPECT_EQ("foofoo",
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let fooRemote = test.mojom.Foo.getRemote(true);"
+                            "  let fooRemote = test.mojom.Foo.getRemote();"
                             "  let resp = await fooRemote.getFoo();"
                             "  return resp.value;"
                             "})()"));
@@ -241,13 +241,12 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest,
   content::ScopedAllowRendererCrashes allow;
 
   // Attempt to get a remote for a disallowed interface.
-  EXPECT_FALSE(
-      content::EvalJs(web_contents,
-                      "(async () => {"
-                      "  let barRemote = test.mojom.Bar.getRemote(true);"
-                      "  let resp = await barRemote.getBar();"
-                      "  return resp.value;"
-                      "})()")
-          .error.empty());
+  EXPECT_FALSE(content::EvalJs(web_contents,
+                               "(async () => {"
+                               "  let barRemote = test.mojom.Bar.getRemote();"
+                               "  let resp = await barRemote.getBar();"
+                               "  return resp.value;"
+                               "})()")
+                   .error.empty());
   EXPECT_TRUE(web_contents->IsCrashed());
 }

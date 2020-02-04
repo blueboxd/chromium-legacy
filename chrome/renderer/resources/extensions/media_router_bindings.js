@@ -855,8 +855,7 @@ MediaRouter.prototype.setKeepAlive = function(keepAlive) {
   } else if (keepAlive === true && !this.keepAlive_) {
     this.keepAlive_ = new extensions.KeepAlivePtr;
     Mojo.bindInterface(
-        extensions.KeepAlive.name, mojo.makeRequest(this.keepAlive_).handle,
-        'context', true);
+        extensions.KeepAlive.name, mojo.makeRequest(this.keepAlive_).handle);
   }
 };
 
@@ -1453,6 +1452,5 @@ MediaRouteProvider.prototype.createMediaRouteController = function(
 
 var ptr = new mediaRouter.mojom.MediaRouterPtr;
 Mojo.bindInterface(
-    mediaRouter.mojom.MediaRouter.name, mojo.makeRequest(ptr).handle, 'context',
-    true);
+    mediaRouter.mojom.MediaRouter.name, mojo.makeRequest(ptr).handle);
 exports.$set('returnValue', new MediaRouter(ptr));

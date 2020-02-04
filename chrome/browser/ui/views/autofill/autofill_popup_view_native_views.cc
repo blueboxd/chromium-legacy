@@ -36,8 +36,10 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 #include "ui/views/view.h"
@@ -295,6 +297,32 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSeparatorView);
 };
 
+// Draws a loading throbber into the dropdown.
+class AutofillPopupLoadingSpinnerView : public AutofillPopupRowView {
+ public:
+  ~AutofillPopupLoadingSpinnerView() override = default;
+
+  static AutofillPopupLoadingSpinnerView* Create(
+      AutofillPopupViewNativeViews* popup_view,
+      int line_number);
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override {}
+  void OnMouseExited(const ui::MouseEvent& event) override {}
+  void OnMouseReleased(const ui::MouseEvent& event) override {}
+
+ protected:
+  // AutofillPopupRowView:
+  void CreateContent() override;
+  void RefreshStyle() override;
+  std::unique_ptr<views::Background> CreateBackground() override;
+
+ private:
+  AutofillPopupLoadingSpinnerView(AutofillPopupViewNativeViews* popup_view,
+                                  int line_number);
+};
+
 // Draws a row which contains a warning message.
 class AutofillPopupWarningView : public AutofillPopupRowView {
  public:
@@ -349,13 +377,15 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                               is_selected());
 
   // Compute set size and position in set, by checking the frontend_id of each
-  // row, summing the number of non-separator rows, and subtracting the number
+  // row, summing the number of interactive rows, and subtracting the number
   // of separators found before this row from its |pos_in_set|.
   int set_size = 0;
   int pos_in_set = line_number() + 1;
   for (int i = 0; i < controller->GetLineCount(); ++i) {
     if (controller->GetSuggestionAt(i).frontend_id ==
-        autofill::POPUP_ITEM_ID_SEPARATOR) {
+            autofill::POPUP_ITEM_ID_SEPARATOR ||
+        controller->GetSuggestionAt(i).frontend_id ==
+            autofill::POPUP_ITEM_ID_LOADING_SPINNER) {
       if (i < line_number())
         --pos_in_set;
     } else {
@@ -791,6 +821,59 @@ AutofillPopupSeparatorView::AutofillPopupSeparatorView(
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
+/************** AutofillPopupLoadingSpinnerView **************/
+
+// static
+AutofillPopupLoadingSpinnerView* AutofillPopupLoadingSpinnerView::Create(
+    AutofillPopupViewNativeViews* popup_view,
+    int line_number) {
+  AutofillPopupLoadingSpinnerView* result =
+      new AutofillPopupLoadingSpinnerView(popup_view, line_number);
+  result->Init();
+  return result;
+}
+
+void AutofillPopupLoadingSpinnerView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  // Spinners are not selectable.
+  node_data->role = ax::mojom::Role::kSplitter;
+}
+
+void AutofillPopupLoadingSpinnerView::CreateContent() {
+  // Add a flex layout that positions the spinner in it's center.
+  auto layout = std::make_unique<views::FlexLayout>();
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal);
+  layout->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
+  layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+  SetLayoutManager(std::move(layout));
+
+  // Add a throbber that fills the height of the row (minus its margins).
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      /*top=*/0, /*left=*/GetHorizontalMargin(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL),
+      /*right=*/GetHorizontalMargin())));
+  auto throbber = std::make_unique<views::Throbber>();
+  throbber->Start();
+  AddChildView(std::move(throbber));
+}
+
+void AutofillPopupLoadingSpinnerView::RefreshStyle() {
+  SchedulePaint();
+}
+
+std::unique_ptr<views::Background>
+AutofillPopupLoadingSpinnerView::CreateBackground() {
+  return nullptr;
+}
+
+AutofillPopupLoadingSpinnerView::AutofillPopupLoadingSpinnerView(
+    AutofillPopupViewNativeViews* popup_view,
+    int line_number)
+    : AutofillPopupRowView(popup_view, line_number) {
+  SetFocusBehavior(FocusBehavior::NEVER);
+}
+
 /************** AutofillPopupWarningView **************/
 
 // static
@@ -1021,6 +1104,11 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
       case autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR:
         rows_.push_back(AutofillPopupSeparatorView::Create(this, line_number));
+        break;
+
+      case autofill::PopupItemId::POPUP_ITEM_ID_LOADING_SPINNER:
+        rows_.push_back(
+            AutofillPopupLoadingSpinnerView::Create(this, line_number));
         break;
 
       case autofill::PopupItemId::

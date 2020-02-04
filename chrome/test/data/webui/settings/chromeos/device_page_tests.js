@@ -1830,6 +1830,24 @@ cr.define('device_page_tests', function() {
             (element.offsetWidth == 0 && element.offsetHeight == 0);
       }
 
+      /**
+       * @param {string} id
+       * @return {string}
+       */
+      function getStorageItemLabelFromId(id) {
+        const rowItem = storagePage.$$('#' + id).shadowRoot;
+        return rowItem.querySelector('#label').innerText;
+      }
+
+      /**
+       * @param {string} id
+       * @return {string}
+       */
+      function getStorageItemSubLabelFromId(id) {
+        const rowItem = storagePage.$$('#' + id).shadowRoot;
+        return rowItem.querySelector('#subLabel').innerText;
+      }
+
       suiteSetup(function() {
         // Disable animations so sub-pages open within one event loop.
         testing.Test.disableAnimationsAndTransitions();
@@ -1904,6 +1922,17 @@ cr.define('device_page_tests', function() {
             '7.5 GB',
             storagePage.$.availableLabelArea.querySelector('.storage-size')
                 .innerText);
+      });
+
+      test('apps extensions size', async function() {
+        assertEquals(
+            'Apps and Extensions', getStorageItemLabelFromId('appsSize'));
+        assertEquals('Calculating…', getStorageItemSubLabelFromId('appsSize'));
+
+        // Send apps size callback.
+        cr.webUIListenerCallback('storage-apps-size-changed', '59.5 KB');
+        Polymer.dom.flush();
+        assertEquals('59.5 KB', getStorageItemSubLabelFromId('appsSize'));
       });
     });
   });

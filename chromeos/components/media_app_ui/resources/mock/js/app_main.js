@@ -13,13 +13,23 @@
  * @implements mediaApp.ClientApi
  */
 class BacklightApp extends HTMLElement {
+  constructor() {
+    super();
+    this.lastImg =
+        /** @type{!HTMLImageElement} */ (document.createElement('img'));
+    this.appendChild(this.lastImg);
+  }
+
   /** @override  */
   async loadFiles(files) {
-    const img = /** @type{HTMLImageElement} */ (document.createElement('img'));
+    const img = /** @type{!HTMLImageElement} */ (document.createElement('img'));
     // Note the mock app will just leak this Blob URL.
     img.src = URL.createObjectURL(files.item(0).blob);
     await img.decode();
-    this.appendChild(img);
+
+    // Simulate an app that shows one image at a time.
+    this.replaceChild(img, this.lastImg);
+    this.lastImg = img;
   }
 }
 

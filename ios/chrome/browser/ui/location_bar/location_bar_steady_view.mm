@@ -31,7 +31,7 @@ const CGFloat kLocationImageToLabelSpacing = -2.0;
 const CGFloat kLocationBarLeadingPadding = 8.0;
 // Trailing space between the trailing button and the trailing edge of the
 // location bar.
-const CGFloat kButtonTrailingSpacing = 10;
+const CGFloat kButtonTrailingSpacing = 11;
 // Duration of display and hide animation of the badge view, in seconds.
 const CGFloat kbadgeViewAnimationDuration = 0.2;
 // Location label vertical offset.

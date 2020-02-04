@@ -19,8 +19,7 @@ cr.define('cellular_setup', function() {
     /** @override */
     getMojoServiceRemote() {
       if (!this.remote_) {
-        this.remote_ = chromeos.cellularSetup.mojom.CellularSetup.getRemote(
-            /*useBrowserInterfaceBroker=*/ true);
+        this.remote_ = chromeos.cellularSetup.mojom.CellularSetup.getRemote();
       }
 
       return this.remote_;

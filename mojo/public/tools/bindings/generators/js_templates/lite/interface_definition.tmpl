@@ -164,11 +164,10 @@ goog.provide('{{module.namespace}}.{{interface.name}}PendingReceiver');
    * @return {!{{module.namespace}}.{{interface.name}}Remote}
    * @export
    */
-  static getRemote(useBrowserInterfaceBroker = false) {
+  static getRemote() {
     let remote = new {{module.namespace}}.{{interface.name}}Remote;
     Mojo.bindInterface(this.$interfaceName,
-                       remote.$.bindNewPipeAndPassReceiver().handle,
-                       "context", useBrowserInterfaceBroker);
+                       remote.$.bindNewPipeAndPassReceiver().handle);
     return remote;
   }
 };

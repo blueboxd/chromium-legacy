@@ -79,11 +79,7 @@ class CSSSegmentedFontFace final
   using FontFaceList = HeapListHashSet<Member<FontFace>>;
 
   FontSelectionCapabilities font_selection_capabilities_;
-  HashMap<FontCacheKey,
-          scoped_refptr<SegmentedFontData>,
-          FontCacheKeyHash,
-          FontCacheKeyTraits>
-      font_data_table_;
+  HashMap<FontCacheKey, scoped_refptr<SegmentedFontData>> font_data_table_;
   // All non-CSS-connected FontFaces are stored after the CSS-connected ones.
   FontFaceList font_faces_;
   FontFaceList::iterator first_non_css_connected_face_;

@@ -69,6 +69,21 @@ void StorageHandler::TestAPI::UpdateMyFilesSize() {
   handler_->UpdateMyFilesSize();
 }
 
+void StorageHandler::TestAPI::UpdateAppsSize() {
+  handler_->UpdateAppsSize();
+}
+
+void StorageHandler::TestAPI::UpdateAndroidAppsSize(
+    uint64_t total_code_bytes,
+    uint64_t total_data_bytes,
+    uint64_t total_cache_bytes) {
+  arc::mojom::ApplicationsSizePtr result(::arc::mojom::ApplicationsSize::New());
+  result->total_code_bytes = total_code_bytes;
+  result->total_data_bytes = total_data_bytes;
+  result->total_cache_bytes = total_cache_bytes;
+  handler_->OnGetAndroidAppsSize(true /* succeeded */, std::move(result));
+}
+
 namespace {
 
 void GetSizeStatBlocking(const base::FilePath& mount_path,
@@ -98,9 +113,12 @@ StorageHandler::StorageHandler(Profile* profile,
       has_browser_cache_size_(false),
       browser_site_data_size_(-1),
       has_browser_site_data_size_(false),
+      apps_extensions_size_(0),
+      android_apps_size_(0),
       updating_my_files_size_(false),
       updating_browsing_data_size_(false),
-      updating_android_size_(false),
+      updating_apps_size_(false),
+      updating_android_apps_size_(false),
       updating_crostini_size_(false),
       updating_other_users_size_(false),
       is_android_running_(false),
@@ -150,7 +168,7 @@ void StorageHandler::OnJavascriptAllowed() {
   if (base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
     arc_observer_.Add(arc::ArcSessionManager::Get());
 
-  // Start observing the mojo connection UpdateAndroidSize() relies on. Note
+  // Start observing the mojo connection UpdateAndroidAppsSize() relies on. Note
   // that OnConnectionReady() will be called immediately if the connection has
   // already been established.
   arc::ArcServiceManager::Get()
@@ -193,8 +211,8 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateSizeStat();
   UpdateMyFilesSize();
   UpdateBrowsingDataSize();
-  UpdateAndroidRunning();
-  UpdateAndroidSize();
+  UpdateAppsSize();
+  UpdateAndroidAppsSize();
   UpdateCrostiniSize();
   UpdateOtherUsersSize();
 }
@@ -277,10 +295,10 @@ int64_t StorageHandler::ComputeLocalFilesSize(
     const base::FilePath& android_files_path) {
   int64_t size = 0;
 
-  // Compute directory size of My Files
+  // Compute directory size of My Files.
   size += base::ComputeDirectorySize(my_files_path);
 
-  // Compute directory size of Play Files
+  // Compute directory size of Play Files.
   size += base::ComputeDirectorySize(android_files_path);
 
   // Remove size of Download. If Android is enabled, the size of the Download
@@ -365,42 +383,64 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
   }
 }
 
-void StorageHandler::UpdateAndroidRunning() {
-  FireWebUIListener("storage-android-running-changed",
-                    base::Value(is_android_running_));
+void StorageHandler::UpdateAppsSize() {
+  if (updating_apps_size_)
+    return;
+  updating_apps_size_ = true;
+
+  // Apps and extensions installed from the web store located in
+  // [user-hash]/Extensions.
+  const base::FilePath extensions_path =
+      profile_->GetPath().AppendASCII("Extensions");
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&base::ComputeDirectorySize, extensions_path),
+      base::BindOnce(&StorageHandler::OnGetAppsSize,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageHandler::UpdateAndroidSize() {
+void StorageHandler::OnGetAppsSize(int64_t total_bytes) {
+  apps_extensions_size_ = total_bytes;
+  updating_apps_size_ = false;
+  UpdateAppsAndExtensionsSize();
+}
+
+void StorageHandler::UpdateAndroidAppsSize() {
   if (!is_android_running_)
     return;
 
-  if (updating_android_size_)
+  if (updating_android_apps_size_)
     return;
-  updating_android_size_ = true;
+  updating_android_apps_size_ = true;
 
   bool success = false;
   auto* arc_storage_manager =
       arc::ArcStorageManager::GetForBrowserContext(profile_);
   if (arc_storage_manager) {
     success = arc_storage_manager->GetApplicationsSize(base::BindOnce(
-        &StorageHandler::OnGetAndroidSize, weak_ptr_factory_.GetWeakPtr()));
+        &StorageHandler::OnGetAndroidAppsSize, weak_ptr_factory_.GetWeakPtr()));
   }
   if (!success)
-    updating_android_size_ = false;
+    updating_android_apps_size_ = false;
 }
 
-void StorageHandler::OnGetAndroidSize(bool succeeded,
-                                      arc::mojom::ApplicationsSizePtr size) {
-  base::string16 size_string;
+void StorageHandler::OnGetAndroidAppsSize(
+    bool succeeded,
+    arc::mojom::ApplicationsSizePtr size) {
   if (succeeded) {
-    uint64_t total_bytes = size->total_code_bytes + size->total_data_bytes +
-                           size->total_cache_bytes;
-    size_string = ui::FormatBytes(total_bytes);
-  } else {
-    size_string = l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
+    android_apps_size_ = size->total_code_bytes + size->total_data_bytes +
+                         size->total_cache_bytes;
   }
-  updating_android_size_ = false;
-  FireWebUIListener("storage-android-size-changed", base::Value(size_string));
+  updating_android_apps_size_ = false;
+  UpdateAppsAndExtensionsSize();
+}
+
+void StorageHandler::UpdateAppsAndExtensionsSize() {
+  FireWebUIListener(
+      "storage-apps-size-changed",
+      base::Value(ui::FormatBytes(apps_extensions_size_ + android_apps_size_)));
 }
 
 void StorageHandler::UpdateCrostiniSize() {
@@ -501,17 +541,14 @@ void StorageHandler::UpdateExternalStorages() {
 
 void StorageHandler::OnConnectionReady() {
   is_android_running_ = true;
-  UpdateAndroidRunning();
-  UpdateAndroidSize();
+  UpdateAndroidAppsSize();
 }
 
 void StorageHandler::OnConnectionClosed() {
   is_android_running_ = false;
-  UpdateAndroidRunning();
 }
 
 void StorageHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
-  FireWebUIListener("storage-android-enabled-changed", base::Value(enabled));
   auto update = std::make_unique<base::DictionaryValue>();
   update->SetKey(kAndroidEnabled, base::Value(enabled));
   content::WebUIDataSource::Update(profile_, source_name_, std::move(update));

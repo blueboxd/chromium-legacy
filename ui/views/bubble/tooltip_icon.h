@@ -26,6 +26,15 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
                                  public MouseWatcherListener,
                                  public WidgetObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when tooltip bubble of the TooltipIcon is shown.
+    virtual void OnTooltipBubbleShown(TooltipIcon* icon) = 0;
+
+    // Called when the TooltipIcon is being destroyed.
+    virtual void OnTooltipIconDestroying(TooltipIcon* icon) = 0;
+  };
+
   METADATA_HEADER(TooltipIcon);
 
   explicit TooltipIcon(const base::string16& tooltip,
@@ -52,6 +61,9 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
   void set_anchor_point_arrow(BubbleBorder::Arrow arrow) {
     anchor_point_arrow_ = arrow;
   }
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   // Changes the color to reflect the hover node_data.
@@ -91,6 +103,8 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
   std::unique_ptr<MouseWatcher> mouse_watcher_;
 
   ScopedObserver<Widget, WidgetObserver> observer_{this};
+
+  base::ObserverList<Observer, /*check_empty=*/true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipIcon);
 };

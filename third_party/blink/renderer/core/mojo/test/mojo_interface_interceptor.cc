@@ -28,7 +28,6 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     ExecutionContext* context,
     const String& interface_name,
     const String& scope,
-    bool use_browser_interface_broker,
     ExceptionState& exception_state) {
   bool process_scope = scope == "process";
   if (process_scope && !context->IsDocument()) {
@@ -38,9 +37,8 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     return nullptr;
   }
 
-  return MakeGarbageCollected<MojoInterfaceInterceptor>(
-      context, interface_name, process_scope,
-      UseBrowserInterfaceBroker(use_browser_interface_broker));
+  return MakeGarbageCollected<MojoInterfaceInterceptor>(context, interface_name,
+                                                        process_scope);
 }
 
 MojoInterfaceInterceptor::~MojoInterfaceInterceptor() = default;
@@ -67,22 +65,20 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
     return;
   }
 
-  if (use_browser_interface_broker_) {
-    ExecutionContext* context = GetExecutionContext();
+  ExecutionContext* context = GetExecutionContext();
 
-    if (!context)
-      return;
+  if (!context)
+    return;
 
-    started_ = true;
-    if (!context->GetBrowserInterfaceBroker().SetBinderForTesting(
-            interface_name,
-            WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
-                               WrapWeakPersistent(this)))) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidModificationError,
-          "Interface " + interface_name_ +
-              " is already intercepted by another MojoInterfaceInterceptor.");
-    }
+  started_ = true;
+  if (!context->GetBrowserInterfaceBroker().SetBinderForTesting(
+          interface_name,
+          WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                             WrapWeakPersistent(this)))) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidModificationError,
+        "Interface " + interface_name_ +
+            " is already intercepted by another MojoInterfaceInterceptor.");
   }
 }
 
@@ -99,12 +95,9 @@ void MojoInterfaceInterceptor::stop() {
     return;
   }
 
-  if (use_browser_interface_broker_) {
-    ExecutionContext* context = GetExecutionContext();
-    DCHECK(context);
-    context->GetBrowserInterfaceBroker().SetBinderForTesting(interface_name,
-                                                             {});
-  }
+  ExecutionContext* context = GetExecutionContext();
+  DCHECK(context);
+  context->GetBrowserInterfaceBroker().SetBinderForTesting(interface_name, {});
 }
 
 void MojoInterfaceInterceptor::Trace(blink::Visitor* visitor) {
@@ -128,15 +121,12 @@ void MojoInterfaceInterceptor::ContextDestroyed(ExecutionContext*) {
   stop();
 }
 
-MojoInterfaceInterceptor::MojoInterfaceInterceptor(
-    ExecutionContext* context,
-    const String& interface_name,
-    bool process_scope,
-    UseBrowserInterfaceBroker use_browser_interface_broker)
+MojoInterfaceInterceptor::MojoInterfaceInterceptor(ExecutionContext* context,
+                                                   const String& interface_name,
+                                                   bool process_scope)
     : ContextLifecycleObserver(context),
       interface_name_(interface_name),
-      process_scope_(process_scope),
-      use_browser_interface_broker_(use_browser_interface_broker) {}
+      process_scope_(process_scope) {}
 
 void MojoInterfaceInterceptor::OnInterfaceRequest(
     mojo::ScopedMessagePipeHandle handle) {

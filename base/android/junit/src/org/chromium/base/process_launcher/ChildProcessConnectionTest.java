@@ -463,9 +463,11 @@ public class ChildProcessConnectionTest {
     }
 
     @Test
-    public void testUpdateGroupImportanceSmoke() {
+    public void testUpdateGroupImportanceSmoke() throws RemoteException {
         ChildProcessConnection connection = createDefaultTestConnection();
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
+        when(mIChildProcessService.bindToCaller()).thenReturn(true);
+        mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
         connection.updateGroupImportance(1, 2);
         assertEquals(1, connection.getGroup());
         assertEquals(2, connection.getImportanceInGroup());

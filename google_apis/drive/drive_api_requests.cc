@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -277,8 +278,7 @@ bool ParseMultipartResponse(const std::string& content_type,
       if (was_last_part)
         break;
     } else if (state == STATE_PART_HTTP_BODY) {
-      line.AppendToString(&body);
-      body.append(kHttpBr);
+      base::StrAppend(&body, {line, kHttpBr});
     }
   }
 

@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Подешавања писаљке</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Наставите</translation>
-<translation id="2364154243880592194">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /> Притисните тастер за претрагу и стрелицу улево да бисте приступили центру за обавештења.</translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
+<translation id="4149156641122542261">Уређајем <ph name="DEVICE_TYPE" /> управља <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Језици</translation>
 <translation id="4195877955194704651">Аутоматски кликови на дугмад</translation>
 <translation id="4217571870635786043">Диктирање</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Повратне информације</translation>
 <translation id="4527045527269911712">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до краја пуњења</translation>
-<translation id="4544944664594876241">Пречица за закључавање екрана је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Дугме Изаберите за говор</translation>
 <translation id="4585337515783392668">Заустави пребацивање на непознати пријемник</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="6820676911989879663">Направите паузу!</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Пречица је искључена</translation>
 <translation id="6910714959251846841">Ово ажурирање захтева да обавите powerwash на уређају. Сазнајте више о најновијем ажурирању за: <ph name="SYSTEM_APP_NAME" />.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Повезивање</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Овај Chromebook мора да се растартује ради примене ажурирања. Ово може да потраје највише 1 минут.</translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
 <translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
 <translation id="7262906531272962081">Направи подсетник</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Камера се користи.</translation>
 <translation id="743058460480092004">Камера и микрофон се користе.</translation>
 <translation id="7497767806359279797">Одаберите језик и тастатуру</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Мрежа се можда надгледа</translation>
 <translation id="7536035074519304529">IP адреса: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Време је за спавање</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> не подржава <ph name="SPECIFIED_RESOLUTION" />. Резолуција је промењена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Палета емоџија</translation>
 <translation id="7564874036684306347">Премештање прозора на други рачунар може да доведе до неочекиваног понашања. Накнадна обавештења, прозори и дијалози ће можда бити подељени између рачунара.</translation>
 <translation id="7568294522609223312">Искључите аутоматске кликове</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Високи контраст</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Укључено, све апликације</translation>
+<translation id="8131740175452115882">Потврди</translation>
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>
 <translation id="8142441511840089262">Двоструки клик</translation>

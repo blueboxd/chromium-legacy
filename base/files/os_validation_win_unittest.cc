@@ -234,7 +234,7 @@ class OpenFileTest : public OsValidationTest,
       if (bitfield & bit_name.bit) {
         if (!result->empty())
           result->append(" | ");
-        bit_name.name.AppendToString(result);
+        result->append(bit_name.name.data(), bit_name.name.size());
         bitfield &= ~bit_name.bit;
       }
       ++bits_begin;

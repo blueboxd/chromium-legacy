@@ -16,7 +16,7 @@ class MockCredentialManager {
     this.reset();
 
     this.interceptor_ = new MojoInterfaceInterceptor(
-      blink.mojom.CredentialManager.$interfaceName, "context", true);
+        blink.mojom.CredentialManager.$interfaceName);
     this.interceptor_.oninterfacerequest = e => {
       this.bindHandleToReceiver(e.handle);
     };
@@ -79,8 +79,8 @@ class MockAuthenticator {
   constructor() {
     this.reset();
 
-    this.interceptor_ = new MojoInterfaceInterceptor(
-      blink.mojom.Authenticator.$interfaceName, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(blink.mojom.Authenticator.$interfaceName);
     this.interceptor_.oninterfacerequest = e => {
       this.bindHandleToReceiver(e.handle);
     };

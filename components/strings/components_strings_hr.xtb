@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Prikaži kartice</translation>
 <translation id="3369192424181595722">Pogreška sata</translation>
 <translation id="337363190475750230">Dodjela je uklonjena</translation>
+<translation id="3376829916920036789">Domena <ph name="ENROLLMENT_DOMAIN" /> omogućila je Enterprise Service Hooks na vašem pregledniku. Te kuke imaju pristup nekim vašim podacima.</translation>
+<translation id="3377144306166885718">Poslužitelj je koristio zastarjelu verziju TLS-a.</translation>
 <translation id="3377188786107721145">Pogreška pri analizi pravila</translation>
 <translation id="3377736046129930310">Za brže potvrđivanje kartica upotrijebite zaključavanje zaslona</translation>
 <translation id="3380365263193509176">Nepoznata pogreška</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Adresa za dostavu</translation>
 <translation id="3395827396354264108">Način preuzimanja</translation>
 <translation id="3399952811970034796">Adresa za dostavu</translation>
+<translation id="3402261774528610252">Veza za učitavanje ove web-lokacije koristila je TLS 1.0 ili TLS 1.1, koji su obustavljeni i onemogućit će se. Nakon onemogućivanja korisnici neće moći učitati ovu web-lokaciju. Poslužitelj bi trebao omogućiti TLS 1.2 ili noviju verziju.</translation>
 <translation id="3422248202833853650">Pokušajte zatvoriti ostale programe da biste oslobodili memoriju.</translation>
 <translation id="3422472998109090673">Host <ph name="HOST_NAME" /> trenutačno nije dostupan.</translation>
 <translation id="3423742043356668186">Specificirano sustavom</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">Nakon što ih potvrdite, podaci o kartici s Google računa podijelit će se s ovom web-lokacijom.</translation>
 <translation id="3748148204939282805">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu vas na prijevaru pokušati navesti da napravite nešto opasno kao što je instaliranje softvera ili otkrivanje osobnih podataka (npr. zaporki, telefonskih brojeva ili brojeva kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Prijevod nije uspio zbog poslužiteljske pogreške.</translation>
+<translation id="3754210790023674521">Zatvori sliku u slici</translation>
 <translation id="3759461132968374835">Nemate nedavnih izvješća o padu. Ovdje se neće prikazati padovi do kojih je došlo kada je izvješćivanje o padovima onemogućeno.</translation>
 <translation id="3760561303380396507">Želite li koristiti Windows Hello umjesto CVC-a?</translation>
 <translation id="3761718714832595332">Sakrij status</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267">Nije <ph name="ORIGINAL_LANGUAGE" /> jezik? Prijavite tu pogrešku</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="519422657042045905">Napomena nije dostupna</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Na ugrađenoj stranici na ovoj stranici navodi se sljedeće</translation>
 <translation id="5205222826937269299">Ime je obavezno</translation>
 <translation id="5215116848420601511">Načini plaćanja i adrese s Google Paya</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome vam preporučuje da odmah provjerite spremljene zaporke.</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5300589172476337783">Prikaži</translation>
+<translation id="5306593769196050043">Oba lista</translation>
 <translation id="5308380583665731573">Povežite se</translation>
 <translation id="5308689395849655368">Onemogućeno je izvješćivanje o padu.</translation>
 <translation id="5314967030527622926">Alat za izradu knjižica</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Provjerite zaporke</translation>
 <translation id="6015796118275082299">Godina</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{1. stranica}one{#. stranica}few{#. stranica}other{#. stranica}}</translation>
 <translation id="6017514345406065928">Zelena</translation>
 <translation id="6017850046339264347">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogli bi instalirati obmanjujuće aplikacije koje se pretvaraju da su nešto drugo ili prikupljaju podatke na temelju kojih vas je moguće pratiti. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinkronizirano)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (omotnica)</translation>
 <translation id="6446608382365791566">Dodajte još podataka</translation>
 <translation id="6447842834002726250">Kolačići</translation>
-<translation id="644931407731409778">PDF dokument koji sadrži {COUNT,plural, =1{1 stranicu}one{# stranicu}few{# stranice}other{# stranica}}</translation>
 <translation id="6451458296329894277">Potvrdi ponovno slanje obrasca</translation>
 <translation id="6457206614190510200">Uvez klamanjem</translation>
 <translation id="6465306955648956876">Upravljajte zaporkama...</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7062635574500127092">Tirkiznoplava</translation>
 <translation id="7064851114919012435">Podaci za kontakt</translation>
+<translation id="70705239631109039">Vaša veza nije posve sigurna</translation>
 <translation id="7075452647191940183">Zahtjev je prevelik</translation>
 <translation id="7079718277001814089">Ova web-lokacija sadrži zlonamjerni softver</translation>
 <translation id="7081308185095828845">Ta značajka nije dostupna na vašem uređaju</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (omotnica)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
+<translation id="7156870133441232244">Poslužitelj bi se trebao nadograditi na TLS 1.2 ili noviju verziju.</translation>
 <translation id="717330890047184534">ID za GAIA-u:</translation>
 <translation id="7174545416324379297">Spojeno</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1401,6 +1407,7 @@ Dodatne pojedinosti:
 <translation id="725866823122871198">Sigurnu vezu s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nije moguće uspostaviti jer datum i vrijeme na računalu (<ph name="DATE_AND_TIME" />) nisu točni.</translation>
 <translation id="7260504762447901703">Opoziv pristupa</translation>
 <translation id="7275334191706090484">Upravljane oznake</translation>
+<translation id="7288778322931489286">Vaš je administrator omogućio Enterprise Service Hooks u vašem pregledniku. Te kuke imaju pristup nekim vašim podacima.</translation>
 <translation id="7292031607255951991">Ime primatelja</translation>
 <translation id="7298195798382681320">Preporučeno</translation>
 <translation id="7300012071106347854">Kobaltno plava</translation>
@@ -1726,6 +1733,7 @@ Dodatne pojedinosti:
 <translation id="874918643257405732">Označi ovu karticu</translation>
 <translation id="8751426954251315517">Pokušajte ponovo drugi put</translation>
 <translation id="8759274551635299824">Ta je kartica istekla</translation>
+<translation id="87601671197631245">Ova web-lokacija upotrebljava zastarjelu sigurnosnu konfiguraciju, pa bi vaši podaci (na primjer zaporke, poruke ili brojevi kreditnih kartica) mogli biti otkriveni kad se šalju na nju.</translation>
 <translation id="8761567432415473239">Googleovo Sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />pronašlo štetne programe<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB uređaj</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1743,6 +1751,7 @@ Dodatne pojedinosti:
 <translation id="8866481888320382733">Pogreška pri analizi postavki pravila</translation>
 <translation id="8866928039507595380">Presavijanje</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Podatke o sigurnosnim događajima koje je označio Enterprise Service Hooks podijelite s administratorom. To može uključivati URL-ove stranica koje posjetite, nazive ili metapodatke datoteka i korisničko ime koje koristite za prijavu na svoj uređaj i Chrome.</translation>
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8870494189203302833">Istim redoslijedom prema dolje</translation>
 <translation id="8874824191258364635">Unesite važeći broj kreditne kartice</translation>

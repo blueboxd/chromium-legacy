@@ -189,6 +189,7 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
     case POPUP_ITEM_ID_CREATE_HINT:
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
+    case POPUP_ITEM_ID_LOADING_SPINNER:
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_PASSWORD_ENTRY:
     case POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:

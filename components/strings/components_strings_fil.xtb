@@ -530,6 +530,8 @@
 <translation id="3366477098757335611">Tingnan ang mga card</translation>
 <translation id="3369192424181595722">Error sa orasan</translation>
 <translation id="337363190475750230">Naalis sa pagkakaprobisyon</translation>
+<translation id="3376829916920036789">Na-enable ng <ph name="ENROLLMENT_DOMAIN" /> ang Enterprise Service Hooks sa iyong browser. May access ang mga hook na ito sa ilan sa iyong data.</translation>
+<translation id="3377144306166885718">Gumamit ang server ng lumang bersyon ng TLS.</translation>
 <translation id="3377188786107721145">Error sa pag-parse ng patakaran</translation>
 <translation id="3377736046129930310">Gumamit ng lock ng screen para kumpirmahin nang mas mabilis ang mga card</translation>
 <translation id="3380365263193509176">Hindi kilalang error</translation>
@@ -538,6 +540,7 @@
 <translation id="3391030046425686457">Address kung saan maghahatid</translation>
 <translation id="3395827396354264108">Pamamaraan sa pag-pick up</translation>
 <translation id="3399952811970034796">Delivery Address</translation>
+<translation id="3402261774528610252">Ang koneksyong ginamit para i-load ang site na ito ay gumamit ng TLS 1.0 o TLS 1.1, na hindi na ginagamit at idi-disable sa hinaharap. Kapag na-disable, pipigilan ang mga user na i-load ang site na ito. Dapat i-enable ng server ang TLS 1.2 o mas bago.</translation>
 <translation id="3422248202833853650">Subukang lumabas sa iba pang program upang magbakante ng memory.</translation>
 <translation id="3422472998109090673">Hindi makakonekta sa <ph name="HOST_NAME" /> sa kasalukuyan.</translation>
 <translation id="3423742043356668186">Tinukoy na system</translation>
@@ -621,6 +624,7 @@
 <translation id="3745099705178523657">Pagkatapos mong magkumpirma, ibabahagi sa site na ito ang mga detalye ng card mula sa iyong Google Account.</translation>
 <translation id="3748148204939282805">Maaaring linlangin ka ng mga attacker sa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> na gawin ang isang mapanganib na bagay tulad ng pag-install ng software o paghayag ng iyong personal na impormasyon (halimbawa, mga password, numero ng telepono, o credit card). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Nabigo ang translation dahil sa error sa server.</translation>
+<translation id="3754210790023674521">Lumabas sa picture-in-picture</translation>
 <translation id="3759461132968374835">Wala kang kamakailang iniulat na mga pag-crash. Hindi lilitaw dito ang mga pag-crash na naganap kapag hindi pinagana ang pag-uulat ng pag-crash.</translation>
 <translation id="3760561303380396507">Gamitin ang Windows Hello sa halip na CVC?</translation>
 <translation id="3761718714832595332">Itago ang status</translation>
@@ -942,6 +946,7 @@
 <translation id="5179510805599951267">Wala sa <ph name="ORIGINAL_LANGUAGE" />? Iulat ang error na ito</translation>
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="519422657042045905">Hindi available ang anotasyon</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Isinasaad ng naka-embed na page sa page na ito na</translation>
 <translation id="5205222826937269299">Kailangan ng pangalan</translation>
 <translation id="5215116848420601511">Mga paraan ng pagbabayad at address gamit ang Google Pay</translation>
@@ -971,6 +976,7 @@
 <translation id="5295292838686006428">Na-expose ang iyong password dahil sa isang paglabag sa data sa isang site o app. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password.</translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
 <translation id="5300589172476337783">Ipakita</translation>
+<translation id="5306593769196050043">Parehong sheet</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
 <translation id="5308689395849655368">Hindi pinagana ang pag-uulat ng pag-crash.</translation>
 <translation id="5314967030527622926">Booklet maker</translation>
@@ -1124,7 +1130,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Suriin ang iyong mga password</translation>
 <translation id="6015796118275082299">Taon</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017514345406065928">Berde</translation>
 <translation id="6017850046339264347">Ang mga umaatake sa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ay maaaring mag-install ng mga mapanlinlang na app na nagpapanggap na ibang bagay o nangongolekta ng data na maaaring gamitin upang subaybayan ka. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (naka-sync)</translation>
@@ -1232,7 +1237,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Magdagdag ng higit pang impormasyon</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="644931407731409778">PDF na dokumentong naglalaman ng {COUNT,plural, =1{1 page}one{# page}other{# na page}}</translation>
 <translation id="6451458296329894277">Muling pagsusumite ng Form sa Pagkumpirma</translation>
 <translation id="6457206614190510200">Saddle stitch</translation>
 <translation id="6465306955648956876">Pamahalaan ang mga password...</translation>
@@ -1344,6 +1348,7 @@
 <translation id="7053983685419859001">I-block</translation>
 <translation id="7062635574500127092">Teal</translation>
 <translation id="7064851114919012435">Impormasyon sa pakikipag-ugnayan</translation>
+<translation id="70705239631109039">Hindi ganap na ligtas ang iyong koneksyon</translation>
 <translation id="7075452647191940183">Masyadong malaki ang kahilingan</translation>
 <translation id="7079718277001814089">Naglalaman ng malware ang site na ito</translation>
 <translation id="7081308185095828845">Hindi available ang feature na ito sa iyong device</translation>
@@ -1363,6 +1368,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> pa}one{<ph name="PAYMENT_METHOD_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> pa}other{<ph name="PAYMENT_METHOD_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> pa}}</translation>
 <translation id="7153618581592392745">Lavender</translation>
+<translation id="7156870133441232244">Dapat i-upgrade ang server sa TLS 1.2 o mas bago.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Naka-merge</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> pa}one{<ph name="SHIPPING_OPTION_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> pa}other{<ph name="SHIPPING_OPTION_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> pa}}</translation>
@@ -1388,6 +1394,7 @@ Mga karagdagang detalye:
 <translation id="725866823122871198">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong computer (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Bawiin ang access</translation>
 <translation id="7275334191706090484">Mga Pinamamahalaang Bookmark</translation>
+<translation id="7288778322931489286">Na-enable ng iyong administrator ang Enterprise Service Hooks sa browser mo. May access ang mga hook na ito sa ilan sa iyong data.</translation>
 <translation id="7292031607255951991">Pangalan ng tatanggap</translation>
 <translation id="7298195798382681320">Inirerekomenda</translation>
 <translation id="7300012071106347854">Cobalt Blue</translation>
@@ -1712,6 +1719,7 @@ Mga karagdagang detalye:
 <translation id="874918643257405732">I-bookmark ang tab na ito</translation>
 <translation id="8751426954251315517">Pakisubukang muli sa susunod</translation>
 <translation id="8759274551635299824">Nag-expire na ang card na ito</translation>
+<translation id="87601671197631245">Gumagamit ang site na ito ng lumang configuration sa seguridad, na posibleng maglantad ng iyong impormasyon (halimbawa, mga password, mensahe, o credit card) kapag ipinadala ito sa site na ito.</translation>
 <translation id="8761567432415473239">Ang Google Safe Browsing ay may <ph name="BEGIN_LINK" />natagpuang mga nakakasirang program<ph name="END_LINK" /> sa <ph name="SITE" /> kamakailan.</translation>
 <translation id="8763927697961133303">USB device</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1729,6 +1737,7 @@ Mga karagdagang detalye:
 <translation id="8866481888320382733">Error sa pag-parse ng mga setting ng patakaran</translation>
 <translation id="8866928039507595380">Fold</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Magbahagi ng data tungkol sa mga pangyayari sa seguridad na na-flag ng Enterprise Service Hooks sa iyong administrator. Posibleng kabilang dito ang mga URL ng mga page na binibisita mo, mga pangalan ng file o metadata, at ang username na iyong ginagamit para mag-sign sa device mo at sa Chrome.</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8870494189203302833">Parehong pagkakasunod-sunod nang nakataob</translation>
 <translation id="8874824191258364635">Maglagay ng wastong numero ng card</translation>

@@ -538,6 +538,8 @@
 <translation id="3366477098757335611">Դիտել քարտերը</translation>
 <translation id="3369192424181595722">Ժամացույցի սխալ</translation>
 <translation id="337363190475750230">Անջատված է</translation>
+<translation id="3376829916920036789">Enterprise Service Hooks-ը միացվել է ձեր դիտարկիչում <ph name="ENROLLMENT_DOMAIN" /> կայքի կողմից։ Այս hook-երին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
+<translation id="3377144306166885718">Սերվերն օգտագործում է TLS-ի հնացած տարբերակ։</translation>
 <translation id="3377188786107721145">Կանոնի վերլուծման սխալ</translation>
 <translation id="3377736046129930310">Օգտագործել էկրանի կողպումը՝ քարտերն ավելի արագ հաստատելու համար</translation>
 <translation id="3380365263193509176">Անհայտ սխալ</translation>
@@ -546,6 +548,7 @@
 <translation id="3391030046425686457">Առաքման հասցեն</translation>
 <translation id="3395827396354264108">Ստացման եղանակ</translation>
 <translation id="3399952811970034796">Առաքման հասցեն</translation>
+<translation id="3402261774528610252">Կապը, որի միջոցով բեռնվել է այս կայքը, օգտագործում է TLS-ի 1.0 կամ 1.1 տարբերակները, որոնք հնացած են և չեն աջակցվի ապագայում։ Անջատվելուց հետո այցելուները այլևս չեն կարողանա դիտել այս կայքը։ Սերվերը պետք է ակտիվացնի TLS-ի 1.2 կամ ավելի բարձր տարբերակ։</translation>
 <translation id="3422248202833853650">Փակեք մյուս ծրագրերը՝ տարածք ազատելու համար:</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" />-ը ներկայումս անհասանելի է:</translation>
 <translation id="3423742043356668186">Նշված է համակարգի կողմից</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">Հաստատումից հետո ձեր Google հաշվին կցված քարտի տվյալները կօգտագործվեն այս կայքի կողմից։</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> կայքում հարձակվողները կարող են խաբեությամբ ձեր սարքի վրա տեղադրել ծրագրեր կամ բացահայտել ձեր անձնական տեղեկությունները (օրինակ՝ գաղտնաբառերը, հեռախոսահամարները կամ վարկային քարտերը): <ph name="BEGIN_LEARN_MORE_LINK" />Իմանալ ավելին<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Սերվերի սխալի պատճառով թարգմանությունը չհաջողվեց:</translation>
+<translation id="3754210790023674521">Դուրս գալ «նկար նկարի մեջ» ռեժիմից</translation>
 <translation id="3759461132968374835">Վերջերս հաղորդված խափանումներ չկան: Խափանումների մասին հաղորդումն անջատված ժամանակ տեղի ունեցած խափանումները չեն ցուցադրվի այստեղ:</translation>
 <translation id="3760561303380396507">Օգտագործե՞լ Windows Hello՝ CVC-ի փոխարեն</translation>
 <translation id="3761718714832595332">Թաքցնել կարգավիճակը</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> չէ՞: Հաղորդեք սխալի մասին</translation>
 <translation id="5190835502935405962">Էջանիշների գոտի</translation>
 <translation id="519422657042045905">Ծանոթագրությունը հասանելի չէ</translation>
+<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Հաղորդագրություն այս կայքում ներկառուցված էջից</translation>
 <translation id="5205222826937269299">Անունը պարտադիր է</translation>
 <translation id="5215116848420601511">Վճարման եղանակներ ու հասցեներ Google Pay-ից</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">Ձեր գաղտնաբառը բացահայտվել է որոշակի կայքում կամ հավելվածում տեղի ունեցած տվյալների արտահոսքի հետևանքով։ Chrome-ը խորհուրդ է տալիս ստուգել ձեր պահված գաղտնաբառերի ապահովությունը։</translation>
 <translation id="5299298092464848405">Կանոնը վերլուծելիս սխալ տեղի ունեցավ</translation>
 <translation id="5300589172476337783">Ցույց տալ</translation>
+<translation id="5306593769196050043">Երկու թերթերը</translation>
 <translation id="5308380583665731573">Կապակցվել</translation>
 <translation id="5308689395849655368">Խափանումների մասին հաշվետվությունների ուղարկումն անջատված է:</translation>
 <translation id="5314967030527622926">Բուկլետ պատրաստելու գործիք</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Ստուգեք ձեր գաղտնաբառերը</translation>
 <translation id="6015796118275082299">Տարի</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Էջ 1}one{Page #}other{Էջ #}}</translation>
 <translation id="6017514345406065928">Կանաչ</translation>
 <translation id="6017850046339264347">Հարձակվողները <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> կայքում կարող են կեղծ հավելվածներ տեղադրել կամ տվյալներ հավաքել՝ ձեզ հետևելու համար։ <ph name="BEGIN_LEARN_MORE_LINK" />Մանրամասն<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (համաժամացված)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (ծրար)</translation>
 <translation id="6446608382365791566">Ավելացրեք լրացուցիչ տեղեկություններ</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
-<translation id="644931407731409778">PDF փաստաթուղթ, որն ունի {COUNT,plural, =1{1 էջ}one{# էջ}other{# էջ}}</translation>
 <translation id="6451458296329894277">Հաստատեք ձևի վերաուղարկումը</translation>
 <translation id="6457206614190510200">Միջծալքային կար</translation>
 <translation id="6465306955648956876">Կառավարել գաղտնաբառերը...</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">Արգելափակել</translation>
 <translation id="7062635574500127092">Փիրուզագույն</translation>
 <translation id="7064851114919012435">Կոնտակտային տվյալներ</translation>
+<translation id="70705239631109039">Ձեր կապը լիարժեք պաշտպանված չէ</translation>
 <translation id="7075452647191940183">Հարցումը չափազանց մեծ է</translation>
 <translation id="7079718277001814089">Այս կայքը վնասաբեր ծրագիր է պարունակում</translation>
 <translation id="7081308185095828845">Այս գործառույթը հասանելի չէ ձեր սարքում</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (ծրար)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> տարբերակ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> տարբերակ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> տարբերակ}}</translation>
 <translation id="7153618581592392745">Նարդոս</translation>
+<translation id="7156870133441232244">Սերվերը պետք է թարմացվի TLS 1.2 կամ ավելի բարձր տարբերակով։</translation>
 <translation id="717330890047184534">Gaia ID՝</translation>
 <translation id="7174545416324379297">Միավորված</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}}</translation>
@@ -1401,6 +1407,7 @@
 <translation id="725866823122871198">Չհաջողվեց մասնավոր կապակցում հաստատել <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> տիրույթի հետ, քանի որ ձեր համակարգչի ամսաթիվը և ժամը (<ph name="DATE_AND_TIME" />) սխալ են:</translation>
 <translation id="7260504762447901703">Արգելել սարքի օգտագործումը</translation>
 <translation id="7275334191706090484">Կառավարվող էջանիշներ</translation>
+<translation id="7288778322931489286">Ձեր ադմինիստրատորը միացրել է Enterprise Service Hooks-ը ձեր դիտարկիչում։ Այս hook-երին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
 <translation id="7292031607255951991">Ստացողի անունը</translation>
 <translation id="7298195798382681320">Հանձնարարելի</translation>
 <translation id="7300012071106347854">Կոբալտե կապույտ</translation>
@@ -1725,6 +1732,7 @@
 <translation id="874918643257405732">Էջանշել այս ներդիրը</translation>
 <translation id="8751426954251315517">Փորձեք ավելի ուշ</translation>
 <translation id="8759274551635299824">Քարտի ժամկետը սպառվել է</translation>
+<translation id="87601671197631245">Այս կայքն օգտագործում է անվտանգության հնացած կազմաձևում, ինչի հետևանքով ձեր տեղեկությունները (օր.` գաղտնաբառերը, հաղորդագրությունները կամ վարկային քարտի տվյալները) այս կայքում լրացնելիս կարող են բացահայտվել։</translation>
 <translation id="8761567432415473239">Google Ապահով զննարկումը վերջերս <ph name="BEGIN_LINK" />վնասաբեր ծրագրեր է հայտնաբերել<ph name="END_LINK" /> <ph name="SITE" />-ում:</translation>
 <translation id="8763927697961133303">USB սարք</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1742,6 +1750,7 @@
 <translation id="8866481888320382733">Կանոնի կարգավորումները վերլուծելիս սխալ առաջացավ</translation>
 <translation id="8866928039507595380">Ծալում</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">Ուղարկեք ձեր ադմինիստրատորին անվտանգությանը սպառնացող գործողությունների մասին տվյալները, որոնք նշվել են Enterprise Service Hooks-ի կողմից որպես վտանգավոր։ Սա կարող է ներառել ձեր այցելած էջերի հասցեները, ֆայլերի անուններ կամ մետատվյալներ, ինչպես նաև օգտանուններ, որոնք օգտագործում եք ձեր սարքում կամ Chrome-ում հաշիվ մտնելու համար։</translation>
 <translation id="8870413625673593573">Վերջին փակվածները</translation>
 <translation id="8870494189203302833">Նույն հերթականությամբ՝ երեսի կողմով ներքև</translation>
 <translation id="8874824191258364635">Մուտքագրեք քարտի վավեր համար</translation>

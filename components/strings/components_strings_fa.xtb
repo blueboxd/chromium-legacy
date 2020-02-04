@@ -537,6 +537,8 @@
 <translation id="3366477098757335611">مشاهده کارت‌ها</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> «قلاب‌های سرویس سازمانی» را در مرورگرتان فعال کرده است. این قلاب‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
+<translation id="3377144306166885718">سرور از نسخه منسوخ «امنیت لایه انتقال» استفاده می‌کرد.</translation>
 <translation id="3377188786107721145">خطای تجزیه خط‌مشی</translation>
 <translation id="3377736046129930310">برای به‌تأیید رساندن سریع‌تر کارت‌ها، از قفل صفحه استفاده شود</translation>
 <translation id="3380365263193509176">خطای ناشناس</translation>
@@ -545,6 +547,7 @@
 <translation id="3391030046425686457">نشانی ارسال</translation>
 <translation id="3395827396354264108">روش تحویل گرفتن</translation>
 <translation id="3399952811970034796">نشانی ارسال</translation>
+<translation id="3402261774528610252">اتصال استفاده‌شده برای بار کردن این سایت از «امنیت لایه انتقال» نسخه ۱.۰ یا ۱.۱ استفاده می‌کرد که منسوخ شده است و در آینده غیرفعال خواهد شد. بعد از غیرفعال شدن، کاربران نمی‌توانند این سایت را بار کنند. سرور باید «امنیت لایه انتقال» نسخه ۱.۲ یا بالاتر را فعال کند.</translation>
 <translation id="3422248202833853650">سعی کنید از برنامه‌های دیگر خارج شوید تا حافظه آزاد شود.</translation>
 <translation id="3422472998109090673">دسترسی به <ph name="HOST_NAME" /> درحال حاضر امکان‌پذیر نیست.</translation>
 <translation id="3423742043356668186">مشخص‌شده توسط سیستم</translation>
@@ -633,6 +636,7 @@
 <translation id="3745099705178523657">‏بعد از تأیید کردن، جزئیات کارت از حساب Google شما با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="3748148204939282805">ممکن است مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> شما را فریب دهند تا اقدام خطرناکی همچون نصب نرم‌افزار یا افشای اطلاعات شخصی (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) انجام دهید. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">بدلیل خطای سرور ترجمه انجام نشد.</translation>
+<translation id="3754210790023674521">خروج از تصویردرتصویر</translation>
 <translation id="3759461132968374835">شما اخیراً گزارش خرابی ارسال نکرده‌اید. مشکلاتی که در هنگام غیرفعال بودن ویژگی ارائه گزارش خرابی ایجاد شده است، در اینجا نمایش داده نمی‌شود.</translation>
 <translation id="3760561303380396507">‏به‌جای CVC از Windows Hello استفاده شود؟</translation>
 <translation id="3761718714832595332">پنهان کردن وضعیت</translation>
@@ -955,6 +959,7 @@
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="519422657042045905">حاشیه‌نویسی دردسترس نیست</translation>
+<translation id="5196187217592847346">قلاب‌های سرویس سازمانی</translation>
 <translation id="5201306358585911203">صفحه جاسازی‌شده‌ای در این صفحه می‌گوید</translation>
 <translation id="5205222826937269299">نام ضروری است</translation>
 <translation id="5215116848420601511">‏روش‌های پرداخت و نشانی‌های مورداستفاده در Google Pay</translation>
@@ -984,6 +989,7 @@
 <translation id="5295292838686006428">‏نقض داده در سایت یا برنامه‌ای باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5300589172476337783">نمایش</translation>
+<translation id="5306593769196050043">هر دو برگ</translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
 <translation id="5314967030527622926">دفترچه‌ساز</translation>
@@ -1137,7 +1143,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">بررسی گذرواژه</translation>
 <translation id="6015796118275082299">سال</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{صفحه ۱}one{صفحه #}other{صفحه #}}</translation>
 <translation id="6017514345406065928">سبز</translation>
 <translation id="6017850046339264347">مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> می‌توانند برنامه‌های فریب‌دهنده‌ای نصب کنند که وانمود می‌کنند چیز دیگری هستند یا داده‌هایی جمع‌آوری کنند که ممکن است برای ردیابی شما استفاده شوند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /> (همگام‌سازی‌شده)</translation>
@@ -1245,7 +1250,6 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">افزودن اطلاعات بیشتر</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
-<translation id="644931407731409778">سند PDF حاوی {COUNT,plural, =1{۱ صفحه}one{# صفحه}other{# صفحه}}</translation>
 <translation id="6451458296329894277">تأیید ارسال مجدد فرم</translation>
 <translation id="6457206614190510200">منگنه تخت</translation>
 <translation id="6465306955648956876">مدیریت گذرواژه‌ها…</translation>
@@ -1357,6 +1361,7 @@
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7062635574500127092">سبز دودی</translation>
 <translation id="7064851114919012435">اطلاعات تماس</translation>
+<translation id="70705239631109039">اتصال شما کاملاً ایمن نیست</translation>
 <translation id="7075452647191940183">درخواست خیلی بزرگ است</translation>
 <translation id="7079718277001814089">این سایت حاوی بدافزار است</translation>
 <translation id="7081308185095828845">این ویژگی در دستگاهتان دردسترس نیست.</translation>
@@ -1376,6 +1381,7 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}one{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}}</translation>
 <translation id="7153618581592392745">نیلی کم‌رنگ</translation>
+<translation id="7156870133441232244">‏سرور باید به «امنیت لایه انتقال» (TLS) نسخه ۱.۲ یا بالاتر ارتقا داده شود.</translation>
 <translation id="717330890047184534">‏شناسه Gaia:</translation>
 <translation id="7174545416324379297">ادغام شد</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
@@ -1401,6 +1407,7 @@
 <translation id="725866823122871198">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نمی‌شود زیرا تاریخ و زمان رایانه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
 <translation id="7260504762447901703">لغو دسترسی</translation>
 <translation id="7275334191706090484">نشانک‌های مدیریت شده</translation>
+<translation id="7288778322931489286">سرپرستتان «قلاب‌های سرویس سازمانی» را در مرورگرتان فعال کرده است. این قلاب‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
 <translation id="7292031607255951991">نام گیرنده</translation>
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="7300012071106347854">آبی پررنگ</translation>
@@ -1725,6 +1732,7 @@
 <translation id="874918643257405732">نشانک‌گذاری این برگه</translation>
 <translation id="8751426954251315517">لطفاً بعداً دوباره امتحان کنید</translation>
 <translation id="8759274551635299824">کارت منقضی شده است</translation>
+<translation id="87601671197631245">پیکربندی امنیتی این سایت قدیمی است و ممکن است اطلاعاتتان (برای مثال، گذرواژه‌ها، پیام‌ها، یا کارت‌های اعتباری) هنگام ارسال شدن به این سایت، درمعرض خطر قرار گیرد.</translation>
 <translation id="8761567432415473239">‏مرور ایمن Google اخیراً <ph name="BEGIN_LINK" />برنامه‌های خطرناک<ph name="END_LINK" /> را در <ph name="SITE" /> پیدا کرده است.</translation>
 <translation id="8763927697961133303">‏دستگاه USB</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1742,6 +1750,7 @@
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8866928039507595380">تاخوردگی</translation>
 <translation id="886872106311861689">B3</translation>
+<translation id="8869862664961249123">‏داده‌های مرتبط با رویدادهای امنیتی را که «قلاب‌های سرویس سازمانی» پرچم‌گذاری کرده‌اند، با سرپرستتان هم‌رسانی کنید. ممکن است شامل این موارد شود: نشانی‌های وب صفحاتی که بازدید می‌کنید، نام فایل‌ها یا فراداده‌ها، و نام کاربری‌ای که برای ورود به سیستم دستگاهتان و Chrome استفاده می‌کنید.</translation>
 <translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8870494189203302833">ترتیب یکسان، روبه‌پایین</translation>
 <translation id="8874824191258364635">شماره کارت معتبری وارد کنید</translation>

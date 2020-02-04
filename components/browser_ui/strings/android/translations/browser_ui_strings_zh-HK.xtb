@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">復原</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2359808026110333948">繼續</translation>
+<translation id="2501278716633472235">返回</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="3115898365077584848">顯示資料</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">複製連結</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4570913071927164677">詳細資料</translation>
+<translation id="497421865427891073">往前</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5556459405103347317">重新載入</translation>
+<translation id="5596627076506792578">更多選項</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5939518447894949180">重設</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />選項</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6746124502594467657">下移</translation>
+<translation id="6818926723028410516">選取項目</translation>
 <translation id="6910211073230771657">已刪除</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6965382102122355670">確定</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
+<translation id="7087918508125750058">揀咗 <ph name="ITEM_COUNT" /> 個。選項喺螢幕頂部</translation>
+<translation id="7250468141469952378">揀咗 <ph name="ITEM_COUNT" /> 個</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
+<translation id="7846076177841592234">取消選取</translation>
 <translation id="8131740175452115882">確定</translation>
 <translation id="8249310407154411074">移至頂部</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8609465669617005112">上移</translation>
+<translation id="8676374126336081632">清除輸入</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
 </translationbundle>

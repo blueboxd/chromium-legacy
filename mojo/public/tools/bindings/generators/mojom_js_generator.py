@@ -807,17 +807,26 @@ class Generator(generator.Generator):
 
   def _ExpressionToTextLite(self, token):
     if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
-      # Both variable and enum constants are constructed like:
-      # NamespaceUid.Struct[.Enum].CONSTANT_NAME
-      name = []
+      # Generate the following for:
+      #  - Enums: NamespaceUid.Enum.CONSTANT_NAME
+      #  - Struct: NamespaceUid.Struct_CONSTANT_NAME
+
+      name_prefix = []
       if token.module:
-        name.append(token.module.namespace)
+        name_prefix.append(token.module.namespace)
       if token.parent_kind:
-        name.append(token.parent_kind.name)
+        name_prefix.append(token.parent_kind.name)
+
+      name = []
       if isinstance(token, mojom.EnumValue):
         name.append(token.enum.name)
       name.append(token.name)
-      return ".".join(name)
+
+      separator = "."
+      if mojom.IsStructKind(token.parent_kind):
+        separator = "_"
+
+      return ".".join(name_prefix) + separator + ".".join(name)
 
     return self._ExpressionToText(token)
 

@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">सर्च इंजन</translation>
 <translation id="1513352483775369820">बुकमार्क और वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड मिटाएं</translation>
-<translation id="1516229014686355813">'खोजने के लिए टैप करें' सुविधा चुने हुए शब्‍द और मौजूदा पेज को संदर्भ के रूप में 'Google सर्च' पर भेजती है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में जाकर बंद कर सकते हैं.</translation>
 <translation id="1521774566618522728">आज सक्रिय है</translation>
 <translation id="1544826120773021464">अपना Google खाता प्रबंधित करने के लिए, "खाता प्रबंधित करें" बटन पर टैप करें</translation>
 <translation id="1549000191223877751">अन्य विंडो में ले जाएं</translation>
@@ -142,7 +141,6 @@
 <translation id="204321170514947529">Chrome में <ph name="APP_NAME" /> का डेटा भी है</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">साइट रोकी गई</translation>
-<translation id="2063713494490388661">खोजने के लिए टैप करें</translation>
 <translation id="2067805253194386918">टेक्स्ट</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2091887806945687916">आवाज़</translation>
@@ -179,6 +177,7 @@
 <translation id="2328985652426384049">साइन इन नहीं कर सकते</translation>
 <translation id="2349710944427398404">Chrome द्वारा उपयोग किया गया कुल डेटा, जिसमें खाते, बुकमार्क और सहेजी गईं सेटिंग शामिल हैं</translation>
 <translation id="2353636109065292463">आपके इंटरनेट कनेक्शन की जाँच की जा रही है</translation>
+<translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2369533728426058518">खुले टैब</translation>
 <translation id="2387895666653383613">लेख स्‍केलिंग</translation>
 <translation id="2394602618534698961">आप जिन फ़ाइलों को डाउनलोड करते हैं वे यहां दिखाई देंगी</translation>
@@ -199,7 +198,6 @@
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास</translation>
 <translation id="2497852260688568942">सिंक को आपके व्यवस्थापक ने अक्षम कर दिया है</translation>
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
-<translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2513403576141822879">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK" />सिंक और Google सेवाएं<ph name="END_LINK" /> देखें</translation>
 <translation id="2517472476991765520">स्कैन करें</translation>
 <translation id="2518590038762162553">Chrome, लाइट मोड में पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है. जिन पेजों पर आप जाते हैं उनको ऑप्टिमाइज़ करने के लिए Chrome आपके वेब ट्रैफ़िक की जानकारी Google को भेजता है. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
@@ -351,6 +349,7 @@
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
 <translation id="3716182511346448902">यह पेज बहुत ज़्यादा मेमोरी का इस्तेमाल करता है, इसलिए Chrome ने इसे रोक दिया है.</translation>
 <translation id="3730075448226062617">Chrome को अपना माइक्रोफ़ोन ऐक्सेस करने देने के लिए, <ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर भी माइक्रोफ़ोन चालू करें.</translation>
+<translation id="3738139272394829648">खोजने के लिए छुएं</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3744111561329211289">बैकग्राउंड सिंक</translation>
 <translation id="3749259744154402564">काम नहीं करता</translation>
@@ -390,9 +389,6 @@
 <translation id="4008040567710660924">किसी खास साइट के लिए कुकी की मंज़ूरी दें.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# घंटा}one{# घंटे}other{# घंटे}}</translation>
 <translation id="4046123991198612571">अगला ट्रैक</translation>
-<translation id="4048707525896921369">पेज को छोड़े बिना वेबसाइटों पर मौजूद विषयों के बारे में जानें. 'खोजने के लिए टैप करें' सुविधा, 'Google सर्च' को कोई शब्‍द और उससे जुड़ी जानकारी भेजती है. इससे परिभाषाएं, तस्वीर, खोज नतीजे और दूसरी जानकारियां हासिल होती हैं.
-
-अपने खोज के शब्द को एडजस्‍ट करने के लिए उसे चुनें. चुनने के लिए उसे देर तक दबाकर रखें. अपनी खोज को बेहतर बनाने के लिए, पैनल को सीधे ऊपर स्‍लाइड करें और 'खोज बॉक्‍स' पर टैप करें.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">स्क्रीन के शीर्ष भाग में मौजूद विकल्प</translation>
 <translation id="4062305924942672200">कानूनी जानकारी</translation>
@@ -606,7 +602,6 @@
 <translation id="5578795271662203820">इस इमेज के लिए <ph name="SEARCH_ENGINE" /> पर खोजें</translation>
 <translation id="5581519193887989363">आप जब चाहें तब <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में जाकर किसी भी चीज़ को सिंक करने का विकल्प चुन सकते हैं.</translation>
 <translation id="5595485650161345191">पते में बदलाव करें</translation>
-<translation id="5596627076506792578">ज़्यादा विकल्प</translation>
 <translation id="5599455543593328020">गुप्त मोड</translation>
 <translation id="5620928963363755975">ज़्यादा विकल्प बटन से डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5626134646977739690">नाम:</translation>
@@ -771,7 +766,6 @@
 <translation id="6782111308708962316">तृतीय पक्ष वेबसाइट को कुकी डेटा सहेजने और पढ़ने से रोकें</translation>
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6811034713472274749">पेज देखने के लिए तैयार है</translation>
-<translation id="6818926723028410516">आइटम चुनें</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="6845325883481699275">'Chrome सुरक्षा' को बेहतर बनाने में मदद करें</translation>
@@ -804,10 +798,8 @@
 <translation id="7053983685419859001">ब्लॉक करें</translation>
 <translation id="7055152154916055070">रीडायरेक्ट ब्लॉक किया गया:</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 चुना गया}one{# चुने गए}other{# चुने गए}}</translation>
 <translation id="7071521146534760487">खाता प्रबंधित करें</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चुने गए.  विकल्प, स्क्रीन के ऊपरी भाग के पास उपलब्ध हैं</translation>
 <translation id="7121362699166175603">पता बार मेंअपने-आपपूर्णता और इतिहास को हटाता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
 <translation id="7128222689758636196">मौजूदा सर्च इंजन के लिए अनुमति दें</translation>
 <translation id="7138678301420049075">अन्य</translation>
@@ -823,7 +815,6 @@
 <translation id="7233236755231902816">वेब को अपनी भाषा में देखने के लिए, Chrome का नया वर्शन पाएं</translation>
 <translation id="7243308994586599757">विकल्‍प स्‍क्रीन के नीचे उपलब्‍ध हैं</translation>
 <translation id="7248069434667874558">पक्का करें कि <ph name="TARGET_DEVICE_NAME" /> पर Chrome में सिंक करने की सुविधा चालू है</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चुने गए</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
 <translation id="7290209999329137901">नाम बदलने की सुविधा उपलब्ध नहीं है</translation>
 <translation id="7291387454912369099">Assistant के ज़रिए अपने आप भरें</translation>
@@ -905,7 +896,6 @@
 <translation id="780301667611848630">नहीं, रहने दें</translation>
 <translation id="7810647596859435254">इसमें खोलें…</translation>
 <translation id="7821588508402923572">बचाया गया डेटा यहां दिखाई देगा</translation>
-<translation id="7846076177841592234">चुना गया हटाएं</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
 <translation id="7875915731392087153">ईमेल बनाएं</translation>
@@ -952,6 +942,7 @@
 <translation id="8110087112193408731">'डिजिटल वेलबीइंग' में अपनी Chrome गतिविधि दिखाना चाहते हैं?</translation>
 <translation id="8116925261070264013">आवाज़ बंद की गई</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
+<translation id="8137558756159375272">'खोजने के लिए छुएं' सुविधा चुने हुए शब्‍द और मौजूदा पेज को संदर्भ के रूप में 'Google सर्च' पर भेजती है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में जाकर बंद कर सकते हैं.</translation>
 <translation id="8156139159503939589">आप किन भाषाओं में पढ़ सकते हैं?</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> फ़ाइलें बची हैं</translation>
@@ -1019,7 +1010,6 @@
 <translation id="8655599981421006542">नए टैब बनाने और पिछले टैब पर वापस जाने के लिए यहां टैप करें</translation>
 <translation id="8662811608048051533">आपको ज़्यादातर साइट से साइन आउट कर देता है.</translation>
 <translation id="8664979001105139458">इस नाम की फ़ाइल पहले से मौजूद है</translation>
-<translation id="8676374126336081632">इनपुट साफ़ करें</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{सिग्नल सशक्तता का स्तर: # बार}one{सिग्नल सशक्तता का स्तर: # बार}other{सिग्नल सशक्तता का स्तर: # बार}}</translation>
 <translation id="868929229000858085">अपने संपर्क खोजें</translation>
 <translation id="869891660844655955">समय समाप्ति तारीख</translation>

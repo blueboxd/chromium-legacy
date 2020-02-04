@@ -52,7 +52,6 @@ MinimumVersionRequirement::CreateInstanceIfValid(
       eol_warning.has_value() ? eol_warning.value() : 0);
   return std::make_unique<MinimumVersionRequirement>(
       minimum_version, warning_time, eol_warning_time);
-  return nullptr;
 }
 
 int MinimumVersionRequirement::Compare(

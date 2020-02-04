@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Soekenjin</translation>
 <translation id="1513352483775369820">Boekmerke en webgeskiedenis</translation>
 <translation id="1513858653616922153">Vee wagwoord uit</translation>
-<translation id="1516229014686355813">Tik om te Soek stuur die geselekteerde woord en die huidige bladsy as konteks na Google Search toe. Jy kan dit in <ph name="BEGIN_LINK" />Instellings<ph name="END_LINK" /> afskakel.</translation>
 <translation id="1521774566618522728">Aktief vandag</translation>
 <translation id="1544826120773021464">Tik op die "Bestuur rekening"-knoppie om jou Google-rekening te bestuur</translation>
 <translation id="1549000191223877751">Beweeg na 'n ander venster</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> het ook data in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Werf is onderbreek</translation>
-<translation id="2063713494490388661">Tik om te soek</translation>
 <translation id="2067805253194386918">teks</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Klank</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Kan nie aanmeld nie</translation>
 <translation id="2349710944427398404">Alle data deur Chrome gebruik, insluitend rekeninge, boekmerke en gestoorde instellings</translation>
 <translation id="2353636109065292463">Gaan jou internetverbinding na</translation>
+<translation id="2359808026110333948">Gaan voort</translation>
 <translation id="2369533728426058518">oop oortjies</translation>
 <translation id="2387895666653383613">Verander teksgrootte</translation>
 <translation id="2394602618534698961">Lêers wat jy aflaai, verskyn hier</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Blaaigeskiedenis</translation>
 <translation id="2497852260688568942">Jou administrateur het sinkronisering gedeaktiveer</translation>
 <translation id="2498359688066513246">Hulp en terugvoer</translation>
-<translation id="2501278716633472235">Gaan terug</translation>
 <translation id="2513403576141822879">Sien <ph name="BEGIN_LINK" />Sinkornisering en Google-dienste<ph name="END_LINK" /> vir meer instellings wat verband hou met privaatheid, sekuriteit en data-insameling</translation>
 <translation id="2517472476991765520">Skandeer</translation>
 <translation id="2518590038762162553">In Ligte modus laai Chrome bladsye vinniger en gebruik tot 60 persent minder data. Chrome stuur jou webverkeer na Google toe om die bladsye wat jy besoek, te optimeer. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Maak die Vindbalk oop</translation>
 <translation id="3716182511346448902">Hierdie bladsy gebruik te veel berging en daarom het Chrome dit laat wag.</translation>
 <translation id="3730075448226062617">Vir Chrome om toegang tot jou mikrofoon te kry, moet jy mikrofoon ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
+<translation id="3738139272394829648">Raak om te soek</translation>
 <translation id="3739899004075612870">Geboekmerk in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
 <translation id="3749259744154402564">Ongesteun</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Laat webkoekies vir 'n spesifieke werf toe.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# uur}other{# uur}}</translation>
 <translation id="4046123991198612571">Volgende snit</translation>
-<translation id="4048707525896921369">Kom meer te wete oor onderwerpe op webwerwe sonder om die bladsy te verlaat. Tik om te Soek stuur 'n woord en sy omringende konteks na Google Search toe en wys definisies, prente, soekresultate en ander besonderhede.
-
-Om jou soekterm aan te pas, druk lank om te kies. Om jou soektog te verfyn, gly die paneel tot heel bo en tik op die soekkassie.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opsies is naby die bokant van die skerm beskikbaar</translation>
 <translation id="4062305924942672200">Regsinligting</translation>
@@ -609,7 +605,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5578795271662203820">Deursoek <ph name="SEARCH_ENGINE" /> vir hierdie prent</translation>
 <translation id="5581519193887989363">Jy kan altyd in <ph name="BEGIN_LINK1" />instellings<ph name="END_LINK1" /> kies wat om te sinkroniseer.</translation>
 <translation id="5595485650161345191">Wysig adres</translation>
-<translation id="5596627076506792578">Meer opsies</translation>
 <translation id="5599455543593328020">Incognitomodus</translation>
 <translation id="5620928963363755975">Kry jou lêers en bladsye in Aflaaie vanaf die Meer Opsies-knoppie</translation>
 <translation id="5626134646977739690">Naam:</translation>
@@ -652,6 +647,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5864419784173784555">Wag tans vir nog 'n aflaai …</translation>
 <translation id="5865733239029070421">Stuur gebruikstatistieke en omvalverslae outomaties na Google</translation>
 <translation id="5869522115854928033">Gestoorde wagwoorde</translation>
+<translation id="5884076754568147479">Om jou te help om take te voltooi, sal Google die URL'e en inhoud ontvang van werwe waarop jy Assistent gebruik, asook inligting wat jy deur Assistent indien</translation>
 <translation id="5902828464777634901">Alle plaaslike data wat deur hierdie webwerf gestuur word, insluitend webkoekies, sal uitgevee word.</translation>
 <translation id="5919204609460789179">Dateer <ph name="PRODUCT_NAME" /> op om sinkronisering te begin</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gestoor</translation>
@@ -775,7 +771,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6782111308708962316">Keer derdeparty-webwerwe om webkoekiedata te stoor en te lees</translation>
 <translation id="6790428901817661496">Speel</translation>
 <translation id="6811034713472274749">Bladsy is gereed om bekyk te word</translation>
-<translation id="6818926723028410516">Kies items</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Vertaal</translation>
 <translation id="6845325883481699275">Help om Chrome-sekuriteit te verbeter</translation>
@@ -808,10 +803,8 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7053983685419859001">Blokkeer</translation>
 <translation id="7055152154916055070">Herleiding is geblokkeer:</translation>
 <translation id="7063006564040364415">Kon nie aan die sinkroniseringbediener koppel nie.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 gekies}other{# gekies}}</translation>
 <translation id="7071521146534760487">Bestuur rekening</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> gekies. Opsies is naby aan die bokant van die skerm beskikbaar</translation>
 <translation id="7121362699166175603">Vee geskiedenis en outovoltooide items in die adresbalk uit. Jou Google-rekening kan dalk ander vorme van blaaigeskiedenis hê by <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Laat vir huidige soekenjin toe</translation>
 <translation id="7138678301420049075">Ander</translation>
@@ -827,7 +820,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7233236755231902816">Kry die jongste weergawe van Chrome om die web in jou taal te sien.</translation>
 <translation id="7243308994586599757">Opsies is naby die onderkant van die skerm beskikbaar</translation>
 <translation id="7248069434667874558">Maak seker dat sinkronisering in Chrome op <ph name="TARGET_DEVICE_NAME" /> aangeskakel is.</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> gekies</translation>
 <translation id="7274013316676448362">Geblokkeerde werf</translation>
 <translation id="7290209999329137901">Hernoeming is nie beskikbaar nie</translation>
 <translation id="7291387454912369099">Assistent-geleide betaalpunt</translation>
@@ -909,7 +901,6 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="780301667611848630">Nee, dankie</translation>
 <translation id="7810647596859435254">Maak oop met …</translation>
 <translation id="7821588508402923572">Jou databesparing sal hier verskyn</translation>
-<translation id="7846076177841592234">Kanselleer keuse</translation>
 <translation id="784934925303690534">Tydomvang</translation>
 <translation id="7851858861565204677">Ander toestelle</translation>
 <translation id="7875915731392087153">Skep e-pos</translation>
@@ -957,6 +948,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8116925261070264013">Gedemp</translation>
 <translation id="8127542551745560481">Wysig tuisblad</translation>
 <translation id="813082847718468539">Bekyk werfinligting</translation>
+<translation id="8137558756159375272">Raak om te soek stuur die geselekteerde woord en die huidige bladsy as konteks na Google Search. Jy kan dit in <ph name="BEGIN_LINK" />Instellings<ph name="END_LINK" /> afskakel.</translation>
 <translation id="8156139159503939589">Watter tale lees jy?</translation>
 <translation id="8168435359814927499">Inhoud</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> lêers oor</translation>
@@ -1024,7 +1016,6 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8655599981421006542">Tik hier om nuwe oortjies te skep en na voriges toe terug te gaan</translation>
 <translation id="8662811608048051533">Meld jou by die meeste werwe af.</translation>
 <translation id="8664979001105139458">Lêernaam bestaan reeds</translation>
-<translation id="8676374126336081632">Vee invoer uit</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Seinsterktevlak: # stafie}other{Seinsterktevlak: # stafies}}</translation>
 <translation id="868929229000858085">Deursoek jou kontakte</translation>
 <translation id="8698438463325761328">Blokkeer werwe om toegang tot jou virtuelerealiteit-toestel en -data te kry</translation>

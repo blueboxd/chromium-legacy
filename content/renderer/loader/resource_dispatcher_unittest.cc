@@ -126,8 +126,8 @@ class ResourceDispatcherTest : public testing::Test,
     request->priority = net::LOW;
     request->mode = network::mojom::RequestMode::kNoCors;
 
-    const RequestExtraData extra_data;
-    extra_data.CopyToResourceRequest(request.get());
+    auto extra_data = base::MakeRefCounted<RequestExtraData>();
+    extra_data->CopyToResourceRequest(request.get());
 
     return request;
   }

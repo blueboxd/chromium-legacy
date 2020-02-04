@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">ម៉ាស៊ីនស្វែងរក</translation>
 <translation id="1513352483775369820">ចំណាំ និងប្រវត្តិគេហទំព័រ</translation>
 <translation id="1513858653616922153">លុបពាក្យសម្ងាត់</translation>
-<translation id="1516229014686355813">មុខងារ​ចុចដើម្បី​ស្វែងរក​ផ្ញើពាក្យ​ដែលបាន​ជ្រើសរើស និង​ទំព័រ​បច្ចុប្បន្ន​ជាបរិបទ​ទៅកម្មវិធី Google ស្វែងរក។ អ្នកអាច​បិទវា​នៅក្នុង <ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />។</translation>
 <translation id="1521774566618522728">ដំណើរការ​ថ្ងៃនេះ</translation>
 <translation id="1544826120773021464">ដើម្បី​គ្រប់គ្រង​គណនី Google របស់អ្នក សូមចុចប៊ូតុង "គ្រប់គ្រងគណនី"</translation>
 <translation id="1549000191223877751">ផ្លាស់ទៅផ្ទាំងវិនដូផ្សេងទៀត</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> ក៏មានទិន្នន័យ​នៅក្នុង Chrome ផងដែរ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">បាន​ផ្អាកគេហទំព័រ</translation>
-<translation id="2063713494490388661">ប៉ះដើម្បីស្វែងរក</translation>
 <translation id="2067805253194386918">អត្ថបទ</translation>
 <translation id="2082238445998314030">លទ្ធផល <ph name="RESULT_NUMBER" /> នៃ <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">សំឡេង</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">មិនអាចចូលបានទេ</translation>
 <translation id="2349710944427398404">ទិន្នន័យសរុបដែលបានប្រើដោយ Chrome ដោយរាប់បញ្ចូលទាំងគណនី ចំណាំ និងការកំណត់ដែលបានរក្សាទុក</translation>
 <translation id="2353636109065292463">កំពុងពិនិត្យមើល​ការតភ្ជាប់អ៊ីនធឺណិត​របស់អ្នក</translation>
+<translation id="2359808026110333948">បន្ត</translation>
 <translation id="2369533728426058518">បើកផ្ទាំង</translation>
 <translation id="2387895666653383613">ការសម្រួលមាត្រដ្ឋានអត្ថបទ</translation>
 <translation id="2394602618534698961">ឯកសារ​ដែលអ្នកទាញយក​បង្ហាញ​នៅទីនេះ</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">ប្រវត្តិរុករក</translation>
 <translation id="2497852260688568942">សមកាលកម្មបានបិទដោយអ្នកគ្រប់គ្រងរបស់អ្នក</translation>
 <translation id="2498359688066513246">ជំនួយ &amp; មតិ</translation>
-<translation id="2501278716633472235">ត្រលប់ក្រោយ</translation>
 <translation id="2513403576141822879">សម្រាប់​ការកំណត់​ច្រើនទៀតពាក់ព័ន្ធនឹង​ឯកជន​ភាព សុវត្ថិភាព និង​ការ​ប្រមូល​ទិន្នន័យ សូមមើល<ph name="BEGIN_LINK" />សមកាលកម្ម​ និង​សេវាកម្ម Google<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2518590038762162553">Chrome ផ្ទុកទំព័រ​រហ័សជាងមុន និងប្រើទិន្នន័យ​តិចជាងមុន​រហូតដល់ 60 ភាគរយ នៅក្នុង​មុខងារស្រាល។ ដើម្បី​បង្កើន​ប្រសិទ្ធភាព​ទំព័រ​ដែល​អ្នក​ចូលមើល Chrome ផ្ញើ​ចរាចរណ៍​បណ្ដាញ​របស់អ្នក​ទៅ Google ។ <ph name="BEGIN_LINK" />ស្វែងយល់​បន្ថែម<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">បើករបារស្វែងរក</translation>
 <translation id="3716182511346448902">ទំព័រនេះ​ប្រើអង្គ​ចងចាំ​ច្រើនពេក ដូច្នេះ Chrome បាន​ផ្អាកវា។</translation>
 <translation id="3730075448226062617">ដើម្បីអនុញ្ញាតឱ្យ Chrome ចូលប្រើមីក្រូហ្វូន​របស់អ្នក អ្នកក៏ត្រូវបើក​មីក្រូហ្វូន​នៅក្នុង<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" /> ផងដែរ។</translation>
+<translation id="3738139272394829648">ប៉ះដើម្បីស្វែងរក</translation>
 <translation id="3739899004075612870">បាន​ដាក់​ចំណាំ​នៅ​ក្នុង <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">សមកាលកម្មផ្ទៃខាងក្រោយ</translation>
 <translation id="3749259744154402564">មិន​ស្គាល់</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">អនុញ្ញាតខូគី​សម្រាប់គេហទំព័រ​ជាក់លាក់។</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ម៉ោង​}other{# ម៉ោង}}</translation>
 <translation id="4046123991198612571">បទ​បន្ទាប់</translation>
-<translation id="4048707525896921369">ស្វែងយល់​អំពី​ប្រធានបទ​នៅលើ​គេហទំព័រ​ដោយមិន​ចាំបាច់​ចាកចេញ​ពីទំព័រ។ មុខងារ​ចុចដើម្បី​ស្វែងរក​ផ្ញើពាក្យ និង​បរិបទ​ជុំវិញ​របស់វាទៅ​កម្មវិធី Google ស្វែងរក ដើម្បី​ទទួលបាន​និយមន័យ រូបភាព លទ្ធផល​ស្វែងរក និង​ព័ត៌មានលម្អិតផ្សេងទៀត​ត្រឡប់មកវិញ។
-
-ដើម្បី​កែតម្រូវ​ពាក្យស្វែងរក​របស់អ្នក សូមចុចឱ្យយូរ​ដើម្បី​ជ្រើសរើស។ ដើម្បីសម្អាត​ការស្វែងរក​របស់អ្នក​ឡើងវិញ សូមអូសផ្ទាំង​ទៅលើបំផុត រួចចុច​ប្រអប់​ស្វែងរក។</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">ជម្រើសមានផ្តល់ជូននៅក្បែរផ្នែកខាងលើអេក្រង់</translation>
 <translation id="4062305924942672200">ព័ត៌មានផ្លូវច្បាប់</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">ស្វែងរក <ph name="SEARCH_ENGINE" /> សម្រាប់រូបភាពនេះ</translation>
 <translation id="5581519193887989363">អ្នកអាចជ្រើសរើស​អ្វីដែលត្រូវធ្វើសមកាលកម្ម​នៅក្នុង<ph name="BEGIN_LINK1" />ការកំណត់<ph name="END_LINK1" />បានជានិច្ច។</translation>
 <translation id="5595485650161345191">កែសម្រួលអាសយដ្ឋាន</translation>
-<translation id="5596627076506792578">ជម្រើសច្រើនទៀត</translation>
 <translation id="5599455543593328020">មុខងារ​ឯកជន</translation>
 <translation id="5620928963363755975">ស្វែងរក​ឯកសារ​ និងទំព័ររបស់អ្នកនៅក្នុង ទាញយក ពីប៊ូតុងជម្រើសច្រើនទៀត</translation>
 <translation id="5626134646977739690">ឈ្មោះ៖</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">កំពុង​រង់ចាំ​ការទាញយក​ផ្សេង​ទៀត…</translation>
 <translation id="5865733239029070421">ផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍អំពីការគាំងទៅ Google ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="5869522115854928033">ពាក្យសម្ងាត់ដែលបានរក្សាទុក</translation>
+<translation id="5884076754568147479">ដើម្បី​ជួយអ្នកក្នុងការបំពេញ​កិច្ចការផ្សេងៗ Google នឹង​ទទួល​ URL និងខ្លឹមសារ​របស់គេហទំព័រ ដែលអ្នកប្រើជាមួយជំនួយការរបស់អ្នក ព្រមទាំងព័ត៌មានដែលអ្នកដាក់បញ្ជូនតាមរយៈជំនួយការ</translation>
 <translation id="5902828464777634901">ទិន្នន័យមូលដ្ឋានទាំងអស់ដែលបានរក្សាទុកដោយគេហទំព័រនេះរាប់ទាំងខុកឃីនឹងត្រូវបានលុប។</translation>
 <translation id="5919204609460789179">អាប់ដេត <ph name="PRODUCT_NAME" /> ដើម្បីចាប់ផ្តើមធ្វើសមកាលកម្ម</translation>
 <translation id="5937580074298050696">បាន​សន្សំ <ph name="AMOUNT" /></translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">ទប់ស្កាត់​គេហទំព័រ​ភាគី​ទីបី​មិនឲ្យ​រក្សាទុក និង​អានទិន្នន័យ​ខូគី</translation>
 <translation id="6790428901817661496">លេង</translation>
 <translation id="6811034713472274749">ទំព័រអាច​មើលបានហើយ</translation>
-<translation id="6818926723028410516">ជ្រើសរើសធាតុ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">បកប្រែ</translation>
 <translation id="6845325883481699275">ជួយ​កែលម្អ​សុវត្ថិភាព Chrome</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
 <translation id="7055152154916055070">​បាន​ទប់ស្កាត់​ការបញ្ជូន​បន្ត៖</translation>
 <translation id="7063006564040364415">មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេសមកម្មទេ។</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{បានជ្រើសរើស 1}other{បានជ្រើសរើស #}}</translation>
 <translation id="7071521146534760487">គ្រប់គ្រងគណនី</translation>
 <translation id="7077143737582773186">កាត​ SD</translation>
-<translation id="7087918508125750058">បានជ្រើស​រើស <ph name="ITEM_COUNT" />។ ជម្រើស​មាននៅក្បែរ​ផ្នែកខាងលើ​អេក្រង់</translation>
 <translation id="7121362699166175603">សម្អាតប្រវត្តិ និងការបំពេញដោយស្វ័យប្រវត្តិនៅក្នុងរបារអាសយដ្ឋាននេះ។ គណនី Google របស់អ្នកអាចនឹងមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="7128222689758636196">អនុញ្ញាត​សម្រាប់​ម៉ាស៊ីន​ស្វែងរក​​បច្ចុប្បន្ន</translation>
 <translation id="7138678301420049075">ផ្សេងទៀត</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">ដើម្បីមើល​គេហទំព័រ​ជា​ភាសា​របស់អ្នក សូម​ទាញយក​កំណែចុងក្រោយ​បំផុត​របស់ Chrome</translation>
 <translation id="7243308994586599757">មានជម្រើសនៅក្បែរផ្នែកខាងក្រោមអេក្រង់</translation>
 <translation id="7248069434667874558">ត្រូវប្រាកដថា <ph name="TARGET_DEVICE_NAME" /> បានបើក​ការធ្វើសមកាលកម្ម​នៅក្នុង Chrome</translation>
-<translation id="7250468141469952378">បានជ្រើស​រើស <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">ទំព័រ​ដែលបាន​រារាំង</translation>
 <translation id="7290209999329137901">មិនអាច​ប្ដូរឈ្មោះ​បានទេ</translation>
 <translation id="7291387454912369099">ជំនួយការដែលជំរុញការបង់ប្រាក់ចេញ</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
-<translation id="7846076177841592234">បោះបង់ការជ្រើសរើស</translation>
 <translation id="784934925303690534">ចន្លោះពេល</translation>
 <translation id="7851858861565204677">ឧបករណ៍ផ្សេងទៀត</translation>
 <translation id="7875915731392087153">បង្កើតអ៊ីមែល</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">បានបិទសំឡេង</translation>
 <translation id="8127542551745560481">កែទំព័រដើម</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
+<translation id="8137558756159375272">ប៉ះដើម្បីស្វែងរក ផ្ញើពាក្យដែលបានជ្រើសយក និងគេហទំព័រថ្មីៗជាបរិបទទៅ Google ស្វែងរក។ អ្នកអាចបើកវានៅក្នុង <ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />។</translation>
 <translation id="8156139159503939589">តើអ្នក​អានជាភាសាអ្វី?</translation>
 <translation id="8168435359814927499">មាតិកា</translation>
 <translation id="8186512483418048923">នៅសល់ឯកសារចំនួន <ph name="FILES" /></translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">ចុច​ត្រង់នេះ ដើម្បី​បង្កើត​ផ្ទាំងថ្មី និង​ត្រឡប់ទៅកាន់​ផ្ទាំង​មុនវិញ</translation>
 <translation id="8662811608048051533">ធ្វើឱ្យអ្នកចាកចេញពីទំព័រភាគច្រើន។</translation>
 <translation id="8664979001105139458">ឈ្មោះ​ឯកសារ​មានរួច​ហើយ</translation>
-<translation id="8676374126336081632">ជម្រះការបញ្ចូល</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{កម្រិត​កម្លាំង​រលកសញ្ញា៖ # កាំ}other{កម្រិត​កម្លាំង​រលកសញ្ញា៖ # កាំ}}</translation>
 <translation id="868929229000858085">ស្វែងរក​ទំនាក់ទំនង​របស់អ្នក</translation>
 <translation id="8698438463325761328">ទប់ស្កាត់​គេហទំព័រ​មិនឱ្យ​ចូល​ប្រើ​ទិន្នន័យ និងឧបករណ៍ VR របស់អ្នក</translation>

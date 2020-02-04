@@ -138,7 +138,10 @@ struct StreamingExportStatus {
 };
 
 struct ContainerInfo {
-  ContainerInfo(std::string name, std::string username, std::string homedir);
+  ContainerInfo(std::string name,
+                std::string username,
+                std::string homedir,
+                std::string ipv4_address);
   ~ContainerInfo();
   ContainerInfo(ContainerInfo&&);
   ContainerInfo(const ContainerInfo&);
@@ -149,6 +152,7 @@ struct ContainerInfo {
   std::string username;
   base::FilePath homedir;
   bool sshfs_mounted = false;
+  std::string ipv4_address;
 };
 
 // Return type when getting app icons from within a container.

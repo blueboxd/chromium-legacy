@@ -527,6 +527,8 @@
 <translation id="3366477098757335611">Список карт</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
 <translation id="337363190475750230">Отключен</translation>
+<translation id="3376829916920036789">Администратор домена <ph name="ENROLLMENT_DOMAIN" /> включил в браузере перехватчик событий Enterprise, у которого есть доступ к некоторым вашим данным.</translation>
+<translation id="3377144306166885718">Этот сервер использует устаревшую версию протокола TLS.</translation>
 <translation id="3377188786107721145">Не удалось выполнить анализ политики</translation>
 <translation id="3377736046129930310">Использовать блокировку экрана для быстрого подтверждения карт</translation>
 <translation id="3380365263193509176">Неизвестная ошибка</translation>
@@ -535,6 +537,7 @@
 <translation id="3391030046425686457">Адрес доставки</translation>
 <translation id="3395827396354264108">Способ выдачи</translation>
 <translation id="3399952811970034796">Адрес доставки</translation>
+<translation id="3402261774528610252">Сайт использует устаревший протокол TLS 1.0 или TLS 1.1. В будущем этот протокол будет отключен, из-за чего пользователи не смогут зайти на сайт. На сервере нужно включить протокол TLS 1.2 или выше.</translation>
 <translation id="3422248202833853650">Закройте другие программы, чтобы освободить память.</translation>
 <translation id="3422472998109090673">Сайт <ph name="HOST_NAME" /> недоступен.</translation>
 <translation id="3423742043356668186">Использовать системные параметры</translation>
@@ -618,6 +621,7 @@
 <translation id="3745099705178523657">После подтверждения реквизиты карты из аккаунта Google будут переданы этому сайту.</translation>
 <translation id="3748148204939282805">Посещение сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может привести к установке вредоносного ПО или хищению личной информации (например, паролей, телефонных номеров и данных банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Сбой при переводе вследствие ошибки сервера.</translation>
+<translation id="3754210790023674521">Выйти из режима "Картинка в картинке"</translation>
 <translation id="3759461132968374835">Нет записей о недавних сбоях. Сбои, которые произошли при отключенной функции записи сбоев, здесь не отображаются.</translation>
 <translation id="3760561303380396507">Использовать Windows Hello вместо CVC-кода?</translation>
 <translation id="3761718714832595332">Скрыть статус</translation>
@@ -939,6 +943,7 @@
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="519422657042045905">В этот PDF-файл нельзя добавлять заметки</translation>
+<translation id="5196187217592847346">Перехватчик событий Enterprise</translation>
 <translation id="5201306358585911203">Подтвердите действие</translation>
 <translation id="5205222826937269299">Введите имя или название</translation>
 <translation id="5215116848420601511">Способы оплаты и адреса из Google Pay</translation>
@@ -968,6 +973,7 @@
 <translation id="5295292838686006428">В результате утечки данных на одном из сайтов или в одном из приложений ваш пароль оказался раскрыт. Рекомендуем проверить безопасность сохраненных паролей.</translation>
 <translation id="5299298092464848405">Не удалось выполнить анализ политики</translation>
 <translation id="5300589172476337783">Показать</translation>
+<translation id="5306593769196050043">Оба листа</translation>
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="5308689395849655368">Отчеты о сбоях отключены.</translation>
 <translation id="5314967030527622926">Изготовление буклета</translation>
@@ -1121,7 +1127,6 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Проверьте свои пароли</translation>
 <translation id="6015796118275082299">Год</translation>
-<translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}few{Страница #}many{Страница #}other{Страница #}}</translation>
 <translation id="6017514345406065928">Зеленый</translation>
 <translation id="6017850046339264347">Злоумышленники могут использовать сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, чтобы установить вредоносные приложения, маскирующиеся под безопасные программы или собирающие данные, по которым вас можно отследить. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (данные синхронизируются)</translation>
@@ -1229,7 +1234,6 @@
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Укажите дополнительную информацию</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
-<translation id="644931407731409778">PDF-документ, в котором {COUNT,plural, =1{1 страница}one{# страница}few{# страницы}many{# страниц}other{# страницы}}</translation>
 <translation id="6451458296329894277">Подтвердите повторную отправку формы</translation>
 <translation id="6457206614190510200">Скрепление внакидку</translation>
 <translation id="6465306955648956876">Управление паролями…</translation>
@@ -1341,6 +1345,7 @@
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7062635574500127092">Бирюзовый</translation>
 <translation id="7064851114919012435">Контактные данные</translation>
+<translation id="70705239631109039">Подключение к сайту небезопасно</translation>
 <translation id="7075452647191940183">Запрос слишком велик.</translation>
 <translation id="7079718277001814089">Этот сайт содержит вредоносное ПО</translation>
 <translation id="7081308185095828845">Функция недоступна на вашем устройстве</translation>
@@ -1360,6 +1365,7 @@
 <translation id="7152423860607593928">Number-14 (конверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
 <translation id="7153618581592392745">Бледно-лиловый</translation>
+<translation id="7156870133441232244">На сервере нужно обновить протокол TLS до версии 1.2 или выше.</translation>
 <translation id="717330890047184534">Идентификатор GAIA:</translation>
 <translation id="7174545416324379297">Объединенное правило</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариантов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}}</translation>
@@ -1385,6 +1391,7 @@
 <translation id="725866823122871198">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Запретить доступ</translation>
 <translation id="7275334191706090484">Управляемые закладки</translation>
+<translation id="7288778322931489286">Администратор включил в браузере перехватчик событий Enterprise, у которого есть доступ к некоторым вашим данным.</translation>
 <translation id="7292031607255951991">Имя получателя</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="7300012071106347854">Синий (кобальт)</translation>
@@ -1709,6 +1716,7 @@
 <translation id="874918643257405732">Добавить страницу в закладки</translation>
 <translation id="8751426954251315517">Повторите попытку позже</translation>
 <translation id="8759274551635299824">Срок действия карты истек.</translation>
+<translation id="87601671197631245">Настройки безопасности этого сайта устарели. Злоумышленники могут получить доступ к вашим данным (например, паролям, сообщениям и номерам банковских карт) при их отправке на этот сайт.</translation>
 <translation id="8761567432415473239">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB-устройство</translation>
 <translation id="877985182522063539">A4</translation>
@@ -1726,6 +1734,7 @@
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="8866928039507595380">Фальцовка</translation>
 <translation id="886872106311861689">В3</translation>
+<translation id="8869862664961249123">Отправлять администратору данные о событиях безопасности, которые были помечены перехватчиком событий Enterprise как потенциально опасные. Это могут быть URL страниц, которые вы посещаете, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в браузер Chrome.</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8870494189203302833">В том же порядке лицевой стороной вниз</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>

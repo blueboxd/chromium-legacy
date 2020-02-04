@@ -117,7 +117,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
   }
-  auto extra_data = std::make_unique<RequestExtraData>();
+  auto extra_data = base::MakeRefCounted<RequestExtraData>();
   extra_data->set_originated_from_service_worker(true);
   extra_data->set_render_frame_id(service_worker_route_id_);
 

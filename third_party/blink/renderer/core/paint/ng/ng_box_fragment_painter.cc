@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -2007,7 +2008,8 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     const PhysicalOffset& accumulated_offset) {
   DCHECK_EQ(hit_test.action, kHitTestFloat);
   DCHECK(container.HasFloatingDescendantsForPaint());
-  for (const NGLink& child : container.Children()) {
+  auto children = container.Children();
+  for (const NGLink& child : base::Reversed(children)) {
     if (child->IsFloating()) {
       if (HitTestAllPhases(hit_test, *child,
                            accumulated_offset + child.Offset()))

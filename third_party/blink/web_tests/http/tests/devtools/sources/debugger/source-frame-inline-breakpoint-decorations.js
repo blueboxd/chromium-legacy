@@ -30,13 +30,6 @@
       //# sourceURL=foo.js
     `);
 
-  async function runAsyncBreakpointActionAndDumpDecorations(sourceFrame, action) {
-    const waitPromise = SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
-    await action();
-    await waitPromise;
-    SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
-  }
-
   Bindings.breakpointManager._storage._breakpoints = new Map();
   SourcesTestRunner.runDebuggerTestSuite([
     function testAddRemoveBreakpoint(next) {
@@ -46,14 +39,16 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        // Breakpoint decoration expectations are pairs of line number plus breakpoint decoration counts.
+        // We expect line 11 to have 5 decorations.
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[11, 5]], () =>
           SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 11, '', true)
         ).then(removeBreakpoint);
       }
 
       function removeBreakpoint() {
         TestRunner.addResult('Toggle breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [], () =>
           SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 11)
         ).then(next);
       }
@@ -66,14 +61,14 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[13, 1]], () =>
           SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 13, '', true)
         ).then(removeBreakpoint);
       }
 
       function removeBreakpoint() {
         TestRunner.addResult('Toggle breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [], () =>
           SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 13)
         ).then(next);
       }
@@ -86,14 +81,14 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[11, 5]], () =>
           SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 11, '', true)
         ).then(clickBySecondLocation);
       }
 
       function clickBySecondLocation() {
         TestRunner.addResult('Click by second breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[11, 5]], () =>
           SourcesTestRunner.clickDebuggerPluginBreakpoint(
               javaScriptSourceFrame, 11, 1, next)
         ).then(clickByFirstLocation);
@@ -101,7 +96,7 @@
 
       function clickByFirstLocation() {
         TestRunner.addResult('Click by first breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[11, 5]], () =>
           SourcesTestRunner.clickDebuggerPluginBreakpoint(
               javaScriptSourceFrame, 11, 0, next)
         ).then(clickBySecondLocationAgain);
@@ -109,7 +104,7 @@
 
       function clickBySecondLocationAgain() {
         TestRunner.addResult('Click by second breakpoint');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [], () =>
           SourcesTestRunner.clickDebuggerPluginBreakpoint(
               javaScriptSourceFrame, 11, 1, next)
         ).then(next);
@@ -123,21 +118,21 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint in line 4');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[12, 3]], () =>
           SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 12, false)
         ).then(toggleBreakpointInAnotherLine);
       }
 
       function toggleBreakpointInAnotherLine() {
         TestRunner.addResult('Setting breakpoint in line 3');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[11, 5], [12, 3]], () =>
           SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 11, false)
         ).then(removeBreakpoints);
       }
 
       function removeBreakpoints() {
         TestRunner.addResult('Click by first inline breakpoints');
-        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () => {
+        SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [], () => {
           SourcesTestRunner.clickDebuggerPluginBreakpoint(
               javaScriptSourceFrame, 11, 0, next);
           SourcesTestRunner.clickDebuggerPluginBreakpoint(
@@ -150,12 +145,12 @@
       let javaScriptSourceFrame = await SourcesTestRunner.showScriptSourcePromise('foo.js');
 
       TestRunner.addResult('Setting breakpoint');
-      await runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+      await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [[28, 2]], () =>
         SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 16, '', true)
       );
 
       TestRunner.addResult('Toggle breakpoint');
-      await runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+      await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(javaScriptSourceFrame, [], () =>
         SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 28)
       );
       next();

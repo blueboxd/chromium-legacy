@@ -43,7 +43,7 @@ DeviceLocalAccountExternalDataService::
     DCHECK(it->second->HasOneRef());
   }
 #endif  // !defined(NDEBUG)
-  backend_task_runner_->DeleteSoon(FROM_HERE, resource_cache_.release());
+  backend_task_runner_->DeleteSoon(FROM_HERE, std::move(resource_cache_));
 }
 
 void DeviceLocalAccountExternalDataService::OnPolicyUpdated(

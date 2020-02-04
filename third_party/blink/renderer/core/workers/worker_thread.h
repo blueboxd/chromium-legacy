@@ -343,7 +343,35 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       network::mojom::CredentialsMode);
 
-  // These are called in this order during worker thread termination.
+  // PrepareForShutdownOnWorkerThread() notifies that the context will be
+  // destroyed, discards queued tasks to prevent running further tasks, and
+  // initiates termination of nested workers. It runs on the worker thread. It
+  // can be called due to the parent thread posting a task to run it on the
+  // worker thread, or the worker thread calling it itself synchronously.
+  //
+  // PerformShutdownOnWorkerThread() destroys the global scope, and notifies the
+  // parent thread of completion of worker shutdown. A call of this function can
+  // be postponed until all nested workers are terminated. It runs on the worker
+  // thread. It can be called due to the parent thread posting a task to run it
+  // on the worker thread, or the worker thread calling it itself synchronously
+  // after all nested workers are terminated.
+  //
+  // These are called in this order during worker shutdown.
+  //
+  // The reason why worker shutdown is separated into these 2 functions:
+  // Workers can simultaneously be requested to terminate for various reasons.
+  // To serialize the termination requests, worker shutdown is supposed to be
+  // initiated from the parent thread (i.e., Terminate()). On the other hand,
+  // queued tasks etc must be discarded as soon as possible after shutdown is
+  // requested to prevent running further tasks. To be specific, when close() is
+  // called on the worker global scope, queued tasks must be discarded soon
+  // before worker shutdown is formally requested via the parent thread. The
+  // HTML spec defines this behavior (see spec comments in DidProcessTask()).
+  // To achieve this, the worker thread runs PrepareForShutdownOnWorkerThread()
+  // immediately after the task that called close() (see DidProcessTask()), and
+  // then posts a task to the parent thread to request termination. In addition
+  // to that, separate functions are useful for waiting until all nested workers
+  // are terminated before the parent thread shut down.
   void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
   void PerformShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
 

@@ -60,6 +60,41 @@ UpdatePasswordInfoBarDelegate::GetCurrentForms() const {
   return passwords_state_.GetCurrentForms();
 }
 
+const base::string16& UpdatePasswordInfoBarDelegate::GetDefaultUsername()
+    const {
+  return passwords_state_.form_manager()
+      ->GetPendingCredentials()
+      .username_value;
+}
+
+unsigned int UpdatePasswordInfoBarDelegate::GetDisplayUsernames(
+    std::vector<base::string16>* usernames) {
+  return UpdatePasswordInfoBarDelegate::GetDisplayUsernames(
+      GetCurrentForms(), GetDefaultUsername(), usernames);
+}
+
+// static
+unsigned int UpdatePasswordInfoBarDelegate::GetDisplayUsernames(
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& current_forms,
+    const base::string16& default_username,
+    std::vector<base::string16>* usernames) {
+  unsigned int selected_username = 0;
+  for (const auto& form : current_forms) {
+    usernames->push_back(GetDisplayUsername(*form));
+    if (form->username_value == default_username) {
+      selected_username = usernames->size() - 1;
+    }
+  }
+
+  if (usernames->empty() ||
+      usernames->at(selected_username) != default_username) {
+    usernames->push_back(default_username);
+    selected_username = usernames->size() - 1;
+  }
+
+  return selected_username;
+}
+
 UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
     content::WebContents* web_contents,
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_update,

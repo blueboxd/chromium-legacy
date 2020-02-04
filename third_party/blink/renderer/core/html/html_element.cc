@@ -1124,7 +1124,7 @@ TextDirection HTMLElement::Directionality() const {
   while (node) {
     // Skip bdi, script, style and text form controls.
     auto* element = DynamicTo<Element>(node);
-    if (DeprecatedEqualIgnoringCase(node->nodeName(), "bdi") ||
+    if (EqualIgnoringASCIICase(node->nodeName(), "bdi") ||
         IsA<HTMLScriptElement>(*node) || IsA<HTMLStyleElement>(*node) ||
         (element && element->IsTextControl()) ||
         (element && element->ShadowPseudoId() == "-webkit-input-placeholder")) {

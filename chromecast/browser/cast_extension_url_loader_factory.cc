@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -210,13 +211,11 @@ void CastExtensionURLLoaderFactory::CreateLoaderAndStart(
   // The above only handles the scheme, host & path, any query or fragment needs
   // to be copied separately.
   if (url.has_query()) {
-    cast_url.push_back('?');
-    url.query_piece().AppendToString(&cast_url);
+    base::StrAppend(&cast_url, {"?", url.query_piece()});
   }
 
   if (url.has_ref()) {
-    cast_url.push_back('#');
-    url.ref_piece().AppendToString(&cast_url);
+    base::StrAppend(&cast_url, {"#", url.ref_piece()});
   }
 
   network::ResourceRequest new_request(request);

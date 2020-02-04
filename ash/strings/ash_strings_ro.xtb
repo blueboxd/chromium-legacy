@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">Setările creionului</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuă</translation>
-<translation id="2364154243880592194">Bară de stare, durată <ph name="TIME" />, <ph name="BATTERY" /> Apasă pe tasta de căutare + stânga pentru a accesa centrul de notificări.</translation>
 <translation id="2365393535144473978">Activând datele mobile, se va activa Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Actualizare disponibilă</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">Derulează înapoi</translation>
 <translation id="4129129681837227511">Pentru a vedea notificările pe ecranul de blocare, deblochează pentru a modifica setarea</translation>
 <translation id="4146833061457621061">Redă muzică</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gestionat de <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Limbi</translation>
 <translation id="4195877955194704651">Butonul Clicuri automate</translation>
 <translation id="4217571870635786043">Dictare</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> până la încărcare completă</translation>
-<translation id="4544944664594876241">Comanda rapidă pentru a bloca ecranul a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Butonul Selectează și ascultă</translation>
 <translation id="4585337515783392668">Nu mai proiecta pe un receiver necunoscut</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="6820676911989879663">Fă o pauză!</translation>
-<translation id="683971173229319003">Tasta de căutare + L</translation>
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Comanda rapidă a fost dezactivată</translation>
 <translation id="6910714959251846841">Această actualizare necesită rularea funcției Powerwash a dispozitivului. Află mai multe despre cea mai recentă actualizare <ph name="SYSTEM_APP_NAME" />.</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Este necesară repornirea Chromebookului pentru aplicarea unei actualizări. Poate dura cel mult un minut.</translation>
 <translation id="7256634071279256947">Microfonul din spate</translation>
 <translation id="726276584504105859">Trage aici pentru a folosi ecranul împărțit</translation>
 <translation id="7262906531272962081">Creează un memento</translation>
@@ -464,11 +463,9 @@
 <translation id="742594950370306541">Camera foto este în uz.</translation>
 <translation id="743058460480092004">Camera foto și microfonul sunt în uz.</translation>
 <translation id="7497767806359279797">Alege limba și tastatura</translation>
-<translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7526573455193969409">Este posibil ca rețeaua să fie monitorizată</translation>
 <translation id="7536035074519304529">Adresă IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Este timpul pentru culcare</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" />. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paletă cu emoji</translation>
 <translation id="7564874036684306347">Mutarea ferestrelor pe alt desktop poate duce la un comportament neașteptat. Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împărțite între ecrane.</translation>
 <translation id="7568294522609223312">Dezactivează clicurile automate</translation>
@@ -511,6 +508,7 @@
 <translation id="8061464966246066292">Contrast ridicat</translation>
 <translation id="8098591350844501178">Nu mai proiecta ecranul pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Activat, toate aplicațiile</translation>
+<translation id="8131740175452115882">Confirmați</translation>
 <translation id="8132793192354020517">Conectat la <ph name="NAME" /></translation>
 <translation id="813913629614996137">Se inițializează...</translation>
 <translation id="8142441511840089262">Dublu clic</translation>

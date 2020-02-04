@@ -134,6 +134,14 @@ void UserModel::SetValue(const std::string& identifier,
   }
 }
 
+base::Optional<ValueProto> UserModel::GetValue(const std::string& identifier) {
+  auto it = values_.find(identifier);
+  if (it != values_.end()) {
+    return it->second;
+  }
+  return base::nullopt;
+}
+
 void UserModel::MergeWithProto(const ModelProto& another,
                                bool force_notifications) {
   for (const auto& another_value : another.values()) {

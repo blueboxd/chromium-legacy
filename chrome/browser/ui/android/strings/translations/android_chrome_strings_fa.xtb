@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">موتور جستجو</translation>
 <translation id="1513352483775369820">نشانک‌ها و سابقه وب</translation>
 <translation id="1513858653616922153">حذف گذرواژه</translation>
-<translation id="1516229014686355813">‏«ضربه برای جستجو» کلمه انتخاب‌شده و صفحه کنونی را به‌عنوان متن جستجو به «جستجوی Google» ارسال می‌کند. می‌توانید این ویژگی را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>
 <translation id="1521774566618522728">امروز فعال بود</translation>
 <translation id="1544826120773021464">‏برای مدیریت تنظیمات حساب Google، روی دکمه «مدیریت حساب» ضربه بزنید</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> داده‌هایی در Chrome نیز دارد</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">سایت موقتاً متوقف شد</translation>
-<translation id="2063713494490388661">ضربه برای جستجو</translation>
 <translation id="2067805253194386918">نوشتار</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">صدا</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">ورود به سیستم امکان‌پذیر نیست</translation>
 <translation id="2349710944427398404">‏کل داده‌های استفاده‌شده توسط Chrome، شامل حساب‌ها، نشانک‌ها و تنظیمات ذخیره‌شده</translation>
 <translation id="2353636109065292463">بررسی اتصال اینترنت</translation>
+<translation id="2359808026110333948">ادامه</translation>
 <translation id="2369533728426058518">برگه‌های باز</translation>
 <translation id="2387895666653383613">اندازه قلم نوشتار</translation>
 <translation id="2394602618534698961">فایل‌هایی که بارگیری می‌کنید، اینجا نشان داده می‌شود</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="2497852260688568942">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
 <translation id="2498359688066513246">راهنمایی و بازخورد</translation>
-<translation id="2501278716633472235">بازگشت</translation>
 <translation id="2513403576141822879">‏برای تنظیمات بیشتر مرتبط با حریم خصوصی، امنیت و جمع‌آوری داده‌ها، <ph name="BEGIN_LINK" />همگام‌سازی و سرویس‌های Google<ph name="END_LINK" /> را ببینید</translation>
 <translation id="2517472476991765520">اسکن</translation>
 <translation id="2518590038762162553">‏در «حالت ساده»، Chrome صفحه‌ها را سریع‌تر بار می‌کند و تا ۶۰ درصد مصرف داده را کاهش می‌دهد. برای بهینه‌سازی صفحاتی که بازدید می‌کنید، Chrome ترافیک وب شما را به Google ارسال می‌کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">باز کردن «نوار پیدا کردن»</translation>
 <translation id="3716182511346448902">‏این صفحه از حافظه بسیار زیادی استفاده می‌کند، بنابراین Chrome موقتاً آن را متوقف کرد.</translation>
 <translation id="3730075448226062617">‏برای اینکه به Chrome امکان دهید به میکروفون دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم میکروفون را روشن کنید.</translation>
+<translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3739899004075612870">در <ph name="PRODUCT_NAME" /> نشانک‌گذاری شد</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3749259744154402564">پشتیبانی‌نشده</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ساعت}one{# ساعت}other{# ساعت}}</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
-<translation id="4048707525896921369">‏بدون ترک کردن صفحه با موضوعات وب‌سایت‌ها آشنا شوید. «ضربه برای جستجو»، کلمه و متن اطراف آن را به «جستجوی Google» ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را بازمی‌گرداند.
-
-عبارت جستجو را با فشار طولانی انتخاب و تنظیم کنید. برای تصحیح جستجویتان، پانل را به‌طور کامل به بالا بلغزانید و روی کادر جستجو ضربه بزنید.</translation>
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4060598801229743805">گزینه‌هایی در نزدیکی بالای صفحه دردسترس هستند</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
@@ -609,7 +605,6 @@
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="5581519193887989363">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> انتخاب کنید.</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
-<translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5599455543593328020">حالت ناشناس</translation>
 <translation id="5620928963363755975">با استفاده از دکمه «گزینه‌های بیشتر»، فایل‌ها و صفحه‌هایتان را در «بارگیری‌ها» پیدا کنید</translation>
 <translation id="5626134646977739690">نام:</translation>
@@ -652,6 +647,7 @@
 <translation id="5864419784173784555">در انتظار بارگیری موردی دیگر…</translation>
 <translation id="5865733239029070421">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
+<translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
 <translation id="5902828464777634901">تمام داده‌های محلی ذخیره شده مرتبط با این وب‌سایت، از جمله کوکی‌ها، حذف می‌شوند.</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> صرفه‌جویی‌شده</translation>
@@ -775,7 +771,6 @@
 <translation id="6782111308708962316">جلوگیری از ذخیره کردن و خواندن داده‌های کوکی توسط وب‌سایت‌های شخص ثالث</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6811034713472274749">صفحه آماده مشاهده است</translation>
-<translation id="6818926723028410516">انتخاب موارد</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6845325883481699275">‏کمک به بهبود امنیت Chrome</translation>
@@ -808,10 +803,8 @@
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7055152154916055070">هدایت کردن مسدود شده است:</translation>
 <translation id="7063006564040364415">اتصال به سرور همگام‌سازی ممکن نیست.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="7071521146534760487">مدیریت حساب</translation>
 <translation id="7077143737582773186">‏کارت SD</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> مورد انتخاب شد.  گزینه‌ها در نزدیکی بالای صفحه دردسترس است</translation>
 <translation id="7121362699166175603">‏سابقه و تکمیل‌های خودکار را در نوار نشانی پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="7128222689758636196">مجاز کردن موتور جستجوی کنونی</translation>
 <translation id="7138678301420049075">دیگر</translation>
@@ -827,7 +820,6 @@
 <translation id="7233236755231902816">‏برای اینکه وب را به زبان خود ببینید، آخرین نسخه Chrome را دریافت کنید</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7248069434667874558">‏مطمئن شوید همگام‌سازی <ph name="TARGET_DEVICE_NAME" /> در Chrome روشن باشد</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
 <translation id="7290209999329137901">عدم‌دسترسی به تغییر نام</translation>
 <translation id="7291387454912369099">تسویه‌حساب فعال‌شده ازسوی دستیار</translation>
@@ -909,7 +901,6 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
-<translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
 <translation id="7875915731392087153">ایجاد ایمیل</translation>
@@ -957,6 +948,7 @@
 <translation id="8116925261070264013">صامت‌شده</translation>
 <translation id="8127542551745560481">ویرایش صفحه اصلی</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
+<translation id="8137558756159375272">‏«لمس برای جستجو» کلمه انتخاب شده و صفحه کنونی را به عنوان محتوای زمینه به جستجوی Google ارسال می‌کند. می‌توانید آن را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>
 <translation id="8156139159503939589">به چه زبانی مطالعه می‌کنید؟</translation>
 <translation id="8168435359814927499">محتوا</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> فایل باقی مانده است</translation>
@@ -1024,7 +1016,6 @@
 <translation id="8655599981421006542">برای ایجاد برگه جدید و برگشتن به برگه‌های قبلی، اینجا ضربه بزنید</translation>
 <translation id="8662811608048051533">شما را از سیستم اکثر سایت‌ها خارج می‌کند.</translation>
 <translation id="8664979001105139458">نام فایل از قبل وجود دارد</translation>
-<translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{سطح قدرت سیگنال: # نوار}one{سطح قدرت سیگنال: # نوار}other{سطح قدرت سیگنال: # نوار}}</translation>
 <translation id="868929229000858085">جستجوی مخاطبین</translation>
 <translation id="8698438463325761328">دسترسی به دستگاه و داده‌های واقعیت مجازی برای سایت‌ها مسدود شود</translation>

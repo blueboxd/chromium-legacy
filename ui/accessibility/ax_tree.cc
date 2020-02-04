@@ -1914,7 +1914,15 @@ void AXTree::RecursivelyPopulateOrderedSetItems(
       // If the hierarchical level of |child| and the level of |original_node|
       // differ, we do not add child to |items_to_be_populated| and we do not
       // recurse into |child| and populate its order set item descendants.
-      if (child_level != original_node_min_level) {
+      // Additionally, as an exception, we always add tab items to the set,
+      // because according to WAI-ARIA spec, tab does not support hierarchical
+      // level, while tab's set container tablist supports hierarchical level.
+      // Due to this, we always assume sibling tabs are always on the same
+      // level, and always add tab child item to |items_to_be_populated|.
+      // https://www.w3.org/WAI/PF/aria/roles#tab
+      // https://www.w3.org/WAI/PF/aria/roles#tablist
+      if (child_level != original_node_min_level &&
+          child->data().role != ax::mojom::Role::kTab) {
         if (child_level < original_node_min_level &&
             original_node.GetUnignoredParent() == child->GetUnignoredParent()) {
           // For a flattened structure, where |original_node| and |child| share

@@ -6,31 +6,11 @@
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/html/image_document.h"
-#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_replaced.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/svg_element_type_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 namespace media_element_parser_helpers {
-
-bool IsMediaElement(const Element* element) {
-  if ((IsA<HTMLImageElement>(element) || IsA<SVGImageElement>(element)) &&
-      !IsA<ImageDocument>(element->GetDocument()))
-    return true;
-  if (IsA<HTMLVideoElement>(element) &&
-      !element->GetDocument().IsMediaDocument())
-    return true;
-  return false;
-}
 
 void ReportUnsizedMediaViolation(const LayoutObject* layout_object,
                                  bool send_report) {

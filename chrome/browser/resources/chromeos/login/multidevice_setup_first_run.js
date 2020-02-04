@@ -31,9 +31,8 @@ cr.define('multidevice_setup', function() {
       assert(!opt_authToken);
 
       if (!this.remote_) {
-        this.remote_ =
-            chromeos.multideviceSetup.mojom.PrivilegedHostDeviceSetter
-                .getRemote(/*useBrowserInterfaceBroker=*/ true);
+        this.remote_ = chromeos.multideviceSetup.mojom
+                           .PrivilegedHostDeviceSetter.getRemote();
       }
 
       return /** @type {!Promise<{success: boolean}>} */ (

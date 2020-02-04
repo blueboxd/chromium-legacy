@@ -67,7 +67,7 @@ const base::Feature kAppNotificationStatusMessaging{
 #if !defined(OS_ANDROID)
 // App Service related flags. See chrome/services/app_service/README.md.
 const base::Feature kAppServiceContextMenu{"AppServiceContextMenu",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceInstanceRegistry{
     "AppServiceInstanceRegistry", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceIntentHandling{

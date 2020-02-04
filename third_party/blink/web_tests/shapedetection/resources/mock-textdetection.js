@@ -5,8 +5,8 @@ class MockTextDetection {
     this.bindingSet_ =
         new mojo.BindingSet(shapeDetection.mojom.TextDetection);
 
-    this.interceptor_ = new MojoInterfaceInterceptor(
-        shapeDetection.mojom.TextDetection.name, "context", true);
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(shapeDetection.mojom.TextDetection.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

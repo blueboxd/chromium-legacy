@@ -40,11 +40,11 @@ static void TestFrameAncestorsCSPParser(const std::string& header,
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   headers->AddHeader("Content-Security-Policy: frame-ancestors " + header);
-  ContentSecurityPolicy policy;
-  policy.Parse(GURL("https://example.com/"), *headers);
+  std::vector<mojom::ContentSecurityPolicyPtr> policies;
+  AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                      &policies);
 
-  auto& frame_ancestors =
-      policy.content_security_policies()[0]->directives[0]->source_list;
+  auto& frame_ancestors = policies[0]->directives[0]->source_list;
   EXPECT_EQ(frame_ancestors->sources.size(),
             expected_result->parsed_sources.size());
   for (size_t i = 0; i < expected_result->parsed_sources.size(); i++) {
@@ -176,11 +176,10 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     headers->AddHeader(
         "Content-Security-Policy: frame-ancestors example.com; other_directive "
         "value; frame-ancestors example.org");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
-
-    auto& frame_ancestors =
-        policy.content_security_policies()[0]->directives[0]->source_list;
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    auto& frame_ancestors = policies[0]->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -198,11 +197,10 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     headers->AddHeader(
         "Content-Security-Policy: other_directive value; frame-ancestors "
         "example.org");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
-
-    auto& frame_ancestors =
-        policy.content_security_policies()[0]->directives[0]->source_list;
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    auto& frame_ancestors = policies[0]->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
@@ -221,14 +219,13 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
     headers->AddHeader("Content-Security-Policy: frame-ancestors example.com");
     headers->AddHeader("Content-Security-Policy: frame-ancestors example.org");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    EXPECT_EQ(2U, policy.content_security_policies().size());
-    auto& frame_ancestors0 =
-        policy.content_security_policies()[0]->directives[0]->source_list;
-    auto& frame_ancestors1 =
-        policy.content_security_policies()[1]->directives[0]->source_list;
+    EXPECT_EQ(2U, policies.size());
+    auto& frame_ancestors0 = policies[0]->directives[0]->source_list;
+    auto& frame_ancestors1 = policies[1]->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors0->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors0->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors0->sources[0]->host, "example.com");
@@ -257,12 +254,12 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     headers->AddHeader(
         "Content-Security-Policy: other_directive value, frame-ancestors "
         "example.org");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    EXPECT_EQ(2U, policy.content_security_policies().size());
-    auto& frame_ancestors1 =
-        policy.content_security_policies()[1]->directives[0]->source_list;
+    EXPECT_EQ(2U, policies.size());
+    auto& frame_ancestors1 = policies[1]->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors1->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors1->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors1->sources[0]->host, "example.org");
@@ -282,14 +279,13 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     headers->AddHeader(
         "Content-Security-Policy: frame-ancestors example.com, frame-ancestors "
         "example.org");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    EXPECT_EQ(2U, policy.content_security_policies().size());
-    auto& frame_ancestors0 =
-        policy.content_security_policies()[0]->directives[0]->source_list;
-    auto& frame_ancestors1 =
-        policy.content_security_policies()[1]->directives[0]->source_list;
+    EXPECT_EQ(2U, policies.size());
+    auto& frame_ancestors0 = policies[0]->directives[0]->source_list;
+    auto& frame_ancestors1 = policies[1]->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors0->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors0->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors0->sources[0]->host, "example.com");
@@ -318,17 +314,16 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     headers->AddHeader(
         "Content-Security-Policy: report-to http://example.com/report; "
         "frame-ancestors example.com");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    auto& report_endpoints =
-        policy.content_security_policies()[0]->report_endpoints;
+    auto& report_endpoints = policies[0]->report_endpoints;
     EXPECT_EQ(report_endpoints.size(), 1U);
     EXPECT_EQ(report_endpoints[0], "http://example.com/report");
-    EXPECT_TRUE(policy.content_security_policies()[0]->use_reporting_api);
+    EXPECT_TRUE(policies[0]->use_reporting_api);
 
-    auto& frame_ancestors =
-        policy.content_security_policies()[0]->directives[0]->source_list;
+    auto& frame_ancestors = policies[0]->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -348,14 +343,14 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
     headers->AddHeader(
         "Content-Security-Policy: report-uri http://example.com/report");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    auto& report_endpoints =
-        policy.content_security_policies()[0]->report_endpoints;
+    auto& report_endpoints = policies[0]->report_endpoints;
     EXPECT_EQ(report_endpoints.size(), 1U);
     EXPECT_EQ(report_endpoints[0], "http://example.com/report");
-    EXPECT_FALSE(policy.content_security_policies()[0]->use_reporting_api);
+    EXPECT_FALSE(policies[0]->use_reporting_api);
   }
 
   // report-to directive.
@@ -364,14 +359,14 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
     headers->AddHeader(
         "Content-Security-Policy: report-to http://example.com/report");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    auto& report_endpoints =
-        policy.content_security_policies()[0]->report_endpoints;
+    auto& report_endpoints = policies[0]->report_endpoints;
     EXPECT_EQ(report_endpoints.size(), 1U);
     EXPECT_EQ(report_endpoints[0], "http://example.com/report");
-    EXPECT_TRUE(policy.content_security_policies()[0]->use_reporting_api);
+    EXPECT_TRUE(policies[0]->use_reporting_api);
   }
 
   // Multiple directives. The report-to directive always takes priority.
@@ -382,14 +377,14 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
         "Content-Security-Policy: report-uri http://example.com/report1; "
         "report-uri http://example.com/report2; report-to "
         "http://example.com/report3");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    auto& report_endpoints =
-        policy.content_security_policies()[0]->report_endpoints;
+    auto& report_endpoints = policies[0]->report_endpoints;
     EXPECT_EQ(report_endpoints.size(), 1U);
     EXPECT_EQ(report_endpoints[0], "http://example.com/report3");
-    EXPECT_TRUE(policy.content_security_policies()[0]->use_reporting_api);
+    EXPECT_TRUE(policies[0]->use_reporting_api);
   }
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
@@ -398,14 +393,14 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
         "Content-Security-Policy: report-to http://example.com/report1");
     headers->AddHeader(
         "Content-Security-Policy: report-uri http://example.com/report2");
-    ContentSecurityPolicy policy;
-    policy.Parse(GURL("https://example.com/"), *headers);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
 
-    auto& report_endpoints =
-        policy.content_security_policies()[0]->report_endpoints;
+    auto& report_endpoints = policies[0]->report_endpoints;
     EXPECT_EQ(report_endpoints.size(), 1U);
     EXPECT_EQ(report_endpoints[0], "http://example.com/report1");
-    EXPECT_TRUE(policy.content_security_policies()[0]->use_reporting_api);
+    EXPECT_TRUE(policies[0]->use_reporting_api);
   }
 }
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -41,15 +42,21 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // credential is being affected.
   bool ShowMultipleAccounts() const;
 
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  GetCurrentForms() const;
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
+      const;
 
   // Returns the username of the saved credentials to be updated by default.
-  const base::string16& get_default_username() const {
-    return passwords_state_.form_manager()
-        ->GetPendingCredentials()
-        .username_value;
-  }
+  const base::string16& GetDefaultUsername() const;
+
+  // Determines the usernames to be displayed in the update infobar and returns
+  // the index of the one selected by default.
+  unsigned int GetDisplayUsernames(std::vector<base::string16>* usernames);
+
+  // Exposed for testing.
+  static unsigned int GetDisplayUsernames(
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& current_forms,
+      const base::string16& default_username,
+      std::vector<base::string16>* usernames);
 
  protected:
   // Makes a ctor available in tests.

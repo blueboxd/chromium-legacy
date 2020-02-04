@@ -35,6 +35,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -535,15 +536,12 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       navigation_type = mojom::NavigationType::RELOAD;
   }
 
-  base::Optional<SourceLocation> source_location;
-  if (!info->source_location.url.IsNull()) {
-    source_location = SourceLocation(info->source_location.url.Latin1(),
-                                     info->source_location.line_number,
-                                     info->source_location.column_number);
-  }
+  SourceLocation source_location(info->source_location.url.Latin1(),
+                                 info->source_location.line_number,
+                                 info->source_location.column_number);
 
   const RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(info->url_request.GetExtraData());
+      static_cast<RequestExtraData*>(info->url_request.GetExtraData().get());
   DCHECK(extra_data);
 
   // Convert from WebVector<int> to std::vector<int>.
@@ -798,9 +796,7 @@ std::vector<gfx::Size> ConvertToFaviconSizes(
 void RecordSuffixedMemoryMBHistogram(base::StringPiece name,
                                      base::StringPiece suffix,
                                      int sample_mb) {
-  std::string name_with_suffix(name);
-  suffix.AppendToString(&name_with_suffix);
-  base::UmaHistogramMemoryMB(name_with_suffix, sample_mb);
+  base::UmaHistogramMemoryMB(base::StrCat({name, suffix}), sample_mb);
 }
 
 void RecordSuffixedRendererMemoryMetrics(
@@ -4858,7 +4854,7 @@ void RenderFrameImpl::WillSendRequestInternal(
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
     RequestExtraData* old_extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
 
     custom_user_agent = old_extra_data->custom_user_agent();
     if (!custom_user_agent.IsNull()) {
@@ -4873,8 +4869,9 @@ void RenderFrameImpl::WillSendRequestInternal(
 
   WebDocument frame_document = frame_->GetDocument();
   if (!request.GetExtraData())
-    request.SetExtraData(std::make_unique<RequestExtraData>());
-  auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
+    request.SetExtraData(base::MakeRefCounted<RequestExtraData>());
+  auto* extra_data =
+      static_cast<RequestExtraData*>(request.GetExtraData().get());
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(IsMainFrame());
@@ -6355,7 +6352,7 @@ void RenderFrameImpl::BeginNavigationInternal(
       transition_type);
 
   if (!info->url_request.GetExtraData())
-    info->url_request.SetExtraData(std::make_unique<RequestExtraData>());
+    info->url_request.SetExtraData(base::MakeRefCounted<RequestExtraData>());
 
   // TODO(clamy): Same-document navigations should not be sent back to the
   // browser.

@@ -21,7 +21,7 @@ export class ChromeHelper {
      * An interface remote that is used to communicate with Chrome.
      * @type {!chromeosCamera.mojom.CameraAppHelperRemote}
      */
-    this.remote_ = chromeosCamera.mojom.CameraAppHelper.getRemote(true);
+    this.remote_ = chromeosCamera.mojom.CameraAppHelper.getRemote();
   }
 
   /**

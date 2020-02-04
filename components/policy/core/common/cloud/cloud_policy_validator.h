@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -411,9 +410,9 @@ class POLICY_EXPORT CloudPolicyValidator final
   // |completion_callback| is invoked when done.
   static void StartValidation(std::unique_ptr<CloudPolicyValidator> validator,
                               CompletionCallback completion_callback) {
-    CloudPolicyValidator* const validator_ptr = validator.release();
+    CloudPolicyValidator* const validator_ptr = validator.get();
     PostValidationTask(
-        base::WrapUnique<CloudPolicyValidatorBase>(validator_ptr),
+        std::move(validator),
         base::BindOnce(std::move(completion_callback), validator_ptr));
   }
 

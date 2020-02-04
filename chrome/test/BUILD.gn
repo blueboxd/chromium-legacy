@@ -1862,6 +1862,10 @@ if (!is_android) {
         "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h",
       ]
 
+      if (enable_autofill_assistant_api) {
+        sources += [ "../browser/extensions/api/autofill_assistant_private/autofill_assistant_private_apitest.cc" ]
+      }
+
       if (enable_background_mode) {
         sources += [ "../browser/extensions/background_app_browsertest.cc" ]
       }
@@ -1889,6 +1893,12 @@ if (!is_android) {
         "//extensions:chrome_extensions_browsertests",
         "//extensions/common/api",
       ]
+
+      if (enable_autofill_assistant_api) {
+        deps += [
+          "//components/autofill_assistant/browser:extensions_test_support",
+        ]
+      }
 
       data += [
         "//chrome/test/data/extensions/",

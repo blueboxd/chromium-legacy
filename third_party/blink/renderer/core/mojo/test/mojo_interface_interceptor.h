@@ -36,16 +36,11 @@ class MojoInterfaceInterceptor final
   static MojoInterfaceInterceptor* Create(ExecutionContext*,
                                           const String& interface_name,
                                           const String& scope,
-                                          bool use_browser_interface_broker,
                                           ExceptionState&);
 
-  using UseBrowserInterfaceBroker =
-      util::StrongAlias<class UseBrowserInterfaceBrokerTag, bool>;
-  MojoInterfaceInterceptor(
-      ExecutionContext*,
-      const String& interface_name,
-      bool process_scope,
-      UseBrowserInterfaceBroker use_browser_interface_broker);
+  MojoInterfaceInterceptor(ExecutionContext*,
+                           const String& interface_name,
+                           bool process_scope);
   ~MojoInterfaceInterceptor() override;
 
   void start(ExceptionState&);
@@ -72,7 +67,6 @@ class MojoInterfaceInterceptor final
   const String interface_name_;
   bool started_ = false;
   bool process_scope_ = false;
-  bool use_browser_interface_broker_ = false;
 };
 
 }  // namespace blink

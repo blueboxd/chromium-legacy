@@ -54,8 +54,7 @@ function updateTable() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  store = mediaHistory.mojom.MediaHistoryStore.getRemote(
-      /*useBrowserInterfaceBroker=*/ true);
+  store = mediaHistory.mojom.MediaHistoryStore.getRemote();
 
   statsTableBody = $('stats-table-body');
   updateTable();

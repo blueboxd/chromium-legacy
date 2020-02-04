@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Leitarvél</translation>
 <translation id="1513352483775369820">Bókamerki og vefferill</translation>
 <translation id="1513858653616922153">Eyða aðgangsorði</translation>
-<translation id="1516229014686355813">Snertileit sendir valið orð og núverandi síðu sem samhengisupplýsingar til Google leitar. Hægt er að slökkva á þessu í <ph name="BEGIN_LINK" />stillingunum<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Virkt í dag</translation>
 <translation id="1544826120773021464">Til að hafa umsjón með Google reikningnum þínum skaltu velja hnappinn „Stjórna reikningi“</translation>
 <translation id="1549000191223877751">Færa í annan glugga</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> er einnig með gögn í Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Hlé gert á vefsvæði</translation>
-<translation id="2063713494490388661">Ýta til að leita</translation>
 <translation id="2067805253194386918">texti</translation>
 <translation id="2082238445998314030">Niðurstaða <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Hljóð</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Innskráning mistókst</translation>
 <translation id="2349710944427398404">Gögn sem Chrome notar alls, þ.m.t. reikningar, bókamerki og vistaðar stillingar</translation>
 <translation id="2353636109065292463">Verið er að athuga nettenginguna</translation>
+<translation id="2359808026110333948">Halda áfram</translation>
 <translation id="2369533728426058518">opnir flipar</translation>
 <translation id="2387895666653383613">Textastærð</translation>
 <translation id="2394602618534698961">Skrár sem þú sækir birtast hér</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Vafraferill</translation>
 <translation id="2497852260688568942">Kerfisstjóri hefur gert samstillingu óvirka</translation>
 <translation id="2498359688066513246">Hjálp og ábendingar</translation>
-<translation id="2501278716633472235">Fara til baka</translation>
 <translation id="2513403576141822879">Frekari upplýsingar sem tengjast persónuvernd, öryggi og gagnasöfnun má finna í <ph name="BEGIN_LINK" />Samstilling og sérstillingar<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Leita</translation>
 <translation id="2518590038762162553">Í léttútgáfu hleður Chrome síðum hraðar og notar allt að 60% minna gagnamagn. Chrome sendir vefumferð þína til Google til þess að geta fínstillt síðurnar sem þú opnar. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Opna leitarstikuna</translation>
 <translation id="3716182511346448902">Chrome stöðvaði þessa síðu því hún notar of mikið minni.</translation>
 <translation id="3730075448226062617">Til að leyfa Chrome að fá aðgang að hljóðnemanum þarftu einnig að kveikja á honum í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Snertileit</translation>
 <translation id="3739899004075612870">Bókamerki bætt við <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Samstilling í bakgrunni</translation>
 <translation id="3749259744154402564">Ekki stutt</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Leyfa fótspor fyrir tiltekið vefsvæði.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# klst.}one{# klst.}other{# klst.}}</translation>
 <translation id="4046123991198612571">Næsta lag</translation>
-<translation id="4048707525896921369">Fræðstu um efni á vefsvæðum án þess að fara af síðunni. Snertileit sendir orð og samhengi þess til Google leitar og birtir skilgreiningar, myndir, leitarniðurstöður og aðrar upplýsingar.
-
-Til að breyta leitarstrengnum geturðu haldið inni til að velja hann. Til að fínstilla leitina skaltu renna svæðinu alla leið upp og snerta leitarreitinn.</translation>
 <translation id="4056223980640387499">Brúnn blær</translation>
 <translation id="4060598801229743805">Valkosti er að finna ofarlega á skjánum</translation>
 <translation id="4062305924942672200">Lagalegar upplýsingar</translation>
@@ -609,7 +605,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5578795271662203820">Leita að þessari mynd á <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Þú getur alltaf valið hvað á að samstilla í <ph name="BEGIN_LINK1" />stillingunum<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Breyta heimilisfangi</translation>
-<translation id="5596627076506792578">Fleiri valkostir</translation>
 <translation id="5599455543593328020">Huliðsstilling</translation>
 <translation id="5620928963363755975">Þú finnur skrár og síður í „Niðurhal“ undir hnappinum „Fleiri valkostir“</translation>
 <translation id="5626134646977739690">Nafn:</translation>
@@ -652,6 +647,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5864419784173784555">Bíður eftir öðru niðurhali…</translation>
 <translation id="5865733239029070421">Sendir sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google</translation>
 <translation id="5869522115854928033">Vistuð aðgangsorð</translation>
+<translation id="5884076754568147479">Google fær vefslóðir og innihald vefsvæða þar sem þú notar hjálparann, auk upplýsinga sem þú sendir með hjálparanum, til að hjálpa þér að ljúka við verkefni</translation>
 <translation id="5902828464777634901">Öllum staðbundnum gögnum sem vefsvæðið geymir verður eytt, að fótsporum meðtöldum.</translation>
 <translation id="5919204609460789179">Uppfærðu <ph name="PRODUCT_NAME" /> til að hefja samstillingu</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spöruð</translation>
@@ -775,7 +771,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6782111308708962316">Koma í veg fyrir að vefsvæði þriðju aðila geti vistað og lesið fótsporagögn</translation>
 <translation id="6790428901817661496">Spila</translation>
 <translation id="6811034713472274749">Hægt er að skoða síðuna</translation>
-<translation id="6818926723028410516">Veldu atriði</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Þýða</translation>
 <translation id="6845325883481699275">Hjálpaðu til við að bæta öryggi Chrome</translation>
@@ -808,10 +803,8 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7053983685419859001">Setja á bannlista</translation>
 <translation id="7055152154916055070">Lokað á framsendingu:</translation>
 <translation id="7063006564040364415">Ekki var hægt að tengjast samstillingarþjóninum.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valið}one{# valið}other{# valin}}</translation>
 <translation id="7071521146534760487">Stjórna reikningi</translation>
 <translation id="7077143737582773186">SD-kort</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valin.  Valkostir eru ofarlega á skjánum</translation>
 <translation id="7121362699166175603">Hreinsar ferilinn og sjálfvirka útfyllingu í veffangastikunni. Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil á <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Leyfa á núverandi leitarvél</translation>
 <translation id="7138678301420049075">Annað</translation>
@@ -827,7 +820,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7233236755231902816">Til að skoða vefinn á þínu tungumáli skaltu sækja nýjustu útgáfuna af Chrome</translation>
 <translation id="7243308994586599757">Valkostir eru neðst á skjánum</translation>
 <translation id="7248069434667874558">Gakktu úr skugga um að kveikt sé á samstillingu í Chrome í <ph name="TARGET_DEVICE_NAME" /></translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> valin</translation>
 <translation id="7274013316676448362">Vefsvæði á bannlista</translation>
 <translation id="7290209999329137901">Ekki er hægt að endurnefna</translation>
 <translation id="7291387454912369099">Greiðsla með hjálparanum</translation>
@@ -909,7 +901,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7810647596859435254">Opna með…</translation>
 <translation id="7821588508402923572">Gagnasparnaður birtist hér</translation>
-<translation id="7846076177841592234">Hætta við val</translation>
 <translation id="784934925303690534">Tímabil</translation>
 <translation id="7851858861565204677">Önnur tæki</translation>
 <translation id="7875915731392087153">Skrifa tölvupóst</translation>
@@ -957,6 +948,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8116925261070264013">Þögguð</translation>
 <translation id="8127542551745560481">Breyta heimasíðu</translation>
 <translation id="813082847718468539">Skoða upplýsingar um vefsvæði</translation>
+<translation id="8137558756159375272">Snertileit sendir valið orð og núverandi síðu sem samhengisupplýsingar til Google leitar. Þú getur slökkt á þessu í <ph name="BEGIN_LINK" />stillingum<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">Hvaða tungumál geturðu lesið?</translation>
 <translation id="8168435359814927499">Efni</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> skrár eftir</translation>
@@ -1024,7 +1016,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8655599981421006542">Ýttu hér til að opna nýja flipa og fara til baka á fyrri flipa</translation>
 <translation id="8662811608048051533">Skráir þig út af flestum vefsvæðum.</translation>
 <translation id="8664979001105139458">Skráarheiti er þegar til</translation>
-<translation id="8676374126336081632">Hreinsa innslátt</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sendistyrkur: # stika}one{Sendistyrkur: # stika}other{Sendistyrkur: # stikur}}</translation>
 <translation id="868929229000858085">Leita í tengiliðum</translation>
 <translation id="8698438463325761328">Loka á að vefsvæði fái aðgang að sýndarveruleikatæki og -gögnum</translation>

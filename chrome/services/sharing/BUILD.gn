@@ -21,6 +21,8 @@ source_set("sharing") {
     "webrtc/p2p_socket_client_delegate.h",
     "webrtc/sharing_webrtc_connection.cc",
     "webrtc/sharing_webrtc_connection.h",
+    "webrtc/sharing_webrtc_timing_recorder.cc",
+    "webrtc/sharing_webrtc_timing_recorder.h",
   ]
 
   deps = [

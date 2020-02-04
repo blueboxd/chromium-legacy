@@ -180,6 +180,11 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setHandleRequest('getAll', function() {
     var views = runtimeNatives.GetExtensionViews(-1, -1, 'APP_WINDOW');
+    // In certain corner cases, renderers may not load correctly, and are
+    // missing the chrome.app bindings. Filter these views out so that the next
+    // lines don't crash.
+    // See https://crbug.com/1021014.
+    views = $Array.filter(views, (w) => w.chrome.app);
     return $Array.map(views, function(win) {
       return win.chrome.app.window.current();
     });

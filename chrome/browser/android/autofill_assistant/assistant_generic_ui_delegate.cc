@@ -29,18 +29,38 @@ AssistantGenericUiDelegate::~AssistantGenericUiDelegate() {
 void AssistantGenericUiDelegate::OnViewClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jidentifier,
+    const base::android::JavaParamRef<jstring>& jview_identifier,
     const base::android::JavaParamRef<jobject>& jvalue) {
-  std::string identifier;
-  if (jidentifier) {
-    base::android::ConvertJavaStringToUTF8(env, jidentifier, &identifier);
+  std::string view_identifier;
+  if (jview_identifier) {
+    base::android::ConvertJavaStringToUTF8(env, jview_identifier,
+                                           &view_identifier);
   }
 
   ValueProto value;
   if (jvalue) {
     value = ui_controller_android_utils::ToNativeValue(env, jvalue);
   }
-  ui_controller_->OnViewEvent({EventProto::kOnViewClicked, identifier}, value);
+  ui_controller_->OnViewEvent({EventProto::kOnViewClicked, view_identifier},
+                              value);
+}
+
+void AssistantGenericUiDelegate::OnListPopupSelectionChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jmodel_identifier,
+    const base::android::JavaParamRef<jobject>& jvalue) {
+  std::string identifier;
+  if (jmodel_identifier) {
+    base::android::ConvertJavaStringToUTF8(env, jmodel_identifier, &identifier);
+  }
+
+  ValueProto value;
+  if (jvalue) {
+    value = ui_controller_android_utils::ToNativeValue(env, jvalue);
+  }
+
+  ui_controller_->OnValueChanged(identifier, value);
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

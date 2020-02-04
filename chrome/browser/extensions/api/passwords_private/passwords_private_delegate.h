@@ -45,9 +45,8 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Gets the password exceptions list.
   using ExceptionEntries = std::vector<api::passwords_private::ExceptionEntry>;
   using ExceptionEntriesCallback =
-      base::Callback<void(const ExceptionEntries&)>;
-  virtual void GetPasswordExceptionsList(
-      const ExceptionEntriesCallback& callback) = 0;
+      base::OnceCallback<void(const ExceptionEntries&)>;
+  virtual void GetPasswordExceptionsList(ExceptionEntriesCallback callback) = 0;
 
   // Changes the username and password corresponding to |id|.
   // |id|: The id for the password entry being updated.

@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="1513352483775369820">Lesezeichen und Webprotokoll</translation>
 <translation id="1513858653616922153">Passwort löschen</translation>
-<translation id="1516229014686355813">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>
 <translation id="1521774566618522728">Heute aktiv</translation>
 <translation id="1544826120773021464">Wenn Sie Ihr Google-Konto verwalten möchten, tippen Sie auf die Schaltfläche "Konto verwalten"</translation>
 <translation id="1549000191223877751">Zu anderem Fenster wechseln</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> hat auch Daten in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Website pausiert</translation>
-<translation id="2063713494490388661">Zum Suchen tippen</translation>
 <translation id="2067805253194386918">Text</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ton</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Anmeldung nicht möglich</translation>
 <translation id="2349710944427398404">Gesamtdaten, die von Chrome verwendet werden, wie Konten, Lesezeichen und gespeicherte Einstellungen</translation>
 <translation id="2353636109065292463">Internetverbindung überprüfen</translation>
+<translation id="2359808026110333948">Weiter</translation>
 <translation id="2369533728426058518">Tabs öffnen</translation>
 <translation id="2387895666653383613">Text-Skalierung</translation>
 <translation id="2394602618534698961">Dateien, die Sie herunterladen, werden hier angezeigt</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="2497852260688568942">Die Synchronisierung wurde von Ihrem Administrator deaktiviert</translation>
 <translation id="2498359688066513246">Hilfe &amp; Feedback</translation>
-<translation id="2501278716633472235">Zurück</translation>
 <translation id="2513403576141822879">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Suchen</translation>
 <translation id="2518590038762162553">Im Lite-Modus werden Seiten schneller in Chrome geladen und es werden bis zu 60 % weniger Daten verbraucht. Zum Optimieren der von Ihnen besuchten Seiten sendet Chrome Ihren Datenverkehr an Google. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
 <translation id="3730075448226062617">Aktivieren Sie das Mikrofon auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome auf es zugreifen kann.</translation>
+<translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
 <translation id="3749259744154402564">Nicht unterstützt</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
-<translation id="4048707525896921369">Erfahren Sie mehr zu Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" wird ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
-
-Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begriff etwas länger gedrückt. Sie können Ihre Suche auch verfeinern, indem Sie das Feld ganz nach oben schieben und auf das Suchfeld tippen.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Optionen sind oben auf dem Bildschirm verfügbar</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
@@ -609,7 +605,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
 <translation id="5581519193887989363">Sie können in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
-<translation id="5596627076506792578">Weitere Optionen</translation>
 <translation id="5599455543593328020">Inkognitomodus</translation>
 <translation id="5620928963363755975">Ihre Dateien und Seiten finden Sie durch Auswahl der Schaltfläche "Weitere Optionen" unter "Downloads"</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -652,6 +647,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5864419784173784555">Warten auf weiteren Download…</translation>
 <translation id="5865733239029070421">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
+<translation id="5884076754568147479">Um Ihnen zu helfen, Aufgaben abzuschließen, erhält Google Informationen über die URLs und Inhalte von Websites, auf denen Sie Assistant verwenden, sowie über die Daten, die Sie über Assistant weitergeben</translation>
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
 <translation id="5919204609460789179">Zur Synchronisierung müssen Sie <ph name="PRODUCT_NAME" /> aktualisieren</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
@@ -775,7 +771,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6782111308708962316">Websites von Drittanbietern am Speichern und Lesen von Cookiedaten hindern</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6811034713472274749">Seitenansicht bereit</translation>
-<translation id="6818926723028410516">Einträge auswählen</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6845325883481699275">Zur Verbesserung der Sicherheit von Chrome beitragen</translation>
@@ -808,10 +803,8 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7055152154916055070">Weiterleitung blockiert:</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
 <translation id="7071521146534760487">Konto verwalten</translation>
 <translation id="7077143737582773186">SD-Karte</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
 <translation id="7128222689758636196">Für die aktuelle Suchmaschine zulassen</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
@@ -827,7 +820,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7233236755231902816">Das Web in Ihrer Sprache – mit der aktuellen Version von Chrome</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7248069434667874558">Prüfen Sie, ob auf <ph name="TARGET_DEVICE_NAME" /> die Synchronisierung in Chrome aktiviert ist</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ausgewählt</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
 <translation id="7290209999329137901">Umbenennen nicht verfügbar</translation>
 <translation id="7291387454912369099">Assistant für AutoFill</translation>
@@ -909,7 +901,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
 <translation id="7821588508402923572">Ihre Einsparungen bei der Datennutzung werden hier angezeigt</translation>
-<translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="784934925303690534">Zeitraum</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>
@@ -957,6 +948,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8116925261070264013">Stummgeschaltet</translation>
 <translation id="8127542551745560481">Startseite bearbeiten</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
+<translation id="8137558756159375272">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>
 <translation id="8156139159503939589">Welche Sprachen können Sie lesen?</translation>
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8186512483418048923">Noch <ph name="FILES" /> Dateien</translation>
@@ -1024,7 +1016,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8655599981421006542">Tippen Sie hier, um neue Tabs zu erstellen oder zu vorherigen Tabs zurückzukehren</translation>
 <translation id="8662811608048051533">Sie werden von den meisten Websites abgemeldet.</translation>
 <translation id="8664979001105139458">Dateiname schon vorhanden</translation>
-<translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstärke: # Balken}other{Signalstärke: # Balken}}</translation>
 <translation id="868929229000858085">Kontakte durchsuchen</translation>
 <translation id="8698438463325761328">Websites daran hindern, auf mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zuzugreifen</translation>

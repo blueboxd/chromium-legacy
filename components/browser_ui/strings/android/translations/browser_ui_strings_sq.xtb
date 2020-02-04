@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Zhbëj</translation>
 <translation id="2148716181193084225">Sot</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
+<translation id="2501278716633472235">Kthehu prapa</translation>
 <translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2704606927547763573">Kopjuar</translation>
 <translation id="3115898365077584848">Shfaq informacionin</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Kopjo lidhjen</translation>
 <translation id="4002066346123236978">Titulli</translation>
 <translation id="4570913071927164677">Detajet</translation>
+<translation id="497421865427891073">Vazhdo përpara</translation>
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5301954838959518834">Në rregull, kuptova.</translation>
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5556459405103347317">Ringarko</translation>
+<translation id="5596627076506792578">Më shumë opsione</translation>
 <translation id="5860033963881614850">Çaktivizuar</translation>
 <translation id="5916664084637901428">Aktiv</translation>
 <translation id="5939518447894949180">Rivendos</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Ndaj</translation>
 <translation id="6746124502594467657">Lëviz poshtë</translation>
+<translation id="6818926723028410516">Zgjidh artikujt</translation>
 <translation id="6910211073230771657">Fshirë</translation>
 <translation id="6945221475159498467">Përzgjidhe</translation>
 <translation id="6965382102122355670">Në rregull</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 i zgjedhur}other{# të zgjedhur}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> të zgjedhura. Opsionet ofrohen pranë kreut të ekranit</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> të zgjedhura</translation>
 <translation id="7649070708921625228">Ndihma</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7781829728241885113">Dje</translation>
 <translation id="7791543448312431591">Shtoje</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
+<translation id="7846076177841592234">Anulo zgjedhjen</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
 <translation id="8249310407154411074">Lëvize në krye</translation>
 <translation id="8261506727792406068">Fshi</translation>
 <translation id="8609465669617005112">Lëviz lart</translation>
+<translation id="8676374126336081632">Pastro hyrjen</translation>
 <translation id="8725066075913043281">Provo sërish</translation>
 <translation id="8730621377337864115">U krye</translation>
 </translationbundle>

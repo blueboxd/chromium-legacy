@@ -338,7 +338,14 @@ void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
     // This WorkerThread will eventually be requested to terminate.
     GetWorkerReportingProxy().DidCloseWorkerGlobalScope();
 
-    // Stop further worker tasks to run after this point.
+    // Stop further worker tasks to run after this point based on the spec:
+    // https://html.spec.whatwg.org/C/#close-a-worker
+    //
+    // "To close a worker, given a workerGlobal, run these steps:"
+    // Step 1: "Discard any tasks that have been added to workerGlobal's event
+    // loop's task queues."
+    // Step 2: "Set workerGlobal's closing flag to true. (This prevents any
+    // further tasks from being queued.)"
     PrepareForShutdownOnWorkerThread();
   } else if (IsForciblyTerminated()) {
     // The script has been terminated forcibly, which means we need to

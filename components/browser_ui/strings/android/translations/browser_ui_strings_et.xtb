@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="2148716181193084225">Täna</translation>
 <translation id="2359808026110333948">Jätka</translation>
+<translation id="2501278716633472235">Mine tagasi</translation>
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2704606927547763573">Kopeeritud</translation>
 <translation id="3115898365077584848">Kuva teave</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Kop. link</translation>
 <translation id="4002066346123236978">Pealkiri</translation>
 <translation id="4570913071927164677">Üksikasjad</translation>
+<translation id="497421865427891073">Edasiminek</translation>
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5301954838959518834">Selge, sain aru</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
+<translation id="5596627076506792578">Rohkem valikuid</translation>
 <translation id="5860033963881614850">Väljas</translation>
 <translation id="5916664084637901428">Sees</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">Üksuse <ph name="NAME_OF_LIST_ITEM" /> valikud</translation>
 <translation id="6527303717912515753">Jaga</translation>
 <translation id="6746124502594467657">Liiguta alla</translation>
+<translation id="6818926723028410516">Valige üksused</translation>
 <translation id="6910211073230771657">Kustutatud</translation>
 <translation id="6945221475159498467">Vali</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> on valitud.  Valikud on saadaval ekraanikuva ülaosas</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> on valitud</translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7781829728241885113">Eile</translation>
 <translation id="7791543448312431591">Lisa</translation>
 <translation id="780301667611848630">Ei, aitäh</translation>
+<translation id="7846076177841592234">Tühista valik</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8249310407154411074">Teisalda kõige üles</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8609465669617005112">Liiguta üles</translation>
+<translation id="8676374126336081632">Tühjenda sisestus</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="8730621377337864115">Valmis</translation>
 </translationbundle>

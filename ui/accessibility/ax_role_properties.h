@@ -133,6 +133,9 @@ AX_EXPORT bool IsTextOrLineBreak(ax::mojom::Role role);
 // Returns true if the role supports expand/collapse.
 AX_EXPORT bool SupportsExpandCollapse(const ax::mojom::Role role);
 
+// Returns true if the role supports hierarchical level.
+AX_EXPORT bool SupportsHierarchicalLevel(const ax::mojom::Role role);
+
 // Returns true if the provided role can have an orientation.
 AX_EXPORT bool SupportsOrientation(const ax::mojom::Role role);
 

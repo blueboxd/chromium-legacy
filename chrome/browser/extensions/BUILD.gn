@@ -927,6 +927,10 @@ jumbo_static_library("extensions") {
   ]
 
   if (enable_autofill_assistant_api) {
+    sources += [
+      "api/autofill_assistant_private/autofill_assistant_private_api.cc",
+      "api/autofill_assistant_private/autofill_assistant_private_api.h",
+    ]
     deps += [ "//components/autofill_assistant/browser" ]
   }
 

@@ -241,6 +241,20 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationLongToShort) {
   EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
 }
 
+// Verifies that the mask layer gradient shader is not applied when no arrow
+// button shows.
+TEST_F(ScrollableShelfViewTest, VerifyApplyMaskGradientShaderWhenNeeded) {
+  AddAppShortcut();
+  ASSERT_EQ(ScrollableShelfView::LayoutStrategy::kNotShowArrowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  EXPECT_FALSE(scrollable_shelf_view_->layer()->layer_mask_layer());
+
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::LayoutStrategy::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  EXPECT_TRUE(scrollable_shelf_view_->layer()->layer_mask_layer());
+}
+
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible
 // icon (see https://crbug.com/997807).
 TEST_F(ScrollableShelfViewTest, NotShowTooltipForHiddenIcons) {

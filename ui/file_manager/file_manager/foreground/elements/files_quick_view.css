@@ -32,6 +32,10 @@ dialog::backdrop {
   opacity: 0.6;
 }
 
+dialog#delete-confirm-dialog::backdrop {
+  background-color: transparent;
+}
+
 .thumbnail {
   flex: none;
   height: 100%;

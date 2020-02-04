@@ -66,8 +66,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void ConnectToWorker(
       GlobalFrameRoutingId client_render_frame_host_id,
       blink::mojom::SharedWorkerInfoPtr info,
-      blink::mojom::FetchClientSettingsObjectPtr
-          outside_fetch_client_settings_object,
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       const blink::MessagePortChannel& port,
@@ -106,6 +104,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
       const blink::MessagePortChannel& message_port,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

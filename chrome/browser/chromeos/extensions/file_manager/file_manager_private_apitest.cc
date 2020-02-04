@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   crostini_manager->AddRunningContainerForTesting(
       crostini::kCrostiniDefaultVmName,
       crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                              "testuser", "/home/testuser"));
+                              "testuser", "/home/testuser", "PLACEHOLDER_IP"));
 
   ExpectCrostiniMount();
 
@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
   crostini_manager->AddRunningContainerForTesting(
       crostini::kCrostiniDefaultVmName,
       crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                              "testuser", "/home/testuser"));
+                              "testuser", "/home/testuser", "PLACEHOLDER_IP"));
 
   ExpectCrostiniMount();
 

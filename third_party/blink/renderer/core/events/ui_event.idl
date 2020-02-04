@@ -29,11 +29,11 @@
 
     // https://w3c.github.io/uievents/#idl-interface-UIEvent-initializers
     // TODO(foolip): None of the initUIEvent() arguments should be optional.
-    [Measure] void initUIEvent([DefaultValue=Undefined] optional DOMString type,
-                               [DefaultValue=Undefined] optional boolean bubbles,
-                               [DefaultValue=Undefined] optional boolean cancelable,
-                               [DefaultValue=Undefined] optional Window? view,
-                               [DefaultValue=Undefined] optional long detail);
+    [Measure] void initUIEvent(optional DOMString type = "undefined",
+                               optional boolean bubbles = false,
+                               optional boolean cancelable = false,
+                               optional Window? view = null,
+                               optional long detail = 0);
 
     readonly attribute unsigned long which;
 };

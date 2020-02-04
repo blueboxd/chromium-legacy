@@ -161,13 +161,9 @@ public class ChildProcessConnection {
         public void updateGroupImportance(int group, int importanceInGroup) {
             assert isBound();
             if (BindService.supportVariableConnections()) {
-                try {
-                    ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
-                    BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
-                            mExecutor, mInstanceName);
-                } catch (IllegalArgumentException e) {
-                    // TODO(crbug.com/1026626): Stop ignoring this exception.
-                }
+                ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
+                BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
+                        mExecutor, mInstanceName);
             }
         }
 
@@ -443,6 +439,7 @@ public class ChildProcessConnection {
      */
     public void rebind() {
         assert isRunningOnLauncherThread();
+        if (!isConnected()) return;
         assert mWaivedBinding.isBound();
         mWaivedBinding.bind();
     }
@@ -711,6 +708,7 @@ public class ChildProcessConnection {
 
     public void updateGroupImportance(int group, int importanceInGroup) {
         assert isRunningOnLauncherThread();
+        if (!isConnected()) return;
         assert !mUnbound;
         assert mWaivedBinding.isBound();
         assert group != 0 || importanceInGroup == 0;

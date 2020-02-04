@@ -305,7 +305,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // blending color space (e.g. for HDR), then a final render pass to convert
   // between the two will be added. This space must always be valid.
   gfx::DisplayColorSpaces display_color_spaces_;
-  gfx::ContentColorUsage display_content_color_usage_;
+
   // Maximum texture size which if positive, will limit the size of render
   // passes.
   int max_texture_size_ = 0;
@@ -362,6 +362,13 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // The root damage rect of the currently-aggregating frame.
   gfx::Rect root_damage_rect_;
+
+  // The aggregate color content usage of the currently-aggregating frame. This
+  // is computed by the prewalk, and is used to determine the format and color
+  // space of all render passes. Note that that is more heavy-handed than is
+  // desirable.
+  gfx::ContentColorUsage root_content_color_usage_ =
+      gfx::ContentColorUsage::kSRGB;
 
   // Occluding damage rect will be calculated for qualified candidates
   const bool needs_surface_occluding_damage_rect_;

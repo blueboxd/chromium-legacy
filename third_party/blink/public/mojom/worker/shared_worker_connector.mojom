@@ -20,8 +20,6 @@ interface SharedWorkerConnector {
   // blob URL. Without this by the time the worker code starts fetching
   // the URL the blob URL might no longer be valid.
   Connect(SharedWorkerInfo info,
-          blink.mojom.FetchClientSettingsObject
-              outside_fetch_client_settings_object,
           pending_remote<SharedWorkerClient> client,
           SharedWorkerCreationContextType creation_context_type,
           handle<message_pipe> message_port,

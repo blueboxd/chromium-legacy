@@ -141,7 +141,6 @@
 <translation id="1187722533808055681">ತಟಸ್ಥದ ಎಚ್ಚರಿಸುವಿಕೆಗಳು</translation>
 <translation id="1188807932851744811">ಲಾಗ್ ಅನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಫೈಲ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ}one{ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ # ಫೈಲ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಿ}other{ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ # ಫೈಲ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಿ}}</translation>
-<translation id="1190660338026981543"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ಡೊಮೇನ್ ಮೂಲಕ ಎಂಟರ್‌ಪ್ರೈಸ್ ನಿರ್ವಹಣೆಗಾಗಿ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಯಶಸ್ವಿಯಾಗಿ ದಾಖಲಿಸಲಾಗಿದೆ.</translation>
 <translation id="119092896208640858">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಇರಿಸಿಕೊಂಡು, ಅದನ್ನು ಈ ಸಾಧನದಿಂದ ಮಾತ್ರ ತೆರವುಗೊಳಿಸಲು, <ph name="BEGIN_LINK" />ಸೈನ್ ಔಟ್<ph name="END_LINK" /> ಮಾಡಿ.</translation>
 <translation id="1193273168751563528">ನಿರ್ವಹಿಸಲಾದ ಸೆಶನ್‌ಗೆ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1195447618553298278">ಅಪರಿಚಿತ ದೋಷ.</translation>
@@ -544,7 +543,6 @@
 <translation id="1744060673522309905">ಡೊಮೇನ್‌ಗೆ ಸಾಧನವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನೀವು ಸೇರಿಸಬಹುದಾದ ಸಾಧನಗಳ ಸಂಖ್ಯೆಯನ್ನು ಮೀರಿಲ್ಲ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
 <translation id="1744108098763830590">ಹಿನ್ನೆಲೆ ಪುಟ</translation>
 <translation id="1745520510852184940">ಯಾವಾಗಲೂ ಇದನ್ನು ಮಾಡಿ</translation>
-<translation id="1746402432151920942">ಸಂರಕ್ಷಿಸಿದ ಮೀಡಿಯಾ ಗುರುತಿಸುವಿಕೆ</translation>
 <translation id="1750172676754093297">ನಿಮ್ಮ ಭದ್ರತಾ ಕೀಯಲ್ಲಿ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‌‍ಗಳನ್ನು ಸಂಗ್ರಹಣೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="175196451752279553">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ</translation>
 <translation id="1753905327828125965">ಅತಿಹೆಚ್ಚು ಬಾರಿ ಸಂದರ್ಶಿಸಿರುವುದು</translation>
@@ -617,7 +615,6 @@
 <translation id="1830550083491357902">ಸೈನ್ ಇನ್ ಆಗಿಲ್ಲ</translation>
 <translation id="1832511806131704864">ಫೋನ್ ಬದಲಾವಣೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1834503245783133039">ಡೌನ್‌ಲೋಡ್‌ ವಿಫಲಗೊಂಡಿದೆ: <ph name="FILE_NAME" /></translation>
-<translation id="1834583737373831634">MIDI ಸಾಧನಗಳು</translation>
 <translation id="1835261175655098052">Linux ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1838374766361614909">ಹುಡುಕಾಟ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="1841545962859478868">ಸಾಧನದ ನಿರ್ವಾಹಕರು ಕೆಳಗಿನದನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು:</translation>
@@ -891,7 +888,6 @@
 <translation id="2220529011494928058">ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ</translation>
 <translation id="2220572644011485463">ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="2224444042887712269">ಈ ಸೆಟ್ಟಿಂಗ್ <ph name="OWNER_EMAIL" /> ಗೆ ಸೇರಿರುತ್ತದೆ.</translation>
-<translation id="2224471211857467033">ಪ್ರವೇಶಿಸುವಿಕೆ ಈವೆಂಟ್‌ಗಳು</translation>
 <translation id="2224551243087462610">ಫೋಲ್ಡರ್ ಹೆಸರು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="2226449515541314767">ಈ ಸೈಟ್ ಅನ್ನು MIDI ಸಾಧನಗಳ ಮೇಲೆ ಪೂರ್ಣ ನಿಯಂತ್ರಣ ಸಾಧಿಸುವುದರಿಂದ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="222704500187107962">ನೀವು ಪ್ರಸ್ತುತ ಅಜ್ಞಾತ ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿದ ನಂತರ, ಈ ವಿನಾಯಿತಿಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ</translation>
@@ -1161,7 +1157,6 @@
 <translation id="2587922766792651800">ಸಮಯ ಮೀರಿದೆ</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> ನಿಂದ ಸಾಧನಗಳು</translation>
 <translation id="2594999711683503743">Google ನಲ್ಲಿ ಹುಡುಕಿ ಅಥವಾ URL ಟೈಪ್ ಮಾಡಿ</translation>
-<translation id="2600522410036850735">ಈ ಸಾಧನವು <ph name="MONTH_AND_YEAR" /> ವರೆಗೆ ಸ್ವಯಂಚಾಲಿತ ಸಾಫ್ಟ್‌ವೇರ್ ಮತ್ತು ಭದ್ರತೆ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುತ್ತದೆ. &lt;a target="_blank" href="<ph name="URL" />"&gt;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;</translation>
 <translation id="2603115962224169880">ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಸ್ವಚ್ಛಗೊಳಿಸಿ</translation>
 <translation id="2603463522847370204">&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="2604255671529671813">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕ ದೋಷ</translation>
@@ -1844,7 +1839,6 @@
 <translation id="3564848315152754834">USB ಸುರಕ್ಷತಾ ಕೀ</translation>
 <translation id="3566721612727112615">ಯಾವುದೇ ಸೈಟ್‌ಗಳನ್ನು ಸೇರಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="3569382839528428029">ನಿಮ್ಮ ಪರದೆಯನ್ನು <ph name="APP_NAME" /> ಹಂಚಬೇಕೆಂದು ನೀವು ಬಯಸುತ್ತೀರಾ?</translation>
-<translation id="3570985609317741174">ವೆಬ್ ವಿಷಯ</translation>
 <translation id="3571734092741541777">ಹೊಂದಿಸು</translation>
 <translation id="3574210789297084292">ಸೈನ್ ಇನ್</translation>
 <translation id="3574917942258583917">ಹೇಗಾದರೂ ಅಜ್ಞಾತ ಮೋಡ್‌ ಅನ್ನು ಮುಚ್ಚುವುದೇ?</translation>
@@ -1983,7 +1977,6 @@
 <translation id="3732530910372558017">ಪಿನ್ ಗರಿಷ್ಠ 63 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು</translation>
 <translation id="3733127536501031542">ಹೆಚ್ಚುವಿಕೆಯೊಂದಿಗೆ SSL ಸರ್ವರ್</translation>
 <translation id="3735740477244556633">ಈ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
-<translation id="3737274407993947948">Linux ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುತ್ತಿರುವಲ್ಲಿ ದೋಷ ಕಂಡುಬಂದಿದೆ...</translation>
 <translation id="3737536731758327622">ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> ತೆರೆಯುವುದೇ?</translation>
@@ -2081,7 +2074,6 @@
 <translation id="3855441664322950881">ಪ್ಯಾಕ್ ವಿಸ್ತರಣೆ</translation>
 <translation id="3855676282923585394">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿ...</translation>
 <translation id="3856800405688283469">ಸಮಯ ವಲಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
-<translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">ಎತ್ತಿರಿ, ನಂತರ ಪುನಃ ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="3862693525629180217">ಅಂತರ್ನಿರ್ಮಿತ ಸೆನ್ಸರ್‌ಗಳ ಮೂಲಕ ಪರಿಶೀಲಿಸಿ</translation>
@@ -2367,7 +2359,6 @@
 <translation id="4268025649754414643">ಕೀ ಎನ್ಸಿಫರ್ಮೆಂಟ್</translation>
 <translation id="4270393598798225102">ಆವೃತ್ತಿ <ph name="NUMBER" /></translation>
 <translation id="4274667386947315930">ಸೈನ್‌-ಇನ್ ಡೇಟಾ</translation>
-<translation id="4275663329226226506">ಮಾದ್ಯಮ</translation>
 <translation id="4275830172053184480">ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4278101229438943600">ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್ ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="4278390842282768270">ಅನುಮತಿಸಲಾಗಿದೆ</translation>
@@ -2789,7 +2780,6 @@
 <translation id="4907306957610201395">ಅನುಮತಿ ವರ್ಗ</translation>
 <translation id="4908811072292128752">ಒಮ್ಮೆಲೆ ಎರಡೂ ಸೈಟ್‌ಗಳನ್ನು ಬ್ರೌಸ್ ಮಾಡಲು ಟ್ಯಾಬ್ ತೆರೆಯಿರಿ</translation>
 <translation id="4909038193460299775">ಈ ಖಾತೆಯನ್ನು <ph name="DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿರುವ ಕಾರಣದಿಂದ, ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಈ ಸಾಧನದಿಂದ ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. ಆದರೆ, ನಿಮ್ಮ ಡೇಟಾವು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿಯೇ ಸಂಗ್ರಹಿತವಾಗಿರುತ್ತದೆ ಮತ್ತು ಅದನ್ನು <ph name="BEGIN_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ<ph name="END_LINK" /> ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>
-<translation id="4909359680501173791">ನಿಮ್ಮನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="4912643508233590958">ತಟಸ್ಥದ ಎಚ್ಚರಿಸುವಿಕೆಗಳು</translation>
 <translation id="491691592645955587">ಸುರಕ್ಷಿತ ಬ್ರೌಸರ್‌ಗೆ ಬದಲಾಯಿಸಿ</translation>
 <translation id="4917385247580444890">ಪ್ರಬಲ</translation>
@@ -3438,7 +3428,6 @@
 <translation id="5834581999798853053">ಸುಮಾರು <ph name="TIME" /> ನಿಮಿಷಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ಕ್ಯಾಮರಾ ಅಥವಾ ಮೈಕ್ರೊಫೋನ್ ರೆಕಾರ್ಡಿಂಗ್</translation>
 <translation id="5842497610951477805">ಬ್ಲೂಟೂತ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="5843250171025351504">ನಿಮ್ಮ ನಿರ್ವಾಹಕರ ಮೂಲಕ ನಿರ್ದಿಷ್ಟಪಡಿಸಿದ ಕನಿಷ್ಠ ಕ್ಲೈಂಟ್ ಆವೃತ್ತಿಯೊಂದಿಗೆ ನಿಮ್ಮ ಸಾಧನ ಇನ್ನು ಮುಂದೆ ಅನುವರ್ತಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಲಾಗಿನ್‌ ಮಾಡಿ.</translation>
 <translation id="5846200638699387931">ರಿಲೇಶನ್ ಸಿಂಟ್ಯಾಕ್ಸ್ ದೋಷ: <ph name="ERROR_LINE" /></translation>
 <translation id="5849212445710944278">ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="5849570051105887917">ಹೋಮ್ ಪೂರೈಕೆದಾರರ ಕೋಡ್</translation>
@@ -3749,7 +3738,6 @@
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> ಗೆ ನಿಮ್ಮನ್ನು ಪ್ರಮಾಣೀಕರಿಸಲು ಒಂದು ಪ್ರಮಾಣಪತ್ರವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="PHONE_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ಫೋನ್ ಬ್ಯಾಟರಿ <ph name="BATTERY_STATUS" />%, ಕನೆಕ್ಟ್</translation>
 <translation id="6268252012308737255"><ph name="APP" /> ರಿಂದ ತೆರೆಯಿರಿ</translation>
-<translation id="6268718011101775129">NFC</translation>
 <translation id="6270391203985052864">ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಬಹುದೇ ಎಂದು ಸೈಟ್‌ಗಳು ಕೇಳಬಹುದು</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />ಸಿಸ್ಟಂ ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್ ಮಾಹಿತಿ<ph name="END_LINK1" /> ಮತ್ತು <ph name="BEGIN_LINK2" />ಮಾಪನಗಳನ್ನು<ph name="END_LINK2" /> ಕಳುಹಿಸಿ</translation>
 <translation id="6272643420381259437">ಪ್ಲಗಿನ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡುತ್ತಿರುವಾಗ ಸಮಸ್ಯೆ (<ph name="ERROR" />) ಕಂಡುಬಂದಿದೆ</translation>

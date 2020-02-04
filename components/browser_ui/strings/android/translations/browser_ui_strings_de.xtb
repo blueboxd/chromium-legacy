@@ -8,6 +8,7 @@
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2359808026110333948">Weiter</translation>
+<translation id="2501278716633472235">Zurück</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="3115898365077584848">Informationen anzeigen</translation>
@@ -17,10 +18,12 @@
 <translation id="3987993985790029246">Link kopieren</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4570913071927164677">Details</translation>
+<translation id="497421865427891073">Weiter</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5556459405103347317">Neu laden</translation>
+<translation id="5596627076506792578">Weitere Optionen</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
@@ -30,18 +33,24 @@
 <translation id="6216432067784365534">Optionen für <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="6746124502594467657">Nach unten</translation>
+<translation id="6818926723028410516">Einträge auswählen</translation>
 <translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6965382102122355670">Ok</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
+<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
+<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ausgewählt</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
+<translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8249310407154411074">Ganz nach oben</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8609465669617005112">Nach oben</translation>
+<translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
 </translationbundle>

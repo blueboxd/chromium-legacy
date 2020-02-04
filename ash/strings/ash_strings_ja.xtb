@@ -112,7 +112,6 @@
 <translation id="2352467521400612932">タッチペンの設定</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> を有効にしています</translation>
 <translation id="2359808026110333948">続行</translation>
-<translation id="2364154243880592194">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /> 通知センターを開くには、検索+左方向キーを押します。</translation>
 <translation id="2365393535144473978">モバイルデータ通信を有効にすると、Bluetooth も有効になります。</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
@@ -238,6 +237,7 @@
 <translation id="4112140312785995938">後方に移動</translation>
 <translation id="4129129681837227511">ロック画面に通知を表示するには、ロックを解除して設定を変更してください</translation>
 <translation id="4146833061457621061">音楽を再生して</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> は <ph name="DOMAIN" /> によって管理されています</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="4195877955194704651">自動クリックボタン</translation>
 <translation id="4217571870635786043">音声入力</translation>
@@ -269,7 +269,6 @@
 <translation id="4513946894732546136">フィードバック</translation>
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
 <translation id="453661520163887813">あと <ph name="TIME" /> で充電完了</translation>
-<translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">[選択して読み上げ] ボタン</translation>
 <translation id="4585337515783392668">不明な受信デバイスへのキャストを停止します</translation>
@@ -426,7 +425,6 @@
 <translation id="6790428901817661496">再生</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="6820676911989879663">休憩の時間です！</translation>
-<translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> を有効にする</translation>
 <translation id="6878400149835617132">ショートカットがオフになっています</translation>
 <translation id="6910714959251846841">このアップデートを適用するにはデバイスで Powerwash を実行する必要があります。<ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください。</translation>
@@ -450,6 +448,7 @@
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
+<translation id="7246071203293827765"><ph name="UPDATE_TEXT" />。アップデートを適用するには、Chromebook を再起動する必要があります。再起動には最長で 1 分ほどかかります。</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7262906531272962081">リマインダーの作成</translation>
@@ -465,11 +464,9 @@
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
 <translation id="7497767806359279797">言語とキーボードを選択</translation>
-<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ネットワークが監視されている可能性があります</translation>
 <translation id="7536035074519304529">IP アドレス: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">おやすみの時間です</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
 <translation id="7564874036684306347">ウィンドウを別のデスクトップに移動すると、予期しない動作が起こることがあります。以降の通知、ウィンドウ、ダイアログは、複数のデスクトップに分かれて表示される可能性があります。</translation>
 <translation id="7568294522609223312">自動クリックをオフにする</translation>
@@ -512,6 +509,7 @@
 <translation id="8061464966246066292">ハイコントラスト</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> への画面のキャストを停止する</translation>
 <translation id="8113423164597455979">オン: 全アプリ</translation>
+<translation id="8131740175452115882">確認</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8142441511840089262">ダブルクリック</translation>

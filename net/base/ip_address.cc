@@ -9,6 +9,7 @@
 
 #include "base/containers/stack_container.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -116,9 +117,7 @@ bool ParseIPLiteralToBytes(const base::StringPiece& ip_literal,
   // a colon however, it must be an IPv6 address.
   if (ip_literal.find(':') != base::StringPiece::npos) {
     // GURL expects IPv6 hostnames to be surrounded with brackets.
-    std::string host_brackets = "[";
-    ip_literal.AppendToString(&host_brackets);
-    host_brackets.push_back(']');
+    std::string host_brackets = base::StrCat({"[", ip_literal, "]"});
     url::Component host_comp(0, host_brackets.size());
 
     // Try parsing the hostname as an IPv6 literal.

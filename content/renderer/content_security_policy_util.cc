@@ -33,7 +33,7 @@ network::mojom::CSPSourceListPtr BuildCSPSourceList(
 network::mojom::CSPDirectivePtr BuildCSPDirective(
     const blink::WebContentSecurityPolicyDirective& directive) {
   return network::mojom::CSPDirective::New(
-      network::ContentSecurityPolicy::ToDirectiveName(directive.name.Utf8()),
+      network::ToCSPDirectiveName(directive.name.Utf8()),
       BuildCSPSourceList(directive.source_list));
 }
 

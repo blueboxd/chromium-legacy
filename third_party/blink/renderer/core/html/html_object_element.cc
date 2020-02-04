@@ -395,7 +395,7 @@ bool HTMLObjectElement::ContainsJavaApplet() const {
 
   for (HTMLElement& child : Traversal<HTMLElement>::ChildrenOf(*this)) {
     if (IsA<HTMLParamElement>(child) &&
-        DeprecatedEqualIgnoringCase(child.GetNameAttribute(), "type") &&
+        EqualIgnoringASCIICase(child.GetNameAttribute(), "type") &&
         MIMETypeRegistry::IsJavaAppletMIMEType(
             child.FastGetAttribute(html_names::kValueAttr).GetString()))
       return true;

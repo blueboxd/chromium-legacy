@@ -1238,7 +1238,7 @@ void DocumentLoader::StartLoadingInternal() {
   HandleResponse();
 
   loading_mhtml_archive_ =
-      DeprecatedEqualIgnoringCase("multipart/related", response_.MimeType()) ||
+      EqualIgnoringASCIICase("multipart/related", response_.MimeType()) ||
       DeprecatedEqualIgnoringCase("message/rfc822", response_.MimeType());
   if (loading_mhtml_archive_) {
     // To commit an mhtml archive synchronously we have to load the whole body

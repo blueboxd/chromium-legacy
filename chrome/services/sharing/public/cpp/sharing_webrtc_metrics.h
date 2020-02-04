@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/time/time.h"
+
 namespace sharing {
 
-// State of the WebRTC connection when it timed out.
+// State of the WebRTC connection when it timed out on the browser process.
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
 // "SharingWebRtcTimeoutState" in src/tools/metrics/histograms/enums.xml.
@@ -63,6 +65,27 @@ enum class WebRtcConnectionErrorReason {
   kMaxValue = kInvalidLocalAnswer,
 };
 
+// Sharing WebRTC connection event on the sandboxed process.
+// Please keep in sync with "SharingWebRtcTimingEvent" in
+// src/tools/metrics/histograms/histograms.xml.
+enum class WebRtcTimingEvent {
+  kInitialized = 0,
+  kOfferReceived = 1,
+  kIceCandidateReceived = 2,
+  kQueuingMessage = 3,
+  kSendingMessage = 4,
+  kSignalingStable = 5,
+  kDataChannelOpen = 6,
+  kMessageReceived = 7,
+  kAnswerCreated = 8,
+  kOfferCreated = 9,
+  kAnswerReceived = 10,
+  kClosing = 11,
+  kClosed = 12,
+  kDestroyed = 13,
+  kMaxValue = kDestroyed,
+};
+
 // Converts string |type| to WebRtcConnectionType. The valid strings for
 // |type| are defined in https://tools.ietf.org/html/rfc5245.
 // Note that kInvalid does not have a corresponding valid string.
@@ -85,6 +108,9 @@ void LogWebRtcSendMessageResult(WebRtcSendMessageResult result);
 
 // Logs the error reason for closing WebRTC connection.
 void LogWebRtcConnectionErrorReason(WebRtcConnectionErrorReason reason);
+
+// Logs the timing for |event| to UMA.
+void LogWebRtcTimingEvent(WebRtcTimingEvent event, base::TimeDelta delay);
 
 }  // namespace sharing
 

@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
 <translation id="1513858653616922153">Delete password</translation>
-<translation id="1516229014686355813">Tap to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Active today</translation>
 <translation id="1544826120773021464">To manage your Google Account, tap the 'Manage account' button</translation>
 <translation id="1549000191223877751">Move to other window</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> also has data in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Site paused</translation>
-<translation id="2063713494490388661">Tap to Search</translation>
 <translation id="2067805253194386918">text</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Sound</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Can’t sign in</translation>
 <translation id="2349710944427398404">Total data used by Chrome, including accounts, bookmarks and saved settings</translation>
 <translation id="2353636109065292463">Checking your Internet connection</translation>
+<translation id="2359808026110333948">Continue</translation>
 <translation id="2369533728426058518">open tabs</translation>
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="2394602618534698961">Files that you download appear here</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Browsing history</translation>
 <translation id="2497852260688568942">Sync is disabled by your administrator</translation>
 <translation id="2498359688066513246">Help &amp; feedback</translation>
-<translation id="2501278716633472235">Go back</translation>
 <translation id="2513403576141822879">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and Google services<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Scan</translation>
 <translation id="2518590038762162553">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data. To optimise the pages that you visit, Chrome sends your web traffic to Google. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
 <translation id="3730075448226062617">To let Chrome access your microphone, also turn on microphone in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3739899004075612870">Bookmarked in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3749259744154402564">Unsupported</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# hr}other{# hrs}}</translation>
 <translation id="4046123991198612571">Next track</translation>
-<translation id="4048707525896921369">Learn about topics on websites without leaving the page. Tap to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
-
-To adjust your search term, long-press to select. To refine your search, slide the panel all the way up and tap the search box.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Options available near the top of the screen</translation>
 <translation id="4062305924942672200">Legal information</translation>
@@ -609,7 +605,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
 <translation id="5581519193887989363">You can always choose what to sync in <ph name="BEGIN_LINK1" />settings<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Edit address</translation>
-<translation id="5596627076506792578">More options</translation>
 <translation id="5599455543593328020">Incognito mode</translation>
 <translation id="5620928963363755975">Find your files and pages in Downloads from the More Options button</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -652,6 +647,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5864419784173784555">Waiting for another download…</translation>
 <translation id="5865733239029070421">Automatically sends usage statistics and crash reports to Google</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
+<translation id="5884076754568147479">To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information that you submit through Assistant</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> saved</translation>
@@ -775,7 +771,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6811034713472274749">Page is ready to view</translation>
-<translation id="6818926723028410516">Select items</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6845325883481699275">Help improve Chrome security</translation>
@@ -808,10 +803,8 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7053983685419859001">Block</translation>
 <translation id="7055152154916055070">Redirect blocked:</translation>
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selected}other{# selected}}</translation>
 <translation id="7071521146534760487">Manage account</translation>
 <translation id="7077143737582773186">SD Card</translation>
-<translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selected. Options available near top of the screen</translation>
 <translation id="7121362699166175603">Clears history and auto-completions in the address bar. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
@@ -827,7 +820,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7233236755231902816">To see the web in your language, get the latest version of Chrome</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7248069434667874558">Make sure that <ph name="TARGET_DEVICE_NAME" /> has sync turned on in Chrome</translation>
-<translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
 <translation id="7274013316676448362">Blocked site</translation>
 <translation id="7290209999329137901">Rename unavailable</translation>
 <translation id="7291387454912369099">Assistant Triggered Checkout</translation>
@@ -909,7 +901,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7810647596859435254">Open with…</translation>
 <translation id="7821588508402923572">Your data savings will appear here</translation>
-<translation id="7846076177841592234">Cancel selection</translation>
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other devices</translation>
 <translation id="7875915731392087153">Create email</translation>
@@ -957,6 +948,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8116925261070264013">Muted</translation>
 <translation id="8127542551745560481">Edit homepage</translation>
 <translation id="813082847718468539">View site information</translation>
+<translation id="8137558756159375272">Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">What languages do you read?</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> files left</translation>
@@ -1024,7 +1016,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8655599981421006542">Tap here to create new tabs and go back to previous ones</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>
 <translation id="8664979001105139458">File name already exists</translation>
-<translation id="8676374126336081632">Clear input</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal Strength Level: # bar}other{Signal Strength Level: # bars}}</translation>
 <translation id="868929229000858085">Search your contacts</translation>
 <translation id="8698438463325761328">Block sites from accessing your virtual reality device and data</translation>

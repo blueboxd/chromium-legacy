@@ -149,7 +149,6 @@ void AutofillPopupControllerImpl::Show(
       ->RegisterKeyPressHandler(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                      base::Unretained(this)));
-  pinned_until_update_ = false;
   delegate_->OnPopupShown();
 
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
@@ -233,8 +232,7 @@ AutofillPopupControllerImpl::GetUnelidedSuggestions() const {
 void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
   // If the reason for hiding is only stale data or a user interacting with
   // native Chrome UI (kEndEditing), the popup might be kept open.
-  if (pinned_until_update_ && (reason == PopupHidingReason::kEndEditing ||
-                               reason == PopupHidingReason::kStaleData)) {
+  if (pinned_until_update_ && reason == PopupHidingReason::kStaleData) {
     return;  // Don't close the popup while waiting for an update.
   }
   if (delegate_) {
@@ -508,7 +506,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 }
 
 bool AutofillPopupControllerImpl::CanAccept(int id) {
-  return id != POPUP_ITEM_ID_SEPARATOR &&
+  return id != POPUP_ITEM_ID_SEPARATOR && id != POPUP_ITEM_ID_LOADING_SPINNER &&
          id != POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE &&
          id != POPUP_ITEM_ID_TITLE;
 }

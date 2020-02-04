@@ -63,7 +63,8 @@ LIBLOUIS_TEST_F_WITH_PREAMBLE(
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_checkAllTables DISABLED_checkAllTables
 #else
-#define MAYBE_checkAllTables checkAllTables
+// Flaky, see crbug.com/1048585.
+#define MAYBE_checkAllTables DISABLED_checkAllTables
 #endif
 `,
     'MAYBE_checkAllTables', function(liblouis) {

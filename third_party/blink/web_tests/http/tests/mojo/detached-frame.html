@@ -29,7 +29,7 @@ promise_test(async () => {
 
   let helper = new content.mojom.MojoWebTestHelperPtr;
   frameMojo.bindInterface(content.mojom.MojoWebTestHelper.name,
-                          mojo.makeRequest(helper).handle, 'context', true);
+                          mojo.makeRequest(helper).handle);
 
   try {
     let reply = await helper.reverse("hello world.");
@@ -52,7 +52,7 @@ promise_test(async () => {
   document.body.removeChild(frame);
 
   let interceptor = new frameMojoInterfaceInterceptor(
-      content.mojom.MojoWebTestHelper.name, 'context', true);
+      content.mojom.MojoWebTestHelper.name);
   try {
     interceptor.start();
     assert_unreached();
@@ -70,7 +70,7 @@ promise_test(async () => {
   // Create the interceptor while the frame is attached so that it is associated
   // with the frame's execution context.
   let interceptor = new frame.contentWindow.MojoInterfaceInterceptor(
-      content.mojom.MojoWebTestHelper.name, 'context', true);
+      content.mojom.MojoWebTestHelper.name);
   document.body.removeChild(frame);
 
   try {
@@ -89,7 +89,7 @@ promise_test(async () => {
 
   // Create the interceptor and start it while the frame is attached.
   let interceptor = new frame.contentWindow.MojoInterfaceInterceptor(
-      content.mojom.MojoWebTestHelper.name, 'context', true);
+      content.mojom.MojoWebTestHelper.name);
   interceptor.start();
   document.body.removeChild(frame);
 

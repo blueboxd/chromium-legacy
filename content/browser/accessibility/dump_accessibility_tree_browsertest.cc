@@ -1040,6 +1040,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTabList) {
   RunAriaTest(FILE_PATH_LITERAL("aria-tablist.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaTabListAriaLevel) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-tablist-aria-level.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTabPanel) {
   RunAriaTest(FILE_PATH_LITERAL("aria-tabpanel.html"));
 }
@@ -2306,8 +2311,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       LanguageDetectionLangDetectionBasic) {
-  RunLanguageDetectionTest(FILE_PATH_LITERAL("basic.html"));
+                       LanguageDetectionLangDetectionStaticBasic) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("static-basic.html"));
 }
 
 //

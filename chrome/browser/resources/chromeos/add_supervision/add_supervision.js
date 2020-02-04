@@ -34,8 +34,7 @@ function isAllowedRequest(requestDetails) {
 }
 
 const addSupervisionHandler =
-    addSupervision.mojom.AddSupervisionHandler.getRemote(
-        /*useBrowserInterfaceBroker=*/ true);
+    addSupervision.mojom.AddSupervisionHandler.getRemote();
 
 Polymer({
   is: 'add-supervision-ui',

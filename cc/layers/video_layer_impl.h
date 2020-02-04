@@ -45,6 +45,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   SimpleEnclosedRegion VisibleOpaqueRegion() const override;
   void DidBecomeActive() override;
   void ReleaseResources() override;
+  gfx::ContentColorUsage GetContentColorUsage() const override;
 
   void SetNeedsRedraw();
   media::VideoRotation video_rotation() const { return video_rotation_; }

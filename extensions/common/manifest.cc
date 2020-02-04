@@ -319,7 +319,7 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 bool Manifest::CanAccessPath(base::span<const base::StringPiece> path) const {
   std::string key;
   for (base::StringPiece component : path) {
-    component.AppendToString(&key);
+    key.append(component.data(), component.size());
     if (!CanAccessKey(key))
       return false;
     key += '.';

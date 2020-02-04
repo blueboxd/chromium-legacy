@@ -135,8 +135,8 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // Override intrinsic sizing info to default if "unsized-media"
   // is disabled and the element has no sizing info.
   bool OverrideIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
+  bool HasOverriddenIntrinsicSize() const;
   FloatSize ImageSizeOverriddenByIntrinsicSize(float multiplier) const;
-  IntSize GetOverriddenIntrinsicSize() const;
 
   // This member wraps the associated decoded image.
   //

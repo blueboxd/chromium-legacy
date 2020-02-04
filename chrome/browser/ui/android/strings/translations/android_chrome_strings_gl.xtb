@@ -73,7 +73,6 @@
 <translation id="1506061864768559482">Motor de busca</translation>
 <translation id="1513352483775369820">Marcadores e historial web</translation>
 <translation id="1513858653616922153">Eliminar contrasinal</translation>
-<translation id="1516229014686355813">A función Tocar para buscar envía a palabra seleccionada e a páxina actual como contexto á Busca de Google. Podes desactivar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Dispositivo activo hoxe</translation>
 <translation id="1544826120773021464">Para xestionar a túa conta de Google, toca o botón Xestionar conta</translation>
 <translation id="1549000191223877751">Mover a outra ventá</translation>
@@ -143,7 +142,6 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> tamén ten datos en Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">O sitio está en pausa</translation>
-<translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2067805253194386918">texto</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Son</translation>
@@ -180,6 +178,7 @@
 <translation id="2328985652426384049">Non se puido iniciar sesión</translation>
 <translation id="2349710944427398404">Datos totais usados por Chrome, incluídas as contas, os marcadores e a configuración gardada</translation>
 <translation id="2353636109065292463">Comprobando a túa conexión a Internet</translation>
+<translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">pestanas abertas</translation>
 <translation id="2387895666653383613">Axuste de texto</translation>
 <translation id="2394602618534698961">Os ficheiros descargados aparecen aquí</translation>
@@ -200,7 +199,6 @@
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2497852260688568942">O administrador desactivou a sincronización</translation>
 <translation id="2498359688066513246">Axuda e comentarios</translation>
-<translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2513403576141822879">Para ver máis opcións relacionadas coa configuración da privacidade, seguranza e recompilación de datos, consulta <ph name="BEGIN_LINK" />Sincronización e servizos de Google<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">Buscar</translation>
 <translation id="2518590038762162553">No modo básico, Chrome carga as páxinas máis rápido e usa un 60 % menos de datos. Para optimizar as páxinas que visitas, Chrome envíalle o teu tráfico web a Google. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
@@ -353,6 +351,7 @@
 <translation id="3714981814255182093">Abrir a barra de busca</translation>
 <translation id="3716182511346448902">Esta páxina utiliza demasiada memoria, así que Chrome pausouna.</translation>
 <translation id="3730075448226062617">Para permitir que Chrome acceda ao teu micrófono, actívao tamén en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
+<translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3739899004075612870">Engadiuse aos marcadores en <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3749259744154402564">Acción non admitida</translation>
@@ -392,9 +391,6 @@
 <translation id="4008040567710660924">Permite cookies para un sitio específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4046123991198612571">Pista seguinte</translation>
-<translation id="4048707525896921369">Obtén información acerca dos temas nos sitios web sen saír da páxina. A función Tocar para buscar envía unha palabra e o contexto que a rodea á Busca de Google, o cal permite obter definicións, imaxes, resultados de busca e outros detalles.
-
-Se queres axustar o termo de busca, manteno premido para seleccionalo. Se queres refinar a busca, move o panel cara arriba e toca a caixa de busca.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opcións dispoñibles preto da parte superior da pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
@@ -446,7 +442,7 @@ Se queres axustar o termo de busca, manteno premido para seleccionalo. Se queres
 <translation id="447252321002412580">Axudar a mellorar o rendemento e as funcións de Chrome</translation>
 <translation id="4479647676395637221">Pregunta antes de permitir que os sitios utilicen a túa cámara (recomendado)</translation>
 <translation id="4479972344484327217">Instalando <ph name="MODULE" /> para Chrome…</translation>
-<translation id="4487967297491345095">Eliminaranse permanentemente todos os datos da aplicación Chrome, mesmo os ficheiros, a configuración, as contas, as bases de datos etc.</translation>
+<translation id="4487967297491345095">Eliminaranse permanentemente todos os datos da aplicación Chrome, mesmo os ficheiros, a configuración, as contas, as bases de datos  etc.</translation>
 <translation id="4493497663118223949">O modo básico está activado</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Hai # día}other{Hai # días}}</translation>
 <translation id="451872707440238414">Buscar nos teus marcadores</translation>
@@ -609,7 +605,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5578795271662203820">Busca esta imaxe en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Sempre podes escoller na <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" /> o contido que queres sincronizar.</translation>
 <translation id="5595485650161345191">Editar enderezo</translation>
-<translation id="5596627076506792578">Máis opcións</translation>
 <translation id="5599455543593328020">Modo de incógnito</translation>
 <translation id="5620928963363755975">A través do botón Máis opcións, atopa os ficheiros e as páxinas que descargaches na sección Descargas</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -652,6 +647,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5864419784173784555">Agardando por outra descarga…</translation>
 <translation id="5865733239029070421">Envía estatísticas de uso e informes de erros automaticamente a Google</translation>
 <translation id="5869522115854928033">Contrasinais gardados</translation>
+<translation id="5884076754568147479">Para axudarche a completar tarefas, Google recibirá os URL e os contidos dos sitios nos que uses o Asistente, ademais da información que envíes a través del</translation>
 <translation id="5902828464777634901">Eliminaranse todos os datos locais almacenados por este sitio web, incluídas as cookies.</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar a sincronización</translation>
 <translation id="5937580074298050696">Datos aforrados: <ph name="AMOUNT" /></translation>
@@ -775,7 +771,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6782111308708962316">Evitar que sitios web de terceiros garden e lean datos de cookies</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6811034713472274749">A páxina está lista para vela</translation>
-<translation id="6818926723028410516">Selecciona elementos</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6845325883481699275">Axudar a mellorar a seguranza de Chrome</translation>
@@ -808,10 +803,8 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7055152154916055070">Bloqueouse unha redirección:</translation>
 <translation id="7063006564040364415">Non se puido conectar co servidor de sincronización.</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento seleccionado}other{# elementos seleccionados}}</translation>
 <translation id="7071521146534760487">Xestiona a conta</translation>
 <translation id="7077143737582773186">Tarxeta SD</translation>
-<translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Hai opcións dispoñibles na parte superior da pantalla</translation>
 <translation id="7121362699166175603">Borra o historial e os completados automáticos na barra de enderezos. É posible que a túa conta de Google teña outras formas do historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Permite o acceso do motor de busca á localización do usuario</translation>
 <translation id="7138678301420049075">Outros</translation>
@@ -827,7 +820,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7233236755231902816">Para ver a Web no teu idioma, descarga a última versión de Chrome</translation>
 <translation id="7243308994586599757">Opcións dispoñibles na parte inferior da pantalla</translation>
 <translation id="7248069434667874558">Asegúrate de que a sincronización de Chrome do dispositivo <ph name="TARGET_DEVICE_NAME" /> estea activada</translation>
-<translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Bloqueouse o sitio</translation>
 <translation id="7290209999329137901">Non está dispoñible a opción de cambiar o nome</translation>
 <translation id="7291387454912369099">Pago activado polo Asistente</translation>
@@ -909,7 +901,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="780301667611848630">Non, grazas</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">A cifra de aforro de datos aparecerá aquí</translation>
-<translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7875915731392087153">Crea un correo electrónico</translation>
@@ -957,6 +948,7 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="8127542551745560481">Editar páxina de inicio</translation>
 <translation id="813082847718468539">Consulta a información do sitio</translation>
+<translation id="8137558756159375272">Ao tocar Buscar envíase a palabra seleccionada e a páxina actual como contexto para a busca de Google. Podes desactivar esta opción na <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="8156139159503939589">Que idiomas sabes ler?</translation>
 <translation id="8168435359814927499">Contido</translation>
 <translation id="8186512483418048923">Quedan <ph name="FILES" /> ficheiros</translation>
@@ -1024,7 +1016,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="8655599981421006542">Toca aquí para crear pestanas novas e volver ás anteriores</translation>
 <translation id="8662811608048051533">Pecha a túa sesión na maioría dos sitios.</translation>
 <translation id="8664979001105139458">Xa existe un ficheiro con este nome</translation>
-<translation id="8676374126336081632">Borrar texto</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidade do sinal: # barra}other{Nivel de intensidade do sinal: # barras}}</translation>
 <translation id="868929229000858085">Busca nos teus contactos</translation>
 <translation id="8698438463325761328">Impide que os sitios accedan aos teus dispositivos e datos de realidade virtual</translation>

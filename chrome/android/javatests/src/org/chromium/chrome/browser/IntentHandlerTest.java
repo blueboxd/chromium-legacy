@@ -28,11 +28,15 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 
 import java.util.ArrayList;
@@ -43,9 +47,11 @@ import java.util.List;
  * TODO(nileshagrawal): Add tests for onNewIntent.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@DisableFeatures({ChromeFeatureList.ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS})
 public class IntentHandlerTest {
     @Rule
-    public final RuleChain mChain = RuleChain.outerRule(new CommandLineInitRule(null))
+    public final RuleChain mChain = RuleChain.outerRule(new Features.JUnitProcessor())
+                                            .around(new CommandLineInitRule(null))
                                             .around(new ChromeBrowserTestRule())
                                             .around(new UiThreadTestRule());
 
@@ -302,11 +308,11 @@ public class IntentHandlerTest {
     public void testRefererUrl_extraHeadersInclReferer() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
         Bundle bundle = new Bundle();
-        bundle.putString("X-custom-header", "X-custom-value");
+        bundle.putString("Accept", "application/xhtml+xml");
         bundle.putString("Referer", GOOGLE_URL);
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
-        Assert.assertEquals("X-custom-header: X-custom-value",
+        Assert.assertEquals("Accept: application/xhtml+xml",
                 IntentHandler.getExtraHeadersFromIntent(headersIntent));
         Assert.assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent));
     }
@@ -318,12 +324,12 @@ public class IntentHandlerTest {
     public void testRefererUrl_extraHeadersInclRefererMultiple() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
         Bundle bundle = new Bundle();
-        bundle.putString("X-custom-header", "X-custom-value");
-        bundle.putString("X-custom-header-2", "X-custom-value-2");
+        bundle.putString("Accept", "application/xhtml+xml");
+        bundle.putString("Content-Language", "de-DE, en-CA");
         bundle.putString("Referer", GOOGLE_URL);
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
-        Assert.assertEquals("X-custom-header-2: X-custom-value-2\nX-custom-header: X-custom-value",
+        Assert.assertEquals("Content-Language: de-DE, en-CA\nAccept: application/xhtml+xml",
                 IntentHandler.getExtraHeadersFromIntent(headersIntent));
         Assert.assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent));
     }
@@ -406,6 +412,33 @@ public class IntentHandlerTest {
     public void testRemoveChromeCustomHeaderFromExtraIntentHeaders() {
         Bundle bundle = new Bundle();
         bundle.putString("X-Chrome-intent-type", "X-custom-value");
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        Assert.assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Android-AppBase"})
+    public void testKeepCustomHeaderFromInternalIntents() {
+        Bundle bundle = new Bundle();
+        bundle.putString("X-Some-Header", "1");
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        IntentHandler.addTrustedIntentExtrasInternal(headersIntent);
+        Assert.assertEquals(
+                "X-Some-Header: 1", IntentHandler.getExtraHeadersFromIntent(headersIntent));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Android-AppBase"})
+    @EnableFeatures({ChromeFeatureList.ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS})
+    public void testStripNonCorsSafelistedCustomHeader() {
+        Bundle bundle = new Bundle();
+        bundle.putString("X-Some-Header", "1");
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
         Assert.assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));

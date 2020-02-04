@@ -641,10 +641,12 @@ LinuxPackageInfo::~LinuxPackageInfo() = default;
 
 ContainerInfo::ContainerInfo(std::string container_name,
                              std::string container_username,
-                             std::string container_homedir)
+                             std::string container_homedir,
+                             std::string ipv4_address)
     : name(std::move(container_name)),
       username(std::move(container_username)),
-      homedir(std::move(container_homedir)) {}
+      homedir(std::move(container_homedir)),
+      ipv4_address(std::move(ipv4_address)) {}
 ContainerInfo::~ContainerInfo() = default;
 ContainerInfo::ContainerInfo(ContainerInfo&&) = default;
 ContainerInfo::ContainerInfo(const ContainerInfo&) = default;
@@ -2283,7 +2285,7 @@ void CrostiniManager::OnContainerStarted(
   running_containers_.emplace(
       signal.vm_name(),
       ContainerInfo(signal.container_name(), signal.container_username(),
-                    signal.container_homedir()));
+                    signal.container_homedir(), signal.ipv4_address()));
 
   // Additional setup might be required in case of default Crostini container
   // such as installing Ansible in default container and applying

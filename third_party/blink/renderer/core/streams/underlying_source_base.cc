@@ -33,6 +33,12 @@ ScriptPromise UnderlyingSourceBase::pull(ScriptState* script_state) {
   return ScriptPromise::CastUndefined(script_state);
 }
 
+ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* script_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  return cancelWrapper(script_state,
+                       ScriptValue(isolate, v8::Undefined(isolate)));
+}
+
 ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* script_state,
                                                   ScriptValue reason) {
   if (controller_)

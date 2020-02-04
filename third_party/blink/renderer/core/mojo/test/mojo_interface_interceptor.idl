@@ -7,8 +7,7 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=MojoJSTest
 ] interface MojoInterfaceInterceptor : EventTarget {
-    [CallWith=ExecutionContext, RaisesException] constructor(DOMString interfaceName, optional MojoScope scope = "context",
-                optional boolean useBrowserInterfaceBroker = false);
+    [CallWith=ExecutionContext, RaisesException] constructor(DOMString interfaceName, optional MojoScope scope = "context");
     [RaisesException] void start();
     void stop();
 

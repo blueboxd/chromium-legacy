@@ -702,9 +702,8 @@ TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
   EXPECT_CALL(*autofill_popup_view(), Hide).Times(0);
   autofill_popup_controller_->PinViewUntilUpdate();
 
-  // Hide() will not work for stale data or when focusing native UI.
+  // Hide() will not work for stale data.
   autofill_popup_controller_->DoHide(PopupHidingReason::kStaleData);
-  autofill_popup_controller_->DoHide(PopupHidingReason::kEndEditing);
 
   // Check the expectations now since TearDown will perform a successful hide.
   Mock::VerifyAndClearExpectations(delegate());

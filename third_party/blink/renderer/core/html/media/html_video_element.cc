@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
-#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/video_request_animation_frame.h"
@@ -84,7 +83,11 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(html_names::kVideoTag, document),
       remoting_interstitial_(nullptr),
       picture_in_picture_interstitial_(nullptr),
-      in_overlay_fullscreen_video_(false) {
+      in_overlay_fullscreen_video_(false),
+      is_default_overridden_intrinsic_size_(
+          !document.IsMediaDocument() &&
+          !document.IsFeatureEnabled(
+              mojom::blink::FeaturePolicyFeature::kUnsizedMedia)) {
   if (document.GetSettings()) {
     default_poster_url_ =
         AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
@@ -93,14 +96,6 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
   if (RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled()) {
     custom_controls_fullscreen_detector_ =
         MakeGarbageCollected<MediaCustomControlsFullscreenDetector>(*this);
-  }
-
-  if (media_element_parser_helpers::IsMediaElement(this) &&
-      !document.IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kUnsizedMedia)) {
-    is_default_overridden_intrinsic_size_ = true;
-    overridden_intrinsic_size_ =
-        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
   }
 
   wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*this);
@@ -241,16 +236,16 @@ void HTMLVideoElement::ParseAttribute(
 }
 
 unsigned HTMLVideoElement::videoWidth() const {
-  if (overridden_intrinsic_size_.Width() > 0)
-    return overridden_intrinsic_size_.Width();
+  if (is_default_overridden_intrinsic_size_)
+    return LayoutReplaced::kDefaultWidth;
   if (!GetWebMediaPlayer())
     return 0;
   return GetWebMediaPlayer()->NaturalSize().width;
 }
 
 unsigned HTMLVideoElement::videoHeight() const {
-  if (overridden_intrinsic_size_.Height() > 0)
-    return overridden_intrinsic_size_.Height();
+  if (is_default_overridden_intrinsic_size_)
+    return LayoutReplaced::kDefaultHeight;
   if (!GetWebMediaPlayer())
     return 0;
   return GetWebMediaPlayer()->NaturalSize().height;
@@ -259,10 +254,6 @@ unsigned HTMLVideoElement::videoHeight() const {
 IntSize HTMLVideoElement::videoVisibleSize() const {
   return GetWebMediaPlayer() ? IntSize(GetWebMediaPlayer()->VisibleRect())
                              : IntSize();
-}
-
-IntSize HTMLVideoElement::GetOverriddenIntrinsicSize() const {
-  return overridden_intrinsic_size_;
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {

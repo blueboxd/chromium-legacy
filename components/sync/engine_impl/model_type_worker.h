@@ -214,7 +214,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // Callback when there is no response or server returns an error without
   // response body.
-  void OnFullCommitFailure();
+  void OnFullCommitFailure(SyncCommitError commit_error);
 
   ModelType type_;
   DataTypeDebugInfoEmitter* debug_info_emitter_;

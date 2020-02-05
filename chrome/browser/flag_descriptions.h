@@ -1595,6 +1595,10 @@ extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
 extern const char kHappinessTrackingSurveysForDesktopSettingsName[];
 extern const char kHappinessTrackingSurveysForDesktopSettingsDescription[];
 
+extern const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[];
+extern const char
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[];
+
 extern const char kIntentPickerName[];
 extern const char kIntentPickerDescription[];
 

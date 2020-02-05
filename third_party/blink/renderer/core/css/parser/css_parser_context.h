@@ -37,8 +37,8 @@ class CORE_EXPORT CSSParserContext final
   // FIXME: This constructor shouldn't exist if we properly piped the UseCounter
   // through the CSS subsystem. Currently the UseCounter life time is too crazy
   // and we need a way to override it.
-  CSSParserContext(const CSSParserContext* other,
-                   const Document* use_counter_document = nullptr);
+  explicit CSSParserContext(const CSSParserContext* other,
+                            const Document* use_counter_document = nullptr);
 
   CSSParserContext(const CSSParserContext* other,
                    const KURL& base_url_override,

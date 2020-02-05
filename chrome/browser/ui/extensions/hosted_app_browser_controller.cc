@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -55,38 +56,6 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
 }
 
 }  // namespace
-
-// static
-void HostedAppBrowserController::SetAppPrefsForWebContents(
-    web_app::AppBrowserController* controller,
-    content::WebContents* web_contents) {
-  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  web_contents->SyncRendererPrefs();
-
-  if (!controller)
-    return;
-
-  // All hosted apps should specify an app ID.
-  DCHECK(controller->HasAppId());
-  extensions::TabHelper::FromWebContents(web_contents)
-      ->SetExtensionApp(ExtensionRegistry::Get(controller->browser()->profile())
-                            ->GetExtensionById(controller->GetAppId(),
-                                               ExtensionRegistry::EVERYTHING));
-
-  web_contents->NotifyPreferencesChanged();
-}
-
-// static
-void HostedAppBrowserController::ClearAppPrefsForWebContents(
-    content::WebContents* web_contents) {
-  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
-  web_contents->SyncRendererPrefs();
-
-  extensions::TabHelper::FromWebContents(web_contents)
-      ->SetExtensionApp(nullptr);
-
-  web_contents->NotifyPreferencesChanged();
-}
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : AppBrowserController(
@@ -275,13 +244,19 @@ void HostedAppBrowserController::OnReceivedInitialURL() {
 
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
-  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(this,
-                                                                    contents);
+
+  const Extension* extension = GetExtension();
+  if (extension && extension->from_bookmark())
+    extension = nullptr;
+  extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(extension);
+  web_app::SetAppPrefsForWebContents(contents);
 }
 
 void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
   AppBrowserController::OnTabRemoved(contents);
-  extensions::HostedAppBrowserController::ClearAppPrefsForWebContents(contents);
+
+  extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(nullptr);
+  web_app::ClearAppPrefsForWebContents(contents);
 }
 
 }  // namespace extensions

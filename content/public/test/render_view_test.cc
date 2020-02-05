@@ -118,25 +118,35 @@ class FakeWebURLLoader : public blink::WebURLLoader {
           task_runner_handle)
       : task_runner_handle_(std::move(task_runner_handle)) {}
 
-  void LoadSynchronously(const WebURLRequest& request,
-                         blink::WebURLLoaderClient* client,
-                         blink::WebURLResponse&,
-                         base::Optional<blink::WebURLError>&,
-                         blink::WebData&,
-                         int64_t&,
-                         int64_t&,
-                         blink::WebBlobInfo&) override {
-    client->DidFail(blink::WebURLError(kFailureReason, request.Url()), 0, 0, 0);
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      base::TimeDelta timeout_interval,
+      blink::WebURLLoaderClient* client,
+      blink::WebURLResponse&,
+      base::Optional<blink::WebURLError>&,
+      blink::WebData&,
+      int64_t&,
+      int64_t&,
+      blink::WebBlobInfo&) override {
+    client->DidFail(blink::WebURLError(kFailureReason, request->url), 0, 0, 0);
   }
 
-  void LoadAsynchronously(const WebURLRequest& request,
-                          blink::WebURLLoaderClient* client) override {
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      blink::WebURLLoaderClient* client) override {
     DCHECK(task_runner_handle_);
     async_client_ = client;
     task_runner_handle_->GetTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeWebURLLoader::DidFail, weak_factory_.GetWeakPtr(),
-                       blink::WebURLError(kFailureReason, request.Url()), 0, 0,
+                       blink::WebURLError(kFailureReason, request->url), 0, 0,
                        0));
   }
 

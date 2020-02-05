@@ -27,9 +27,8 @@ class SystemNetworkContextManager {
   // Checks if the global SystemNetworkContextManager has been created.
   static bool HasInstance();
 
-  // Gets the global SystemNetworkContextManager instance. If it has not been
-  // created yet, NetworkService is called, which will cause the
-  // SystemNetworkContextManager to be created.
+  // Gets the global SystemNetworkContextManager instance or DCHECKs if there
+  // isn't one..
   static SystemNetworkContextManager* GetInstance();
 
   // Destroys the global SystemNetworkContextManager instance.

@@ -145,12 +145,25 @@ void SharingMessageBridgeImpl::OnCommitAttemptErrors(
   }
 }
 
-void SharingMessageBridgeImpl::OnCommitAttemptFailed() {
+void SharingMessageBridgeImpl::OnCommitAttemptFailed(
+    syncer::SyncCommitError commit_error) {
   // Full commit failed means we need to drop all entities and report an error
   // using callback.
+  sync_pb::SharingMessageCommitError::ErrorCode sharing_message_error_code;
+  switch (commit_error) {
+    case syncer::SyncCommitError::kNetworkError:
+      sharing_message_error_code =
+          sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR;
+      break;
+    case syncer::SyncCommitError::kServerError:
+    case syncer::SyncCommitError::kBadServerResponse:
+      sharing_message_error_code =
+          sync_pb::SharingMessageCommitError::SYNC_SERVER_ERROR;
+      break;
+  }
+
   sync_pb::SharingMessageCommitError sync_error_message;
-  sync_error_message.set_error_code(
-      sync_pb::SharingMessageCommitError::SYNC_ERROR);
+  sync_error_message.set_error_code(sharing_message_error_code);
   for (auto& cth_and_callback : commit_callbacks_) {
     change_processor()->UntrackEntityForClientTagHash(cth_and_callback.first);
     ReplyToCallback(std::move(cth_and_callback.second), sync_error_message);

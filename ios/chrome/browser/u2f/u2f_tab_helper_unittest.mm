@@ -78,6 +78,7 @@ class U2FTabHelperTest : public PlatformTest {
   }
 
   web::TestWebState web_state_;
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // Tests that IsU2FUrl returns true only if U2F url param is true.

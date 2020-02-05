@@ -19,6 +19,7 @@ class Profile;
 // Trigger identifiers currently used; duplicates not allowed.
 extern const char kHatsSurveyTriggerSatisfaction[];
 extern const char kHatsSurveyTriggerSettings[];
+extern const char kHatsSurveyTriggerSettingsPrivacy[];
 
 // This class provides the client side logic for determining if a
 // survey should be shown for any trigger based on input from a finch

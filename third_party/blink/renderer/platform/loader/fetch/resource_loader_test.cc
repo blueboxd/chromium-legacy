@@ -75,21 +75,32 @@ class ResourceLoaderTest : public testing::Test {
  private:
   class NoopWebURLLoader final : public WebURLLoader {
    public:
-    NoopWebURLLoader(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    explicit NoopWebURLLoader(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
         : task_runner_(task_runner) {}
     ~NoopWebURLLoader() override = default;
-    void LoadSynchronously(const WebURLRequest&,
-                           WebURLLoaderClient*,
-                           WebURLResponse&,
-                           base::Optional<WebURLError>&,
-                           WebData&,
-                           int64_t& encoded_data_length,
-                           int64_t& encoded_body_length,
-                           WebBlobInfo& downloaded_blob) override {
+    void LoadSynchronously(
+        std::unique_ptr<network::ResourceRequest> request,
+        scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+        int requestor_id,
+        bool download_to_network_cache_only,
+        bool pass_response_pipe_to_client,
+        base::TimeDelta timeout_interval,
+        WebURLLoaderClient*,
+        WebURLResponse&,
+        base::Optional<WebURLError>&,
+        WebData&,
+        int64_t& encoded_data_length,
+        int64_t& encoded_body_length,
+        WebBlobInfo& downloaded_blob) override {
       NOTREACHED();
     }
-    void LoadAsynchronously(const WebURLRequest&,
-                            WebURLLoaderClient*) override {}
+    void LoadAsynchronously(
+        std::unique_ptr<network::ResourceRequest> request,
+        scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+        int requestor_id,
+        bool download_to_network_cache_only,
+        WebURLLoaderClient*) override {}
 
     void SetDefersLoading(bool) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {

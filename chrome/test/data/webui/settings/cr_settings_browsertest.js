@@ -982,21 +982,6 @@ TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTests', function() {
   mocha.run();
 });
 
-TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTestsPart2', function() {
-  settings_site_settings_page.registerUMALoggingTestsPart2();
-  mocha.run();
-});
-
-TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTestsPart3', function() {
-  settings_site_settings_page.registerUMALoggingTestsPart3();
-  mocha.run();
-});
-
-TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTestsPart4', function() {
-  settings_site_settings_page.registerUMALoggingTestsPart4();
-  mocha.run();
-});
-
 /**
  * Test fixture for
  * chrome/browser/resources/settings/privacy_page/

@@ -126,6 +126,10 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  metrics::MetricsStateManager* metrics_state_manager() const {
+    return metrics_state_manager_.get();
+  }
+
  protected:
   // Called by Initialize() to allow embedder specific initialization.
   virtual void InitInternal() = 0;

@@ -110,8 +110,6 @@ class ScreenlockBridge {
     virtual void HideUserPodCustomIcon(const AccountId& account_id) = 0;
 
     // (Re)enable lock screen UI.
-    // TODO(crbug.com/927498): Remove TestLockHandler dependency on this, and
-    // then remove this method.
     virtual void EnableInput() = 0;
 
     // Set the authentication type to be used on the lock screen.

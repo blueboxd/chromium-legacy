@@ -129,6 +129,7 @@ class WKBasedNavigationManagerTest : public PlatformTest {
 
  private:
   TestBrowserState browser_state_;
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // Tests that GetItemAtIndex() on an empty manager will sync navigation items to

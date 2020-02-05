@@ -143,6 +143,16 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   return false;
 }
 
+bool ContentMainDelegateImpl::ShouldCreateFeatureList() {
+#if defined(OS_ANDROID)
+  // On android WebLayer is in charge of creating its own FeatureList.
+  return false;
+#else
+  // TODO(weblayer-dev): Support feature lists on desktop.
+  return true;
+#endif
+}
+
 void ContentMainDelegateImpl::PreSandboxStartup() {
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
@@ -177,6 +187,10 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
   EnableCrashReporter(command_line.GetSwitchValueASCII(switches::kProcessType));
   SetWebLayerCrashKeys();
 #endif
+}
+
+void ContentMainDelegateImpl::PostEarlyInitialization(bool is_running_tests) {
+  browser_client_->CreateFeatureListAndFieldTrials();
 }
 
 int ContentMainDelegateImpl::RunProcess(

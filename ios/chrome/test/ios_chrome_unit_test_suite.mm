@@ -67,6 +67,8 @@ IOSChromeUnitTestSuite::IOSChromeUnitTestSuite(int argc, char** argv)
 IOSChromeUnitTestSuite::~IOSChromeUnitTestSuite() {}
 
 void IOSChromeUnitTestSuite::Initialize() {
+  url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
+
   // Add an additional listener to do the extra initialization for unit tests.
   // It will be started before the base class listeners and ended after the
   // base class listeners.
@@ -87,6 +89,5 @@ void IOSChromeUnitTestSuite::Initialize() {
 
   ios::RegisterPathProvider();
   ui::RegisterPathProvider();
-  url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
   ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(nullptr, 0);
 }

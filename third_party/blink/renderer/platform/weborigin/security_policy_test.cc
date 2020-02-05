@@ -569,9 +569,10 @@ TEST_F(SecurityPolicyAccessTest, IsOriginAccessAllowedPriority) {
 // Test that referrers for custom hierarchical (standard) schemes are correctly
 // handled by the new policy. (For instance, this covers android-app://.)
 TEST(SecurityPolicyTest, ReferrerForCustomScheme) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
   const char kCustomStandardScheme[] = "my-new-scheme";
-  SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(kCustomStandardScheme);
   url::AddStandardScheme(kCustomStandardScheme, url::SCHEME_WITH_HOST);
+  SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(kCustomStandardScheme);
 
   String kFullReferrer = "my-new-scheme://com.foo.me/this-should-be-truncated";
   String kTruncatedReferrer = "my-new-scheme://com.foo.me/";

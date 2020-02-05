@@ -558,11 +558,6 @@ void TapEdit() {
 // Checks that deleting a saved password from password details view goes back
 // to the list-of-passwords view which doesn't display that form anymore.
 - (void)testSavedFormDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -613,11 +608,6 @@ void TapEdit() {
 // goes back to the list-of-passwords view which doesn't display that form
 // anymore.
 - (void)testDuplicatedSavedFormDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
   // Save duplicate of the previously saved form to be deleted at the same time.
@@ -675,11 +665,6 @@ void TapEdit() {
 // Checks that deleting a blocked form from password details view goes
 // back to the list-of-passwords view which doesn't display that form anymore.
 - (void)testBlockedFormDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save blacklisted form to be deleted later.
   GREYAssert([PasswordSettingsAppInterface
                  saveExampleBlockedOrigin:@"https://blocked.com"],
@@ -729,11 +714,6 @@ void TapEdit() {
 
 // Checks that deleting a password from password details can be cancelled.
 - (void)testCancelDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -746,13 +726,19 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Tap the alert's Cancel button to cancel.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   ButtonWithAccessibilityLabel(
-                                       l10n_util::GetNSString(
-                                           IDS_IOS_CANCEL_PASSWORD_DELETION)),
-                                   grey_interactable(), nullptr)]
-      performAction:grey_tap()];
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kPasswordDetailsTableViewId)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     ButtonWithAccessibilityLabel(
+                                         l10n_util::GetNSString(
+                                             IDS_IOS_CANCEL_PASSWORD_DELETION)),
+                                     grey_interactable(), nullptr)]
+        performAction:grey_tap()];
+  }
 
   // Check that the current view is still the detail view, by locating the Copy
   // button.
@@ -1408,11 +1394,6 @@ void TapEdit() {
 
 // Test export flow
 - (void)testExportFlow {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Saving a form is needed for exporting passwords.
   SaveExamplePasswordForm();
 

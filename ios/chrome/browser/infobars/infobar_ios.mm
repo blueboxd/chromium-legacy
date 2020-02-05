@@ -16,8 +16,11 @@ using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 
 InfoBarIOS::InfoBarIOS(id<InfobarUIDelegate> controller,
-                       std::unique_ptr<InfoBarDelegate> delegate)
-    : InfoBar(std::move(delegate)), controller_(controller) {
+                       std::unique_ptr<InfoBarDelegate> delegate,
+                       bool skip_banner)
+    : InfoBar(std::move(delegate)),
+      controller_(controller),
+      skip_banner_(skip_banner) {
   DCHECK(controller_);
   [controller_ setDelegate:this];
 }

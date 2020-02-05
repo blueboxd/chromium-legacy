@@ -12,8 +12,11 @@
 // Protocol to communicate with the Infobar container.
 @protocol InfobarContainerConsumer
 
-// Adds |infoBarDelegate|'s Infobar to the InfobarContainer.
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate;
+// Adds |infoBarDelegate|'s Infobar to the InfobarContainer.  If |skipBanner| is
+// YES, the banner is skipped but the badge and subsequent modals will be
+// available.
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                    skipBanner:(BOOL)skipBanner;
 
 // Informs InfobarContainerConsumer that the backing infobarManager will change.
 // This most likely means that the WebState is changing and a new set of

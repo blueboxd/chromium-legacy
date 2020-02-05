@@ -55,7 +55,6 @@ class OriginTest : public ::testing::Test {
     AddStandardScheme("standard-but-noaccess", SchemeType::SCHEME_WITH_HOST);
     AddNoAccessScheme("standard-but-noaccess");
   }
-  void TearDown() override { url::ResetForTests(); }
 
   ::testing::AssertionResult DoEqualityComparisons(const url::Origin& a,
                                                    const url::Origin& b,
@@ -105,6 +104,9 @@ class OriginTest : public ::testing::Test {
     return Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
         precursor_scheme, precursor_host, precursor_port, nonce);
   }
+
+ private:
+  ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 TEST_F(OriginTest, OpaqueOriginComparison) {
@@ -656,6 +658,7 @@ TEST_F(OriginTest, NonStandardScheme) {
   Origin origin = Origin::Create(GURL("cow://"));
   EXPECT_TRUE(origin.opaque());
 }
+
 TEST_F(OriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EnableNonStandardSchemesForAndroidWebView();
   Origin origin = Origin::Create(GURL("cow://"));
@@ -663,10 +666,10 @@ TEST_F(OriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EXPECT_EQ("cow", origin.scheme());
   EXPECT_EQ("", origin.host());
   EXPECT_EQ(0, origin.port());
-  ResetForTests();
 }
 
 TEST_F(OriginTest, CanBeDerivedFrom) {
+  AddStandardScheme("new-standard", SchemeType::SCHEME_WITH_HOST);
   Origin opaque_unique_origin = Origin();
 
   Origin regular_origin = Origin::Create(GURL("https://a.com/"));
@@ -684,7 +687,6 @@ TEST_F(OriginTest, CanBeDerivedFrom) {
       non_standard_scheme_origin.DeriveNewOpaqueOrigin();
 
   // Also, add new standard scheme that is local to the test.
-  AddStandardScheme("new-standard", SchemeType::SCHEME_WITH_HOST);
   Origin new_standard_origin = Origin::Create(GURL("new-standard://host/"));
   Origin new_standard_opaque_precursor_origin =
       new_standard_origin.DeriveNewOpaqueOrigin();

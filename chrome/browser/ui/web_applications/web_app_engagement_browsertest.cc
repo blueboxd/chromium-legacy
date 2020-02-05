@@ -42,17 +42,6 @@
 
 namespace {
 
-void NavigateToURLAndWait(Browser* browser, const GURL& url) {
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  content::TestNavigationObserver observer(
-      web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-  NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
-  ui_test_utils::NavigateToURL(&params);
-  observer.WaitForNavigationFinished();
-}
-
 GURL GetUrlForSuffix(const std::string& prefix, int suffix) {
   return GURL(prefix + base::NumberToString(suffix) + ".com/");
 }

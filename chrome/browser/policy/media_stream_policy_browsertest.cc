@@ -120,10 +120,7 @@ class MediaStreamDevicesControllerBrowserTest
     MediaStreamDevicesController::RequestPermissions(
         request, base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
                             base::Unretained(this)));
-    // TODO(crbug.com/1033439): replace QuitCurrentWhenIdleDeprecated with
-    // RunLoop
-    // instance instead
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    quit_closure_.Run();
   }
 
   void FinishVideoTest() {
@@ -135,9 +132,7 @@ class MediaStreamDevicesControllerBrowserTest
     MediaStreamDevicesController::RequestPermissions(
         request, base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
                             base::Unretained(this)));
-    // TODO(crbug.com/1033439): replace QuitCurrentWhenIdleDeprecated with
-    // RunLoop instance instead
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    quit_closure_.Run();
   }
 
   std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
@@ -145,6 +140,7 @@ class MediaStreamDevicesControllerBrowserTest
   bool request_url_allowed_via_whitelist_;
   GURL request_url_;
   std::string request_pattern_;
+  base::RepeatingClosure quit_closure_;
 };
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
@@ -168,7 +164,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       base::BindOnce(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
                      base::Unretained(this)));
 
-  base::RunLoop().Run();
+  base::RunLoop loop;
+  quit_closure_ = loop.QuitWhenIdleClosure();
+  loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
@@ -203,7 +201,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             &MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
             base::Unretained(this)));
 
-    base::RunLoop().Run();
+    base::RunLoop loop;
+    quit_closure_ = loop.QuitWhenIdleClosure();
+    loop.Run();
   }
 }
 
@@ -228,7 +228,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       base::BindOnce(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
                      base::Unretained(this)));
 
-  base::RunLoop().Run();
+  base::RunLoop loop;
+  quit_closure_ = loop.QuitWhenIdleClosure();
+  loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
@@ -263,7 +265,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             &MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
             base::Unretained(this)));
 
-    base::RunLoop().Run();
+    base::RunLoop loop;
+    quit_closure_ = loop.QuitWhenIdleClosure();
+    loop.Run();
   }
 }
 

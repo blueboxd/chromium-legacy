@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -44,6 +43,8 @@ namespace blink {
 
 LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element),
+      button_text_(nullptr),
+      inner_block_(nullptr),
       options_width_(0) {
   DCHECK(IsA<HTMLSelectElement>(element));
 }
@@ -52,15 +53,72 @@ LayoutMenuList::~LayoutMenuList() = default;
 
 bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
                                     const ComputedStyle&) const {
-  // For a size=1 <select>, we only render the active option label through the
-  // InnerElement. We do not allow adding layout objects for options,
-  // optgroups, ::before, or ::after.
-  return object->GetNode() == &SelectElement()->InnerElement();
+  // For a size=1 <select>, we only render the active option through the
+  // anonymous inner_block_ plus button_text_. We do not allow adding layout
+  // objects for options or optgroups.
+  return object->IsAnonymous();
 }
 
-// TODO(tkent): Move this to menu_list_inner_element.cc.
-void MenuListInnerElement::AdjustInnerStyle(const ComputedStyle& parent_style,
-                                            ComputedStyle& inner_style) const {
+scoped_refptr<ComputedStyle> LayoutMenuList::CreateInnerStyle() {
+  scoped_refptr<ComputedStyle> inner_style =
+      ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
+                                                     EDisplay::kBlock);
+
+  AdjustInnerStyle(StyleRef(), *inner_style);
+  return inner_style;
+}
+
+void LayoutMenuList::UpdateInnerStyle() {
+  DCHECK(inner_block_);
+  scoped_refptr<ComputedStyle> inner_style =
+      ComputedStyle::Clone(inner_block_->StyleRef());
+  AdjustInnerStyle(StyleRef(), *inner_style);
+  inner_block_->SetModifiedStyleOutsideStyleRecalc(std::move(inner_style),
+                                                   ApplyStyleChanges::kNo);
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
+}
+
+void LayoutMenuList::CreateInnerBlock() {
+  if (inner_block_) {
+    DCHECK_EQ(FirstChild(), inner_block_);
+    DCHECK(!inner_block_->NextSibling());
+    return;
+  }
+
+  // Create an anonymous block.
+  LegacyLayout legacy =
+      ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
+  DCHECK(!FirstChild());
+  inner_block_ = LayoutBlockFlow::CreateAnonymous(&GetDocument(),
+                                                  CreateInnerStyle(), legacy);
+
+  button_text_ =
+      LayoutText::CreateEmptyAnonymous(GetDocument(), Style(), legacy);
+  // We need to set the text explicitly though it was specified in the
+  // constructor because LayoutText doesn't refer to the text
+  // specified in the constructor in a case of re-transforming.
+  inner_block_->AddChild(button_text_);
+  LayoutFlexibleBox::AddChild(inner_block_);
+
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
+}
+
+bool LayoutMenuList::HasOptionStyleChanged(
+    const ComputedStyle& inner_style) const {
+  const ComputedStyle* option_style = SelectElement()->OptionStyle();
+  return option_style &&
+         ((option_style->Direction() != inner_style.Direction() ||
+           option_style->GetUnicodeBidi() != inner_style.GetUnicodeBidi()));
+}
+
+void LayoutMenuList::AdjustInnerStyle(const ComputedStyle& parent_style,
+                                      ComputedStyle& inner_style) const {
   inner_style.SetFlexGrow(1);
   inner_style.SetFlexShrink(1);
   // min-width: 0; is needed for correct shrinking.
@@ -80,8 +138,8 @@ void MenuListInnerElement::AdjustInnerStyle(const ComputedStyle& parent_style,
   LayoutTheme& theme = LayoutTheme::GetTheme();
   Length padding_start =
       Length::Fixed(theme.PopupInternalPaddingStart(parent_style));
-  Length padding_end = Length::Fixed(
-      theme.PopupInternalPaddingEnd(GetDocument().GetFrame(), parent_style));
+  Length padding_end =
+      Length::Fixed(theme.PopupInternalPaddingEnd(GetFrame(), parent_style));
   if (parent_style.IsLeftToRightDirection()) {
     inner_style.SetTextAlign(ETextAlign::kLeft);
     inner_style.SetPaddingLeft(padding_start);
@@ -96,8 +154,10 @@ void MenuListInnerElement::AdjustInnerStyle(const ComputedStyle& parent_style,
   inner_style.SetPaddingBottom(
       Length::Fixed(theme.PopupInternalPaddingBottom(parent_style)));
 
-  if (const ComputedStyle* option_style =
-          To<HTMLSelectElement>(OwnerShadowHost())->OptionStyle()) {
+  if (HasOptionStyleChanged(inner_style)) {
+    inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kStyleChange);
+    const ComputedStyle* option_style = SelectElement()->OptionStyle();
     inner_style.SetDirection(option_style->Direction());
     inner_style.SetUnicodeBidi(option_style->GetUnicodeBidi());
   }
@@ -108,7 +168,41 @@ HTMLSelectElement* LayoutMenuList::SelectElement() const {
 }
 
 LayoutBlock* LayoutMenuList::InnerBlock() const {
-  return To<LayoutBlock>(SelectElement()->InnerElement().GetLayoutObject());
+  return inner_block_;
+}
+
+void LayoutMenuList::AddChild(LayoutObject* new_child,
+                              LayoutObject* before_child) {
+  inner_block_->AddChild(new_child, before_child);
+  DCHECK_EQ(inner_block_, FirstChild());
+
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(this);
+
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
+}
+
+void LayoutMenuList::RemoveChild(LayoutObject* old_child) {
+  if (old_child == inner_block_ || !inner_block_) {
+    LayoutFlexibleBox::RemoveChild(old_child);
+    inner_block_ = nullptr;
+  } else {
+    inner_block_->RemoveChild(old_child);
+  }
+}
+
+void LayoutMenuList::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  LayoutBlock::StyleDidChange(diff, old_style);
+
+  if (!inner_block_)
+    CreateInnerBlock();
+
+  button_text_->SetStyle(Style());
+  UpdateInnerStyle();
 }
 
 void LayoutMenuList::UpdateOptionsWidth() const {
@@ -133,8 +227,22 @@ void LayoutMenuList::UpdateOptionsWidth() const {
   options_width_ = static_cast<int>(ceilf(max_option_width));
 }
 
+void LayoutMenuList::UpdateFromElement() {
+  DCHECK(inner_block_);
+  if (HasOptionStyleChanged(inner_block_->StyleRef()))
+    UpdateInnerStyle();
+}
+
+void LayoutMenuList::SetText(const String& s) {
+  button_text_->ForceSetText(s.Impl());
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
+}
+
 String LayoutMenuList::GetText() const {
-  return SelectElement()->InnerElement().innerText();
+  return button_text_ ? button_text_->GetText() : String();
 }
 
 PhysicalRect LayoutMenuList::ControlClipRect(

@@ -61,10 +61,19 @@
       flex-direction: row;
       justify-content: space-between;
   }
+
   div.outer {
       align-items: stretch;
       display: flex;
       flex-direction: column;
+  }
+
+  #configure-message-title {
+    margin-bottom: 46px;
+  }
+
+  #username {
+    width: 264px;
   }
 </style>
 
@@ -82,9 +91,8 @@
       <a href="$i18n{learnMoreUrl}" target="_blank">$i18n{learnMore}</a>
     </div>
     <div id="configure-message" hidden="[[!eq_(state_, State.CONFIGURE)]]">
-      <div>$i18n{configureMessage}</div>
+      <div id="configure-message-title">[[getConfigureMessageTitle_()]]</div>
       <div hidden="[[!showUsernameSelection_()]]">
-        <div>$i18n{usernameMessage}</div>
         <cr-input label="Username" id="username" type="text"
                   value="{{username_}}" maxlength="[[MAX_USERNAME_LENGTH]]"
                   invalid="[[!eq_(usernameError_, '')]]"
@@ -120,7 +128,10 @@
       <paper-progress class="progress-bar" indeterminate></paper-progress>
     </div>
   </div>
-  <img id="img-linux-illustration" src="images/linux_illustration.png" alt="">
+  <!-- TODO(crbug.com/1043067): Should show an error image for state "error".
+      -->
+  <img id="img-linux-illustration" src="images/linux_illustration.png" alt=""
+      hidden="[[eq_(state_, State.CONFIGURE)]]">
   <div id="button-container">
     <cr-button class="cancel-button" on-click="onCancelButtonClick_"
         disabled="[[eq_(state_, State.CANCELING)]]">

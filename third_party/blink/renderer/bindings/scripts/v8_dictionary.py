@@ -153,39 +153,64 @@ def member_context(_, member, component_info):
     runtime_features = component_info['runtime_enabled_features']
 
     return {
-        'cpp_default_value': cpp_default_value,
-        'cpp_type': unwrapped_idl_type.cpp_type,
-        'cpp_value': cpp_value,
-        'cpp_value_to_v8_value': unwrapped_idl_type.cpp_value_to_v8_value(
-            cpp_value='impl->%s()' % getter_name, isolate='isolate',
+        'cpp_default_value':
+        cpp_default_value,
+        'cpp_type':
+        unwrapped_idl_type.cpp_type,
+        'cpp_value':
+        cpp_value,
+        'cpp_value_to_v8_value':
+        unwrapped_idl_type.cpp_value_to_v8_value(
+            cpp_value='impl->%s()' % getter_name,
+            isolate='isolate',
             creation_context='creationContext',
             extended_attributes=extended_attributes),
-        'deprecate_as': v8_utilities.deprecate_as(member),
-        'enum_type': idl_type.enum_type,
-        'enum_values': idl_type.enum_values,
-        'getter_name': getter_name,
-        'has_explicit_presence': has_explicit_presence,
-        'has_method_name': has_method_name_for_dictionary_member(member),
-        'idl_type': idl_type.base_type,
-        'is_callback_function_type': idl_type.is_callback_function,
-        'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,
-        'is_nullable': idl_type.is_nullable,
-        'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
-        'is_string_type': idl_type.preprocessed_type.is_string_type,
-        'is_required': member.is_required,
-        'name': member.name,
+        'deprecate_as':
+        v8_utilities.deprecate_as(member),
+        'enum_type':
+        idl_type.enum_type,
+        'enum_values':
+        idl_type.enum_values,
+        'getter_name':
+        getter_name,
+        'has_explicit_presence':
+        has_explicit_presence,
+        'has_method_name':
+        has_method_name_for_dictionary_member(member),
+        'idl_type':
+        idl_type.base_type,
+        'is_callback_function_type':
+        idl_type.is_callback_function,
+        'is_deprecated_dictionary':
+        is_deprecated_dictionary,
+        'is_interface_type':
+        idl_type.is_interface_type and not is_deprecated_dictionary,
+        'is_nullable':
+        idl_type.is_nullable,
+        'is_object':
+        unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
+        'is_string_type':
+        idl_type.preprocessed_type.is_string_type,
+        'is_required':
+        member.is_required,
+        'name':
+        member.name,
         'origin_trial_feature_name':
-            v8_utilities.origin_trial_feature_name(member, runtime_features),  # [RuntimeEnabled] for origin trial
+        v8_utilities.origin_trial_feature_name(member, runtime_features),  # [RuntimeEnabled] for origin trial
         'runtime_enabled_feature_name':
-            v8_utilities.runtime_enabled_feature_name(member, runtime_features),  # [RuntimeEnabled] if not in origin trial
-        'setter_name': setter_name_for_dictionary_member(member),
-        'has_value_or_default': has_value_or_default,
-        'null_setter_name': null_setter_name_for_dictionary_member(member),
-        'v8_default_value': v8_default_value,
-        'v8_value': v8_value,
-        'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, v8_value, cpp_value, isolate='isolate',
-            use_exception_state=True),
+        v8_utilities.runtime_enabled_feature_name(member, runtime_features),  # [RuntimeEnabled] if not in origin trial
+        'setter_name':
+        setter_name_for_dictionary_member(member),
+        'has_value_or_default':
+        has_value_or_default,
+        'null_setter_name':
+        null_setter_name_for_dictionary_member(member),
+        'v8_default_value':
+        v8_default_value,
+        'v8_value':
+        v8_value,
+        'v8_value_to_local_cpp_value':
+        idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value, cpp_value, isolate='isolate', use_exception_state=True),
     }
 
 

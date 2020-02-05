@@ -798,10 +798,12 @@ void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(
 
 void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
     const std::string& client_uuid) {
-  DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(!base::Contains(controllee_map_, client_uuid));
-  DCHECK(base::Contains(bfcached_controllee_map_, client_uuid));
-  AddControllee(bfcached_controllee_map_[client_uuid]);
+  // TODO(crbug.com/1021718): Change these to DCHECK once we figure out the
+  // cause of crash.
+  CHECK(IsBackForwardCacheEnabled());
+  CHECK(!base::Contains(controllee_map_, client_uuid));
+  CHECK(base::Contains(bfcached_controllee_map_, client_uuid));
+  AddControllee(bfcached_controllee_map_.at(client_uuid));
   bfcached_controllee_map_.erase(client_uuid);
 }
 

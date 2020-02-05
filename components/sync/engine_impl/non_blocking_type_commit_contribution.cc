@@ -24,7 +24,7 @@ NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     base::OnceCallback<void(const CommitResponseDataList&,
                             const FailedCommitResponseDataList&)>
         on_commit_response_callback,
-    base::OnceCallback<void()> on_full_commit_failure_callback,
+    base::OnceCallback<void(SyncCommitError)> on_full_commit_failure_callback,
     Cryptographer* cryptographer,
     PassphraseType passphrase_type,
     DataTypeDebugInfoEmitter* debug_info_emitter,
@@ -188,8 +188,9 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
   }
 }
 
-void NonBlockingTypeCommitContribution::ProcessCommitFailure() {
-  std::move(on_full_commit_failure_callback_).Run();
+void NonBlockingTypeCommitContribution::ProcessCommitFailure(
+    SyncCommitError commit_error) {
+  std::move(on_full_commit_failure_callback_).Run(commit_error);
   on_commit_response_callback_.Reset();
 }
 

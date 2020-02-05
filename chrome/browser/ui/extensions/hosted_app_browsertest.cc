@@ -35,6 +35,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/test/ssl_test_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -98,6 +100,11 @@
 using content::RenderFrameHost;
 using content::WebContents;
 using extensions::Extension;
+using web_app::GetAppMenuCommandState;
+using web_app::kDisabled;
+using web_app::kEnabled;
+using web_app::kNotPresent;
+using web_app::NavigateToURLAndWait;
 
 namespace {
 
@@ -146,40 +153,6 @@ Browser* OpenPopupAndWait(Browser* browser,
   return popup_browser;
 }
 
-// If |proceed_through_interstitial| is true, asserts that a security
-// interstitial is shown, and clicks through it, before returning.
-void NavigateToURLAndWait(Browser* browser,
-                          const GURL& url,
-                          bool proceed_through_interstitial = false) {
-  WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  {
-    content::TestNavigationObserver observer(
-        web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-    NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
-    ui_test_utils::NavigateToURL(&params);
-    observer.WaitForNavigationFinished();
-  }
-
-  if (!proceed_through_interstitial)
-    return;
-
-  {
-    // Need a second TestNavigationObserver; the above one is spent.
-    content::TestNavigationObserver observer(
-        web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            browser->tab_strip_model()->GetActiveWebContents());
-    ASSERT_TRUE(
-        helper &&
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-    std::string javascript = "window.certificateErrorPageController.proceed();";
-    ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
-    observer.Wait();
-  }
-}
-
 // Used by ShouldShowCustomTabBarForXXX. Performs a navigation and then checks
 // that the toolbar visibility is as expected.
 void NavigateAndCheckForToolbar(Browser* browser,
@@ -208,20 +181,6 @@ void CheckWebContentsDoesNotHaveAppPrefs(content::WebContents* web_contents) {
   blink::mojom::RendererPreferences* prefs =
       web_contents->GetMutableRendererPrefs();
   EXPECT_TRUE(prefs->can_accept_load_drops);
-}
-
-void CheckMixedContentLoaded(Browser* browser) {
-  ssl_test_util::CheckSecurityState(
-      browser->tab_strip_model()->GetActiveWebContents(),
-      ssl_test_util::CertError::NONE, security_state::NONE,
-      ssl_test_util::AuthState::DISPLAYED_INSECURE_CONTENT);
-}
-
-void CheckMixedContentFailedToLoad(Browser* browser) {
-  ssl_test_util::CheckSecurityState(
-      browser->tab_strip_model()->GetActiveWebContents(),
-      ssl_test_util::CertError::NONE, security_state::SECURE,
-      ssl_test_util::AuthState::NONE);
 }
 
 // Returns a path string that points to a page with the
@@ -264,26 +223,6 @@ bool IsBrowserOpen(const Browser* test_browser) {
       return true;
   }
   return false;
-}
-
-enum AppMenuCommandState {
-  kEnabled,
-  kDisabled,
-  kNotPresent,
-};
-
-AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
-  DCHECK(!browser->app_controller())
-      << "This check only applies to regular browser windows.";
-  auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser);
-  app_menu_model->Init();
-  ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
-  if (!app_menu_model->GetModelAndIndexForCommandId(command_id, &model,
-                                                    &index)) {
-    return kNotPresent;
-  }
-  return model->IsEnabledAt(index) ? kEnabled : kDisabled;
 }
 
 }  // namespace
@@ -859,7 +798,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
   SetupApp(test_app_dir.UnpackedPath());
   url_observer.Wait();
 
-  CheckMixedContentLoaded(app_browser_);
+  web_app::CheckMixedContentLoaded(app_browser_);
 }
 
 // Ensure that hosted app windows with blank titles don't display the URL as a
@@ -1208,21 +1147,6 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, ShortcutMenuOptionsForInstallablePWA) {
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kEnabled);
 }
 
-// Tests that creating a shortcut app but not installing a PWA is available for
-// a non-installable site.
-IN_PROC_BROWSER_TEST_P(SharedPWATest,
-                       ShortcutMenuOptionsForNonInstallableSite) {
-  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-
-  ASSERT_TRUE(https_server()->Start());
-  NavigateToURLAndWait(browser(), GetMixedContentAppURL());
-  EXPECT_FALSE(manager->WaitForInstallableCheck());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
-}
-
 // Tests that an installed PWA is not used when out of scope by one path level.
 IN_PROC_BROWSER_TEST_P(SharedPWATest, MenuOptionsOutsideInstalledPwaScope) {
   ASSERT_TRUE(https_server()->Start());
@@ -1429,15 +1353,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OverscrollEnabled) {
 #endif
 }
 
-// Tests that mixed content is not loaded inside PWA windows.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, MixedContentInPWA) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallMixedContentPWA();
-  CheckMixedContentFailedToLoad(app_browser_);
-}
-
 // Tests that when calling OpenInChrome, mixed content can be loaded in the new
 // tab.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
@@ -1448,7 +1363,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   InstallMixedContentPWA();
 
   // Mixed content is not allowed in PWAs.
-  CheckMixedContentFailedToLoad(app_browser_);
+  web_app::CheckMixedContentFailedToLoad(app_browser_);
 
   chrome::OpenInChrome(app_browser_);
   ASSERT_EQ(browser(), chrome::FindLastActive());
@@ -1458,7 +1373,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
                                          ->GetLastCommittedURL());
 
   // The WebContents is just reparented, so mixed content is still not loaded.
-  CheckMixedContentFailedToLoad(browser());
+  web_app::CheckMixedContentFailedToLoad(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kEnabled);
 
@@ -1470,7 +1385,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   // After reloading, mixed content should successfully load because the
   // WebContents is no longer in a PWA window.
 
-  CheckMixedContentLoaded(browser());
+  web_app::CheckMixedContentLoaded(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kNotPresent);
   EXPECT_EQ(web_app::ReparentWebAppForSecureActiveTab(browser()), nullptr);
@@ -1491,7 +1406,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   ASSERT_EQ(tab_contents->GetLastCommittedURL(), GetMixedContentAppURL());
 
   // A regular tab should be able to load mixed content.
-  CheckMixedContentLoaded(browser());
+  web_app::CheckMixedContentLoaded(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kNotPresent);
 
@@ -1507,7 +1422,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   // loaded. Note that in practice, this should never happen for PWAs. Users
   // won't be able to reparent WebContents if there is mixed content loaded
   // in them.
-  CheckMixedContentLoaded(app_browser);
+  web_app::CheckMixedContentLoaded(app_browser);
 
   ui_test_utils::UrlLoadObserver url_observer(
       GetMixedContentAppURL(), content::NotificationService::AllSources());
@@ -1516,7 +1431,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
 
   // After reloading, mixed content should fail to load, because the WebContents
   // is now in a PWA window.
-  CheckMixedContentFailedToLoad(app_browser);
+  web_app::CheckMixedContentFailedToLoad(app_browser);
 }
 
 // Tests that mixed content is not loaded inside iframes in PWA windows.
@@ -1525,7 +1440,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, IFrameMixedContentInPWA) {
 
   InstallMixedContentIFramePWA();
 
-  CheckMixedContentFailedToLoad(app_browser_);
+  web_app::CheckMixedContentFailedToLoad(app_browser_);
 }
 
 // Tests that iframes can't dynamically load mixed content in a PWA window, when
@@ -1539,11 +1454,11 @@ IN_PROC_BROWSER_TEST_P(
   InstallSecureIFramePWA();
 
   NavigateToURLAndWait(browser(), GetSecureIFrameAppURL());
-  CheckMixedContentFailedToLoad(browser());
+  web_app::CheckMixedContentFailedToLoad(browser());
 
   app_browser_ = web_app::ReparentWebContentsIntoAppBrowser(
       browser()->tab_strip_model()->GetActiveWebContents(), app_->id());
-  CheckMixedContentFailedToLoad(app_browser_);
+  web_app::CheckMixedContentFailedToLoad(app_browser_);
 
   content::RenderFrameHost* main_frame =
       app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
@@ -1551,7 +1466,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_FALSE(TryToLoadImage(
       iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
 
-  CheckMixedContentFailedToLoad(app_browser_);
+  web_app::CheckMixedContentFailedToLoad(app_browser_);
 }
 
 // Tests that iframes can dynamically load mixed content in a regular browser
@@ -1572,7 +1487,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   EXPECT_TRUE(TryToLoadImage(
       iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
 
-  CheckMixedContentLoaded(browser());
+  web_app::CheckMixedContentLoaded(browser());
 }
 
 // Check that uninstalling a PWA with a window opened doesn't crash.

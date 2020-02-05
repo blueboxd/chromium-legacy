@@ -662,6 +662,7 @@ TEST_F(SecurityOriginTest, CanonicalizeHost) {
 }
 
 TEST_F(SecurityOriginTest, UrlOriginConversions) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddLocalScheme("nonstandard-but-local");
   SchemeRegistry::RegisterURLSchemeAsLocal("nonstandard-but-local");
   struct TestCases {
@@ -884,6 +885,7 @@ TEST_F(SecurityOriginTest, NonStandardScheme) {
 }
 
 TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
   url::EnableNonStandardSchemesForAndroidWebView();
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("cow://");
@@ -891,7 +893,6 @@ TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EXPECT_EQ("cow", origin->Protocol());
   EXPECT_EQ("", origin->Host());
   EXPECT_EQ(0, origin->Port());
-  url::ResetForTests();
 }
 
 TEST_F(SecurityOriginTest, OpaqueIsolatedCopy) {

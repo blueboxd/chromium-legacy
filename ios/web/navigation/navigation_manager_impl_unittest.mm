@@ -153,6 +153,9 @@ class NavigationManagerTest : public PlatformTest {
   TestWebState web_state_;
   MockNavigationManagerDelegate delegate_;
   std::unique_ptr<NavigationManagerImpl> manager_;
+
+ private:
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // Tests state of an empty navigation manager.

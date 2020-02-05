@@ -151,16 +151,6 @@ void LayoutListMarker::UpdateLayout() {
         LayoutUnit(font_data ? font_data->GetFontMetrics().Height() : 0));
   }
 
-  SetMarginStart(LayoutUnit());
-  SetMarginEnd(LayoutUnit());
-
-  const Length& start_margin = StyleRef().MarginStart();
-  const Length& end_margin = StyleRef().MarginEnd();
-  if (start_margin.IsFixed())
-    SetMarginStart(LayoutUnit(start_margin.Value()));
-  if (end_margin.IsFixed())
-    SetMarginEnd(LayoutUnit(end_margin.Value()));
-
   ClearNeedsLayout();
 }
 
@@ -298,15 +288,8 @@ void LayoutListMarker::UpdateMargins() {
         InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
   }
 
-  Length start_length = Length::Fixed(margin_start);
-  Length end_length = Length::Fixed(margin_end);
-
-  if (start_length != style.MarginStart() || end_length != style.MarginEnd()) {
-    scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(style);
-    new_style->SetMarginStart(start_length);
-    new_style->SetMarginEnd(end_length);
-    SetStyleInternal(std::move(new_style));
-  }
+  SetMarginStart(margin_start);
+  SetMarginEnd(margin_end);
 }
 
 std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
@@ -524,17 +507,10 @@ void LayoutListMarker::ListItemStyleDidChange() {
   Element* list_item = To<Element>(list_item_->GetNode());
   const ComputedStyle* cached_marker_style =
       list_item->CachedStyleForPseudoElement(kPseudoIdMarker);
-  scoped_refptr<ComputedStyle> new_style =
-      cached_marker_style ? ComputedStyle::Clone(*cached_marker_style)
-                          : list_item->StyleForPseudoElement(kPseudoIdMarker);
-  DCHECK(new_style);
-  if (Style()) {
-    // Reuse the current margins. Otherwise resetting the margins to initial
-    // values would trigger unnecessary layout.
-    new_style->SetMarginStart(StyleRef().MarginStart());
-    new_style->SetMarginEnd(StyleRef().MarginRight());
-  }
-  SetStyle(std::move(new_style));
+  if (cached_marker_style)
+    SetStyle(cached_marker_style);
+  else
+    SetStyle(list_item->StyleForPseudoElement(kPseudoIdMarker));
 }
 
 }  // namespace blink

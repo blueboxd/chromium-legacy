@@ -92,7 +92,8 @@ enum class VulkanVersion {
   kVulkanVersionUnknown = 0,
   kVulkanVersion_1_0_0 = 1,
   kVulkanVersion_1_1_0 = 2,
-  kMaxValue = kVulkanVersion_1_1_0,
+  kVulkanVersion_1_2_0 = 3,
+  kMaxValue = kVulkanVersion_1_2_0,
 };
 
 GPU_EXPORT VulkanVersion

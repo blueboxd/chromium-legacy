@@ -16,12 +16,11 @@ namespace {
 class SchemeHostPortTest : public testing::Test {
  public:
   SchemeHostPortTest() = default;
-  ~SchemeHostPortTest() override {
-    // Reset any added schemes.
-    url::ResetForTests();
-  }
+  ~SchemeHostPortTest() override = default;
 
  private:
+  url::ScopedSchemeRegistryForTests scoped_registry_;
+
   DISALLOW_COPY_AND_ASSIGN(SchemeHostPortTest);
 };
 

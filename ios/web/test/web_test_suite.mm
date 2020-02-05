@@ -34,7 +34,7 @@ WebTestSuite::~WebTestSuite() {
 void WebTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
-  RegisterWebSchemes(false);
+  RegisterWebSchemes();
 
   // Force unittests to run using en-US so if testing string output will work
   // regardless of the system language.

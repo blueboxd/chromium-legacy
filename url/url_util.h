@@ -5,6 +5,7 @@
 #ifndef URL_URL_UTIL_H_
 #define URL_URL_UTIL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,8 +20,22 @@ namespace url {
 
 // Init ------------------------------------------------------------------------
 
-// Resets all custom schemes to the default values.  Not thread-safe.
-COMPONENT_EXPORT(URL) void ResetForTests();
+// Used for tests that need to reset schemes. Note that this can only be used
+// in conjunction with ScopedSchemeRegistryForTests.
+COMPONENT_EXPORT(URL) void ClearSchemesForTests();
+
+class ScopedSchemeRegistryInternal;
+
+// Stores the SchemeRegistry upon creation, allowing tests to modify a copy of
+// it, and restores the original SchemeRegistry when deleted.
+class COMPONENT_EXPORT(URL) ScopedSchemeRegistryForTests {
+ public:
+  ScopedSchemeRegistryForTests();
+  ~ScopedSchemeRegistryForTests();
+
+ private:
+  std::unique_ptr<ScopedSchemeRegistryInternal> internal_;
+};
 
 // Schemes ---------------------------------------------------------------------
 
@@ -39,7 +54,7 @@ COMPONENT_EXPORT(URL) bool AllowNonStandardSchemesForAndroidWebView();
 
 // The following Add*Scheme method are not threadsafe and can not be called
 // concurrently with any other url_util function. They will assert if the lists
-// of schemes have been locked (see LockSchemeRegistries).
+// of schemes have been locked (see LockSchemeRegistries), or used.
 
 // Adds an application-defined scheme to the internal list of "standard-format"
 // URL schemes. A standard-format scheme adheres to what RFC 3986 calls "generic

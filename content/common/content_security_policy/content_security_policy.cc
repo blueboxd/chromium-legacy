@@ -200,15 +200,6 @@ bool CheckContentSecurityPolicy(
   return true;
 }
 
-bool ShouldUpgradeInsecureRequest(
-    const network::mojom::ContentSecurityPolicyPtr& policy) {
-  for (auto& directive : policy->directives) {
-    if (directive->name == CSPDirectiveName::UpgradeInsecureRequests)
-      return true;
-  }
-  return false;
-}
-
 std::string ToString(const network::mojom::CSPDirectivePtr& directive) {
   return network::ToString(directive->name) + " " +
          ToString(directive->source_list);

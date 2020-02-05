@@ -48,7 +48,11 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountId;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.common.ContentProcessInfo;
 
 import java.io.File;
@@ -91,15 +95,20 @@ public class ChromeBackupAgentTest {
     public JniMocker mocker = new JniMocker();
     @Mock
     private ChromeBackupAgent.Natives mChromeBackupAgentJniMock;
+    @Mock
+    private IdentityManager mIdentityManagerMock;
 
     private ChromeBackupAgent mAgent;
     private AsyncInitTaskRunner mTaskRunner;
+
+    private final CoreAccountInfo mAccountInfo =
+            new CoreAccountInfo(new CoreAccountId("gaia_id_user1"), "user1", "gaia_id_user1");
 
     private void setUpTestPrefs(SharedPreferences prefs) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE, true);
         editor.putBoolean(ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP, false);
-        editor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, "user1");
+        when(mIdentityManagerMock.getPrimaryAccountInfo()).thenReturn(mAccountInfo);
         editor.apply();
     }
 
@@ -122,6 +131,11 @@ public class ChromeBackupAgentTest {
                 .thenReturn(new String[] {"pref1"});
         when(mChromeBackupAgentJniMock.getBoolBackupValues(mAgent))
                 .thenReturn(new boolean[] {true});
+
+        IdentityServicesProvider identityServicesProvider = mock(IdentityServicesProvider.class);
+        IdentityServicesProvider.setInstanceForTests(identityServicesProvider);
+        when(identityServicesProvider.getIdentityManager()).thenReturn(mIdentityManagerMock);
+        when(mIdentityManagerMock.getPrimaryAccountInfo()).thenReturn(null);
 
         // Mock initializing the browser
         doReturn(true).when(mAgent).initializeBrowser();
@@ -164,7 +178,7 @@ public class ChromeBackupAgentTest {
                 .writeEntityHeader(
                         "AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP, 1);
         verify(backupData).writeEntityData(new byte[] {0}, 1);
-        byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8("user1");
+        byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8(mAccountInfo.getEmail());
         verify(backupData)
                 .writeEntityHeader("AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY,
                         unameBytes.length);
@@ -368,7 +382,7 @@ public class ChromeBackupAgentTest {
                 "AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
                 "AndroidDefault.junk",
                 "AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY};
-        byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8("user1");
+        byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8(mAccountInfo.getEmail());
         final byte[][] values = {{0}, {1}, {1}, {23, 42}, unameBytes};
         when(backupData.getKey()).thenAnswer(new Answer<String>() {
             private int mPos;

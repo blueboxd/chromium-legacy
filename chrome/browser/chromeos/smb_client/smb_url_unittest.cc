@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -111,7 +112,7 @@ TEST_F(SmbUrlTest, ReplacesHost) {
 
   const std::string new_host = "192.168.0.1";
   const std::string expected_url = "smb://192.168.0.1/share";
-  EXPECT_EQ(expected_url, smb_url.ReplaceHost(new_host));
+  EXPECT_EQ(expected_url, smb_url.ReplaceHost(new_host).ToString());
 
   // GetHost returns the original host.
   EXPECT_EQ(expected_host, smb_url.GetHost());

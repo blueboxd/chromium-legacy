@@ -27,10 +27,12 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
 class HTMLSelectElement;
+class LayoutText;
 
 class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
  public:
@@ -39,6 +41,7 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 
   HTMLSelectElement* SelectElement() const;
   String GetText() const;
+  void SetText(const String&);
 
   const char* GetName() const override { return "LayoutMenuList"; }
 
@@ -51,6 +54,13 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   }
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
+  void AddChild(LayoutObject* new_child,
+                LayoutObject* before_child = nullptr) override;
+  void RemoveChild(LayoutObject*) override;
+  bool CreatesAnonymousWrapper() const override { return true; }
+
+  void UpdateFromElement() override;
+
   PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
   bool HasControlClip() const override { return true; }
 
@@ -61,8 +71,20 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
 
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
   LayoutBlock* InnerBlock() const;
+  void CreateInnerBlock();
+  scoped_refptr<ComputedStyle> CreateInnerStyle();
+  void UpdateInnerStyle();
+  void AdjustInnerStyle(const ComputedStyle& parent_style,
+                        ComputedStyle& inner_style) const;
+  bool HasOptionStyleChanged(const ComputedStyle& inner_style) const;
   void UpdateOptionsWidth() const;
+  void SetIndexToSelectOnCancel(int list_index);
+
+  LayoutText* button_text_;
+  LayoutBlock* inner_block_;
 
   // m_optionsWidth is calculated and cached on demand.
   // updateOptionsWidth() should be called before reading them.

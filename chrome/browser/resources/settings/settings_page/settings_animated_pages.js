@@ -171,8 +171,14 @@ Polymer({
     }
 
     // Set the subpage's id for use by neon-animated-pages.
-    const content = Polymer.DomIf._contentForTemplate(
-        /** @type {!HTMLTemplateElement} */ (domIf.firstElementChild));
+    const content =
+        /**
+           @type {!{_contentForTemplate:
+               function(!HTMLTemplateElement):!HTMLElement}}
+         */
+        (Polymer.DomIf)
+            ._contentForTemplate(
+                /** @type {!HTMLTemplateElement} */ (domIf.firstElementChild));
     const subpage = content.querySelector('settings-subpage');
     subpage.setAttribute('route-path', routePath);
 

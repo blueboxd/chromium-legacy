@@ -64,18 +64,18 @@
               checked="{{tpmFirmwareUpdateChecked_}}"
               disabled="[[!tpmFirmwareUpdateEditable_]]"
               on-change="onTPMFirmwareUpdateChanged_">
+              <div id="tpmFirmwareUpdateContainer">
+                <span>
+                  [[i18nDynamic(locale, 'resetTPMFirmwareUpdate')]]
+                </span>
+                <a href="#"
+                    hidden="[[isHelpLinkHidden_(uiState_, isGoogleBranded_)]]"
+					          class="oobe-local-link"
+                    on-tap="onTPMFirmwareUpdateLearnMore_">
+                  [[i18nDynamic(locale, 'learnMore')]]
+                </a>
+              </div>
           </cr-checkbox>
-          <div id="tpmFirmwareUpdateContainer">
-            <span>
-              [[i18nDynamic(locale, 'resetTPMFirmwareUpdate')]]
-            </span>
-            <a href="#"
-                hidden="[[isHelpLinkHidden_(uiState_, isGoogleBranded_)]]"
-                class="oobe-local-link"
-                on-tap="onTPMFirmwareUpdateLearnMore_">
-              [[i18nDynamic(locale, 'learnMore')]]
-            </a>
-          </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">

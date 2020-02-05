@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -112,6 +113,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<base::UnguessableToken> recursive_prefetch_token;
   base::Optional<TrustedParams> trusted_params;
 };
+
+// This does not accept |kDefault| referrer policy.
+COMPONENT_EXPORT(NETWORK_CPP_BASE)
+net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
+    mojom::ReferrerPolicy referrer_policy);
 
 }  // namespace network
 

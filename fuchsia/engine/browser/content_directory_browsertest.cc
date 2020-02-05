@@ -14,11 +14,13 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/test/content_test_suite_base.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
 #include "fuchsia/engine/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 
 namespace {
 
@@ -65,6 +67,11 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kContentDirectories);
 
+    // Scheme initialization for the WebEngineContentClient depends on the above
+    // command line modification, which won't have been present when the schemes
+    // were initially registered.
+    content::ContentTestSuiteBase::ReRegisterContentSchemes();
+
     cr_fuchsia::WebEngineBrowserTest::SetUp();
   }
 
@@ -102,6 +109,9 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
   cr_fuchsia::TestNavigationListener navigation_listener_;
+
+ private:
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDirectoryTest);
 };

@@ -40,6 +40,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_statistics.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -581,7 +582,7 @@ class PageStackThreadSafe : public PageStack {
 // - kBlinkPageSize
 // - kAllocationGranularity
 class PLATFORM_EXPORT ObjectStartBitmap {
-  DISALLOW_NEW();
+  USING_FAST_MALLOC(ObjectStartBitmap);
 
  public:
   // Granularity of addresses added to the bitmap.
@@ -626,7 +627,7 @@ class PLATFORM_EXPORT ObjectStartBitmap {
 
   inline void ObjectStartIndexAndBit(Address, size_t*, size_t*) const;
 
-  const Address offset_;
+  Address offset_;
   // The bitmap contains a bit for every kGranularity aligned address on a
   // a NormalPage, i.e., for a page of size kBlinkPageSize.
   uint8_t object_start_bit_map_[kReservedForBitmap];
@@ -809,6 +810,9 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 
   CardTable card_table_;
   ObjectStartBitmap object_start_bit_map_;
+#if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
+  std::unique_ptr<ObjectStartBitmap> cached_object_start_bit_map_;
+#endif
   Vector<ToBeFinalizedObject> to_be_finalized_objects_;
   FreeList cached_freelist_;
   Vector<FutureFreelistEntry> unfinalized_freelist_;

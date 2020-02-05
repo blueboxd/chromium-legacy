@@ -917,7 +917,9 @@
     "type": "raw",
   },
   "ios_chrome_settings_egtests": {
-    "args": [],
+    "args": [
+      "--enable-features=ClearSyncedData",
+    ],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",
     "type": "raw",
   },

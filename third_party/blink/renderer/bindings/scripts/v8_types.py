@@ -136,6 +136,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
     'XPathNSResolver': 'XPathNSResolver*',
     'boolean': 'bool',
+    'object': 'ScriptValue',
     'unrestricted double': 'double',
     'unrestricted float': 'float',
 }
@@ -398,28 +399,37 @@ IdlNullableType.is_traceable = property(
 ################################################################################
 
 INCLUDES_FOR_TYPE = {
-    'object': set(),
-    'ArrayBufferView': set(['bindings/core/v8/v8_array_buffer_view.h',
-                            'core/typed_arrays/array_buffer_view_helpers.h',
-                            'core/typed_arrays/flexible_array_buffer_view.h']),
-    'Dictionary': set(['bindings/core/v8/dictionary.h']),
-    'EventHandler': set(['bindings/core/v8/js_event_handler.h']),
-    'HTMLCollection': set(['bindings/core/v8/v8_html_collection.h',
-                           'core/dom/class_collection.h',
-                           'core/dom/tag_collection.h',
-                           'core/html/html_collection.h',
-                           'core/html/html_table_rows_collection.h',
-                           'core/html/forms/html_data_list_options_collection.h',
-                           'core/html/forms/html_form_controls_collection.h']),
-    'NodeList': set(['bindings/core/v8/v8_node_list.h',
-                     'core/dom/name_node_list.h',
-                     'core/dom/node_list.h',
-                     'core/dom/static_node_list.h',
-                     'core/html/forms/labels_node_list.h']),
-    'Promise': set(['bindings/core/v8/script_promise.h']),
-    'SerializedScriptValue': set(['bindings/core/v8/serialization/serialized_script_value.h',
-                                  'bindings/core/v8/serialization/serialized_script_value_factory.h']),
-    'ScriptValue': set(['bindings/core/v8/script_value.h']),
+    'object':
+    set(['bindings/core/v8/script_value.h']),
+    'ArrayBufferView':
+    set([
+        'bindings/core/v8/v8_array_buffer_view.h', 'core/typed_arrays/array_buffer_view_helpers.h',
+        'core/typed_arrays/flexible_array_buffer_view.h'
+    ]),
+    'Dictionary':
+    set(['bindings/core/v8/dictionary.h']),
+    'EventHandler':
+    set(['bindings/core/v8/js_event_handler.h']),
+    'HTMLCollection':
+    set([
+        'bindings/core/v8/v8_html_collection.h', 'core/dom/class_collection.h', 'core/dom/tag_collection.h',
+        'core/html/html_collection.h', 'core/html/html_table_rows_collection.h',
+        'core/html/forms/html_data_list_options_collection.h', 'core/html/forms/html_form_controls_collection.h'
+    ]),
+    'NodeList':
+    set([
+        'bindings/core/v8/v8_node_list.h', 'core/dom/name_node_list.h', 'core/dom/node_list.h', 'core/dom/static_node_list.h',
+        'core/html/forms/labels_node_list.h'
+    ]),
+    'Promise':
+    set(['bindings/core/v8/script_promise.h']),
+    'ScriptValue':
+    set(['bindings/core/v8/script_value.h']),
+    'SerializedScriptValue':
+    set([
+        'bindings/core/v8/serialization/serialized_script_value.h',
+        'bindings/core/v8/serialization/serialized_script_value_factory.h'
+    ]),
 }
 
 
@@ -577,11 +587,9 @@ V8_VALUE_TO_CPP_VALUE = {
 
 
 def v8_conversion_needs_exception_state(idl_type):
-    return (idl_type.is_numeric_type or
-            idl_type.is_enum or
-            idl_type.is_dictionary or
-            idl_type.is_array_buffer_view_or_typed_array or
-            idl_type.name in ('Boolean', 'ByteString', 'Dictionary', 'USVString', 'SerializedScriptValue'))
+    return (idl_type.is_numeric_type or idl_type.is_enum or idl_type.is_dictionary or idl_type.is_array_buffer_view_or_typed_array
+            or idl_type.name in ('Boolean', 'ByteString', 'Dictionary', 'Object', 'USVString', 'SerializedScriptValue'))
+
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
@@ -617,15 +625,14 @@ def native_value_traits_type_name(idl_type, extended_attributes, in_sequence_or_
         # attribute and nullable string types.
         name = 'IDL%s' % idl_type.name
     elif idl_type.is_nullable:
-        inner_type = native_value_traits_type_name(idl_type.inner_type, extended_attributes)
-        # IDLNullable is only required for sequences and such.
-        # The IDL compiler already has special cases for nullable operation
+        inner_type = idl_type.inner_type
+        inner_type_nvt_type = native_value_traits_type_name(inner_type, extended_attributes)
+        # The IDL compiler has special cases to handle some nullable types in operation
         # parameters, dictionary fields, etc.
-        if in_sequence_or_record:
-            name = 'IDLNullable<%s>' % native_value_traits_type_name(idl_type.inner_type,
-                                                                     extended_attributes)
+        if in_sequence_or_record or inner_type.name == 'Object':
+            name = 'IDLNullable<%s>' % inner_type_nvt_type
         else:
-            name = inner_type
+            name = inner_type_nvt_type
     elif idl_type.native_array_element_type:
         name = 'IDLSequence<%s>' % native_value_traits_type_name(idl_type.native_array_element_type,
                                                                  extended_attributes, True)
@@ -634,7 +641,7 @@ def native_value_traits_type_name(idl_type, extended_attributes, in_sequence_or_
                                                                     extended_attributes),
                                       native_value_traits_type_name(idl_type.value_type,
                                                                     extended_attributes, True))
-    elif idl_type.is_basic_type or idl_type.name == 'Promise':
+    elif idl_type.is_basic_type or idl_type.name in ['Object', 'Promise']:
         name = 'IDL%s' % idl_type.name
     elif idl_type.implemented_as is not None:
         name = idl_type.implemented_as
@@ -804,7 +811,7 @@ def preprocess_idl_type(idl_type):
     if idl_type.is_enum:
         # Enumerations are internally DOMStrings
         return IdlType('DOMString')
-    if idl_type.base_type in ['any', 'object'] or idl_type.is_custom_callback_function:
+    if idl_type.base_type == 'any' or idl_type.is_custom_callback_function:
         return IdlType('ScriptValue')
     if idl_type.is_callback_function:
         return idl_type
@@ -873,8 +880,10 @@ def v8_conversion_type(idl_type, extended_attributes):
         if idl_type.is_nullable:
             return 'StringOrNull'
         return base_idl_type
-    if idl_type.is_basic_type or base_idl_type == 'ScriptValue':
+    if idl_type.is_basic_type:
         return base_idl_type
+    if base_idl_type in ['object', 'ScriptValue']:
+        return 'ScriptValue'
     # Generic dictionary type
     if base_idl_type == 'Dictionary':
         return 'Dictionary'

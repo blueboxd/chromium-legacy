@@ -17,6 +17,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -104,6 +106,19 @@ int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
   }
 
   return num_user_installed;
+}
+
+std::vector<SquareSizePx> GetBookmarkAppDownloadedIconSizes(
+    const Extension* extension) {
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension);
+
+  std::vector<SquareSizePx> icon_sizes_in_px;
+  icon_sizes_in_px.reserve(icons.map().size());
+
+  for (const ExtensionIconSet::IconMap::value_type& icon_info : icons.map())
+    icon_sizes_in_px.push_back(icon_info.first);
+
+  return icon_sizes_in_px;
 }
 
 }  // namespace extensions

@@ -23,7 +23,8 @@ class InfoBarDelegate;
 class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
  public:
   InfoBarIOS(id<InfobarUIDelegate> controller,
-             std::unique_ptr<infobars::InfoBarDelegate> delegate);
+             std::unique_ptr<infobars::InfoBarDelegate> delegate,
+             bool skip_banner = false);
   ~InfoBarIOS() override;
 
   // Observer interface for objects interested in changes to InfoBarIOS.
@@ -46,6 +47,10 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   bool accepted() const { return accepted_; }
   void set_accepted(bool accepted);
 
+  // Whether or not the banner should be skipped. If true if the banner
+  // should be skipped but not the badge and subsequent modals.
+  bool skip_banner() const { return skip_banner_; }
+
   // Returns the InfobarUIDelegate associated to this Infobar.
   id<InfobarUIDelegate> InfobarUIDelegate();
 
@@ -60,6 +65,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
   id<InfobarUIDelegate> controller_ = nil;
   bool accepted_ = false;
+  bool skip_banner_ = false;
   DISALLOW_COPY_AND_ASSIGN(InfoBarIOS);
 };
 

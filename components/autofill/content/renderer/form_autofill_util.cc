@@ -1476,9 +1476,11 @@ GURL StripAuthAndParams(const GURL& gurl) {
   return gurl.ReplaceComponents(rep);
 }
 
-bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
+bool ExtractFormData(const WebFormElement& form_element,
+                     const FieldDataManager& field_data_manager,
+                     FormData* data) {
   return WebFormElementToFormData(
-      form_element, WebFormControlElement(), nullptr,
+      form_element, WebFormControlElement(), &field_data_manager,
       static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
                                           form_util::EXTRACT_OPTION_TEXT |
                                           form_util::EXTRACT_OPTIONS),

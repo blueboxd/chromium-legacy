@@ -59,7 +59,7 @@ void ModelTypeSyncBridge::OnCommitAttemptErrors(
   // By default the bridge just ignores failed commit items.
 }
 
-void ModelTypeSyncBridge::OnCommitAttemptFailed() {
+void ModelTypeSyncBridge::OnCommitAttemptFailed(SyncCommitError commit_error) {
   // By default ignore any failures.
 }
 

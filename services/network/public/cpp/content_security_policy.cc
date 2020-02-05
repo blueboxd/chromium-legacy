@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
@@ -436,6 +437,36 @@ mojom::CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
   if (name == "frame-ancestors")
     return mojom::CSPDirectiveName::FrameAncestors;
   return mojom::CSPDirectiveName::Unknown;
+}
+
+bool ShouldUpgradeInsecureRequest(
+    const std::vector<mojom::ContentSecurityPolicyPtr>& policies) {
+  for (const auto& policy : policies) {
+    for (const auto& directive : policy->directives) {
+      if (directive->name == mojom::CSPDirectiveName::UpgradeInsecureRequests) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+void UpgradeInsecureRequest(GURL* url) {
+  // Only HTTP URL can be upgraded to HTTPS.
+  if (!url->SchemeIs(url::kHttpScheme))
+    return;
+
+  // Some URL like http://127.0.0.0.1 are considered potentially trustworthy and
+  // aren't upgraded, even if the protocol used is HTTP.
+  if (IsUrlPotentiallyTrustworthy(*url))
+    return;
+
+  // Updating the URL's scheme also implicitly updates the URL's port from
+  // 80 to 443 if needed.
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(url::kHttpsScheme);
+  *url = url->ReplaceComponents(replacements);
 }
 
 }  // namespace network

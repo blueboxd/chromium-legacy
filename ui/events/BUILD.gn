@@ -611,23 +611,11 @@ if (!is_ios) {
     }
 
     if (use_x11) {
-      sources += [
-        "devices/x11/device_data_manager_x11_unittest.cc",
-        "x/events_x_unittest.cc",
-      ]
+      sources += [ "devices/x11/device_data_manager_x11_unittest.cc" ]
       configs += [ "//build/config/linux:x11" ]
       deps += [
         "//ui/events/devices/x11",
-        "//ui/events/x",
-        "//ui/gfx/x",
-      ]
-    }
-
-    if (use_x11 || ozone_platform_x11) {
-      sources += [ "x/x11_event_translation_unittest.cc" ]
-      deps += [
-        "//ui/events/x",
-        "//ui/gfx/x",
+        "//ui/events/x:unittests",
       ]
     }
 

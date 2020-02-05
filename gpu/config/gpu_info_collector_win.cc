@@ -341,7 +341,7 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   create_info.pApplicationInfo = &app_info;
 
   // Get the Vulkan API version supported in the GPU driver
-  for (int minor_version = 1; minor_version >= 0; --minor_version) {
+  for (int minor_version = 2; minor_version >= 0; --minor_version) {
     app_info.apiVersion = VK_MAKE_VERSION(1, minor_version, 0);
     VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
     if (result == VK_SUCCESS && vk_instance &&

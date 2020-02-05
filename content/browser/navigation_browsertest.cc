@@ -72,6 +72,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -3082,11 +3083,9 @@ class NavigationUrlRewriteBrowserTest : public NavigationBaseBrowserTest {
     }
   };
 
-  void SetUp() override {
+  NavigationUrlRewriteBrowserTest() {
     url::AddStandardScheme(kNoAccessScheme, url::SCHEME_WITH_HOST);
     url::AddNoAccessScheme(kNoAccessScheme);
-
-    NavigationBaseBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -3110,6 +3109,7 @@ class NavigationUrlRewriteBrowserTest : public NavigationBaseBrowserTest {
  private:
   std::unique_ptr<BrowserClient> browser_client_;
   ContentBrowserClient* old_browser_client_;
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // TODO(1021779): Figure out why this fails on the kitkat-dbg builder

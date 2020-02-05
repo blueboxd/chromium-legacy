@@ -500,6 +500,7 @@ TEST(NetworkIsolationKeyTest, UseRegistrableDomainWithNonStandardScheme) {
 
   // Have to register the scheme, or url::Origin::Create() will return an opaque
   // origin.
+  url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme("foo", url::SCHEME_WITH_HOST);
 
   url::Origin origin = url::Origin::Create(GURL("foo://a.foo.com"));

@@ -134,7 +134,7 @@ class Method(object):
             raise Exception("Instant probe must return void: %s" % self.name)
 
         # Splitting parameters by a comma, assuming that attribute lists contain no more than one attribute.
-        self.params = map(Parameter, map(str.strip, match.group(3).split(",")))
+        self.params = list(map(Parameter, map(str.strip, match.group(3).split(","))))
 
 
 class Parameter(object):
@@ -144,7 +144,7 @@ class Parameter(object):
         if match:
             self.options.append(match.group(1))
 
-        parts = map(str.strip, source.split("="))
+        parts = list(map(str.strip, source.split("=")))
         self.default_value = parts[1] if len(parts) != 1 else None
 
         param_decl = parts[0]

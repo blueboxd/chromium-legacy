@@ -53,6 +53,8 @@
 // empty then it means there are no banners queued to be presented.
 @property(nonatomic, strong)
     NSMutableArray<InfobarCoordinator*>* infobarCoordinatorsToPresent;
+// If YES, the banner is not shown, but the badge and subsequent modals will be.
+@property(nonatomic, assign) BOOL skipBanner;
 
 @end
 
@@ -205,12 +207,15 @@
 
 #pragma mark InfobarContainerConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                    skipBanner:(BOOL)skipBanner {
   DCHECK(IsInfobarUIRebootEnabled());
   InfobarCoordinator* infobarCoordinator =
       static_cast<InfobarCoordinator*>(infoBarDelegate);
 
   [self.infobarCoordinators addObject:infobarCoordinator];
+
+  self.skipBanner = skipBanner;
 
   // Configure the Coordinator and try to present the Banner afterwards.
   [infobarCoordinator start];
@@ -276,7 +281,7 @@
 - (void)presentBannerForInfobarCoordinator:
     (InfobarCoordinator*)infobarCoordinator {
   // Each banner can only be presented once.
-  if (infobarCoordinator.bannerWasPresented)
+  if (infobarCoordinator.bannerWasPresented || self.skipBanner)
     return;
 
   // If a banner is being presented or base VC is not in window, queue it then

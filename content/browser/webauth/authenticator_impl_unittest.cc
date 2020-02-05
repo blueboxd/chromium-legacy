@@ -400,7 +400,10 @@ class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
 
 class AuthenticatorImplTest : public AuthenticatorTestBase {
  protected:
-  ~AuthenticatorImplTest() override {}
+  AuthenticatorImplTest() {
+    url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+  }
+  ~AuthenticatorImplTest() override = default;
 
   void TearDown() override {
     // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
@@ -541,6 +544,9 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
       mock_adapter_;
+
+ private:
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -947,7 +953,6 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
 
   {
     OverrideLastCommittedOrigin(main_rfh(),
@@ -1002,7 +1007,6 @@ TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
 
   // TODO(martinkr): VirtualFidoDeviceFactory does not offer devices that
   // support both U2F and CTAP yet; we should test those.
@@ -1037,7 +1041,6 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
   SimulateNavigation(GURL(kTestOrigin1));
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   SetTransports(device::GetAllTransportProtocols());
   auto bluetooth_values = SetUpMockBluetooth();
@@ -1089,7 +1092,6 @@ TEST_F(AuthenticatorImplTest, AttestationPermitted) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
 
   // TODO(martinkr): VirtualFidoDeviceFactory does not offer devices that
   // support both U2F and CTAP yet; we should test those.
@@ -1692,7 +1694,6 @@ class OverrideRPIDAuthenticatorTest : public AuthenticatorImplTest {
 TEST_F(OverrideRPIDAuthenticatorTest, ChromeExtensions) {
   // Test that credentials can be created and used from an extension origin when
   // permitted by the delegate.
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   constexpr char kExtensionId[] = "abcdefg";
   const std::string extension_origin =
       std::string("chrome-extension://") + kExtensionId;
@@ -2518,7 +2519,6 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   OverrideLastCommittedOrigin(main_rfh(),
                               url::Origin::Create(GURL(kCryptotokenOrigin)));
 
@@ -3686,7 +3686,6 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   OverrideLastCommittedOrigin(main_rfh(),
                               url::Origin::Create(GURL(kCryptotokenOrigin)));
 
@@ -3760,7 +3759,6 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
 TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   OverrideLastCommittedOrigin(main_rfh(),
                               url::Origin::Create(GURL(kCryptotokenOrigin)));
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(

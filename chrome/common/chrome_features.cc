@@ -274,8 +274,8 @@ const base::Feature kDesktopPWAsUnifiedUiController{
 // on extensions unconditionally use the new launch manager.)
 // TODO(crbug.com/877898): Enable and delete this feature flag before
 // kDesktopPWAsWithoutExtensions launch.
-const base::Feature kDesktopPWAsUnifiedLaunch{
-    "DesktopPWAsUnifiedLaunch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDesktopPWAsUnifiedLaunch{"DesktopPWAsUnifiedLaunch",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables usage of shared LevelDB instance (ModelTypeStoreService).
 // If this flag is disabled, the new Web Apps system uses its own isolated
@@ -411,16 +411,22 @@ const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
 const base::Feature kHappinessTrackingSurveysForDesktop{
     "HappinessTrackingSurveysForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the Happiness Tracking System demo mode for Desktop
+// Chrome.
+const base::Feature kHappinessTrackingSurveysForDesktopDemo{
+    "HappinessTrackingSurveysForDesktopDemo",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Settings.
 const base::Feature kHappinessTrackingSurveysForDesktopSettings{
     "HappinessTrackingSurveysForDesktopSettings",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the Happiness Tracking System demo mode for Desktop
-// Chrome.
-const base::Feature kHappinessTrackingSurveysForDesktopDemo{
-    "HappinessTrackingSurveysForDesktopDemo",
+// Enables or disables the Happiness Tracking System for Desktop Chrome
+// Privacy Settings.
+const base::Feature kHappinessTrackingSurveysForDesktopSettingsPrivacy{
+    "HappinessTrackingSurveysForDesktopSettingsPrivacy",
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
@@ -703,8 +709,8 @@ const base::Feature kSoundContentSetting{"SoundContentSetting",
 
 #if !defined(OS_ANDROID)
 // Enables or disables the Javascript API to propagate sync encryption keys.
-const base::Feature kSyncEncryptionKeysWebApi{
-    "SyncEncryptionKeysWebApi", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncEncryptionKeysWebApi{"SyncEncryptionKeysWebApi",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

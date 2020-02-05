@@ -1395,10 +1395,18 @@ void NormalPage::ToBeFinalizedObject::Finalize() {
 }
 
 void NormalPage::FinalizeSweep(SweepResult action) {
+  // Call finalizers.
   for (ToBeFinalizedObject& object : to_be_finalized_objects_) {
     object.Finalize();
   }
   to_be_finalized_objects_.clear();
+#if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
+  // Copy object start bit map.
+  DCHECK(cached_object_start_bit_map_);
+  object_start_bit_map_ = *cached_object_start_bit_map_;
+  cached_object_start_bit_map_.reset();
+#endif
+  // Merge freelists or unmap the page.
   if (action == SweepResult::kPageNotEmpty) {
     MergeFreeLists();
     MarkAsSwept();
@@ -1420,7 +1428,11 @@ void NormalPage::AddToFreeList(Address start,
     unfinalized_freelist_.push_back(std::move(entry));
   } else {
     cached_freelist_.Add(start, size);
-    object_start_bit_map()->SetBit(start);
+#if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
+    cached_object_start_bit_map_->SetBit(start);
+#else
+    object_start_bit_map_.SetBit(start);
+#endif
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
     if (Arena()->GetThreadState()->IsMemoryReducingGC()) {
       DiscardPages(start + sizeof(FreeListEntry), start + size);
@@ -1447,7 +1459,14 @@ void NormalPage::MergeFreeLists() {
 }
 
 bool NormalPage::Sweep(FinalizeType finalize_type) {
+  ObjectStartBitmap* bitmap;
+#if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
+  cached_object_start_bit_map_ = std::make_unique<ObjectStartBitmap>(Payload());
+  bitmap = cached_object_start_bit_map_.get();
+#else
   object_start_bit_map()->Clear();
+  bitmap = object_start_bit_map();
+#endif
   cached_freelist_.Clear();
   unfinalized_freelist_.clear();
   Address start_of_gap = Payload();
@@ -1492,7 +1511,7 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
                     found_finalizer);
       found_finalizer = false;
     }
-    object_start_bit_map()->SetBit(header_address);
+    bitmap->SetBit(header_address);
 #if !BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
     header->Unmark<HeapObjectHeader::AccessMode::kAtomic>();
 #endif

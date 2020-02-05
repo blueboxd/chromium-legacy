@@ -426,7 +426,9 @@ struct CommitErrorCodeTestData {
      SharingSendMessageResult::kInternalError},
     {sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF,
      SharingSendMessageResult::kInternalError},
-    {sync_pb::SharingMessageCommitError::SYNC_ERROR,
+    {sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR,
+     SharingSendMessageResult::kNetworkError},
+    {sync_pb::SharingMessageCommitError::SYNC_SERVER_ERROR,
      SharingSendMessageResult::kInternalError}};
 
 class SharingFCMSenderCommitErrorCodeTest

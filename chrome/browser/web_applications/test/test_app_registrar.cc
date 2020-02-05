@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "url/gurl.h"
 
@@ -121,6 +122,12 @@ DisplayMode TestAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
 }
 
 std::vector<WebApplicationIconInfo> TestAppRegistrar::GetAppIconInfos(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+std::vector<SquareSizePx> TestAppRegistrar::GetAppDownloadedIconSizes(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
   return {};

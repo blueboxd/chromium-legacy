@@ -31,11 +31,8 @@ a {
 }
 
 #tpmFirmwareUpdateContainer {
+  cursor: default;
   line-height: 20px;
-}
-
-#tpmFirmwareUpdateContainer a {
-  cursor: pointer;
   pointer-events: auto;
 }
 

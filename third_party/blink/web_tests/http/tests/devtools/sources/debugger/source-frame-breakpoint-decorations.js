@@ -58,11 +58,10 @@
 
       function removeBreakpoint() {
         TestRunner.addResult('Toggle breakpoint');
+        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
         SourcesTestRunner
             .runActionAndWaitForExactBreakpointDecorations(
-                javaScriptSourceFrame, [],
-                () => SourcesTestRunner.toggleBreakpoint(
-                    javaScriptSourceFrame, 2))
+                javaScriptSourceFrame, [], () => {}, true)
             .then(next);
       }
     },

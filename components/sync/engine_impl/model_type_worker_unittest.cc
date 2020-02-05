@@ -475,7 +475,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
         worker()->GetContribution(INT_MAX));
     DCHECK(contribution);
 
-    contribution->ProcessCommitFailure();
+    contribution->ProcessCommitFailure(SyncCommitError::kNetworkError);
     contribution->CleanUp();
   }
 

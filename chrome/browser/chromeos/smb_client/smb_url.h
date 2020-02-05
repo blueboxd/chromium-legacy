@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace chromeos {
@@ -24,6 +23,10 @@ class SmbUrl {
   ~SmbUrl();
   SmbUrl(SmbUrl&& smb_url);
 
+  // Allow copying.
+  SmbUrl(const SmbUrl& url);
+  SmbUrl& operator=(const SmbUrl& url);
+
   // Returns the host of the URL which can be resolved or unresolved.
   std::string GetHost() const;
 
@@ -35,7 +38,7 @@ class SmbUrl {
 
   // Replaces the host to |new_host| and returns the full URL. Does not
   // change the original URL.
-  std::string ReplaceHost(const std::string& new_host) const;
+  SmbUrl ReplaceHost(const std::string& new_host) const;
 
   // Returns true if the passed URL is valid and was properly parsed. This
   // should be called after the constructor.
@@ -66,8 +69,6 @@ class SmbUrl {
 
   // Share name component of the URL.
   std::string share_;
-
-  DISALLOW_COPY_AND_ASSIGN(SmbUrl);
 };
 
 }  // namespace smb_client

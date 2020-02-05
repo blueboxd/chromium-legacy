@@ -31,7 +31,12 @@ InternetDisconnectedWebURLLoader::InternetDisconnectedWebURLLoader(
 InternetDisconnectedWebURLLoader::~InternetDisconnectedWebURLLoader() = default;
 
 void InternetDisconnectedWebURLLoader::LoadSynchronously(
-    const blink::WebURLRequest&,
+    std::unique_ptr<network::ResourceRequest> request,
+    scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+    int requestor_id,
+    bool download_to_network_cache_only,
+    bool pass_response_pipe_to_client,
+    base::TimeDelta timeout_interval,
     blink::WebURLLoaderClient*,
     blink::WebURLResponse&,
     base::Optional<blink::WebURLError>&,
@@ -43,7 +48,10 @@ void InternetDisconnectedWebURLLoader::LoadSynchronously(
 }
 
 void InternetDisconnectedWebURLLoader::LoadAsynchronously(
-    const blink::WebURLRequest& request,
+    std::unique_ptr<network::ResourceRequest> request,
+    scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+    int requestor_id,
+    bool download_to_network_cache_only,
     blink::WebURLLoaderClient* client) {
   DCHECK(task_runner_handle_);
   task_runner_handle_->GetTaskRunner()->PostTask(
@@ -55,7 +63,7 @@ void InternetDisconnectedWebURLLoader::LoadAsynchronously(
           // ResourceLoader which owns |this|, and we are binding with weak ptr
           // of |this| here.
           base::Unretained(client),
-          blink::WebURLError(net::ERR_INTERNET_DISCONNECTED, request.Url())));
+          blink::WebURLError(net::ERR_INTERNET_DISCONNECTED, request->url)));
 }
 
 void InternetDisconnectedWebURLLoader::SetDefersLoading(bool defers) {}

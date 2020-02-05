@@ -56,7 +56,7 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
   // in KeyEvent::ApplyLayout() which makes it possible for CrOS/Linux, for
   // example, to support host system keyboard layouts.
 #if defined(USE_OZONE)
-  return std::make_unique<KeyEvent>(event_type, key_code, event_flags);
+  auto event = std::make_unique<KeyEvent>(event_type, key_code, event_flags);
 #else
   DomCode dom_code = CodeFromXEvent(&xev);
   DomKey dom_key = GetDomKeyFromXEvent(&xev);
@@ -64,12 +64,12 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
   ValidateEventTimeClock(&timestamp);
   auto event = std::make_unique<KeyEvent>(event_type, key_code, dom_code,
                                           event_flags, dom_key, timestamp);
+#endif
 
   DCHECK(event);
   event->SetProperties(GetEventPropertiesFromXEvent(event_type, xev));
   event->InitializeNative();
   return event;
-#endif
 }
 
 void SetEventSourceDeviceId(MouseEvent* event, const XEvent& xev) {

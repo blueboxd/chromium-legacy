@@ -60,13 +60,13 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
                              chrome_browser_sharing::SharingMessage message,
                              SendMessageCallback callback) override;
 
-  void OnOfferReceived(
+  virtual void OnOfferReceived(
       const std::string& device_guid,
       const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
       const std::string& offer,
       base::OnceCallback<void(const std::string&)> callback);
 
-  void OnIceCandidatesReceived(
+  virtual void OnIceCandidatesReceived(
       const std::string& device_guid,
       const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
       std::vector<sharing::mojom::IceCandidatePtr> ice_candidates);

@@ -62,6 +62,11 @@ class WebAppBrowserController : public AppBrowserController,
 
   void SetReadIconCallbackForTesting(base::OnceClosure callback);
 
+ protected:
+  // web_app::AppBrowserController:
+  void OnTabInserted(content::WebContents* contents) override;
+  void OnTabRemoved(content::WebContents* contents) override;
+
  private:
   const AppRegistrar& registrar() const;
 

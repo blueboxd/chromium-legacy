@@ -1178,7 +1178,7 @@ class SyncManagerTest : public testing::Test,
 
  private:
   // Needed by |sync_manager_|.
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Needed by |sync_manager_|.
   base::ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.

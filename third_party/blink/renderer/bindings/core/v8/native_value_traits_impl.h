@@ -421,7 +421,7 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLObject>>
     if (value->IsObject())
       return ScriptValue(isolate, value);
     if (value->IsNullOrUndefined())
-      return ScriptValue();
+      return ScriptValue(isolate, v8::Null(isolate));
     exception_state.ThrowTypeError(
         ExceptionMessages::FailedToConvertJSValue("object"));
     return ScriptValue();
@@ -434,7 +434,7 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLObject>>
     if (value->IsObject())
       return ScriptValue(isolate, value);
     if (value->IsNullOrUndefined())
-      return ScriptValue();
+      return ScriptValue(isolate, v8::Null(isolate));
     exception_state.ThrowTypeError(
         ExceptionMessages::ArgumentNotOfType(argument_index, "object"));
     return ScriptValue();

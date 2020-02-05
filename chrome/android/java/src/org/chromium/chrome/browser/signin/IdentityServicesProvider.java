@@ -29,7 +29,7 @@ public class IdentityServicesProvider {
     }
 
     @VisibleForTesting
-    static void setInstanceForTests(IdentityServicesProvider provider) {
+    public static void setInstanceForTests(IdentityServicesProvider provider) {
         sIdentityServicesProvider = provider;
     }
 

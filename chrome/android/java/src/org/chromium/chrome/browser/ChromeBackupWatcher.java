@@ -14,7 +14,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 
 /**
  * Class for watching for changes to the Android preferences that are backed up using Android
@@ -46,19 +48,26 @@ public class ChromeBackupWatcher {
             }
             sharedPrefs.edit().putBoolean(FIRST_BACKUP_DONE, true).apply();
         }
-        sharedPrefs.registerOnSharedPreferenceChangeListener(
-                (sharedPreferences, key) -> {
-                    // Update the backup if the user id or any of the backed up Android
-                    // preferences change.
-                    if (key.equals(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY)) {
+        sharedPrefs.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> {
+            // Update the backup if any of the backed up Android preferences change.
+            for (String pref : ChromeBackupAgent.BACKUP_ANDROID_BOOL_PREFS) {
+                if (key.equals(pref)) {
+                    onBackupPrefsChanged();
+                    return;
+                }
+            }
+        });
+        // Update the backup if the sign-in status changes.
+        IdentityServicesProvider.get().getIdentityManager().addObserver(
+                new IdentityManager.Observer() {
+                    @Override
+                    public void onPrimaryAccountSet(CoreAccountInfo account) {
                         onBackupPrefsChanged();
-                        return;
                     }
-                    for (String pref : ChromeBackupAgent.BACKUP_ANDROID_BOOL_PREFS) {
-                        if (key.equals(pref)) {
-                            onBackupPrefsChanged();
-                            return;
-                        }
+
+                    @Override
+                    public void onPrimaryAccountCleared(CoreAccountInfo account) {
+                        onBackupPrefsChanged();
                     }
                 });
     }

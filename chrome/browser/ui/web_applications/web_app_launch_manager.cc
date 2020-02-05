@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -80,10 +81,12 @@ content::WebContents* NavigateWebApplicationWindow(
   nav_params.disposition = disposition;
   Navigate(&nav_params);
 
-  content::WebContents* web_contents =
+  content::WebContents* const web_contents =
       nav_params.navigated_or_inserted_contents;
 
   SetTabHelperAppId(web_contents, app_id);
+  web_app::SetAppPrefsForWebContents(web_contents);
+
   return web_contents;
 }
 

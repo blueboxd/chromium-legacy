@@ -16,6 +16,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProper
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.WAITING_TO_REPLACE;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.PORTRAIT_ORIENTATION;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SHOW_WHEN_VISIBLE;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SUPPRESSED_BY_BOTTOM_SHEET;
 
 import android.view.Surface;
 import android.view.View;
@@ -58,6 +59,9 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.WebContents;
@@ -126,6 +130,13 @@ class ManualFillingMediator extends EmptyTabObserver
         }
     };
 
+    private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
+        @Override
+        public void onSheetStateChanged(@SheetState int newState) {
+            mModel.set(SUPPRESSED_BY_BOTTOM_SHEET, newState != SheetState.HIDDEN);
+        }
+    };
+
     void initialize(KeyboardAccessoryCoordinator keyboardAccessory,
             AccessorySheetCoordinator accessorySheet, WindowAndroid windowAndroid) {
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
@@ -159,6 +170,7 @@ class ManualFillingMediator extends EmptyTabObserver
             }
         };
         mActivity.getFullscreenManager().addListener(mFullscreenListener);
+        mActivity.getBottomSheetController().addObserver(mBottomSheetObserver);
         ensureObserverRegistered(getActiveBrowserTab());
         refreshTabs();
     }
@@ -239,6 +251,7 @@ class ManualFillingMediator extends EmptyTabObserver
         LayoutManager manager = getLayoutManager();
         if (manager != null) manager.removeSceneChangeObserver(mTabSwitcherObserver);
         mActivity.getFullscreenManager().removeListener(mFullscreenListener);
+        mActivity.getBottomSheetController().removeObserver(mBottomSheetObserver);
         mWindowAndroid = null;
         mActivity = null;
     }
@@ -327,6 +340,11 @@ class ManualFillingMediator extends EmptyTabObserver
         } else if (property == KEYBOARD_EXTENSION_STATE) {
             transitionIntoState(mModel.get(KEYBOARD_EXTENSION_STATE));
             return;
+        } else if (property == SUPPRESSED_BY_BOTTOM_SHEET) {
+            if (isInitialized() && mModel.get(SUPPRESSED_BY_BOTTOM_SHEET)) {
+                mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
+            }
+            return;
         }
         throw new IllegalArgumentException("Unhandled property: " + property);
     }
@@ -357,7 +375,7 @@ class ManualFillingMediator extends EmptyTabObserver
                 }
                 // Intentional fallthrough.
             case EXTENDING_KEYBOARD:
-                if (!canExtendKeyboard()) {
+                if (!canExtendKeyboard() || mModel.get(SUPPRESSED_BY_BOTTOM_SHEET)) {
                     mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
                     return false;
                 }
@@ -375,7 +393,7 @@ class ManualFillingMediator extends EmptyTabObserver
                 }
                 // Intentional fallthrough.
             case WAITING_TO_REPLACE:
-                if (!hasSufficientSpace()) {
+                if (!hasSufficientSpace() || mModel.get(SUPPRESSED_BY_BOTTOM_SHEET)) {
                     mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
                     return false;
                 }

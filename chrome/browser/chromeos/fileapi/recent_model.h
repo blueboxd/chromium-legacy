@@ -76,8 +76,9 @@ class RecentModel : public KeyedService {
 
   void OnGetRecentFiles(size_t max_files,
                         const base::Time& cutoff_time,
+                        FileType file_type,
                         std::vector<RecentFile> files);
-  void OnGetRecentFilesCompleted();
+  void OnGetRecentFilesCompleted(FileType file_type);
   void ClearCache();
 
   void SetMaxFilesForTest(size_t max_files);
@@ -95,6 +96,9 @@ class RecentModel : public KeyedService {
 
   // Cached GetRecentFiles() response.
   base::Optional<std::vector<RecentFile>> cached_files_ = base::nullopt;
+
+  // File type of the cached GetRecentFiles() response.
+  FileType cached_files_type_ = FileType::kAll;
 
   // Timer to clear the cache.
   base::OneShotTimer cache_clear_timer_;

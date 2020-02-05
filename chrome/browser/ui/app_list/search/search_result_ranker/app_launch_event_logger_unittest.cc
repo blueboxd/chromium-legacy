@@ -23,7 +23,6 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/url_util.h"
 
 namespace app_list {
 
@@ -133,7 +132,6 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeChrome) {
 
   GURL url(std::string("chrome-extension://") + kGmailChromeApp + "/");
 
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   test_ukm_recorder_.SetIsWebstoreExtensionCallback(
       base::BindRepeating(&TestIsWebstoreExtension));
 

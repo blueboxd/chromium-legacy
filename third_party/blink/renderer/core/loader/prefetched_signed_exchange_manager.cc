@@ -61,34 +61,41 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   const WebURLRequest& request() const { return request_; }
 
   // WebURLLoader methods:
-  void LoadSynchronously(const WebURLRequest& request,
-                         WebURLLoaderClient* client,
-                         WebURLResponse& response,
-                         base::Optional<WebURLError>& error,
-                         WebData& data,
-                         int64_t& encoded_data_length,
-                         int64_t& encoded_body_length,
-                         WebBlobInfo& downloaded_blob) override {
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      base::TimeDelta timeout_interval,
+      WebURLLoaderClient* client,
+      WebURLResponse& response,
+      base::Optional<WebURLError>& error,
+      WebData& data,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      WebBlobInfo& downloaded_blob) override {
     NOTREACHED();
   }
-  void LoadAsynchronously(const WebURLRequest& request,
-                          WebURLLoaderClient* client) override {
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      WebURLLoaderClient* client) override {
     if (url_loader_) {
-      url_loader_->LoadAsynchronously(request, client);
+      url_loader_->LoadAsynchronously(
+          std::move(request), std::move(request_extra_data), requestor_id,
+          download_to_network_cache_only, client);
       return;
     }
     // It is safe to use Unretained(client), because |client| is a
     // ResourceLoader which owns |this|, and we are binding with weak ptr of
     // |this| here.
-    WebURLRequest new_request;
-    new_request.CopyFrom(request);
     pending_method_calls_.push(WTF::Bind(
-        &PrefetchedSignedExchangeLoader::LoadAsynchronouslyWithValue,
-        GetWeakPtr(), std::move(new_request), WTF::Unretained(client)));
-  }
-  void LoadAsynchronouslyWithValue(WebURLRequest request,
-                                   WebURLLoaderClient* client) {
-    LoadAsynchronously(request, client);
+        &PrefetchedSignedExchangeLoader::LoadAsynchronously, GetWeakPtr(),
+        std::move(request), std::move(request_extra_data), requestor_id,
+        download_to_network_cache_only, WTF::Unretained(client)));
   }
   void SetDefersLoading(bool value) override {
     if (url_loader_) {

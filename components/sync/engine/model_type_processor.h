@@ -48,7 +48,7 @@ class ModelTypeProcessor {
 
   // Informs this object that a commit attempt failed, e.g. due to network or
   // server issues. The commit may not include all pending entities.
-  virtual void OnCommitFailed();
+  virtual void OnCommitFailed(SyncCommitError commit_error);
 
   // Informs this object that there are some incoming updates it should
   // handle.

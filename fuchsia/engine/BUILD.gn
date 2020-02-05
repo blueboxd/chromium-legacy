@@ -262,6 +262,7 @@ test("web_engine_browsertests") {
     ":web_engine_core",
     "//base/test:test_support",
     "//content/public/browser",
+    "//content/test:test_support",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
     "//net:test_support",

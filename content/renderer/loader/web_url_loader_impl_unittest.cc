@@ -302,18 +302,17 @@ class WebURLLoaderImplTest : public testing::Test {
     client_.reset(new TestWebURLLoaderClient(&dispatcher_));
   }
 
-  ~WebURLLoaderImplTest() override {}
+  ~WebURLLoaderImplTest() override = default;
 
   void DoStartAsyncRequest() {
-    DoStartAsyncRequestWithPriority(blink::WebURLRequest::Priority::kVeryLow);
-  }
-
-  void DoStartAsyncRequestWithPriority(
-      blink::WebURLRequest::Priority priority) {
-    blink::WebURLRequest request{GURL(kTestURL)};
-    request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-    request.SetPriority(priority);
-    client()->loader()->LoadAsynchronously(request, client());
+    auto request = std::make_unique<network::ResourceRequest>();
+    request->url = GURL(kTestURL);
+    request->fetch_request_context_type =
+        static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
+    request->priority = net::IDLE;
+    client()->loader()->LoadAsynchronously(
+        std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
+        /*download_to_network_cache_only=*/false, client());
     ASSERT_TRUE(peer());
   }
 
@@ -467,17 +466,20 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   // Initialize the request and the stream override.
   const GURL kRequestURL = GURL(kTestURL);
   const std::string kMimeType = "application/javascript";
-  blink::WebURLRequest request(kRequestURL);
-  request.SetRequestContext(blink::mojom::RequestContextType::SCRIPT);
-  request.SetPriority(blink::WebURLRequest::Priority::kVeryLow);
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override(
-      new NavigationResponseOverrideParameters());
+  auto response_override =
+      std::make_unique<NavigationResponseOverrideParameters>();
   response_override->response_head->mime_type = kMimeType;
   auto extra_data = base::MakeRefCounted<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
-  request.SetExtraData(std::move(extra_data));
 
-  client()->loader()->LoadAsynchronously(request, client());
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = kRequestURL;
+  request->fetch_request_context_type =
+      static_cast<int>(blink::mojom::RequestContextType::SCRIPT);
+
+  client()->loader()->LoadAsynchronously(
+      std::move(request), std::move(extra_data), /*requestor_id=*/0,
+      /*download_to_network_cache_only=*/false, client());
 
   ASSERT_TRUE(peer());
   EXPECT_EQ(kRequestURL, dispatcher()->url());
@@ -610,9 +612,12 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   const int kEncodedBodyLength = 30;
   const int kEncodedDataLength = 130;
   const GURL url(kTestURL);
-  blink::WebURLRequest request(url);
-  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-  request.SetPriority(blink::WebURLRequest::Priority::kHighest);
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+  request->fetch_request_context_type =
+      static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
+  request->priority = net::HIGHEST;
 
   // Prepare a mock response
   SyncLoadResponse sync_load_response;
@@ -630,9 +635,13 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
   blink::WebBlobInfo downloaded_blob;
-  client()->loader()->LoadSynchronously(request, nullptr, response, error, data,
-                                        encoded_data_length,
-                                        encoded_body_length, downloaded_blob);
+
+  client()->loader()->LoadSynchronously(
+      std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
+      /*download_to_network_cache_only=*/false,
+      /*pass_response_pipe_to_client=*/false, base::TimeDelta(), nullptr,
+      response, error, data, encoded_data_length, encoded_body_length,
+      downloaded_blob);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);

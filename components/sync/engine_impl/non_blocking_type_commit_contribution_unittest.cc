@@ -333,8 +333,9 @@ TEST(NonBlockingTypeCommitContributionTest, ShouldPropagateFullCommitFailure) {
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  base::MockOnceCallback<void()> on_commit_failure_callback;
-  EXPECT_CALL(on_commit_failure_callback, Run);
+  base::MockOnceCallback<void(SyncCommitError commit_error)>
+      on_commit_failure_callback;
+  EXPECT_CALL(on_commit_failure_callback, Run(SyncCommitError::kNetworkError));
 
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), CommitRequestDataList(),
@@ -343,7 +344,7 @@ TEST(NonBlockingTypeCommitContributionTest, ShouldPropagateFullCommitFailure) {
       PassphraseType::kCustomPassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
-  contribution.ProcessCommitFailure();
+  contribution.ProcessCommitFailure(SyncCommitError::kNetworkError);
   contribution.CleanUp();
 }
 

@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
@@ -455,6 +456,10 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceRequest resource_request(test_url);
   resource_request.SetInspectorId(CreateUniqueIdentifier());
+  resource_request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
+  resource_request.SetReferrerPolicy(
+      ReferrerPolicyResolveDefault(resource_request.GetReferrerPolicy()));
+  resource_request.SetPriority(WebURLRequest::Priority::kLow);
   ImageResource* image_resource = ImageResource::Create(resource_request);
   fetcher->StartLoad(image_resource);
 

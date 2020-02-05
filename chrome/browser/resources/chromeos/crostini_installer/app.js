@@ -204,6 +204,7 @@ Polymer({
   onNextButtonClick_() {
     assert(this.state_ === State.PROMPT);
     this.state_ = State.CONFIGURE;
+    this.$.install.focus();
   },
 
   /** @private */
@@ -468,6 +469,17 @@ Polymer({
    */
   showUsernameSelection_() {
     return loadTimeData.getBoolean('crostiniCustomUsername');
+  },
+
+  /**
+   * @private
+   */
+  getConfigureMessageTitle_() {
+    // If the flags only allow username config, then we show a username specific
+    // subtitle instead of a generic configure subtitle.
+    if (this.showUsernameSelection_() && !this.showDiskResizing_())
+      return loadTimeData.getString('usernameMessage');
+    return loadTimeData.getString('configureMessage');
   },
 
   /** @private */

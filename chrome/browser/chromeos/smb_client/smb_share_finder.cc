@@ -84,23 +84,23 @@ void SmbShareFinder::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
   scanner_.RegisterHostLocator(std::move(locator));
 }
 
-std::string SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
+SmbUrl SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
   DCHECK(url.IsValid());
 
   const std::string ip_address = scanner_.ResolveHost(url.GetHost()).ToString();
   // Return the original URL if the resolved host cannot be found or if there is
   // no change in the resolved IP address.
   if (ip_address.empty() || ip_address == url.GetHost()) {
-    return url.ToString();
+    return url;
   }
 
   return url.ReplaceHost(ip_address);
 }
 
 bool SmbShareFinder::TryResolveUrl(const SmbUrl& url,
-                                   std::string* updated_url) const {
+                                   SmbUrl* updated_url) const {
   *updated_url = GetResolvedUrl(url);
-  return *updated_url != url.ToString();
+  return updated_url->ToString() != url.ToString();
 }
 
 void SmbShareFinder::OnHostsFound(bool success, const HostMap& hosts) {

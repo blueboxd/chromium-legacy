@@ -16,11 +16,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
@@ -231,15 +234,22 @@ LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
       version_(0),
       store_birthday_(0),
       persistent_file_(persistent_file),
+      writer_(persistent_file_,
+              base::CreateSequencedTaskRunner(
+                  {base::ThreadPool(), base::MayBlock(),
+                   base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       observer_for_tests_(nullptr) {
   DCHECK(!persistent_file_.empty());
   Init();
 }
 
-LoopbackServer::~LoopbackServer() {}
+LoopbackServer::~LoopbackServer() {
+  if (writer_.HasPendingWrite())
+    writer_.DoScheduledWrite();
+}
 
 void LoopbackServer::Init() {
-  if (LoadStateFromFile(persistent_file_))
+  if (LoadStateFromFile())
     return;
 
   store_birthday_ = base::Time::Now().ToJavaTime();
@@ -367,8 +377,7 @@ net::HttpStatusCode LoopbackServer::HandleCommand(
 
   response->set_store_birthday(GetStoreBirthday());
 
-  // TODO(pastarmovj): This should be done asynchronously.
-  SaveStateToFile(persistent_file_);
+  ScheduleSaveStateToFile();
   return net::HTTP_OK;
 }
 
@@ -823,45 +832,52 @@ bool LoopbackServer::DeSerializeState(
   return true;
 }
 
-// Saves all entities and server state to a protobuf file in |filename|.
-bool LoopbackServer::SaveStateToFile(const base::FilePath& filename) const {
+bool LoopbackServer::SerializeData(std::string* data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pb::LoopbackServerProto proto;
   SerializeState(&proto);
+  if (!proto.SerializeToString(data)) {
+    LOG(ERROR) << "Loopback sync proto could not be serialized";
+    return false;
+  }
+  UMA_HISTOGRAM_MEMORY_KB(
+      "Sync.Local.FileSizeKB",
+      base::saturated_cast<base::Histogram::Sample>(
+          base::ClampDiv(base::ClampAdd(data->size(), 512), 1024)));
+  return true;
+}
 
-  std::string serialized = proto.SerializeAsString();
-  if (!base::CreateDirectory(filename.DirName())) {
+bool LoopbackServer::ScheduleSaveStateToFile() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!base::CreateDirectory(persistent_file_.DirName())) {
     LOG(ERROR) << "Loopback sync could not create the storage directory.";
     return false;
   }
-  int result = base::WriteFile(filename, serialized.data(), serialized.size());
-  if (result == static_cast<int>(serialized.size()))
-    UMA_HISTOGRAM_MEMORY_KB("Sync.Local.FileSizeKB", result / 1024);
-  // TODO(pastarmovj): Add new UMA here to catch error counts.
-  return result == static_cast<int>(serialized.size());
+
+  writer_.ScheduleWrite(this);
+  return true;
 }
 
-// Loads all entities and server state from a protobuf file in |filename|.
-bool LoopbackServer::LoadStateFromFile(const base::FilePath& filename) {
-  if (base::PathExists(filename)) {
-    std::string serialized;
-    if (base::ReadFileToString(filename, &serialized)) {
-      sync_pb::LoopbackServerProto proto;
-      if (serialized.length() > 0 && proto.ParseFromString(serialized)) {
-        return DeSerializeState(proto);
-      } else {
-        LOG(ERROR) << "Loopback sync can not parse the persistent state file.";
-        return false;
-      }
-    } else {
-      // TODO(pastarmovj): Try to understand what is the issue e.g. file already
-      // open, no access rights etc. and decide if better course of action is
-      // available instead of giving up and wiping the global state on the next
-      // write.
-      LOG(ERROR) << "Loopback sync can not read the persistent state file.";
-      return false;
-    }
+bool LoopbackServer::LoadStateFromFile() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!base::PathExists(persistent_file_)) {
+    LOG(WARNING) << "Loopback sync persistent state file does not exist.";
+    return false;
   }
-  LOG(WARNING) << "Loopback sync persistent state file does not exist.";
+  std::string serialized;
+  if (base::ReadFileToString(persistent_file_, &serialized)) {
+    sync_pb::LoopbackServerProto proto;
+    if (serialized.length() > 0 && proto.ParseFromString(serialized)) {
+      return DeSerializeState(proto);
+    }
+    LOG(ERROR) << "Loopback sync can not parse the persistent state file.";
+    return false;
+  }
+  // TODO(pastarmovj): Try to understand what is the issue e.g. file already
+  // open, no access rights etc. and decide if better course of action is
+  // available instead of giving up and wiping the global state on the next
+  // write.
+  LOG(ERROR) << "Loopback sync can not read the persistent state file.";
   return false;
 }
 

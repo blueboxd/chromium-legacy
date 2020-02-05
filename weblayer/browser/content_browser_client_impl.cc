@@ -43,6 +43,7 @@
 #include "url/origin.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
 #include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
@@ -146,7 +147,14 @@ void HandleSSLErrorWrapper(
 namespace weblayer {
 
 ContentBrowserClientImpl::ContentBrowserClientImpl(MainParams* params)
-    : params_(params) {}
+    : params_(params),
+      feature_list_creator_(std::make_unique<FeatureListCreator>()) {
+  if (!SystemNetworkContextManager::HasInstance())
+    SystemNetworkContextManager::CreateInstance(GetUserAgent());
+
+  feature_list_creator_->SetSystemNetworkContextManager(
+      SystemNetworkContextManager::GetInstance());
+}
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl() = default;
 
@@ -281,14 +289,6 @@ void ContentBrowserClientImpl::OnNetworkServiceCreated(
   network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
-
-  // Create SystemNetworkContextManager if it has not been created yet. We need
-  // to set up global NetworkService state before anything else uses it and this
-  // is the first opportunity to initialize SystemNetworkContextManager with the
-  // NetworkService.
-  if (!SystemNetworkContextManager::HasInstance())
-    SystemNetworkContextManager::CreateInstance(GetUserAgent());
-
   SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(
       network_service);
 }
@@ -441,6 +441,10 @@ void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   PopulateWebLayerFrameBinders(render_frame_host, map);
+}
+
+void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {
+  feature_list_creator_->CreateFeatureListAndFieldTrials();
 }
 
 #if defined(OS_ANDROID)

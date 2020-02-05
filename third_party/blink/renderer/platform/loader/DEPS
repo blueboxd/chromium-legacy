@@ -63,4 +63,13 @@ specific_include_rules = {
   "replaying_web_data_consumer_handle.h": [
       "+third_party/blink/renderer/platform/waitable_event.h",
   ],
+  "request_conversion.cc": [
+     # This file consists of conversion functions and hence needs to access
+     # both the blink and chromium mojom variants.
+     "+net/base/request_priority.h",
+     "+net/http/http_request_headers.h",
+     "+net/http/http_util.h",
+     "+third_party/blink/public/mojom/blob/blob.mojom.h",
+     "+services/network/public/mojom/data_pipe_getter.mojom.h",
+  ]
 }

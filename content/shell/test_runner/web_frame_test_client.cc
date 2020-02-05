@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/test_runner_support.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
@@ -386,7 +387,9 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
 
   if (test_runner()->ClearReferrer()) {
     request.SetReferrerString(blink::WebString());
-    request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
+    request.SetReferrerPolicy(
+        content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+            content::Referrer::GetDefaultReferrerPolicy()));
   }
 
   std::string host = url.host();

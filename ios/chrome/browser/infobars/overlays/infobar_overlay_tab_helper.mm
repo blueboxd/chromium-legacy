@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
 
 #include "base/logging.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
@@ -45,6 +46,10 @@ InfobarOverlayTabHelper::OverlayRequestScheduler::~OverlayRequestScheduler() =
 
 void InfobarOverlayTabHelper::OverlayRequestScheduler::OnInfoBarAdded(
     InfoBar* infobar) {
+  // Skip showing banner if it was requested. Badge and modals will keep
+  // showing.
+  if (static_cast<InfoBarIOS*>(infobar)->skip_banner())
+    return;
   tab_helper_->request_inserter()->AddOverlayRequest(
       infobar, InfobarOverlayType::kBanner);
 }

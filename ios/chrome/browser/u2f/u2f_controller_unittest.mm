@@ -62,6 +62,7 @@ class U2FControllerTest : public PlatformTest {
   }
 
   U2FController* _U2FController;
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 TEST_F(U2FControllerTest, XCallbackFromRequestURLWithCorrectFlowTest) {

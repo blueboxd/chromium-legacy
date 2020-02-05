@@ -19,8 +19,7 @@ MenuListInnerElement::CustomStyleForLayoutObject() {
   const ComputedStyle& parent_style = OwnerShadowHost()->ComputedStyleRef();
   scoped_refptr<ComputedStyle> style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
-                                                     EDisplay::kBlock);
-  AdjustInnerStyle(parent_style, *style);
+                                                     EDisplay::kNone);
   return style;
 }
 

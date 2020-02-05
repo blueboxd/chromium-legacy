@@ -21,6 +21,10 @@ class ContentTestSuiteBase : public base::TestSuite {
   // registered temporarily so that it can provide additional schemes.
   static void RegisterContentSchemes(ContentClient* content_client);
 
+  // Re-initializes content's schemes even if schemes have already been
+  // registered.
+  static void ReRegisterContentSchemes();
+
   // Registers renderer/utility/gpu processes to run in-thread.
   static void RegisterInProcessThreads();
 

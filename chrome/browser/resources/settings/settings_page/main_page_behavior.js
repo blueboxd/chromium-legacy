@@ -2,13 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {Route, Router} from '../router.m.js';
+// #import {SettingsRoutes} from '../settings_routes.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * @enum {string}
    * A categorization of every possible Settings URL, necessary for implementing
    * a finite state machine.
    */
-  const RouteState = {
+  /* #export */ const RouteState = {
     // Initial state before anything has loaded yet.
     INITIAL: 'initial',
     // A dialog that has a dedicated URL (e.g. /importData).
@@ -50,7 +57,7 @@ cr.define('settings', function() {
    * container. At most one section should be expanded at any given time.
    * @polymerBehavior
    */
-  const MainPageBehavior = {
+  /* #export */ const MainPageBehavior = {
     properties: {
       /**
        * Whether a search operation is in progress or previous search results
@@ -138,13 +145,15 @@ cr.define('settings', function() {
      * @private
      */
     shouldExpandAdvanced_(route) {
+      const routes = /** @type {!SettingsRoutes} */ (
+          settings.Router.getInstance().getRoutes());
       return (
                  this.tagName == 'SETTINGS-BASIC-PAGE'
                  // <if expr="chromeos">
                  || this.tagName == 'OS-SETTINGS-PAGE'
                  // </if>
                  ) &&
-          settings.routes.ADVANCED && settings.routes.ADVANCED.contains(route);
+          routes.ADVANCED && routes.ADVANCED.contains(route);
     },
 
     /**
@@ -197,9 +206,12 @@ cr.define('settings', function() {
       // TODO(dpapad): On chrome://os-settings the lazy_load.html file resides
       // at a different path. Remove conditional logic once this file is not
       // shared between chrome://settings and chrome://os-settings.
+      // TODO(rbpotter): Fix this to work correctly in Polymer 3, instead of
+      // just removing the importHref lines.
       const lazyLoadPathPrefix =
           window.origin === 'chrome://settings' ? '' : '/chromeos';
-      Polymer.importHref(`${lazyLoadPathPrefix}/lazy_load.html`, () => {});
+      /* #ignore */ Polymer.importHref(
+          /* #ignore */ `${lazyLoadPathPrefix}/lazy_load.html`, () => {});
 
       this.ensureSectionForRoute_(route).then(section => {
         section.classList.add('expanded');

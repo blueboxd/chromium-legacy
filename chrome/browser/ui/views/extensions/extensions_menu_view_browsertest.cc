@@ -382,8 +382,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
 }
 
+// TODO(crbug.com/1049036): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       TriggeringExtensionClosesMenu) {
+                       DISABLED_TriggeringExtensionClosesMenu) {
   LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
   VerifyUi();
@@ -451,8 +452,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   DismissUi();
 }
 
+// TODO(crbug.com/1048980): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       ManageExtensionsOpensExtensionsPage) {
+                       DISABLED_ManageExtensionsOpensExtensionsPage) {
   ShowUi("");
   VerifyUi();
 

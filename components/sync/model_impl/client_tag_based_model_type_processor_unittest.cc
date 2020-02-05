@@ -175,7 +175,9 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     }
   }
 
-  void OnCommitAttemptFailed() override { commit_failures_count_++; }
+  void OnCommitAttemptFailed(syncer::SyncCommitError commit_error) override {
+    commit_failures_count_++;
+  }
 
   void SetOnCommitAttemptErrorsCallback(
       base::OnceCallback<void(const FailedCommitResponseDataList&)> callback) {
@@ -2544,7 +2546,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldPropagateFullCommitFailure) {
   ASSERT_EQ(0, bridge()->commit_failures_count());
 
-  type_processor()->OnCommitFailed();
+  type_processor()->OnCommitFailed(syncer::SyncCommitError::kNetworkError);
   EXPECT_EQ(1, bridge()->commit_failures_count());
 }
 

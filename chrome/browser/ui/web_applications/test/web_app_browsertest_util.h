@@ -34,6 +34,21 @@ ExternalInstallOptions CreateInstallOptions(const GURL& url);
 // Synchronous version of PendingAppManager::Install.
 InstallResultCode PendingAppManagerInstall(Profile*, ExternalInstallOptions);
 
+// If |proceed_through_interstitial| is true, asserts that a security
+// interstitial is shown, and clicks through it, before returning.
+void NavigateToURLAndWait(Browser* browser,
+                          const GURL& url,
+                          bool proceed_through_interstitial = false);
+
+enum AppMenuCommandState {
+  kEnabled,
+  kDisabled,
+  kNotPresent,
+};
+
+// For a non-app browser, determines if the command is enabled/disabled/absent.
+AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_

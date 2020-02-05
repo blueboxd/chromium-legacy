@@ -249,17 +249,6 @@ TEST(ContentSecurityPolicy, BlobAllowedWhenBypassingCSP) {
       false, false, &context, SourceLocation(), false));
 }
 
-TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
-  auto policy = DefaultSrc("https", "example.com");
-
-  EXPECT_FALSE(ShouldUpgradeInsecureRequest(policy));
-
-  policy->directives.push_back(network::mojom::CSPDirective::New(
-      CSPDirectiveName::UpgradeInsecureRequests,
-      network::mojom::CSPSourceList::New()));
-  EXPECT_TRUE(ShouldUpgradeInsecureRequest(policy));
-}
-
 TEST(ContentSecurityPolicy, NavigateToChecks) {
   GURL url_a("https://a");
   GURL url_b("https://b");

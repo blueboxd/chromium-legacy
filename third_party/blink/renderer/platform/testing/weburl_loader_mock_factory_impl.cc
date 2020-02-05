@@ -118,18 +118,18 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
   while (!pending_loaders_.IsEmpty()) {
     LoaderToRequestMap::iterator iter = pending_loaders_.begin();
     base::WeakPtr<WebURLLoaderMock> loader(iter->key->GetWeakPtr());
-    WebURLRequest request;
-    request.CopyFrom(iter->value);
+    std::unique_ptr<network::ResourceRequest> request = std::move(iter->value);
     pending_loaders_.erase(loader.get());
 
     WebURLResponse response;
     base::Optional<WebURLError> error;
     WebData data;
-    LoadRequest(request.Url(), &response, &error, &data);
+    LoadRequest(WebURL(KURL(request->url)), &response, &error, &data);
     // Follow any redirects while the loader is still active.
     while (response.HttpStatusCode() >= 300 &&
            response.HttpStatusCode() < 400) {
-      WebURL new_url = loader->ServeRedirect(request, response);
+      WebURL new_url = loader->ServeRedirect(
+          WebString::FromLatin1(request->method), response);
       RunUntilIdle();
       if (!loader || loader->is_cancelled() || loader->is_deferred())
         break;
@@ -205,22 +205,20 @@ void WebURLLoaderMockFactoryImpl::CancelLoad(WebURLLoaderMock* loader) {
 }
 
 void WebURLLoaderMockFactoryImpl::LoadSynchronously(
-    const WebURLRequest& request,
+    std::unique_ptr<network::ResourceRequest> request,
     WebURLResponse* response,
     base::Optional<WebURLError>* error,
     WebData* data,
     int64_t* encoded_data_length) {
-  LoadRequest(request.Url(), response, error, data);
+  LoadRequest(WebURL(KURL(request->url)), response, error, data);
   *encoded_data_length = data->size();
 }
 
 void WebURLLoaderMockFactoryImpl::LoadAsynchronouly(
-    const WebURLRequest& request,
+    std::unique_ptr<network::ResourceRequest> request,
     WebURLLoaderMock* loader) {
   DCHECK(!pending_loaders_.Contains(loader));
-  WebURLRequest new_request;
-  new_request.CopyFrom(request);
-  pending_loaders_.Set(loader, std::move(new_request));
+  pending_loaders_.Set(loader, std::move(request));
 }
 
 void WebURLLoaderMockFactoryImpl::RunUntilIdle() {

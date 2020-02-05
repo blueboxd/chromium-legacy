@@ -122,7 +122,8 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
      * Calls native side code to create an infobar.
      */
     public static void maybeLaunchSyncErrorInfoBar(WebContents webContents) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ERROR_INFOBAR_ANDROID)) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ERROR_INFOBAR_ANDROID)
+                || webContents == null) {
             return;
         }
         @SyncErrorInfoBarType

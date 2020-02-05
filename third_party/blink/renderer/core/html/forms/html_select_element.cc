@@ -2327,42 +2327,18 @@ String HTMLSelectElement::UpdateFromElement() {
     }
   }
 
-  auto& inner_element = InnerElement();
-  const ComputedStyle* inner_style = inner_element.GetComputedStyle();
-  if (inner_style && option_style_ &&
-      ((option_style_->Direction() != inner_style->Direction() ||
-        option_style_->GetUnicodeBidi() != inner_style->GetUnicodeBidi()))) {
-    scoped_refptr<ComputedStyle> cloned_style =
-        ComputedStyle::Clone(*inner_style);
-    cloned_style->SetDirection(option_style_->Direction());
-    cloned_style->SetUnicodeBidi(option_style_->GetUnicodeBidi());
-    if (auto* inner_layout = inner_element.GetLayoutObject()) {
-      inner_layout->SetModifiedStyleOutsideStyleRecalc(
-          std::move(cloned_style), LayoutObject::ApplyStyleChanges::kYes);
-    } else {
-      inner_element.SetComputedStyle(std::move(cloned_style));
-    }
-  }
-  if (GetLayoutObject())
+  String stripped = text.StripWhiteSpace();
+  if (auto* layout_object = GetLayoutObject()) {
+    ToLayoutMenuList(layout_object)->SetText(stripped);
+    layout_object->UpdateFromElement();
     DidUpdateMenuListActiveOption(option);
-
-  return text.StripWhiteSpace();
+  }
+  return stripped;
 }
 
 void HTMLSelectElement::UpdateMenuListLabel(const String& label) {
-  if (!UsesMenuList())
-    return;
-  InnerElement().setTextContent(label);
-  // LayoutMenuList::ControlClipRect() depends on the content box size of
-  // inner_element.
-  if (auto* box = GetLayoutBox()) {
-    box->SetNeedsPaintPropertyUpdate();
-    if (auto* layer = box->Layer())
-      layer->SetNeedsCompositingInputsUpdate();
-
-    if (auto* cache = GetDocument().ExistingAXObjectCache())
-      cache->TextChanged(box);
-  }
+  if (UsesMenuList())
+    InnerElement().setTextContent(label);
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {

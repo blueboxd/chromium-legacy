@@ -72,7 +72,6 @@ class ElementInnerTextCollector final {
   static bool IsBeingRendered(const Node& node);
   // Returns true if used value of "display" is block-level.
   static bool IsDisplayBlockLevel(const Node&);
-  static LayoutObject* PreviousLeafOf(const LayoutObject& layout_object);
   static bool ShouldEmitNewlineForTableRow(
       const LayoutNGTableRowInterface& table_row);
 
@@ -81,7 +80,6 @@ class ElementInnerTextCollector final {
   void ProcessChildrenWithRequiredLineBreaks(const Node& node,
                                              int required_line_break_count);
   void ProcessLayoutText(const LayoutText& layout_text, const Text& text_node);
-  void ProcessLayoutTextEmpty(const LayoutText& layout_text);
   void ProcessNode(const Node& node);
   void ProcessOptionElement(const HTMLOptionElement& element);
   void ProcessSelectElement(const HTMLSelectElement& element);
@@ -178,19 +176,6 @@ bool ElementInnerTextCollector::IsDisplayBlockLevel(const Node& node) {
   // Note: CAPTION is associated to |LayoutNGTableCaption| in LayoutNG or
   // |LayoutBlockFlow| in legacy layout.
   return true;
-}
-
-// static
-LayoutObject* ElementInnerTextCollector::PreviousLeafOf(
-    const LayoutObject& layout_object) {
-  LayoutObject* parent = layout_object.Parent();
-  for (LayoutObject* runner = layout_object.PreviousInPreOrder(); runner;
-       runner = runner->PreviousInPreOrder()) {
-    if (runner != parent)
-      return runner;
-    parent = runner->Parent();
-  }
-  return nullptr;
 }
 
 // static

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -21,6 +22,9 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -144,6 +148,20 @@ Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
       gfx::Rect(), profile, true /* user_gesture */));
   browser_params.is_focus_mode = true;
   return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
+}
+
+void SetAppPrefsForWebContents(content::WebContents* web_contents) {
+  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  web_contents->SyncRendererPrefs();
+
+  web_contents->NotifyPreferencesChanged();
+}
+
+void ClearAppPrefsForWebContents(content::WebContents* web_contents) {
+  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
+  web_contents->SyncRendererPrefs();
+
+  web_contents->NotifyPreferencesChanged();
 }
 
 }  // namespace web_app

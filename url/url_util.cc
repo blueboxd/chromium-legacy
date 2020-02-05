@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <atomic>
 
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -95,9 +96,24 @@ struct SchemeRegistry {
   bool allow_non_standard_schemes = false;
 };
 
-SchemeRegistry* GetSchemeRegistry() {
+// See the LockSchemeRegistries declaration in the header.
+bool scheme_registries_locked = false;
+
+// Ensure that the schemes aren't modified after first use.
+static std::atomic<bool> g_scheme_registries_used{false};
+
+// Gets the scheme registry without locking the schemes. This should *only* be
+// used for adding schemes to the registry.
+SchemeRegistry* GetSchemeRegistryWithoutLocking() {
   static base::NoDestructor<SchemeRegistry> registry;
   return registry.get();
+}
+
+const SchemeRegistry& GetSchemeRegistry() {
+#if DCHECK_IS_ON()
+  g_scheme_registries_used.store(true);
+#endif
+  return *GetSchemeRegistryWithoutLocking();
 }
 
 // Pass this enum through for methods which would like to know if whitespace
@@ -106,9 +122,6 @@ enum WhitespaceRemovalPolicy {
   REMOVE_WHITESPACE,
   DO_NOT_REMOVE_WHITESPACE,
 };
-
-// See the LockSchemeRegistries declaration in the header.
-bool scheme_registries_locked = false;
 
 // This template converts a given character type to the corresponding
 // StringPiece type.
@@ -159,7 +172,7 @@ bool DoIsInSchemes(const CHAR* spec,
 template<typename CHAR>
 bool DoIsStandard(const CHAR* spec, const Component& scheme, SchemeType* type) {
   return DoIsInSchemes(spec, scheme, type,
-                       GetSchemeRegistry()->standard_schemes);
+                       GetSchemeRegistry().standard_schemes);
 }
 
 
@@ -443,7 +456,16 @@ bool DoReplaceComponents(const char* spec,
   return ReplacePathURL(spec, parsed, replacements, output, out_parsed);
 }
 
-void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
+void DoSchemeModificationPreamble() {
+  // If this assert triggers, it means you've called Add*Scheme after
+  // the SchemeRegistry has been used.
+  //
+  // This normally means you're trying to set up a new scheme too late or using
+  // the SchemeRegistry too early in your application's init process. Make sure
+  // that you haven't added any static GURL initializers in tests.
+  DCHECK(!g_scheme_registries_used.load())
+      << "Trying to add a scheme after the lists have been used.";
+
   // If this assert triggers, it means you've called Add*Scheme after
   // LockSchemeRegistries has been called (see the header file for
   // LockSchemeRegistries for more).
@@ -453,105 +475,145 @@ void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
   // and calls LockSchemeRegistries, and add your new scheme there.
   DCHECK(!scheme_registries_locked)
       << "Trying to add a scheme after the lists have been locked.";
+}
 
+void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
+  DoSchemeModificationPreamble();
   DCHECK(schemes);
   DCHECK(strlen(new_scheme) > 0);
   DCHECK_EQ(base::ToLowerASCII(new_scheme), new_scheme);
+  DCHECK(std::find(schemes->begin(), schemes->end(), new_scheme) ==
+         schemes->end());
   schemes->push_back(new_scheme);
 }
 
 void DoAddSchemeWithType(const char* new_scheme,
                          SchemeType type,
                          std::vector<SchemeWithType>* schemes) {
-  // See DoAddScheme above.
-  DCHECK(!scheme_registries_locked)
-      << "Trying to add a scheme after the lists have been locked.";
-
+  DoSchemeModificationPreamble();
   DCHECK(schemes);
   DCHECK(strlen(new_scheme) > 0);
   DCHECK_EQ(base::ToLowerASCII(new_scheme), new_scheme);
+  DCHECK(std::find_if(schemes->begin(), schemes->end(),
+                      [&new_scheme](const SchemeWithType& scheme) {
+                        return scheme.scheme == new_scheme;
+                      }) == schemes->end());
   schemes->push_back({new_scheme, type});
 }
 
 }  // namespace
 
-void ResetForTests() {
-  *GetSchemeRegistry() = SchemeRegistry();
+void ClearSchemesForTests() {
+  DCHECK(!g_scheme_registries_used.load())
+      << "Schemes already used "
+      << "(use ScopedSchemeRegistryForTests to relax for tests).";
+  DCHECK(!scheme_registries_locked)
+      << "Schemes already locked "
+      << "(use ScopedSchemeRegistryForTests to relax for tests).";
+  *GetSchemeRegistryWithoutLocking() = SchemeRegistry();
 }
 
+class ScopedSchemeRegistryInternal {
+ public:
+  ScopedSchemeRegistryInternal()
+      : registry_(std::make_unique<SchemeRegistry>(
+            *GetSchemeRegistryWithoutLocking())) {
+    g_scheme_registries_used.store(false);
+    scheme_registries_locked = false;
+  }
+  ~ScopedSchemeRegistryInternal() {
+    *GetSchemeRegistryWithoutLocking() = *registry_;
+    g_scheme_registries_used.store(true);
+    scheme_registries_locked = true;
+  }
+
+ private:
+  std::unique_ptr<SchemeRegistry> registry_;
+};
+
+ScopedSchemeRegistryForTests::ScopedSchemeRegistryForTests()
+    : internal_(std::make_unique<ScopedSchemeRegistryInternal>()) {}
+
+ScopedSchemeRegistryForTests::~ScopedSchemeRegistryForTests() = default;
+
 void EnableNonStandardSchemesForAndroidWebView() {
-  // See DoAddScheme above.
-  DCHECK(!scheme_registries_locked)
-      << "Trying to modify schemes after the lists have been locked.";
-  GetSchemeRegistry()->allow_non_standard_schemes = true;
+  DoSchemeModificationPreamble();
+  GetSchemeRegistryWithoutLocking()->allow_non_standard_schemes = true;
 }
 
 bool AllowNonStandardSchemesForAndroidWebView() {
-  return GetSchemeRegistry()->allow_non_standard_schemes;
+  return GetSchemeRegistry().allow_non_standard_schemes;
 }
 
 void AddStandardScheme(const char* new_scheme, SchemeType type) {
-  DoAddSchemeWithType(new_scheme, type, &GetSchemeRegistry()->standard_schemes);
+  DoAddSchemeWithType(new_scheme, type,
+                      &GetSchemeRegistryWithoutLocking()->standard_schemes);
 }
 
 void AddReferrerScheme(const char* new_scheme, SchemeType type) {
-  DoAddSchemeWithType(new_scheme, type, &GetSchemeRegistry()->referrer_schemes);
+  DoAddSchemeWithType(new_scheme, type,
+                      &GetSchemeRegistryWithoutLocking()->referrer_schemes);
 }
 
 void AddSecureScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->secure_schemes);
+  DoAddScheme(new_scheme, &GetSchemeRegistryWithoutLocking()->secure_schemes);
 }
 
 const std::vector<std::string>& GetSecureSchemes() {
-  return GetSchemeRegistry()->secure_schemes;
+  return GetSchemeRegistry().secure_schemes;
 }
 
 void AddLocalScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->local_schemes);
+  DoAddScheme(new_scheme, &GetSchemeRegistryWithoutLocking()->local_schemes);
 }
 
 const std::vector<std::string>& GetLocalSchemes() {
-  return GetSchemeRegistry()->local_schemes;
+  return GetSchemeRegistry().local_schemes;
 }
 
 void AddNoAccessScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->no_access_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->no_access_schemes);
 }
 
 const std::vector<std::string>& GetNoAccessSchemes() {
-  return GetSchemeRegistry()->no_access_schemes;
+  return GetSchemeRegistry().no_access_schemes;
 }
 
 void AddCorsEnabledScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->cors_enabled_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->cors_enabled_schemes);
 }
 
 const std::vector<std::string>& GetCorsEnabledSchemes() {
-  return GetSchemeRegistry()->cors_enabled_schemes;
+  return GetSchemeRegistry().cors_enabled_schemes;
 }
 
 void AddWebStorageScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->web_storage_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->web_storage_schemes);
 }
 
 const std::vector<std::string>& GetWebStorageSchemes() {
-  return GetSchemeRegistry()->web_storage_schemes;
+  return GetSchemeRegistry().web_storage_schemes;
 }
 
 void AddCSPBypassingScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->csp_bypassing_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->csp_bypassing_schemes);
 }
 
 const std::vector<std::string>& GetCSPBypassingSchemes() {
-  return GetSchemeRegistry()->csp_bypassing_schemes;
+  return GetSchemeRegistry().csp_bypassing_schemes;
 }
 
 void AddEmptyDocumentScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->empty_document_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->empty_document_schemes);
 }
 
 const std::vector<std::string>& GetEmptyDocumentSchemes() {
-  return GetSchemeRegistry()->empty_document_schemes;
+  return GetSchemeRegistry().empty_document_schemes;
 }
 
 void LockSchemeRegistries() {
@@ -583,7 +645,7 @@ bool IsStandard(const base::char16* spec, const Component& scheme) {
 bool IsReferrerScheme(const char* spec, const Component& scheme) {
   SchemeType unused_scheme_type;
   return DoIsInSchemes(spec, scheme, &unused_scheme_type,
-                       GetSchemeRegistry()->referrer_schemes);
+                       GetSchemeRegistry().referrer_schemes);
 }
 
 bool FindAndCompareScheme(const char* str,

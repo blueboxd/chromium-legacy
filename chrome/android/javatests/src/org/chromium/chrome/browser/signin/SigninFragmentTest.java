@@ -80,13 +80,29 @@ public class SigninFragmentTest {
     @Test
     @LargeTest
     @Feature("RenderTest")
-    public void testSigninFragmentNotDefaultAccount() throws IOException {
+    public void testSigninFragmentNotDefaultAccountWithPrimaryAccount() throws IOException {
         Account account = mSyncTestRule.setUpTestAccount();
+        SigninTestUtil.addTestAccount("test.second.account@gmail.com");
         View view = getSigninFragmentViewAfterStartingActivity(() -> {
             SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
                     mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER, account.name);
         });
-        mRenderTestRule.render(view, "signin_fragment_not_default_account");
+        mRenderTestRule.render(view, "signin_fragment_choose_primary_account");
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSigninFragmentNotDefaultAccountWithSecondaryAccount() throws IOException {
+        mSyncTestRule.setUpTestAccount();
+        String secondAccountName = "test.second.account@gmail.com";
+        SigninTestUtil.addTestAccount(secondAccountName);
+        View view = getSigninFragmentViewAfterStartingActivity(() -> {
+            SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
+                    mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
+                    secondAccountName);
+        });
+        mRenderTestRule.render(view, "signin_fragment_choose_secondary_account");
     }
 
     @Test

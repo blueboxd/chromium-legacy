@@ -54,6 +54,8 @@ class TestAppRegistrar : public AppRegistrar {
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
+  std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+      const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
 

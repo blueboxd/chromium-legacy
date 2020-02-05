@@ -33,11 +33,6 @@ bool CONTENT_EXPORT CheckContentSecurityPolicy(
     const SourceLocation& source_location,
     bool is_form_submission);
 
-// Returns true if |policy| specifies that an insecure HTTP request should be
-// upgraded to HTTPS.
-bool CONTENT_EXPORT ShouldUpgradeInsecureRequest(
-    const network::mojom::ContentSecurityPolicyPtr& policy);
-
 std::string CONTENT_EXPORT ToString(const network::mojom::CSPDirectivePtr&);
 
 }  // namespace content

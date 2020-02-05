@@ -48,7 +48,7 @@ void MockModelTypeProcessor::OnCommitCompleted(
     RunQueuedTasks();
 }
 
-void MockModelTypeProcessor::OnCommitFailed() {
+void MockModelTypeProcessor::OnCommitFailed(SyncCommitError commit_error) {
   ++commit_failures_count_;
 }
 

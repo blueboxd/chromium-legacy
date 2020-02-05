@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UTIL_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UTIL_H_
 
+#include <vector>
+
+#include "chrome/common/web_application_info.h"
+
 namespace content {
 class BrowserContext;
 }
@@ -46,6 +50,9 @@ const Extension* GetInstalledShortcutForUrl(Profile* profile, const GURL& url);
 // Count a number of all bookmark apps which are installed by user
 // (non default-installed apps).
 int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context);
+
+std::vector<SquareSizePx> GetBookmarkAppDownloadedIconSizes(
+    const Extension* extension);
 
 }  // namespace extensions
 

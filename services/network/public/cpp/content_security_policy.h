@@ -35,6 +35,17 @@ void AddContentSecurityPolicyFromHeaders(
     const GURL& base_url,
     std::vector<mojom::ContentSecurityPolicyPtr>* out);
 
+// Return true if the set of |policies| contains one "Upgrade-Insecure-request"
+// directive.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool ShouldUpgradeInsecureRequest(
+    const std::vector<mojom::ContentSecurityPolicyPtr>& policies);
+
+// Upgrade scheme of the |url| from HTTP to HTTPS and its port from 80 to 433
+// (if needed). This is a no-op on non-HTTP and on potentially trustworthy URL.
+COMPONENT_EXPORT(NETWORK_CPP)
+void UpgradeInsecureRequest(GURL* url);
+
 COMPONENT_EXPORT(NETWORK_CPP)
 std::string ToString(mojom::CSPDirectiveName name);
 

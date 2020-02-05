@@ -404,4 +404,56 @@ TEST(ContentSecurityPolicy, ParseReportEndpoint) {
   }
 }
 
+// Check URL are upgraded iif "upgrade-insecure-requests" directive is defined.
+TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
+  std::vector<mojom::ContentSecurityPolicyPtr> policies;
+
+  EXPECT_FALSE(ShouldUpgradeInsecureRequest(policies));
+
+  policies.push_back(mojom::ContentSecurityPolicy::New());
+  policies[0]->directives.push_back(mojom::CSPDirective::New());
+  policies[0]->directives[0]->name =
+      mojom::CSPDirectiveName::UpgradeInsecureRequests;
+
+  EXPECT_TRUE(ShouldUpgradeInsecureRequest(policies));
+}
+
+// Check upgraded URLs are only the Non-trusted Non-HTTP URLs.
+TEST(ContentSecurityPolicy, UpgradeInsecureRequests) {
+  std::vector<mojom::ContentSecurityPolicyPtr> policies;
+  policies.push_back(mojom::ContentSecurityPolicy::New());
+  policies[0]->directives.push_back(mojom::CSPDirective::New());
+  policies[0]->directives[0]->name =
+      mojom::CSPDirectiveName::UpgradeInsecureRequests;
+
+  struct {
+    std::string input;
+    std::string output;
+  } kTestCases[]{
+      // Non trusted Non-HTTP URLs are upgraded.
+      {"http://example.com", "https://example.com"},
+      {"http://example.com:80", "https://example.com:443"},
+
+      // Non-standard ports should not be modified.
+      {"http://example.com:8088", "https://example.com:8088"},
+
+      // Trusted Non-HTTPS URLs don't need to be modified.
+      {"http://127.0.0.1", "http://127.0.0.1"},
+      {"http://127.0.0.8", "http://127.0.0.8"},
+      {"http://localhost", "http://localhost"},
+      {"http://sub.localhost", "http://sub.localhost"},
+
+      // Non-HTTP URLs don't need to be modified.
+      {"https://example.com", "https://example.com"},
+      {"data:text/html,<html></html>", "data:text/html,<html></html>"},
+      {"weird-scheme://this.is.a.url", "weird-scheme://this.is.a.url"},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    GURL url(test_case.input);
+    UpgradeInsecureRequest(&url);
+    EXPECT_EQ(url, GURL(test_case.output));
+  }
+}
+
 }  // namespace network

@@ -1615,10 +1615,12 @@ static void VoidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 }
 
 static void VoidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidMethodNullableAndOptionalObjectArgs");
+
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 2)) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", ExceptionMessages::NotEnoughArguments(2, info.Length())));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
     return;
   }
 
@@ -1631,34 +1633,21 @@ static void VoidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
       break;
     --num_args_passed;
   }
-  if (info[0]->IsObject()) {
-    object_arg = ScriptValue(info.GetIsolate(), info[0]);
-  } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 1 ('objectArg') is not an object."));
+  object_arg = NativeValueTraits<IDLObject>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
-  }
 
-  if (info[1]->IsObject()) {
-    nullable_object_arg = ScriptValue(info.GetIsolate(), info[1]);
-  } else if (info[1]->IsNullOrUndefined()) {
-    nullable_object_arg = ScriptValue(info.GetIsolate(), v8::Null(info.GetIsolate()));
-  } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 2 ('nullableObjectArg') is not an object."));
+  nullable_object_arg = NativeValueTraits<IDLNullable<IDLObject>>::NativeValue(info.GetIsolate(), info[1], exception_state);
+  if (exception_state.HadException())
     return;
-  }
 
   if (UNLIKELY(num_args_passed <= 2)) {
     impl->voidMethodNullableAndOptionalObjectArgs(object_arg, nullable_object_arg);
     return;
   }
-  if (info[2]->IsObject()) {
-    optional_object_arg = ScriptValue(info.GetIsolate(), info[2]);
-  } else if (info[2]->IsUndefined()) {
-    optional_object_arg = ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
-  } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 3 ('optionalObjectArg') is not an object."));
+  optional_object_arg = NativeValueTraits<IDLObject>::NativeValue(info.GetIsolate(), info[2], exception_state);
+  if (exception_state.HadException())
     return;
-  }
 
   impl->voidMethodNullableAndOptionalObjectArgs(object_arg, nullable_object_arg, optional_object_arg);
 }

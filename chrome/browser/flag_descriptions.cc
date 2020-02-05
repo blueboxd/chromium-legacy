@@ -2768,6 +2768,12 @@ const char kHappinessTrackingSurveysForDesktopSettingsDescription[] =
     "Enable showing Happiness Tracking Surveys for Settings to users on "
     "Desktop";
 
+const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[] =
+    "Happiness Tracking Surveys for Privacy Settings";
+const char kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[] =
+    "Enable showing Happiness Tracking Surveys for Privacy Settings to users "
+    "on Desktop";
+
 const char kIntentPickerName[] = "Intent picker";
 const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"

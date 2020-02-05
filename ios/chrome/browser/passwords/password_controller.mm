@@ -150,7 +150,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 // is prompted to update the password. If |type| is SAVE, the user is prompted
 // to save the password.
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
-               infoBarType:(PasswordInfoBarType)type;
+               infoBarType:(PasswordInfoBarType)type
+                    manual:(BOOL)manual;
+
+// Removes infobar for given |type| if it exists. If it is not found the
+// request is silently ignored (because that use case is expected).
+- (void)removeInfoBarOfType:(PasswordInfoBarType)type manual:(BOOL)manual;
 
 // Hides auto sign-in notification. Removes the view from superview and destroys
 // the controller.
@@ -516,15 +521,24 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)showSavePasswordInfoBar:
-    (std::unique_ptr<PasswordFormManagerForUI>)formToSave {
+            (std::unique_ptr<PasswordFormManagerForUI>)formToSave
+                         manual:(BOOL)manual {
   [self showInfoBarForForm:std::move(formToSave)
-               infoBarType:PasswordInfoBarType::SAVE];
+               infoBarType:PasswordInfoBarType::SAVE
+                    manual:manual];
 }
 
 - (void)showUpdatePasswordInfoBar:
-    (std::unique_ptr<PasswordFormManagerForUI>)formToUpdate {
+            (std::unique_ptr<PasswordFormManagerForUI>)formToUpdate
+                           manual:(BOOL)manual {
   [self showInfoBarForForm:std::move(formToUpdate)
-               infoBarType:PasswordInfoBarType::UPDATE];
+               infoBarType:PasswordInfoBarType::UPDATE
+                    manual:manual];
+}
+
+- (void)removePasswordInfoBarManualFallback:(BOOL)manual {
+  [self removeInfoBarOfType:PasswordInfoBarType::SAVE manual:manual];
+  [self removeInfoBarOfType:PasswordInfoBarType::UPDATE manual:manual];
 }
 
 // Shows auto sign-in notification and schedules hiding it after 3 seconds.
@@ -653,8 +667,48 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   }];
 }
 
+- (InfoBarIOS*)findInfobarOfType:(InfobarType)infobarType manual:(BOOL)manual {
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(_webState);
+
+  size_t count = infoBarManager->infobar_count();
+  for (size_t i = 0; i < count; i++) {
+    InfoBarIOS* infobar =
+        static_cast<InfoBarIOS*>(infoBarManager->infobar_at(i));
+    if (infobar->InfobarUIDelegate().infobarType == infobarType &&
+        infobar->skip_banner() == manual)
+      return infobar;
+  }
+
+  return nil;
+}
+
+- (void)removeInfoBarOfType:(PasswordInfoBarType)type manual:(BOOL)manual {
+  if (!IsInfobarUIRebootEnabled())
+    return;
+
+  InfoBarIOS* infobar = nil;
+  switch (type) {
+    case PasswordInfoBarType::SAVE: {
+      infobar = [self findInfobarOfType:InfobarType::kInfobarTypePasswordSave
+                                 manual:manual];
+      break;
+    }
+    case PasswordInfoBarType::UPDATE: {
+      infobar = [self findInfobarOfType:InfobarType::kInfobarTypePasswordUpdate
+                                 manual:manual];
+      break;
+    }
+  }
+
+  if (infobar) {
+    InfoBarManagerImpl::FromWebState(_webState)->RemoveInfoBar(infobar);
+  }
+}
+
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
-               infoBarType:(PasswordInfoBarType)type {
+               infoBarType:(PasswordInfoBarType)type
+                    manual:(BOOL)manual {
   if (!_webState)
     return;
 
@@ -678,8 +732,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
             [[InfobarPasswordCoordinator alloc]
                 initWithInfoBarDelegate:delegate.get()
                                    type:InfobarType::kInfobarTypePasswordSave];
-        infoBarManager->AddInfoBar(
-            std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
+        // If manual save, skip showing banner.
+        std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
+            coordinator, std::move(delegate), /*skip_banner=*/manual);
+        infoBarManager->AddInfoBar(std::move(infobar));
       } else {
         IOSPasswordInfoBarController* controller =
             [[IOSPasswordInfoBarController alloc]
@@ -698,9 +754,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
             alloc]
             initWithInfoBarDelegate:delegate.get()
                                type:InfobarType::kInfobarTypePasswordUpdate];
-        infoBarManager->AddInfoBar(
-            std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
-
+        // If manual save, skip showing banner.
+        std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
+            coordinator, std::move(delegate), /*skip_banner=*/manual);
+        infoBarManager->AddInfoBar(std::move(infobar));
       } else {
         IOSChromeUpdatePasswordInfoBarDelegate::Create(
             isSyncUser, infoBarManager, std::move(form),

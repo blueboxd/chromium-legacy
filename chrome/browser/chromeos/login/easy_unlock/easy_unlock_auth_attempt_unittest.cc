@@ -99,8 +99,6 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     ADD_FAILURE() << "Should not be reached.";
   }
 
-  // TODO(crbug.com/927498): This tests is the only dependency on
-  // ScreenlockBridge::EnableInput. It should be removed.
   void EnableInput() override {
     ASSERT_EQ(STATE_ATTEMPTING_UNLOCK, state_);
     state_ = STATE_UNLOCK_CANCELED;

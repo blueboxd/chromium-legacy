@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
       callback;
   EXPECT_CALL(
       callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_ERROR)));
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_SERVER_ERROR)));
 
   ASSERT_TRUE(SetupSync());
   GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::TRANSIENT_ERROR);

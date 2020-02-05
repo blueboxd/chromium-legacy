@@ -326,8 +326,8 @@
                                                      browser:self.browser];
 
   self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
+      initWithBaseViewController:self.viewController];
+  self.passwordBreachCoordinator.dispatcher = self.dispatcher;
 
   self.printController = [[PrintController alloc] init];
 

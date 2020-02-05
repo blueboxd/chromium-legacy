@@ -21,6 +21,8 @@ namespace syncer {
 
 static const int64_t kUncommittedVersion = -1;
 
+enum class SyncCommitError { kNetworkError, kServerError, kBadServerResponse };
+
 struct CommitRequestData {
   CommitRequestData();
   ~CommitRequestData();

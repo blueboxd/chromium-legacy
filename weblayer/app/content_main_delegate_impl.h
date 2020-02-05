@@ -26,7 +26,9 @@ class ContentMainDelegateImpl : public content::ContentMainDelegate {
 
   // ContentMainDelegate implementation:
   bool BasicStartupComplete(int* exit_code) override;
+  bool ShouldCreateFeatureList() override;
   void PreSandboxStartup() override;
+  void PostEarlyInitialization(bool is_running_tests) override;
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;

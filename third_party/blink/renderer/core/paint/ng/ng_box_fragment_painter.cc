@@ -2010,21 +2010,25 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
   DCHECK(container.HasFloatingDescendantsForPaint());
   auto children = container.Children();
   for (const NGLink& child : base::Reversed(children)) {
-    if (child->IsFloating()) {
-      if (HitTestAllPhases(hit_test, *child,
-                           accumulated_offset + child.Offset()))
+    const NGPhysicalFragment& child_fragment = *child.fragment;
+    if (child_fragment.HasSelfPaintingLayer())
+      continue;
+
+    const PhysicalOffset child_offset = accumulated_offset + child.offset;
+
+    if (child_fragment.IsFloating()) {
+      if (HitTestAllPhases(hit_test, child_fragment, child_offset))
         return true;
       continue;
     }
 
-    if (child->IsBlockFormattingContextRoot())
+    if (child_fragment.IsBlockFormattingContextRoot())
       continue;
 
     if (const auto* child_container =
-            DynamicTo<NGPhysicalContainerFragment>(child.get())) {
+            DynamicTo<NGPhysicalContainerFragment>(&child_fragment)) {
       if (child_container->HasFloatingDescendantsForPaint() &&
-          HitTestFloatingChildren(hit_test, *child_container,
-                                  accumulated_offset + child.Offset()))
+          HitTestFloatingChildren(hit_test, *child_container, child_offset))
         return true;
     }
   }

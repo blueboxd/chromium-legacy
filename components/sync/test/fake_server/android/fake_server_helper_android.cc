@@ -12,6 +12,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -55,6 +56,7 @@ void FakeServerHelperAndroid::DeleteFakeServer(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                jlong fake_server,
                                                jlong profile_sync_service) {
+  base::ScopedAllowBlockingForTesting scoped_allow;
   syncer::ProfileSyncService* sync_service =
       reinterpret_cast<syncer::ProfileSyncService*>(profile_sync_service);
   sync_service->OverrideNetworkForTest(syncer::CreateHttpPostProviderFactory());

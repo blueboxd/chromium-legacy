@@ -113,6 +113,11 @@ void TestDictionary::setObjectOrNullMemberToNull() {
   object_or_null_member_ = ScriptValue();
 }
 
+void TestDictionary::setObjectOrNullSequenceMember(const HeapVector<ScriptValue>& value) {
+  object_or_null_sequence_member_ = value;
+  has_object_or_null_sequence_member_ = true;
+}
+
 void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
   other_double_or_string_member_ = value;
 }
@@ -218,6 +223,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(internal_dictionary_sequence_member_);
   visitor->Trace(object_member_);
   visitor->Trace(object_or_null_member_);
+  visitor->Trace(object_or_null_sequence_member_);
   visitor->Trace(other_double_or_string_member_);
   visitor->Trace(required_callback_function_member_);
   visitor->Trace(test_enum_or_null_or_test_enum_sequence_member_);

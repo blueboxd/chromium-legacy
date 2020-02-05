@@ -114,7 +114,7 @@ class SmbShareFinderTest : public testing::Test {
 
   // Helper function that expects |url| to resolve to |expected|.
   void ExpectResolvedHost(const SmbUrl& url, const std::string& expected) {
-    EXPECT_EQ(expected, share_finder_->GetResolvedUrl(url));
+    EXPECT_EQ(expected, share_finder_->GetResolvedUrl(url).ToString());
   }
 
   void ExpectDiscoveryCalled(int32_t expected) {

@@ -157,7 +157,8 @@ SyncerError DirectoryCommitContribution::ProcessCommitResponse(
   }
 }
 
-void DirectoryCommitContribution::ProcessCommitFailure() {}
+void DirectoryCommitContribution::ProcessCommitFailure(
+    SyncCommitError commit_error) {}
 
 void DirectoryCommitContribution::CleanUp() {
   DCHECK(syncing_bits_set_);

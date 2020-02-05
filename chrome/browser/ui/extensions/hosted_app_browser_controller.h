@@ -31,14 +31,6 @@ class Extension;
 class HostedAppBrowserController : public web_app::AppBrowserController,
                                    public ExtensionUninstallDialog::Delegate {
  public:
-  // Functions to set preferences that are unique to app windows.
-  static void SetAppPrefsForWebContents(
-      web_app::AppBrowserController* controller,
-      content::WebContents* web_contents);
-
-  // Clear preferences that are unique to app windows.
-  static void ClearAppPrefsForWebContents(content::WebContents* web_contents);
-
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController() override;
 

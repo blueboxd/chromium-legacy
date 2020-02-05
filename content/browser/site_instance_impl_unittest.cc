@@ -114,13 +114,12 @@ class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
 
 class SiteInstanceTest : public testing::Test {
  public:
-  SiteInstanceTest() : old_browser_client_(nullptr) {}
+  SiteInstanceTest() : old_browser_client_(nullptr) {
+    url::AddStandardScheme(kPrivilegedScheme, url::SCHEME_WITH_HOST);
+  }
 
   void SetUp() override {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
-    url::AddStandardScheme(kPrivilegedScheme, url::SCHEME_WITH_HOST);
-    url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
-
     RenderProcessHostImpl::set_render_process_host_factory_for_testing(
         &rph_factory_);
   }
@@ -142,8 +141,6 @@ class SiteInstanceTest : public testing::Test {
     // scheduled for deletion. Here, call DrainMessageLoop() again so the
     // AppCacheDatabase actually gets deleted.
     DrainMessageLoop();
-
-    ResetSchemesAndOriginsWhitelist();
   }
 
   void set_privileged_process_id(int process_id) {
@@ -178,6 +175,8 @@ class SiteInstanceTest : public testing::Test {
   SiteInstanceTestBrowserClient browser_client_;
   ContentBrowserClient* old_browser_client_;
   MockRenderProcessHostFactory rph_factory_;
+
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // Test to ensure no memory leaks for SiteInstance objects.

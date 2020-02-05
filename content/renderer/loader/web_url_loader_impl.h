@@ -66,16 +66,26 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       const GURL& url);
 
   // WebURLLoader methods:
-  void LoadSynchronously(const blink::WebURLRequest& request,
-                         blink::WebURLLoaderClient* client,
-                         blink::WebURLResponse& response,
-                         base::Optional<blink::WebURLError>& error,
-                         blink::WebData& data,
-                         int64_t& encoded_data_length,
-                         int64_t& encoded_body_length,
-                         blink::WebBlobInfo& downloaded_blob) override;
-  void LoadAsynchronously(const blink::WebURLRequest& request,
-                          blink::WebURLLoaderClient* client) override;
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      base::TimeDelta timeout_interval,
+      blink::WebURLLoaderClient* client,
+      blink::WebURLResponse& response,
+      base::Optional<blink::WebURLError>& error,
+      blink::WebData& data,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      blink::WebBlobInfo& downloaded_blob) override;
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      blink::WebURLLoaderClient* client) override;
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;

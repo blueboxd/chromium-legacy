@@ -283,8 +283,7 @@ class DeviceDisplayResolutionTest : public DeviceDisplayResolutionTestBase {
   DISALLOW_COPY_AND_ASSIGN(DeviceDisplayResolutionTest);
 };
 
-// crbug.com/1000694.
-IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, DISABLED_Internal) {
+IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, Internal) {
   const PolicyValue policy_value = GetParam();
 
   EXPECT_EQ(kDefaultDisplayScale, GetScaleOfInternalDisplay())
@@ -301,9 +300,7 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, DISABLED_Internal) {
       << "Scale of primary display after policy";
 }
 
-// crbug.com/1000694.
-IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
-                       DISABLED_ResizeExternalDisplay) {
+IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, ResizeExternalDisplay) {
   const PolicyValue policy_value = GetParam();
 
   AddExternalDisplay();
@@ -331,9 +328,7 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
       << "Primary display scale after resizing external";
 }
 
-// crbug.com/1000694.
-IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
-                       DISABLED_ConnectExternalDisplay) {
+IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, ConnectExternalDisplay) {
   const PolicyValue policy_value = GetParam();
 
   SetPolicy(policy_value);
@@ -353,9 +348,7 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
       << "Primary display scale after connecting external";
 }
 
-// crbug.com/1000694.
-IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest,
-                       DISABLED_SetAndUnsetPolicy) {
+IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, SetAndUnsetPolicy) {
   const PolicyValue policy_value = GetParam();
   AddExternalDisplay();
   SetPolicy(policy_value);
@@ -448,8 +441,7 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
       << "Initial primary display scale after policy set";
 }
 
-// crbug.com/1000694.
-IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, DISABLED_Reboot) {
+IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, Reboot) {
   const PolicyValue policy_value = GetParam();
 
   AddExternalDisplay();
@@ -502,9 +494,7 @@ class DeviceDisplayResolutionRecommendedTest
   DISALLOW_COPY_AND_ASSIGN(DeviceDisplayResolutionRecommendedTest);
 };
 
-// crbug.com/1000694.
-IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
-                       DISABLED_Internal) {
+IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest, Internal) {
   const PolicyValue policy_value = GetParam();
   EXPECT_EQ(kDefaultDisplayResolution, GetResolutionOfInternalDisplay())
       << "Initial primary display resolution before policy";
@@ -528,9 +518,8 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
       << "Scale of internal display after user operation";
 }
 
-// crbug.com/1000694.
 IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
-                       DISABLED_ResizeExternalDisplay) {
+                       ResizeExternalDisplay) {
   const PolicyValue policy_value = GetParam();
   AddExternalDisplay();
 

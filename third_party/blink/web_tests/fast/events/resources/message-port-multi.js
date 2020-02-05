@@ -18,7 +18,9 @@ channel.port1.postMessage("two ports", [channel2.port1, channel2.port2]);
 
 // Now test various failure cases
 shouldThrow('channel.port1.postMessage("same port", [channel.port1])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Port at index 0 contains the source port."');
-shouldThrow('channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 1 is an untransferable \'null\' value."');
+shouldThrow(
+    'channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])',
+    '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Failed to convert value to \'object\'."');
 shouldThrow('channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2])', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 1 does not have a transferable type."');
 shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Message port at index 1 is a duplicate of an earlier port."');
 // Should be OK to send channel3.port1 (should not have been disentangled by the previous failed calls).

@@ -10,6 +10,6 @@ ModelTypeProcessor::ModelTypeProcessor() = default;
 
 ModelTypeProcessor::~ModelTypeProcessor() = default;
 
-void ModelTypeProcessor::OnCommitFailed() {}
+void ModelTypeProcessor::OnCommitFailed(SyncCommitError commit_error) {}
 
 }  // namespace syncer

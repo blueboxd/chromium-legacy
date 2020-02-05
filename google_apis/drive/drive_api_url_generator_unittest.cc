@@ -29,10 +29,11 @@ class DriveApiUrlGeneratorTest : public testing::Test {
     url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   }
 
-  ~DriveApiUrlGeneratorTest() override { url::ResetForTests(); }
-
  protected:
   DriveApiUrlGenerator url_generator_;
+
+ private:
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 // Make sure the hard-coded urls are returned.

@@ -2189,14 +2189,19 @@ body.files-ng .table-header {
   font-family: 'Roboto Medium';
   height: 56px;
   line-height: 20px;
-  padding-bottom: 16px;
-  padding-top: 20px;
 }
 
 body.files-ng .table-header-label {
+  font-weight: normal;
   line-height: 20px;
   margin-inline-end: 5px;
   margin-inline-start: 24px;
+}
+
+body.files-ng .table-header-cell {
+  cursor: pointer;
+  padding-bottom: 16px;
+  padding-top: 20px;
 }
 
 body.files-ng #list-container .table-header-cell:first-child
@@ -2244,10 +2249,15 @@ body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
   animation: none;
 }
 
+body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
+  border-radius: 16px;
+}
+
 body.files-ng .table-row-cell > * {
   color: var(--google-grey-700);
   padding: 0;
   padding-inline-start: 24px;
+  padding-top: 0 !important;
 }
 
 body.files-ng #list-container .table-row-cell .size {
@@ -2265,6 +2275,7 @@ body.files-ng .table-row-cell:first-child > * {
 
 body.files-ng .table-row-cell .filename-label {
   color: var(--google-grey-900);
+  padding-top: 0;
 }
 
 body.files-ng.check-select list:focus li[selected] .table-row-cell

@@ -137,8 +137,8 @@ Test for setting invalid enum value in union sequence
 PASS dictionaryTest.set({internalEnumOrInternalEnumSequenceMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
 PASS dictionaryTest.set({internalEnumOrInternalEnumSequenceMember: ['invalid']}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
 Test for setting invalid object value
-PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
-PASS dictionaryTest.set({objectMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
+PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': Failed to convert value to 'object'..
+PASS dictionaryTest.set({objectMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': Failed to convert value to 'object'..
 
 
 Test for setting invalid Element value
@@ -226,7 +226,7 @@ PASS derived.requiredBooleanMember is false
 
 
 Test for passing invalid values as derived dictionary
-PASS dictionaryTest.setDerived({objectMember: 42, requiredBooleanMember: false }) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': member objectMember is not an object..
+PASS dictionaryTest.setDerived({objectMember: 42, requiredBooleanMember: false }) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': Failed to convert value to 'object'..
 PASS dictionaryTest.setDerived({}) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': required member requiredBooleanMember is undefined..
 PASS successfullyParsed is true
 

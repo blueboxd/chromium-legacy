@@ -24,390 +24,343 @@ cr.define('settings_site_settings_page', function() {
         page.remove();
       });
 
-      test('LogCookiesClick', function() {
+      test('LogAllSiteSettingsPageClicks', async function() {
+        page.$$('#all-sites').click();
+        let result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ALL,
+            result);
+
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#cookies').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_COOKIES,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_COOKIES,
+            result);
 
-      test('LogLocationClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#location').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_LOCATION,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_LOCATION,
+            result);
 
-      test('LogCameraClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#camera').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_CAMERA,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_CAMERA,
+            result);
 
-      test('LogMicrophoneClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#microphone').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_MICROPHONE,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_MICROPHONE,
+            result);
 
-      test('LogSensorsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#sensors').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_SENSORS,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_SENSORS,
+            result);
 
-      test('LogNotificationsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#notifications').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_NOTIFICATIONS,
-                  result);
-            });
-      });
-    });
-  }
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_NOTIFICATIONS,
+            result);
 
-  // Split tests into 4 to prevent timeout.
-  function registerUMALoggingTestsPart2() {
-    suite('SiteSettingsPageUMACheckPart2', function() {
-      /** @type {settings.TestPrivacyPageBrowserProxy} */
-      let testBrowserProxy;
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
 
-      /** @type {SettingsSiteSettingsPageElement} */
-      let page;
-
-      setup(function() {
-        testBrowserProxy = new TestMetricsBrowserProxy();
-        settings.MetricsBrowserProxyImpl.instance_ = testBrowserProxy;
-        PolymerTest.clearBody();
-        page = document.createElement('settings-site-settings-page');
-        document.body.appendChild(page);
-        Polymer.dom.flush();
-      });
-
-      teardown(function() {
-        page.remove();
-      });
-
-      test('LogJavascriptClick', function() {
         page.$$('#javascript').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_JAVASCRIPT,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_JAVASCRIPT,
+            result);
 
-      test('LogFlashClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#flash').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_FLASH,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_FLASH,
+            result);
 
-      test('LogImagesClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#images').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_IMAGES,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_IMAGES,
+            result);
 
-      test('LogPopupsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#popups').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_POPUPS,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_POPUPS,
+            result);
 
-      if (loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter')) {
-        test('LogAdsClick', function() {
-          page.$$('#ads').click();
-          return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-              .then(result => {
-                assertEquals(
-                    settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ADS,
-                    result);
-              });
-        });
-      }
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
 
-      test('LogBackgroundSyncClick', function() {
         page.$$('#background-sync').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_BACKGROUND_SYNC,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_BACKGROUND_SYNC,
+            result);
 
-      test('LogSoundClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#sound').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_SOUND,
-                  result);
-            });
-      });
-    });
-  }
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_SOUND,
+            result);
 
-  // Split tests into 4 to prevent timeout.
-  function registerUMALoggingTestsPart3() {
-    suite('SiteSettingsPageUMACheckPart3', function() {
-      /** @type {settings.TestPrivacyPageBrowserProxy} */
-      let testBrowserProxy;
+        if (loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
 
-      /** @type {SettingsSiteSettingsPageElement} */
-      let page;
+          page.$$('#ads').click();
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ADS,
+              result);
+        }
 
-      setup(function() {
-        testBrowserProxy = new TestMetricsBrowserProxy();
-        settings.MetricsBrowserProxyImpl.instance_ = testBrowserProxy;
-        PolymerTest.clearBody();
-        page = document.createElement('settings-site-settings-page');
-        document.body.appendChild(page);
-        Polymer.dom.flush();
-      });
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
 
-      teardown(function() {
-        page.remove();
-      });
-
-      test('LogAutomaticDownloadsClick', function() {
         page.$$('#automatic-downloads').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
+            result);
 
-      test('LogUnsandboxedPluginsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#unsandboxed-plugins').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_UNSANDBOXED_PLUGINS,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_UNSANDBOXED_PLUGINS,
+            result);
 
-      if (!loadTimeData.getBoolean('isGuest')) {
-        test('LogHandlersClick', function() {
+        if (!loadTimeData.getBoolean('isGuest')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
+
           page.$$('#protocol-handlers').click();
-          return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-              .then(result => {
-                assertEquals(
-                    settings.SettingsPageInteractions
-                        .PRIVACY_SITE_SETTINGS_HANDLERS,
-                    result);
-              });
-        });
-      }
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_HANDLERS,
+              result);
+        }
 
-      test('LogMidiDevicesClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#midi-devices').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_MIDI_DEVICES,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_MIDI_DEVICES,
+            result);
 
-      test('LogZoomLevelsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#zoom-levels').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_ZOOM_LEVELS,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ZOOM_LEVELS,
+            result);
 
-      test('LogUSBDevicesClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#usb-devices').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_USB_DEVICES,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_USB_DEVICES,
+            result);
 
-      test('LogSerialPortsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#serial-ports').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_SERIAL_PORTS,
-                  result);
-            });
-      });
-    });
-  }
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_SERIAL_PORTS,
+            result);
 
-  // Split tests into 4 to prevent timeout.
-  function registerUMALoggingTestsPart4() {
-    suite('SiteSettingsPageUMACheckPart4', function() {
-      /** @type {settings.TestPrivacyPageBrowserProxy} */
-      let testBrowserProxy;
+        if (loadTimeData.getBoolean(
+                'enableNativeFileSystemWriteContentSetting')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
 
-      /** @type {SettingsSiteSettingsPageElement} */
-      let page;
-
-      setup(function() {
-        testBrowserProxy = new TestMetricsBrowserProxy();
-        settings.MetricsBrowserProxyImpl.instance_ = testBrowserProxy;
-        PolymerTest.clearBody();
-        page = document.createElement('settings-site-settings-page');
-        document.body.appendChild(page);
-        Polymer.dom.flush();
-      });
-
-      teardown(function() {
-        page.remove();
-      });
-
-      if (loadTimeData.getBoolean(
-              'enableNativeFileSystemWriteContentSetting')) {
-        test('LogNativeFileSystemWriteClick', function() {
           page.$$('#native-file-system-write').click();
-          return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-              .then(result => {
-                assertEquals(
-                    settings.SettingsPageInteractions
-                        .PRIVACY_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
-                    result);
-              });
-        });
-      }
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions
+                  .PRIVACY_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
+              result);
+        }
 
-      test('LogPDFDocumentsClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#pdf-documents').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_PDF_DOCUMENTS,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_PDF_DOCUMENTS,
+            result);
 
-      test('LogProtectedContentClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#protected-content').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions
+                .PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT,
+            result);
 
-      test('LogClipboardClick', function() {
+        settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+        testBrowserProxy.reset();
+
         page.$$('#clipboard').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions
-                      .PRIVACY_SITE_SETTINGS_CLIPBOARD,
-                  result);
-            });
-      });
+        result =
+            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_CLIPBOARD,
+            result);
 
-      if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
-        test('LogPaymentHandlerClick', function() {
+        if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
+
           page.$$('#paymentHandler').click();
-          return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-              .then(result => {
-                assertEquals(
-                    settings.SettingsPageInteractions
-                        .PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER,
-                    result);
-              });
-        });
-      }
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions
+                  .PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER,
+              result);
+        }
 
-      if (loadTimeData.getBoolean('enableInsecureContentContentSetting')) {
-        test('LogMixedscriptClick', function() {
+        if (loadTimeData.getBoolean('enableInsecureContentContentSetting')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
+
           page.$$('#mixedscript').click();
-          return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-              .then(result => {
-                assertEquals(
-                    settings.SettingsPageInteractions
-                        .PRIVACY_SITE_SETTINGS_MIXEDSCRIPT,
-                    result);
-              });
-        });
-      }
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions
+                  .PRIVACY_SITE_SETTINGS_MIXEDSCRIPT,
+              result);
+        }
 
-      if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
-        test('LogBluetoothScanningClick', function() {
+        if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
+
           page.$$('#bluetooth-scanning').click();
-          return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
-              .then(result => {
-                assertEquals(
-                    settings.SettingsPageInteractions
-                        .PRIVACY_SITE_SETTINGS_BLUETOOTH_SCANNING,
-                    result);
-              });
-        });
-      }
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions
+                  .PRIVACY_SITE_SETTINGS_BLUETOOTH_SCANNING,
+              result);
+        }
+
+        if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
+
+          page.$$('#ar').click();
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_AR,
+              result);
+
+
+          settings.Router.getInstance().navigateTo(
+              settings.routes.SITE_SETTINGS);
+          testBrowserProxy.reset();
+
+          page.$$('#vr').click();
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_VR,
+              result);
+        }
+      });
     });
   }
   return {
     registerUMALoggingTests,
-    registerUMALoggingTestsPart2,
-    registerUMALoggingTestsPart3,
-    registerUMALoggingTestsPart4,
   };
 });

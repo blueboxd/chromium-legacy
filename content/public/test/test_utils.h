@@ -101,9 +101,6 @@ bool AreDefaultSiteInstancesEnabled();
 // the test; the flag will be read on the first real navigation.
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
-// Resets the internal secure schemes/origins whitelist.
-void ResetSchemesAndOriginsWhitelist();
-
 // Returns a GURL constructed from the WebUI scheme and the given host.
 GURL GetWebUIURL(const std::string& host);
 

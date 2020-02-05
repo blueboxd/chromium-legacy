@@ -77,10 +77,6 @@ class PLATFORM_EXPORT KURL {
   USING_FAST_MALLOC(KURL);
 
  public:
-  // This must be called during initialization (before we create
-  // other threads).
-  static void Initialize();
-
   KURL();
   KURL(const KURL&);
 

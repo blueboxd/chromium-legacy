@@ -14,6 +14,7 @@
 #include "net/base/features.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 
 namespace content {
@@ -146,31 +147,10 @@ url::Origin Referrer::SanitizeOriginForRequest(
 // static
 net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
     network::mojom::ReferrerPolicy referrer_policy) {
-  switch (referrer_policy) {
-    case network::mojom::ReferrerPolicy::kAlways:
-      return net::URLRequest::NEVER_CLEAR_REFERRER;
-    case network::mojom::ReferrerPolicy::kNever:
-      return net::URLRequest::NO_REFERRER;
-    case network::mojom::ReferrerPolicy::kOrigin:
-      return net::URLRequest::ORIGIN;
-    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-      return net::URLRequest::
-          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-      return net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
-    case network::mojom::ReferrerPolicy::kSameOrigin:
-      return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN;
-    case network::mojom::ReferrerPolicy::kStrictOrigin:
-      return net::URLRequest::
-          ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-    case network::mojom::ReferrerPolicy::kDefault:
-      return GetDefaultReferrerPolicy();
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      return net::URLRequest::
-          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+  if (referrer_policy == network::mojom::ReferrerPolicy::kDefault) {
+    return GetDefaultReferrerPolicy();
   }
-  return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+  return network::ReferrerPolicyForUrlRequest(referrer_policy);
 }
 
 // static

@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/shared_buffer_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.h"
 #include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -1247,7 +1248,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   DCHECK(loader_);
   DCHECK_EQ(request.Priority(), ResourceLoadPriority::kHighest);
 
-  WrappedResourceRequest request_in(request);
+  auto network_resource_request = std::make_unique<network::ResourceRequest>();
+  PopulateResourceRequest(request, network_resource_request.get());
   WebURLResponse response_out;
   base::Optional<WebURLError> error_out;
   WebData data_out;
@@ -1272,9 +1274,12 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
       data_out = WebData(std::move(data));
     }
   } else {
-    loader_->LoadSynchronously(request_in, this, response_out, error_out,
-                               data_out, encoded_data_length,
-                               encoded_body_length, downloaded_blob);
+    loader_->LoadSynchronously(
+        std::move(network_resource_request), request.GetExtraData(),
+        request.RequestorID(), request.IsDownloadToNetworkCacheOnly(),
+        request.DownloadToBlob(), request.TimeoutInterval(), this, response_out,
+        error_out, data_out, encoded_data_length, encoded_body_length,
+        downloaded_blob);
   }
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
@@ -1324,7 +1329,11 @@ void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {
     return;
   }
 
-  loader_->LoadAsynchronously(WrappedResourceRequest(request), this);
+  auto network_resource_request = std::make_unique<network::ResourceRequest>();
+  PopulateResourceRequest(request, network_resource_request.get());
+  loader_->LoadAsynchronously(std::move(network_resource_request),
+                              request.GetExtraData(), request.RequestorID(),
+                              request.IsDownloadToNetworkCacheOnly(), this);
   if (code_cache_request_) {
     // Sets defers loading and initiates a fetch from code cache.
     code_cache_request_->FetchFromCodeCache(loader_.get(), this);

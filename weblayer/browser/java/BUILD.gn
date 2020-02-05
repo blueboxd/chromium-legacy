@@ -78,6 +78,7 @@ android_library("java") {
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/security_interstitials/content/android:java",
     "//components/spellcheck/browser/android:java",
+    "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//net/android:net_java",

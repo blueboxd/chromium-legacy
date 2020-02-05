@@ -341,11 +341,9 @@ bool ShouldConfigureDefaultContainer(Profile* profile) {
          !default_container_configured && !ansible_playbook_file_path.empty();
 }
 
-bool ShouldAllowContainerUpgrade(Profile* profile) {
-  return CrostiniFeatures::Get()->IsContainerUpgradeUIAllowed(profile) &&
-         crostini::CrostiniManager::GetForProfile(profile)
-             ->IsContainerUpgradeable(ContainerId(
-                 kCrostiniDefaultVmName, kCrostiniDefaultContainerName));
+// TODO(davidmunro): Answer based on flag and current container version.
+bool ShouldAllowContainerUpgrade() {
+  return false;
 }
 
 void LaunchCrostiniApp(Profile* profile,

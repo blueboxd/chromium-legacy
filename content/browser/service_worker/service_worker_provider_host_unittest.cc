@@ -36,6 +36,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -107,13 +108,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ServiceWorkerProviderHostTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
     SetContentClient(&test_content_client_);
+    ReRegisterContentSchemesForTests();
   }
   ~ServiceWorkerProviderHostTest() override {}
 
   void SetUp() override {
     old_content_browser_client_ =
         SetBrowserClientForTesting(&test_content_browser_client_);
-    ResetSchemesAndOriginsWhitelist();
     mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &ServiceWorkerProviderHostTest::OnMojoError, base::Unretained(this)));
 
@@ -143,8 +144,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     registration3_ = nullptr;
     helper_.reset();
     SetBrowserClientForTesting(old_content_browser_client_);
-    // Reset cached security schemes so we don't affect other tests.
-    ResetSchemesAndOriginsWhitelist();
     mojo::core::SetDefaultProcessErrorCallback(
         mojo::core::ProcessErrorCallback());
   }
@@ -341,6 +340,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
                                top_frame_origin);
     return container_host;
   }
+
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
 };

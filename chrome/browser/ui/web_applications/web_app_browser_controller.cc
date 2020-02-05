@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -132,6 +133,16 @@ void WebAppBrowserController::Uninstall() {
 
 bool WebAppBrowserController::IsInstalled() const {
   return registrar().IsInstalled(GetAppId());
+}
+
+void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
+  AppBrowserController::OnTabInserted(contents);
+  web_app::SetAppPrefsForWebContents(contents);
+}
+
+void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
+  AppBrowserController::OnTabRemoved(contents);
+  web_app::ClearAppPrefsForWebContents(contents);
 }
 
 const AppRegistrar& WebAppBrowserController::registrar() const {

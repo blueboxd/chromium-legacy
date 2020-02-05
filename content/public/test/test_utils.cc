@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -209,11 +208,6 @@ bool AreDefaultSiteInstancesEnabled() {
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
-}
-
-void ResetSchemesAndOriginsWhitelist() {
-  url::ResetForTests();
-  ReRegisterContentSchemesForTests();
 }
 
 GURL GetWebUIURL(const std::string& host) {

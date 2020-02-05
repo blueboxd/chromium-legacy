@@ -30,8 +30,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -436,13 +436,13 @@ WebContents* NavigateApplicationWindow(Browser* browser,
   nav_params.disposition = disposition;
   Navigate(&nav_params);
 
-  WebContents* web_contents = nav_params.navigated_or_inserted_contents;
+  WebContents* const web_contents = nav_params.navigated_or_inserted_contents;
 
-  // TODO(https://crbug.com/1034361):
-  // Once WebAppBrowserController implements TabInserted and TabRemoved, remove
-  // the following call.
-  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
-      browser->app_controller(), web_contents);
+  if (extension && !extension->from_bookmark()) {
+    extensions::TabHelper::FromWebContents(web_contents)
+        ->SetExtensionApp(extension);
+  }
+  web_app::SetAppPrefsForWebContents(web_contents);
 
   // TODO(https://crbug.com/1032443):
   // Eventually move this to browser_navigator.cc: CreateTargetContents().

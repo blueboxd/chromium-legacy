@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -781,6 +782,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
               }];
 
   [exportConfirmation addAction:exportAction];
+
+  // Starting with iOS13, alerts of style UIAlertControllerStyleActionSheet
+  // need a sourceView or sourceRect, or this crashes.
+  if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
+    exportConfirmation.popoverPresentationController.sourceView =
+        self.tableView;
+  }
 
   [self presentViewController:exportConfirmation animated:YES completion:nil];
 }

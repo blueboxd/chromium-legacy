@@ -7177,6 +7177,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "ios"
             ],
             "experiments": [

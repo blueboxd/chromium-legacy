@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
@@ -220,6 +221,13 @@ ImageResource* ImageResource::Create(const ResourceRequest& request) {
 ImageResource* ImageResource::CreateForTest(const KURL& url) {
   ResourceRequest request(url);
   request.SetInspectorId(CreateUniqueIdentifier());
+  // These are needed because some unittests don't go through the usual
+  // request setting path in ResourceFetcher.
+  request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
+  request.SetReferrerPolicy(
+      ReferrerPolicyResolveDefault(request.GetReferrerPolicy()));
+  request.SetPriority(WebURLRequest::Priority::kLow);
+
   return Create(request);
 }
 

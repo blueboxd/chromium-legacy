@@ -91,6 +91,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -2706,10 +2707,10 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   // upgrade-insecure-requests is handled in the network code for redirects,
   // only do the upgrade here if this is not a redirect.
   if (!has_followed_redirect && !frame_tree_node()->IsMainFrame()) {
-    if (parent &&
-        parent->ShouldModifyRequestUrlForCsp(true /* is subresource */)) {
+    if (network::ShouldUpgradeInsecureRequest(
+            parent->ContentSecurityPolicies())) {
       upgrade_if_insecure_ = true;
-      parent->ModifyRequestUrlForCsp(&common_params_->url);
+      network::UpgradeInsecureRequest(&common_params_->url);
       commit_params_->original_url = common_params_->url;
     }
   }

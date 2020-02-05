@@ -108,6 +108,10 @@ void ChromeUnitTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ChromeUnitTestSuiteInitializer);
 
+  {
+    ChromeContentClient content_client;
+    RegisterContentSchemes(&content_client);
+  }
   InitializeProviders();
   RegisterInProcessThreads();
 
@@ -127,11 +131,6 @@ void ChromeUnitTestSuite::Shutdown() {
 }
 
 void ChromeUnitTestSuite::InitializeProviders() {
-  {
-    ChromeContentClient content_client;
-    RegisterContentSchemes(&content_client);
-  }
-
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();
   ui::RegisterPathProvider();

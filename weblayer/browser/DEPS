@@ -24,6 +24,7 @@ include_rules = [
   "+components/ssl_errors",
   "+components/startup_metric_utils",
   "+components/strings",
+  "+components/variations",
   "+components/version_info",
   "+components/web_cache/browser",
   "+content/public",

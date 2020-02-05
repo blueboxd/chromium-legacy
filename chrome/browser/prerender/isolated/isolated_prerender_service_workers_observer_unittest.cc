@@ -10,20 +10,19 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace {
-const GURL kTestURL("https://test.com/path?foo=bar");
-const GURL kOtherURL("https://other.com/path?what=ever");
-const url::Origin kTestOrigin(url::Origin::Create(kTestURL));
-const url::Origin kOtherOrigin(url::Origin::Create(kOtherURL));
-}  // namespace
-
 TEST(IsolatedPrerenderServiceWorkersObserverTest, NotReady) {
+  const url::Origin kTestOrigin(
+      url::Origin::Create(GURL("https://test.com/path?foo=bar")));
   IsolatedPrerenderServiceWorkersObserver observer(nullptr);
   EXPECT_EQ(base::nullopt,
             observer.IsServiceWorkerRegisteredForOrigin(kTestOrigin));
 }
 
 TEST(IsolatedPrerenderServiceWorkersObserverTest, UsageInfoCallback) {
+  const url::Origin kTestOrigin(
+      url::Origin::Create(GURL("https://test.com/path?foo=bar")));
+  const url::Origin kOtherOrigin(
+      url::Origin::Create(GURL("https://other.com/path?what=ever")));
   IsolatedPrerenderServiceWorkersObserver observer(nullptr);
 
   content::StorageUsageInfo info{kTestOrigin, /*total_size_bytes=*/0,
@@ -37,6 +36,8 @@ TEST(IsolatedPrerenderServiceWorkersObserverTest, UsageInfoCallback) {
 }
 
 TEST(IsolatedPrerenderServiceWorkersObserverTest, OnRegistration) {
+  const GURL kTestURL("https://test.com/path?foo=bar");
+  const url::Origin kTestOrigin(url::Origin::Create(kTestURL));
   IsolatedPrerenderServiceWorkersObserver observer(nullptr);
   observer.CallOnHasUsageInfoForTesting({});
   EXPECT_EQ(base::Optional<bool>(false),

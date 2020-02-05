@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -115,6 +116,8 @@ public class ManualFillingControllerTest {
     private AccessorySheetCoordinator mMockAccessorySheet;
     @Mock
     private CompositorViewHolder mMockCompositorViewHolder;
+    @Mock
+    private BottomSheetController mMockBottomSheetController;
 
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
@@ -278,6 +281,7 @@ public class ManualFillingControllerTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         KeyboardVisibilityDelegate.setInstance(mMockKeyboard);
+        when(mMockActivity.getBottomSheetController()).thenReturn(mMockBottomSheetController);
         when(mMockWindow.getKeyboardDelegate()).thenReturn(mMockKeyboard);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockKeyboard.calculateKeyboardHeight(any())).thenReturn(0);

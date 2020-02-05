@@ -417,6 +417,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(
     blink::AssociatedInterfaceRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       last_supplied_password_info_iter_(web_input_to_password_info_.end()),
+      field_data_manager_(base::MakeRefCounted<FieldDataManager>()),
       logging_state_active_(false),
       username_autofill_state_(WebAutofillState::kNotFilled),
       password_autofill_state_(WebAutofillState::kNotFilled),
@@ -551,8 +552,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   WebInputElement mutable_element = element;  // We need a non-const.
 
   const base::string16 element_value = element.Value().Utf16();
-  field_data_manager_.UpdateFieldDataMap(element, element_value,
-                                         FieldPropertiesFlags::USER_TYPED);
+  field_data_manager_->UpdateFieldDataMap(element, element_value,
+                                          FieldPropertiesFlags::USER_TYPED);
 
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
 
@@ -637,7 +638,7 @@ void PasswordAutofillAgent::FillField(WebInputElement* input,
   DCHECK(!input->IsNull());
   input->SetAutofillValue(WebString::FromUTF16(credential));
   input->SetAutofillState(WebAutofillState::kAutofilled);
-  field_data_manager_.UpdateFieldDataMap(
+  field_data_manager_->UpdateFieldDataMap(
       *input, credential, FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER);
 }
 
@@ -1309,7 +1310,7 @@ void PasswordAutofillAgent::InformNoSavedCredentials() {
   }
   all_autofilled_elements_.clear();
 
-  field_data_manager_.ClearData();
+  field_data_manager_->ClearData();
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
@@ -1351,27 +1352,27 @@ void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
   }
 
   focus_state_notifier_.FocusedInputChanged(focused_field_type);
-  field_data_manager_.UpdateFieldDataMapWithNullValue(
+  field_data_manager_->UpdateFieldDataMapWithNullValue(
       *input_element, FieldPropertiesFlags::HAD_FOCUS);
 }
 
 std::unique_ptr<PasswordForm> PasswordAutofillAgent::GetPasswordFormFromWebForm(
     const WebFormElement& web_form) {
-  return CreateSimplifiedPasswordFormFromWebForm(web_form, &field_data_manager_,
-                                                 &username_detector_cache_);
+  return CreateSimplifiedPasswordFormFromWebForm(
+      web_form, field_data_manager_.get(), &username_detector_cache_);
 }
 
 std::unique_ptr<PasswordForm>
 PasswordAutofillAgent::GetSimplifiedPasswordFormFromWebForm(
     const WebFormElement& web_form) {
-  return CreateSimplifiedPasswordFormFromWebForm(web_form, &field_data_manager_,
-                                                 &username_detector_cache_);
+  return CreateSimplifiedPasswordFormFromWebForm(
+      web_form, field_data_manager_.get(), &username_detector_cache_);
 }
 
 std::unique_ptr<FormData> PasswordAutofillAgent::GetFormDataFromWebForm(
     const WebFormElement& web_form) {
-  return CreateSimplifiedFormDataFromWebForm(web_form, &field_data_manager_,
-                                             &username_detector_cache_);
+  return CreateSimplifiedFormDataFromWebForm(
+      web_form, field_data_manager_.get(), &username_detector_cache_);
 }
 
 std::unique_ptr<PasswordForm>
@@ -1387,7 +1388,7 @@ PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
   if (!web_frame)
     return nullptr;
   return CreateSimplifiedPasswordFormFromUnownedInputElements(
-      *web_frame, &field_data_manager_, &username_detector_cache_);
+      *web_frame, field_data_manager_.get(), &username_detector_cache_);
 }
 
 std::unique_ptr<PasswordForm>
@@ -1399,7 +1400,7 @@ PasswordAutofillAgent::GetSimplifiedPasswordFormFromUnownedInputElements() {
   if (!web_frame)
     return nullptr;
   return CreateSimplifiedPasswordFormFromUnownedInputElements(
-      *web_frame, &field_data_manager_, &username_detector_cache_);
+      *web_frame, field_data_manager_.get(), &username_detector_cache_);
 }
 
 std::unique_ptr<FormData>
@@ -1415,7 +1416,7 @@ PasswordAutofillAgent::GetFormDataFromUnownedInputElements() {
   if (!web_frame)
     return nullptr;
   return CreateSimplifiedFormDataFromUnownedInputElements(
-      *web_frame, &field_data_manager_, &username_detector_cache_);
+      *web_frame, field_data_manager_.get(), &username_detector_cache_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1471,7 +1472,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   password_to_username_.clear();
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();
   browser_has_form_to_process_ = false;
-  field_data_manager_.ClearData();
+  field_data_manager_.get()->ClearData();
   username_autofill_state_ = WebAutofillState::kNotFilled;
   password_autofill_state_ = WebAutofillState::kNotFilled;
   sent_request_to_store_ = false;
@@ -1887,7 +1888,7 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
                                           WebInputElement field) {
   // Do not autofill on load fields that have any user typed input.
   const uint32_t field_id = field.UniqueRendererFormControlId();
-  if (field_data_manager_.DidUserType(field_id))
+  if (field_data_manager_->DidUserType(field_id))
     return;
   if (field.Value().Utf16() != value)
     field.SetSuggestedValue(WebString::FromUTF16(value));
@@ -1896,7 +1897,7 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
   // not fill in the DOM with a password until we believe the user is
   // intentionally interacting with the page.
   gatekeeper_.RegisterElement(&field);
-  field_data_manager_.UpdateFieldDataMap(
+  field_data_manager_.get()->UpdateFieldDataMap(
       field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
   autofilled_elements_cache_.emplace(field_id, WebString::FromUTF16(value));
   all_autofilled_elements_.insert(field_id);

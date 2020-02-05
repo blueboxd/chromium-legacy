@@ -81,6 +81,10 @@ void ContentTestSuiteBase::RegisterContentSchemes(
   SetContentClient(nullptr);
 }
 
+void ContentTestSuiteBase::ReRegisterContentSchemes() {
+  content::ReRegisterContentSchemesForTests();
+}
+
 void ContentTestSuiteBase::RegisterInProcessThreads() {
   UtilityProcessHost::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);

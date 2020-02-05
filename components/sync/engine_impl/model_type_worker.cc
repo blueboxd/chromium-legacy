@@ -422,10 +422,10 @@ void ModelTypeWorker::OnCommitResponse(
       model_type_state_, committed_response_list, error_response_list);
 }
 
-void ModelTypeWorker::OnFullCommitFailure() {
+void ModelTypeWorker::OnFullCommitFailure(SyncCommitError commit_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  model_type_processor_->OnCommitFailed();
+  model_type_processor_->OnCommitFailed(commit_error);
 }
 
 void ModelTypeWorker::AbortMigration() {

@@ -34,16 +34,26 @@ class InternetDisconnectedWebURLLoader final : public blink::WebURLLoader {
   ~InternetDisconnectedWebURLLoader() override;
 
   // WebURLLoader implementation:
-  void LoadSynchronously(const blink::WebURLRequest&,
-                         blink::WebURLLoaderClient*,
-                         blink::WebURLResponse&,
-                         base::Optional<blink::WebURLError>&,
-                         blink::WebData&,
-                         int64_t& encoded_data_length,
-                         int64_t& encoded_body_length,
-                         blink::WebBlobInfo& downloaded_blob) override;
-  void LoadAsynchronously(const blink::WebURLRequest& request,
-                          blink::WebURLLoaderClient* client) override;
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      base::TimeDelta timeout_interval,
+      blink::WebURLLoaderClient*,
+      blink::WebURLResponse&,
+      base::Optional<blink::WebURLError>&,
+      blink::WebData&,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      blink::WebBlobInfo& downloaded_blob) override;
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      blink::WebURLLoaderClient* client) override;
   void SetDefersLoading(bool defers) override;
   void DidChangePriority(blink::WebURLRequest::Priority, int) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;

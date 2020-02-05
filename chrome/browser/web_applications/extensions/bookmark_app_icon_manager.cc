@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/extension_icon_set.h"
@@ -83,21 +84,6 @@ void ReadExtensionIcons(Profile* profile,
       base::BindOnce(&OnExtensionIconsLoaded, std::move(callback)));
 }
 
-void ReadAllExtensionIcons(Profile* profile,
-                           const web_app::AppId& app_id,
-                           BookmarkAppIconManager::ReadIconsCallback callback) {
-  const Extension* app = GetBookmarkApp(profile, app_id);
-  DCHECK(app);
-
-  const ExtensionIconSet& icons = IconsInfo::GetIcons(app);
-
-  std::vector<SquareSizePx> icon_sizes_in_px;
-  for (const ExtensionIconSet::IconMap::value_type& icon_info : icons.map())
-    icon_sizes_in_px.push_back(icon_info.first);
-
-  ReadExtensionIcons(profile, app_id, icon_sizes_in_px, std::move(callback));
-}
-
 }  // anonymous namespace
 
 BookmarkAppIconManager::BookmarkAppIconManager(Profile* profile)
@@ -149,7 +135,10 @@ void BookmarkAppIconManager::ReadIcons(
 
 void BookmarkAppIconManager::ReadAllIcons(const web_app::AppId& app_id,
                                           ReadIconsCallback callback) const {
-  ReadAllExtensionIcons(profile_, app_id, std::move(callback));
+  const Extension* app = GetBookmarkApp(profile_, app_id);
+  DCHECK(app);
+  ReadExtensionIcons(profile_, app_id, GetBookmarkAppDownloadedIconSizes(app),
+                     std::move(callback));
 }
 
 void BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,

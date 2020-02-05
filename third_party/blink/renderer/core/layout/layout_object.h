@@ -1996,6 +1996,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsListMarkerIncludingNGInside() const {
     return IsListMarker() || IsLayoutNGListMarkerIncludingInside();
   }
+  bool IsOutsideListMarker() const;
 
   virtual bool IsCombineText() const { return false; }
 

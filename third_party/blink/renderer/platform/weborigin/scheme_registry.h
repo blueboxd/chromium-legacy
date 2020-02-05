@@ -49,8 +49,6 @@ class PLATFORM_EXPORT SchemeRegistry {
   STATIC_ONLY(SchemeRegistry);
 
  public:
-  static void Initialize();
-
   static void RegisterURLSchemeAsLocal(const String&);
   static bool ShouldTreatURLSchemeAsLocal(const String&);
 

@@ -2011,4 +2011,48 @@
       }
     }
   };
+
+  /**
+   * Tests that the tab-index focus stays within the delete confirm dialog.
+   */
+  testcase.openQuickViewTabIndexDeleteDialog = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Open the Quick View delete confirm dialog.
+    const deleteKey = ['#quick-view', 'Delete', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
+        'Pressing Delete failed.');
+
+    // Check: the Quick View delete confirm dialog should open.
+    await remoteCall.waitForElement(
+        appId,  // The cr dialog is a child of the Quick View shadow DOM.
+        ['#quick-view', '.cr-dialog-container.shown .cr-dialog-ok:focus']);
+
+    // Prepare a list of tab-index focus queries.
+    const tabQueries = [
+      {'query': ['#quick-view', '.cr-dialog-cancel:not([hidden])']},
+      {'query': ['#quick-view', '.cr-dialog-ok:not([hidden])']},
+    ];
+
+    for (const query of tabQueries) {
+      // Make the browser dispatch a tab key event to FilesApp.
+      const result = await sendTestMessage(
+          {name: 'dispatchTabKey', shift: query.shift || false});
+      chrome.test.assertEq(
+          result, 'tabKeyDispatched', 'Tab key dispatch failure');
+
+      // Note: Allow 500ms between key events to filter out the focus
+      // traversal problems noted in crbug.com/907380#c10.
+      await wait(500);
+
+      // Check: the queried element should gain the focus.
+      await remoteCall.waitForElement(appId, query.query);
+    }
+  };
 })();

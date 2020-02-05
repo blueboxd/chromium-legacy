@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/test/task_environment.h"
 #include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -133,6 +134,8 @@ class LoopbackServerTest : public testing::Test {
     EXPECT_FALSE(response.has_commit());
   }
 
+  base::test::TaskEnvironment task_environment_;
+
   base::FilePath persistent_file_;
   std::unique_ptr<LoopbackConnectionManager> lcm_;
 };
@@ -224,8 +227,6 @@ TEST_F(LoopbackServerTest, CommitBookmarkTombstoneFailure) {
 TEST_F(LoopbackServerTest, LoadSavedState) {
   std::string id = CommitVerifySuccess(NewBookmarkEntity(kUrl1, kBookmarkBar));
 
-  LoopbackConnectionManager second_user(persistent_file_);
-
   ClientToServerMessage get_updates_msg;
   SyncerProtoUtil::SetProtocolVersion(&get_updates_msg);
   get_updates_msg.set_share("required");
@@ -233,6 +234,18 @@ TEST_F(LoopbackServerTest, LoadSavedState) {
   get_updates_msg.mutable_get_updates()
       ->add_from_progress_marker()
       ->set_data_type_id(EntitySpecifics::kBookmarkFieldNumber);
+
+  ClientToServerResponse expected_response;
+  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), nullptr, get_updates_msg,
+                                        &expected_response));
+  EXPECT_EQ(SyncEnums::SUCCESS, expected_response.error_code());
+  ASSERT_TRUE(expected_response.has_get_updates());
+  ASSERT_TRUE(expected_response.has_store_birthday());
+
+  lcm_.reset();
+  task_environment_.RunUntilIdle();
+
+  LoopbackConnectionManager second_user(persistent_file_);
 
   ClientToServerResponse response;
   EXPECT_TRUE(CallPostAndProcessHeaders(&second_user, nullptr, get_updates_msg,
@@ -243,13 +256,7 @@ TEST_F(LoopbackServerTest, LoadSavedState) {
   EXPECT_EQ(5, response.get_updates().entries_size());
   EXPECT_EQ(1U, ResponseToMap(response).count(id));
 
-  ClientToServerResponse response2;
-  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), nullptr, get_updates_msg,
-                                        &response2));
-  EXPECT_EQ(SyncEnums::SUCCESS, response2.error_code());
-  ASSERT_TRUE(response2.has_get_updates());
-  ASSERT_TRUE(response2.has_store_birthday());
-  EXPECT_EQ(response2.store_birthday(), response.store_birthday());
+  EXPECT_EQ(expected_response.store_birthday(), response.store_birthday());
 }
 
 TEST_F(LoopbackServerTest, CommitCommandUpdate) {

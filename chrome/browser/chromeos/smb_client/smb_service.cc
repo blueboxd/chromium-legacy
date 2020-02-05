@@ -414,9 +414,8 @@ void SmbService::MountInternal(
   } else {
     // If using kerberos, the hostname should not be resolved since kerberos
     // service tickets are keyed on hosname.
-    const std::string url = use_kerberos
-                                ? share_url.ToString()
-                                : share_finder_->GetResolvedUrl(share_url);
+    const SmbUrl url =
+        use_kerberos ? share_url : share_finder_->GetResolvedUrl(share_url);
 
     SmbProviderClient::MountOptions smb_mount_options;
     smb_mount_options.original_path = share_url.ToString();
@@ -427,7 +426,8 @@ void SmbService::MountInternal(
     smb_mount_options.account_hash = user->username_hash();
     smb_mount_options.skip_connect = skip_connect;
     GetSmbProviderClient()->Mount(
-        base::FilePath(url), smb_mount_options, MakeFdWithContents(password),
+        base::FilePath(url.ToString()), smb_mount_options,
+        MakeFdWithContents(password),
         base::BindOnce(&SmbService::OnProviderMountDone, AsWeakPtr(),
                        std::move(callback), options, save_credentials));
   }
@@ -552,9 +552,9 @@ void SmbService::OnHostsDiscoveredForUpdateSharePath(
     int32_t mount_id,
     const std::string& share_path,
     StartReadDirIfSuccessfulCallback reply) {
-  std::string resolved_url;
+  SmbUrl resolved_url(share_path);
   if (share_finder_->TryResolveUrl(SmbUrl(share_path), &resolved_url)) {
-    UpdateSharePath(mount_id, resolved_url, std::move(reply));
+    UpdateSharePath(mount_id, resolved_url.ToString(), std::move(reply));
   } else {
     std::move(reply).Run(false /* should_retry_start_read_dir */);
   }
@@ -594,10 +594,9 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
 
   // If using kerberos, the hostname should not be resolved since kerberos
   // service tickets are keyed on hosname.
-  const base::FilePath mount_path =
-      is_kerberos_chromad
-          ? base::FilePath(parsed_url.ToString())
-          : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
+  const SmbUrl resolved_url = is_kerberos_chromad
+                                  ? parsed_url
+                                  : share_finder_->GetResolvedUrl(parsed_url);
 
   // An empty password is passed to Mount to conform with the credentials API
   // which expects username & workgroup strings along with a password file
@@ -612,7 +611,8 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
       !username.empty() && !is_kerberos_chromad;
   smb_mount_options.account_hash = user->username_hash();
   GetSmbProviderClient()->Mount(
-      mount_path, smb_mount_options, MakeFdWithContents(""),
+      base::FilePath(resolved_url.ToString()), smb_mount_options,
+      MakeFdWithContents(""),
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
 }
@@ -859,7 +859,7 @@ void SmbService::RequestUpdatedSharePath(
   }
   // Host discovery did not run, but try to resolve the hostname in case a
   // previous host discovery found the host.
-  std::string resolved_url;
+  SmbUrl resolved_url(share_path);
   if (share_finder_->TryResolveUrl(SmbUrl(share_path), &resolved_url)) {
     UpdateSharePath(mount_id, share_path, std::move(reply));
   } else {

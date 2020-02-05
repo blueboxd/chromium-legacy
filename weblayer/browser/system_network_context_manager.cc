@@ -41,17 +41,7 @@ bool SystemNetworkContextManager::HasInstance() {
 
 // static
 SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
-  if (!g_system_network_context_manager) {
-    // Initialize the network service, which will trigger
-    // ChromeContentBrowserClient::OnNetworkServiceCreated(), which calls
-    // CreateInstance() to initialize |g_system_network_context_manager|.
-    content::GetNetworkService();
-
-    // TODO(crbug.com/981057): There should be a DCHECK() here to make sure
-    // |g_system_network_context_manager| has been created, but that is not
-    // true in many unit tests.
-  }
-
+  DCHECK(g_system_network_context_manager);
   return g_system_network_context_manager;
 }
 

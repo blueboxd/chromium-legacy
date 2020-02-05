@@ -10,7 +10,7 @@ PASS Resolved as expected: convert(long)
 PASS Resolved as expected: convert(boolean)
 PASS Rejected as expected: type error(Dictionary)
 PASS reason instanceof Error is true
-TypeError: Failed to execute 'promiseCheck' on 'Internals': parameter 3 ('arg3') is not an object.
+TypeError: Failed to execute 'promiseCheck' on 'Internals': Failed to convert value to 'object'.
 PASS Resolved as expected: convert(String)
 PASS Rejected as expected: conversion error(toString)
 PASS reason instanceof Error is true
@@ -28,7 +28,7 @@ PASS Resolved as expected: valid arguments
 PASS Resolved as expected: valid arguments
 PASS Rejected as expected: type error(Dictionary)
 PASS reason instanceof Error is true
-TypeError: Failed to execute 'promiseCheckWithoutExceptionState' on 'Internals': parameter 1 ('arg1') is not an object.
+TypeError: Failed to execute 'promiseCheckWithoutExceptionState' on 'Internals': Failed to convert value to 'object'.
 PASS Resolved as expected: convert(String...)
 PASS Rejected as expected: conversion error(String...)
 PASS reason instanceof Error is true

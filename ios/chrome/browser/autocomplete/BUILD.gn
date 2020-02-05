@@ -12,6 +12,8 @@ source_set("autocomplete") {
     "autocomplete_scheme_classifier_impl.mm",
     "in_memory_url_index_factory.cc",
     "in_memory_url_index_factory.h",
+    "remote_suggestions_service_factory.h",
+    "remote_suggestions_service_factory.mm",
     "shortcuts_backend_factory.h",
     "shortcuts_backend_factory.mm",
   ]

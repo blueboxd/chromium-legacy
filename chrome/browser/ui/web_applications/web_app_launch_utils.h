@@ -37,6 +37,12 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
 // Reparents contents to a new app browser when entering the Focus Mode.
 Browser* ReparentWebContentsForFocusMode(content::WebContents* contents);
 
+// Set preferences that are unique to app windows.
+void SetAppPrefsForWebContents(content::WebContents* web_contents);
+
+// Clear preferences that are unique to app windows.
+void ClearAppPrefsForWebContents(content::WebContents* web_contents);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_LAUNCH_UTILS_H_

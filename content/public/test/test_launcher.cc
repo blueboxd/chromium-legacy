@@ -35,8 +35,10 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/common/url_schemes.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/test/browser_test.h"
@@ -274,6 +276,13 @@ void AppendCommandLineSwitches() {
 
 }  // namespace
 
+class ContentClientCreator {
+ public:
+  static void Create(ContentMainDelegate* delegate) {
+    SetContentClient(delegate->CreateContentClient());
+  }
+};
+
 std::string TestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
   return std::string();
 }
@@ -306,6 +315,11 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   // browser test target and is not created by the |launcher_delegate|.
   std::unique_ptr<ContentMainDelegate> content_main_delegate(
       launcher_delegate->CreateContentMainDelegate());
+  ContentClientCreator::Create(content_main_delegate.get());
+  // Many tests use GURL during setup, so we need to register schemes early in
+  // test launching.
+  RegisterContentSchemes();
+
   // ContentMain is not run on Android in the test process, and is run via
   // java for child processes.
   ContentMainParams params(content_main_delegate.get());

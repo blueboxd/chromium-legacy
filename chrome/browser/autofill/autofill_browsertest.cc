@@ -161,6 +161,7 @@ class AutofillTest : public InProcessBrowserTest {
 
     std::string js = GetJSToFillForm(data) + submit_js;
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+
     if (simulate_click) {
       // Simulate a mouse click to submit the form because form submissions not
       // triggered by user gestures are ignored.

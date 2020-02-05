@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "url/url_util.h"
 
 namespace blink {
 
@@ -630,8 +631,8 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
 
   // A unique origin does not bypass secure context checks unless it
   // is also potentially trustworthy.
-  url::AddStandardScheme("very-special-scheme",
-                         url::SchemeType::SCHEME_WITH_HOST);
+  url::ScopedSchemeRegistryForTests scoped_registry;
+  url::AddStandardScheme("very-special-scheme", url::SCHEME_WITH_HOST);
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
   NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");

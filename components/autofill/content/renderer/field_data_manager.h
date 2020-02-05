@@ -19,10 +19,9 @@ namespace autofill {
 
 // This class provides the meathods to update and get the field data (the pair
 // of user typed value and field properties mask).
-class FieldDataManager {
+class FieldDataManager : public base::RefCounted<FieldDataManager> {
  public:
   FieldDataManager();
-  ~FieldDataManager();
 
   void ClearData();
   bool HasFieldData(uint32_t id) const;
@@ -48,6 +47,10 @@ class FieldDataManager {
   bool DidUserType(uint32_t id) const;
 
  private:
+  friend class base::RefCounted<FieldDataManager>;
+
+  ~FieldDataManager();
+
   std::map<uint32_t,
            std::pair<base::Optional<base::string16>, FieldPropertiesMask>>
       field_value_and_properties_map_;

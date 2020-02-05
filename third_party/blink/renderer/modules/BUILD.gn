@@ -252,7 +252,6 @@ jumbo_source_set("unit_tests") {
 
   sources = [
     "accessibility/accessibility_object_model_test.cc",
-    "accessibility/ax_layout_object_test.cc",
     "accessibility/ax_object_cache_test.cc",
     "accessibility/ax_object_test.cc",
     "accessibility/ax_position_test.cc",

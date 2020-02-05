@@ -36,6 +36,7 @@
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -49,6 +50,33 @@
 using blink::mojom::FetchCacheMode;
 
 namespace blink {
+
+// This is complementary to ConvertNetPriorityToWebKitPriority, defined in
+// service_worker_context_client.cc.
+net::RequestPriority ConvertWebKitPriorityToNetPriority(
+    WebURLRequest::Priority priority) {
+  switch (priority) {
+    case WebURLRequest::Priority::kVeryHigh:
+      return net::HIGHEST;
+
+    case WebURLRequest::Priority::kHigh:
+      return net::MEDIUM;
+
+    case WebURLRequest::Priority::kMedium:
+      return net::LOW;
+
+    case WebURLRequest::Priority::kLow:
+      return net::LOWEST;
+
+    case WebURLRequest::Priority::kVeryLow:
+      return net::IDLE;
+
+    case WebURLRequest::Priority::kUnresolved:
+    default:
+      NOTREACHED();
+      return net::LOW;
+  }
+}
 
 WebURLRequest::ExtraData::ExtraData() : render_frame_id_(MSG_ROUTING_NONE) {}
 

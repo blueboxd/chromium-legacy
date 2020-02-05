@@ -17,6 +17,9 @@
 
 namespace {
 
+using sync_pb::SharingMessageCommitError;
+using sync_pb::SharingMessageSpecifics;
+using syncer::SyncCommitError;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::NotNull;
@@ -47,9 +50,9 @@ class SharingMessageBridgeTest : public testing::Test {
   SharingMessageBridgeImpl* bridge() { return bridge_.get(); }
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
 
-  std::unique_ptr<sync_pb::SharingMessageSpecifics> CreateSpecifics(
+  std::unique_ptr<SharingMessageSpecifics> CreateSpecifics(
       const std::string& payload) const {
-    auto specifics = std::make_unique<sync_pb::SharingMessageSpecifics>();
+    auto specifics = std::make_unique<SharingMessageSpecifics>();
     specifics->set_payload(payload);
     return specifics;
   }
@@ -59,6 +62,12 @@ class SharingMessageBridgeTest : public testing::Test {
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
   std::unique_ptr<SharingMessageBridgeImpl> bridge_;
 };
+
+class SharingMessageBridgeErrorsTest
+    : public SharingMessageBridgeTest,
+      public testing::WithParamInterface<
+          testing::tuple<SyncCommitError,
+                         SharingMessageCommitError::ErrorCode>> {};
 
 TEST_F(SharingMessageBridgeTest, ShouldWriteMessagesToProcessor) {
   syncer::EntityData entity_data;
@@ -102,8 +111,7 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSuccess) {
 
   base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
   bridge()->SendSharingMessage(CreateSpecifics("payload"), callback.Get());
-  EXPECT_CALL(callback,
-              Run(HasErrorCode(sync_pb::SharingMessageCommitError::NONE)));
+  EXPECT_CALL(callback, Run(HasErrorCode(SharingMessageCommitError::NONE)));
 
   // Mark data as committed.
   syncer::EntityChangeList change_list;
@@ -112,8 +120,7 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSuccess) {
 
   EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
   histogram_tester.ExpectUniqueSample("Sync.SharingMessage.CommitResult",
-                                      sync_pb::SharingMessageCommitError::NONE,
-                                      1);
+                                      SharingMessageCommitError::NONE, 1);
 }
 
 TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnFailure) {
@@ -123,7 +130,7 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnFailure) {
       .WillRepeatedly(SaveArgPointeeMove<1>(&entity_data));
 
   base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
-  sync_pb::SharingMessageCommitError commit_error;
+  SharingMessageCommitError commit_error;
   EXPECT_CALL(callback, Run).WillOnce(SaveArg<0>(&commit_error));
 
   bridge()->SendSharingMessage(CreateSpecifics("payload"), callback.Get());
@@ -138,7 +145,7 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnFailure) {
     syncer::FailedCommitResponseData response;
     response.client_tag_hash = entity_data.client_tag_hash;
     response.datatype_specific_error.mutable_sharing_message_error()
-        ->set_error_code(sync_pb::SharingMessageCommitError::PERMISSION_DENIED);
+        ->set_error_code(SharingMessageCommitError::PERMISSION_DENIED);
     response_list.push_back(std::move(response));
   }
   EXPECT_CALL(*processor(),
@@ -148,11 +155,11 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnFailure) {
 
   EXPECT_TRUE(commit_error.has_error_code());
   EXPECT_EQ(commit_error.error_code(),
-            sync_pb::SharingMessageCommitError::PERMISSION_DENIED);
+            SharingMessageCommitError::PERMISSION_DENIED);
   EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
   histogram_tester.ExpectUniqueSample(
       "Sync.SharingMessage.CommitResult",
-      sync_pb::SharingMessageCommitError::PERMISSION_DENIED, 1);
+      SharingMessageCommitError::PERMISSION_DENIED, 1);
 }
 
 TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackIfSyncIsDisabled) {
@@ -161,16 +168,15 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackIfSyncIsDisabled) {
   EXPECT_CALL(*processor(), Put).Times(0);
 
   base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
-  EXPECT_CALL(
-      callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+  EXPECT_CALL(callback,
+              Run(HasErrorCode(SharingMessageCommitError::SYNC_TURNED_OFF)));
 
   bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
 
   EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
   histogram_tester.ExpectUniqueSample(
       "Sync.SharingMessage.CommitResult",
-      sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF, 1);
+      SharingMessageCommitError::SYNC_TURNED_OFF, 1);
 }
 
 TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncStoppedEvent) {
@@ -179,32 +185,40 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncStoppedEvent) {
   bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
   ASSERT_EQ(bridge()->GetCallbacksCountForTesting(), 1u);
 
-  EXPECT_CALL(
-      callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+  EXPECT_CALL(callback,
+              Run(HasErrorCode(SharingMessageCommitError::SYNC_TURNED_OFF)));
   bridge()->ApplyStopSyncChanges(nullptr);
 
   EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
   histogram_tester.ExpectUniqueSample(
       "Sync.SharingMessage.CommitResult",
-      sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF, 1);
+      SharingMessageCommitError::SYNC_TURNED_OFF, 1);
 }
 
-TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncCommitFailure) {
+TEST_P(SharingMessageBridgeErrorsTest,
+       ShouldInvokeCallbackOnSyncCommitFailure) {
   base::HistogramTester histogram_tester;
   base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
   bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
   ASSERT_EQ(bridge()->GetCallbacksCountForTesting(), 1u);
 
-  EXPECT_CALL(
-      callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_ERROR)));
-  bridge()->OnCommitAttemptFailed();
+  EXPECT_CALL(callback, Run(HasErrorCode(testing::get<1>(GetParam()))));
+  bridge()->OnCommitAttemptFailed(testing::get<0>(GetParam()));
 
   EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
-  histogram_tester.ExpectUniqueSample(
-      "Sync.SharingMessage.CommitResult",
-      sync_pb::SharingMessageCommitError::SYNC_ERROR, 1);
+  histogram_tester.ExpectUniqueSample("Sync.SharingMessage.CommitResult",
+                                      testing::get<1>(GetParam()), 1);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SharingMessageBridgeErrorsTest,
+    testing::Values(
+        testing::make_tuple(SyncCommitError::kNetworkError,
+                            SharingMessageCommitError::SYNC_NETWORK_ERROR),
+        testing::make_tuple(SyncCommitError::kServerError,
+                            SharingMessageCommitError::SYNC_SERVER_ERROR),
+        testing::make_tuple(SyncCommitError::kBadServerResponse,
+                            SharingMessageCommitError::SYNC_SERVER_ERROR)));
 
 }  // namespace

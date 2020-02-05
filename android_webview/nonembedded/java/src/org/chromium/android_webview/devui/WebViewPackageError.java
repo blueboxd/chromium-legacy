@@ -130,7 +130,7 @@ public class WebViewPackageError {
 
         // Switching WebView providers is possible from API >= 24.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            builder.setPositiveButton("Change WebView provider",
+            builder.setNeutralButton("Change WebView provider",
                     (dialog, id)
                             -> mContext.startActivity(
                                     new Intent(Settings.ACTION_WEBVIEW_SETTINGS)));

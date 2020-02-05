@@ -61,7 +61,7 @@ class WebMainRunnerImpl : public WebMainRunner {
     if (!GetWebClient())
       SetWebClient(&empty_web_client_);
 
-    RegisterWebSchemes(true);
+    RegisterWebSchemes();
     ui::RegisterPathProvider();
 
     CHECK(base::i18n::InitializeICU());

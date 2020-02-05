@@ -17,6 +17,7 @@
 
 namespace weblayer {
 
+class FeatureListCreator;
 class SafeBrowsingService;
 struct MainParams;
 
@@ -104,6 +105,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
                                 bool* ignore_navigation) override;
 #endif
 
+  void CreateFeatureListAndFieldTrials();
+
  private:
   MainParams* params_;
 
@@ -111,6 +114,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   SafeBrowsingService* GetSafeBrowsingService();
   std::unique_ptr<SafeBrowsingService> safe_browsing_service_;
 #endif
+
+  std::unique_ptr<FeatureListCreator> feature_list_creator_;
 };
 
 }  // namespace weblayer

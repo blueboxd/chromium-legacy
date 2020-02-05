@@ -9,8 +9,11 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -18,7 +21,14 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/base/page_transition_types.h"
 
 namespace web_app {
 
@@ -106,6 +116,54 @@ InstallResultCode PendingAppManagerInstall(
           }));
   run_loop.Run();
   return result_code;
+}
+
+// If |proceed_through_interstitial| is true, asserts that a security
+// interstitial is shown, and clicks through it, before returning.
+void NavigateToURLAndWait(Browser* browser,
+                          const GURL& url,
+                          bool proceed_through_interstitial) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  {
+    content::TestNavigationObserver observer(
+        web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
+    NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
+    ui_test_utils::NavigateToURL(&params);
+    observer.WaitForNavigationFinished();
+  }
+
+  if (!proceed_through_interstitial)
+    return;
+
+  {
+    // Need a second TestNavigationObserver; the above one is spent.
+    content::TestNavigationObserver observer(
+        web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            browser->tab_strip_model()->GetActiveWebContents());
+    ASSERT_TRUE(
+        helper &&
+        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
+    std::string javascript = "window.certificateErrorPageController.proceed();";
+    ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
+    observer.Wait();
+  }
+}
+
+AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
+  DCHECK(!browser->app_controller())
+      << "This check only applies to regular browser windows.";
+  auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser);
+  app_menu_model->Init();
+  ui::MenuModel* model = app_menu_model.get();
+  int index = -1;
+  if (!app_menu_model->GetModelAndIndexForCommandId(command_id, &model,
+                                                    &index)) {
+    return kNotPresent;
+  }
+  return model->IsEnabledAt(index) ? kEnabled : kDisabled;
 }
 
 }  // namespace web_app

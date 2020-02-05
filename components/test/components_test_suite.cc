@@ -55,8 +55,13 @@ class ComponentsTestSuite : public base::TestSuite {
 
     mojo::core::Init();
 
-    // Before registering any schemes, clear GURL's internal state.
-    url::ResetForTests();
+    // These schemes need to be added globally to pass tests of
+    // autocomplete_input_unittest.cc and content_settings_pattern*
+    // TODO(https://crbug.com/1047702): Move this scheme initialization into the
+    //    individual tests that need these schemes.
+    url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-search", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-distiller", url::SCHEME_WITH_HOST);
 
 #if !defined(OS_IOS)
     gl::GLSurfaceTestSupport::InitializeOneOff();
@@ -68,6 +73,10 @@ class ComponentsTestSuite : public base::TestSuite {
       content::ContentClient content_client;
       content::ContentTestSuiteBase::RegisterContentSchemes(&content_client);
     }
+#else
+    url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("devtools", url::SCHEME_WITH_HOST);
+
 #endif
 
     ui::RegisterPathProvider();
@@ -86,14 +95,6 @@ class ComponentsTestSuite : public base::TestSuite {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path.AppendASCII("components_tests_resources.pak"),
         ui::SCALE_FACTOR_NONE);
-
-    // These schemes need to be added globally to pass tests of
-    // autocomplete_input_unittest.cc and content_settings_pattern*
-    url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
-    url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
-    url::AddStandardScheme("devtools", url::SCHEME_WITH_HOST);
-    url::AddStandardScheme("chrome-search", url::SCHEME_WITH_HOST);
-    url::AddStandardScheme("chrome-distiller", url::SCHEME_WITH_HOST);
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
         kNonWildcardDomainNonPortSchemes,

@@ -811,6 +811,8 @@ VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
       return VulkanVersion::kVulkanVersion_1_0_0;
     case VK_MAKE_VERSION(1, 1, 0):
       return VulkanVersion::kVulkanVersion_1_1_0;
+    case VK_MAKE_VERSION(1, 2, 0):
+      return VulkanVersion::kVulkanVersion_1_2_0;
     default:
       NOTREACHED();
       return VulkanVersion::kVulkanVersionUnknown;

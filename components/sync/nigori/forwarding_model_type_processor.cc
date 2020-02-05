@@ -41,8 +41,9 @@ void ForwardingModelTypeProcessor::OnCommitCompleted(
                                 error_response_list);
 }
 
-void ForwardingModelTypeProcessor::OnCommitFailed() {
-  processor_->OnCommitFailed();
+void ForwardingModelTypeProcessor::OnCommitFailed(
+    SyncCommitError commit_error) {
+  processor_->OnCommitFailed(commit_error);
 }
 
 void ForwardingModelTypeProcessor::OnUpdateReceived(

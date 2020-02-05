@@ -99,6 +99,7 @@ TEST(SiteForCookiesTest, File) {
 }
 
 TEST(SiteForCookiesTest, Extension) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   std::vector<GURL> equivalent = {GURL("chrome-extension://abc/"),
                                   GURL("chrome-extension://abc/foo.txt"),

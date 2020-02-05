@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "components/sync/base/syncer_error.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -44,7 +45,7 @@ class CommitContribution {
   // proper response to process (i.e. unparsable or unexpected server response,
   // network error). This method may be called only if ProcessCommitResponse
   // was never called.
-  virtual void ProcessCommitFailure() = 0;
+  virtual void ProcessCommitFailure(SyncCommitError commit_error) = 0;
 
   // Cleans up any temporary state associated with the commit. Must be called
   // before destruction.

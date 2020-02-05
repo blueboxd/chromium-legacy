@@ -68,7 +68,7 @@ class Commit {
 
  private:
   // Report commit failure to each contribution.
-  void ReportFullCommitFailure();
+  void ReportFullCommitFailure(SyncerError syncer_error);
 
   ContributionMap contributions_;
 

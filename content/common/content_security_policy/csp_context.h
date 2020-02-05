@@ -54,14 +54,6 @@ class CONTENT_EXPORT CSPContext {
                       CheckCSPDisposition check_csp_disposition,
                       bool is_form_submission);
 
-  // Returns true if the request URL needs to be modified (e.g. upgraded to
-  // HTTPS) according to the CSP.
-  bool ShouldModifyRequestUrlForCsp(bool is_suresource_or_form_submssion);
-
-  // If the scheme of |url| is HTTP, this upgrades it to HTTPS, otherwise it
-  // doesn't modify it.
-  void ModifyRequestUrlForCsp(GURL* url);
-
   void SetSelf(const url::Origin origin);
   void SetSelf(network::mojom::CSPSourcePtr self_source);
 
@@ -81,6 +73,10 @@ class CONTENT_EXPORT CSPContext {
       network::mojom::ContentSecurityPolicyPtr policy) {
     policies_.push_back(std::move(policy));
   }
+  const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+  ContentSecurityPolicies() {
+    return policies_;
+  }
 
   virtual bool SchemeShouldBypassCSP(const base::StringPiece& scheme);
 
@@ -99,6 +95,7 @@ class CONTENT_EXPORT CSPContext {
       SourceLocation* source_location) const;
 
  private:
+  // TODO(arthursonzogni): This is an interface, stop storing data.
   network::mojom::CSPSourcePtr self_source_;  // Nullable.
   std::vector<network::mojom::ContentSecurityPolicyPtr> policies_;
 

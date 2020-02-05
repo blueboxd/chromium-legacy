@@ -24,6 +24,7 @@ dictionary TestDictionary {
     Element? elementOrNullMember;
     object objectMember;
     object? objectOrNullMember;
+    sequence<object?> objectOrNullSequenceMember;
     [ImplementedAs=createMember] boolean create;
     [DeprecateAs=CreateMember, ImplementedAs=createMember] boolean deprecatedCreateMember;
     // If done naively, collides with a C++ keyword.

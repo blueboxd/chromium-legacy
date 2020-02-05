@@ -28,12 +28,14 @@
 
 constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 constexpr char kHatsSurveyTriggerSettings[] = "settings";
+constexpr char kHatsSurveyTriggerSettingsPrivacy[] = "settings-privacy";
 
 namespace {
 
 const base::Feature* survey_features[] = {
     &features::kHappinessTrackingSurveysForDesktop,
-    &features::kHappinessTrackingSurveysForDesktopSettings};
+    &features::kHappinessTrackingSurveysForDesktopSettings,
+    &features::kHappinessTrackingSurveysForDesktopSettingsPrivacy};
 
 // Which survey we're triggering
 constexpr char kHatsSurveyTrigger[] = "survey";

@@ -78,7 +78,9 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
+// |skipBanner| is used in inforbar reboot UI only.
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                    skipBanner:(BOOL)skipBanner {
   UIView* infoBarView = infoBarDelegate.view;
   [self.view addSubview:infoBarView];
   infoBarView.translatesAutoresizingMaskIntoConstraints = NO;

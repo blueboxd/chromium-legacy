@@ -91,6 +91,10 @@ class AppRegistrar {
   virtual std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const = 0;
 
+  // Represents which icon sizes we successfully downloaded from the IconInfos.
+  virtual std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+      const AppId& app_id) const = 0;
+
   virtual std::vector<AppId> GetAppIds() const = 0;
 
   // Safe downcast.

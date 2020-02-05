@@ -90,6 +90,7 @@ int BrowserMainPartsImpl::PreCreateThreads() {
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
+
 void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
@@ -114,12 +115,6 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
       new net::NetworkChangeNotifierFactoryAndroid());
 #endif
   return service_manager::RESULT_CODE_NORMAL_EXIT;
-}
-
-void BrowserMainPartsImpl::PostEarlyInitialization() {
-#if defined(OS_ANDROID)
-  CreateLocalState();
-#endif
 }
 
 void BrowserMainPartsImpl::PreMainMessageLoopRun() {
@@ -164,14 +159,6 @@ void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(
   // cleanup inside content.
   params_->delegate->SetMainMessageLoopQuitClosure(
       base::BindOnce(StopMessageLoop, std::move(quit_closure)));
-}
-
-void BrowserMainPartsImpl::CreateLocalState() {
-  DCHECK(!local_state_);
-  feature_list_creator_ = std::make_unique<FeatureListCreator>();
-  feature_list_creator_->CreateLocalState();
-  local_state_ = feature_list_creator_->TakePrefService();
-  CHECK(local_state_);
 }
 
 }  // namespace weblayer

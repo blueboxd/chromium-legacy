@@ -37669,6 +37669,8 @@ from previous Chrome versions.
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
   <int value="-1044244605"
       label="UpdateNotificationSchedulingIntegration:enabled"/>
+  <int value="-1042723808"
+      label="HappinessTrackingSurveysForDesktopSettingsPrivacy:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
   <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
@@ -39256,6 +39258,8 @@ from previous Chrome versions.
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="964613807" label="ContextualSearchTranslationModel:disabled"/>
+  <int value="965037619"
+      label="HappinessTrackingSurveysForDesktopSettingsPrivacy:disabled"/>
   <int value="966415988" label="SyncPseudoUSSPasswords:enabled"/>
   <int value="969340095" label="EnableDspHotword:disabled"/>
   <int value="972228058" label="SyncUSSSessions:disabled"/>
@@ -58295,6 +58299,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="36" label="PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER"/>
   <int value="37" label="PRIVACY_SITE_SETTINGS_MIXEDSCRIPT"/>
   <int value="38" label="PRIVACY_SITE_SETTINGS_BLUETOOTH_SCANNING"/>
+  <int value="39" label="PRIVACY_SITE_SETTINGS_ALL"/>
+  <int value="40" label="PRIVACY_SITE_SETTINGS_AR"/>
+  <int value="41" label="PRIVACY_SITE_SETTINGS_VR"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">
@@ -62791,7 +62798,8 @@ would be helpful to identify which type is being sent.
   <int value="6" label="Unauthenticated"/>
   <int value="7" label="Permission denied"/>
   <int value="8" label="Sync turned off"/>
-  <int value="9" label="Sync error"/>
+  <int value="9" label="Sync network error"/>
+  <int value="10" label="Sync server error"/>
 </enum>
 
 <enum name="SyncSimpleConflictResolutions">
@@ -66528,6 +66536,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="VULKAN_API_VERSION_UNKNOWN"/>
   <int value="1" label="VULKAN_API_VERSION_1_0_0"/>
   <int value="2" label="VULKAN_API_VERSION_1_1_0"/>
+  <int value="3" label="VULKAN_API_VERSION_1_2_0"/>
 </enum>
 
 <enum name="WaitForVBlankErrorCode">

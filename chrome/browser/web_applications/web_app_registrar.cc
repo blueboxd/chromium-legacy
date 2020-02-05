@@ -100,6 +100,13 @@ std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
                  : std::vector<WebApplicationIconInfo>();
 }
 
+std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizes(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->downloaded_icon_sizes()
+                 : std::vector<SquareSizePx>();
+}
+
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
   app_ids.reserve(registry_.size());

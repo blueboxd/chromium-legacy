@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -456,6 +457,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              handler:nil];
   [alertController addAction:okAction];
   alertController.preferredAction = okAction;
+
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
@@ -501,6 +503,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                         deletePassword:_passwordForm];
               }];
   [_deleteConfirmation addAction:deleteAction];
+
+  // Starting with iOS13, alerts of style UIAlertControllerStyleActionSheet
+  // need a sourceView or sourceRect, or this crashes.
+  if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
+    _deleteConfirmation.popoverPresentationController.sourceView =
+        self.tableView;
+  }
 
   [self presentViewController:_deleteConfirmation animated:YES completion:nil];
 }

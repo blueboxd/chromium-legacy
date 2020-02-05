@@ -858,22 +858,24 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                        is_placeholder_icon, icon_effects, std::move(callback));
 }
 
-apps::mojom::InstallSource GetInstallSource(const ArcAppListPrefs* prefs,
-                                            const std::string& package_name) {
-  // TODO(crbug.com/1010821): Create a generic check for kSystem apps.
-  if (prefs->GetAppIdByPackageName(package_name) == arc::kPlayStoreAppId) {
+apps::mojom::InstallSource GetInstallSource(
+    const ArcAppListPrefs* prefs,
+    const ArcAppListPrefs::AppInfo* app_info) {
+  // Sticky represents apps that cannot be uninstalled and are installed by the
+  // system.
+  if (app_info->sticky) {
     return apps::mojom::InstallSource::kSystem;
   }
 
-  if (prefs->IsDefault(package_name)) {
+  if (prefs->IsDefault(app_info->package_name)) {
     return apps::mojom::InstallSource::kDefault;
   }
 
-  if (prefs->IsOem(package_name)) {
+  if (prefs->IsOem(app_info->package_name)) {
     return apps::mojom::InstallSource::kOem;
   }
 
-  if (prefs->IsControlledByPolicy(package_name)) {
+  if (prefs->IsControlledByPolicy(app_info->package_name)) {
     return apps::mojom::InstallSource::kPolicy;
   }
 
@@ -907,7 +909,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;
 
-  app->install_source = GetInstallSource(prefs, app_info.package_name);
+  app->install_source = GetInstallSource(prefs, &app_info);
 
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;

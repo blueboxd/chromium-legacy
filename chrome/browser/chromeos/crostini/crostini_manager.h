@@ -138,9 +138,6 @@ class CrostiniManager : public KeyedService,
   // Callback indicating success or failure
   using BoolCallback = base::OnceCallback<void(bool success)>;
 
-  using RestartId = int;
-  static const RestartId kUninitializedRestartId = -1;
-
   // Observer class for the Crostini restart flow.
   class RestartObserver {
    public:
@@ -158,10 +155,6 @@ class CrostiniManager : public KeyedService,
     virtual void OnContainerStarted(CrostiniResult result) {}
     virtual void OnSshKeysFetched(bool success) {}
     virtual void OnContainerMounted(bool success) {}
-
-   protected:
-    friend class CrostiniManager;
-    RestartId restart_id_;
   };
 
   struct RestartOptions {
@@ -412,6 +405,8 @@ class CrostiniManager : public KeyedService,
                        uint8_t guest_port,
                        BoolCallback callback);
 
+  using RestartId = int;
+  static const RestartId kUninitializedRestartId = -1;
   // Runs all the steps required to restart the given crostini vm and container.
   // The optional |observer| tracks progress. If provided, it must be alive
   // until the restart completes (i.e. when |callback| is called) or the restart
@@ -584,7 +579,6 @@ class CrostiniManager : public KeyedService,
 
   bool IsContainerUpgradeable(const ContainerId& container_id);
   bool ShouldPromptContainerUpgrade(const ContainerId& container_id);
-  void UpgradePromptShown(const ContainerId& container_id);
 
  private:
   class CrostiniRestarter;

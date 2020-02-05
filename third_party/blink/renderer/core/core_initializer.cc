@@ -59,8 +59,6 @@
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
@@ -136,8 +134,6 @@ void CoreInitializer::Initialize() {
 
   style_change_extra_data::Init();
 
-  KURL::Initialize();
-  SchemeRegistry::Initialize();
   SecurityPolicy::Init();
 
   RegisterEventFactory();

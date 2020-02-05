@@ -2397,6 +2397,7 @@ TEST_F(URLRequestTest, SettingSameSiteCookies) {
 // Tests special chrome:// scheme that is supposed to always attach SameSite
 // cookies if the requested site is secure.
 TEST_F(URLRequestTest, SameSiteCookiesSpecialScheme) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme("chrome", url::SchemeType::SCHEME_WITH_HOST);
 
   EmbeddedTestServer https_test_server(EmbeddedTestServer::TYPE_HTTPS);
@@ -2485,8 +2486,6 @@ TEST_F(URLRequestTest, SameSiteCookiesSpecialScheme) {
               d.data_received().find("StrictSameSiteCookie"));
     EXPECT_EQ(std::string::npos, d.data_received().find("LaxSameSiteCookie"));
   }
-
-  url::ResetForTests();
 }
 
 // Tests that __Secure- cookies can't be set on non-secure origins.

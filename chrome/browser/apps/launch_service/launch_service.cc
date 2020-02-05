@@ -45,6 +45,10 @@ LaunchService::~LaunchService() {}
 
 LaunchManager& LaunchService::GetLaunchManagerForApp(
     const std::string& app_id) {
+  // --app old-style app shortcuts
+  if (app_id.empty())
+    return *extension_app_launch_manager_;
+
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
           app_id);

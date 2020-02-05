@@ -164,8 +164,11 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     base::FilePath language_detection_file =
         test_path.Append(base::FilePath(file_path));
 
+    // Enable language detection for both static and dynamic content.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
 
     RunTest(language_detection_file, "accessibility/language-detection");
   }
@@ -2313,6 +2316,21 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        LanguageDetectionLangDetectionStaticBasic) {
   RunLanguageDetectionTest(FILE_PATH_LITERAL("static-basic.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       LanguageDetectionLangDetectionDynamicBasic) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("dynamic-basic.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       LanguageDetectionLangDetectionDynamicMultipleInserts) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("dynamic-multiple-inserts.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       LanguageDetectionLangDetectionDynamicReparenting) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("dynamic-reparenting.html"));
 }
 
 //

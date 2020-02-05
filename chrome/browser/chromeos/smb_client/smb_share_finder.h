@@ -50,13 +50,13 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
   void RegisterHostLocator(std::unique_ptr<HostLocator> locator);
 
   // Attempts to resolve |url|. Returns the resolved url if successful,
-  // otherwise returns ToString of |url|.
-  std::string GetResolvedUrl(const SmbUrl& url) const;
+  // otherwise returns |url|.
+  SmbUrl GetResolvedUrl(const SmbUrl& url) const;
 
   // Attempts to resolve |url|. If able to resolve |url|, returns true and sets
   // |resolved_url| the the resolved url. If unable, returns false and sets
-  // |resolved_url| to ToString of |url|.
-  bool TryResolveUrl(const SmbUrl& url, std::string* updated_url) const;
+  // |resolved_url| to |url|.
+  bool TryResolveUrl(const SmbUrl& url, SmbUrl* updated_url) const;
 
  private:
   // Handles the response from finding hosts in the network.

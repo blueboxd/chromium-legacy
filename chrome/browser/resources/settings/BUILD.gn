@@ -214,6 +214,7 @@ group("closure_compile_module") {
     "controls:closure_compile_module",
     "prefs:closure_compile_module",
     "search_engines_page:closure_compile_module",
+    "settings_page:closure_compile_module",
   ]
 }
 

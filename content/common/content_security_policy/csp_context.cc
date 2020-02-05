@@ -56,27 +56,6 @@ bool CSPContext::IsAllowedByCsp(network::mojom::CSPDirectiveName directive_name,
   return allow;
 }
 
-bool CSPContext::ShouldModifyRequestUrlForCsp(
-    bool is_subresource_or_form_submission) {
-  for (const auto& policy : policies_) {
-    if (ShouldUpgradeInsecureRequest(policy) &&
-        is_subresource_or_form_submission) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void CSPContext::ModifyRequestUrlForCsp(GURL* url) {
-  if (url->SchemeIs(url::kHttpScheme) && !IsOriginSecure(*url)) {
-    // Updating the URL's scheme also implicitly updates the URL's port from 80
-    // to 443 if needed.
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr(url::kHttpsScheme);
-    *url = url->ReplaceComponents(replacements);
-  }
-}
-
 void CSPContext::SetSelf(const url::Origin origin) {
   self_source_.reset();
 

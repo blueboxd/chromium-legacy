@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
@@ -3591,6 +3592,10 @@ bool LayoutObject::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
     return false;
   policy = GetDocument().GetSettings()->GetImageAnimationPolicy();
   return true;
+}
+
+bool LayoutObject::IsOutsideListMarker() const {
+  return IsListMarker() && !ToLayoutListMarker(this)->IsInside();
 }
 
 int LayoutObject::CaretMinOffset() const {

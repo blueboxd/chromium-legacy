@@ -74,6 +74,10 @@ SmbUrl::~SmbUrl() = default;
 
 SmbUrl::SmbUrl(SmbUrl&& smb_url) = default;
 
+SmbUrl::SmbUrl(const SmbUrl& smb_url) = default;
+
+SmbUrl& SmbUrl::operator=(const SmbUrl& smb_url) = default;
+
 std::string SmbUrl::GetHost() const {
   DCHECK(IsValid());
 
@@ -92,12 +96,14 @@ const std::string& SmbUrl::ToString() const {
   return url_;
 }
 
-std::string SmbUrl::ReplaceHost(const std::string& new_host) const {
+SmbUrl SmbUrl::ReplaceHost(const std::string& new_host) const {
   DCHECK(IsValid());
 
   std::string temp = url_;
   temp.replace(host_.begin, host_.len, new_host);
-  return temp;
+  SmbUrl new_url(temp);
+  DCHECK(new_url.IsValid());
+  return new_url;
 }
 
 bool SmbUrl::IsValid() const {

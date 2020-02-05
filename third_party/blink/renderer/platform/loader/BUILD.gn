@@ -105,6 +105,8 @@ blink_platform_sources("loader") {
     "fetch/text_resource_decoder_options.h",
     "fetch/unique_identifier.cc",
     "fetch/unique_identifier.h",
+    "fetch/url_loader/request_conversion.cc",
+    "fetch/url_loader/request_conversion.h",
     "fetch/worker_resource_timing_notifier.h",
     "ftp_directory_listing.cc",
     "ftp_directory_listing.h",

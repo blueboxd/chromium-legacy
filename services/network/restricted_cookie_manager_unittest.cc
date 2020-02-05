@@ -773,6 +773,7 @@ TEST_P(RestrictedCookieManagerTest, CookiesEnabledFor) {
 // Test that special chrome:// scheme always attaches SameSite cookies when the
 // requested origin is secure.
 TEST_P(RestrictedCookieManagerTest, SameSiteCookiesSpecialScheme) {
+  url::ScopedSchemeRegistryForTests scoped_registry;
   cookie_settings_.set_secure_origin_cookies_allowed_schemes({"chrome"});
   url::AddStandardScheme("chrome", url::SchemeType::SCHEME_WITH_HOST);
 
@@ -836,8 +837,6 @@ TEST_P(RestrictedCookieManagerTest, SameSiteCookiesSpecialScheme) {
   cookies = sync_service_->GetAllForUrl(http_url, chrome_url, http_origin,
                                         std::move(options));
   EXPECT_THAT(cookies, testing::SizeIs(0));
-
-  url::ResetForTests();
 }
 
 namespace {

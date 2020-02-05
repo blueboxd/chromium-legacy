@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/files/important_file_writer.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
@@ -30,7 +31,7 @@ class FakeServer;
 namespace syncer {
 
 // A loopback version of the Sync server used for local profile serialization.
-class LoopbackServer {
+class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
  public:
   class ObserverForTests {
    public:
@@ -48,7 +49,7 @@ class LoopbackServer {
   };
 
   explicit LoopbackServer(const base::FilePath& persistent_file);
-  virtual ~LoopbackServer();
+  ~LoopbackServer() override;
 
   // Handles a /command POST (with the given |message|) to the server.
   // |response| must not be null.
@@ -90,6 +91,9 @@ class LoopbackServer {
   using ResponseTypeProvider =
       base::RepeatingCallback<sync_pb::CommitResponse::ResponseType(
           const LoopbackServerEntity& entity)>;
+
+  // ImportantFileWriter::DataSerializer:
+  bool SerializeData(std::string* data) override;
 
   // Gets LoopbackServer ready for syncing.
   void Init();
@@ -208,11 +212,14 @@ class LoopbackServer {
   // Populates the server state from |proto|. Returns true iff successful.
   bool DeSerializeState(const sync_pb::LoopbackServerProto& proto);
 
-  // Saves all entities and server state to a protobuf file in |filename|.
-  bool SaveStateToFile(const base::FilePath& filename) const;
+  // Schedules committing state to disk at some later time. Repeat calls are
+  // batched together. Outstanding scheduled writes are committed at shutdown.
+  // Returns true on success.
+  bool ScheduleSaveStateToFile();
 
-  // Loads all entities and server state from a protobuf file in |filename|.
-  bool LoadStateFromFile(const base::FilePath& filename);
+  // Loads all entities and server state from a protobuf file. Returns true on
+  // success.
+  bool LoadStateFromFile();
 
   void set_observer_for_tests(ObserverForTests* observer) {
     observer_for_tests_ = observer;
@@ -238,6 +245,9 @@ class LoopbackServer {
 
   // The file used to store the local sync data.
   base::FilePath persistent_file_;
+
+  // Used to limit the rate of file rewrites due to updates.
+  base::ImportantFileWriter writer_;
 
   // Used to verify that LoopbackServer is only used from one sequence.
   SEQUENCE_CHECKER(sequence_checker_);

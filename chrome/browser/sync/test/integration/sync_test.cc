@@ -295,8 +295,6 @@ void SyncTest::TearDown() {
 
   // Return OSCrypt to its real behaviour
   OSCryptMocker::TearDown();
-
-  fake_server_.reset();
 }
 
 void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
@@ -860,6 +858,7 @@ void SyncTest::TearDownOnMainThread() {
              observer : fake_server_invalidation_observers_) {
       fake_server_->RemoveObserver(observer.get());
     }
+    fake_server_.reset();
   }
 
   // Delete things that unsubscribe in destructor before their targets are gone.

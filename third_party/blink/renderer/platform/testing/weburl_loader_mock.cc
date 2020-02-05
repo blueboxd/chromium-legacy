@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "net/cookies/site_for_cookies.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -71,7 +72,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 }
 
 WebURL WebURLLoaderMock::ServeRedirect(
-    const WebURLRequest& request,
+    const WebString& method,
     const WebURLResponse& redirect_response) {
   KURL redirect_url(redirect_response.HttpHeaderField("Location"));
 
@@ -80,8 +81,8 @@ WebURL WebURLLoaderMock::ServeRedirect(
   bool report_raw_headers = false;
   bool follow = client_->WillFollowRedirect(
       redirect_url, net::SiteForCookies::FromUrl(redirect_url), WebString(),
-      network::mojom::ReferrerPolicy::kDefault, request.HttpMethod(),
-      redirect_response, report_raw_headers);
+      network::mojom::ReferrerPolicy::kDefault, method, redirect_response,
+      report_raw_headers);
   // |this| might be deleted in willFollowRedirect().
   if (!self)
     return redirect_url;
@@ -93,7 +94,12 @@ WebURL WebURLLoaderMock::ServeRedirect(
 }
 
 void WebURLLoaderMock::LoadSynchronously(
-    const WebURLRequest& request,
+    std::unique_ptr<network::ResourceRequest> request,
+    scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+    int requestor_id,
+    bool download_to_network_cache_only,
+    bool pass_response_pipe_to_client,
+    base::TimeDelta timeout_interval,
     WebURLLoaderClient* client,
     WebURLResponse& response,
     base::Optional<WebURLError>& error,
@@ -101,17 +107,21 @@ void WebURLLoaderMock::LoadSynchronously(
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
     blink::WebBlobInfo& downloaded_blob) {
-  DCHECK(factory_->IsMockedURL(request.Url()));
-  factory_->LoadSynchronously(request, &response, &error, &data,
+  DCHECK(factory_->IsMockedURL(WebURL(KURL(request->url)))) << request->url;
+  factory_->LoadSynchronously(std::move(request), &response, &error, &data,
                               &encoded_data_length);
 }
 
-void WebURLLoaderMock::LoadAsynchronously(const WebURLRequest& request,
-                                          WebURLLoaderClient* client) {
+void WebURLLoaderMock::LoadAsynchronously(
+    std::unique_ptr<network::ResourceRequest> request,
+    scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+    int requestor_id,
+    bool download_to_network_cache_only,
+    WebURLLoaderClient* client) {
   DCHECK(client);
-  DCHECK(factory_->IsMockedURL(request.Url())) << request.Url();
+  DCHECK(factory_->IsMockedURL(WebURL(KURL(request->url)))) << request->url;
   client_ = client;
-  factory_->LoadAsynchronouly(request, this);
+  factory_->LoadAsynchronouly(std::move(request), this);
 }
 
 void WebURLLoaderMock::Cancel() {

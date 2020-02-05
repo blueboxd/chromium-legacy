@@ -70,6 +70,7 @@ class ComponentUpdaterPolicyTest : public PolicyTest {
       bool supports_group_policy_enable_component_updates);
 
   TestCase cur_test_case_;
+  base::RepeatingClosure quit_closure_;
 
   static const char component_id_[];
 
@@ -212,9 +213,7 @@ void ComponentUpdaterPolicyTest::BeginTest() {
 void ComponentUpdaterPolicyTest::EndTest() {
   post_interceptor_.reset();
   cus_ = nullptr;
-  // TODO(crbug.com/1033439): replace QuitCurrentWhenIdleDeprecated with RunLoop
-  // instance instead
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  quit_closure_.Run();
 }
 
 void ComponentUpdaterPolicyTest::VerifyExpectations(bool update_disabled) {
@@ -339,7 +338,9 @@ void ComponentUpdaterPolicyTest::
 
 IN_PROC_BROWSER_TEST_F(ComponentUpdaterPolicyTest, EnabledComponentUpdates) {
   BeginTest();
-  base::RunLoop().Run();
+  base::RunLoop loop;
+  quit_closure_ = loop.QuitWhenIdleClosure();
+  loop.Run();
 }
 
 }  // namespace policy

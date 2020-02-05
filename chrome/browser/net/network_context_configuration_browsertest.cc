@@ -22,6 +22,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -2010,12 +2011,11 @@ class NetworkContextConfigurationProxySettingsBrowserTest
     expected_connections_run_loop.Run();
 
     // Then wait for any remaining connections that we should NOT get.
-    base::RunLoop unexpected_connections_run_loop;
-    base::RunLoop::ScopedRunTimeoutForTest run_timeout(
-        base::TimeDelta::FromMilliseconds(100),
-        base::BindLambdaForTesting(
-            [&]() { unexpected_connections_run_loop.Quit(); }));
-    unexpected_connections_run_loop.Run();
+    base::RunLoop ugly_100ms_wait;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, ugly_100ms_wait.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(100));
+    ugly_100ms_wait.Run();
 
     // Stop the server.
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());

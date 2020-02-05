@@ -38,11 +38,19 @@ using password_manager::CredentialLeakType;
 
 // Shows UI to prompt the user to save the password.
 - (void)showSavePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToSave;
+            (std::unique_ptr<password_manager::PasswordFormManagerForUI>)
+                formToSave
+                         manual:(BOOL)manual;
 
 // Shows UI to prompt the user to update the password.
 - (void)showUpdatePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToUpdate;
+            (std::unique_ptr<password_manager::PasswordFormManagerForUI>)
+                formToUpdate
+                           manual:(BOOL)manual;
+
+// Removes the saving/updating password Infobar from the InfobarManager.
+// This also causes the UI to be dismissed.
+- (void)removePasswordInfoBarManualFallback:(BOOL)manual;
 
 // Shows UI to notify the user about auto sign in.
 - (void)showAutosigninNotification:

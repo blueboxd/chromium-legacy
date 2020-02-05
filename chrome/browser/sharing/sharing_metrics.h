@@ -114,6 +114,7 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 // until an ack message is received for it.
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
                               SharingDevicePlatform receiver_device_platform,
+                              SharingChannelType channel_type,
                               base::TimeDelta time);
 
 // Logs to UMA the time from receiving a SharingMessage to sending
@@ -150,12 +151,14 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
 void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform receiver_device_platform,
+    SharingChannelType channel_type,
     SharingSendMessageResult result);
 
 // Logs to UMA result of sending an ack of a SharingMessage.
 void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform ack_receiver_device_type,
+    SharingChannelType channel_type,
     SharingSendMessageResult result);
 
 // Logs to UMA the size of the selected text for Shared Clipboard.

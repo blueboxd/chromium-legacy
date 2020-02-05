@@ -8,8 +8,8 @@ FAIL Paste blocks HTML style injection resources/testharness.js:1587:25)
 	 but got  <div contenteditable>te<br>t">.<a>.|</a>st</div>,
 	 sameupto <div contenteditable>te
 FAIL Paste blocks SVG style injection resources/testharness.js:1587:25)
-	 expected <div contenteditable>teA<br>C|<svg></svg>st</div>,
+	 expected <div contenteditable>teA<math>B</math>C|<svg></svg>st</div>,
 	 but got  <div contenteditable>teA<math>B<br></math>C|<svg></svg>st</div>,
-	 sameupto <div contenteditable>teA<
+	 sameupto <div contenteditable>teA<math>B<
 Harness: the test ran to completion.
 

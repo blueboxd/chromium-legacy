@@ -35,6 +35,9 @@ interface AssistantService {
 
   // Binds an interface to control assistant settings.
   BindSettingsManager(pending_receiver<AssistantSettingsManager> receiver);
+
+  // Signals system shutdown, the service could start cleaning up if needed.
+  Shutdown();
 };
 
 // Interface whose implementation is owned by Shell in Ash. This is used

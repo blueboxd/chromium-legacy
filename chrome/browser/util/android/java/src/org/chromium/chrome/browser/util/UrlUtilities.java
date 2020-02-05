@@ -14,6 +14,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.url.GURL;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -105,6 +106,15 @@ public class UrlUtilities {
      */
     public static boolean isInternalScheme(URI uri) {
         return INTERNAL_SCHEMES.contains(uri.getScheme());
+    }
+
+    /**
+     * @param gurl A GURL.
+     *
+     * @return Whether the URL's scheme is for a internal chrome page.
+     */
+    public static boolean isInternalScheme(GURL gurl) {
+        return INTERNAL_SCHEMES.contains(gurl.getScheme());
     }
 
     /**

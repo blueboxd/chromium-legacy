@@ -20,12 +20,12 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
     : XOSExchangeDataProvider(x_window, selection) {}
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11() {
-  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  X11EventSource::GetInstance()->AddXEventDispatcher(this);
 }
 
 OSExchangeDataProviderAuraX11::~OSExchangeDataProviderAuraX11() {
   if (own_window())
-    PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+    X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 std::unique_ptr<OSExchangeData::Provider>
@@ -70,22 +70,12 @@ void OSExchangeDataProviderAuraX11::SetFileContents(
                  base::RefCountedString::TakeString(&file_contents_copy)));
 }
 
-bool OSExchangeDataProviderAuraX11::CanDispatchEvent(
-    const PlatformEvent& event) {
-  return event->xany.window == x_window();
-}
-
-uint32_t OSExchangeDataProviderAuraX11::DispatchEvent(
-    const PlatformEvent& event) {
-  XEvent* xev = event;
-  switch (xev->type) {
-    case SelectionRequest:
-      selection_owner().OnSelectionRequest(*xev);
-      return ui::POST_DISPATCH_STOP_PROPAGATION;
-    default:
-      NOTIMPLEMENTED();
+bool OSExchangeDataProviderAuraX11::DispatchXEvent(XEvent* xev) {
+  if (xev->type == SelectionRequest && xev->xany.window == x_window()) {
+    selection_owner().OnSelectionRequest(*xev);
+    return true;
   }
-  return ui::POST_DISPATCH_NONE;
+  return false;
 }
 
 }  // namespace ui

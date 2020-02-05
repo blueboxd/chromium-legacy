@@ -118,6 +118,35 @@ class MetricsRecorder {
                       kNotAutoTranslated)));
   }
 
+  void CheckTranslateTargetLanugageOrigin(int expected_recent_target,
+                                          int expected_language_model,
+                                          int expected_application_ui,
+                                          int expected_accept_languages,
+                                          int expected_default_english) {
+    Snapshot();
+
+    EXPECT_EQ(expected_recent_target,
+              GetCountWithoutSnapshot(
+                  static_cast<int>(translate::TranslateBrowserMetrics::
+                                       TargetLanguageOrigin::kRecentTarget)));
+    EXPECT_EQ(expected_language_model,
+              GetCountWithoutSnapshot(
+                  static_cast<int>(translate::TranslateBrowserMetrics::
+                                       TargetLanguageOrigin::kLanguageModel)));
+    EXPECT_EQ(expected_application_ui,
+              GetCountWithoutSnapshot(
+                  static_cast<int>(translate::TranslateBrowserMetrics::
+                                       TargetLanguageOrigin::kApplicationUI)));
+    EXPECT_EQ(expected_accept_languages,
+              GetCountWithoutSnapshot(static_cast<int>(
+                  translate::TranslateBrowserMetrics::TargetLanguageOrigin::
+                      kAcceptLanguages)));
+    EXPECT_EQ(expected_default_english,
+              GetCountWithoutSnapshot(
+                  static_cast<int>(translate::TranslateBrowserMetrics::
+                                       TargetLanguageOrigin::kDefaultEnglish)));
+  }
+
   HistogramBase::Count GetTotalCount() {
     Snapshot();
     if (!samples_)
@@ -303,4 +332,28 @@ TEST(TranslateBrowserMetricsTest, ReportTranslateHrefHintStatus) {
       translate::TranslateBrowserMetrics::HrefTranslateStatus::
           kNotAutoTranslated);
   recorder.CheckTranslateHrefHintStatus(1, 1, 1);
+}
+
+TEST(TranslateBrowserMetricsTest, ReportTranslateTargetLanguageOrigin) {
+  MetricsRecorder recorder(translate::TranslateBrowserMetrics::GetMetricsName(
+      translate::TranslateBrowserMetrics::
+          UMA_TRANSLATE_TARGET_LANGUAGE_ORIGIN));
+  recorder.CheckTranslateTargetLanugageOrigin(0, 0, 0, 0, 0);
+  translate::TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+      translate::TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget);
+  recorder.CheckTranslateTargetLanugageOrigin(1, 0, 0, 0, 0);
+  translate::TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+      translate::TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel);
+  recorder.CheckTranslateTargetLanugageOrigin(1, 1, 0, 0, 0);
+  translate::TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+      translate::TranslateBrowserMetrics::TargetLanguageOrigin::kApplicationUI);
+  recorder.CheckTranslateTargetLanugageOrigin(1, 1, 1, 0, 0);
+  translate::TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+      translate::TranslateBrowserMetrics::TargetLanguageOrigin::
+          kAcceptLanguages);
+  recorder.CheckTranslateTargetLanugageOrigin(1, 1, 1, 1, 0);
+  translate::TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+      translate::TranslateBrowserMetrics::TargetLanguageOrigin::
+          kDefaultEnglish);
+  recorder.CheckTranslateTargetLanugageOrigin(1, 1, 1, 1, 1);
 }

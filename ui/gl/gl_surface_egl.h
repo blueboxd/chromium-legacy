@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/egl_timestamps.h"
@@ -27,6 +26,10 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_overlay.h"
+
+#if defined(USE_X11)
+#include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
+#endif
 
 namespace gl {
 
@@ -111,8 +114,10 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
 // Encapsulates an EGL surface bound to a view.
 class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
-                                         public EGLTimestampClient,
-                                         public ui::PlatformEventDispatcher {
+#if defined(USE_X11)
+                                         public ui::XEventDispatcher,
+#endif
+                                         public EGLTimestampClient {
  public:
   NativeViewGLSurfaceEGL(EGLNativeWindowType window,
                          std::unique_ptr<gfx::VSyncProvider> vsync_provider);
@@ -186,9 +191,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
   void TraceSwapEvents(EGLuint64KHR oldFrameId);
 
-  // PlatformEventDispatcher implementation.
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+#if defined(USE_X11)
+  // XEventDispatcher:
+  bool DispatchXEvent(XEvent* xev) override;
+#endif
 
   EGLSurface surface_ = nullptr;
   bool supports_post_sub_buffer_ = false;

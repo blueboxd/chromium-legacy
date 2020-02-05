@@ -301,7 +301,7 @@ void V4LocalDatabaseManager::CancelCheck(Client* client) {
 }
 
 bool V4LocalDatabaseManager::CanCheckResourceType(
-    content::ResourceType resource_type) const {
+    blink::mojom::ResourceType resource_type) const {
   // We check all types since most checks are fast.
   return true;
 }

@@ -687,7 +687,7 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
   // Simulates modifying DOM tree to invalidate distribution.
   Element* host = GetDocument().getElementById("host");
   host->AppendChild(sample);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // Simulates to restore selection from undo stack.
   selection = CreateVisibleSelection(selection.AsSelection());
@@ -699,7 +699,7 @@ TEST_F(VisibleSelectionTest, BackwardSelectionWithMultipleEmptyBodies) {
   Element* body = GetDocument().body();
   Element* new_body = GetDocument().CreateRawElement(html_names::kBodyTag);
   body->appendChild(new_body);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   const SelectionInDOMTree selection =
       SelectionInDOMTree::Builder()

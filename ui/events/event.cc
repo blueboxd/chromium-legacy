@@ -28,10 +28,6 @@
 
 #if defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"        // nogncheck
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
-#include "ui/events/x/events_x_utils.h"                     // nogncheck
-#include "ui/events/x/x11_event_translation.h"
-#include "ui/gfx/x/x11.h"                                   // nogncheck
 #elif defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"  // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
@@ -333,13 +329,6 @@ Event::Event(const PlatformEvent& native_event, EventType type, int flags)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
   ComputeEventLatencyOS(native_event);
 
-#if defined(USE_X11)
-  if (native_event->type == GenericEvent) {
-    XIDeviceEvent* xiev =
-        static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-    source_device_id_ = xiev->sourceid;
-  }
-#endif
 #if defined(USE_OZONE)
   source_device_id_ = native_event->source_device_id();
   if (auto* properties = native_event->properties())
@@ -468,9 +457,6 @@ MouseEvent::MouseEvent(const PlatformEvent& native_event)
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
   InitializeNative();
-#if defined(USE_X11)
-  SetProperties(GetEventPropertiesFromXEvent(type(), *native_event));
-#endif
 }
 
 MouseEvent::MouseEvent(EventType type,
@@ -894,11 +880,6 @@ void KeyEvent::InitializeNative() {
   }
 
   NormalizeFlags();
-  // TODO(crbug.com/965991): Remove once PlatformEvent migration is done.
-  if (native_event()) {
-    key_ = GetDomKeyFromXEvent(native_event());
-    SetProperties(GetEventPropertiesFromXEvent(type(), *native_event()));
-  }
 #elif defined(OS_WIN)
   // Only Windows has native character events.
   if (is_char_) {

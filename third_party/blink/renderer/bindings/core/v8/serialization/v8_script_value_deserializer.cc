@@ -220,7 +220,10 @@ bool V8ScriptValueDeserializer::ReadUTF8String(String* string) {
     return false;
   *string =
       String::FromUTF8(reinterpret_cast<const LChar*>(utf8_data), utf8_length);
-  return true;
+
+  // Decoding must have failed; this encoding does not distinguish between null
+  // and empty strings.
+  return !string->IsNull();
 }
 
 ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(

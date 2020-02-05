@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -20,6 +21,16 @@ namespace base {
 namespace {
 HangWatcher* g_instance = nullptr;
 }
+
+constexpr const char* kThreadName = "HangWatcher";
+
+// The time that the HangWatcher thread will sleep for between calls to
+// Monitor(). Increasing or decreasing this does not modify the type of hangs
+// that can be detected. It instead increases the probability that a call to
+// Monitor() will happen at the right time to catch a hang. This has to be
+// balanced with power/cpu use concerns as busy looping would catch amost all
+// hangs but present unacceptable overhead.
+const base::TimeDelta kMonitoringPeriod = base::TimeDelta::FromSeconds(10);
 
 HangWatchScope::HangWatchScope(TimeDelta timeout) {
   internal::HangWatchState* current_hang_watch_state =
@@ -61,15 +72,59 @@ HangWatchScope::~HangWatchScope() {
 }
 
 HangWatcher::HangWatcher(RepeatingClosure on_hang_closure)
-    : on_hang_closure_(std::move(on_hang_closure)) {
+    : monitor_period_(kMonitoringPeriod),
+      monitor_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                     WaitableEvent::InitialState::NOT_SIGNALED),
+      on_hang_closure_(std::move(on_hang_closure)),
+      thread_(this, kThreadName) {
+  // |thread_checker_| should not be bound to the constructing thread.
+  DETACH_FROM_THREAD(thread_checker_);
+
   DCHECK(!g_instance);
   g_instance = this;
+  Start();
 }
 
 HangWatcher::~HangWatcher() {
   DCHECK_EQ(g_instance, this);
   DCHECK(watch_states_.empty());
   g_instance = nullptr;
+  Stop();
+}
+
+void HangWatcher::Start() {
+  thread_.Start();
+}
+
+void HangWatcher::Stop() {
+  keep_monitoring_.store(false);
+  monitor_event_.Signal();
+  thread_.Join();
+}
+
+bool HangWatcher::IsWatchListEmpty() {
+  AutoLock auto_lock(watch_state_lock_);
+  return watch_states_.empty();
+}
+
+void HangWatcher::Run() {
+  // Monitor() should only run on |thread_|. Bind |thread_checker_| here to make
+  // sure of that.
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  while (keep_monitoring_) {
+    // If there is nothing to watch sleep until there is.
+    if (IsWatchListEmpty()) {
+      monitor_event_.Wait();
+    } else {
+      Monitor();
+    }
+
+    if (keep_monitoring_) {
+      // Sleep until next scheduled monitoring.
+      monitor_event_.TimedWait(monitor_period_);
+    }
+  }
 }
 
 // static
@@ -83,11 +138,18 @@ ScopedClosureRunner HangWatcher::RegisterThread() {
   watch_states_.push_back(
       internal::HangWatchState::CreateHangWatchStateForCurrentThread());
 
+  // Now that there is a thread to monitor we wake the HangWatcher thread.
+  if (watch_states_.size() == 1) {
+    monitor_event_.Signal();
+  }
+
   return ScopedClosureRunner(BindOnce(&HangWatcher::UnregisterThread,
                                       Unretained(HangWatcher::GetInstance())));
 }
 
 void HangWatcher::Monitor() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   bool must_invoke_hang_closure = false;
   {
     AutoLock auto_lock(watch_state_lock_);
@@ -104,6 +166,23 @@ void HangWatcher::Monitor() {
     // to prevent lock reentrancy.
     on_hang_closure_.Run();
   }
+
+  if (after_monitor_closure_for_testing_) {
+    after_monitor_closure_for_testing_.Run();
+  }
+}
+
+void HangWatcher::SetAfterMonitorClosureForTesting(
+    base::RepeatingClosure closure) {
+  after_monitor_closure_for_testing_ = std::move(closure);
+}
+
+void HangWatcher::SetMonitoringPeriodForTesting(base::TimeDelta period) {
+  monitor_period_ = period;
+}
+
+void HangWatcher::SignalMonitorEventForTesting() {
+  monitor_event_.Signal();
 }
 
 void HangWatcher::UnregisterThread() {
@@ -129,10 +208,19 @@ namespace internal {
 
 // |deadline_| starts at Max() to avoid validation problems
 // when setting the first legitimate value.
-HangWatchState::HangWatchState() : deadline_(TimeTicks::Max()) {}
+HangWatchState::HangWatchState() : deadline_(TimeTicks::Max()) {
+  // There should not exist a state object for this thread already.
+  DCHECK(!GetHangWatchStateForCurrentThread()->Get());
+
+  // Bind the new instance to this thread.
+  GetHangWatchStateForCurrentThread()->Set(this);
+}
 
 HangWatchState::~HangWatchState() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  DCHECK_EQ(GetHangWatchStateForCurrentThread()->Get(), this);
+  GetHangWatchStateForCurrentThread()->Set(nullptr);
 
 #if DCHECK_IS_ON()
   // Destroying the HangWatchState should not be done if there are live
@@ -144,18 +232,13 @@ HangWatchState::~HangWatchState() {
 // static
 std::unique_ptr<HangWatchState>
 HangWatchState::CreateHangWatchStateForCurrentThread() {
-  // There should not exist a state object for this thread already.
-  DCHECK(!GetHangWatchStateForCurrentThread()->Get());
 
   // Allocate a watch state object for this thread.
   std::unique_ptr<HangWatchState> hang_state =
       std::make_unique<HangWatchState>();
 
-  // Bind the new instance to this thread.
-  GetHangWatchStateForCurrentThread()->Set(hang_state.get());
-
   // Setting the thread local worked.
-  DCHECK(GetHangWatchStateForCurrentThread()->Get());
+  DCHECK_EQ(GetHangWatchStateForCurrentThread()->Get(), hang_state.get());
 
   // Transfer ownership to caller.
   return hang_state;

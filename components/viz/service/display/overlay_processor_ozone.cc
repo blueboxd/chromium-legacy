@@ -131,6 +131,18 @@ void OverlayProcessorOzone::CheckOverlaySupport(
     // For ozone-cast, there will not be a primary_plane.
     if (primary_plane) {
       ConvertToOzoneOverlaySurface(*primary_plane, &(*ozone_surface_iterator));
+      if (shared_image_interface_) {
+        bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
+                                                  primary_plane->mailbox);
+        // We cannot validate an overlay configuration without the buffer for
+        // primary plane present.
+        if (!result) {
+          for (auto& candidate : *surfaces) {
+            candidate.overlay_handled = false;
+          }
+          return;
+        }
+      }
       ozone_surface_iterator++;
     }
 
@@ -141,29 +153,11 @@ void OverlayProcessorOzone::CheckOverlaySupport(
       ConvertToOzoneOverlaySurface(*surface_iterator,
                                    &(*ozone_surface_iterator));
       if (shared_image_interface_) {
-        UMA_HISTOGRAM_BOOLEAN(
-            "Compositing.Display.OverlayProcessorOzone."
-            "IsCandidateSharedImage",
-            surface_iterator->mailbox.IsSharedImage());
-        if (surface_iterator->mailbox.IsSharedImage()) {
-          (*ozone_surface_iterator).native_pixmap =
-              shared_image_interface_->GetNativePixmap(
-                  surface_iterator->mailbox);
-          if (!ozone_surface_iterator->native_pixmap) {
-            // SharedImage creation and destruction happens on a different
-            // thread so there is no guarantee that we can always look them up
-            // successfully. If a SharedImage doesn't exist, ignore the
-            // candidate. We will try again next frame.
-            DLOG(ERROR)
-                << "Unable to find the NativePixmap corresponding to the "
-                   "overlay candidate";
-            *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
-            ReportSharedImageExists(false);
-          } else {
-            (*ozone_surface_iterator).native_pixmap_unique_id =
-                MailboxToUInt32(surface_iterator->mailbox);
-            ReportSharedImageExists(true);
-          }
+        bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
+                                                  surface_iterator->mailbox);
+        // Skip the candidate if the corresponding NativePixmap is not found.
+        if (!result) {
+          *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
         }
       }
     }
@@ -193,6 +187,37 @@ void OverlayProcessorOzone::CheckOverlaySupport(
 gfx::Rect OverlayProcessorOzone::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& overlay) const {
   return ToEnclosedRect(overlay.display_rect);
+}
+
+bool OverlayProcessorOzone::SetNativePixmapForCandidate(
+    ui::OverlaySurfaceCandidate* candidate,
+    const gpu::Mailbox& mailbox) {
+  DCHECK(shared_image_interface_);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Compositing.Display.OverlayProcessorOzone."
+      "IsCandidateSharedImage",
+      mailbox.IsSharedImage());
+
+  if (!mailbox.IsSharedImage())
+    return false;
+
+  candidate->native_pixmap = shared_image_interface_->GetNativePixmap(mailbox);
+
+  if (!candidate->native_pixmap) {
+    // SharedImage creation and destruction happens on a different
+    // thread so there is no guarantee that we can always look them up
+    // successfully. If a SharedImage doesn't exist, ignore the
+    // candidate. We will try again next frame.
+    DLOG(ERROR) << "Unable to find the NativePixmap corresponding to the "
+                   "overlay candidate";
+    ReportSharedImageExists(false);
+    return false;
+  }
+
+  candidate->native_pixmap_unique_id = MailboxToUInt32(mailbox);
+  ReportSharedImageExists(true);
+  return true;
 }
 
 }  // namespace viz

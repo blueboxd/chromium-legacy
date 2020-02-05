@@ -31,17 +31,19 @@
 namespace {
 
 constexpr uint32_t kPlaneOffset = 100;
-constexpr uint32_t kTypePropId = 300;
-constexpr uint32_t kInFormatsPropId = 301;
-constexpr uint32_t kPlaneCtmId = 302;
-constexpr uint32_t kCtmPropId = 303;
-constexpr uint32_t kGammaLutPropId = 304;
-constexpr uint32_t kGammaLutSizePropId = 305;
-constexpr uint32_t kDegammaLutPropId = 306;
-constexpr uint32_t kDegammaLutSizePropId = 307;
-constexpr uint32_t kOutFencePtrPropId = 308;
+constexpr uint32_t kConnectorIdBase = 700;
+
+constexpr uint32_t kTypePropId = 3010;
+constexpr uint32_t kInFormatsPropId = 3011;
+constexpr uint32_t kPlaneCtmId = 3012;
+constexpr uint32_t kBackgroundColorPropId = 1002;
+constexpr uint32_t kCtmPropId = 1003;
+constexpr uint32_t kGammaLutPropId = 1004;
+constexpr uint32_t kGammaLutSizePropId = 1005;
+constexpr uint32_t kDegammaLutPropId = 1006;
+constexpr uint32_t kDegammaLutSizePropId = 1007;
+constexpr uint32_t kOutFencePtrPropId = 1008;
 constexpr uint32_t kInFormatsBlobPropId = 400;
-constexpr uint32_t kBackgroundColorPropId = 401;
 
 const gfx::Size kDefaultBufferSize(2, 2);
 // Create a basic mode for a 6x4 screen.
@@ -110,35 +112,60 @@ void HardwareDisplayPlaneManagerTest::SetUp() {
 void HardwareDisplayPlaneManagerTest::InitializeDrmState(
     size_t crtc_count,
     size_t planes_per_crtc) {
-  property_names_ = {
+  std::map<uint32_t, std::string> crtc_property_names = {
+      {1000, "ACTIVE"},
+      {1001, "MODE_ID"},
+  };
+
+  std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(1);
+  std::map<uint32_t, std::string> connector_property_names = {
+      {2000, "CRTC_ID"},
+  };
+  for (size_t i = 0; i < connector_properties.size(); ++i) {
+    connector_properties[i].id = kConnectorIdBase + i;
+    for (const auto& pair : connector_property_names) {
+      connector_properties[i].properties.push_back(
+          {/* .id = */ pair.first, /* .value = */ 0});
+    }
+  }
+  connector_properties_ = connector_properties;
+
+  std::vector<ui::MockDrmDevice::PlaneProperties> plane_properties(
+      planes_per_crtc * crtc_count);
+  std::map<uint32_t, std::string> plane_property_names = {
       // Add all required properties.
-      {200, "CRTC_ID"},
-      {201, "CRTC_X"},
-      {202, "CRTC_Y"},
-      {203, "CRTC_W"},
-      {204, "CRTC_H"},
-      {205, "FB_ID"},
-      {206, "SRC_X"},
-      {207, "SRC_Y"},
-      {208, "SRC_W"},
-      {209, "SRC_H"},
+      {3000, "CRTC_ID"},
+      {3001, "CRTC_X"},
+      {3002, "CRTC_Y"},
+      {3003, "CRTC_W"},
+      {3004, "CRTC_H"},
+      {3005, "FB_ID"},
+      {3006, "SRC_X"},
+      {3007, "SRC_Y"},
+      {3008, "SRC_W"},
+      {3009, "SRC_H"},
       // Defines some optional properties we use for convenience.
       {kTypePropId, "type"},
       {kInFormatsPropId, "IN_FORMATS"},
   };
+
   // Always add an additional cursor plane.
   ++planes_per_crtc;
   for (size_t i = 0; i < crtc_count; ++i) {
     ui::MockDrmDevice::CrtcProperties crtc_prop;
     // Start ID at 1 cause 0 is an invalid ID.
     crtc_prop.id = i + 1;
+    for (const auto& pair : crtc_property_names) {
+      crtc_prop.properties.push_back(
+          {/* .id = */ pair.first, /* .value = */ 0});
+    }
     crtc_properties_.emplace_back(std::move(crtc_prop));
 
     for (size_t j = 0; j < planes_per_crtc; ++j) {
       ui::MockDrmDevice::PlaneProperties plane_prop;
       plane_prop.id = kPlaneOffset + i * planes_per_crtc + j;
       plane_prop.crtc_mask = 1 << i;
-      for (const auto& pair : property_names_) {
+      for (const auto& pair : plane_property_names) {
         uint32_t value = 0;
         if (pair.first == kTypePropId) {
           if (j == 0)
@@ -158,23 +185,26 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
     }
   }
 
+  property_names_.insert(crtc_property_names.begin(),
+                         crtc_property_names.end());
+  property_names_.insert(connector_property_names.begin(),
+                         connector_property_names.end());
+  property_names_.insert(plane_property_names.begin(),
+                         plane_property_names.end());
+
   // Separately add optional properties that will be used in some tests, but the
   // tests will append the property to the planes on a case-by-case basis.
   //
   // Plane properties:
   property_names_.insert({kPlaneCtmId, "PLANE_CTM"});
   // CRTC properties:
+  property_names_.insert({kBackgroundColorPropId, "BACKGROUND_COLOR"});
   property_names_.insert({kCtmPropId, "CTM"});
   property_names_.insert({kGammaLutPropId, "GAMMA_LUT"});
   property_names_.insert({kGammaLutSizePropId, "GAMMA_LUT_SIZE"});
   property_names_.insert({kDegammaLutPropId, "DEGAMMA_LUT"});
   property_names_.insert({kDegammaLutSizePropId, "DEGAMMA_LUT_SIZE"});
   property_names_.insert({kOutFencePtrPropId, "OUT_FENCE_PTR"});
-  property_names_.insert({kBackgroundColorPropId, "BACKGROUND_COLOR"});
-
-  ui::MockDrmDevice::ConnectorProperties connector_prop;
-  connector_prop.id = 1000;
-  connector_properties_.emplace_back(std::move(connector_prop));
 }
 
 void HardwareDisplayPlaneManagerTest::PerformPageFlip(

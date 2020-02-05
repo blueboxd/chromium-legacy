@@ -228,7 +228,8 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
 
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
-  identity_test_env()->MakePrimaryAccountAvailable("logged_in@gmail.com");
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
+      "logged_in@gmail.com");
 
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }

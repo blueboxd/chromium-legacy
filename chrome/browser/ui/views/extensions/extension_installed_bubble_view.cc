@@ -170,16 +170,18 @@ gfx::ImageSkia MakeIconFromBitmap(const SkBitmap& bitmap) {
 bool ShouldShowHowToUse(const extensions::Extension* extension) {
   const auto* info = GetActionInfoForExtension(extension);
 
+  if (HasOmniboxKeyword(extension))
+    return true;
+
   if (!info)
     return false;
 
-  switch (info->type) {
-    case extensions::ActionInfo::TYPE_BROWSER:
-    case extensions::ActionInfo::TYPE_PAGE:
-      return !info->synthesized;
-    case extensions::ActionInfo::TYPE_ACTION:
-      return HasOmniboxKeyword(extension);
+  if (info->type == extensions::ActionInfo::TYPE_BROWSER ||
+      info->type == extensions::ActionInfo::TYPE_PAGE) {
+    return !info->synthesized;
   }
+
+  return false;
 }
 
 bool HasCommandKeybinding(const extensions::Extension* extension,
@@ -261,9 +263,12 @@ base::string16 GetHowToUseDescription(const Extension* extension,
                        : IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT;
       break;
     case extensions::ActionInfo::TYPE_ACTION:
-      extra = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
-      message_id = IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO;
       break;
+  }
+
+  if (message_id == 0 && HasOmniboxKeyword(extension)) {
+    extra = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
+    message_id = IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO;
   }
 
   if (message_id == 0)

@@ -33,7 +33,7 @@ blink::mojom::FetchAPIRequestPtr TypeConverter<
   output->mode = input.mode;
   output->is_main_resource_load =
       content::ServiceWorkerUtils::IsMainResourceType(
-          static_cast<content::ResourceType>(input.resource_type));
+          static_cast<blink::mojom::ResourceType>(input.resource_type));
   output->credentials_mode = input.credentials_mode;
   output->cache_mode =
       content::ServiceWorkerUtils::GetCacheModeFromLoadFlags(input.load_flags);

@@ -16,7 +16,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "user_consent_types.proto";
+import "components/sync/protocol/user_consent_types.proto";
 
 // Next id: 14
 message UserConsentSpecifics {

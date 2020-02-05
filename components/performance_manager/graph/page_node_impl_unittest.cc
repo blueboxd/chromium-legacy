@@ -232,7 +232,6 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnPageIsHoldingWebLockChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageIsHoldingIndexedDBLockChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameUrlChanged, void(const PageNode*));
-  MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameDocumentChanged, void(const PageNode*));
   MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
   MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
@@ -297,11 +296,6 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->SetLifecycleStateForTesting(PageNodeImpl::LifecycleState::kFrozen);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
-  EXPECT_CALL(obs, OnPageAlmostIdleChanged(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
-  page_node->SetPageAlmostIdleForTesting(true);
-  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
-
   const GURL kTestUrl = GURL("https://foo.com/");
   int64_t navigation_id = 0x1234;
   EXPECT_CALL(obs, OnMainFrameUrlChanged(_))
@@ -345,8 +339,6 @@ TEST_F(PageNodeImplTest, PublicInterface) {
 
   EXPECT_EQ(page_node->browser_context_id(),
             public_page_node->GetBrowserContextID());
-  EXPECT_EQ(page_node->page_almost_idle(),
-            public_page_node->IsPageAlmostIdle());
   EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());
   EXPECT_EQ(page_node->is_audible(), public_page_node->IsAudible());
   EXPECT_EQ(page_node->is_loading(), public_page_node->IsLoading());

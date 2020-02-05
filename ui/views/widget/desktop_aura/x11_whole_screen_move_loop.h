@@ -62,6 +62,8 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // Dispatch mouse movement event to |delegate_| in a posted task.
   void DispatchMouseMovement();
 
+  void PostDispatchIfNeeded(const ui::MouseEvent& event);
+
   X11MoveLoopDelegate* delegate_;
 
   // Are we running a nested run loop from RunMoveLoop()?

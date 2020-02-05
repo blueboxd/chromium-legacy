@@ -9,7 +9,6 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -19,6 +18,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -219,9 +219,9 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   const GURL request_url_;
 
-  // This is ResourceType::kServiceWorker for the main script or
-  // ResourceType::kScript for an imported script.
-  const ResourceType resource_type_;
+  // This is blink::mojom::ResourceType::kServiceWorker for the main script or
+  // blink::mojom::ResourceType::kScript for an imported script.
+  const blink::mojom::ResourceType resource_type_;
 
   // Loader options to pass to the network loader.
   const uint32_t options_;

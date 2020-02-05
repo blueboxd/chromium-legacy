@@ -21,9 +21,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/resource_type.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 namespace content {
 class NavigationHandle;
@@ -114,7 +114,7 @@ class MetricsWebContentsObserver
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
-      const content::mojom::ResourceLoadInfo& resource_load_info) override;
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
   void FrameReceivedFirstUserActivation(
       content::RenderFrameHost* render_frame_host) override;
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
@@ -201,7 +201,7 @@ class MetricsWebContentsObserver
   PageLoadTracker* GetTrackerOrNullForRequest(
       const content::GlobalRequestID& request_id,
       content::RenderFrameHost* render_frame_host_or_null,
-      content::ResourceType resource_type,
+      blink::mojom::ResourceType resource_type,
       base::TimeTicks creation_time);
 
   // Notify all loads, provisional and committed, that we performed an action

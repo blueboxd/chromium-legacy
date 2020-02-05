@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/user_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
@@ -212,6 +213,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
                                       uint64_t name_hash,
                                       base::HistogramBase::Sample sample);
 
+  // Registered as a callback to receive every action recorded using
+  // base::RecordAction(), when tracing is enabled with a histogram category.
+  static void OnUserActionSampleCallback(const std::string& action);
+
  private:
   friend class base::NoDestructor<TraceEventDataSource>;
 
@@ -287,6 +292,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;
   bool privacy_filtering_enabled_ = false;
+  std::string process_name_;
+  int process_id_ = base::kNullProcessId;
+  base::ActionCallback user_action_callback_ =
+      base::BindRepeating(&TraceEventDataSource::OnUserActionSampleCallback);
   SEQUENCE_CHECKER(perfetto_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);

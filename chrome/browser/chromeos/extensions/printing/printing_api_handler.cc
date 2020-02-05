@@ -114,13 +114,14 @@ void PrintingAPIHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void PrintingAPIHandler::SubmitJob(
-    const std::string& extension_id,
+    gfx::NativeWindow native_window,
+    scoped_refptr<const extensions::Extension> extension,
     std::unique_ptr<api::printing::SubmitJob::Params> params,
     PrintJobSubmitter::SubmitJobCallback callback) {
   auto print_job_submitter = std::make_unique<PrintJobSubmitter>(
-      browser_context_, printers_manager_, &printer_capabilities_provider_,
-      &print_job_controller_, &pdf_flattener_, extension_id,
-      std::move(params->request));
+      native_window, browser_context_, printers_manager_,
+      &printer_capabilities_provider_, &print_job_controller_, &pdf_flattener_,
+      std::move(extension), std::move(params->request));
   PrintJobSubmitter* print_job_submitter_ptr = print_job_submitter.get();
   print_job_submitter_ptr->Start(base::BindOnce(
       &PrintingAPIHandler::OnPrintJobSubmitted, weak_ptr_factory_.GetWeakPtr(),

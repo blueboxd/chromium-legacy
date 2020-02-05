@@ -81,8 +81,10 @@ static void ScrollToVisible(Range* match) {
           first_node.GetExecutionContext())) {
     const EphemeralRangeInFlatTree range(match);
     if (InvisibleDOM::ActivateRangeIfNeeded(range) ||
-        DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range))
-      first_node.GetDocument().UpdateStyleAndLayout();
+        DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range)) {
+      first_node.GetDocument().UpdateStyleAndLayout(
+          DocumentUpdateReason::kFindInPage);
+    }
   }
   Settings* settings = first_node.GetDocument().GetSettings();
   bool smooth_find_enabled =
@@ -247,7 +249,8 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
 
   // Need to clean out style and layout state before querying
   // Element::isFocusable().
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kFindInPage);
 
   // Try to find the first focusable node up the chain, which will, for
   // example, focus links if we have found text within the link.

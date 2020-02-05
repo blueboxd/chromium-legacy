@@ -20,10 +20,10 @@ class CORE_EXPORT LocationReportBody : public ReportBody {
       : source_file_(location->Url()),
         line_number_(location->IsUnknown()
                          ? base::nullopt
-                         : base::Optional<uint32_t>{location->LineNumber()}),
-        column_number_(location->IsUnknown() ? base::nullopt
-                                             : base::Optional<uint32_t>{
-                                                   location->ColumnNumber()}) {}
+                         : base::make_optional(location->LineNumber())),
+        column_number_(location->IsUnknown()
+                           ? base::nullopt
+                           : base::make_optional(location->ColumnNumber())) {}
 
   LocationReportBody() : LocationReportBody(SourceLocation::Capture()) {}
 
@@ -52,8 +52,8 @@ class CORE_EXPORT LocationReportBody : public ReportBody {
 
  protected:
   const String source_file_;
-  base::Optional<uint32_t> line_number_;
-  base::Optional<uint32_t> column_number_;
+  const base::Optional<uint32_t> line_number_;
+  const base::Optional<uint32_t> column_number_;
 };
 
 }  // namespace blink

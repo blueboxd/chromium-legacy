@@ -22,8 +22,8 @@ jumbo_component("x") {
     "x11_menu_list.h",
     "x11_pointer_grab.cc",
     "x11_pointer_grab.h",
-    "x11_shm_image_pool_base.cc",
-    "x11_shm_image_pool_base.h",
+    "x11_shm_image_pool.cc",
+    "x11_shm_image_pool.h",
     "x11_software_bitmap_presenter.cc",
     "x11_software_bitmap_presenter.h",
     "x11_topmost_window_finder.cc",
@@ -34,18 +34,6 @@ jumbo_component("x") {
     "x11_window.cc",
     "x11_window.h",
   ]
-
-  if (use_x11) {
-    sources += [
-      "x11_shm_image_pool.cc",
-      "x11_shm_image_pool.h",
-    ]
-  } else {
-    sources += [
-      "x11_shm_image_pool_ozone.cc",
-      "x11_shm_image_pool_ozone.h",
-    ]
-  }
 
   if (is_desktop_linux) {
     sources += [

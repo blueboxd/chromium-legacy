@@ -11,19 +11,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/x/x11_types.h"
-
-namespace ui {
-class ScopedEventDispatcher;
-class XScopedEventSelector;
-}
 
 namespace views {
 
 // Blocks till the value of |property| on |window| changes.
-class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
+class X11PropertyChangeWaiter : public ui::XEventDispatcher {
  public:
   X11PropertyChangeWaiter(XID window, const char* property);
   ~X11PropertyChangeWaiter() override;
@@ -33,16 +28,15 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
 
  protected:
   // Returns whether the run loop can exit.
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event);
+  virtual bool ShouldKeepOnWaiting(XEvent* event);
 
   XID xwindow() const {
     return x_window_;
   }
 
  private:
-  // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  // ui::XEventDispatcher:
+  bool DispatchXEvent(XEvent* event) override;
 
   XID x_window_;
   const char* property_;
@@ -55,7 +49,7 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
   // Ends the run loop.
   base::OnceClosure quit_closure_;
 
-  std::unique_ptr<ui::ScopedEventDispatcher> dispatcher_;
+  std::unique_ptr<ui::ScopedXEventDispatcher> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(X11PropertyChangeWaiter);
 };

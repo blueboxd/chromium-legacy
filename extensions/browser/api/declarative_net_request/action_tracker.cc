@@ -34,7 +34,7 @@ namespace dnr_api = api::declarative_net_request;
 
 bool IsMainFrameNavigationRequest(const WebRequestInfo& request_info) {
   return request_info.is_navigation_request &&
-         request_info.type == content::ResourceType::kMainFrame;
+         request_info.type == blink::mojom::ResourceType::kMainFrame;
 }
 
 // Returns whether a TrackedRule should be recorded on a rule match for the

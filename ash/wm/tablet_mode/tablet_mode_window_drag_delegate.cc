@@ -314,8 +314,11 @@ void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     if (ShouldFlingIntoOverview(event)) {
       DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
-      Shell::Get()->overview_controller()->overview_session()->AddItem(
-          dragged_window_, /*reposition=*/true, /*animate=*/false);
+      Shell::Get()
+          ->overview_controller()
+          ->overview_session()
+          ->AddItemInMruOrder(dragged_window_, /*reposition=*/true,
+                              /*animate=*/false, /*restack=*/true);
     }
     StartFling(event);
   }

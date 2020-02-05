@@ -262,7 +262,8 @@ TEST_F(DocumentLoadingRenderingTest,
   // executing a script that reads offsetTop in the child frame could do this.
   auto* child_frame =
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
-  child_frame->contentDocument()->UpdateStyleAndLayout();
+  child_frame->contentDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kTest);
 
   auto frame2 = Compositor().BeginFrame();
 
@@ -459,7 +460,7 @@ TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
   const auto recalc_and_check = [this]() {
     GetDocument().GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create("test reason"));
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
     Element* element = GetDocument().getElementById("test");
     ASSERT_NE(nullptr, element);

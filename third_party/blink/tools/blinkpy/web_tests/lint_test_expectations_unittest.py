@@ -46,6 +46,7 @@ class FakePort(object):
         self.path = path
 
     ALL_BUILD_TYPES = ('debug', 'release')
+    FLAG_EXPECTATIONS_PREFIX = 'FlagExpectations'
 
     def test_configuration(self):
         return None

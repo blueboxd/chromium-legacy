@@ -916,14 +916,14 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests",
     "type": "raw",
   },
-  "ios_chrome_signin_egtests": {
-    "args": [],
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests",
-    "type": "raw",
-  },
   "ios_chrome_settings_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",
+    "type": "raw",
+  },
+  "ios_chrome_signin_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests",
     "type": "raw",
   },
   "ios_chrome_translate_egtests": {
@@ -965,6 +965,11 @@
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module",
     "type": "raw",
   },
+  "ios_chrome_signin_eg2tests_module": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module",
+    "type": "raw",
+  },
   "ios_chrome_smoke_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module",
@@ -975,7 +980,7 @@
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module",
     "type": "raw",
   },
-"ios_chrome_web_eg2tests_module": {
+  "ios_chrome_web_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module",
     "type": "raw",

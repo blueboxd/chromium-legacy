@@ -12,7 +12,7 @@ import android.view.ViewStub;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -64,7 +64,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             mIncognitoSwitchCoordinator.destroy();
             mIncognitoSwitchCoordinator = null;
         }
-        if (FeatureUtilities.isStartSurfaceEnabled()) {
+        if (CachedFeatureFlags.isStartSurfaceEnabled()) {
             TemplateUrlServiceFactory.get().removeObserver(this);
         }
     }
@@ -223,7 +223,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
 
         assert mTabModelSelector != null;
         mTabSwitcherModeToolbar.setTabModelSelector(mTabModelSelector);
-        if (FeatureUtilities.isStartSurfaceEnabled()) {
+        if (CachedFeatureFlags.isStartSurfaceEnabled()) {
             mIncognitoSwitchCoordinator =
                     new IncognitoSwitchCoordinator(mTabSwitcherModeToolbar, mTabModelSelector);
             mLogo = mTabSwitcherModeToolbar.findViewById(R.id.logo);

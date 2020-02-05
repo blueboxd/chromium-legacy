@@ -13,6 +13,7 @@ import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
 import("//chrome/browser/buildflags.gni")
+import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chromeos/assistant/assistant.gni")
@@ -886,6 +887,8 @@ if (!is_android) {
       "../browser/chrome_worker_browsertest.cc",
       "../browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.cc",
       "../browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.h",
+      "../browser/chromeos/login/saml/test_client_cert_saml_idp_mixin.cc",
+      "../browser/chromeos/login/saml/test_client_cert_saml_idp_mixin.h",
       "../browser/chromeos/scoped_test_system_nss_key_slot_mixin.cc",
       "../browser/chromeos/scoped_test_system_nss_key_slot_mixin.h",
       "../browser/client_hints/client_hints_browsertest.cc",
@@ -919,6 +922,7 @@ if (!is_android) {
       "../browser/download/download_frame_policy_browsertest.cc",
       "../browser/download/download_started_animation_browsertest.cc",
       "../browser/download/save_page_browsertest.cc",
+      "../browser/enterprise_reporting/report_scheduler_browsertest.cc",
       "../browser/fast_shutdown_browsertest.cc",
       "../browser/favicon/content_favicon_driver_browsertest.cc",
       "../browser/first_run/first_run_browsertest.cc",
@@ -1067,6 +1071,7 @@ if (!is_android) {
       "../browser/pdf/pdf_extension_test_util.cc",
       "../browser/pdf/pdf_extension_test_util.h",
       "../browser/performance_manager/graph/page_node_impl_browsertest.cc",
+      "../browser/performance_manager/page_load_tracker_decorator_browsertest.cc",
       "../browser/permissions/permission_delegation_browsertest.cc",
       "../browser/permissions/permission_manager_browsertest.cc",
       "../browser/permissions/permission_request_manager_browsertest.cc",
@@ -2242,6 +2247,7 @@ if (!is_android) {
         "../browser/chromeos/login/reset_browsertest.cc",
         "../browser/chromeos/login/saml/password_change_success_detection_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
+        "../browser/chromeos/login/saml/security_token_saml_browsertest.cc",
         "../browser/chromeos/login/screens/app_downloading_screen_browsertest.cc",
         "../browser/chromeos/login/screens/assistant_optin_flow_screen_browsertest.cc",
         "../browser/chromeos/login/screens/fingerprint_setup_browsertest.cc",
@@ -2514,6 +2520,7 @@ if (!is_android) {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
 
         # chromeos does not support machine level user cloud policies
+        "../browser/enterprise_reporting/report_scheduler_browsertest.cc",
         "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
 
         # TODO(1026473): Re-enable these when linux-chromeos-rel breakage is
@@ -2715,6 +2722,11 @@ if (!is_android) {
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
         "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
       ]
+      if (enable_extensions) {
+        sources += [
+          "../browser/supervised_user/supervised_user_extension_browsertest.cc",
+        ]
+      }
     }
     if (is_linux && is_asan && is_lsan) {
       # TODO(crbug.com/793426): Fix the flakiness on Linux Asan Lsan bot.
@@ -3538,6 +3550,13 @@ test("unit_tests") {
     "../../third_party/zlib/google/zip_reader_unittest.cc",
     "../../third_party/zlib/google/zip_unittest.cc",
   ]
+
+  if (enable_downgrade_processing) {
+    sources += [
+      "../browser/downgrade/snapshot_manager_unittest.cc",
+      "../browser/downgrade/user_data_downgrade_unittest.cc",
+    ]
+  }
 
   if (toolkit_views) {
     # Test accessibility checks that audit any UI opened in a browser test.
@@ -6242,6 +6261,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/single_client_secondary_account_sync_test.cc",
       "../browser/sync/test/integration/single_client_send_tab_to_self_sync_test.cc",
       "../browser/sync/test/integration/single_client_sessions_sync_test.cc",
+      "../browser/sync/test/integration/single_client_sharing_message_sync_test.cc",
       "../browser/sync/test/integration/single_client_standalone_transport_sync_test.cc",
       "../browser/sync/test/integration/single_client_themes_sync_test.cc",
       "../browser/sync/test/integration/single_client_typed_urls_sync_test.cc",

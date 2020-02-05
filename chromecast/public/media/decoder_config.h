@@ -56,8 +56,11 @@ enum class ChannelLayout {
   // pass-through mode).
   BITSTREAM,
 
+  // Channels are not explicitly mapped to speakers.
+  DISCRETE,
+
   // Max value, must always equal the largest entry ever logged.
-  MAX_LAST = BITSTREAM,
+  MAX_LAST = DISCRETE,
 };
 
 // Internal chromecast apps use this to decide on channel_layout.

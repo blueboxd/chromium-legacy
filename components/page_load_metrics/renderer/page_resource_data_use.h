@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/origin.h"
 
 class GURL;
@@ -31,7 +31,7 @@ class PageResourceDataUse {
   void DidStartResponse(const url::Origin& origin_of_final_response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        content::ResourceType resource_type,
+                        blink::mojom::ResourceType resource_type,
                         content::PreviewsState previews_state);
 
   // Updates received bytes.

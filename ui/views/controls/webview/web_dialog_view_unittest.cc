@@ -181,7 +181,7 @@ TEST_F(WebDialogViewUnitTest, ObservableWebViewOnWebDialogViewClosed) {
   content::RenderFrameHost* rfh = web_view()->web_contents()->GetMainFrame();
   ASSERT_TRUE(rfh);
   content::GlobalRequestID request_id;
-  content::mojom::ResourceLoadInfo resource_load_info;
+  blink::mojom::ResourceLoadInfo resource_load_info;
   web_view()->ResourceLoadComplete(rfh, request_id, resource_load_info);
 }
 

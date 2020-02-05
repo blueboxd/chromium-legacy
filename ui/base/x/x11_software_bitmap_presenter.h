@@ -21,7 +21,7 @@ class SkCanvas;
 
 namespace ui {
 
-class XShmImagePoolBase;
+class XShmImagePool;
 
 class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
  public:
@@ -67,7 +67,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
   // parent-relative background.
   int composite_ = 0;
 
-  scoped_refptr<ui::XShmImagePoolBase> shm_pool_;
+  scoped_refptr<ui::XShmImagePool> shm_pool_;
   bool needs_swap_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> host_task_runner_;

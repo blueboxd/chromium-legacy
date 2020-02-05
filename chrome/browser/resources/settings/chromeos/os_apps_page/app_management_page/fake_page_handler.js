@@ -164,7 +164,7 @@ cr.define('app_management', function() {
       const app = app_management.Store.getInstance().data.apps[appId];
 
       const newApp =
-          /** @type {App} */ (Object.assign({}, app, {isPinned: pinnedValue}));
+          /** @type {!App} */ (Object.assign({}, app, {isPinned: pinnedValue}));
       this.page.onAppChanged(newApp);
     }
 
@@ -180,7 +180,7 @@ cr.define('app_management', function() {
 
       const newPermissions = Object.assign({}, app.permissions);
       newPermissions[permission.permissionId] = permission;
-      const newApp = /** @type {App} */ (
+      const newApp = /** @type {!App} */ (
           Object.assign({}, app, {permissions: newPermissions}));
       this.page.onAppChanged(newApp);
     }

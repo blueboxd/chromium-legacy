@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-import "web_app_specifics.proto";
+import "components/sync/protocol/web_app_specifics.proto";
 
 option optimize_for = LITE_RUNTIME;
 

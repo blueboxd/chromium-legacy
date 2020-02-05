@@ -119,8 +119,7 @@ void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
       // It is safe to pass Unretained(quota_util) since context owns it.
       base::BindOnce(&FileSystemQuotaUtil::GetOriginUsageOnFileTaskRunner,
                      base::Unretained(quota_util),
-                     base::RetainedRef(file_system_context_), origin.GetURL(),
-                     type),
+                     base::RetainedRef(file_system_context_), origin, type),
       std::move(callback));
 }
 

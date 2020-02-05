@@ -17,7 +17,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     int64_t original_network_content_length,
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
         data_reduction_proxy_data,
-    content::ResourceType detected_resource_type,
+    blink::mojom::ResourceType detected_resource_type,
     int net_error,
     std::unique_ptr<net::LoadTimingInfo> load_timing_info)
     : origin_of_final_url(origin_of_final_url),

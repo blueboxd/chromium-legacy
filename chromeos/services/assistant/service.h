@@ -31,7 +31,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
 class PrefService;
@@ -47,6 +46,12 @@ class PendingSharedURLLoaderFactory;
 namespace power_manager {
 class PowerSupplyProperties;
 }  // namespace power_manager
+
+namespace signin {
+class AccessTokenFetcher;
+struct AccessTokenInfo;
+class IdentityManager;
+}  // namespace signin
 
 namespace chromeos {
 namespace assistant {
@@ -71,6 +76,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
           std::unique_ptr<network::PendingSharedURLLoaderFactory>
               pending_url_loader_factory,
+          signin::IdentityManager* identity_manager,
           PrefService* profile_prefs);
   ~Service() override;
 
@@ -86,9 +92,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // itself is created, so we do not have time in our tests to grab a handle
   // to |Service| and set this before it is too late.
   static void OverrideS3ServerUriForTesting(const char* uri);
-
-  void SetIdentityAccessorForTesting(
-      mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor);
 
   void SetAssistantManagerServiceForTesting(
       std::unique_ptr<AssistantManagerService> assistant_manager_service);
@@ -106,6 +109,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void BindSettingsManager(
       mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
+  void Shutdown() override;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
@@ -136,8 +140,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateAssistantManagerState();
 
-  identity::mojom::IdentityAccessor* GetIdentityAccessor();
-
   void RequestAccessToken();
 
   void GetUnconsentedPrimaryAccountInfoCallback(
@@ -146,9 +148,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       const base::Optional<std::string>& email,
       const identity::AccountState& account_state);
 
-  void GetAccessTokenCallback(const base::Optional<std::string>& token,
-                              base::Time expiration_time,
-                              const GoogleServiceAuthError& error);
+  void GetAccessTokenCallback(GoogleServiceAuthError error,
+                              signin::AccessTokenInfo access_token_info);
   void RetryRefreshToken();
 
   void CreateAssistantManagerService();
@@ -177,7 +178,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   mojo::Remote<mojom::Client> client_;
   mojo::Remote<mojom::DeviceActions> device_actions_;
 
-  mojo::Remote<identity::mojom::IdentityAccessor> identity_accessor_;
+  signin::IdentityManager* const identity_manager_;
 
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
@@ -225,6 +226,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   PrefService* const profile_prefs_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
+
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

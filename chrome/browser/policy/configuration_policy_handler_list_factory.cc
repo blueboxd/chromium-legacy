@@ -971,6 +971,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCloudPolicyOverridesPlatformPolicy,
     policy_prefs::kCloudPolicyOverridesPlatformPolicy,
     base::Value::Type::BOOLEAN },
+  { key::kUserDataSnapshotRentionLimit,
+    prefs::kUserDataSnapshotRentionLimit,
+    base::Value::Type::INTEGER },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

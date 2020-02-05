@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -38,14 +39,28 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   DCHECK(!scoped_write_);
-  if (vulkan_surface_) {
-    auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-        std::move(vulkan_surface_));
-  }
   for (auto it = sk_surface_size_pairs_.begin();
        it != sk_surface_size_pairs_.end(); ++it) {
     memory_type_tracker_->TrackMemFree(it->bytes_allocated);
+  }
+  sk_surface_size_pairs_.clear();
+  if (vulkan_surface_) {
+#if defined(OS_ANDROID)
+    if (base::SysInfo::IsLowEndDevice()) {
+      // For low end device, output surface will be destroyed when chrome goes
+      // into background. And a new output surface will be created when chrome
+      // goes to foreground again. The vulkan surface cannot be created
+      // successfully, if the old vulkan surface is not destroyed. To avoid the
+      // problem, we sync the device queue, and destroy the vulkan surface
+      // synchronously.
+      vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
+      vulkan_surface_->Destroy();
+      return;
+    }
+#endif
+    auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
+    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+        std::move(vulkan_surface_));
   }
 }
 

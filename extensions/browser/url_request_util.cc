@@ -15,12 +15,13 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 
 namespace extensions {
 namespace url_request_util {
 
 bool AllowCrossRendererResourceLoad(const GURL& url,
-                                    content::ResourceType resource_type,
+                                    blink::mojom::ResourceType resource_type,
                                     ui::PageTransition page_transition,
                                     int child_id,
                                     bool is_incognito,
@@ -32,7 +33,8 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
 
   // This logic is performed for main frame requests in
   // ExtensionNavigationThrottle::WillStartRequest.
-  if (child_id != -1 || resource_type != content::ResourceType::kMainFrame) {
+  if (child_id != -1 ||
+      resource_type != blink::mojom::ResourceType::kMainFrame) {
     // Extensions with webview: allow loading certain resources by guest
     // renderers with privileged partition IDs as specified in owner's extension
     // the manifest file.
@@ -79,10 +81,10 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
 
   // Navigating the main frame to an extension URL is allowed, even if not
   // explicitly listed as web_accessible_resource.
-  if (resource_type == content::ResourceType::kMainFrame) {
+  if (resource_type == blink::mojom::ResourceType::kMainFrame) {
     *allowed = true;
     return true;
-  } else if (resource_type == content::ResourceType::kSubFrame) {
+  } else if (resource_type == blink::mojom::ResourceType::kSubFrame) {
     // When navigating in subframe, allow if it is the same origin
     // as the top-level frame. This can only be the case if the subframe
     // request is coming from the extension process.
@@ -102,7 +104,7 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
   // Since not all subresources are required to be listed in a v2
   // manifest, we must allow all subresource loads if there are any web
   // accessible resources. See http://crbug.com/179127.
-  if (!content::IsResourceTypeFrame(resource_type) &&
+  if (!blink::IsResourceTypeFrame(resource_type) &&
       WebAccessibleResourcesInfo::HasWebAccessibleResources(extension)) {
     *allowed = true;
     return true;

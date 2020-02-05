@@ -37,10 +37,10 @@ void ImeWindowFrameView::Init() {
       titlebar->SetLayoutManager(std::make_unique<views::FlexLayout>());
   titlebar_layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
   auto content = std::make_unique<views::View>();
-  content->SetProperty(views::kFlexBehaviorKey,
-                       views::FlexSpecification::ForSizeRule(
-                           views::MinimumFlexSizeRule::kPreferred,
-                           views::MaximumFlexSizeRule::kUnbounded));
+  content->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded));
 
   constexpr int kLeadingMarginDp = 8, kTrailingMarginDp = 6;
   if (in_follow_cursor_mode()) {
@@ -64,11 +64,11 @@ void ImeWindowFrameView::Init() {
   title_icon->SetImage(ime_window_view_->GetWindowIcon());
   title_icon->SetImageSize({16, 16});
   title_icon->set_tooltip_text(ime_window_view_->GetWindowTitle());
-  title_icon->SetProperty(views::kFlexBehaviorKey,
-                          views::FlexSpecification::ForSizeRule(
-                              views::MinimumFlexSizeRule::kPreferred,
-                              views::MaximumFlexSizeRule::kUnbounded)
-                              .WithAlignment(views::LayoutAlignment::kStart));
+  title_icon->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithAlignment(views::LayoutAlignment::kStart));
   title_icon_ = titlebar->AddChildView(std::move(title_icon));
 
   if (!in_follow_cursor_mode()) {
@@ -84,11 +84,11 @@ void ImeWindowFrameView::Init() {
     close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
     close_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
-    close_button->SetProperty(views::kFlexBehaviorKey,
-                              views::FlexSpecification::ForSizeRule(
-                                  views::MinimumFlexSizeRule::kPreferred,
-                                  views::MaximumFlexSizeRule::kUnbounded)
-                                  .WithAlignment(views::LayoutAlignment::kEnd));
+    close_button->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kUnbounded)
+            .WithAlignment(views::LayoutAlignment::kEnd));
     close_button_ = titlebar->AddChildView(std::move(close_button));
   }
 }

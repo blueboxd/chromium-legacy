@@ -443,37 +443,14 @@ void PasswordManager::ShowManualFallbackForSaving(PasswordManagerDriver* driver,
         ->set_user_typed_password_on_chrome_sign_in_page();
   }
 
-  if (!client_->GetProfilePasswordStore()->IsAbleToSavePasswords() ||
-      !client_->IsSavingAndFillingEnabled(form_data.url) ||
-      ShouldBlockPasswordForSameOriginButDifferentScheme(form_data.url)) {
-    return;
-  }
-
   auto availability =
       manager ? PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess
               : PasswordManagerMetricsRecorder::FormManagerAvailable::
                     kMissingManual;
   if (client_ && client_->GetMetricsRecorder())
     client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
-  if (!manager)
-    return;
 
-  if (!client_->GetStoreResultFilter()->ShouldSave(
-          *manager->GetSubmittedForm())) {
-    return;
-  }
-
-  // Show the fallback if a prompt or a confirmation bubble should be available.
-  bool has_generated_password = manager->HasGeneratedPassword();
-  if (ShouldPromptUserToSavePassword(*manager) || has_generated_password) {
-    bool is_update = manager->IsPasswordUpdate();
-    manager->GetMetricsRecorder()->RecordShowManualFallbackForSaving(
-        has_generated_password, is_update);
-    client_->ShowManualFallbackForSaving(manager->Clone(),
-                                         has_generated_password, is_update);
-  } else {
-    HideManualFallbackForSaving();
-  }
+  ShowManualFallbackForSavingImpl(manager, form_data);
 }
 
 void PasswordManager::HideManualFallbackForSaving() {
@@ -595,10 +572,6 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
   if (store_password_called_)
     return nullptr;
 
-  // No need to report PasswordManagerMetricsRecorder::EMPTY_PASSWORD, because
-  // PasswordToSave in PasswordFormManager DCHECKs that the password is never
-  // empty.
-
   const GURL& origin = submitted_form.url;
   if (ShouldBlockPasswordForSameOriginButDifferentScheme(origin)) {
     RecordProvisionalSaveFailure(
@@ -689,12 +662,20 @@ void PasswordManager::PresaveGeneratedPassword(
 }
 
 void PasswordManager::UpdateStateOnUserInput(
+    PasswordManagerDriver* driver,
     const base::string16& form_identifier,
     const base::string16& field_identifier,
     const base::string16& field_value) {
   for (std::unique_ptr<PasswordFormManager>& manager : form_managers_) {
     if (manager->UpdateStateOnUserInput(form_identifier, field_identifier,
                                         field_value)) {
+      ProvisionallySaveForm(manager->observed_form(), driver, true);
+      if (manager->is_submitted() && !manager->HasGeneratedPassword()) {
+        ShowManualFallbackForSavingImpl(manager.get(),
+                                        manager->observed_form());
+      } else {
+        HideManualFallbackForSaving();
+      }
       break;
     }
   }
@@ -1118,6 +1099,36 @@ void PasswordManager::TryToFindPredictionsToPossibleUsernameData() {
         return;
       }
     }
+  }
+}
+
+void PasswordManager::ShowManualFallbackForSavingImpl(
+    PasswordFormManager* form_manager,
+    const FormData& form_data) {
+  if (!form_manager || !form_manager->is_submitted())
+    return;
+
+  if (!client_->GetProfilePasswordStore()->IsAbleToSavePasswords() ||
+      !client_->IsSavingAndFillingEnabled(form_data.url) ||
+      ShouldBlockPasswordForSameOriginButDifferentScheme(form_data.url)) {
+    return;
+  }
+
+  if (!client_->GetStoreResultFilter()->ShouldSave(
+          *form_manager->GetSubmittedForm())) {
+    return;
+  }
+
+  // Show the fallback if a prompt or a confirmation bubble should be available.
+  bool has_generated_password = form_manager->HasGeneratedPassword();
+  if (ShouldPromptUserToSavePassword(*form_manager) || has_generated_password) {
+    bool is_update = form_manager->IsPasswordUpdate();
+    form_manager->GetMetricsRecorder()->RecordShowManualFallbackForSaving(
+        has_generated_password, is_update);
+    client_->ShowManualFallbackForSaving(form_manager->Clone(),
+                                         has_generated_password, is_update);
+  } else {
+    HideManualFallbackForSaving();
   }
 }
 

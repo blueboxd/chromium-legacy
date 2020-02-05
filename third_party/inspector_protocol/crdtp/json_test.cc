@@ -81,6 +81,32 @@ TEST(JsonEncoder, NotAContinuationByte) {
   EXPECT_EQ("\"Hello\"", out);  // "Hello" shows we restarted at 'H'.
 }
 
+TEST(JsonEncoder, EscapesLoneHighSurrogates) {
+  // This tests that the JSON encoder escapes lone high surrogates, i.e.
+  // invalid code points in the range from 0xD800 to 0xDBFF. In
+  // unescaped form, these cannot be represented in well-formed UTF-8 or
+  // UTF-16.
+  std::vector<uint16_t> chars = {'a', 0xd800, 'b', 0xdada, 'c', 0xdbff, 'd'};
+  std::string out;
+  Status status;
+  std::unique_ptr<ParserHandler> writer = NewJSONEncoder(&out, &status);
+  writer->HandleString16(span<uint16_t>(chars.data(), chars.size()));
+  EXPECT_EQ("\"a\\ud800b\\udadac\\udbffd\"", out);
+}
+
+TEST(JsonEncoder, EscapesLoneLowSurrogates) {
+  // This tests that the JSON encoder escapes lone low surrogates, i.e.
+  // invalid code points in the range from 0xDC00 to 0xDFFF. In
+  // unescaped form, these cannot be represented in well-formed UTF-8 or
+  // UTF-16.
+  std::vector<uint16_t> chars = {'a', 0xdc00, 'b', 0xdede, 'c', 0xdfff, 'd'};
+  std::string out;
+  Status status;
+  std::unique_ptr<ParserHandler> writer = NewJSONEncoder(&out, &status);
+  writer->HandleString16(span<uint16_t>(chars.data(), chars.size()));
+  EXPECT_EQ("\"a\\udc00b\\udedec\\udfffd\"", out);
+}
+
 TEST(JsonEncoder, EscapesFFFF) {
   // This tests that the JSON encoder will escape the UTF16 input 0xffff as
   // \uffff; useful to check this since it's an edge case.

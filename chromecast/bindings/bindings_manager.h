@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 
 namespace chromecast {
@@ -20,13 +19,8 @@ namespace bindings {
 // Injects Cast Platform API scripts into pages' scripting context and
 // establishes bidirectional communication with them across the JS/native
 // boundary.
-// TODO(crbug.com/803242): Deprecated and will be shortly removed.
 class BindingsManager {
  public:
-  // NOTE: This is the deprecated legacy notification type. Please use a
-  // MessagePortConnectedHandler instead!
-  using PortConnectedHandler =
-      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
   using MessagePortConnectedHandler =
       base::RepeatingCallback<void(blink::WebMessagePort)>;
 
@@ -38,10 +32,6 @@ class BindingsManager {
   // Registers a |handler| which will receive MessagePorts originating from
   // the frame's web content. |port_name| is an alphanumeric string that is
   // consistent across JS and native code.
-  // NOTE: The mojo::ScopedMessagePipeHandle of this function is deprecated and
-  // soon to be removed, please use the blink::WebMessagePort variant!
-  void RegisterPortHandler(base::StringPiece port_name,
-                           PortConnectedHandler handler);
   void RegisterPortHandler(base::StringPiece port_name,
                            MessagePortConnectedHandler handler);
 
@@ -58,10 +48,6 @@ class BindingsManager {
  protected:
   // Called by platform-specific subclasses when the underlying transport has
   // delivered a port.
-  // NOTE: The mojo::ScopedMessagePipeHandle of this function is deprecated and
-  // soon to be removed, please use the blink::WebMessagePort variant!
-  void OnPortConnected(base::StringPiece port_name,
-                       mojo::ScopedMessagePipeHandle port);
   void OnPortConnected(base::StringPiece port_name, blink::WebMessagePort port);
 
  private:

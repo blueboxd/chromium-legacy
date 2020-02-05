@@ -35,6 +35,10 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/upgrade_detector/build_state.h"
+#endif
+
 class BatteryMetrics;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
@@ -191,6 +195,8 @@ class BrowserProcessImpl : public BrowserProcess,
   resource_coordinator::TabManager* GetTabManager() override;
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
+
+  BuildState* GetBuildState() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -400,6 +406,8 @@ class BrowserProcessImpl : public BrowserProcess,
 #if !defined(OS_ANDROID)
   // Called to signal the process' main message loop to exit.
   base::OnceClosure quit_closure_;
+
+  BuildState build_state_;
 #endif
 
   SEQUENCE_CHECKER(sequence_checker_);

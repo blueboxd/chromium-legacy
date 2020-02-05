@@ -218,15 +218,15 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
 };
 
 using EventType = ServiceWorkerMetrics::EventType;
-EventType ResourceTypeToEventType(ResourceType resource_type) {
+EventType ResourceTypeToEventType(blink::mojom::ResourceType resource_type) {
   switch (resource_type) {
-    case ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kMainFrame:
       return EventType::FETCH_MAIN_FRAME;
-    case ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kSubFrame:
       return EventType::FETCH_SUB_FRAME;
-    case ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
       return EventType::FETCH_SHARED_WORKER;
-    case ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kServiceWorker:
       return EventType::FETCH_SUB_RESOURCE;
     default:
       return EventType::FETCH_SUB_RESOURCE;
@@ -458,7 +458,7 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
 
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     blink::mojom::FetchAPIRequestPtr request,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
     base::OnceClosure prepare_callback,
@@ -674,8 +674,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     URLLoaderFactoryGetter* url_loader_factory_getter,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     int frame_tree_node_id) {
-  if (resource_type_ != ResourceType::kMainFrame &&
-      resource_type_ != ResourceType::kSubFrame) {
+  if (resource_type_ != blink::mojom::ResourceType::kMainFrame &&
+      resource_type_ != blink::mojom::ResourceType::kSubFrame) {
     return false;
   }
   if (!version_->navigation_preload_state().enabled)
@@ -685,13 +685,13 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  if (resource_type_ == ResourceType::kMainFrame) {
-    resource_request.resource_type =
-        static_cast<int>(ResourceType::kNavigationPreloadMainFrame);
+  if (resource_type_ == blink::mojom::ResourceType::kMainFrame) {
+    resource_request.resource_type = static_cast<int>(
+        blink::mojom::ResourceType::kNavigationPreloadMainFrame);
   } else {
-    DCHECK_EQ(ResourceType::kSubFrame, resource_type_);
-    resource_request.resource_type =
-        static_cast<int>(ResourceType::kNavigationPreloadSubFrame);
+    DCHECK_EQ(blink::mojom::ResourceType::kSubFrame, resource_type_);
+    resource_request.resource_type = static_cast<int>(
+        blink::mojom::ResourceType::kNavigationPreloadSubFrame);
   }
 
   resource_request.skip_service_worker = true;

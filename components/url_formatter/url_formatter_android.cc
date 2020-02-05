@@ -10,6 +10,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
+#include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
@@ -27,16 +28,14 @@ namespace url_formatter {
 
 namespace android {
 
-static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FixupUrl(
+static ScopedJavaLocalRef<jobject> JNI_UrlFormatter_FixupUrl(
     JNIEnv* env,
     const JavaParamRef<jstring>& url) {
   DCHECK(url);
   GURL fixed_url = url_formatter::FixupURL(
       base::android::ConvertJavaStringToUTF8(env, url), std::string());
 
-  return fixed_url.is_valid()
-             ? base::android::ConvertUTF8ToJavaString(env, fixed_url.spec())
-             : ScopedJavaLocalRef<jstring>();
+  return url::GURLAndroid::FromNativeGURL(env, fixed_url);
 }
 
 static ScopedJavaLocalRef<jstring>

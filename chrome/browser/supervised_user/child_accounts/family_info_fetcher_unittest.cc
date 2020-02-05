@@ -16,6 +16,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -140,8 +142,27 @@ class FamilyInfoFetcherTest
     fetcher_->StartGetFamilyMembers();
   }
 
+  CoreAccountInfo SetPrimaryAccount() {
+#if defined(OS_CHROMEOS)
+    return identity_test_env_.SetUnconsentedPrimaryAccount(kAccountId);
+#elif defined(OS_ANDROID)
+    // TODO(https://crbug.com/1046746): Change to SetUnconsentedPrimaryAccount()
+    // when Android supports the concept of an unconsented primary account that
+    // is different than the primary account.
+    return identity_test_env_.SetPrimaryAccount(kAccountId);
+#else
+#error Unsupported platform.
+#endif
+  }
+
   void IssueRefreshToken() {
+#if defined(OS_CHROMEOS)
+    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kAccountId);
+#elif defined(OS_ANDROID)
     identity_test_env_.MakePrimaryAccountAvailable(kAccountId);
+#else
+#error Unsupported platform.
+#endif
   }
 
   void IssueRefreshTokenForDifferentAccount() {
@@ -150,7 +171,7 @@ class FamilyInfoFetcherTest
 
   void WaitForAccessTokenRequestAndIssueToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        identity_test_env_.identity_manager()->GetPrimaryAccountId(),
+        identity_test_env_.identity_manager()->GetUnconsentedPrimaryAccountId(),
         "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   }
 
@@ -248,7 +269,7 @@ TEST_F(FamilyInfoFetcherTest, SuccessAfterWaitingForRefreshToken) {
   // account_id. We don't use IssueRefreshToken() as it also sets a refresh
   // token for the primary account and that's something we don't want for this
   // test.
-  identity_test_env_.SetPrimaryAccount(kAccountId);
+  CoreAccountInfo account_info = SetPrimaryAccount();
   StartGetFamilyProfile();
 
   // Since there is no refresh token yet, we should not get a request for an
@@ -258,10 +279,10 @@ TEST_F(FamilyInfoFetcherTest, SuccessAfterWaitingForRefreshToken) {
   identity_test_env_.SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
 
-  // In this case we don't directly call IssueRefreshToken() as it calls
-  // MakePrimaryAccountAvailable(). Since we already have a primary account set
-  // we cannot set another one without clearing it before.
-  identity_test_env_.SetRefreshTokenForPrimaryAccount();
+  // In this case we don't directly call IssueRefreshToken() as it sets the
+  // primary account. We already have a primary account set so we cannot set
+  // another one.
+  identity_test_env_.SetRefreshTokenForAccount(account_info.account_id);
 
   // Do reset the callback for access token request before using the Wait* APIs.
   identity_test_env_.SetCallbackForNextAccessTokenRequest(base::OnceClosure());
@@ -277,7 +298,7 @@ TEST_F(FamilyInfoFetcherTest, NoRefreshToken) {
   // retrieve the primary account_id from IdentityManager. We don't call
   // IssueRefreshToken because we don't want it to precisely issue a refresh
   // token for the primary account, just set it.
-  identity_test_env_.SetPrimaryAccount(kAccountId);
+  SetPrimaryAccount();
   StartGetFamilyProfile();
 
   IssueRefreshTokenForDifferentAccount();
@@ -298,7 +319,7 @@ TEST_F(FamilyInfoFetcherTest, GetTokenFailure) {
   // On failure to get an access token we expect a token error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::TOKEN_ERROR));
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      identity_test_env_.identity_manager()->GetPrimaryAccountId(),
+      identity_test_env_.identity_manager()->GetUnconsentedPrimaryAccountId(),
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 

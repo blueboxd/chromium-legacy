@@ -227,7 +227,6 @@ void ClearBrowsingData(Browser* browser, int remove_mask) {
 bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
   switch (status) {
     case FINAL_STATUS_USED:
-    case FINAL_STATUS_WINDOW_OPENER:
     case FINAL_STATUS_APP_TERMINATING:
     case FINAL_STATUS_PROFILE_DESTROYED:
     case FINAL_STATUS_CACHE_OR_HISTORY_CLEARED:

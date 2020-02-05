@@ -2972,13 +2972,12 @@ AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
 
   // Now we do the same for each possible relation defined by an
   // IntListAttribute. In this case we need to handle each target in the list.
-  for (unsigned i = 0; i < G_N_ELEMENTS(kIntListRelations); i++) {
-    const AtkIntListRelation& relation = kIntListRelations[i];
-
-    std::set<AXPlatformNode*> targets =
+  for (const auto& relation : kIntListRelations) {
+    std::vector<AXPlatformNode*> targets =
         GetDelegate()->GetTargetNodesForRelation(relation.attribute);
-    for (AXPlatformNode* target : targets)
+    for (AXPlatformNode* target : targets) {
       AddRelationToSet(relation_set, relation.relation, target);
+    }
 
     if (!relation.reverse_relation.has_value())
       continue;

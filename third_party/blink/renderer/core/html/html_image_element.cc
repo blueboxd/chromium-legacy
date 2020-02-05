@@ -442,8 +442,9 @@ void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
 }
 
 unsigned HTMLImageElement::width() {
-  if (InActiveDocument())
-    GetDocument().UpdateStyleAndLayout();
+  if (InActiveDocument()) {
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  }
 
   if (!GetLayoutObject()) {
     // check the attribute first for an explicit pixel value
@@ -465,8 +466,9 @@ unsigned HTMLImageElement::width() {
 }
 
 unsigned HTMLImageElement::height() {
-  if (InActiveDocument())
-    GetDocument().UpdateStyleAndLayout();
+  if (InActiveDocument()) {
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  }
 
   if (!GetLayoutObject()) {
     // check the attribute first for an explicit pixel value
@@ -584,7 +586,7 @@ void HTMLImageElement::setWidth(unsigned value) {
 }
 
 int HTMLImageElement::x() const {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   LayoutObject* r = GetLayoutObject();
   if (!r)
     return 0;
@@ -596,7 +598,7 @@ int HTMLImageElement::x() const {
 }
 
 int HTMLImageElement::y() const {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   LayoutObject* r = GetLayoutObject();
   if (!r)
     return 0;

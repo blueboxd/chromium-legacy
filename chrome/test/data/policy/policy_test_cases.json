@@ -6729,8 +6729,19 @@
       {
         "policies": { "StricterMixedContentTreatmentEnabled": false },
         "prefs": {
-	  "security_state.stricter_mixed_content_treatment_enabled": {}
-	}
+          "security_state.stricter_mixed_content_treatment_enabled": {}
+        }
+      }
+    ]
+  },
+  "UserDataSnapshotRentionLimit" : {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "UserDataSnapshotRentionLimit": 2 },
+        "prefs": {
+          "downgrade.snapshot_retention_limit": { "value": 2, "local_state": true }
+        }
       }
     ]
   },
@@ -6744,5 +6755,22 @@
 	}
       }
     ]
-  }
+  },
+  "SystemProxySettings": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+     {
+      "policies": {
+       "SystemProxySettings": {
+        "system_proxy_enabled": "true",
+        "system_services_username": "test_user",
+        "system_services_password": "0000"
+       }
+      },
+      "prefs": {
+       "cros.system_proxy_settings": { "local_state": true }
+      }
+     }
+    ]
+   }
 }

@@ -24,7 +24,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -59,7 +59,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
 
     public ThemeSettingsFragmentTest(boolean defaultToLight) {
         mDefaultToLight = defaultToLight;
-        FeatureUtilities.setNightModeDefaultToLightForTesting(defaultToLight);
+        CachedFeatureFlags.setNightModeDefaultToLightForTesting(defaultToLight);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             SharedPreferencesManager.getInstance().removeKey(UI_THEME_DARKEN_WEBSITES_ENABLED);
         });
 
-        FeatureUtilities.setNightModeDefaultToLightForTesting(null);
+        CachedFeatureFlags.setNightModeDefaultToLightForTesting(null);
         super.tearDownTest();
     }
 
@@ -94,7 +94,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             // Default to light parameter is only applicable pre-Q.
             if (mDefaultToLight && BuildInfo.isAtLeastQ()) {
                 Assert.assertFalse("Q should not default to light.",
-                        FeatureUtilities.isNightModeDefaultToLight());
+                        CachedFeatureFlags.isNightModeDefaultToLight());
                 return;
             }
 
@@ -139,7 +139,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             // Default to light parameter is only applicable pre-Q.
             if (mDefaultToLight && BuildInfo.isAtLeastQ()) {
                 Assert.assertFalse("Q should not default to light.",
-                        FeatureUtilities.isNightModeDefaultToLight());
+                        CachedFeatureFlags.isNightModeDefaultToLight());
                 return;
             }
 

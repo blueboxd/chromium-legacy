@@ -21,8 +21,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_load_info.mojom.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -33,6 +31,8 @@
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "url/gurl.h"
 
@@ -173,7 +173,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
-                       ResourceType resource_type,
+                       blink::mojom::ResourceType resource_type,
                        int render_frame_id,
                        const GURL& request_url,
                        std::unique_ptr<NavigationResponseOverrideParameters>
@@ -182,7 +182,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     ~PendingRequestInfo();
 
     std::unique_ptr<RequestPeer> peer;
-    ResourceType resource_type;
+    blink::mojom::ResourceType resource_type;
     int render_frame_id;
     bool is_deferred = false;
     // Original requested url.
@@ -206,7 +206,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     PreviewsState previews_state = PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
     // These stats will be sent to the browser process.
-    mojom::ResourceLoadInfoPtr resource_load_info;
+    blink::mojom::ResourceLoadInfoPtr resource_load_info;
 
     // For mojo loading.
     std::unique_ptr<blink::ThrottlingURLLoader> url_loader;

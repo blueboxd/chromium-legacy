@@ -50,8 +50,8 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -669,7 +669,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             public void onOverviewModeStartedShowing(boolean showToolbar) {
                 mToolbar.setTabSwitcherMode(true, showToolbar, false);
                 updateButtonStatus();
-                if (FeatureUtilities.isBottomToolbarEnabled()
+                if (CachedFeatureFlags.isBottomToolbarEnabled()
                         && !BottomToolbarVariationManager
                                     .shouldBottomToolbarBeVisibleInOverviewMode()) {
                     // TODO(crbug.com/1036474): don't tell mToolbar the visibility of bottom toolbar
@@ -685,7 +685,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onOverviewModeStateChanged(
                     @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
-                assert FeatureUtilities.isStartSurfaceEnabled();
+                assert CachedFeatureFlags.isStartSurfaceEnabled();
                 mToolbar.updateTabSwitcherToolbarState(showTabSwitcherToolbar);
                 mOverviewModeState = overviewModeState;
                 mIdentityDiscController.updateButtonState(
@@ -696,11 +696,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
                 mToolbar.setTabSwitcherMode(false, showToolbar, delayAnimation);
                 updateButtonStatus();
-                if (FeatureUtilities.isBottomToolbarEnabled()
+                if (CachedFeatureFlags.isBottomToolbarEnabled()
                         && !BottomToolbarVariationManager
                                     .shouldBottomToolbarBeVisibleInOverviewMode()) {
                     // User may enter overview mode in landscape mode but exit in portrait mode.
-                    mIsBottomToolbarVisible = !FeatureUtilities.isAdaptiveToolbarEnabled()
+                    mIsBottomToolbarVisible = !CachedFeatureFlags.isAdaptiveToolbarEnabled()
                             || mActivity.getResources().getConfiguration().orientation
                                     != Configuration.ORIENTATION_LANDSCAPE;
                     mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
@@ -785,8 +785,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * Enable the bottom toolbar.
      */
     public void enableBottomToolbar() {
-        if (FeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
-                && FeatureUtilities.isBottomToolbarEnabled()) {
+        if (CachedFeatureFlags.isDuetTabStripIntegrationAndroidEnabled()
+                && CachedFeatureFlags.isBottomToolbarEnabled()) {
             mTabGroupPopUiParentSupplier = new ObservableSupplierImpl<>();
             mTabGroupPopupUi = TabManagementModuleProvider.getDelegate().createTabGroupPopUi(
                     mAppThemeColorProvider, mTabGroupPopUiParentSupplier);
@@ -802,8 +802,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 mAppThemeColorProvider, mShareDelegateSupplier, mShowStartSurfaceSupplier,
                 this::openHomepage, (reason) -> setUrlBarFocus(true, reason));
 
-        mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
-                && (!FeatureUtilities.isAdaptiveToolbarEnabled()
+        mIsBottomToolbarVisible = CachedFeatureFlags.isBottomToolbarEnabled()
+                && (!CachedFeatureFlags.isAdaptiveToolbarEnabled()
                         || mActivity.getResources().getConfiguration().orientation
                                 != Configuration.ORIENTATION_LANDSCAPE);
         mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
@@ -893,7 +893,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mLocationBarModel.initializeWithNative();
         mLocationBarModel.setShouldShowOmniboxInOverviewMode(
-                FeatureUtilities.isStartSurfaceEnabled());
+                CachedFeatureFlags.isStartSurfaceEnabled());
 
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
@@ -1207,8 +1207,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private void onOrientationChange(int newOrientation) {
         if (mActionModeController != null) mActionModeController.showControlsOnOrientationChange();
 
-        if (mBottomControlsCoordinator != null && FeatureUtilities.isBottomToolbarEnabled()
-                && FeatureUtilities.isAdaptiveToolbarEnabled()) {
+        if (mBottomControlsCoordinator != null && CachedFeatureFlags.isBottomToolbarEnabled()
+                && CachedFeatureFlags.isAdaptiveToolbarEnabled()) {
             mIsBottomToolbarVisible = newOrientation != Configuration.ORIENTATION_LANDSCAPE;
             if (!BottomToolbarVariationManager.shouldBottomToolbarBeVisibleInOverviewMode()
                     && mIsBottomToolbarVisible) {

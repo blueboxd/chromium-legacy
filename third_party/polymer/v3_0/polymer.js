@@ -16,6 +16,7 @@ export {Base} from './polymer-legacy.js';
 export {dashToCamelCase} from './lib/utils/case-map.js';
 export {Debouncer, enqueueDebouncer} from './lib/utils/debounce.js';
 export {dom, flush} from './lib/legacy/polymer.dom.js';
+export {DomIf} from './lib/elements/dom-if.js';
 export {html} from './lib/utils/html-tag.js';
 export {matches, translate} from './lib/utils/path.js';
 export {OptionalMutableDataBehavior} from './lib/legacy/mutable-data-behavior.js';

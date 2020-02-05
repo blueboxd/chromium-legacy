@@ -28,6 +28,12 @@ public class CachedMetrics {
         @GuardedBy("sMetrics")
         private static final List<CachedMetric> sMetrics = new ArrayList<CachedMetric>();
 
+        /**
+         * Randomly choose whether to always immediately invoke {@link RecordHistogram}. This value
+         * is recorded using a synthetic field trial.
+         */
+        protected static final boolean HISTOGRAMS_BYPASS_CACHE = Math.random() < 0.5;
+
         protected final String mName;
         protected boolean mCached;
 
@@ -59,6 +65,19 @@ public class CachedMetrics {
          */
         @GuardedBy("sMetrics")
         protected abstract void commitAndClear();
+
+        /**
+         * Returns {@code true} if histogram samples should be immediately recorded.
+         * <p>
+         * Handles two cases:
+         * <ul>
+         *     <li>Cache is not needed, because {@link LibraryLoader} is already initialized.
+         *     <li>Cache is disabled to validate caching present in {@link RecordHistogram}.
+         * </ul>
+         */
+        protected static boolean shouldHistogramBypassCache() {
+            return HISTOGRAMS_BYPASS_CACHE || LibraryLoader.getInstance().isInitialized();
+        }
     }
 
     /**
@@ -113,7 +132,7 @@ public class CachedMetrics {
 
         public void record(int sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.getInstance().isInitialized()) {
+                if (shouldHistogramBypassCache()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -153,7 +172,7 @@ public class CachedMetrics {
 
         public void record(int sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.getInstance().isInitialized()) {
+                if (shouldHistogramBypassCache()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -192,7 +211,7 @@ public class CachedMetrics {
 
         public void record(long sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.getInstance().isInitialized()) {
+                if (shouldHistogramBypassCache()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -249,7 +268,7 @@ public class CachedMetrics {
 
         public void record(boolean sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.getInstance().isInitialized()) {
+                if (shouldHistogramBypassCache()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -295,7 +314,7 @@ public class CachedMetrics {
 
         public void record(int sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.getInstance().isInitialized()) {
+                if (shouldHistogramBypassCache()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -384,5 +403,10 @@ public class CachedMetrics {
                 metric.commitAndClear();
             }
         }
+    }
+
+    /** Returns true if histograms are immediately recorded with {@link UmaRecorder}. */
+    public static boolean histogramsBypassCache() {
+        return CachedMetric.HISTOGRAMS_BYPASS_CACHE;
     }
 }

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
@@ -48,6 +49,10 @@ bool CheckStudyLowEndDevice(const Study::Filter& filter,
 // Checks whether a study is applicable given |is_enterprise| per |filter|.
 bool CheckStudyEnterprise(const Study::Filter& filter,
                           const ClientFilterableState& client_state);
+
+// Checks whether a study is applicable given the ChromeVariations policy value.
+bool CheckStudyPolicyRestriction(const Study::Filter& filter,
+                                 RestrictionPolicy policy_restriction);
 
 // Checks whether a study is applicable for the given date/time per |filter|.
 bool CheckStudyStartDate(const Study::Filter& filter,

@@ -1363,16 +1363,6 @@ PhysicalRect LayoutObject::AbsoluteBoundingBoxRectForScrollIntoView() const {
   return rect;
 }
 
-FloatRect LayoutObject::AbsoluteBoundingBoxRectForRange(
-    const EphemeralRange& range) {
-  if (range.IsNull() || !range.StartPosition().ComputeContainerNode())
-    return FloatRect();
-
-  range.GetDocument().UpdateStyleAndLayout();
-
-  return ComputeTextFloatRect(range);
-}
-
 void LayoutObject::AddAbsoluteRectForLayer(IntRect& result) {
   if (HasLayer())
     result.Unite(AbsoluteBoundingBoxRect());

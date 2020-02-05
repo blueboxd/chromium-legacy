@@ -73,4 +73,10 @@ void SetRecordActionTaskRunner(
   g_task_runner.Get() = task_runner;
 }
 
+scoped_refptr<SingleThreadTaskRunner> GetRecordActionTaskRunner() {
+  if (g_task_runner.IsCreated())
+    return g_task_runner.Get();
+  return nullptr;
+}
+
 }  // namespace base

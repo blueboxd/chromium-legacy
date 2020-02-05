@@ -508,11 +508,8 @@ void LocationBarView::Layout() {
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
                                       kLeadingDecorationMaxFraction,
                                       edge_padding, selected_keyword_view_);
-    // Call this even if keyword doesn't change. Let the View decide what to do
-    // about a11y.
-    bool keyword_changed = selected_keyword_view_->keyword() != keyword;
-    selected_keyword_view_->SetKeyword(keyword, profile_);
-    if (keyword_changed) {
+    if (selected_keyword_view_->keyword() != keyword) {
+      selected_keyword_view_->SetKeyword(keyword, profile_);
       const TemplateURL* template_url =
           TemplateURLServiceFactory::GetForProfile(profile_)
               ->GetTemplateURLForKeyword(keyword);

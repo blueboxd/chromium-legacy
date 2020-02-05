@@ -23,7 +23,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -54,8 +54,8 @@ public class OverviewAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testAllMenuItemsWithoutStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.setStartSurfaceEnabledForTesting(false);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -89,8 +89,8 @@ public class OverviewAppMenuTest {
     public void testIncognitoAllMenuItemsWithoutStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
-            FeatureUtilities.setStartSurfaceEnabledForTesting(false);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -123,8 +123,8 @@ public class OverviewAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testAllMenuItemsWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.setStartSurfaceEnabledForTesting(true);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -160,8 +160,8 @@ public class OverviewAppMenuTest {
     public void testIncognitoAllMenuItemsWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
-            FeatureUtilities.setStartSurfaceEnabledForTesting(true);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -196,8 +196,8 @@ public class OverviewAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testGroupTabsIsDisabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.setStartSurfaceEnabledForTesting(false);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -219,8 +219,8 @@ public class OverviewAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testGroupTabsIsEnabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.setStartSurfaceEnabledForTesting(false);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -248,8 +248,8 @@ public class OverviewAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testGroupTabsIsDisabledWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.setStartSurfaceEnabledForTesting(true);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -271,8 +271,8 @@ public class OverviewAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testGroupTabsIsEnabledWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.setStartSurfaceEnabledForTesting(true);
-            FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+            CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+            CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });

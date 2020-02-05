@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/branding_buildflags.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -170,13 +171,26 @@ void GetDefaultDeviceIdCallback(pa_context* c,
   pa_threaded_mainloop_signal(data->loop_, 0);
 }
 
+struct ContextStartupData {
+  base::WaitableEvent* context_wait;
+  pa_threaded_mainloop* pa_mainloop;
+};
+
+void SignalReadyOrErrorStateCallback(pa_context* context, void* context_data) {
+  auto context_state = pa_context_get_state(context);
+  auto* data = static_cast<ContextStartupData*>(context_data);
+  if (!PA_CONTEXT_IS_GOOD(context_state) || context_state == PA_CONTEXT_READY)
+    data->context_wait->Signal();
+  pa_threaded_mainloop_signal(data->pa_mainloop, 0);
+}
+
 }  // namespace
 
 bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
 #if defined(DLOPEN_PULSEAUDIO)
   StubPathMap paths;
 
-  // Check if the pulse library is avialbale.
+  // Check if the pulse library is available.
   paths[kModulePulse].push_back(kPulseLib);
   if (!InitializeStubs(paths)) {
     VLOG(1) << "Failed on loading the Pulse library and symbols";
@@ -200,16 +214,20 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
     return false;
   }
 
-  pa_context_set_state_callback(pa_context, &pulse::ContextStateCallback,
-                                pa_mainloop);
+  // We can't rely on pa_threaded_mainloop_wait() for PulseAudio startup since
+  // it can hang indefinitely. Instead we use a WaitableEvent to time out the
+  // startup process if it takes too long.
+  base::WaitableEvent context_wait;
+  ContextStartupData data = {&context_wait, pa_mainloop};
 
-  // Note: We don't use PA_CONTEXT_NOAUTOSPAWN here since when the daemon is
-  // missing, we seem to just hang forever.
-  if (pa_context_connect(pa_context, nullptr, PA_CONTEXT_NOFLAGS, nullptr)) {
+  pa_context_set_state_callback(pa_context, &SignalReadyOrErrorStateCallback,
+                                &data);
+
+  if (pa_context_connect(pa_context, nullptr, PA_CONTEXT_NOAUTOSPAWN,
+                         nullptr)) {
     VLOG(1) << "Failed to connect to the context.  Error: "
             << pa_strerror(pa_context_errno(pa_context));
-    pa_context_set_state_callback(pa_context, nullptr, nullptr);
-    pa_context_unref(pa_context);
+    DestroyContext(pa_context);
     pa_threaded_mainloop_free(pa_mainloop);
     return false;
   }
@@ -220,26 +238,44 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
 
   // Start the threaded mainloop after everything has been configured.
   if (pa_threaded_mainloop_start(pa_mainloop)) {
+    DestroyContext(pa_context);
     mainloop_lock.reset();
     DestroyMainloop(pa_mainloop);
     return false;
   }
 
-  // Wait until |pa_context| is ready.  pa_threaded_mainloop_wait() must be
-  // called after pa_context_get_state() in case the context is already ready,
-  // otherwise pa_threaded_mainloop_wait() will hang indefinitely.
-  while (true) {
-    pa_context_state_t context_state = pa_context_get_state(pa_context);
-    if (!PA_CONTEXT_IS_GOOD(context_state)) {
-      DestroyContext(pa_context);
-      mainloop_lock.reset();
-      DestroyMainloop(pa_mainloop);
-      return false;
-    }
-    if (context_state == PA_CONTEXT_READY)
-      break;
-    pa_threaded_mainloop_wait(pa_mainloop);
+  // Don't hold the mainloop lock while waiting for the context to become ready,
+  // or we'll never complete since PulseAudio can't continue working.
+  mainloop_lock.reset();
+
+  // Wait for up to 5 seconds for pa_context to become ready. We'll be signaled
+  // by the SignalReadyOrErrorStateCallback that we setup above.
+  //
+  // We've chosen a timeout value of 5 seconds because this can be executed at
+  // browser startup (other times it's during audio process startup). In the
+  // normal case, this should only take ~50ms, but we've seen some test bots
+  // hang indefinitely when the pulse daemon can't be started.
+  constexpr base::TimeDelta kStartupTimeout = base::TimeDelta::FromSeconds(5);
+  const bool was_signaled = context_wait.TimedWait(kStartupTimeout);
+
+  // Require the mainloop lock before checking the context state.
+  mainloop_lock = std::make_unique<AutoPulseLock>(pa_mainloop);
+
+  auto context_state = pa_context_get_state(pa_context);
+  if (context_state != PA_CONTEXT_READY) {
+    if (!was_signaled)
+      VLOG(1) << "Timed out trying to connect to PulseAudio.";
+    else
+      VLOG(1) << "Failed to connect to PulseAudio: " << context_state;
+    DestroyContext(pa_context);
+    mainloop_lock.reset();
+    DestroyMainloop(pa_mainloop);
+    return false;
   }
+
+  // Replace our function local state callback with a global appropriate one.
+  pa_context_set_state_callback(pa_context, &pulse::ContextStateCallback,
+                                pa_mainloop);
 
   *mainloop = pa_mainloop;
   *context = pa_context;

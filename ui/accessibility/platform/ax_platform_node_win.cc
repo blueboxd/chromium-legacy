@@ -685,6 +685,12 @@ int AXPlatformNodeWin::GetIndexInParent() {
 }
 
 base::string16 AXPlatformNodeWin::GetHypertext() const {
+  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
+  if (!GetDelegate()->IsWebContent()) {
+    if (IsPlainTextField())
+      return GetString16Attribute(ax::mojom::StringAttribute::kValue);
+  }
+
   // Hypertext of platform leaves, which internally are composite objects, are
   // represented with the inner text of the internal composite object.
   if (IsChildOfLeaf())
@@ -3312,7 +3318,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nCharacters(LONG* n_characters) {
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                                        ui::AXMode::kInlineTextBoxes);
 
-  base::string16 text = TextForIAccessibleText();
+  base::string16 text = GetHypertext();
   *n_characters = static_cast<LONG>(text.size());
 
   return S_OK;
@@ -3396,7 +3402,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_text(LONG start_offset,
   if (start_offset > end_offset)
     std::swap(start_offset, end_offset);
 
-  const base::string16 str = TextForIAccessibleText();
+  const base::string16 str = GetHypertext();
   LONG str_len = static_cast<LONG>(str.length());
   if (start_offset < 0 || start_offset > str_len)
     return E_INVALIDARG;
@@ -3433,7 +3439,7 @@ HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
   if (offset < 0)
     return E_INVALIDARG;
 
-  const base::string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = GetHypertext();
   LONG text_len = text_str.length();
 
   // https://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/interface_i_accessible_text.html
@@ -3616,11 +3622,11 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelection(LONG selection_index,
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
   if (start_offset < 0 ||
-      start_offset > static_cast<LONG>(TextForIAccessibleText().length())) {
+      start_offset > static_cast<LONG>(GetHypertext().length())) {
     return E_INVALIDARG;
   }
   if (end_offset < 0 ||
-      end_offset > static_cast<LONG>(TextForIAccessibleText().length())) {
+      end_offset > static_cast<LONG>(GetHypertext().length())) {
     return E_INVALIDARG;
   }
 
@@ -7235,14 +7241,6 @@ void AXPlatformNodeWin::AddAlertTarget() {
 void AXPlatformNodeWin::RemoveAlertTarget() {
   if (g_alert_targets.Get().find(this) != g_alert_targets.Get().end())
     g_alert_targets.Get().erase(this);
-}
-
-base::string16 AXPlatformNodeWin::TextForIAccessibleText() {
-  // Special case allows us to get text even in non-HTML case, e.g. browser
-  // UI.
-  if (IsPlainTextField())
-    return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  return GetHypertext();
 }
 
 void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {

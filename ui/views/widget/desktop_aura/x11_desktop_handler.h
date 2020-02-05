@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/env_observer.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
@@ -32,7 +31,7 @@ namespace views {
 // A singleton that owns global objects related to the desktop and listens for
 // X11 events on the X11 root window. Destroys itself when aura::Env is
 // deleted.
-class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
+class VIEWS_EXPORT X11DesktopHandler : public ui::XEventDispatcher,
                                        public aura::EnvObserver {
  public:
   // Returns the singleton handler.  Creates one if one has not
@@ -50,9 +49,8 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // Gets the current workspace ID.
   std::string GetWorkspace();
 
-  // ui::PlatformEventDispatcher
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  // ui::XEventDispatcher
+  bool DispatchXEvent(XEvent* event) override;
 
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;

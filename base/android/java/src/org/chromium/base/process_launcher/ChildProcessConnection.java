@@ -750,7 +750,6 @@ public class ChildProcessConnection {
     public void removeStrongBinding() {
         assert isRunningOnLauncherThread();
         if (!isConnected()) {
-            Log.w(TAG, "The connection is not bound for %d", getPid());
             return;
         }
         assert mStrongBindingCount > 0;
@@ -782,7 +781,6 @@ public class ChildProcessConnection {
     public void removeModerateBinding() {
         assert isRunningOnLauncherThread();
         if (!isConnected()) {
-            Log.w(TAG, "The connection is not bound for %d", getPid());
             return;
         }
         assert mModerateBindingCount > 0;

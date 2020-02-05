@@ -36,9 +36,6 @@ CORE_EXPORT String ToCoreString(const v8_inspector::StringView&);
 CORE_EXPORT String ToCoreString(std::unique_ptr<v8_inspector::StringBuffer>);
 
 namespace protocol {
-
-class Value;
-
 using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
 
@@ -79,7 +76,6 @@ class CORE_EXPORT StringUtil {
   static String builderToString(StringBuilder& builder) {
     return builder.ToString();
   }
-  static std::unique_ptr<protocol::Value> parseJSON(const String&);
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);

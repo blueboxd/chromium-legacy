@@ -97,44 +97,100 @@ CORE_EXPORT LayoutUnit ResolveBlockLengthInternal(
         nullptr);
 
 // Used for resolving min inline lengths, (|ComputedStyle::MinLogicalWidth|).
+template <typename MinMaxSizeFunc>
 inline LayoutUnit ResolveMinInlineLength(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    const base::Optional<MinMaxSize>& min_and_max,
+    const MinMaxSizeFunc& min_max_size_func,
+    const Length& length,
+    LengthResolvePhase phase) {
+  if (LIKELY(length.IsAuto() || InlineLengthUnresolvable(length, phase)))
+    return border_padding.InlineSum();
+
+  base::Optional<MinMaxSize> min_max_size;
+  if (length.IsIntrinsic())
+    min_max_size = min_max_size_func();
+
+  return ResolveInlineLengthInternal(constraint_space, style, border_padding,
+                                     min_max_size, length);
+}
+
+template <>
+inline LayoutUnit ResolveMinInlineLength<base::Optional<MinMaxSize>>(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const base::Optional<MinMaxSize>& min_max_size,
     const Length& length,
     LengthResolvePhase phase) {
   if (LIKELY(length.IsAuto() || InlineLengthUnresolvable(length, phase)))
     return border_padding.InlineSum();
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
-                                     min_and_max, length);
+                                     min_max_size, length);
 }
 
 // Used for resolving max inline lengths, (|ComputedStyle::MaxLogicalWidth|).
+template <typename MinMaxSizeFunc>
 inline LayoutUnit ResolveMaxInlineLength(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    const base::Optional<MinMaxSize>& min_and_max,
+    const MinMaxSizeFunc& min_max_size_func,
+    const Length& length,
+    LengthResolvePhase phase) {
+  if (LIKELY(length.IsNone() || InlineLengthUnresolvable(length, phase)))
+    return LayoutUnit::Max();
+
+  base::Optional<MinMaxSize> min_max_size;
+  if (length.IsIntrinsic())
+    min_max_size = min_max_size_func();
+
+  return ResolveInlineLengthInternal(constraint_space, style, border_padding,
+                                     min_max_size, length);
+}
+
+template <>
+inline LayoutUnit ResolveMaxInlineLength<base::Optional<MinMaxSize>>(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const base::Optional<MinMaxSize>& min_max_size,
     const Length& length,
     LengthResolvePhase phase) {
   if (LIKELY(length.IsNone() || InlineLengthUnresolvable(length, phase)))
     return LayoutUnit::Max();
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
-                                     min_and_max, length);
+                                     min_max_size, length);
 }
 
 // Used for resolving main inline lengths, (|ComputedStyle::LogicalWidth|).
+template <typename MinMaxSizeFunc>
 inline LayoutUnit ResolveMainInlineLength(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    const base::Optional<MinMaxSize>& min_and_max,
+    const MinMaxSizeFunc& min_max_size_func,
+    const Length& length) {
+  base::Optional<MinMaxSize> min_max_size;
+  if (length.IsIntrinsic())
+    min_max_size = min_max_size_func();
+
+  return ResolveInlineLengthInternal(constraint_space, style, border_padding,
+                                     min_max_size, length);
+}
+
+template <>
+inline LayoutUnit ResolveMainInlineLength<base::Optional<MinMaxSize>>(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const base::Optional<MinMaxSize>& min_max_size,
     const Length& length) {
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
-                                     min_and_max, length);
+                                     min_max_size, length);
 }
 
 // Used for resolving min block lengths, (|ComputedStyle::MinLogicalHeight|).
@@ -157,6 +213,30 @@ inline LayoutUnit ResolveMinBlockLength(
       opt_percentage_resolution_block_size_for_min_max);
 }
 
+template <typename IntrinsicBlockSizeFunc>
+inline LayoutUnit ResolveMinBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    const IntrinsicBlockSizeFunc& intrinsic_block_size_func,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
+  if (LIKELY(BlockLengthUnresolvable(
+          constraint_space, length, phase,
+          opt_percentage_resolution_block_size_for_min_max)))
+    return border_padding.BlockSum();
+
+  LayoutUnit intrinsic_block_size = kIndefiniteSize;
+  if (length.IsIntrinsicOrAuto())
+    intrinsic_block_size = intrinsic_block_size_func();
+
+  return ResolveBlockLengthInternal(
+      constraint_space, style, border_padding, length, intrinsic_block_size,
+      phase, opt_percentage_resolution_block_size_for_min_max);
+}
+
 // Used for resolving max block lengths, (|ComputedStyle::MaxLogicalHeight|).
 inline LayoutUnit ResolveMaxBlockLength(
     const NGConstraintSpace& constraint_space,
@@ -175,6 +255,30 @@ inline LayoutUnit ResolveMaxBlockLength(
   return ResolveBlockLengthInternal(
       constraint_space, style, border_padding, length, content_size, phase,
       opt_percentage_resolution_block_size_for_min_max);
+}
+
+template <typename IntrinsicBlockSizeFunc>
+inline LayoutUnit ResolveMaxBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    const IntrinsicBlockSizeFunc& intrinsic_block_size_func,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
+  if (LIKELY(BlockLengthUnresolvable(
+          constraint_space, length, phase,
+          opt_percentage_resolution_block_size_for_min_max)))
+    return LayoutUnit::Max();
+
+  LayoutUnit intrinsic_block_size = kIndefiniteSize;
+  if (length.IsIntrinsicOrAuto())
+    intrinsic_block_size = intrinsic_block_size_func();
+
+  return ResolveBlockLengthInternal(
+      constraint_space, style, border_padding, length, intrinsic_block_size,
+      phase, opt_percentage_resolution_block_size_for_min_max);
 }
 
 // Used for resolving main block lengths, (|ComputedStyle::LogicalHeight|).
@@ -196,6 +300,31 @@ inline LayoutUnit ResolveMainBlockLength(
   return ResolveBlockLengthInternal(
       constraint_space, style, border_padding, length, content_size, phase,
       opt_percentage_resolution_block_size_for_min_max);
+}
+
+template <typename IntrinsicBlockSizeFunc>
+inline LayoutUnit ResolveMainBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    const IntrinsicBlockSizeFunc& intrinsic_block_size_func,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
+  if (UNLIKELY((length.IsPercentOrCalc() || length.IsFillAvailable()) &&
+               BlockLengthUnresolvable(
+                   constraint_space, length, phase,
+                   opt_percentage_resolution_block_size_for_min_max)))
+    return intrinsic_block_size_func();
+
+  LayoutUnit intrinsic_block_size = kIndefiniteSize;
+  if (length.IsIntrinsicOrAuto())
+    intrinsic_block_size = intrinsic_block_size_func();
+
+  return ResolveBlockLengthInternal(
+      constraint_space, style, border_padding, length, intrinsic_block_size,
+      phase, opt_percentage_resolution_block_size_for_min_max);
 }
 
 // For the given style and min/max content sizes, computes the min and max
@@ -241,12 +370,12 @@ MinMaxSize ComputeMinAndMaxContentSizeForOutOfFlow(
 // then constraining the result by the resolved min logical width and max
 // logical width from the ComputedStyle object. Calls Node::ComputeMinMaxSize
 // if needed.
-// |override_minmax_for_test| is provided *solely* for use by unit tests.
+// |override_min_max_size_for_test| is provided *solely* for use by unit tests.
 CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace&,
     NGLayoutInputNode,
     const NGBoxStrut& border_padding,
-    const MinMaxSize* override_minmax_for_test = nullptr);
+    const MinMaxSize* override_min_max_size_for_test = nullptr);
 
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit

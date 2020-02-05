@@ -1335,11 +1335,11 @@
     # Cast Linux takes very long in linking, possibly due to being on GCE
     # (crbug/794423).
     'cast_release_bot': [
-      'cast', 'cast_exo', 'release_bot', 'minimal_symbols',
+      'cast', 'release_bot', 'minimal_symbols',
     ],
 
     'cast_release_trybot': [
-      'cast', 'cast_exo', 'release_trybot',
+      'cast', 'release_trybot',
     ],
 
     'cast_audio_release_bot': [
@@ -2138,10 +2138,6 @@
 
     'cast_audio': {
       'gn_args': 'is_cast_audio_only=true'
-    },
-
-    'cast_exo': {
-      'gn_args': 'enable_cast_wayland_server=true',
     },
 
     'cfi': {

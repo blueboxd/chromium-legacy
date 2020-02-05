@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_traits.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
@@ -88,8 +89,13 @@ class TracingControllerImpl : public TracingController,
   // exists.
   void FinalizeStartupTracingIfNeeded();
 
-  const PerfettoFileTracer* perfetto_file_tracer_for_testing() const {
+  PerfettoFileTracer* perfetto_file_tracer_for_testing() const {
     return perfetto_file_tracer_.get();
+  }
+
+  void set_startup_file_endpoint_priority_for_testing(
+      base::TaskPriority priority) {
+    startup_file_endpoint_priority_ = priority;
   }
 
  private:
@@ -132,6 +138,8 @@ class TracingControllerImpl : public TracingController,
   base::FilePath startup_trace_file_;
   // This timer initiates trace file saving.
   base::OneShotTimer startup_trace_timer_;
+  base::TaskPriority startup_file_endpoint_priority_ =
+      base::TaskPriority::BEST_EFFORT;
 
 #if defined(OS_CHROMEOS)
   bool are_statistics_loaded_ = false;

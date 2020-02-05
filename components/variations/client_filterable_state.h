@@ -16,13 +16,25 @@
 
 namespace variations {
 
+// The values of the ChromeVariations policy. Those should be kept in sync
+// with the values defined in policy_templates.json!
+enum class RestrictionPolicy {
+  // No restrictions applied by policy. Default value when policy not set.
+  NO_RESTRICTIONS = 0,
+  // Only critical security variations should be applied.
+  CRITICAL_ONLY = 1,
+  // All variations disabled. Disables the variations framework altogether.
+  ALL = 2,
+  kMaxValue = ALL,
+};
+
 using IsEnterpriseFunction = base::OnceCallback<bool()>;
 
 // A container for all of the client state which is used for filtering studies.
 struct ClientFilterableState {
   static Study::Platform GetCurrentPlatform();
 
-  ClientFilterableState(IsEnterpriseFunction is_enterprise_function);
+  explicit ClientFilterableState(IsEnterpriseFunction is_enterprise_function);
   ~ClientFilterableState();
 
   // Whether this is an enterprise client. Always false on android, iOS, and
@@ -65,6 +77,9 @@ struct ClientFilterableState {
 
   // The country code to use for studies configured with permanent consistency.
   std::string permanent_consistency_country;
+
+  // The restriction applied to Chrome through the "ChromeVariations" policy.
+  RestrictionPolicy policy_restriction = RestrictionPolicy::NO_RESTRICTIONS;
 
  private:
   // Evaluating enterprise status negatively affects performance, so we only

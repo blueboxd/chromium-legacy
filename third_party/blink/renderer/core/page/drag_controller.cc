@@ -484,7 +484,7 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
   // TODO(editing-dev): The use of
   // UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   if (!frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
     return frame->Selection()
         .ComputeVisibleSelectionInDOMTree()
@@ -500,7 +500,7 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
   // TODO(editing-dev): The use of
   // UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   const VisibleSelection& visible_selection =
       frame->Selection().ComputeVisibleSelectionInDOMTree();
   range = CreateRange(visible_selection.ToNormalizedEphemeralRange());
@@ -577,7 +577,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
         .CaretPosition()
         .GetPosition()
         .GetDocument()
-        ->UpdateStyleAndLayout();
+        ->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   }
 
   const PositionWithAffinity& caret_position =

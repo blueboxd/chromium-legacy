@@ -2954,7 +2954,7 @@ void HTMLMediaElement::RemoveTextTrack(WebInbandTextTrack* web_track) {
 
   // This cast is safe because InbandTextTrack is the only concrete
   // implementation of WebInbandTextTrackClient.
-  InbandTextTrack* text_track = ToInbandTextTrack(web_track->Client());
+  auto* text_track = To<InbandTextTrack>(web_track->Client());
   if (!text_track)
     return;
 

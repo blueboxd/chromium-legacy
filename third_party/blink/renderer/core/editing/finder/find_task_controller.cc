@@ -98,7 +98,8 @@ class FindTaskController::IdleFindTask
 
     // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  see http://crbug.com/590369 for more details.
-    search_start.GetDocument()->UpdateStyleAndLayout();
+    search_start.GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kFindInPage);
 
     int match_count = 0;
     bool full_range_searched = false;

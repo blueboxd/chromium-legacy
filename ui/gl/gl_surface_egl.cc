@@ -23,7 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/angle_platform_impl.h"
@@ -158,7 +158,6 @@
 
 using ui::GetLastEGLErrorString;
 using ui::PlatformEvent;
-using ui::PlatformEventSource;
 
 namespace gl {
 
@@ -1308,8 +1307,8 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     }
   }
 
-  if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
-    source->AddPlatformEventDispatcher(this);
+  if (ui::X11EventSource::HasInstance()) {
+    ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
   }
 
   if (!vsync_provider_external_ && !vsync_provider_internal_) {
@@ -1414,8 +1413,8 @@ void NativeViewGLSurfaceEGL::Destroy() {
 
   if (surface_) {
 #if defined(USE_X11)
-    if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
-      source->RemovePlatformEventDispatcher(this);
+    if (ui::X11EventSource::HasInstance()) {
+      ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
     }
 #endif
     if (!eglDestroySurface(GetDisplay(), surface_)) {
@@ -1898,29 +1897,24 @@ bool NativeViewGLSurfaceEGL::CommitAndClearPendingOverlays() {
   return success;
 }
 
-bool NativeViewGLSurfaceEGL::CanDispatchEvent(const PlatformEvent& event) {
 #if defined(USE_X11)
+bool NativeViewGLSurfaceEGL::DispatchXEvent(XEvent* x_event) {
   // When ANGLE is used for EGL, it creates an X11 child window. Expose events
   // from this window need to be forwarded to this class.
-  return event->type == Expose &&
-         std::find(children_.begin(), children_.end(), event->xexpose.window) !=
-             children_.end();
-#else
-  return false;
-#endif
-}
+  bool can_dispatch = x_event->type == Expose &&
+                      std::find(children_.begin(), children_.end(),
+                                x_event->xexpose.window) != children_.end();
 
-uint32_t NativeViewGLSurfaceEGL::DispatchEvent(const PlatformEvent& event) {
-#if defined(USE_X11)
-  XEvent x_event = *event;
-  x_event.xexpose.window = window_;
+  if (!can_dispatch)
+    return false;
 
+  x_event->xexpose.window = window_;
   Display* x11_display = GetNativeDisplay();
-  XSendEvent(x11_display, window_, x11::False, ExposureMask, &x_event);
+  XSendEvent(x11_display, window_, x11::False, ExposureMask, x_event);
   XFlush(x11_display);
-#endif
-  return ui::POST_DISPATCH_STOP_PROPAGATION;
+  return true;
 }
+#endif
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     : size_(size),

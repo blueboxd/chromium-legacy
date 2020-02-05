@@ -68,10 +68,11 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionHostBrowserTest,
   url::Origin expected_origin_of_final_url =
       url::Origin::Create(embedded_test_server()->GetURL("/"));
   IPUrlInfo expected_result_1(expected_origin_of_final_url.Serialize(), "GET",
-                              page_url.spec(), content::ResourceType::kImage);
+                              page_url.spec(),
+                              blink::mojom::ResourceType::kImage);
   IPUrlInfo expected_result_2(expected_origin_of_final_url.Serialize(), "GET",
                               page_url.spec(),
-                              content::ResourceType::kSubFrame);
+                              blink::mojom::ResourceType::kSubFrame);
   EXPECT_TRUE(FindExpectedIPUrlInfo(expected_result_1, ip_urls));
   EXPECT_TRUE(FindExpectedIPUrlInfo(expected_result_2, ip_urls));
 }

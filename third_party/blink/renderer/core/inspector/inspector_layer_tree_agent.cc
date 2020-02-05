@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
@@ -537,8 +538,19 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
   if (!response.isSuccess())
     return response;
   protocol::ErrorSupport errors;
-  std::unique_ptr<protocol::Value> log_value = protocol::StringUtil::parseJSON(
-      snapshot->SnapshotCommandLog()->ToJSONString());
+  const String& json = snapshot->SnapshotCommandLog()->ToJSONString();
+  std::vector<uint8_t> cbor;
+  if (json.Is8Bit()) {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint8_t>(json.Characters8(), json.length()), &cbor);
+  } else {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint16_t>(
+            reinterpret_cast<const uint16_t*>(json.Characters16()),
+            json.length()),
+        &cbor);
+  }
+  auto log_value = protocol::Value::parseBinary(cbor.data(), cbor.size());
   *command_log = protocol::ValueConversions<
       protocol::Array<protocol::DictionaryValue>>::fromValue(log_value.get(),
                                                              &errors);

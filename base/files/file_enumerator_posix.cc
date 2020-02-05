@@ -30,6 +30,26 @@ void GetStat(const FilePath& path, bool show_links, stat_wrapper_t* st) {
   }
 }
 
+#if defined(OS_FUCHSIA)
+bool ShouldShowSymLinks(int file_type) {
+  return false;
+}
+#else
+bool ShouldShowSymLinks(int file_type) {
+  return file_type & FileEnumerator::SHOW_SYM_LINKS;
+}
+#endif  // defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
+bool ShouldTrackVisitedDirectories(int file_type) {
+  return false;
+}
+#else
+bool ShouldTrackVisitedDirectories(int file_type) {
+  return !(file_type & FileEnumerator::SHOW_SYM_LINKS);
+}
+#endif  // defined(OS_FUCHSIA)
+
 }  // namespace
 
 // FileEnumerator::FileInfo ----------------------------------------------------
@@ -89,7 +109,7 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
   // INCLUDE_DOT_DOT must not be specified if recursive.
   DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
 
-  if (recursive && !(file_type & SHOW_SYM_LINKS)) {
+  if (recursive && ShouldTrackVisitedDirectories(file_type_)) {
     stat_wrapper_t st;
     GetStat(root_path, false, &st);
     visited_directories_.insert(st.st_ino);
@@ -160,15 +180,14 @@ FilePath FileEnumerator::Next() {
         continue;
 
       const FilePath full_path = root_path_.Append(info.filename_);
-      const bool show_sym_links = file_type_ & SHOW_SYM_LINKS;
-      GetStat(full_path, show_sym_links, &info.stat_);
+      GetStat(full_path, ShouldShowSymLinks(file_type_), &info.stat_);
 
       const bool is_dir = info.IsDirectory();
 
       // Recursive mode: schedule traversal of a directory if either
       // SHOW_SYM_LINKS is on or we haven't visited the directory yet.
       if (recursive_ && is_dir &&
-          (show_sym_links ||
+          (!ShouldTrackVisitedDirectories(file_type_) ||
            visited_directories_.insert(info.stat_.st_ino).second)) {
         pending_paths_.push(full_path);
       }

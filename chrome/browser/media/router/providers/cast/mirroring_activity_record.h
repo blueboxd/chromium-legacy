@@ -33,6 +33,14 @@ class MirroringActivityRecord : public ActivityRecord,
  public:
   using OnStopCallback = base::OnceClosure;
 
+  enum class MirroringType {
+    kTab,           // Mirror a single tab.
+    kDesktop,       // Mirror the whole desktop.
+    kOffscreenTab,  // Used for Presentation API 1UA mode.
+    kNonLocal,      // Activity started by other sender devices.
+    kMaxValue = kNonLocal,
+  };
+
   MirroringActivityRecord(const MediaRoute& route,
                           const std::string& app_id,
                           cast_channel::CastMessageHandler* message_handler,
@@ -61,13 +69,6 @@ class MirroringActivityRecord : public ActivityRecord,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
 
  private:
-  enum class MirroringType {
-    kTab,           // Mirror a single tab.
-    kDesktop,       // Mirror the whole desktop.
-    kOffscreenTab,  // Used for Presentation API 1UA mode.
-    kMaxValue = kOffscreenTab,
-  };
-
   void HandleParseJsonResult(const std::string& route_id,
                              data_decoder::DataDecoder::ValueOrError result);
 

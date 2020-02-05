@@ -12,6 +12,7 @@
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/threading/simple_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
@@ -65,10 +66,10 @@ class BASE_EXPORT HangWatchScope {
 };
 
 // Monitors registered threads for hangs by inspecting their associated
-// HangWatchStates for deadline overruns. Only one instance of HangWatcher can
-// exist at a time within a single process. This instance must outlive all
-// monitored threads.
-class BASE_EXPORT HangWatcher {
+// HangWatchStates for deadline overruns. This happens at a regular interval on
+// a separate thread. Only one instance of HangWatcher can exist at a time
+// within a single process. This instance must outlive all monitored threads.
+class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
  public:
   // The first invocation of the constructor will set the global instance
   // accessible through GetInstance(). This means that only one instance can
@@ -76,7 +77,7 @@ class BASE_EXPORT HangWatcher {
   explicit HangWatcher(RepeatingClosure on_hang_closure);
 
   // Clears the global instance for the class.
-  ~HangWatcher();
+  ~HangWatcher() override;
 
   HangWatcher(const HangWatcher&) = delete;
   HangWatcher& operator=(const HangWatcher&) = delete;
@@ -87,21 +88,65 @@ class BASE_EXPORT HangWatcher {
   // Sets up the calling thread to be monitored for threads. Returns a
   // ScopedClosureRunner that unregisters the thread. This closure has to be
   // called from the registered thread before it's joined.
-  ScopedClosureRunner RegisterThread() WARN_UNUSED_RESULT;
+  ScopedClosureRunner RegisterThread()
+      LOCKS_EXCLUDED(watch_state_lock_) WARN_UNUSED_RESULT;
 
-  // Inspects the state of all registered threads to check if they are hung.
-  void Monitor();
+  // Choose a closure to be run at the end of each call to Monitor(). Use only
+  // for testing.
+  void SetAfterMonitorClosureForTesting(base::RepeatingClosure closure);
+
+  // Set a monitoring period other than the default. Use only for
+  // testing.
+  void SetMonitoringPeriodForTesting(base::TimeDelta period);
+
+  // Force the monitoring loop to resume and evaluate whether to continue.
+  // This can trigger a call to Monitor() or not depending on why the
+  // HangWatcher thread is sleeping. Use only for testing.
+  void SignalMonitorEventForTesting();
 
  private:
+  THREAD_CHECKER(thread_checker_);
+
+  // Inspects the state of all registered threads to check if they are hung and
+  // invokes the appropriate closure if so.
+  void Monitor();
+
+  // Call Run() on the HangWatcher thread.
+  void Start();
+
+  // Stop all monitoring and join the HangWatcher thread.
+  void Stop();
+
+  // Run the loop that periodically monitors the registered thread at a
+  // set time interval.
+  void Run() override;
+
+  base::TimeDelta monitor_period_;
+
+  // Indicates whether Run() should return after the next monitoring.
+  std::atomic<bool> keep_monitoring_{true};
+
+  // Use to make the HangWatcher thread wake or sleep to schedule the
+  // appropriate monitoring frequency.
+  WaitableEvent monitor_event_;
+
+  bool IsWatchListEmpty() LOCKS_EXCLUDED(watch_state_lock_);
+
   // Stops hang watching on the calling thread by removing the entry from the
   // watch list.
-  void UnregisterThread();
+  void UnregisterThread() LOCKS_EXCLUDED(watch_state_lock_);
 
   const RepeatingClosure on_hang_closure_;
   Lock watch_state_lock_;
 
   std::vector<std::unique_ptr<internal::HangWatchState>> watch_states_
       GUARDED_BY(watch_state_lock_);
+
+  base::DelegateSimpleThread thread_;
+
+  base::RepeatingClosure after_monitor_closure_for_testing_;
+
+  FRIEND_TEST_ALL_PREFIXES(HangWatcherTest, NestedScopes);
 };
 
 // Classes here are exposed in the header only for testing. They are not

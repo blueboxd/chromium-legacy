@@ -298,12 +298,9 @@ class QuickViewController {
       };
     }
 
-    // Delete the entry.
-    const deleteCommand = CommandHandler.getCommand('delete');
-    if (deleteCommand.canDeleteEntries_([entry], this.fileManager_)) {
-      deleteCommand.deleteEntries_(
-          [entry], this.fileManager_, this.deleteConfirmDialog_);
-    }
+    // Delete the entry if the entry can be deleted.
+    CommandHandler.getCommand('delete').deleteEntries(
+        [entry], this.fileManager_, this.deleteConfirmDialog_);
   }
 
   /**
@@ -342,9 +339,9 @@ class QuickViewController {
       }
 
       if (this.currentSelection_ >= this.entries_.length) {
-        this.currentSelection_ = 0;
-      } else if (this.currentSelection_ < 0) {
         this.currentSelection_ = this.entries_.length - 1;
+      } else if (this.currentSelection_ < 0) {
+        this.currentSelection_ = 0;
       }
     }
 

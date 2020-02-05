@@ -18,7 +18,9 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/sequence_checker.h"
@@ -52,6 +54,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_histogram_sample.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_process_descriptor.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_user_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_descriptor.pbzero.h"
 
@@ -736,6 +739,17 @@ void TraceEventDataSource::StartTracingInternal(
     base::StatisticsRecorder::SetGlobalSampleCallback(
         &TraceEventDataSource::OnMetricsSampleCallback);
   }
+  if (trace_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("user_action_samples"))) {
+    auto task_runner = base::GetRecordActionTaskRunner();
+    if (task_runner) {
+      task_runner->PostTask(
+          FROM_HERE, base::Bind([]() {
+            base::AddActionCallback(
+                TraceEventDataSource::GetInstance()->user_action_callback_);
+          }));
+    }
+  }
 }
 
 void TraceEventDataSource::StopTracing(
@@ -809,6 +823,14 @@ void TraceEventDataSource::StopTracing(
   }
 
   base::StatisticsRecorder::SetGlobalSampleCallback(nullptr);
+  auto task_runner = base::GetRecordActionTaskRunner();
+  if (task_runner) {
+    task_runner->PostTask(
+        FROM_HERE, base::Bind([]() {
+          base::RemoveActionCallback(
+              TraceEventDataSource::GetInstance()->user_action_callback_);
+        }));
+  }
 }
 
 void TraceEventDataSource::LogHistogram(base::HistogramBase* histogram) {
@@ -965,6 +987,17 @@ void TraceEventDataSource::OnMetricsSampleCallback(
                     ctx.event()->set_chrome_histogram_sample();
                 new_sample->set_name_hash(name_hash);
                 new_sample->set_sample(sample);
+              });
+}
+
+void TraceEventDataSource::OnUserActionSampleCallback(
+    const std::string& action) {
+  TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction",
+              [&](perfetto::EventContext ctx) {
+                perfetto::protos::pbzero::ChromeUserEvent* new_sample =
+                    ctx.event()->set_chrome_user_event();
+                // TODO(ssid): Set action string in non filtered mode.
+                new_sample->set_action_hash(base::HashMetricName(action));
               });
 }
 

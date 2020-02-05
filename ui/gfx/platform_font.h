@@ -101,12 +101,10 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   virtual NativeFont GetNativeFont() const = 0;
 #endif
 
-  // Returns the underlying Skia typeface if this PlatformFont instance is
-  // backed by PlatformFontSkia, returns nullptr otherwise. Used in
-  // RenderTextHarfBuzz for having access to the exact Skia typeface returned by
-  // font fallback, as we would otherwise lose the handle to the correct
-  // platform font instance.
-  virtual sk_sp<SkTypeface> GetNativeSkTypefaceIfAvailable() const = 0;
+  // Returns the underlying Skia typeface. Used in RenderTextHarfBuzz for having
+  // access to the exact Skia typeface returned by  font fallback, as we would
+  // otherwise lose the handle to the correct platform font instance.
+  virtual sk_sp<SkTypeface> GetNativeSkTypeface() const = 0;
 
  protected:
   virtual ~PlatformFont() {}

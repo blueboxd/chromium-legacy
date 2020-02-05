@@ -536,7 +536,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool HasVisibleCaretOrSelection() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
       ax::mojom::IntAttribute attr) override;
-  std::set<ui::AXPlatformNode*> GetTargetNodesForRelation(
+  std::vector<ui::AXPlatformNode*> GetTargetNodesForRelation(
       ax::mojom::IntListAttribute attr) override;
   std::set<ui::AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntAttribute attr) override;

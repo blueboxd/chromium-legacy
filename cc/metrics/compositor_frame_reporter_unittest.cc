@@ -154,9 +154,9 @@ TEST_F(CompositorFrameReporterTest, SubmittedDroppedFrameReportingTest) {
   EXPECT_EQ(1, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(2);
-  pipeline_reporter_->DroppedFrame();
   pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
+      CompositorFrameReporter::FrameTerminationStatus::kDidNotPresentFrame,
+      Now());
   EXPECT_EQ(2, pipeline_reporter_->StageHistorySizeForTesting());
 
   pipeline_reporter_ = nullptr;

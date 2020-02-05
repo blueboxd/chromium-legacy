@@ -15,7 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.VerifiesOnN;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -217,7 +217,7 @@ public class TabWindowManager implements ActivityStateListener {
             // fullscreen mode and there are no TabModelSelector's currently alive. This indicates
             // that it is a cold start or process restart in fullscreen mode.
             boolean mergeTabs = Build.VERSION.SDK_INT > Build.VERSION_CODES.M
-                    && FeatureUtilities.isTabModelMergingEnabled()
+                    && CachedFeatureFlags.isTabModelMergingEnabled()
                     && !activity.isInMultiWindowMode()
                     && getInstance().getNumberOfAssignedTabModelSelectors() == 0;
             TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(

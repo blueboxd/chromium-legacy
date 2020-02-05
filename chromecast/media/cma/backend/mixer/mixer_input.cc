@@ -16,6 +16,7 @@
 #include "base/numerics/ranges.h"
 #include "chromecast/media/audio/audio_fader.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector_input.h"
+#include "chromecast/media/cma/backend/mixer/channel_layout.h"
 #include "chromecast/media/cma/backend/mixer/filter_group.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -40,6 +41,7 @@ int RoundUpMultiple(int value, int multiple) {
 MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
     : source_(source),
       num_channels_(source->num_channels()),
+      channel_layout_(source->channel_layout()),
       input_samples_per_second_(source->sample_rate()),
       output_samples_per_second_(filter_group->input_samples_per_second()),
       primary_(source->primary()),
@@ -121,8 +123,10 @@ void MixerInput::SetFilterGroup(FilterGroup* filter_group) {
       LOG(INFO) << "Remixing channels for " << source_ << " from "
                 << num_channels_ << " to " << filter_group->num_channels();
       channel_mixer_ = std::make_unique<::media::ChannelMixer>(
-          ::media::GuessChannelLayout(num_channels_),
-          ::media::GuessChannelLayout(filter_group->num_channels()));
+          mixer::CreateAudioParametersForChannelMixer(channel_layout_,
+                                                      num_channels_),
+          mixer::CreateAudioParametersForChannelMixer(
+              ::media::CHANNEL_LAYOUT_NONE, filter_group->num_channels()));
     }
   }
   filter_group_ = filter_group;

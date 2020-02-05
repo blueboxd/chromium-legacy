@@ -62,6 +62,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -644,13 +645,13 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->headers = GetWebURLRequestHeaders(request);
   if (resource_request->resource_type ==
-      static_cast<int>(ResourceType::kStylesheet)) {
+      static_cast<int>(blink::mojom::ResourceType::kStylesheet)) {
     resource_request->headers.SetHeader(network::kAcceptHeader,
                                         kStylesheetAcceptHeader);
   } else if (resource_request->resource_type ==
-                 static_cast<int>(ResourceType::kFavicon) ||
+                 static_cast<int>(blink::mojom::ResourceType::kFavicon) ||
              resource_request->resource_type ==
-                 static_cast<int>(ResourceType::kImage)) {
+                 static_cast<int>(blink::mojom::ResourceType::kImage)) {
     resource_request->headers.SetHeader(network::kAcceptHeader,
                                         kImageAcceptHeader);
   } else {
@@ -679,9 +680,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->recursive_prefetch_token = request.RecursivePrefetchToken();
 
   if (resource_request->resource_type ==
-          static_cast<int>(ResourceType::kPrefetch) ||
+          static_cast<int>(blink::mojom::ResourceType::kPrefetch) ||
       resource_request->resource_type ==
-          static_cast<int>(ResourceType::kFavicon)) {
+          static_cast<int>(blink::mojom::ResourceType::kFavicon)) {
     resource_request->do_not_prompt_for_login = true;
   }
 
@@ -693,7 +694,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   }
 
   if (resource_request->resource_type ==
-          static_cast<int>(ResourceType::kImage) &&
+          static_cast<int>(blink::mojom::ResourceType::kImage) &&
       IsBannedCrossSiteAuth(resource_request.get(), request)) {
     // Prevent third-party image content from prompting for login, as this
     // is often a scam to extract credentials for another domain from the
@@ -764,23 +765,24 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (request.IsDownloadToNetworkCacheOnly()) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
-    const bool discard_body = (resource_request->resource_type ==
-                               static_cast<int>(ResourceType::kPrefetch));
+    const bool discard_body =
+        (resource_request->resource_type ==
+         static_cast<int>(blink::mojom::ResourceType::kPrefetch));
     peer =
         std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }
 
   if (resource_request->resource_type ==
-      static_cast<int>(ResourceType::kPrefetch)) {
+      static_cast<int>(blink::mojom::ResourceType::kPrefetch)) {
     resource_request->corb_detachable = true;
   }
 
   if (resource_request->resource_type ==
-      static_cast<int>(ResourceType::kPluginResource)) {
+      static_cast<int>(blink::mojom::ResourceType::kPluginResource)) {
     resource_request->corb_excluded = true;
   }
   if (request.IsSignedExchangePrefetchCacheEnabled()) {
-    DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
+    DCHECK_EQ(static_cast<int>(blink::mojom::ResourceType::kPrefetch),
               resource_request->resource_type);
     resource_request->is_signed_exchange_prefetch_cache_enabled = true;
   }
@@ -788,8 +790,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   auto throttles = extra_data->TakeURLLoaderThrottles();
   // The frame request blocker is only for a frame's subresources.
   if (extra_data->frame_request_blocker() &&
-      !IsResourceTypeFrame(
-          static_cast<ResourceType>(resource_request->resource_type))) {
+      !blink::IsResourceTypeFrame(static_cast<blink::mojom::ResourceType>(
+          resource_request->resource_type))) {
     auto throttle =
         extra_data->frame_request_blocker()->GetThrottleIfRequestsBlocked();
     if (throttle)

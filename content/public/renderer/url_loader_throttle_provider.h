@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
 namespace content {
@@ -38,7 +38,7 @@ class CONTENT_EXPORT URLLoaderThrottleProvider {
   virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateThrottles(int render_frame_id,
                   const blink::WebURLRequest& request,
-                  ResourceType resource_type) = 0;
+                  blink::mojom::ResourceType resource_type) = 0;
 
   // Set the network status online state as specified in |is_online|.
   virtual void SetOnline(bool is_online) = 0;

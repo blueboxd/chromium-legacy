@@ -160,7 +160,7 @@ class ProxyingURLLoaderFactory::InProgressRequest
   GURL referrer_origin_;
   net::HttpRequestHeaders headers_;
   net::RedirectInfo redirect_info_;
-  const content::ResourceType resource_type_;
+  const blink::mojom::ResourceType resource_type_;
   const bool is_main_frame_;
 
   base::OnceClosure destruction_callback_;
@@ -198,7 +198,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
     return in_progress_request_->factory_->web_contents_getter_;
   }
 
-  content::ResourceType GetResourceType() const override {
+  blink::mojom::ResourceType GetResourceType() const override {
     return in_progress_request_->resource_type_;
   }
 
@@ -307,7 +307,8 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       request_url_(request.url),
       response_url_(request.url),
       referrer_origin_(request.referrer.GetOrigin()),
-      resource_type_(static_cast<content::ResourceType>(request.resource_type)),
+      resource_type_(
+          static_cast<blink::mojom::ResourceType>(request.resource_type)),
       is_main_frame_(request.is_main_frame),
       target_client_(std::move(client)),
       loader_receiver_(this, std::move(loader_receiver)) {

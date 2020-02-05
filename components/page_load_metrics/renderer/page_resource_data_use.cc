@@ -17,17 +17,17 @@ namespace page_load_metrics {
 namespace {
 
 // Returns true when the image is a placeholder for lazy load.
-bool IsPartialImageRequest(content::ResourceType resource_type,
+bool IsPartialImageRequest(blink::mojom::ResourceType resource_type,
                            content::PreviewsState previews_state) {
-  if (resource_type != content::ResourceType::kImage)
+  if (resource_type != blink::mojom::ResourceType::kImage)
     return false;
   return previews_state & content::PreviewsTypes::LAZY_IMAGE_LOAD_DEFERRED;
 }
 
 // Returns true if this resource was previously fetched as a placeholder.
-bool IsImageAutoReload(content::ResourceType resource_type,
+bool IsImageAutoReload(blink::mojom::ResourceType resource_type,
                        content::PreviewsState previews_state) {
-  if (resource_type != content::ResourceType::kImage)
+  if (resource_type != blink::mojom::ResourceType::kImage)
     return false;
   return previews_state & content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD;
 }
@@ -91,7 +91,7 @@ void PageResourceDataUse::DidStartResponse(
     const url::Origin& origin_of_final_response_url,
     int resource_id,
     const network::mojom::URLResponseHead& response_head,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     content::PreviewsState previews_state) {
   resource_id_ = resource_id;
 
@@ -112,8 +112,8 @@ void PageResourceDataUse::DidStartResponse(
   if (response_head.was_fetched_via_cache)
     cache_type_ = mojom::CacheType::kHttp;
   is_primary_frame_resource_ =
-      resource_type == content::ResourceType::kMainFrame ||
-      resource_type == content::ResourceType::kSubFrame;
+      resource_type == blink::mojom::ResourceType::kMainFrame ||
+      resource_type == blink::mojom::ResourceType::kSubFrame;
   origin_ = origin_of_final_response_url;
   is_secure_scheme_ = GURL::SchemeIsCryptographic(origin_.scheme());
 }

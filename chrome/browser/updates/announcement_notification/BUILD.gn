@@ -18,10 +18,15 @@ source_set("announcement_notification") {
     "empty_announcement_notification_service.h",
   ]
 
+  # TODO(xingliu): Move code depends on //chrome/browser out of this module.
   deps = [
     "//base",
+    "//chrome/app:generated_resources",
     "//components/keyed_service/content",
+    "//components/prefs:prefs",
     "//skia",
+    "//ui/base",
+    "//url",
   ]
 
   if (is_android) {
@@ -29,6 +34,7 @@ source_set("announcement_notification") {
       "announcement_notification_delegate_android.cc",
       "announcement_notification_delegate_android.h",
     ]
+    deps += [ "//chrome/android:chrome_jni_headers" ]
   } else {
     sources += [
       "announcement_notification_delegate.cc",

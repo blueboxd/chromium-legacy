@@ -15,7 +15,6 @@
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/sha2.h"
 #include "ipc/ipc_message.h"
@@ -23,6 +22,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 using ::testing::IsNull;
@@ -110,7 +110,7 @@ class ResourceRequestDetectorTest : public testing::Test {
   }
 
   void ExpectNoIncident(const std::string& url,
-                        content::ResourceType resource_type) {
+                        blink::mojom::ResourceType resource_type) {
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
         .Times(0);
 
@@ -121,11 +121,10 @@ class ResourceRequestDetectorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ExpectIncidentAdded(
-      const std::string& url,
-      content::ResourceType resource_type,
-      ResourceRequestIncidentMessage::Type expected_type,
-      const std::string& expected_digest) {
+  void ExpectIncidentAdded(const std::string& url,
+                           blink::mojom::ResourceType resource_type,
+                           ResourceRequestIncidentMessage::Type expected_type,
+                           const std::string& expected_digest) {
     std::unique_ptr<Incident> incident;
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
         .WillOnce(WithArg<1>(TakeIncident(&incident)));
@@ -161,27 +160,27 @@ class ResourceRequestDetectorTest : public testing::Test {
 TEST_F(ResourceRequestDetectorTest, NoDbCheckForIgnoredResourceTypes) {
   ExpectNoDatabaseCheck();
   ExpectNoIncident("http://www.example.com/index.html",
-                   content::ResourceType::kMainFrame);
+                   blink::mojom::ResourceType::kMainFrame);
 }
 
 TEST_F(ResourceRequestDetectorTest, NoDbCheckForUnsupportedSchemes) {
   ExpectNoDatabaseCheck();
   ExpectNoIncident("file:///usr/local/script.js",
-                   content::ResourceType::kScript);
+                   blink::mojom::ResourceType::kScript);
   ExpectNoIncident("chrome-extension://abcdefghi/script.js",
-                   content::ResourceType::kScript);
+                   blink::mojom::ResourceType::kScript);
 }
 
 TEST_F(ResourceRequestDetectorTest, NoEventForNegativeSynchronousDbCheck) {
   const std::string url = "http://www.example.com/script.js";
   ExpectNegativeSyncDatabaseCheck(url);
-  ExpectNoIncident(url, content::ResourceType::kScript);
+  ExpectNoIncident(url, blink::mojom::ResourceType::kScript);
 }
 
 TEST_F(ResourceRequestDetectorTest, NoEventForNegativeAsynchronousDbCheck) {
   const std::string url = "http://www.example.com/script.js";
   ExpectAsyncDatabaseCheck(url, false, "");
-  ExpectNoIncident(url, content::ResourceType::kScript);
+  ExpectNoIncident(url, blink::mojom::ResourceType::kScript);
 }
 
 TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedSchemes) {
@@ -192,16 +191,16 @@ TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedSchemes) {
   for (const auto& scheme : schemes) {
     const std::string url = scheme + "://" + domain_path;
     ExpectAsyncDatabaseCheck(url, true, digest);
-    ExpectIncidentAdded(url, content::ResourceType::kScript,
+    ExpectIncidentAdded(url, blink::mojom::ResourceType::kScript,
                         ResourceRequestIncidentMessage::TYPE_PATTERN, digest);
   }
 }
 
 TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedResourceTypes) {
-  content::ResourceType supported_types[] = {
-      content::ResourceType::kScript,
-      content::ResourceType::kSubFrame,
-      content::ResourceType::kObject,
+  blink::mojom::ResourceType supported_types[] = {
+      blink::mojom::ResourceType::kScript,
+      blink::mojom::ResourceType::kSubFrame,
+      blink::mojom::ResourceType::kObject,
   };
   const std::string url = "http://www.example.com/";
   const std::string digest = "dummydigest";

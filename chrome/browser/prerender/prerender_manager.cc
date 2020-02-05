@@ -405,12 +405,6 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
     return nullptr;
   }
 
-  // Do not use the prerendered version if there is an opener object.
-  if (web_contents->HasOpener()) {
-    prerender_data->contents()->Destroy(FINAL_STATUS_WINDOW_OPENER);
-    return nullptr;
-  }
-
   DCHECK(prerender_data->contents()->prerendering_has_started());
 
   // At this point, we've determined that we will use the prerender.

@@ -62,8 +62,6 @@ class PerformanceManagerTabHelper
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void OnAudioStateChanged(bool audible) override;
   void DidFinishNavigation(
@@ -83,8 +81,7 @@ class PerformanceManagerTabHelper
 
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
-  // Retrieves the frame node associated with |render_frame_host|. Returns
-  // nullptr if none exist for that frame.
+  // Retrieves the frame node associated with |render_frame_host|.
   FrameNodeImpl* GetFrameNode(content::RenderFrameHost* render_frame_host);
 
   class Observer : public base::CheckedObserver {

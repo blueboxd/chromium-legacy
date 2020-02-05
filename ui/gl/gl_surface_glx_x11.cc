@@ -4,9 +4,10 @@
 
 #include "ui/gl/gl_surface_glx_x11.h"
 
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+
+using ui::X11EventSource;
 
 namespace gl {
 
@@ -18,27 +19,23 @@ GLSurfaceGLXX11::~GLSurfaceGLXX11() {
 }
 
 void GLSurfaceGLXX11::RegisterEvents() {
-  auto* event_source = ui::PlatformEventSource::GetInstance();
   // Can be null in tests, when we don't care about Exposes.
-  if (event_source) {
+  if (X11EventSource::HasInstance()) {
     XSelectInput(gfx::GetXDisplay(), window(), ExposureMask);
-    event_source->AddPlatformEventDispatcher(this);
+    X11EventSource::GetInstance()->AddXEventDispatcher(this);
   }
 }
 
 void GLSurfaceGLXX11::UnregisterEvents() {
-  auto* event_source = ui::PlatformEventSource::GetInstance();
-  if (event_source)
-    event_source->RemovePlatformEventDispatcher(this);
+  if (X11EventSource::HasInstance())
+    X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
-bool GLSurfaceGLXX11::CanDispatchEvent(const ui::PlatformEvent& event) {
-  return CanHandleEvent(event);
-}
-
-uint32_t GLSurfaceGLXX11::DispatchEvent(const ui::PlatformEvent& event) {
+bool GLSurfaceGLXX11::DispatchXEvent(XEvent* event) {
+  if (!CanHandleEvent(event))
+    return false;
   ForwardExposeEvent(event);
-  return ui::POST_DISPATCH_STOP_PROPAGATION;
+  return true;
 }
 
 }  // namespace gl

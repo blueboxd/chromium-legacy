@@ -62,14 +62,8 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
   MOCK_METHOD2(MaybeGetAppExtension,
                const Extension*(content::BrowserContext*, const std::string&));
-  // Note that DoEnableExtension takes |callback| as a reference.
-  void EnableExtension(Profile* profile,
-                       const std::string& app_id,
-                       base::OnceCallback<void()> callback) {
-    DoEnableExtension(profile, app_id, callback);
-  }
-  MOCK_METHOD3(DoEnableExtension,
-               void(Profile*, const std::string&, base::OnceCallback<void()>&));
+  MOCK_METHOD3(EnableExtension,
+               void(Profile*, const std::string&, base::OnceCallback<void()>));
   MOCK_METHOD3(LaunchApp,
                void(Profile*,
                     const Extension*,
@@ -616,7 +610,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
   // App not found.
   EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
-  EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
+  EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
   EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
   NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
@@ -629,7 +623,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
   EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
       .WillOnce(Return(static_cast<const Extension*>(NULL)))
       .WillRepeatedly(Return(extension_a_.get()));
-  EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
+  EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
   NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
 }
@@ -1123,7 +1117,7 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, FindProfileFromBadProfile) {
       .Times(1);
   EXPECT_CALL(*delegate_, LaunchApp(&profile_b_, extension_a_.get(), _))
       .Times(0);
-  EXPECT_CALL(*delegate_, DoEnableExtension(&profile_c_, kTestAppIdA, _))
+  EXPECT_CALL(*delegate_, EnableExtension(&profile_c_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
   NormalLaunch(bootstrap_ca_, nullptr);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccess,

@@ -35,7 +35,16 @@ import("java_sources.gni")
 import("static_initializers.gni")
 import("trichrome.gni")
 
-chrome_public_manifest_package = "org.chromium.chrome"
+declare_args() {
+  # Android package name to use when compiling the public chrome targets
+  # (chrome_modern_public_apk, monochrome_public_apk, etc. as well as the
+  # *_bundle variants). This is particularly useful when using
+  # monochrome_public_apk for WebView development, as the OS only accepts
+  # WebView providers which declare one of a handful of package names. See
+  # https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/build-instructions.md#Changing-package-name
+  # for details.
+  chrome_public_manifest_package = "org.chromium.chrome"
+}
 chrome_public_test_manifest_package = "org.chromium.chrome.tests"
 
 chrome_public_jinja_variables =
@@ -2449,8 +2458,7 @@ if (public_android_sdk) {
     # Having //clank present causes different flags because of how play services
     # is wired up.
     # The channel is required because manifest entries vary based on channel.
-    if (check_android_configuration && !enable_chrome_android_internal &&
-        android_channel == "stable") {
+    if (!enable_chrome_android_internal && android_channel == "stable") {
       verify_android_configuration = true
     }
   }
@@ -2635,8 +2643,8 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/feedback/ScreenshotTask.java",
     "java/src/org/chromium/chrome/browser/feedback/SystemInfoFeedbackSource.java",
     "java/src/org/chromium/chrome/browser/firstrun/FirstRunUtils.java",
+    "java/src/org/chromium/chrome/browser/flags/CachedFeatureFlags.java",
     "java/src/org/chromium/chrome/browser/flags/ChromeSessionState.java",
-    "java/src/org/chromium/chrome/browser/flags/FeatureUtilities.java",
     "java/src/org/chromium/chrome/browser/gesturenav/CompositorNavigationGlow.java",
     "java/src/org/chromium/chrome/browser/history/BrowsingHistoryBridge.java",
     "java/src/org/chromium/chrome/browser/history/HistoryDeletionBridge.java",

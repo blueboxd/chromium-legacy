@@ -1422,7 +1422,14 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
       *reason = RequestOutcome::TURNED_OFF_BY_ADMIN;
       return false;
     }
+
+// Only saved password reuse warnings are shown on Android, so other types of
+// password reuse events should be gated by extended reporting.
+#if defined(OS_ANDROID)
+    return extended_reporting_enabled;
+#else
     return true;
+#endif
   }
 
   // Password field on focus pinging is enabled for !incognito &&

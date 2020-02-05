@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "extensions/browser/quota_service.h"
 
 namespace extensions {
@@ -30,7 +31,8 @@ ExtensionFunction::ResponseAction PrintingSubmitJobFunction::Run() {
       api::printing::SubmitJob::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   PrintingAPIHandler::Get(browser_context())
-      ->SubmitJob(extension_id(), std::move(params),
+      ->SubmitJob(ChromeExtensionFunctionDetails(this).GetNativeWindowForUI(),
+                  extension_, std::move(params),
                   base::BindOnce(
                       &PrintingSubmitJobFunction::OnPrintJobSubmitted, this));
 

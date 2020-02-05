@@ -24,8 +24,10 @@ EXCEPTION_MODEL_TYPES = [
   'NIGORI',  # Model type string is 'encryption keys'.
   'SUPERVISED_USER_SETTINGS',  # Root tag and model type string replace
                                # 'Supervised' with 'Managed'
-  'SUPERVISED_USER_WHITELISTS'  # See previous.
-]
+  'SUPERVISED_USER_WHITELISTS',  # See previous.
+
+  # Deprecated types:
+  'DEPRECATED_EXPERIMENTS']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
 # are blacklisted in order to prevent prefix collision.

@@ -280,7 +280,7 @@ void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
 
 int64_t PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* context,
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
 
@@ -289,8 +289,8 @@ int64_t PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(
 
   int64_t total_size;
   base::Time last_modified_time;
-  GetOriginDetailsOnFileTaskRunner(context, url::Origin::Create(origin_url),
-                                   &total_size, &last_modified_time);
+  GetOriginDetailsOnFileTaskRunner(context, origin, &total_size,
+                                   &last_modified_time);
   return total_size;
 }
 

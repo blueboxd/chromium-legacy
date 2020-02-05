@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
@@ -57,6 +58,10 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -433,6 +438,14 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TabHelper::FromWebContents(target_contents.get())
       ->SetExtensionAppById(params.extension_app_id);
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  if (params.is_captive_portal_popup) {
+    DCHECK_EQ(WindowOpenDisposition::NEW_POPUP, params.disposition);
+    CaptivePortalTabHelper::FromWebContents(target_contents.get())
+        ->set_is_captive_portal_window();
+  }
 #endif
 
   return target_contents;

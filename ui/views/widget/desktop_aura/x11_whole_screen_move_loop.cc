@@ -29,6 +29,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 
@@ -60,10 +61,24 @@ X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() = default;
 void X11WholeScreenMoveLoop::DispatchMouseMovement() {
   if (!last_motion_in_screen_)
     return;
-  delegate_->OnMouseMovement(last_motion_in_screen_->location(),
+  delegate_->OnMouseMovement(last_motion_in_screen_->root_location(),
                              last_motion_in_screen_->flags(),
                              last_motion_in_screen_->time_stamp());
   last_motion_in_screen_.reset();
+}
+
+void X11WholeScreenMoveLoop::PostDispatchIfNeeded(const ui::MouseEvent& event) {
+  bool dispatch_mouse_event = !last_motion_in_screen_;
+  last_motion_in_screen_ = std::make_unique<ui::MouseEvent>(event);
+  if (dispatch_mouse_event) {
+    // Post a task to dispatch mouse movement event when control returns to the
+    // message loop. This allows smoother dragging since the events are
+    // dispatched without waiting for the drag widget updates.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&X11WholeScreenMoveLoop::DispatchMouseMovement,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,32 +95,14 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
   if (!in_move_loop_)
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
 
-  XEvent* xev = event;
-  ui::EventType type = ui::EventTypeFromNative(xev);
-  switch (type) {
+  switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED: {
-      bool dispatch_mouse_event = !last_motion_in_screen_.get();
-      last_motion_in_screen_.reset(
-          ui::EventFromNative(xev).release()->AsMouseEvent());
-      last_motion_in_screen_->set_location(
-          ui::EventSystemLocationFromNative(xev));
-      if (dispatch_mouse_event) {
-        // Post a task to dispatch mouse movement event when control returns to
-        // the message loop. This allows smoother dragging since the events are
-        // dispatched without waiting for the drag widget updates.
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&X11WholeScreenMoveLoop::DispatchMouseMovement,
-                           weak_factory_.GetWeakPtr()));
-      }
+      PostDispatchIfNeeded(*event->AsMouseEvent());
       return ui::POST_DISPATCH_NONE;
     }
     case ui::ET_MOUSE_RELEASED: {
-      int button = (xev->type == ButtonRelease)
-          ? xev->xbutton.button
-          : ui::EventButtonFromNative(xev);
-      if (button == Button1) {
+      if (event->AsMouseEvent()->IsLeftMouseButton()) {
         // Assume that drags are being done with the left mouse button. Only
         // break the drag if the left mouse button was released.
         DispatchMouseMovement();
@@ -121,7 +118,7 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
       return ui::POST_DISPATCH_NONE;
     }
     case ui::ET_KEY_PRESSED:
-      if (ui::KeyboardCodeFromXKeyEvent(xev) == ui::VKEY_ESCAPE) {
+      if (event->AsKeyEvent()->key_code() == ui::VKEY_ESCAPE) {
         canceled_ = true;
         EndMoveLoop();
         return ui::POST_DISPATCH_NONE;

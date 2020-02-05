@@ -352,7 +352,7 @@ bool SpatialNavigationController::Advance(
     // Currently this will fail if we're going from an inner document to a
     // sub-scroller in a parent document.
     if (auto* document = DynamicTo<Document>(container))
-      document->UpdateStyleAndLayout();
+      document->UpdateStyleAndLayout(DocumentUpdateReason::kSpatialNavigation);
   }
 
   return false;

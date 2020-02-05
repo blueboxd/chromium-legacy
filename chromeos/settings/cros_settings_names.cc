@@ -425,4 +425,15 @@ const char kDevicePowerwashAllowed[] = "cros.device.device_powerwash_allowed";
 // during SAML authentication.
 extern const char kDeviceWebBasedAttestationAllowedUrls[] =
     "cros.device.device_web_based_attestation_allowed_urls";
+
+// A dictionary containing parameters controlling the availability of
+// System-proxy service and the web proxy credentials for system services
+// connecting through System-proxy.
+const char kSystemProxySettings[] = "cros.system_proxy_settings";
+const char kSystemProxySettingsKeyEnabled[] = "system_proxy_enabled";
+const char kSystemProxySettingsKeySystemServicesUsername[] =
+    "system_services_username";
+const char kSystemProxySettingsKeySystemServicesPassword[] =
+    "system_services_password";
+
 }  // namespace chromeos

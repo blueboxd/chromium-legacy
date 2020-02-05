@@ -53,6 +53,11 @@ class IdentityManager;
 CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                   const std::string& email);
 
+// As above, but adds an "unconsented" primary account. See ./README.md for
+// the distinction between primary and unconsented primary accounts.
+CoreAccountInfo SetUnconsentedPrimaryAccount(IdentityManager* identity_manager,
+                                             const std::string& email);
+
 // Sets a refresh token for the primary account (which must already be set).
 // Blocks until the refresh token is set. If |token_value| is empty a default
 // value will be used instead.

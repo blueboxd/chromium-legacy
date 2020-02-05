@@ -53,6 +53,11 @@ class ServiceConnectionImpl : public ServiceConnection {
   void RunSmartctlCheckRoutine(
       mojom::CrosHealthdDiagnosticsService::RunSmartctlCheckRoutineCallback
           callback) override;
+  void RunAcPowerRoutine(
+      mojom::AcPowerStatusEnum expected_status,
+      const base::Optional<std::string>& expected_power_type,
+      mojom::CrosHealthdDiagnosticsService::RunAcPowerRoutineCallback callback)
+      override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -148,6 +153,16 @@ void ServiceConnectionImpl::RunSmartctlCheckRoutine(
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunSmartctlCheckRoutine(
       std::move(callback));
+}
+
+void ServiceConnectionImpl::RunAcPowerRoutine(
+    mojom::AcPowerStatusEnum expected_status,
+    const base::Optional<std::string>& expected_power_type,
+    mojom::CrosHealthdDiagnosticsService::RunAcPowerRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunAcPowerRoutine(
+      expected_status, expected_power_type, std::move(callback));
 }
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(

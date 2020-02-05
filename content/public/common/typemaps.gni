@@ -5,7 +5,6 @@
 typemaps = [
   "//content/public/common/browser_controls_state.typemap",
   "//content/public/common/drop_data.typemap",
-  "//content/public/common/resource_type.typemap",
   "//content/public/common/web_preferences.typemap",
   "//content/public/common/webplugininfo.typemap",
 ]

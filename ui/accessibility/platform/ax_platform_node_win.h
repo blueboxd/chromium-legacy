@@ -1241,9 +1241,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void AddAlertTarget();
   void RemoveAlertTarget();
 
-  // Return the text to use for IAccessibleText.
-  base::string16 TextForIAccessibleText();
-
   // Enum used to specify whether IAccessibleText is requesting text
   // At, Before, or After a specified offset.
   enum class TextOffsetType { kAtOffset, kBeforeOffset, kAfterOffset };

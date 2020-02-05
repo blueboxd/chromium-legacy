@@ -333,8 +333,9 @@ TEST_F(DataReductionProxySettingsAndroidTest,
 
 TEST_F(DataReductionProxySettingsAndroidTest,
        MaybeRewriteWebliteUrlWithHoldbackEnabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "DataCompressionProxyHoldback", "Enabled"));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      data_reduction_proxy::features::kDataReductionProxyHoldback);
 
   Init();
   drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
@@ -343,7 +344,7 @@ TEST_F(DataReductionProxySettingsAndroidTest,
             MaybeRewriteWebliteUrlAsUTF8(
                 "http://googleweblight.com/i?u=http://example.com/"));
 
-  // DataCompressionProxyHoldback should not affect https webpages.
+  // DataReductionProxyHoldback should not affect https webpages.
   EXPECT_EQ("https://example.com/",
             MaybeRewriteWebliteUrlAsUTF8(
                 "https://googleweblight.com/i?u=https://example.com/"));

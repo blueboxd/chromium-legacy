@@ -539,9 +539,9 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // |side_data_blob| is available to read and the request is destined
   // for a script.
   auto resource_type =
-      static_cast<content::ResourceType>(resource_request_.resource_type);
+      static_cast<blink::mojom::ResourceType>(resource_request_.resource_type);
   if (response->side_data_blob &&
-      resource_type == content::ResourceType::kScript) {
+      resource_type == blink::mojom::ResourceType::kScript) {
     side_data_as_blob_.Bind(std::move(response->side_data_blob->blob));
     side_data_as_blob_->ReadSideData(base::BindOnce(
         &ServiceWorkerSubresourceLoader::OnSideDataReadingComplete,

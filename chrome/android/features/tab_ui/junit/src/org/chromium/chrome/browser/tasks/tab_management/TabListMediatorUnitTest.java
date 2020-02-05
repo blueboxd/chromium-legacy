@@ -79,8 +79,8 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -210,6 +210,8 @@ public class TabListMediatorUnitTest {
     UrlUtilities.Natives mUrlUtilitiesJniMock;
     @Mock
     TabListMediator.TabGridAccessibilityHelper mTabGridAccessibilityHelper;
+    @Mock
+    TabListMediator.ItemAnimationStopper mItemAnimationStopper;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -245,8 +247,8 @@ public class TabListMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
 
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
-        FeatureUtilities.setStartSurfaceEnabledForTesting(false);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
+        CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE, TAB1_URL);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE, TAB2_URL);
         mViewHolder1 = prepareViewHolder(TAB1_ID, POSITION1);
@@ -317,7 +319,7 @@ public class TabListMediatorUnitTest {
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, false, null, null, mGridCardOnClickListenerProvider, null,
-                getClass().getSimpleName(), 0);
+                mItemAnimationStopper, getClass().getSimpleName(), 0);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
         ContextUtils.initApplicationContextForTests(mContext);
@@ -327,8 +329,8 @@ public class TabListMediatorUnitTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
-        FeatureUtilities.setStartSurfaceEnabledForTesting(null);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
     }
 
     @Test
@@ -602,6 +604,20 @@ public class TabListMediatorUnitTest {
                 prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL), false);
 
         assertThat(mModel.size(), equalTo(2));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
+    // clang-format off
+    public void tabClosure_ForceStopItemAnimationForStrip() {
+        // clang-format on
+        setUpForTabGroupOperation(TabListMediatorType.TAB_STRIP);
+
+        mMediatorTabModelObserver.willCloseTab(mTab2, false);
+
+        assertThat(mModel.size(), equalTo(1));
+        verify(mItemAnimationStopper).endItemAnimationForPosition(eq(1));
     }
 
     @Test
@@ -1861,12 +1877,19 @@ public class TabListMediatorUnitTest {
         TabListMediator.TabGridDialogHandler handler =
                 type == TabListMediatorType.TAB_GRID_DIALOG ? mTabGridDialogHandler : null;
         boolean actionOnRelatedTabs = type == TabListMediatorType.TAB_SWITCHER;
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        int uiType = 0;
+        if (type == TabListMediatorType.TAB_SWITCHER
+                || type == TabListMediatorType.TAB_GRID_DIALOG) {
+            uiType = TabProperties.UiType.CLOSABLE;
+        } else if (type == TabListMediatorType.TAB_STRIP) {
+            uiType = TabProperties.UiType.STRIP;
+        }
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
 
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, actionOnRelatedTabs, null, null, null, handler,
-                getClass().getSimpleName(), 0);
+                mItemAnimationStopper, getClass().getSimpleName(), uiType);
 
         // There are two TabModelObserver and two TabGroupModelFilter.Observer added when
         // initializing TabListMediator, one set from TabListMediator and the other from

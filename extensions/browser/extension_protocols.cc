@@ -44,7 +44,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/content_verifier.h"
@@ -82,6 +81,8 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/url_util.h"
 
 using content::BrowserContext;
@@ -169,7 +170,7 @@ bool ExtensionCanLoadInIncognito(bool is_main_frame,
 //
 // Called on the UI thread.
 bool AllowExtensionResourceLoad(const GURL& url,
-                                content::ResourceType resource_type,
+                                blink::mojom::ResourceType resource_type,
                                 ui::PageTransition page_transition,
                                 int child_id,
                                 bool is_incognito,
@@ -177,7 +178,8 @@ bool AllowExtensionResourceLoad(const GURL& url,
                                 bool extension_enabled_in_incognito,
                                 const ExtensionSet& extensions,
                                 const ProcessMap& process_map) {
-  const bool is_main_frame = resource_type == content::ResourceType::kMainFrame;
+  const bool is_main_frame =
+      resource_type == blink::mojom::ResourceType::kMainFrame;
   if (is_incognito &&
       !ExtensionCanLoadInIncognito(is_main_frame, extension,
                                    extension_enabled_in_incognito)) {
@@ -208,12 +210,12 @@ bool AllowExtensionResourceLoad(const GURL& url,
   // in browser process during update check when
   // ServiceWorkerImportedScriptUpdateCheck is enabled.
   if (child_id == -1 &&
-      (content::IsResourceTypeFrame(resource_type) ||
+      (blink::IsResourceTypeFrame(resource_type) ||
        (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
-        resource_type == content::ResourceType::kWorker) ||
-       resource_type == content::ResourceType::kSharedWorker ||
-       resource_type == content::ResourceType::kScript ||
-       resource_type == content::ResourceType::kServiceWorker)) {
+        resource_type == blink::mojom::ResourceType::kWorker) ||
+       resource_type == blink::mojom::ResourceType::kSharedWorker ||
+       resource_type == blink::mojom::ResourceType::kScript ||
+       resource_type == blink::mojom::ResourceType::kServiceWorker)) {
     return true;
   }
 
@@ -415,7 +417,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     if (!AllowExtensionResourceLoad(
             request.url,
-            static_cast<content::ResourceType>(request.resource_type),
+            static_cast<blink::mojom::ResourceType>(request.resource_type),
             static_cast<ui::PageTransition>(request.transition_type),
             render_process_id_, browser_context_->IsOffTheRecord(),
             extension.get(), incognito_enabled, enabled_extensions,

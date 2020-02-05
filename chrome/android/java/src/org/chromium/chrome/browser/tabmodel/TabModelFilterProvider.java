@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 
@@ -95,7 +95,7 @@ public class TabModelFilterProvider {
      * @return a {@link TabModelFilter}.
      */
     private TabModelFilter createTabModelFilter(TabModel model) {
-        if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
+        if (CachedFeatureFlags.isTabGroupsAndroidEnabled()) {
             TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
             if (tabManagementDelegate != null) {
                 return tabManagementDelegate.createTabGroupModelFilter(model);

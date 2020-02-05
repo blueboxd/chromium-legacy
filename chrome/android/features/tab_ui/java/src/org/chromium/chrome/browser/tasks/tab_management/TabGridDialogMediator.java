@@ -19,7 +19,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.Tab;
@@ -228,7 +228,7 @@ public class TabGridDialogMediator {
         // Setup toolbar button click listeners.
         setupToolbarClickHandlers();
 
-        if (FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+        if (CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) {
             // Setup toolbar edit text.
             setupToolbarEditText();
 

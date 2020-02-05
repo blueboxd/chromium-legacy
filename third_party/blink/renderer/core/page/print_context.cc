@@ -173,7 +173,7 @@ void PrintContext::EndPrintMode() {
 // static
 int PrintContext::PageNumberForElement(Element* element,
                                        const FloatSize& page_size_in_pixels) {
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
 
   LocalFrame* frame = element->GetDocument().GetFrame();
   FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
@@ -300,7 +300,7 @@ String PrintContext::PageSizeAndMarginsInPixels(LocalFrame* frame,
 // static
 int PrintContext::NumberOfPages(LocalFrame* frame,
                                 const FloatSize& page_size_in_pixels) {
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
 
   FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
   ScopedPrintContext print_context(frame);

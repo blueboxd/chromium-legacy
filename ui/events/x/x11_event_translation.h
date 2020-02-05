@@ -39,9 +39,6 @@ EVENTS_EXPORT std::unique_ptr<MouseWheelEvent> BuildMouseWheelEventFromXEvent(
 EVENTS_EXPORT std::unique_ptr<TouchEvent> BuildTouchEventFromXEvent(
     const XEvent& xev);
 
-EVENTS_EXPORT Event::Properties GetEventPropertiesFromXEvent(EventType type,
-                                                             const XEvent& xev);
-
 }  // namespace ui
 
 #endif  // UI_EVENTS_X_X11_EVENT_TRANSLATION_H_

@@ -30,6 +30,6 @@ selection_test(
     selection.setClipboardData('A<math>B<a style=display:block>C<title>D<a id="</title><svg><style>*{background:red}</style>">c');
     selection.document.execCommand('paste');
   },
-  '<div contenteditable>teA<br>C|<svg></svg>st</div>',
+  '<div contenteditable>teA<math>B</math>C|<svg></svg>st</div>',
   'Paste blocks SVG style injection');
 </script>

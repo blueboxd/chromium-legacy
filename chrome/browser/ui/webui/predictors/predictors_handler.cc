@@ -17,7 +17,6 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/resource_type.h"
 
 using predictors::AutocompleteActionPredictor;
 using predictors::ResourcePrefetchPredictor;

@@ -32,11 +32,10 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL {
  private:
   ~NativeViewGLSurfaceEGLX11() override;
 
-  EGLNativeWindowType parent_window_;
+  // XEventDispatcher:
+  bool DispatchXEvent(XEvent* xev) override;
 
-  // PlatformEventDispatcher implementation.
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  EGLNativeWindowType parent_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGLX11);
 };

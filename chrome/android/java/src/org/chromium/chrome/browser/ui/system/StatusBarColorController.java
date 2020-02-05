@@ -20,8 +20,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -254,7 +254,7 @@ public class StatusBarColorController
                     || (!ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                             && !DeviceClassManager.enableAccessibilityLayout()
-                            && !FeatureUtilities.isGridTabSwitcherEnabled())) {
+                            && !CachedFeatureFlags.isGridTabSwitcherEnabled())) {
                 return mStandardPrimaryBgColor;
             }
 

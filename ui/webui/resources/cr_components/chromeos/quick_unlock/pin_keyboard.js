@@ -215,18 +215,28 @@ Polymer({
   },
 
   /**
+   * Schedules a call to focusInputSynchronously().
+   * @param {number=} opt_selectionStart
+   * @param {number=} opt_selectionEnd
+   */
+  focusInput(opt_selectionStart, opt_selectionEnd) {
+    setTimeout(
+        () =>
+            this.focusInputSynchronously(opt_selectionStart, opt_selectionEnd),
+        0);
+  },
+
+  /**
    * Transfers focus to the input element. This should not bring up the virtual
    * keyboard, if it is enabled. After focus, moves the caret to the correct
    * location if specified.
    * @param {number=} opt_selectionStart
    * @param {number=} opt_selectionEnd
    */
-  focusInput(opt_selectionStart, opt_selectionEnd) {
-    setTimeout(function() {
-      this.passwordElement_().focus();
-      this.selectionStart_ = opt_selectionStart || 0;
-      this.selectionEnd_ = opt_selectionEnd || 0;
-    }.bind(this), 0);
+  focusInputSynchronously(opt_selectionStart, opt_selectionEnd) {
+    this.passwordElement_().focus();
+    this.selectionStart_ = opt_selectionStart || 0;
+    this.selectionEnd_ = opt_selectionEnd || 0;
   },
 
   /**

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace blink {
 
@@ -436,8 +437,21 @@ int ScreenshotTool::GetDataResourceId() {
 }
 
 void ScreenshotTool::Dispatch(const String& message) {
+  if (message.IsEmpty())
+    return;
+  std::vector<uint8_t> cbor;
+  if (message.Is8Bit()) {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint8_t>(message.Characters8(), message.length()), &cbor);
+  } else {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint16_t>(
+            reinterpret_cast<const uint16_t*>(message.Characters16()),
+            message.length()),
+        &cbor);
+  }
   std::unique_ptr<protocol::Value> value =
-      protocol::StringUtil::parseJSON(message);
+      protocol::Value::parseBinary(cbor.data(), cbor.size());
   if (!value)
     return;
   protocol::ErrorSupport errors;

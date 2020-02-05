@@ -14,6 +14,7 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
+#include "chrome/services/sharing/public/cpp/sharing_webrtc_metrics.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -90,26 +91,34 @@ void SharingWebRtcConnectionHost::OnMessageDecrypted(
     gcm::GCMDecryptionResult result,
     std::string message) {
   chrome_browser_sharing::WebRtcMessage sharing_message;
-  if (result != gcm::GCMDecryptionResult::DECRYPTED_DRAFT_08 ||
-      !sharing_message.ParseFromString(message)) {
-    // TODO(crbug.com/1021984): replace this with UMA metrics
-    LOG(ERROR) << "Could not parse Sharing message received via WebRTC!";
+  if (result != gcm::GCMDecryptionResult::DECRYPTED_DRAFT_08) {
+    LogSharingWebRtcOnMessageReceivedResult(
+        sharing::WebRtcOnMessageReceivedResult::kDecryptionFailed);
+    return;
+  }
+
+  if (!sharing_message.ParseFromString(message)) {
+    LogSharingWebRtcOnMessageReceivedResult(
+        sharing::WebRtcOnMessageReceivedResult::kParseFailed);
     return;
   }
 
   auto payload_case = sharing_message.message().payload_case();
   if (!IsValidSharingWebRtcPayloadCase(payload_case)) {
-    // TODO(crbug.com/1021984): replace this with UMA metrics
-    LOG(ERROR) << "Unexpected payload case from WebRTC: " << payload_case;
+    LogSharingWebRtcOnMessageReceivedResult(
+        sharing::WebRtcOnMessageReceivedResult::kInvalidPayload);
     return;
   }
 
   auto* handler = handler_registry_->GetSharingHandler(payload_case);
   if (!handler) {
-    // TODO(crbug.com/1021984): replace this with UMA metrics
-    LOG(ERROR) << "No sharing handler for payload_case " << payload_case;
+    LogSharingWebRtcOnMessageReceivedResult(
+        sharing::WebRtcOnMessageReceivedResult::kHandlerNotFound);
     return;
   }
+
+  LogSharingWebRtcOnMessageReceivedResult(
+      sharing::WebRtcOnMessageReceivedResult::kSuccess);
 
   timeout_state_ = sharing::WebRtcTimeoutState::kMessageReceived;
   timeout_timer_.Reset();

@@ -7,14 +7,13 @@
 
 #include <array>
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "base/version.h"
-#include "build/build_config.h"
+#include "chrome/browser/upgrade_detector/build_state_observer.h"
+#include "chrome/browser/upgrade_detector/installed_version_poller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/variations/service/variations_service.h"
 
@@ -22,17 +21,14 @@ namespace base {
 class Clock;
 template <typename T>
 class NoDestructor;
-class SequencedTaskRunner;
-class TaskRunner;
 class TickClock;
 }  // namespace base
 
 // This class contains the non-CrOS desktop implementation of the detector.
 class UpgradeDetectorImpl : public UpgradeDetector,
+                            public BuildStateObserver,
                             public variations::VariationsService::Observer {
  public:
-  ~UpgradeDetectorImpl() override;
-
   // Returns the currently installed Chrome version, which may be newer than the
   // one currently running. Not supported on Android, iOS or ChromeOS. Must be
   // run on a thread where I/O operations are allowed.
@@ -42,12 +38,18 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   static UpgradeDetectorImpl* GetInstance();
 
   // UpgradeDetector:
+  void Init() override;
+  void Shutdown() override;
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
   base::Time GetHighAnnoyanceDeadline() override;
+
+  // BuildStateObserver:
+  void OnUpdate(const BuildState* build_state) override;
 
  protected:
   UpgradeDetectorImpl(const base::Clock* clock,
                       const base::TickClock* tick_clock);
+  ~UpgradeDetectorImpl() override;
 
   // Sends out a notification and starts a one shot timer to wait until
   // notifying the user.
@@ -74,9 +76,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
 
   friend class base::NoDestructor<UpgradeDetectorImpl>;
 
-  // A callback that receives the results of |DetectUpgradeTask|.
-  using UpgradeDetectedCallback = base::OnceCallback<void(UpgradeAvailable)>;
-
   // Returns the index of |level| in |stages_|.
   static LevelIndex AnnoyanceLevelToStagesIndex(
       UpgradeNotificationAnnoyanceLevel level);
@@ -88,18 +87,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // UpgradeDetector:
   void OnRelaunchNotificationPeriodPrefChanged() override;
 
-#if defined(OS_WIN)
-  // Receives the results of AreAutoupdatesEnabled and starts the upgrade check
-  // timer.
-  void OnAutoupdatesEnabledResult(bool auto_updates_enabled);
-#endif
-
-  // Start the timer that will call |CheckForUpgrade()|.
-  void StartTimerForUpgradeCheck();
-
-  // Launches a background task to check if we have the latest version.
-  void CheckForUpgrade();
-
   // Starts the upgrade notification timer that will check periodically whether
   // enough time has elapsed to update the severity (which maps to visual
   // badging) of the notification.
@@ -109,27 +96,20 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   void InitializeThresholds();
   void DoInitializeThresholds();
 
-  // Returns true after calling UpgradeDetected if current install is outdated.
-  bool DetectOutdatedInstall();
+  void StartOutdatedBuildDetector();
+  void DetectOutdatedInstall();
 
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the
   // user that a new version is available.
   void NotifyOnUpgrade();
 
-  // Determines whether or not an update is available, posting |callback| with
-  // the result to |callback_task_runner| if so.
-  static void DetectUpgradeTask(
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      UpgradeDetectedCallback callback);
-
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // A sequenced task runner on which blocking tasks run.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  base::Optional<InstalledVersionPoller> installed_version_poller_;
 
-  // We periodically check to see if Chrome has been upgraded.
-  base::RepeatingTimer detect_upgrade_timer_;
+  // A timer used to periodically check if the build has become outdated.
+  base::OneShotTimer outdated_build_timer_;
 
   // A timer used to move through the various upgrade notification stages and
   // schedule calls to NotifyUpgrade.
@@ -152,9 +132,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // The date the binaries were built.
   base::Time build_date_;
 
-  // We use this factory to create callback tasks for UpgradeDetected. We pass
-  // the task to the actual upgrade detection code, which is in
-  // DetectUpgradeTask.
   base::WeakPtrFactory<UpgradeDetectorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImpl);

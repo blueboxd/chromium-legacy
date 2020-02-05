@@ -66,8 +66,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -100,8 +100,8 @@ public class TabGridDialogTest {
 
     @Before
     public void setUp() {
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
@@ -113,8 +113,8 @@ public class TabGridDialogTest {
 
     @After
     public void tearDown() {
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test
@@ -366,7 +366,7 @@ public class TabGridDialogTest {
     }
 
     private void verifyTabGroupsContinuation(ChromeTabbedActivity cta, boolean isEnabled) {
-        assertEquals(isEnabled, FeatureUtilities.isTabGroupsAndroidContinuationEnabled());
+        assertEquals(isEnabled, CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled());
 
         // Verify whether the menu button exists.
         onView(withId(R.id.toolbar_menu_button))

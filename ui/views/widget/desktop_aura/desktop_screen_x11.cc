@@ -15,8 +15,6 @@
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/util/display_util.h"
-#include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/native_widget_types.h"
@@ -55,15 +53,15 @@ DesktopScreenX11::~DesktopScreenX11() {
   if (auto* linux_ui = views::LinuxUI::instance())
     linux_ui->RemoveDeviceScaleFactorObserver(this);
   if (x11_display_manager_->IsXrandrAvailable() &&
-      ui::PlatformEventSource::GetInstance()) {
-    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+      ui::X11EventSource::HasInstance()) {
+    ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
   }
 }
 
 void DesktopScreenX11::Init() {
   if (x11_display_manager_->IsXrandrAvailable() &&
-      ui::PlatformEventSource::GetInstance()) {
-    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+      ui::X11EventSource::HasInstance()) {
+    ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
   }
   x11_display_manager_->Init();
 }
@@ -158,13 +156,10 @@ void DesktopScreenX11::RemoveObserver(display::DisplayObserver* observer) {
   x11_display_manager_->RemoveObserver(observer);
 }
 
-bool DesktopScreenX11::CanDispatchEvent(const ui::PlatformEvent& event) {
-  return x11_display_manager_->CanProcessEvent(*event);
-}
-
-uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
-  ignore_result(x11_display_manager_->ProcessEvent(event));
-  return ui::POST_DISPATCH_NONE;
+bool DesktopScreenX11::DispatchXEvent(XEvent* event) {
+  if (!x11_display_manager_->CanProcessEvent(*event))
+    return false;
+  return x11_display_manager_->ProcessEvent(event);
 }
 
 void DesktopScreenX11::OnDeviceScaleFactorChanged() {

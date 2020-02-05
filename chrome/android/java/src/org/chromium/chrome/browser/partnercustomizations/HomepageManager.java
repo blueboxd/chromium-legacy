@@ -10,8 +10,8 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -212,7 +212,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      * Get the homepage button preference state.
      */
     public static void recordHomeButtonPreferenceState() {
-        if (!FeatureUtilities.isEnabled(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)) {
+        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)) {
             RecordHistogram.recordBooleanHistogram(
                     "Settings.ShowHomeButtonPreferenceState", HomepageManager.isHomepageEnabled());
             return;

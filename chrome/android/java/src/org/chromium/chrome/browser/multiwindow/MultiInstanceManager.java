@@ -21,7 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -147,7 +147,7 @@ public class MultiInstanceManager
 
     @Override
     public void onResumeWithNative() {
-        if (FeatureUtilities.isTabModelMergingEnabled()) {
+        if (CachedFeatureFlags.isTabModelMergingEnabled()) {
             boolean inMultiWindowMode = mMultiWindowModeStateDispatcher.isInMultiWindowMode()
                     || mMultiWindowModeStateDispatcher.isInMultiDisplayMode();
             // Don't need to merge tabs when mMergeTabsOnResume is null (cold start) since they get
@@ -169,7 +169,7 @@ public class MultiInstanceManager
 
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
-        if (!FeatureUtilities.isTabModelMergingEnabled() || !mNativeInitialized) {
+        if (!CachedFeatureFlags.isTabModelMergingEnabled() || !mNativeInitialized) {
             return;
         }
 
@@ -234,7 +234,7 @@ public class MultiInstanceManager
     }
 
     private void killOtherTask() {
-        if (!FeatureUtilities.isTabModelMergingEnabled()) return;
+        if (!CachedFeatureFlags.isTabModelMergingEnabled()) return;
 
         Class<?> otherWindowActivityClass =
                 mMultiWindowModeStateDispatcher.getOpenInOtherWindowActivity();
@@ -283,7 +283,7 @@ public class MultiInstanceManager
      */
     @VisibleForTesting
     public void maybeMergeTabs() {
-        if (!FeatureUtilities.isTabModelMergingEnabled()) return;
+        if (!CachedFeatureFlags.isTabModelMergingEnabled()) return;
 
         killOtherTask();
         RecordUserAction.record("Android.MergeState.Live");
@@ -296,7 +296,7 @@ public class MultiInstanceManager
 
     @SuppressLint("NewApi")
     private boolean isMergedInstanceTaskRunning() {
-        if (!FeatureUtilities.isTabModelMergingEnabled() || sMergedInstanceTaskId == 0) {
+        if (!CachedFeatureFlags.isTabModelMergingEnabled() || sMergedInstanceTaskId == 0) {
             return false;
         }
 

@@ -455,9 +455,9 @@ void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
     return;
 
   // It is illegal to call this method without having first cached screen
-  // context (see CacheScreenContext()).
-  DCHECK(assistant_extra_);
-  DCHECK(assistant_tree_);
+  // context (see CacheScreenContext()). |assistant_extra_| and
+  // |assistant_tree_| could be nullptr if there is no active browser or ARC.
+  // window.
   DCHECK(!assistant_screenshot_.empty());
 
   SendScreenContextRequest(assistant_extra_.get(), assistant_tree_.get(),

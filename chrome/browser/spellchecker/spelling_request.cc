@@ -26,7 +26,8 @@ bool CompareLocation(const SpellCheckResult& r1, const SpellCheckResult& r2) {
 
 }  // namespace
 
-SpellingRequest::SpellingRequest(SpellingServiceClient* client,
+SpellingRequest::SpellingRequest(PlatformSpellChecker* platform_spell_checker,
+                                 SpellingServiceClient* client,
                                  const base::string16& text,
                                  int render_process_id,
                                  int document_tag,
@@ -43,7 +44,7 @@ SpellingRequest::SpellingRequest(SpellingServiceClient* client,
       BarrierClosure(2, base::BindOnce(&SpellingRequest::OnCheckCompleted,
                                        weak_factory_.GetWeakPtr()));
   RequestRemoteCheck(client, render_process_id);
-  RequestLocalCheck(document_tag);
+  RequestLocalCheck(platform_spell_checker, document_tag);
 }
 
 SpellingRequest::~SpellingRequest() = default;
@@ -89,10 +90,12 @@ void SpellingRequest::RequestRemoteCheck(SpellingServiceClient* client,
                      weak_factory_.GetWeakPtr()));
 }
 
-void SpellingRequest::RequestLocalCheck(int document_tag) {
+void SpellingRequest::RequestLocalCheck(
+    PlatformSpellChecker* platform_spell_checker,
+    int document_tag) {
   // |this| may be gone at callback invocation if the owner has been removed.
   spellcheck_platform::RequestTextCheck(
-      document_tag, text_,
+      platform_spell_checker, document_tag, text_,
       base::BindOnce(&SpellingRequest::OnLocalCheckCompletedOnAnyThread,
                      weak_factory_.GetWeakPtr()));
 }

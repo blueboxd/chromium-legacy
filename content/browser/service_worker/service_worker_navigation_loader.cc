@@ -120,7 +120,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "url", resource_request.url.spec());
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
-      static_cast<ResourceType>(resource_request.resource_type)));
+      static_cast<blink::mojom::ResourceType>(resource_request.resource_type)));
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   resource_request_ = resource_request;
@@ -164,7 +164,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       blink::mojom::FetchAPIRequest::From(resource_request_),
-      static_cast<ResourceType>(resource_request_.resource_type),
+      static_cast<blink::mojom::ResourceType>(resource_request_.resource_type),
       container_host_->client_uuid(), active_worker,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(), active_worker,
@@ -472,7 +472,7 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
 
   // We only record these metrics for top-level navigation.
   if (resource_request_.resource_type !=
-      static_cast<int>(ResourceType::kMainFrame))
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame))
     return;
 
   // |fetch_event_timing_| is recorded in renderer so we can get reasonable

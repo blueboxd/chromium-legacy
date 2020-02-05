@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/base/decryptor.h"
@@ -59,6 +61,9 @@ class FuchsiaDecryptor : public Decryptor {
   NewKeyCB new_key_cb_ GUARDED_BY(new_key_cb_lock_);
 
   std::unique_ptr<FuchsiaClearStreamDecryptor> audio_decryptor_;
+
+  // TaskRunner for the thread on which |audio_decryptor_| was created.
+  scoped_refptr<base::SingleThreadTaskRunner> audio_decryptor_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaDecryptor);
 };

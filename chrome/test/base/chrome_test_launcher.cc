@@ -61,6 +61,7 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
+#include "chrome/browser/upgrade_detector/installed_version_poller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #endif
 
@@ -76,6 +77,11 @@ int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
 #if defined(OS_ANDROID)
   // Android browser tests run child processes as threads instead.
   content::ContentTestSuiteBase::RegisterInProcessThreads();
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  InstalledVersionPoller::ScopedDisableForTesting disable_polling(
+      InstalledVersionPoller::MakeScopedDisableForTesting());
 #endif
   return test_suite.Run();
 }

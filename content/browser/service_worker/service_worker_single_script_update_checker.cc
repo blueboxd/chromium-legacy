@@ -19,7 +19,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
@@ -27,6 +26,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -177,7 +177,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     resource_request.destination =
         network::mojom::RequestDestination::kServiceWorker;
     resource_request.resource_type =
-        static_cast<int>(ResourceType::kServiceWorker);
+        static_cast<int>(blink::mojom::ResourceType::kServiceWorker);
 
     // Request SSLInfo. It will be persisted in service worker storage and
     // may be used by ServiceWorkerNavigationLoader for navigations handled
@@ -197,7 +197,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     resource_request.fetch_request_context_type =
         static_cast<int>(blink::mojom::RequestContextType::SCRIPT);
     resource_request.destination = network::mojom::RequestDestination::kScript;
-    resource_request.resource_type = static_cast<int>(ResourceType::kScript);
+    resource_request.resource_type =
+        static_cast<int>(blink::mojom::ResourceType::kScript);
   }
 
   // Upgrade the request to an a priori authenticated URL, if appropriate.

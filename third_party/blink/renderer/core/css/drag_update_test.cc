@@ -58,11 +58,11 @@ TEST(DragUpdateTest, ChildAffectedByDragUpdate) {
     </div>
   )HTML");
 
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   unsigned start_count = document.GetStyleEngine().StyleForElementCount();
 
   document.getElementById("div")->SetDragged(true);
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   unsigned element_count =
       document.GetStyleEngine().StyleForElementCount() - start_count;
@@ -88,11 +88,11 @@ TEST(DragUpdateTest, SiblingAffectedByDragUpdate) {
     <span class='drag'></span>
   )HTML");
 
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   unsigned start_count = document.GetStyleEngine().StyleForElementCount();
 
   document.getElementById("div")->SetDragged(true);
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   unsigned element_count =
       document.GetStyleEngine().StyleForElementCount() - start_count;

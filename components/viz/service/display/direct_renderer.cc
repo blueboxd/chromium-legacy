@@ -352,10 +352,16 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane =
         nullptr;
     if (output_surface_->IsDisplayedAsOverlayPlane()) {
+      // OutputSurface::GetOverlayMailbox() returns the mailbox for the last
+      // used buffer, which is most likely different from the one being used
+      // this frame. However, for the purpose of testing the overlay
+      // configuration, the mailbox for ANY buffer from BufferQueue is good
+      // enough because they're all created with identical properties.
       current_frame()->output_surface_plane =
           overlay_processor_->ProcessOutputSurfaceAsOverlay(
               device_viewport_size, output_surface_->GetOverlayBufferFormat(),
-              reshape_device_color_space_, reshape_has_alpha_);
+              reshape_device_color_space_, reshape_has_alpha_,
+              output_surface_->GetOverlayMailbox());
       primary_plane = &(current_frame()->output_surface_plane.value());
     }
 

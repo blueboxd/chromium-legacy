@@ -24,7 +24,6 @@
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/common/resource_type.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "url/origin.h"
 

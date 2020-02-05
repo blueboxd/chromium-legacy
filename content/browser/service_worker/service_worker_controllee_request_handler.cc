@@ -28,6 +28,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -65,7 +66,7 @@ bool ShouldFallbackToLoadOfflinePage(
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerContainerHost> container_host,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     bool skip_service_worker)
     : context_(std::move(context)),
       container_host_(std::move(container_host)),
@@ -94,7 +95,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
 
   // For navigations, the update logic is taken care of
   // during navigation and waits for the HintToUpdateServiceWorker message.
-  if (IsResourceTypeFrame(resource_type_))
+  if (blink::IsResourceTypeFrame(resource_type_))
     return;
 
   // For shared workers. The renderer doesn't yet send a
@@ -441,9 +442,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
       active_version->site_for_uma(),
-      resource_type_ == ResourceType::kMainFrame);
+      resource_type_ == blink::mojom::ResourceType::kMainFrame);
 
-  if (IsResourceTypeFrame(resource_type_))
+  if (blink::IsResourceTypeFrame(resource_type_))
     container_host_->AddServiceWorkerToUpdate(active_version);
 
   if (active_version->fetch_handler_existence() !=

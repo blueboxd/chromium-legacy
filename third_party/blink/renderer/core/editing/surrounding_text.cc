@@ -42,7 +42,7 @@ namespace {
 EphemeralRange ComputeRangeFromFrameSelection(LocalFrame* frame) {
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   return frame->Selection()
       .ComputeVisibleSelectionInDOMTree()

@@ -60,7 +60,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     network::ResourceRequest resource_request;
     resource_request.url = script_url_;
     resource_request.resource_type =
-        static_cast<int>(ResourceType::kServiceWorker);
+        static_cast<int>(blink::mojom::ResourceType::kServiceWorker);
     factory_->CreateLoaderAndStart(
         loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
         0 /* request_id */, network::mojom::kURLLoadOptionNone,

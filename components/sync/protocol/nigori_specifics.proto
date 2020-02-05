@@ -16,7 +16,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "encryption.proto";
+import "components/sync/protocol/encryption.proto";
 
 message NigoriKey {
   // Note that M78 and before rely on the name being populated, at least for

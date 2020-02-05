@@ -15,7 +15,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -53,7 +53,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         mParentLayout = new TabGridDialogParent(context, containerView);
 
         TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
-        if (FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+        if (CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) {
             mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
                     context, containerView, tabModelSelector, tabContentManager, mParentLayout);
 
@@ -69,7 +69,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         // TODO(crbug.com/1031349) : Remove the inline mode logic here, make the constructor to take
         // in a mode parameter instead.
         mTabListCoordinator = new TabListCoordinator(
-                FeatureUtilities.isTabGroupsAndroidContinuationEnabled()
+                CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()
                                 && SysUtils.isLowEndDevice()
                         ? TabListCoordinator.TabListMode.LIST
                         : TabListCoordinator.TabListMode.GRID,

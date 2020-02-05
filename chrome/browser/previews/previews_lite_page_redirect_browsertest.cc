@@ -864,19 +864,21 @@ class BasePreviewsLitePageRedirectServerBrowserTest
 
   // net::test_server::EmbeddedTestServerConnectionListener:
   void ReadFromSocket(const net::StreamSocket& socket, int rv) override {}
-  void AcceptedSocket(const net::StreamSocket& socket) override {
+  std::unique_ptr<net::StreamSocket> AcceptedSocket(
+      std::unique_ptr<net::StreamSocket> socket) override {
     // AcceptedSocket is called every time there is a new HTTP request/response
     // on a socket, even if the socket is being reused. So instead of
     // incrementing a counter, keep track of the addresses of the socket in use.
     net::IPEndPoint server_end_point;
-    socket.GetLocalAddress(&server_end_point);
+    socket->GetLocalAddress(&server_end_point);
 
     net::IPEndPoint remote_end_point;
-    socket.GetPeerAddress(&remote_end_point);
+    socket->GetPeerAddress(&remote_end_point);
 
     std::string unique_socket_id =
         server_end_point.ToString() + remote_end_point.ToString();
     previews_server_connections_.insert(unique_socket_id);
+    return socket;
   }
 
   base::Optional<base::test::ScopedFeatureList>

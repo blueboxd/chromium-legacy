@@ -92,12 +92,14 @@ void SVGTextContentElement::Trace(blink::Visitor* visitor) {
 }
 
 unsigned SVGTextContentElement::getNumberOfChars() {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
   return SVGTextQuery(GetLayoutObject()).NumberOfCharacters();
 }
 
 float SVGTextContentElement::getComputedTextLength() {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
   return SVGTextQuery(GetLayoutObject()).TextLength();
 }
 
@@ -105,7 +107,8 @@ float SVGTextContentElement::getSubStringLength(
     unsigned charnum,
     unsigned nchars,
     ExceptionState& exception_state) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   unsigned number_of_chars = getNumberOfChars();
   if (charnum >= number_of_chars) {
@@ -125,7 +128,8 @@ float SVGTextContentElement::getSubStringLength(
 SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(
     unsigned charnum,
     ExceptionState& exception_state) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
@@ -143,7 +147,8 @@ SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(
 SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(
     unsigned charnum,
     ExceptionState& exception_state) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
@@ -161,7 +166,8 @@ SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(
 SVGRectTearOff* SVGTextContentElement::getExtentOfChar(
     unsigned charnum,
     ExceptionState& exception_state) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
@@ -178,7 +184,8 @@ SVGRectTearOff* SVGTextContentElement::getExtentOfChar(
 float SVGTextContentElement::getRotationOfChar(
     unsigned charnum,
     ExceptionState& exception_state) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
@@ -194,7 +201,8 @@ float SVGTextContentElement::getRotationOfChar(
 int SVGTextContentElement::getCharNumAtPosition(
     SVGPointTearOff* point,
     ExceptionState& exception_state) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
   return SVGTextQuery(GetLayoutObject())
       .CharacterNumberAtPosition(point->Target()->Value());
 }

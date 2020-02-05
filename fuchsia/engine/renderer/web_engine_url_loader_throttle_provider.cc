@@ -29,7 +29,7 @@ std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 WebEngineURLLoaderThrottleProvider::CreateThrottles(
     int render_frame_id,
     const blink::WebURLRequest& request,
-    content::ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;

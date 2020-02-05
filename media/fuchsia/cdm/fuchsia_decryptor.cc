@@ -5,7 +5,9 @@
 #include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
@@ -18,7 +20,12 @@ FuchsiaDecryptor::FuchsiaDecryptor(
   DCHECK(cdm_);
 }
 
-FuchsiaDecryptor::~FuchsiaDecryptor() = default;
+FuchsiaDecryptor::~FuchsiaDecryptor() {
+  if (audio_decryptor_) {
+    audio_decryptor_task_runner_->DeleteSoon(FROM_HERE,
+                                             std::move(audio_decryptor_));
+  }
+}
 
 void FuchsiaDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                         const NewKeyCB& new_key_cb) {
@@ -37,8 +44,10 @@ void FuchsiaDecryptor::Decrypt(StreamType stream_type,
     return;
   }
 
-  if (!audio_decryptor_)
+  if (!audio_decryptor_) {
+    audio_decryptor_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     audio_decryptor_ = FuchsiaClearStreamDecryptor::Create(cdm_);
+  }
 
   audio_decryptor_->Decrypt(std::move(encrypted), decrypt_cb);
 }

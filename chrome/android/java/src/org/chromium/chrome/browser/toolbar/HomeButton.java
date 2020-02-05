@@ -26,8 +26,8 @@ import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -227,7 +227,7 @@ public class HomeButton extends ChromeImageButton
     }
 
     private void updateContextMenuListener() {
-        if (!FeatureUtilities.isBottomToolbarEnabled() && !isManagedByPolicy()) {
+        if (!CachedFeatureFlags.isBottomToolbarEnabled() && !isManagedByPolicy()) {
             setOnCreateContextMenuListener(this);
         } else {
             setOnCreateContextMenuListener(null);

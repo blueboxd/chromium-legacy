@@ -86,7 +86,7 @@
         android:order="15"
         android:title="@string/language_settings"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment"
+        android:fragment="org.chromium.chrome.browser.datareduction.settings.DataReductionPreferenceFragment"
         android:key="data_reduction"
         android:order="16"
         android:title="@string/data_reduction_title_lite_mode"/>

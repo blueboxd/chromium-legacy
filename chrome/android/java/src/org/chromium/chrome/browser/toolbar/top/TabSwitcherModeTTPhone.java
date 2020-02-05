@@ -19,8 +19,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -138,7 +138,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // TODO(twellington): Handle interrupted animations to avoid jumps to 1.0 or 0.f.
         setAlpha(inTabSwitcherMode ? 0.0f : 1.0f);
 
-        boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
+        boolean showZoomingAnimation = CachedFeatureFlags.isGridTabSwitcherEnabled()
                 && TabFeatureUtilities.isTabToGtsAnimationEnabled();
         long duration = showZoomingAnimation
                 ? ToolbarManager.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
@@ -273,7 +273,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
      */
     void onBottomToolbarVisibilityChanged(boolean isVisible) {
         mShouldShowNewTabButton = !isVisible
-                || (FeatureUtilities.isBottomToolbarEnabled()
+                || (CachedFeatureFlags.isBottomToolbarEnabled()
                         && !BottomToolbarVariationManager.isNewTabButtonOnBottom());
         setNewTabButtonVisibility(mShouldShowNewTabButton);
         // show tab switcher button on the top in landscape mode.
@@ -343,7 +343,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private int getToolbarColorForCurrentState() {
         // TODO(huayinz): Split tab switcher background color from primary background color.
         if (DeviceClassManager.enableAccessibilityLayout()
-                || FeatureUtilities.isGridTabSwitcherEnabled()) {
+                || CachedFeatureFlags.isGridTabSwitcherEnabled()) {
             return ChromeColors.getPrimaryBackgroundColor(getResources(), mIsIncognito);
         }
 
@@ -375,7 +375,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // If StartSurface is enabled, the incognito switch is shown and handled
         // by the IncognitoSwitchCoordinator in the
         // TabSwitcherModeTTCoordinatorPhone.
-        if (FeatureUtilities.isStartSurfaceEnabled()) return;
+        if (CachedFeatureFlags.isStartSurfaceEnabled()) return;
 
         if (mIncognitoToggleTabLayout == null) {
             if (showIncognitoToggle) inflateIncognitoToggle();
@@ -399,13 +399,13 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
      *         and incognito status.
      */
     private boolean shouldShowIncognitoToggle() {
-        return (usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
+        return (usingHorizontalTabSwitcher() || CachedFeatureFlags.isGridTabSwitcherEnabled())
                 && IncognitoUtils.isIncognitoModeEnabled();
     }
 
     private void updateIncognitoToggleTabsVisibility() {
         // TODO(yuezhanggg): Add a regression test for this "New Tab" variation. (crbug: 977546)
-        if (!FeatureUtilities.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
+        if (!CachedFeatureFlags.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
                 || !ChromeFeatureList
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                     "tab_grid_layout_android_new_tab")

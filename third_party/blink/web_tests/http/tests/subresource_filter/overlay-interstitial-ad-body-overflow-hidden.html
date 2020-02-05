@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+if (window.testRunner) {
+  // Inject a subresource filter to mark 'overlay-interstitial-ad-testharness.js' as a would be disallowed resource.
+  testRunner.setDisallowedSubresourcePathSuffixes(["overlay-interstitial-ad-testharness.js"], false /* block_subresources */);
+}
+
+async_test(t => {
+  let ad_script = document.createElement("script");
+  ad_script.async = false;
+  ad_script.src = "resources/overlay-interstitial-ad-testharness.js";
+  ad_script.onload = t.step_func(() => {
+    // Add an element with height:2000px at the end of the body, to make sure the document overflows.
+    let div = document.createElement("div");
+    div.style.height = '2000px';
+    document.body.appendChild(div);
+
+    // Create a frame in an absolute positioned div.
+    createInterstitialAdFrameAbsoluteOuterDiv();
+
+    // After 1500ms verify no interstitial was detected. Then make the <body>
+    // overflow:hidden, and after 1500ms verify an interstitial was detected.
+    verifyInterstitialUseCounterAfter1500ms(t, false,
+      (test) => {
+        document.body.style.overflow = "hidden";
+        verifyInterstitialUseCounterAfter1500ms(test, true);
+      });
+  });
+  document.body.appendChild(ad_script);
+}, "Test UseCounter for overlay-interstitial-ad when the frame is in a absolute positioned div and the <body> has overflow:hidden.");
+
+</script>
+</body>
+</html>

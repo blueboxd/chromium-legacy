@@ -115,9 +115,7 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
       language_(language),
       use_browser_spellchecker_(false),
       browser_context_(browser_context),
-#if !defined(OS_ANDROID)
       spellcheck_service_(spellcheck_service),
-#endif
       download_status_(DOWNLOAD_NONE) {
 }
 
@@ -131,8 +129,9 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Disable the language from platform spellchecker.
   if (spellcheck::UseBrowserSpellChecker())
-    spellcheck_platform::DisableLanguage(language_);
-#endif
+    spellcheck_platform::DisableLanguage(
+        spellcheck_service_->platform_spell_checker(), language_);
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 }
 
 void SpellcheckHunspellDictionary::Load() {
@@ -142,7 +141,7 @@ void SpellcheckHunspellDictionary::Load() {
   if (spellcheck::UseBrowserSpellChecker() &&
       spellcheck_platform::SpellCheckerAvailable()) {
     spellcheck_platform::PlatformSupportsLanguage(
-        language_,
+        spellcheck_service_->platform_spell_checker(), language_,
         base::BindOnce(
             &SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete,
             weak_ptr_factory_.GetWeakPtr()));
@@ -445,9 +444,10 @@ void SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete(
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     if (spellcheck::UseBrowserSpellChecker()) {
       spellcheck_platform::SetLanguage(
-          language_, base::BindOnce(&SpellcheckHunspellDictionary::
-                                        SpellCheckPlatformSetLanguageComplete,
-                                    weak_ptr_factory_.GetWeakPtr()));
+          spellcheck_service_->platform_spell_checker(), language_,
+          base::BindOnce(&SpellcheckHunspellDictionary::
+                             SpellCheckPlatformSetLanguageComplete,
+                         weak_ptr_factory_.GetWeakPtr()));
       return;
     }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)

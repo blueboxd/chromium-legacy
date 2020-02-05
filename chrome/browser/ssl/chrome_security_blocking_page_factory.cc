@@ -415,11 +415,11 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
             ->test_url(),
         ui::PAGE_TRANSITION_TYPED);
     params.disposition = WindowOpenDisposition::NEW_POPUP;
+    params.is_captive_portal_popup = true;
     Navigate(&params);
     content::WebContents* new_contents = params.navigated_or_inserted_contents;
     CaptivePortalTabHelper* captive_portal_tab_helper =
         CaptivePortalTabHelper::FromWebContents(new_contents);
-    captive_portal_tab_helper->set_is_captive_portal_window();
     captive_portal_tab_helper->SetIsLoginTab();
     return;
   }

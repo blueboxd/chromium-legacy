@@ -4,17 +4,17 @@
 
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace safe_browsing {
 
 namespace {
 
-// Verifies that safe_browsing::ResourceType and content::ResourceType are kept
-// in sync.
-#define STATIC_ASSERT_ENUM(a)                                   \
-  static_assert(static_cast<int>(ResourceType::a) ==            \
-                    static_cast<int>(content::ResourceType::a), \
+// Verifies that safe_browsing::ResourceType and blink::mojom::ResourceType are
+// kept in sync.
+#define STATIC_ASSERT_ENUM(a)                                        \
+  static_assert(static_cast<int>(ResourceType::a) ==                 \
+                    static_cast<int>(blink::mojom::ResourceType::a), \
                 "mismatching enums: ResourceType::" #a)
 
 }  // namespace

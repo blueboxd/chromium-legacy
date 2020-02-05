@@ -68,17 +68,22 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void ClearIncrementalState() override;
 
   // perfetto::TracingService::ProducerEndpoint implementation.
+
   // Used by the TraceWriters
   // to signal Perfetto that shared memory chunks are ready
   // for consumption.
   void CommitData(const perfetto::CommitDataRequest& commit,
                   CommitDataCallback callback) override;
+
   // Used by the DataSource implementations to create TraceWriters
   // for writing their protobufs, and respond to flushes.
   void NotifyFlushComplete(perfetto::FlushRequestID) override;
   perfetto::SharedMemory* shared_memory() const override;
   void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
   void UnregisterTraceWriter(uint32_t writer_id) override;
+
+  // Used by PerfettoTracedProcess to create trace writers.
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
 
   // These ProducerEndpoint functions are only used on the service
   // side and should not be called on the clients.
@@ -88,7 +93,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void ActivateTriggers(const std::vector<std::string>&) override;
   size_t shared_buffer_page_size_kb() const override;
-  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
+  bool IsShmemProvidedByProducer() const override;
 
   void BindClientAndHostPipesForTesting(
       mojo::PendingReceiver<mojom::ProducerClient>,

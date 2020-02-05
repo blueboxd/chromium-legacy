@@ -1919,4 +1919,13 @@ TEST(V8ScriptValueSerializerTest, RoundTripDOMException) {
   EXPECT_EQ(exception->message(), new_exception->message());
 }
 
+TEST(V8ScriptValueSerializerTest, DecodeDOMExceptionWithInvalidNameString) {
+  V8TestingScope scope;
+  scoped_refptr<SerializedScriptValue> input = SerializedValue(
+      {0xff, 0x13, 0xff, 0x0d, 0x5c, 0x78, 0x01, 0xff, 0x00, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.GetScriptState(), input).Deserialize();
+  EXPECT_TRUE(result->IsNull());
+}
+
 }  // namespace blink

@@ -6,14 +6,14 @@
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURAX11_H_
 
 #include "ui/base/x/x11_os_exchange_data_provider.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 
 namespace ui {
 
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
     : public XOSExchangeDataProvider,
-      public PlatformEventDispatcher {
+      public XEventDispatcher {
  public:
   // |x_window| is the window the cursor is over, and |selection| is the set of
   // data being offered.
@@ -35,9 +35,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
 
-  // PlatformEventDispatcher:
-  bool CanDispatchEvent(const PlatformEvent& event) override;
-  uint32_t DispatchEvent(const PlatformEvent& event) override;
+  // XEventDispatcher:
+  bool DispatchXEvent(XEvent* xev) override;
 
  private:
   friend class OSExchangeDataProviderAuraX11Test;

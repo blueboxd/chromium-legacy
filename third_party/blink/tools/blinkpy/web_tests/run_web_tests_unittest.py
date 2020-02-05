@@ -483,6 +483,105 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run([WEB_TESTS_LAST_COMPONENT + '/passes/text.html'])
         self.assertEqual(['passes/text.html'], tests_run)
 
+    def test_no_flag_specific_files_json_results(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7')
+        host.filesystem.write_text_file(
+            '/tmp/overrides.txt', '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
+        self.assertTrue(logging_run(
+            ['--order', 'natural', 'failures/expected/text.html', '--num-retries', '1',
+             '--additional-driver-flag', '--composite-after-paint', '--additional-expectations',
+             '/tmp/overrides.txt'],
+            tests_included=True, host=host))
+        results = json.loads(
+            host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        test_results = results['tests']['failures']['expected']['text.html']
+        self.assertNotIn('flag_name', results)
+        self.assertNotIn('flag_expectations', test_results)
+        self.assertNotIn('base_expectations', test_results)
+
+    def test_no_flag_expectations_found_json_results(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7')
+        flag_exp_path = host.filesystem.join(
+            port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
+        host.filesystem.write_text_file(
+            '/tmp/overrides.txt', '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
+        host.filesystem.write_text_file(flag_exp_path, '')
+        self.assertTrue(logging_run(
+            ['--order', 'natural', 'failures/expected/text.html', '--num-retries', '1',
+             '--additional-driver-flag', '--composite-after-paint', '--additional-expectations',
+             '/tmp/overrides.txt'],
+            tests_included=True, host=host))
+        results = json.loads(
+            host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        test_results = results['tests']['failures']['expected']['text.html']
+        self.assertEqual(results['flag_name'], '/composite-after-paint')
+        self.assertNotIn('flag_expectations', test_results)
+        self.assertNotIn('base_expectations', test_results)
+
+    def test_slow_flag_expectations_in_json_results(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7')
+        flag_exp_path = host.filesystem.join(
+            port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
+        host.filesystem.write_text_file(
+            '/tmp/overrides.txt', '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
+        host.filesystem.write_text_file(
+            flag_exp_path,
+            '# results: [ Slow ]\nfailures/expected/text.html [ Slow ]')
+        self.assertTrue(logging_run(
+            ['--order', 'natural', 'failures/expected/text.html', '--num-retries', '1',
+             '--additional-driver-flag', '--composite-after-paint', '--additional-expectations',
+             '/tmp/overrides.txt'],
+            tests_included=True, host=host))
+        results = json.loads(
+            host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        test_results = results['tests']['failures']['expected']['text.html']
+        self.assertEqual(results['flag_name'], '/composite-after-paint')
+        self.assertEqual(test_results['flag_expectations'], ['PASS'])
+        self.assertEqual(test_results['base_expectations'], ['FAIL', 'TIMEOUT'])
+
+    def test_flag_and_base_expectations_in_json_results(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7')
+        flag_exp_path = host.filesystem.join(
+            port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
+        host.filesystem.write_text_file(
+            '/tmp/overrides.txt', '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
+        host.filesystem.write_text_file(
+            flag_exp_path,
+            '# results: [ Crash Failure ]\nfailures/expected/text.html [ Crash Failure ]')
+        self.assertTrue(logging_run(
+            ['--order', 'natural', 'failures/expected/text.html', '--num-retries', '1',
+             '--additional-driver-flag', '--composite-after-paint', '--additional-expectations',
+             '/tmp/overrides.txt'],
+            tests_included=True, host=host))
+        results = json.loads(
+            host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        test_results = results['tests']['failures']['expected']['text.html']
+        self.assertEqual(results['flag_name'], '/composite-after-paint')
+        self.assertEqual(test_results['flag_expectations'], ['FAIL', 'CRASH'])
+        self.assertEqual(test_results['base_expectations'], ['FAIL', 'TIMEOUT'])
+
+    def test_flag_and_default_base_expectations_in_json_results(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7')
+        flag_exp_path = host.filesystem.join(
+            port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
+        host.filesystem.write_text_file(
+            flag_exp_path, '# results: [ Failure ]\npasses/args.html [ Failure ]')
+        self.assertTrue(logging_run(
+            ['--order', 'natural', 'passes/args.html', '--num-retries', '1',
+             '--additional-driver-flag', '--composite-after-paint'],
+            tests_included=True, host=host))
+        results = json.loads(
+            host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        test_results = results['tests']['passes']['args.html']
+        self.assertEqual(results['flag_name'], '/composite-after-paint')
+        self.assertEqual(test_results['flag_expectations'], ['FAIL'])
+        self.assertEqual(test_results['base_expectations'], ['PASS'])
+
     def test_stderr_is_saved(self):
         host = MockHost()
         self.assertTrue(passing_run(host=host))

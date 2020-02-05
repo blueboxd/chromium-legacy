@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -33,6 +34,7 @@ import org.chromium.content_public.browser.WebContents;
  * and the framework's MetricService.
  */
 public class UmaSessionStats {
+    private static final String TAG = "UmaSessionStats";
     private static final String SAMSUNG_MULTWINDOW_PACKAGE = "com.sec.feature.multiwindow";
 
     private static long sNativeUmaSessionStats;
@@ -213,6 +215,7 @@ public class UmaSessionStats {
     }
 
     public static void registerSyntheticFieldTrial(String trialName, String groupName) {
+        Log.d(TAG, "registerSyntheticFieldTrial(%s, %s)", trialName, groupName);
         assert isMetricsServiceAvailable();
         UmaSessionStatsJni.get().registerSyntheticFieldTrial(trialName, groupName);
     }

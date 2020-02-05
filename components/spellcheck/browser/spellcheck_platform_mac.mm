@@ -18,6 +18,8 @@
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
 
+class PlatformSpellChecker;
+
 using base::TimeTicks;
 using content::BrowserThread;
 
@@ -151,7 +153,8 @@ void UpdateSpellingPanelWithMisspelledWord(const base::string16& word) {
                     waitUntilDone:YES];
 }
 
-void PlatformSupportsLanguage(const std::string& current_language,
+void PlatformSupportsLanguage(PlatformSpellChecker* spell_checker_instance,
+                              const std::string& current_language,
                               base::OnceCallback<void(bool)> callback) {
   // First, convert the language to an OS X language code.
   NSString* mac_lang_code = ConvertLanguageCodeToMac(current_language);
@@ -163,7 +166,8 @@ void PlatformSupportsLanguage(const std::string& current_language,
   std::move(callback).Run([availableLanguages containsObject:mac_lang_code]);
 }
 
-void SetLanguage(const std::string& lang_to_set,
+void SetLanguage(PlatformSpellChecker* spell_checker_instance,
+                 const std::string& lang_to_set,
                  base::OnceCallback<void(bool)> callback) {
   // Do not set any language right now, since Chrome should honor the
   // system spellcheck settings. (http://crbug.com/166046)
@@ -174,7 +178,8 @@ void SetLanguage(const std::string& lang_to_set,
   std::move(callback).Run(true);
 }
 
-void DisableLanguage(const std::string& lang_to_disable) {}
+void DisableLanguage(PlatformSpellChecker* spell_checker_instance,
+                     const std::string& lang_to_disable) {}
 
 static int last_seen_tag_;
 
@@ -217,12 +222,14 @@ void FillSuggestionList(const base::string16& wrong_word,
   }
 }
 
-void AddWord(const base::string16& word) {
-    NSString* word_to_add = base::SysUTF16ToNSString(word);
+void AddWord(PlatformSpellChecker* spell_checker_instance,
+             const base::string16& word) {
+  NSString* word_to_add = base::SysUTF16ToNSString(word);
   [SharedSpellChecker() learnWord:word_to_add];
 }
 
-void RemoveWord(const base::string16& word) {
+void RemoveWord(PlatformSpellChecker* spell_checker_instance,
+                const base::string16& word) {
   NSString *word_to_remove = base::SysUTF16ToNSString(word);
   [SharedSpellChecker() unlearnWord:word_to_remove];
 }
@@ -232,7 +239,8 @@ int GetDocumentTag() {
   return static_cast<int>(doc_tag);
 }
 
-void IgnoreWord(const base::string16& word) {
+void IgnoreWord(PlatformSpellChecker* spell_checker_instance,
+                const base::string16& word) {
   [SharedSpellChecker() ignoreWord:base::SysUTF16ToNSString(word)
             inSpellDocumentWithTag:last_seen_tag_];
 }
@@ -241,7 +249,8 @@ void CloseDocumentWithTag(int tag) {
   [SharedSpellChecker() closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
 }
 
-void RequestTextCheck(int document_tag,
+void RequestTextCheck(PlatformSpellChecker* spell_checker_instance,
+                      int document_tag,
                       const base::string16& text,
                       TextCheckCompleteCallback passed_callback) {
   NSString* text_to_check = base::SysUTF16ToNSString(text);

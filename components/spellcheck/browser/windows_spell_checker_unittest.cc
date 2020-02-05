@@ -38,10 +38,6 @@ class WindowsSpellCheckerTest : public testing::Test {
     }
   }
 
-  WindowsSpellChecker* GetWindowsSpellChecker() {
-    return win_spell_checker_.get();
-  }
-
   void RunUntilResultReceived() {
     if (callback_finished_)
       return;
@@ -79,12 +75,12 @@ class WindowsSpellCheckerTest : public testing::Test {
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  void RetrieveSupportedWindowsPreferredLanguagesCallback(
+  void GetSupportedWindowsPreferredLanguagesCallback(
       const std::vector<std::string>& preferred_languages) {
     callback_finished_ = true;
     preferred_languages_ = preferred_languages;
     for (const auto& preferred_language : preferred_languages_) {
-      DLOG(INFO) << "RetrieveSupportedWindowsPreferredLanguagesCallback: "
+      DLOG(INFO) << "GetSupportedWindowsPreferredLanguagesCallback: "
                     "Dictionary supported for locale: "
                  << preferred_language;
     }
@@ -115,7 +111,7 @@ class WindowsSpellCheckerTest : public testing::Test {
       const base::string16 word(base::ASCIIToUTF16(test_case.text_to_check));
 
       // Check if the suggested words occur.
-      GetWindowsSpellChecker()->RequestTextCheckForAllLanguages(
+      win_spell_checker_->RequestTextCheck(
           1, word,
           base::BindOnce(&WindowsSpellCheckerTest::TextCheckCompletionCallback,
                          base::Unretained(this)));
@@ -141,11 +137,10 @@ class WindowsSpellCheckerTest : public testing::Test {
   }
 
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  void RetrieveSupportedWindowsPreferredLanguagesTests() {
-    GetWindowsSpellChecker()->RetrieveSupportedWindowsPreferredLanguages(
-        base::BindOnce(&WindowsSpellCheckerTest::
-                           RetrieveSupportedWindowsPreferredLanguagesCallback,
-                       base::Unretained(this)));
+  void GetSupportedWindowsPreferredLanguagesTests() {
+    win_spell_checker_->GetSupportedWindowsPreferredLanguages(base::BindOnce(
+        &WindowsSpellCheckerTest::GetSupportedWindowsPreferredLanguagesCallback,
+        base::Unretained(this)));
 
     RunUntilResultReceived();
 
@@ -158,7 +153,7 @@ class WindowsSpellCheckerTest : public testing::Test {
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   void PerLanguageSuggestionsTests() {
-    GetWindowsSpellChecker()->GetPerLanguageSuggestions(
+    win_spell_checker_->GetPerLanguageSuggestions(
         base::ASCIIToUTF16("tihs"),
         base::BindOnce(
             &WindowsSpellCheckerTest::PerLanguageSuggestionsCompletionCallback,
@@ -208,7 +203,7 @@ TEST_F(WindowsSpellCheckerTest, SpellCheckAsyncMethods) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
-  GetWindowsSpellChecker()->CreateSpellChecker(
+  win_spell_checker_->CreateSpellChecker(
       "en-US",
       base::BindOnce(&WindowsSpellCheckerTest::SetLanguageCompletionCallback,
                      base::Unretained(this)));
@@ -220,7 +215,7 @@ TEST_F(WindowsSpellCheckerTest, SpellCheckAsyncMethods) {
   RequestTextCheckTests();
 
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  RetrieveSupportedWindowsPreferredLanguagesTests();
+  GetSupportedWindowsPreferredLanguagesTests();
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)

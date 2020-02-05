@@ -32,4 +32,9 @@ MockNavigationHandle::MockNavigationHandle(const GURL& url,
 
 MockNavigationHandle::~MockNavigationHandle() = default;
 
+void MockNavigationHandle::SetAuthChallengeInfo(
+    const net::AuthChallengeInfo& challenge) {
+  auth_challenge_info_ = challenge;
+}
+
 }  // namespace content

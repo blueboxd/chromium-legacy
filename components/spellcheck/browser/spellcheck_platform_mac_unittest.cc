@@ -74,7 +74,7 @@ TEST_F(SpellcheckPlatformMacTest, IgnoreWords_EN_US) {
     EXPECT_FALSE(spellcheck_platform::CheckSpelling(word, doc_tag)) << word;
 
     // Ignore the word.
-    spellcheck_platform::IgnoreWord(word);
+    spellcheck_platform::IgnoreWord(nullptr, word);
 
     // The word should now show up as correctly spelled.
     EXPECT_TRUE(spellcheck_platform::CheckSpelling(word, doc_tag)) << word;
@@ -390,7 +390,8 @@ TEST_F(SpellcheckPlatformMacTest, SpellCheckSuggestions_EN_US) {
 // RequestTextCheck results.
 TEST_F(SpellcheckPlatformMacTest, SpellCheckIgnoresOrthography)  {
   base::string16 test_string(base::ASCIIToUTF16("Icland is awesome."));
-  spellcheck_platform::RequestTextCheck(0, test_string, std::move(callback_));
+  spellcheck_platform::RequestTextCheck(nullptr, 0, test_string,
+                                        std::move(callback_));
   WaitForCallback();
   EXPECT_TRUE(callback_finished_);
   EXPECT_EQ(1U, results_.size());

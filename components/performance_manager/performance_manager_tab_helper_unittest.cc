@@ -223,28 +223,4 @@ TEST_F(PerformanceManagerTabHelperTest, PageIsAudible) {
   ExpectPageIsAudible(false);
 }
 
-TEST_F(PerformanceManagerTabHelperTest, GetFrameNode) {
-  SetContents(CreateTestWebContents());
-
-  auto* tab_helper =
-      PerformanceManagerTabHelper::FromWebContents(web_contents());
-  ASSERT_TRUE(tab_helper);
-
-  // GetFrameNode() can return nullptr. In this test, it is achieved by using an
-  // empty RenderFrameHost.
-  auto* empty_frame = web_contents()->GetMainFrame();
-  DCHECK(empty_frame);
-
-  auto* empty_frame_node = tab_helper->GetFrameNode(empty_frame);
-  EXPECT_FALSE(empty_frame_node);
-
-  // This navigation will create a frame node.
-  auto* new_frame = content::NavigationSimulator::NavigateAndCommitFromBrowser(
-      web_contents(), GURL(kParentUrl));
-  DCHECK(new_frame);
-
-  auto* new_frame_node = tab_helper->GetFrameNode(new_frame);
-  EXPECT_TRUE(new_frame_node);
-}
-
 }  // namespace performance_manager

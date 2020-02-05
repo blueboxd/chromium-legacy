@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/test_users.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -144,22 +145,13 @@ constexpr char kTestAuthSIDCookie2[] = "fake-auth-SID-cookie-2";
 constexpr char kTestAuthLSIDCookie1[] = "fake-auth-LSID-cookie-1";
 constexpr char kTestAuthLSIDCookie2[] = "fake-auth-LSID-cookie-2";
 
-// Note: SAML account cannot be @gmail or @example.com account.  The former by
-// design, the latter because @example.com is used in another tests as regular
-// user. So we use @corp.example.com and @example.test, so that we can handle
-// it specially in embedded_setup_chromeos.html .
-constexpr char kFirstSAMLUserEmail[] = "bob@corp.example.com";
-constexpr char kSecondSAMLUserEmail[] = "alice@corp.example.com";
-constexpr char kHTTPSAMLUserEmail[] = "carol@corp.example.com";
-constexpr char kNonSAMLUserEmail[] = "dan@corp.example.com";
-constexpr char kDeviceAttestationSAMLUserEmail[] = "frank@corp.example.test";
-constexpr char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
+constexpr char kNonSAMLUserEmail[] = "frank@corp.example.com";
 
-constexpr char kFirstSAMLUserGaiaId[] = "bob-gaia";
-constexpr char kSecondSAMLUserGaiaId[] = "alice-gaia";
-constexpr char kHTTPSAMLUserGaiaId[] = "carol-gaia";
-constexpr char kNonSAMLUserGaiaId[] = "dan-gaia";
-constexpr char kDifferentDomainSAMLUserGaiaId[] = "eve-gaia";
+constexpr char kFirstSAMLUserGaiaId[] = "alice-gaia";
+constexpr char kSecondSAMLUserGaiaId[] = "bob-gaia";
+constexpr char kThirdSAMLUserGaiaId[] = "carol-gaia";
+constexpr char kFifthSAMLUserGaiaId[] = "eve-gaia";
+constexpr char kNonSAMLUserGaiaId[] = "frank-gaia";
 
 constexpr char kIdPHost[] = "login.corp.example.com";
 constexpr char kAdditionalIdPHost[] = "login2.corp.example.com";
@@ -545,16 +537,19 @@ class SamlTest : public OobeBaseTest {
 
     fake_saml_idp_.SetUp(base_login_saml_idp_url, device_attest_saml_idp_url,
                          device_attest_check_response_saml_idp_url, gaia_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(kFirstSAMLUserEmail,
-                                             base_login_saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(kSecondSAMLUserEmail,
-                                             base_login_saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(kHTTPSAMLUserEmail,
-                                             http_saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(kDifferentDomainSAMLUserEmail,
-                                             base_login_saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(kDeviceAttestationSAMLUserEmail,
-                                             device_attest_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
+        saml_test_users::kFirstUserCorpExampleComEmail,
+        base_login_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
+        saml_test_users::kSecondUserCorpExampleComEmail,
+        base_login_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
+        saml_test_users::kThirdUserCorpExampleComEmail, http_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
+        saml_test_users::kFourthUserCorpExampleTestEmail,
+        device_attest_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
+        saml_test_users::kFifthUserExampleTestEmail, base_login_saml_idp_url);
     fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl(
         "example.com", base_login_saml_idp_url);
   }
@@ -572,7 +567,8 @@ class SamlTest : public OobeBaseTest {
 
   void SetUpOnMainThread() override {
     fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
-        kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+        saml_test_users::kFirstUserCorpExampleComEmail, kTestAuthSIDCookie1,
+        kTestAuthLSIDCookie1);
 
     embedded_test_server()->RegisterRequestHandler(base::Bind(
         &FakeSamlIdp::HandleRequest, base::Unretained(&fake_saml_idp_)));
@@ -665,7 +661,8 @@ class SamlTest : public OobeBaseTest {
 // clicking.
 IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Saml flow UI expectations.
   test::OobeJS().ExpectVisiblePath({"gaia-signin", "saml-notice-container"});
@@ -700,7 +697,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
@@ -722,8 +720,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
   EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
-                                     kFirstSAMLUserGaiaId)));
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail,
+          kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
 }
@@ -735,7 +734,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIWithoutConfirm) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate(
       "saml_api_login_auth_without_confirm.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
@@ -755,8 +755,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIWithoutConfirm) {
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
   EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
-                                     kFirstSAMLUserGaiaId)));
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail,
+          kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
 }
@@ -765,7 +766,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIWithoutConfirm) {
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   content::DOMMessageQueue message_queue;
   // Make sure that the password is scraped correctly.
@@ -791,8 +793,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
-                                     kFirstSAMLUserGaiaId)));
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail,
+          kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -802,7 +805,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
 // Tests password scraping from a dynamically created password field.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   SigninFrameJS().Evaluate(
       "(function() {"
@@ -822,8 +826,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
-                                     kFirstSAMLUserGaiaId)));
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail,
+          kFirstSAMLUserGaiaId)));
 }
 
 // Tests the multiple password scraped flow.
@@ -831,7 +836,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
@@ -849,8 +855,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
-                                     kFirstSAMLUserGaiaId)));
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail,
+          kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -862,7 +869,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_no_passwords.html");
 
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TapOn("Submit");
@@ -881,25 +889,27 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
-                                     kFirstSAMLUserGaiaId)));
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail,
+          kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
                                       0, 1);
 }
 
-// Types |bob@corp.example.com| into the GAIA login form but then authenticates
-// as |alice@corp.example.com| via SAML. Verifies that the logged-in user is
-// correctly identified as Alice.
+// Types the second user e-mail into the GAIA login form but then authenticates
+// as the first user via SAML. Verifies that the logged-in user is correctly
+// identified as the first user.
 IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  // Type |bob@corp.example.com| into the GAIA login form.
-  StartSamlAndWaitForIdpPageLoad(kSecondSAMLUserEmail);
+  // Type the second user e-mail into the GAIA login form.
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSecondUserCorpExampleComEmail);
 
-  // Authenticate as alice@corp.example.com via SAML (the |Email| provided here
-  // is irrelevant - the authenticated user's e-mail address that FakeGAIA
-  // reports was set via |SetFakeMergeSessionParams|).
+  // Authenticate as the first user via SAML (the |Email| provided here is
+  // irrelevant - the authenticated user's e-mail address that FakeGAIA reports
+  // was set via |SetFakeMergeSessionParams|).
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
@@ -909,14 +919,16 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
-  EXPECT_EQ(kFirstSAMLUserEmail, user->GetAccountId().GetUserEmail());
+  EXPECT_EQ(saml_test_users::kFirstUserCorpExampleComEmail,
+            user->GetAccountId().GetUserEmail());
 }
 
 // Verifies that if the authenticated user's e-mail address cannot be retrieved,
 // an error message is shown.
 IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams("", kTestAuthSIDCookie1,
                                                     kTestAuthLSIDCookie1);
@@ -932,7 +944,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
 // error on the first failure and fatal error on the second failure.
 IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
@@ -974,7 +987,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, NoticeUpdatedOnRedirect) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_instant_meta_refresh.html");
   fake_saml_idp()->SetRefreshURL(
       saml_https_forwarder_2.GetURLForSSLHost("simple.html"));
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Wait until the notice shown to the user is updated to contain
   // |kAdditionalIdPHost|.
@@ -1020,7 +1034,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
-      ->ShowSigninScreenForTest(kHTTPSAMLUserEmail, "", "[]");
+      ->ShowSigninScreenForTest(saml_test_users::kThirdUserCorpExampleComEmail,
+                                "", "[]");
 
   const GURL url = embedded_test_server()->base_url().Resolve("/SAML");
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
@@ -1040,7 +1055,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
-      ->ShowSigninScreenForTest(kFirstSAMLUserEmail, "", "[]");
+      ->ShowSigninScreenForTest(saml_test_users::kFirstUserCorpExampleComEmail,
+                                "", "[]");
 
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
                                       base::UTF8ToUTF16(url.spec())),
@@ -1077,7 +1093,7 @@ void SAMLEnrollmentTest::SetUpOnMainThread() {
   token_info.scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   token_info.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
-  token_info.email = kFirstSAMLUserEmail;
+  token_info.email = saml_test_users::kFirstUserCorpExampleComEmail;
   fake_gaia_.fake_gaia()->IssueOAuthToken(kTestRefreshToken, token_info);
 
   SamlTest::SetUpOnMainThread();
@@ -1095,7 +1111,8 @@ void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
 
 IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
@@ -1108,7 +1125,8 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
 IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
@@ -1211,28 +1229,32 @@ void SAMLPolicyTest::SetUpOnMainThread() {
 
   // Pretend that the test users' OAuth tokens are valid.
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail, kFirstSAMLUserGaiaId),
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail, kFirstSAMLUserGaiaId),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
       AccountId::FromUserEmailGaiaId(kNonSAMLUserEmail, kNonSAMLUserGaiaId),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmailGaiaId(kDifferentDomainSAMLUserEmail,
-                                     kDifferentDomainSAMLUserGaiaId),
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFifthUserExampleTestEmail, kFifthSAMLUserGaiaId),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   // Give affiliated users appropriate affiliation IDs.
   std::set<std::string> user_affiliation_ids;
   user_affiliation_ids.insert(kAffiliationID);
   chromeos::ChromeUserManager::Get()->SetUserAffiliation(
-      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail, kFirstSAMLUserGaiaId),
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kFirstUserCorpExampleComEmail, kFirstSAMLUserGaiaId),
       user_affiliation_ids);
   chromeos::ChromeUserManager::Get()->SetUserAffiliation(
-      AccountId::FromUserEmailGaiaId(kSecondSAMLUserEmail,
-                                     kSecondSAMLUserGaiaId),
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kSecondUserCorpExampleComEmail,
+          kSecondSAMLUserGaiaId),
       user_affiliation_ids);
   chromeos::ChromeUserManager::Get()->SetUserAffiliation(
-      AccountId::FromUserEmailGaiaId(kHTTPSAMLUserEmail, kHTTPSAMLUserGaiaId),
+      AccountId::FromUserEmailGaiaId(
+          saml_test_users::kThirdUserCorpExampleComEmail, kThirdSAMLUserGaiaId),
       user_affiliation_ids);
   chromeos::ChromeUserManager::Get()->SetUserAffiliation(
       AccountId::FromUserEmailGaiaId(kNonSAMLUserEmail, kNonSAMLUserGaiaId),
@@ -1413,7 +1435,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, PRE_SAMLNoLimit) {
   // Remove the offline login time limit for SAML users.
   SetSAMLOfflineSigninTimeLimitPolicy(-1);
 
-  LogInWithSAML(kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 }
 
 // Verifies that when no offline login time limit is set, a user who
@@ -1429,7 +1452,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, PRE_SAMLZeroLimit) {
   // Set the offline login time limit for SAML users to zero.
   SetSAMLOfflineSigninTimeLimitPolicy(0);
 
-  LogInWithSAML(kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 }
 
 // Verifies that when the offline login time limit is exceeded for a user who
@@ -1444,7 +1468,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, SAMLZeroLimit) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin,
                        PRE_PRE_TransferCookiesAffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
-  LogInWithSAML(kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
   GetCookies();
   EXPECT_EQ(kTestAuthSIDCookie1, GetCookieValue(kGAIASIDCookieName));
@@ -1461,7 +1486,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin,
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue2);
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   ShowGAIALoginForm();
-  LogInWithSAML(kFirstSAMLUserEmail, kTestAuthSIDCookie2, kTestAuthLSIDCookie2);
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie2, kTestAuthLSIDCookie2);
 
   GetCookies();
   EXPECT_EQ(kTestAuthSIDCookie1, GetCookieValue(kGAIASIDCookieName));
@@ -1479,7 +1505,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, TransferCookiesAffiliated) {
   ShowGAIALoginForm();
 
   EnableTransferSAMLCookiesPolicy();
-  LogInWithSAML(kFirstSAMLUserEmail, kTestAuthSIDCookie2, kTestAuthLSIDCookie2);
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie2, kTestAuthLSIDCookie2);
 
   GetCookies();
   EXPECT_EQ(kTestAuthSIDCookie1, GetCookieValue(kGAIASIDCookieName));
@@ -1490,8 +1517,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, TransferCookiesAffiliated) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin,
                        PRE_TransferCookiesUnaffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
-  LogInWithSAML(kDifferentDomainSAMLUserEmail, kTestAuthSIDCookie1,
-                kTestAuthLSIDCookie1);
+  LogInWithSAML(saml_test_users::kFifthUserExampleTestEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
   GetCookies();
   EXPECT_EQ(kTestAuthSIDCookie1, GetCookieValue(kGAIASIDCookieName));
@@ -1509,8 +1536,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, TransferCookiesUnaffiliated) {
   ShowGAIALoginForm();
 
   EnableTransferSAMLCookiesPolicy();
-  LogInWithSAML(kDifferentDomainSAMLUserEmail, kTestAuthSIDCookie1,
-                kTestAuthLSIDCookie1);
+  LogInWithSAML(saml_test_users::kFifthUserExampleTestEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
   GetCookies();
   EXPECT_EQ(kTestAuthSIDCookie1, GetCookieValue(kGAIASIDCookieName));
@@ -1553,7 +1580,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
-      kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+      saml_test_users::kFirstUserCorpExampleComEmail, kTestAuthSIDCookie1,
+      kTestAuthLSIDCookie1);
   SetLoginBehaviorPolicyToSAMLInterstitial();
   WaitForSigninScreen();
 
@@ -1652,7 +1680,8 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
 
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
@@ -1686,7 +1715,8 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
 
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
 
   // Give fake gaia an empty email address, so login will fail:
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
@@ -1814,7 +1844,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, DefaultPolicy) {
 
   // Leave policy unset.
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
   histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
@@ -1830,7 +1861,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, EmptyPolicy) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({/* empty list */});
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
   histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
@@ -1845,7 +1877,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"login.corp.example.com"});
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;
@@ -1865,7 +1898,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest,
   SetAllowedUrlsPolicy({"login.corp.example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;
@@ -1884,7 +1918,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, Success) {
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;
@@ -1906,7 +1941,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyNoMatchError) {
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;
@@ -1927,7 +1963,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyRegexSuccess) {
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;
@@ -1949,7 +1986,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyTwoEntriesSuccess) {
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;
@@ -1980,7 +2018,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, TimeoutError) {
       ->GetHandler<GaiaScreenHandler>()
       ->SetNextSamlChallengeKeyHandlerForTesting(std::move(handler));
 
-  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFourthUserCorpExampleTestEmail);
 
   if (Test::HasFailure()) {
     return;

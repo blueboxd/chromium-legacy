@@ -42,8 +42,6 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_intercepting_job_factory.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "url/url_constants.h"
@@ -266,14 +264,7 @@ void URLRequestContextBuilder::set_quic_context(
 
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
-  DCHECK(!shared_cert_verifier_);
   cert_verifier_ = std::move(cert_verifier);
-}
-
-void URLRequestContextBuilder::SetSharedCertVerifier(
-    CertVerifier* shared_cert_verifier) {
-  DCHECK(!cert_verifier_);
-  shared_cert_verifier_ = shared_cert_verifier;
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -289,18 +280,6 @@ void URLRequestContextBuilder::set_persistent_reporting_and_nel_store(
       std::move(persistent_reporting_and_nel_store);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-
-void URLRequestContextBuilder::SetInterceptors(
-    std::vector<std::unique_ptr<URLRequestInterceptor>>
-        url_request_interceptors) {
-  url_request_interceptors_ = std::move(url_request_interceptors);
-}
-
-void URLRequestContextBuilder::set_create_intercepting_job_factory(
-    CreateInterceptingJobFactory create_intercepting_job_factory) {
-  DCHECK(!create_intercepting_job_factory_);
-  create_intercepting_job_factory_ = std::move(create_intercepting_job_factory);
-}
 
 void URLRequestContextBuilder::SetCookieStore(
     std::unique_ptr<CookieStore> cookie_store) {
@@ -474,8 +453,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (cert_verifier_) {
     storage->set_cert_verifier(std::move(cert_verifier_));
-  } else if (shared_cert_verifier_) {
-    context->set_cert_verifier(shared_cert_verifier_);
   } else {
     // TODO(mattm): Should URLRequestContextBuilder create a CertNetFetcher?
     storage->set_cert_verifier(
@@ -619,7 +596,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
   storage->set_http_transaction_factory(std::move(http_transaction_factory));
 
-  URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
+  std::unique_ptr<URLRequestJobFactoryImpl> job_factory =
+      std::make_unique<URLRequestJobFactoryImpl>();
   // Adds caller-provided protocol handlers first so that these handlers are
   // used over the ftp handler below.
   for (auto& scheme_handler : protocol_handlers_) {
@@ -637,22 +615,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-  std::unique_ptr<URLRequestJobFactory> top_job_factory(job_factory);
-  if (!url_request_interceptors_.empty()) {
-    // Set up interceptors in the reverse order.
-
-    for (auto i = url_request_interceptors_.rbegin();
-         i != url_request_interceptors_.rend(); ++i) {
-      top_job_factory.reset(new URLRequestInterceptingJobFactory(
-          std::move(top_job_factory), std::move(*i)));
-    }
-    url_request_interceptors_.clear();
-  }
-  if (create_intercepting_job_factory_) {
-    top_job_factory = std::move(create_intercepting_job_factory_)
-                          .Run(std::move(top_job_factory));
-  }
-  storage->set_job_factory(std::move(top_job_factory));
+  storage->set_job_factory(std::move(job_factory));
 
   return std::move(context);
 }

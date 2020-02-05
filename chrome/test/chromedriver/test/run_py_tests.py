@@ -55,6 +55,10 @@ import unittest_util
 import webserver
 sys.path.remove(_TEST_DIR)
 
+sys.path.insert(0,os.path.join(chrome_paths.GetSrc(), 'third_party',
+                               'catapult', 'third_party', 'gsutil',
+                               'third_party', 'monotonic'))
+from monotonic import monotonic
 
 _TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
 
@@ -351,8 +355,8 @@ class ChromeDriverBaseTest(unittest.TestCase):
     Returns:
       Handle to a new window. None if timeout.
     """
-    deadline = time.time() + 20
-    while time.time() < deadline:
+    deadline = monotonic() + 20
+    while monotonic() < deadline:
       handles = driver.GetWindowHandles()
       if check_closed_windows:
         self.assertTrue(set(old_handles).issubset(handles))
@@ -368,8 +372,8 @@ class ChromeDriverBaseTest(unittest.TestCase):
     Args:
       predicate: A function that returns a boolean value.
     """
-    deadline = time.time() + timeout
-    while time.time() < deadline:
+    deadline = monotonic() + timeout
+    while monotonic() < deadline:
       if predicate():
         return True
       time.sleep(timestep)
@@ -452,9 +456,9 @@ class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
      </body></html>""" % self._sync_server.GetUrl())
     eager_driver = self.CreateDriver(page_load_strategy='eager')
     thread.start()
-    start_eager = time.time()
+    start_eager = monotonic()
     eager_driver.Load(self._http_server.GetUrl() + '/top.html')
-    stop_eager = time.time()
+    stop_eager = monotonic()
     send_response.set()
     eager_time = stop_eager - start_eager
     self.assertTrue(eager_time < 9)
@@ -479,9 +483,9 @@ class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
 
     driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
-    start = time.time()
+    start = monotonic()
     driver.Load(self._http_server.GetUrl() + '/slow')
-    self.assertTrue(time.time() - start < 2)
+    self.assertTrue(monotonic() - start < 2)
     handler.sent_hello.set()
     self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
     self.assertTrue('hello' in driver.GetPageSource())
@@ -1571,9 +1575,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._http_server.SetDataForPath(
         '/1MB',
         "<html><body>%s</body></html>" % _1_megabyte)
-    start = time.time()
+    start = monotonic()
     self._driver.Load(self._http_server.GetUrl() + '/1MB')
-    finish = time.time()
+    finish = monotonic()
     duration = finish - start
     actual_throughput_kbps = 1024 / duration
     self.assertLessEqual(actual_throughput_kbps, throughput_kbps * 1.5)
@@ -1595,9 +1599,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._http_server.SetDataForPath(
         '/1MB',
         "<html><body>%s</body></html>" % _1_megabyte)
-    start = time.time()
+    start = monotonic()
     self._driver.Load(self._http_server.GetUrl() + '/1MB')
-    finish = time.time()
+    finish = monotonic()
     duration = finish - start
     actual_throughput_kbps = 1024 / duration
     self.assertLessEqual(actual_throughput_kbps, throughput_kbps * 1.5)
@@ -2095,17 +2099,17 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self._http_server.GetUrl() + '/top.html')
     thread = threading.Thread(target=waitAndRespond)
     thread.start()
-    start = time.time()
+    start = monotonic()
     # Click should not wait for frame to load, so elapsed time from this
     # command should be < 2 seconds.
     self._driver.FindElement('css selector', '#button').Click()
-    self.assertLess(time.time() - start, 2.0)
+    self.assertLess(monotonic() - start, 2.0)
     frame = self._driver.FindElement('css selector', '#iframe')
     # WaitForPendingNavigations examines the load state of the current frame
     # so ChromeDriver will wait for frame to load after SwitchToFrame
     # start is reused because that began the pause for the frame load
     self._driver.SwitchToFrame(frame)
-    self.assertGreaterEqual(time.time() - start, 2.0)
+    self.assertGreaterEqual(monotonic() - start, 2.0)
     self._driver.FindElement('css selector', '#iframediv')
     thread.join()
 
@@ -3293,10 +3297,10 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     return {'Content-Type': 'text/csv'}, 'a,b,c\n1,2,3\n'
 
   def WaitForFileToDownload(self, path):
-    deadline = time.time() + 60
+    deadline = monotonic() + 60
     while True:
       time.sleep(0.1)
-      if os.path.isfile(path) or time.time() > deadline:
+      if os.path.isfile(path) or monotonic() > deadline:
         break
     self.assertTrue(os.path.isfile(path), "Failed to download file!")
 
@@ -4116,9 +4120,9 @@ class PerfTest(ChromeDriverBaseTest):
 
   def testSessionStartTime(self):
     def Run(url):
-      start = time.time()
+      start = monotonic()
       driver = self.CreateDriver(url)
-      end = time.time()
+      end = monotonic()
       driver.Quit()
       return end - start
     self._RunDriverPerfTest('session start', Run)
@@ -4126,18 +4130,18 @@ class PerfTest(ChromeDriverBaseTest):
   def testSessionStopTime(self):
     def Run(url):
       driver = self.CreateDriver(url)
-      start = time.time()
+      start = monotonic()
       driver.Quit()
-      end = time.time()
+      end = monotonic()
       return end - start
     self._RunDriverPerfTest('session stop', Run)
 
   def testColdExecuteScript(self):
     def Run(url):
       driver = self.CreateDriver(url)
-      start = time.time()
+      start = monotonic()
       driver.ExecuteScript('return 1')
-      end = time.time()
+      end = monotonic()
       driver.Quit()
       return end - start
     self._RunDriverPerfTest('cold exe js', Run)

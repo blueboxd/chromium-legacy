@@ -14,7 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
@@ -87,6 +87,16 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   config.prefer_dark_theme = properties.prefer_dark_theme;
   config.background_color = properties.background_color;
   return config;
+}
+
+// Coalesce touch/mouse events if needed
+bool CoalesceEventsIfNeeded(XEvent* const xev, EventType type, XEvent* out) {
+  if (xev->type != GenericEvent ||
+      (type != ui::ET_TOUCH_MOVED && type != ui::ET_MOUSE_MOVED &&
+       type != ui::ET_MOUSE_DRAGGED)) {
+    return false;
+  }
+  return ui::CoalescePendingMotionEvents(xev, out) > 0;
 }
 
 }  // namespace
@@ -170,7 +180,8 @@ bool X11Window::IsVisible() const {
 }
 
 void X11Window::PrepareForShutdown() {
-  PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  DCHECK(X11EventSource::HasInstance());
+  X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 void X11Window::SetBounds(const gfx::Rect& bounds) {
@@ -494,42 +505,116 @@ bool X11Window::HandleAsAtkEvent(XEvent* xev) {
 #endif
 }
 
+// CheckCanDispatchNextPlatformEvent is called by X11EventSourceLibevent to
+// determine whether X11Window instance (XEventDispatcher implementation) is
+// able to process next translated event sent by it. So, it's done through
+// |handle_next_event_| internal flag, used in subsequent CanDispatchEvent
+// call.
+void X11Window::CheckCanDispatchNextPlatformEvent(XEvent* xev) {
+  if (is_shutting_down_)
+    return;
+  current_xevent_ = XWindow::IsTargetedBy(*xev) ? xev : nullptr;
+}
+
+void X11Window::PlatformEventDispatchFinished() {
+  current_xevent_ = nullptr;
+}
+
+PlatformEventDispatcher* X11Window::GetPlatformEventDispatcher() {
+  return this;
+}
+
+bool X11Window::DispatchXEvent(XEvent* xev) {
+  if (!XWindow::IsTargetedBy(*xev))
+    return false;
+  XWindow::ProcessEvent(xev);
+  return true;
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
-#if defined(USE_X11)
-  return XWindow::IsTargetedBy(*xev);
-#else
-  NOTREACHED() << "Ozone must use own dispatcher as it has different type of "
-                  "PlatformEvent";
-  return false;
-#endif
+  DCHECK_NE(window(), x11::None);
+  return !!current_xevent_;
 }
 
 uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
-#if defined(USE_X11)
-  TRACE_EVENT1("views", "X11PlatformWindow::Dispatch", "event->type",
-               event->type);
+  TRACE_EVENT1("views", "X11PlatformWindow::Dispatch", "event->type()",
+               event->type());
 
-  if (!HandleAsAtkEvent(event))
-    ProcessEvent(event);
+  DCHECK_NE(window(), x11::None);
+  DCHECK(event);
+  DCHECK(current_xevent_);
+
+  if (event->IsMouseEvent())
+    X11WindowManager::GetInstance()->MouseOnWindow(this);
+#if BUILDFLAG(USE_ATK)
+  // TODO(crbug.com/1014934): Support ATK in Ozone/X11.
+  if (HandleAsAtkEvent(current_xevent_))
+    return POST_DISPATCH_STOP_PROPAGATION;
+#endif
+
+  DispatchUiEvent(event, current_xevent_);
   return POST_DISPATCH_STOP_PROPAGATION;
-#else
-  // Notify that the mouse gets physically entered to the window regardless of
-  // the grab. This is used to update the mouse cursor state.
+}
+
+void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
   auto* window_manager = X11WindowManager::GetInstance();
   DCHECK(window_manager);
-  if (event->IsMouseEvent())
-    window_manager->MouseOnWindow(this);
 
-  OnXWindowEvent(event);
-  return POST_DISPATCH_STOP_PROPAGATION;
+  // Process X11-specific bits
+  if (XWindow::IsTargetedBy(*xev))
+    XWindow::ProcessEvent(xev);
+
+  // If |event| is a located event (mouse, touch, etc) and another X11 window
+  // is set as the current located events grabber, the |event| must be
+  // re-routed to that grabber. Otherwise, just send the event.
+  auto* located_events_grabber = window_manager->located_events_grabber();
+  if (event->IsLocatedEvent() && located_events_grabber &&
+      located_events_grabber != this) {
+    if (event->IsMouseEvent() ||
+        (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
+      // Another X11Window has installed itself as capture. Translate the
+      // event's location and dispatch to the other.
+      ConvertEventLocationToTargetLocation(located_events_grabber->GetBounds(),
+                                           GetBounds(),
+                                           event->AsLocatedEvent());
+    }
+    return located_events_grabber->DispatchUiEvent(event, xev);
+  }
+
+  XEvent last_xev;
+  std::unique_ptr<ui::Event> last_motion;
+  bool coalesced = CoalesceEventsIfNeeded(xev, event->type(), &last_xev);
+  if (coalesced) {
+    last_motion = ui::BuildEventFromXEvent(last_xev);
+    event = last_motion.get();
+  }
+
+  // If after CoalescePendingMotionEvents the type of xev is resolved
+  // to UNKNOWN, don't dispatch the event. TODO(804418): investigate
+  // why ColescePendingMotionEvents can include mouse wheel events as
+  // well. Investigation showed that events on Linux are checked with
+  // cmt-device path, and can include DT_CMT_SCROLL_ data. See more
+  // discussion in https://crrev.com/c/853953
+  if (event->type() != ui::ET_UNKNOWN) {
+#if defined(USE_OZONE)
+    DispatchEventFromNativeUiEvent(
+        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                              base::Unretained(platform_window_delegate())));
+#else
+    platform_window_delegate_->DispatchEvent(event);
 #endif
+  }
+
+  if (coalesced)
+    XFreeEventData(last_xev.xgeneric.display, &last_xev.xcookie);
 }
 
 void X11Window::OnXWindowCreated() {
   X11WindowManager::GetInstance()->AddWindow(this);
 
-  // X11WindowOzone overrides this method and manages events by itself.
-  SetPlatformEventDispatcher();
+  DCHECK(X11EventSource::HasInstance());
+  X11EventSource::GetInstance()->AddXEventDispatcher(this);
+
   platform_window_delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 }
 
@@ -617,40 +702,6 @@ void X11Window::OnXWindowLostPointerGrab() {
     x11_extension_delegate_->OnLostMouseGrab();
 }
 
-void X11Window::OnXWindowEvent(ui::Event* event) {
-  DCHECK_NE(window(), x11::None);
-  DCHECK(event);
-
-  auto* window_manager = X11WindowManager::GetInstance();
-  DCHECK(window_manager);
-
-  // If |event| is a located event (mouse, touch, etc) and another X11 window
-  // is set as the current located events grabber, the |event| must be
-  // re-routed to that grabber. Otherwise, just send the event.
-  auto* located_events_grabber = window_manager->located_events_grabber();
-  if (event->IsLocatedEvent() && located_events_grabber &&
-      located_events_grabber != this) {
-    if (event->IsMouseEvent() ||
-        (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
-      // Another X11Window has installed itself as capture. Translate the
-      // event's location and dispatch to the other.
-      ConvertEventLocationToTargetLocation(located_events_grabber->GetBounds(),
-                                           GetBounds(),
-                                           event->AsLocatedEvent());
-    }
-    located_events_grabber->OnXWindowEvent(event);
-    return;
-  }
-
-#if defined(USE_OZONE)
-  DispatchEventFromNativeUiEvent(
-      event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                            base::Unretained(platform_window_delegate())));
-#else
-  platform_window_delegate_->DispatchEvent(event);
-#endif
-}
-
 void X11Window::OnXWindowSelectionEvent(XEvent* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowSelectionEvent(xev);
@@ -679,11 +730,6 @@ void X11Window::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& pointer_location_in_px) {
   XWindow::WmMoveResize(hittest, pointer_location_in_px);
-}
-
-void X11Window::SetPlatformEventDispatcher() {
-  DCHECK(PlatformEventSource::GetInstance());
-  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
 gfx::Size X11Window::AdjustSizeForDisplay(

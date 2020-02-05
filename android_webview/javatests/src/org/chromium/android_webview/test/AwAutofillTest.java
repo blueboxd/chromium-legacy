@@ -1304,7 +1304,7 @@ public class AwAutofillTest {
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
             clearChangedValues();
             executeJavaScriptAndWaitForResult("document.getElementById('color').focus();");
-            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_SPACE);
             // Use key B to select 'blue'.
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             cnt += waitForCallbackAndVerifyTypes(cnt,
@@ -1342,7 +1342,7 @@ public class AwAutofillTest {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
             // Change select control first shall start autofill session.
-            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_SPACE);
             // Use key B to select 'blue'.
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             cnt += waitForCallbackAndVerifyTypes(cnt,
@@ -1371,7 +1371,7 @@ public class AwAutofillTest {
                 + "</script>"
                 + "<form action='a.html' name='formname' id='formid'>"
                 + "<button onclick='myFunction();' autofocus>button </button>"
-                + "<select id='color' autofocus><option value='red'>red</option><option "
+                + "<select id='color'><option value='red'>red</option><option "
                 + "value='blue' id='blue'>blue</option></select>"
                 + "</form>"
                 + "</body>"
@@ -1380,7 +1380,7 @@ public class AwAutofillTest {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
             // Change select control first shall start autofill session.
-            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_SPACE);
             cnt += waitForCallbackAndVerifyTypes(cnt,
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
             ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
@@ -1408,7 +1408,7 @@ public class AwAutofillTest {
                 + "</script>"
                 + "<form action='a.html' name='formname' id='formid'>"
                 + "<button onclick='myFunction();' autofocus>button </button>"
-                + "<select id='color' autofocus><option value='red'>red</option><option "
+                + "<select id='color'><option value='red'>red</option><option "
                 + "value='blue' id='blue'>blue</option></select>"
                 + "</form>"
                 + "</body>"
@@ -1421,7 +1421,7 @@ public class AwAutofillTest {
             // didn't trigger the autofill, since
             // testUserInitiatedJavascriptSelectControlChangeNotification verified user's triggering
             // work.
-            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_SPACE);
             cnt += waitForCallbackAndVerifyTypes(cnt,
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
             ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();

@@ -695,7 +695,8 @@ Element* FindFocusableElementDescendingDownIntoFrameDocument(
     auto* container_local_frame = DynamicTo<LocalFrame>(owner.ContentFrame());
     if (!container_local_frame)
       break;
-    container_local_frame->GetDocument()->UpdateStyleAndLayout();
+    container_local_frame->GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kFocus);
     ScopedFocusNavigation scope =
         ScopedFocusNavigation::OwnedByIFrame(owner, owner_map);
     Element* found_element =
@@ -1027,7 +1028,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
   if (!current && !initial_focus)
     current = document->SequentialFocusNavigationStartingPoint(type);
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
   ScopedFocusNavigation scope =
       current ? ScopedFocusNavigation::CreateFor(*current, owner_map)
               : ScopedFocusNavigation::CreateForDocument(*document, owner_map);
@@ -1149,7 +1150,7 @@ Element* FocusController::NextFocusableElementInForm(
   // from current element in terms of tabindex, then it's signalling CPU load.
   // Will nvestigate further for a proper solution later.
   static const int kFocusTraversalThreshold = 50;
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
   auto* html_element = DynamicTo<HTMLElement>(element);
   if (!html_element)
     return nullptr;
@@ -1233,7 +1234,7 @@ Element* FocusController::FindFocusableElementAfter(
   if (type != mojom::blink::FocusType::kForward &&
       type != mojom::blink::FocusType::kBackward)
     return nullptr;
-  element.GetDocument().UpdateStyleAndLayout();
+  element.GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
 
   OwnerMap owner_map;
   return FindFocusableElement(type, element, owner_map);

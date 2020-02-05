@@ -4,13 +4,11 @@
 
 #include "ui/gl/gl_surface_egl_x11.h"
 
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gl/egl_util.h"
 
 using ui::GetLastEGLErrorString;
-using ui::PlatformEvent;
-using ui::PlatformEventSource;
+using ui::X11EventSource;
 
 namespace gl {
 
@@ -147,18 +145,15 @@ bool NativeViewGLSurfaceEGLX11::Resize(const gfx::Size& size,
   return true;
 }
 
-bool NativeViewGLSurfaceEGLX11::CanDispatchEvent(const PlatformEvent& event) {
-  return event->type == Expose && event->xexpose.window == window_;
-}
+bool NativeViewGLSurfaceEGLX11::DispatchXEvent(XEvent* xev) {
+  if (xev->type != Expose || xev->xexpose.window != window_)
+    return false;
 
-uint32_t NativeViewGLSurfaceEGLX11::DispatchEvent(const PlatformEvent& event) {
-  XEvent x_event = *event;
-  x_event.xexpose.window = parent_window_;
-
+  xev->xexpose.window = parent_window_;
   Display* x11_display = GetNativeDisplay();
-  XSendEvent(x11_display, parent_window_, x11::False, ExposureMask, &x_event);
+  XSendEvent(x11_display, parent_window_, x11::False, ExposureMask, xev);
   XFlush(x11_display);
-  return ui::POST_DISPATCH_STOP_PROPAGATION;
+  return true;
 }
 
 NativeViewGLSurfaceEGLX11::~NativeViewGLSurfaceEGLX11() {

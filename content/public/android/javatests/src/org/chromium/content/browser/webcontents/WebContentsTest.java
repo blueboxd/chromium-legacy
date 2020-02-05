@@ -25,6 +25,8 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
@@ -385,8 +387,14 @@ public class WebContentsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
 
         final ChildProcessConnection connection = getSandboxedChildProcessConnection();
-        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
-                () -> Assert.assertFalse(connection.isModerateBindingBound()));
+        // Need to poll here because there is an intentional delay for removing binding.
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Failed to remove moderate binding") {
+            @Override
+            public boolean isSatisfied() {
+                return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                        () -> !connection.isModerateBindingBound());
+            }
+        });
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> webContents.setImportance(ChildProcessImportance.MODERATE));
@@ -407,8 +415,13 @@ public class WebContentsTest {
                 () -> Assert.assertTrue(connection.isStrongBindingBound()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
-        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
-                () -> Assert.assertFalse(connection.isStrongBindingBound()));
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Failed to remove strong binding") {
+            @Override
+            public boolean isSatisfied() {
+                return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                        () -> !connection.isStrongBindingBound());
+            }
+        });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onShow());
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(

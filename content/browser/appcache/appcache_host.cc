@@ -397,7 +397,7 @@ void AppCacheHost::GetResourceList(GetResourceListCallback callback) {
 
 std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
     std::unique_ptr<AppCacheRequest> request,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     bool should_reset_appcache) {
   if (AppCacheRequestHandler::IsMainResourceType(resource_type)) {
     // Store the first party origin so that it can be used later in SelectCache

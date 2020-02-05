@@ -89,7 +89,6 @@ class PageNodeImpl
   base::TimeTicks usage_estimate_time() const;
   base::TimeDelta cumulative_cpu_usage_estimate() const;
   uint64_t private_footprint_kb_estimate() const;
-  bool page_almost_idle() const;
   const GURL& main_frame_url() const;
   int64_t navigation_id() const;
   const std::string& contents_mime_type() const;
@@ -104,10 +103,6 @@ class PageNodeImpl
 
   void SetLifecycleStateForTesting(LifecycleState lifecycle_state) {
     SetLifecycleState(lifecycle_state);
-  }
-
-  void SetPageAlmostIdleForTesting(bool page_almost_idle) {
-    SetPageAlmostIdle(page_almost_idle);
   }
 
   void SetIsHoldingWebLockForTesting(bool is_holding_weblock) {
@@ -126,11 +121,10 @@ class PageNodeImpl
   friend class FrameNodeImpl;
   friend class PageAggregatorAccess;
   friend class FrozenFrameAggregatorAccess;
-  friend class PageAlmostIdleAccess;
+  friend class PageLoadTrackerAccess;
 
   // PageNode implementation:
   const std::string& GetBrowserContextID() const override;
-  bool IsPageAlmostIdle() const override;
   bool IsVisible() const override;
   base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
   bool IsAudible() const override;
@@ -154,7 +148,6 @@ class PageNodeImpl
   void JoinGraph() override;
   void LeaveGraph() override;
 
-  void SetPageAlmostIdle(bool page_almost_idle);
   void SetLifecycleState(LifecycleState lifecycle_state);
   void SetOriginTrialFreezePolicy(InterventionPolicy policy);
   void SetIsHoldingWebLock(bool is_holding_weblock);
@@ -217,11 +210,6 @@ class PageNodeImpl
   // The unique ID of the browser context that this page belongs to.
   const std::string browser_context_id_;
 
-  // Page almost idle state. This is the output that is driven by the
-  // PageAlmostIdleDecorator.
-  ObservedProperty::
-      NotifiesOnlyOnChanges<bool, &PageNodeObserver::OnPageAlmostIdleChanged>
-          page_almost_idle_{false};
   // Whether or not the page is visible. Driven by browser instrumentation.
   // Initialized on construction.
   ObservedProperty::NotifiesOnlyOnChanges<bool,
@@ -272,8 +260,8 @@ class PageNodeImpl
       &PageNodeObserver::OnHadFormInteractionChanged>
       had_form_interaction_{false};
 
-  // Storage for PageAlmostIdle user data.
-  std::unique_ptr<NodeAttachedData> page_almost_idle_data_;
+  // Storage for PageLoadTracker user data.
+  std::unique_ptr<NodeAttachedData> page_load_tracker_data_;
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;

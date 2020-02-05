@@ -5,16 +5,16 @@
 #ifndef CONTENT_COMMON_NET_RECORD_LOAD_HISTOGRAMS_H_
 #define CONTENT_COMMON_NET_RECORD_LOAD_HISTOGRAMS_H_
 
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/origin.h"
 
 namespace content {
 
 // Logs histograms when a resource destined for a renderer (One with a
-// content::ResourceType) finishes loading, or when a load is aborted. Not used
-// for internal network requests initiated by the browser itself.
+// blink::mojom::ResourceType) finishes loading, or when a load is aborted. Not
+// used for internal network requests initiated by the browser itself.
 void RecordLoadHistograms(const url::Origin& origin,
-                          ResourceType resource_type,
+                          blink::mojom::ResourceType resource_type,
                           int net_error);
 
 }  // namespace content

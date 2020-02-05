@@ -36,12 +36,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/resource_load_info.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -772,7 +772,7 @@ void CastWebContentsImpl::MainFrameWasResized(bool width_changed) {
 void CastWebContentsImpl::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   if (!web_contents_ || render_frame_host != web_contents_->GetMainFrame())
     return;
   int net_error = resource_load_info.net_error;

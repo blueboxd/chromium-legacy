@@ -1107,20 +1107,8 @@ void XWindow::ProcessEvent(XEvent* xev) {
   switch (xev->type) {
     case EnterNotify:
     case LeaveNotify: {
-#if defined(USE_X11)
-      // Ignore EventNotify and LeaveNotify events from children of |xwindow_|.
-      // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
-      if (xev->xcrossing.detail != NotifyInferior) {
-        DCHECK(xev);
-        ui::MouseEvent mouse_event(xev);
-        OnXWindowEvent(&mouse_event);
-      } else
-#endif
-      {
-        bool is_enter = xev->type == EnterNotify;
-        OnCrossingEvent(is_enter, xev->xcrossing.focus, xev->xcrossing.mode,
-                        xev->xcrossing.detail);
-      }
+      OnCrossingEvent(xev->type == EnterNotify, xev->xcrossing.focus,
+                      xev->xcrossing.mode, xev->xcrossing.detail);
       break;
     }
     case Expose: {
@@ -1129,37 +1117,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
       OnXWindowDamageEvent(damage_rect_in_pixels);
       break;
     }
-#if !defined(USE_OZONE)
-    case KeyPress:
-    case KeyRelease: {
-      ui::KeyEvent key_event(xev);
-      OnXWindowEvent(&key_event);
-      break;
-    }
-    case ButtonPress:
-    case ButtonRelease: {
-      ui::EventType event_type = ui::EventTypeFromNative(xev);
-      switch (event_type) {
-        case ui::ET_MOUSEWHEEL: {
-          ui::MouseWheelEvent mouseev(xev);
-          OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_MOUSE_PRESSED:
-        case ui::ET_MOUSE_RELEASED: {
-          ui::MouseEvent mouseev(xev);
-          OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_UNKNOWN:
-          // No event is created for X11-release events for mouse-wheel buttons.
-          break;
-        default:
-          NOTREACHED() << event_type;
-      }
-      break;
-    }
-#endif
     case x11::FocusIn:
     case x11::FocusOut:
       OnFocusEvent(xev->type == x11::FocusIn, xev->xfocus.mode,
@@ -1177,8 +1134,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       switch (static_cast<XIEvent*>(xev->xcookie.data)->evtype) {
         case XI_Enter:
         case XI_Leave: {
-          bool is_enter = enter_event->evtype == XI_Enter;
-          OnCrossingEvent(is_enter, enter_event->focus,
+          OnCrossingEvent(enter_event->evtype == XI_Enter, enter_event->focus,
                           XI2ModeToXMode(enter_event->mode),
                           enter_event->detail);
           return;
@@ -1192,82 +1148,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
         default:
           break;
       }
-#if !defined(USE_OZONE)
-      int num_coalesced = 0;
-      ui::EventType type = ui::EventTypeFromNative(xev);
-      XEvent last_event;
-
-      switch (type) {
-        case ui::ET_TOUCH_MOVED:
-          num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-          if (num_coalesced > 0)
-            xev = &last_event;
-          FALLTHROUGH;
-        case ui::ET_TOUCH_PRESSED:
-        case ui::ET_TOUCH_RELEASED: {
-          ui::TouchEvent touchev(xev);
-          OnXWindowEvent(&touchev);
-          break;
-        }
-        case ui::ET_MOUSE_MOVED:
-        case ui::ET_MOUSE_DRAGGED:
-        case ui::ET_MOUSE_PRESSED:
-        case ui::ET_MOUSE_RELEASED:
-        case ui::ET_MOUSE_ENTERED:
-        case ui::ET_MOUSE_EXITED: {
-          if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
-            // If this is a motion event, we want to coalesce all pending motion
-            // events that are at the top of the queue.
-            num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-            if (num_coalesced > 0)
-              xev = &last_event;
-          }
-          ui::MouseEvent mouseev(xev);
-          // If after CoalescePendingMotionEvents the type of xev is resolved to
-          // UNKNOWN, don't dispatch the event.
-          // TODO(804418): investigate why ColescePendingMotionEvents can
-          // include mouse wheel events as well. Investigation showed that
-          // events on Linux are checked with cmt-device path, and can include
-          // DT_CMT_SCROLL_ data. See more discussion in
-          // https://crrev.com/c/853953
-          if (mouseev.type() != ui::ET_UNKNOWN)
-            OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_MOUSEWHEEL: {
-          ui::MouseWheelEvent mouseev(xev);
-          OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_SCROLL_FLING_START:
-        case ui::ET_SCROLL_FLING_CANCEL:
-        case ui::ET_SCROLL: {
-          ui::ScrollEvent scrollev(xev);
-          // We need to filter zero scroll offset here. Because
-          // MouseWheelEventQueue assumes we'll never get a zero scroll offset
-          // event and we need delta to determine which element to scroll on
-          // phaseBegan.
-          if (scrollev.x_offset() != 0.0 || scrollev.y_offset() != 0.0)
-            OnXWindowEvent(&scrollev);
-          break;
-        }
-        case ui::ET_KEY_PRESSED:
-        case ui::ET_KEY_RELEASED: {
-          ui::KeyEvent key_event(xev);
-          OnXWindowEvent(&key_event);
-          break;
-        }
-        case ui::ET_UNKNOWN:
-          break;
-        default:
-          NOTREACHED();
-      }
-
-      // If we coalesced an event we need to free its cookie.
-      if (num_coalesced > 0)
-        XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
-#endif
-
       break;
     }
     case MapNotify: {
@@ -1322,30 +1202,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
       }
       break;
     }
-#if !defined(USE_OZONE)
-    case MotionNotify: {
-      // Discard all but the most recent motion event that targets the same
-      // window with unchanged state.
-      XEvent last_event;
-      while (XPending(xev->xany.display)) {
-        XEvent next_event;
-        XPeekEvent(xev->xany.display, &next_event);
-        if (next_event.type == MotionNotify &&
-            next_event.xmotion.window == xev->xmotion.window &&
-            next_event.xmotion.subwindow == xev->xmotion.subwindow &&
-            next_event.xmotion.state == xev->xmotion.state) {
-          XNextEvent(xev->xany.display, &last_event);
-          xev = &last_event;
-        } else {
-          break;
-        }
-      }
-
-      ui::MouseEvent mouseev(xev);
-      OnXWindowEvent(&mouseev);
-      break;
-    }
-#endif
     case PropertyNotify: {
       XAtom changed_atom = xev->xproperty.atom;
       if (changed_atom == gfx::GetAtom("_NET_WM_STATE")) {

@@ -187,6 +187,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/sync/test/android/javatests/src"/>
     <classpathentry kind="src" path="components/test/android/browsertests_apk/src"/>
     <classpathentry kind="src" path="components/url_formatter/android/java/src"/>
+    <classpathentry kind="src" path="components/url_formatter/android/native_java_unittests/src"/>
     <classpathentry kind="src" path="components/variations/android/java/src"/>
     <classpathentry kind="src" path="components/variations/android/junit/src"/>
     <classpathentry kind="src" path="components/version_info/android/java/src"/>

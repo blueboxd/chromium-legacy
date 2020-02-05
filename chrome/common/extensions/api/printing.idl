@@ -23,7 +23,10 @@ namespace printing {
   // The status of $(ref:submitJob) request.
   enum SubmitJobStatus {
     // Sent print job request is accepted.
-    OK
+    OK,
+
+    // Sent print job request is rejected by the user.
+    USER_REJECTED
   };
 
   // Response for $(ref:submitJob) request.

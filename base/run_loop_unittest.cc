@@ -26,8 +26,10 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -548,47 +550,74 @@ INSTANTIATE_TEST_SUITE_P(Mock,
                          RunLoopTest,
                          testing::Values(RunLoopTestType::kTestDelegate));
 
-TEST(ScopedRunTimeoutForTestTest, TimesOut) {
-  test::TaskEnvironment task_environment;
-  RunLoop run_loop;
+TEST(RunLoopUntilConditionTest, FailsTestOnTimeout) {
+  test::SingleThreadTaskEnvironment task_environment;
 
-  static constexpr auto kArbitraryTimeout =
-      base::TimeDelta::FromMilliseconds(10);
-  RunLoop::ScopedRunTimeoutForTest run_timeout(
-      kArbitraryTimeout, MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
-
-  // Since the delayed task will be posted only after the message pump starts
-  // running, the ScopedRunTimeoutForTest will already have started to elapse,
-  // so if Run() exits at the correct time then our delayed task will not run.
-  SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&SequencedTaskRunner::PostDelayedTask),
-                     SequencedTaskRunnerHandle::Get(), FROM_HERE,
-                     MakeExpectedNotRunClosure(FROM_HERE), kArbitraryTimeout));
-
-  // This task should get to run before Run() times-out.
-  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MakeExpectedRunClosure(FROM_HERE), kArbitraryTimeout);
-
-  run_loop.Run();
+  // Expect the Run() timeout to be run when |condition| is false and the loop
+  // times out.
+  const RunLoop::ScopedRunTimeoutForTest short_timeout(
+      TimeDelta::FromMilliseconds(10),
+      MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
+  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return false; }));
 }
 
-TEST(ScopedRunTimeoutForTestTest, RunTasksUntilTimeout) {
-  test::TaskEnvironment task_environment;
-  RunLoop run_loop;
+TEST(RunLoopUntilConditionTest, FailsTestIfConditionNotMetOnQuit) {
+  test::SingleThreadTaskEnvironment task_environment;
+  RunLoop loop;
 
-  static constexpr auto kArbitraryTimeout =
-      base::TimeDelta::FromMilliseconds(10);
-  RunLoop::ScopedRunTimeoutForTest run_timeout(
-      kArbitraryTimeout, MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
+  // Expect the Run() timeout to be run when |condition| is false and the loop
+  // Quit()s prematurely.
+  const RunLoop::ScopedRunTimeoutForTest short_timeout(
+      TimeDelta::FromMilliseconds(10),
+      MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
 
-  // Posting a task with the same delay as our timeout, immediately before
-  // calling Run(), means it should get to run. Since this uses QuitWhenIdle(),
-  // the Run() timeout callback should also get to run.
-  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MakeExpectedRunClosure(FROM_HERE), kArbitraryTimeout);
+  // Running with a never-true condition will fire the on-timeout callback.
+  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return false; }));
+}
 
-  run_loop.Run();
+TEST(RunLoopUntilConditionTest, NoEffectIfConditionMetOnQuit) {
+  test::SingleThreadTaskEnvironment task_environment;
+  RunLoop loop;
+
+  // Verify that the call does not trigger the Run() timeout.
+  const RunLoop::ScopedRunTimeoutForTest short_timeout(
+      TimeDelta::FromMilliseconds(10), MakeExpectedNotRunClosure(FROM_HERE));
+  SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, loop.QuitClosure());
+  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return true; }));
+}
+
+TEST(RunLoopUntilConditionTest, NoEffectIfConditionMetOnTimeout) {
+  test::SingleThreadTaskEnvironment task_environment;
+  RunLoop loop;
+
+  // Verify that the call does not trigger the Run() timeout.
+  // Note that |short_timeout| must be shorter than the RunUntilConditionForTest
+  // polling frequency.
+  const RunLoop::ScopedRunTimeoutForTest short_timeout(
+      TimeDelta::FromMilliseconds(10), MakeExpectedNotRunClosure(FROM_HERE));
+  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return true; }));
+}
+
+TEST(RunLoopUntilConditionTest, QuitsLoopIfConditionMetOnPoll) {
+  test::SingleThreadTaskEnvironment task_environment;
+  RunLoop loop;
+
+  // Configure a long timeout so it won't fire before we poll.
+  const RunLoop::ScopedRunTimeoutForTest long_timeout(
+      TestTimeouts::action_timeout(), MakeExpectedNotRunClosure(FROM_HERE));
+
+  // Arrange to post a task to the loop after the Run()-timeout has been
+  // started, set to run after the |condition| is polled and before the Run()
+  // timeout expires. This task should not get to run.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce([]() {
+        ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE),
+            TimeDelta::FromSeconds(1));
+      }));
+
+  // Run the loop, which should be Quit() the first time |condition| is polled.
+  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return true; }));
 }
 
 TEST(RunLoopDeathTest, MustRegisterBeforeInstantiating) {

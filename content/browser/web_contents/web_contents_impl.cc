@@ -4677,7 +4677,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& http_method,
     const std::string& mime_type,
-    ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   for (auto& observer : observers_)
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
 
@@ -4832,7 +4832,7 @@ void WebContentsImpl::SubresourceResponseStarted(
 void WebContentsImpl::ResourceLoadComplete(
     RenderFrameHost* render_frame_host,
     const GlobalRequestID& request_id,
-    mojom::ResourceLoadInfoPtr resource_load_info) {
+    blink::mojom::ResourceLoadInfoPtr resource_load_info) {
   for (auto& observer : observers_) {
     observer.ResourceLoadComplete(render_frame_host, request_id,
                                   *resource_load_info);

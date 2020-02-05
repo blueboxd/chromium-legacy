@@ -182,6 +182,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   // Form data for password generation on this page.
   std::map<base::string16, PasswordFormGenerationData> _formGenerationData;
+
+  NSString* _lastTypedfieldIdentifier;
+  NSString* _lastTypedValue;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
@@ -315,6 +318,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   _credentialManager.reset();
   _formGenerationData.clear();
   _isPasswordGenerated = NO;
+  _lastTypedfieldIdentifier = nil;
+  _lastTypedValue = nil;
 }
 
 #pragma mark - FormSuggestionProvider
@@ -370,9 +375,17 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     }
   }
 
-  self.passwordManager->UpdateStateOnUserInput(
-      SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
-      SysNSStringToUTF16(typedValue));
+  if (![fieldIdentifier isEqualToString:_lastTypedfieldIdentifier] ||
+      ![typedValue isEqualToString:_lastTypedValue]) {
+    // This method is called multiple times for the same user keystroke. Inform
+    // only once the keystroke.
+    _lastTypedfieldIdentifier = fieldIdentifier;
+    _lastTypedValue = typedValue;
+
+    self.passwordManager->UpdateStateOnUserInput(
+        self.passwordManagerDriver, SysNSStringToUTF16(formName),
+        SysNSStringToUTF16(fieldIdentifier), SysNSStringToUTF16(typedValue));
+  }
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName

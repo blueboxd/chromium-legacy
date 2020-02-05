@@ -163,40 +163,42 @@ void LogReadDynamicRulesStatus(ReadJSONRulesResult::Status status) {
   base::UmaHistogramEnumeration(kReadDynamicRulesJSONStatusHistogram, status);
 }
 
-// Maps content::ResourceType to api::declarative_net_request::ResourceType.
-dnr_api::ResourceType GetDNRResourceType(content::ResourceType resource_type) {
+// Maps blink::mojom::ResourceType to
+// api::declarative_net_request::ResourceType.
+dnr_api::ResourceType GetDNRResourceType(
+    blink::mojom::ResourceType resource_type) {
   switch (resource_type) {
-    case content::ResourceType::kPrefetch:
-    case content::ResourceType::kSubResource:
+    case blink::mojom::ResourceType::kPrefetch:
+    case blink::mojom::ResourceType::kSubResource:
       return dnr_api::RESOURCE_TYPE_OTHER;
-    case content::ResourceType::kMainFrame:
-    case content::ResourceType::kNavigationPreloadMainFrame:
+    case blink::mojom::ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadMainFrame:
       return dnr_api::RESOURCE_TYPE_MAIN_FRAME;
-    case content::ResourceType::kCspReport:
+    case blink::mojom::ResourceType::kCspReport:
       return dnr_api::RESOURCE_TYPE_CSP_REPORT;
-    case content::ResourceType::kScript:
-    case content::ResourceType::kWorker:
-    case content::ResourceType::kSharedWorker:
-    case content::ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kScript:
+    case blink::mojom::ResourceType::kWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kServiceWorker:
       return dnr_api::RESOURCE_TYPE_SCRIPT;
-    case content::ResourceType::kImage:
-    case content::ResourceType::kFavicon:
+    case blink::mojom::ResourceType::kImage:
+    case blink::mojom::ResourceType::kFavicon:
       return dnr_api::RESOURCE_TYPE_IMAGE;
-    case content::ResourceType::kStylesheet:
+    case blink::mojom::ResourceType::kStylesheet:
       return dnr_api::RESOURCE_TYPE_STYLESHEET;
-    case content::ResourceType::kObject:
-    case content::ResourceType::kPluginResource:
+    case blink::mojom::ResourceType::kObject:
+    case blink::mojom::ResourceType::kPluginResource:
       return dnr_api::RESOURCE_TYPE_OBJECT;
-    case content::ResourceType::kXhr:
+    case blink::mojom::ResourceType::kXhr:
       return dnr_api::RESOURCE_TYPE_XMLHTTPREQUEST;
-    case content::ResourceType::kSubFrame:
-    case content::ResourceType::kNavigationPreloadSubFrame:
+    case blink::mojom::ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadSubFrame:
       return dnr_api::RESOURCE_TYPE_SUB_FRAME;
-    case content::ResourceType::kPing:
+    case blink::mojom::ResourceType::kPing:
       return dnr_api::RESOURCE_TYPE_PING;
-    case content::ResourceType::kMedia:
+    case blink::mojom::ResourceType::kMedia:
       return dnr_api::RESOURCE_TYPE_MEDIA;
-    case content::ResourceType::kFontResource:
+    case blink::mojom::ResourceType::kFontResource:
       return dnr_api::RESOURCE_TYPE_FONT;
   }
   NOTREACHED();

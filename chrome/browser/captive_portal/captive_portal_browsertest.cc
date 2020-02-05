@@ -168,6 +168,10 @@ const char* const kMockHttpsConnectionSecureDnsErr =
 // captive portal.
 const char* const kInternetConnectedTitle = "Title Of Awesomeness";
 
+// Expected title of a login page that was created in secure mode.
+const char* const kLoginSecureDnsDisabledTitle =
+    "Fake Login Page Secure Dns Disabled";
+
 // Creates a server-side redirect for use with the TestServer.
 std::string CreateServerRedirect(const std::string& dest_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
@@ -1050,7 +1054,12 @@ bool CaptivePortalBrowserTest::OnIntercept(
         contents = GetContents("captive_portal/page511.html");
         headers = "HTTP/1.1 511 Network Authentication Required\n";
       } else {
-        contents = GetContents("captive_portal/login.html");
+        // These URLs should only be requested for navigations, which will have
+        // trusted_params.
+        contents =
+            params->url_request.trusted_params->disable_secure_dns
+                ? GetContents("captive_portal/login_secure_dns_disabled.html")
+                : GetContents("captive_portal/login.html");
         headers = "HTTP/1.0 200 Just Peachy\n";
       }
     } else {
@@ -1350,6 +1359,8 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
       login_tab = popup_browser->tab_strip_model()->GetWebContentsAt(0);
       EXPECT_TRUE(CaptivePortalTabHelper::FromWebContents(login_tab)
                       ->is_captive_portal_window());
+      EXPECT_EQ(base::ASCIIToUTF16(kLoginSecureDnsDisabledTitle),
+                login_tab->GetTitle());
     } else {
       ASSERT_EQ(initial_browser_count, browser_list_->size());
       ASSERT_EQ(initial_tab_count + 1, tab_strip_model->count());
@@ -1453,6 +1464,8 @@ void CaptivePortalBrowserTest::FastErrorBehindCaptivePortal(
       login_tab = popup_browser->tab_strip_model()->GetWebContentsAt(0);
       EXPECT_TRUE(CaptivePortalTabHelper::FromWebContents(login_tab)
                       ->is_captive_portal_window());
+      EXPECT_EQ(base::ASCIIToUTF16(kLoginSecureDnsDisabledTitle),
+                login_tab->GetTitle());
     } else {
       ASSERT_EQ(initial_browser_count, browser_list_->size());
       ASSERT_EQ(initial_tab_count + 1, tab_strip_model->count());
@@ -1945,45 +1958,6 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, LoginFastTimeout) {
   FastTimeoutBehindCaptivePortal(browser(), true);
   Login(browser(), 0 /* num_loading_tabs */, 1 /* num_timed_out_tabs */,
         1 /* expected_portal_checks */);
-}
-
-// Test that a navigation in a tab that is part of a captive portal windoow
-// has secure DNS disabled.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       CaptivePortalWindowNavigationDisableSecureDns) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  CaptivePortalTabHelper::FromWebContents(web_contents)
-      ->set_is_captive_portal_window();
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  url::Origin origin = url::Origin::Create(url);
-
-  // Disable the interceptor that was set up during construction of the test.
-  // This is necessary since only one interceptor is allowed.
-  url_loader_interceptor_.reset();
-
-  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor;
-  bool invoked_interceptor = false;
-  url_loader_interceptor = std::make_unique<content::URLLoaderInterceptor>(
-      base::BindLambdaForTesting(
-          [&](content::URLLoaderInterceptor::RequestParams* params) {
-            if (params->url_request.url.spec().find("title1.html") !=
-                std::string::npos) {
-              invoked_interceptor = true;
-              EXPECT_TRUE(params->url_request.trusted_params);
-              EXPECT_TRUE(
-                  params->url_request.trusted_params->disable_secure_dns);
-              EXPECT_EQ(
-                  net::NetworkIsolationKey(origin, origin),
-                  params->url_request.trusted_params->network_isolation_key);
-            }
-            return false;
-          }));
-
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(invoked_interceptor);
 }
 
 // A cert error triggers a captive portal check and results in opening a login

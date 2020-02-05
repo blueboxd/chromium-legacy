@@ -1353,10 +1353,10 @@ CommandHandler.onEditCommand_ = function(command) {
  */
 CommandHandler.init = function() {
   ChromeVoxKbHandler.commandHandler = CommandHandler.onCommand;
-  const firstRunId = 'jdgcneonijmofocbhmijhacgchbihela';
+  const firstRunOrigin = 'chrome-extension://jdgcneonijmofocbhmijhacgchbihela';
   chrome.runtime.onMessageExternal.addListener(function(
       request, sender, sendResponse) {
-    if (sender.id != firstRunId) {
+    if (sender.origin != firstRunOrigin) {
       return;
     }
 

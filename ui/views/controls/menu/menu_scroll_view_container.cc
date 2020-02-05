@@ -181,10 +181,10 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
       AddChildView(std::make_unique<MenuScrollButton>(content_view, true));
 
   scroll_view_ = AddChildView(std::make_unique<MenuScrollView>(content_view));
-  scroll_view_->SetProperty(views::kFlexBehaviorKey,
-                            views::FlexSpecification::ForSizeRule(
-                                views::MinimumFlexSizeRule::kScaleToMinimum,
-                                views::MaximumFlexSizeRule::kUnbounded));
+  scroll_view_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded));
 
   scroll_down_button_ =
       AddChildView(std::make_unique<MenuScrollButton>(content_view, false));

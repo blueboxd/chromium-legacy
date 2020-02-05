@@ -38,6 +38,10 @@ ASH_EXPORT bool CanUnpinWindow();
 // If a window is pinned (aka forced fullscreen), exit from pinned mode.
 ASH_EXPORT void UnpinWindow();
 
+// Change primary display to the secondary display next to current primary
+// display
+ASH_EXPORT void ShiftPrimaryDisplay();
+
 }  // namespace accelerators
 }  // namespace ash
 

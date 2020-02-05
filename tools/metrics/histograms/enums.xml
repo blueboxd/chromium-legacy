@@ -14887,6 +14887,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="99" label="QR Code Generator"/>
   <int value="100" label="Crostini Force Close"/>
   <int value="101" label="App Uninstall"/>
+  <int value="102" label="Print Job Confirmation"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -19553,6 +19554,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="669" label="URLsToNotCheckForMalwareOfDownloadedContent"/>
   <int value="670" label="MinimumChromeVersionEnforced"/>
   <int value="671" label="ReportDeviceTimezoneInfo"/>
+  <int value="672" label="SystemProxySettings"/>
+  <int value="673" label="UserDataSnapshotRentionLimit"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -51844,7 +51847,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="INVALID_HTTP_METHOD (Obsolete)"/>
   <int value="24" label="WINDOW_PRINT (Obsolete)"/>
   <int value="25" label="RECENTLY_VISITED"/>
-  <int value="26" label="WINDOW_OPENER"/>
+  <int value="26" label="WINDOW_OPENER (Obsolete)"/>
   <int value="27" label="PAGE_ID_CONFLICT (Obsolete)"/>
   <int value="28" label="SAFE_BROWSING"/>
   <int value="29" label="FRAGMENT_MISMATCH (Obsolete)"/>
@@ -58623,6 +58626,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Relay"/>
 </enum>
 
+<enum name="SharingWebRtcOnMessageReceivedResult">
+  <int value="0" label="Decryption Failed"/>
+  <int value="1" label="Parsing Failed"/>
+  <int value="2" label="Invalid Payload"/>
+  <int value="3" label="Handler Not Found"/>
+  <int value="4" label="Success"/>
+</enum>
+
 <enum name="SharingWebRtcSendMessageResult">
   <int value="0" label="Internal error"/>
   <int value="1" label="Success"/>
@@ -60015,6 +60026,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="30" label="UMA_TAB_CLOSE_MULTIPLE_UNDO"/>
   <int value="31" label="UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION"/>
   <int value="32" label="UMA_TAB_GROUP_MANUAL_CREATION_UNDO"/>
+</enum>
+
+<enum name="SnapshotOperationResult">
+  <int value="0" label="Success">Operation succeeded</int>
+  <int value="1" label="Partial Sucess">Operation suceeded partially</int>
+  <int value="2" label="Failure">Operation failed</int>
+  <int value="3" label="Failed To Create Snapshot Directory">
+    Operation failed because the snapshot directory could not be created
+  </int>
 </enum>
 
 <enum name="SnippetOpenMethod">
@@ -64205,6 +64225,14 @@ Full version information for the fingerprint enum values:
   <int value="2" label="unexpected other schemes"/>
 </enum>
 
+<enum name="TranslateTargetLanguageOrigin">
+  <int value="0" label="Recent target language"/>
+  <int value="1" label="Language model"/>
+  <int value="2" label="Application UI"/>
+  <int value="3" label="Accept languages"/>
+  <int value="4" label="Default English"/>
+</enum>
+
 <enum name="TriggerHelpUIResult">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="FAILURE"/>
@@ -65124,6 +65152,10 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Unsupported Downgrade">
     Unsupported downgrade detected
   </int>
+  <int value="3" label="Snapshot Restoration">
+    Downgrade with snapshot restoration detected
+  </int>
+  <int value="4" label="Minor Downgrade">Minor version downgrade</int>
 </enum>
 
 <enum name="UserDemographicsStatus">
@@ -65517,6 +65549,12 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Requests not allowed: network down"/>
   <int value="5" label="Requests not allowed: disabled by command line"/>
   <int value="6" label="Waiting for network status"/>
+</enum>
+
+<enum name="VariationsRestrictionPolicyValues">
+  <int value="0" label="All variations are applied"/>
+  <int value="1" label="Only critical variations applied"/>
+  <int value="2" label="All variations are restricted"/>
 </enum>
 
 <enum name="VariationsSeedDateChange">

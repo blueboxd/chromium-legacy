@@ -18,6 +18,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -44,12 +45,13 @@ bool PathContainsDisallowedCharacter(const GURL& url) {
 }  // namespace
 
 // static
-bool ServiceWorkerUtils::IsMainResourceType(ResourceType type) {
+bool ServiceWorkerUtils::IsMainResourceType(blink::mojom::ResourceType type) {
   // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
   // to be a main resource.
-  if (type == ResourceType::kWorker)
+  if (type == blink::mojom::ResourceType::kWorker)
     return base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker);
-  return IsResourceTypeFrame(type) || type == ResourceType::kSharedWorker;
+  return blink::IsResourceTypeFrame(type) ||
+         type == blink::mojom::ResourceType::kSharedWorker;
 }
 
 // static

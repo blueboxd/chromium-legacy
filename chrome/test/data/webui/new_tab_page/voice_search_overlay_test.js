@@ -280,4 +280,40 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     // Assert.
     assertFalse(voiceSearchOverlay.$.dialog.open);
   });
+
+  test('on idle timeout stops voice search', async () => {
+    // Arrange.
+    const [callback, _] = await testProxy.whenCalled('setTimeout');
+
+    // Act.
+    callback();
+
+    // Assert.
+    assertTrue(mockSpeechRecognition.abortCalled);
+  });
+
+  const retryTestParams = [
+    {
+      name: 'retry link',
+      element: 'retryLink',
+    },
+    {
+      name: 'mic button',
+      element: 'micButton',
+    }
+  ];
+
+  retryTestParams.forEach(param => {
+    test(`${param.name} click starts voice search if in retry state`, () => {
+      // Arrange.
+      mockSpeechRecognition.onnomatch();
+      mockSpeechRecognition.startCalled = false;
+
+      // Act.
+      voiceSearchOverlay.shadowRoot.querySelector(`#${param.element}`).click();
+
+      // Assert.
+      assertTrue(mockSpeechRecognition.startCalled);
+    });
+  });
 });

@@ -61,7 +61,7 @@ class GFX_EXPORT PlatformFontSkia : public PlatformFont {
   std::string GetActualFontName() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
-  sk_sp<SkTypeface> GetNativeSkTypefaceIfAvailable() const override;
+  sk_sp<SkTypeface> GetNativeSkTypeface() const override;
 
  private:
   // Create a new instance of this object with the specified properties. Called

@@ -48,7 +48,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   // skipped after checking with the UrlCheckerDelegate.
   void Start(const net::HttpRequestHeaders& headers,
              int load_flags,
-             content::ResourceType resource_type,
+             blink::mojom::ResourceType resource_type,
              bool has_user_gesture,
              bool originated_from_service_worker,
              const GURL& url,
@@ -199,7 +199,7 @@ void BrowserURLLoaderThrottle::WillStartRequest(
       base::BindOnce(
           &BrowserURLLoaderThrottle::CheckerOnIO::Start,
           io_checker_->AsWeakPtr(), request->headers, request->load_flags,
-          static_cast<content::ResourceType>(request->resource_type),
+          static_cast<blink::mojom::ResourceType>(request->resource_type),
           request->has_user_gesture, request->originated_from_service_worker,
           request->url, request->method));
 }

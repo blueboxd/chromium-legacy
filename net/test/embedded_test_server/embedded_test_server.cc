@@ -434,7 +434,7 @@ void EmbeddedTestServer::HandleAcceptResult(
     std::unique_ptr<StreamSocket> socket) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   if (connection_listener_)
-    connection_listener_->AcceptedSocket(*socket);
+    socket = connection_listener_->AcceptedSocket(std::move(socket));
 
   if (is_using_ssl_)
     socket = DoSSLUpgrade(std::move(socket));

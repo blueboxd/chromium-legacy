@@ -278,10 +278,7 @@ jumbo_component("events") {
   friend = [ ":*" ]
 
   if (use_x11) {
-    sources += [
-      "x/events_x.cc",
-      "x/keyboard_hook_x11.cc",
-    ]
+    sources += [ "x/keyboard_hook_x11.cc" ]
   }
 
   if (use_x11 || ozone_platform_x11) {
@@ -300,7 +297,7 @@ jumbo_component("events") {
     configs += [ "//build/config/linux:glib" ]
   }
 
-  if (use_ozone) {
+  if (use_ozone || use_x11) {
     sources += [ "events_default.cc" ]
   }
 
@@ -449,8 +446,6 @@ jumbo_static_library("test_support") {
     "test/motion_event_test_utils.h",
     "test/platform_event_source_test_api.cc",
     "test/platform_event_source_test_api.h",
-    "test/platform_event_waiter.cc",
-    "test/platform_event_waiter.h",
     "test/test_event_handler.cc",
     "test/test_event_handler.h",
     "test/test_event_processor.cc",
@@ -501,10 +496,13 @@ jumbo_static_library("test_support") {
     sources += [
       "test/events_test_utils_x11.cc",
       "test/events_test_utils_x11.h",
+      "test/x11_event_waiter.cc",
+      "test/x11_event_waiter.h",
     ]
     deps += [
       "//ui/events/devices/x11",
       "//ui/events/keycodes:x11",
+      "//ui/events/platform/x11",
       "//ui/events/x",
       "//ui/gfx/x",
     ]

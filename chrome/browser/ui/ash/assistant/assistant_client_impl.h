@@ -15,6 +15,8 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -29,6 +31,7 @@ class Profile;
 // Class to handle all Assistant in-browser-process functionalities.
 class AssistantClientImpl : public ash::AssistantClient,
                             public chromeos::assistant::mojom::Client,
+                            public content::NotificationObserver,
                             public signin::IdentityManager::Observer,
                             public session_manager::SessionManagerObserver {
  public:
@@ -42,6 +45,11 @@ class AssistantClientImpl : public ash::AssistantClient,
   void BindAssistant(
       mojo::PendingReceiver<chromeos::assistant::mojom::Assistant> receiver)
       override;
+
+  // content::NotificationObserver overrides:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // assistant::mojom::Client overrides:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override;
@@ -118,6 +126,8 @@ class AssistantClientImpl : public ash::AssistantClient,
       pending_assistant_receivers_;
 
   bool initialized_ = false;
+
+  content::NotificationRegistrar notification_registrar_;
 
   // Non-owning pointers.
   Profile* profile_ = nullptr;

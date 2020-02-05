@@ -26,8 +26,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform_event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/views/controls/image_view.h"
@@ -210,19 +208,12 @@ void DesktopDragDropClientAuraX11::RemoveObserver(
   NOTIMPLEMENTED();
 }
 
-bool DesktopDragDropClientAuraX11::CanDispatchEvent(
-    const ui::PlatformEvent& event) {
-  return target_current_context() &&
-         event->xany.window == target_current_context()->source_window();
-}
-
-uint32_t DesktopDragDropClientAuraX11::DispatchEvent(
-    const ui::PlatformEvent& event) {
-  DCHECK(target_current_context());
-
-  if (target_current_context()->DispatchXEvent(event))
-    return ui::POST_DISPATCH_STOP_PROPAGATION;
-  return ui::POST_DISPATCH_NONE;
+bool DesktopDragDropClientAuraX11::DispatchXEvent(XEvent* event) {
+  if (!target_current_context() ||
+      event->xany.window != target_current_context()->source_window()) {
+    return false;
+  }
+  return target_current_context()->DispatchXEvent(event);
 }
 
 void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {
@@ -375,7 +366,7 @@ void DesktopDragDropClientAuraX11::OnBeginForeignDrag(XID window) {
   DCHECK(target_current_context());
   DCHECK(!target_current_context()->source_client());
 
-  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
   source_window_events_ =
       std::make_unique<ui::XScopedEventSelector>(window, PropertyChangeMask);
 }
@@ -384,7 +375,7 @@ void DesktopDragDropClientAuraX11::OnEndForeignDrag() {
   DCHECK(target_current_context());
   DCHECK(!target_current_context()->source_client());
 
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 void DesktopDragDropClientAuraX11::OnBeforeDragLeave() {

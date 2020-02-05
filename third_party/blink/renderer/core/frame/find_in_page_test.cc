@@ -77,7 +77,7 @@ class FindInPageCallbackReceiver {
 
 TEST_F(FindInPageTest, FindMatchRectsReturnsCorrectRects) {
   GetDocument().body()->SetInnerHTMLFromString("aAaAbBaBbAaAaA");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("aA"));

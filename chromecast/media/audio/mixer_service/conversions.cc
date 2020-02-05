@@ -78,6 +78,14 @@ media::AudioContentType ConvertContentType(ContentType type) {
   return static_cast<media::AudioContentType>(type);
 }
 
+ChannelLayout ConvertChannelLayout(media::ChannelLayout channel_layout) {
+  return static_cast<ChannelLayout>(channel_layout);
+}
+
+media::ChannelLayout ConvertChannelLayout(ChannelLayout channel_layout) {
+  return static_cast<media::ChannelLayout>(channel_layout);
+}
+
 }  // namespace mixer_service
 }  // namespace media
 }  // namespace chromecast

@@ -669,8 +669,8 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
                            FormHasUniqueKey(presaved_form)))
       .WillOnce(SaveArg<0>(&presaved_form));
 
-  manager()->UpdateStateOnUserInput(form_data.name, generation_element,
-                                    generated_password);
+  manager()->UpdateStateOnUserInput(&driver_, form_data.name,
+                                    generation_element, generated_password);
   Mock::VerifyAndClearExpectations(store_.get());
 
   // Test when the user is changing the username, presaved credential is
@@ -681,7 +681,8 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
                   FormUsernamePasswordAre(username, generated_password),
                   FormHasUniqueKey(presaved_form)));
 
-  manager()->UpdateStateOnUserInput(form_data.name, username_element, username);
+  manager()->UpdateStateOnUserInput(&driver_, form_data.name, username_element,
+                                    username);
 }
 
 TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
@@ -707,8 +708,8 @@ TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
 
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _));
   // Test when the user is changing the generated password.
-  manager()->UpdateStateOnUserInput(form_data.name, generation_element,
-                                    generated_password);
+  manager()->UpdateStateOnUserInput(&driver_, form_data.name,
+                                    generation_element, generated_password);
 
   // The user is submitting the form.
   form_data.fields[0].value = username;
@@ -750,7 +751,39 @@ TEST_F(PasswordManagerTest, PasswordNoLongerGeneratedOnIOS) {
   EXPECT_CALL(*store_, RemoveLogin(FormHasUniqueKey(presaved_form)));
   manager()->OnPasswordNoLongerGenerated(&driver_);
 }
-#endif
+
+TEST_F(PasswordManagerTest, ShowHideManualFallbackOnIOS) {
+  ON_CALL(client_, IsSavingAndFillingEnabled(_)).WillByDefault(Return(true));
+
+  FormData form_data = MakeSimpleFormData();
+  const base::string16 password_element = form_data.fields[1].name;
+
+  // A form is found by PasswordManager.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, {form_data});
+
+  // Check that the saving manual fallback is shown the user typed in a password
+  // field.
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  base::string16 typed_password = ASCIIToUTF16("password");
+  manager()->UpdateStateOnUserInput(&driver_, form_data.name, password_element,
+                                    typed_password);
+  Mock::VerifyAndClearExpectations(&client_);
+
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_EQ(typed_password,
+            form_manager_to_save->GetPendingCredentials().password_value);
+
+  // Check that the saving manual is hidden when the user cleared the password
+  // field value.
+  EXPECT_CALL(client_, HideManualFallbackForSaving());
+  manager()->UpdateStateOnUserInput(&driver_, form_data.name, password_element,
+                                    base::string16());
+}
+#endif  // defined(OS_IOS)
 
 TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   // When the password store already contains credentials for a given form, new

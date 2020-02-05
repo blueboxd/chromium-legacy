@@ -654,8 +654,8 @@ void TabDragController::InitDragData(TabSlotView* view,
                                      TabDragData* drag_data) {
   TRACE_EVENT0("views", "TabDragController::InitDragData");
   const int source_model_index = source_context_->GetIndexOf(view);
+  drag_data->source_model_index = source_model_index;
   if (source_model_index != TabStripModel::kNoTab) {
-    drag_data->source_model_index = source_model_index;
     drag_data->contents = source_context_->GetTabStripModel()->GetWebContentsAt(
         drag_data->source_model_index);
     drag_data->pinned = source_context_->IsTabPinned(static_cast<Tab*>(view));
@@ -1605,6 +1605,8 @@ void TabDragController::RevertDrag() {
       source_context_->StoppedDragging(views, initial_tab_positions_,
                                        move_behavior_ == MOVE_VISIBLE_TABS,
                                        false);
+      if (header_drag_)
+        source_context_->GetTabStripModel()->MoveTabGroup(group_.value());
     } else {
       attached_context_->DraggedTabsDetached();
     }
@@ -1676,6 +1678,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
 
   base::AutoReset<bool> setter(&is_mutating_, true);
   TabDragData* data = &(drag_data_[drag_index]);
+  int target_index = data->source_model_index;
   if (attached_context_) {
     int index = attached_context_->GetTabStripModel()->GetIndexOfWebContents(
         data->contents);
@@ -1687,24 +1690,35 @@ void TabDragController::RevertDragAt(size_t drag_index) {
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       source_context_->GetTabStripModel()->InsertWebContentsAt(
-          data->source_model_index, std::move(detached_web_contents),
+          target_index, std::move(detached_web_contents),
           (data->pinned ? TabStripModel::ADD_PINNED : 0));
     } else {
       // The Tab was moved within the TabDragContext where the drag
       // was initiated. Move it back to the starting location.
+
+      // If the target index is to the right, then other unreverted tabs are
+      // occupying indices between this tab and the target index. Those
+      // unreverted tabs will later be reverted to the right of the target
+      // index, so we skip those indices.
+      if (target_index > index) {
+        for (size_t i = drag_index + 1; i < drag_data_.size(); ++i) {
+          if (drag_data_[i].contents)
+            ++target_index;
+        }
+      }
       source_context_->GetTabStripModel()->MoveWebContentsAt(
-          index, data->source_model_index, false);
+          index, target_index, false);
     }
   } else {
     // The Tab was detached from the TabDragContext where the drag
     // began, and has not been attached to any other TabDragContext.
     // We need to put it back into the source TabDragContext.
     source_context_->GetTabStripModel()->InsertWebContentsAt(
-        data->source_model_index, std::move(data->owned_contents),
+        target_index, std::move(data->owned_contents),
         (data->pinned ? TabStripModel::ADD_PINNED : 0));
   }
   source_context_->GetTabStripModel()->UpdateGroupForDragRevert(
-      data->source_model_index,
+      target_index,
       data->tab_group_data.has_value()
           ? base::Optional<tab_groups::TabGroupId>{data->tab_group_data.value()
                                                        .group_id}

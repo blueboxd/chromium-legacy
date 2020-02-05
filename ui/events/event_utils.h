@@ -92,14 +92,6 @@ EVENTS_EXPORT gfx::PointF EventLocationFromNative(
 EVENTS_EXPORT gfx::Point EventSystemLocationFromNative(
     const PlatformEvent& native_event);
 
-#if defined(USE_X11)
-// Returns the 'real' button for an event. The button reported in slave events
-// does not take into account any remapping (e.g. using xmodmap), while the
-// button reported in master events do. This is a utility function to always
-// return the mapped button.
-EVENTS_EXPORT int EventButtonFromNative(const PlatformEvent& native_event);
-#endif
-
 // Returns the KeyboardCode from a native event.
 EVENTS_EXPORT KeyboardCode
 KeyboardCodeFromNative(const PlatformEvent& native_event);

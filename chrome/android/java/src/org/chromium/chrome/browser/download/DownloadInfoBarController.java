@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -418,7 +418,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      */
     private void computeNextStepForUpdate(OfflineItem updatedItem, boolean forceShowDownloadStarted,
             boolean userCancel, boolean itemWasRemoved) {
-        if (!FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
+        if (!CachedFeatureFlags.isDownloadProgressInfoBarEnabled()) return;
 
         if (updatedItem != null && mIgnoredItems.contains(updatedItem.id)) return;
 
@@ -753,7 +753,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      */
     @VisibleForTesting
     protected void showInfoBar(@DownloadInfoBarState int state, DownloadProgressInfoBarData info) {
-        if (!FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
+        if (!CachedFeatureFlags.isDownloadProgressInfoBarEnabled()) return;
 
         mCurrentInfo = info;
 

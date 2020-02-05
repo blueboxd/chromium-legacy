@@ -29,6 +29,7 @@ class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
+enum class SharingChannelType;
 enum class SendWebPushMessageResult;
 class SharingMessageBridge;
 class SharingSyncPreference;
@@ -40,7 +41,8 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
   using SharingMessage = chrome_browser_sharing::SharingMessage;
   using SendMessageCallback =
       base::OnceCallback<void(SharingSendMessageResult result,
-                              base::Optional<std::string> message_id)>;
+                              base::Optional<std::string> message_id,
+                              SharingChannelType channel_type)>;
 
   SharingFCMSender(std::unique_ptr<WebPushSender> web_push_sender,
                    SharingMessageBridge* sharing_message_bridge,
@@ -90,10 +92,12 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
                       const std::string& p256dh,
                       const std::string& auth_secret,
                       const SharingMessage& message,
+                      SharingChannelType channel_type,
                       SendMessageCallback callback,
                       MessageSender message_sender);
 
-  void OnMessageEncrypted(SendMessageCallback callback,
+  void OnMessageEncrypted(SharingChannelType channel_type,
+                          SendMessageCallback callback,
                           MessageSender message_sender,
                           gcm::GCMEncryptionResult result,
                           std::string message);
@@ -120,6 +124,7 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
 
   void OnMessageSentViaSync(SendMessageCallback callback,
                             const std::string& message_id,
+                            SharingChannelType channel_type,
                             const sync_pb::SharingMessageCommitError& error);
 
   bool SetMessageSenderInfo(SharingMessage* message);

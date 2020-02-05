@@ -41,8 +41,8 @@ import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDow
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -401,7 +401,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         updateDownloadProgress(item, status);
         updateDownloadInfoBar(item);
 
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress == null) return;
         if (!isAutoResumable || sIsNetworkListenerDisabled) return;
@@ -1429,7 +1429,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param guid Id of the download item.
      */
     private void addAutoResumableDownload(String guid) {
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
         if (mAutoResumableDownloadIds.isEmpty() && !sIsNetworkListenerDisabled) {
             mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(
                     this, new RegistrationPolicyAlwaysRegister());
@@ -1444,7 +1444,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param guid Id of the download item.
      */
     private void removeAutoResumableDownload(String guid) {
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
         if (mAutoResumableDownloadIds.isEmpty()) return;
         mAutoResumableDownloadIds.remove(guid);
         stopListenToConnectionChangeIfNotNeeded();
@@ -1462,7 +1462,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
 
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
         if (mAutoResumableDownloadIds.isEmpty()) return;
         if (connectionType == ConnectionType.CONNECTION_NONE) return;
         boolean isMetered = isActiveNetworkMetered(ContextUtils.getApplicationContext());

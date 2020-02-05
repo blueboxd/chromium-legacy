@@ -9,8 +9,8 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace {
 
@@ -72,8 +72,9 @@ void ThirdPartyMetricsObserver::OnComplete(
 void ThirdPartyMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
-  if (third_party_font_loaded_ || extra_request_complete_info.resource_type !=
-                                      content::ResourceType::kFontResource) {
+  if (third_party_font_loaded_ ||
+      extra_request_complete_info.resource_type !=
+          blink::mojom::ResourceType::kFontResource) {
     return;
   }
 

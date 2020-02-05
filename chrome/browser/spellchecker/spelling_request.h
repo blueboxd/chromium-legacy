@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SPELLCHECKER_SPELLING_REQUEST_H_
 
 #include "base/containers/unique_ptr_adapters.h"
+#include "components/spellcheck/browser/platform_spell_checker.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
 
@@ -20,7 +21,8 @@ class SpellingRequest {
       spellcheck::mojom::SpellCheckHost::RequestTextCheckCallback;
   using DestructionCallback = base::OnceCallback<void(SpellingRequest*)>;
 
-  SpellingRequest(SpellingServiceClient* client,
+  SpellingRequest(PlatformSpellChecker* platform_spell_checker,
+                  SpellingServiceClient* client,
                   const base::string16& text,
                   int render_process_id,
                   int document_tag,
@@ -39,7 +41,8 @@ class SpellingRequest {
   void RequestRemoteCheck(SpellingServiceClient* client, int render_process_id);
 
   // Request a check for |text_| from local spell checker.
-  void RequestLocalCheck(int document_tag);
+  void RequestLocalCheck(PlatformSpellChecker* platform_spell_checker,
+                         int document_tag);
 
   // Check if all pending requests are done, send reply to render process if so.
   void OnCheckCompleted();

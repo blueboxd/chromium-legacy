@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/resource_type.h"
 
 namespace net {
 namespace test_server {
@@ -36,7 +35,7 @@ class TestDispatcherHostDelegate : public ResourceDispatcherHostDelegate {
   void RequestBeginning(net::URLRequest* request,
                         content::ResourceContext* resource_context,
                         content::AppCacheService* appcache_service,
-                        content::ResourceType resource_type,
+                        blink::mojom::ResourceType resource_type,
                         std::vector<std::unique_ptr<content::ResourceThrottle>>*
                             throttles) override;
 

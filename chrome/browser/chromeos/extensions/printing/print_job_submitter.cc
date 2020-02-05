@@ -8,21 +8,30 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/read_only_shared_memory_region.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/extensions/printing/print_job_controller.h"
 #include "chrome/browser/chromeos/extensions/printing/printer_capabilities_provider.h"
 #include "chrome/browser/chromeos/extensions/printing/printing_api_utils.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/printing/printing_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/native_window_tracker.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/services/printing/public/mojom/pdf_flattener.mojom.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/blob_reader.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/image_loader.h"
+#include "extensions/common/extension.h"
 #include "printing/backend/print_backend.h"
 #include "printing/metafile_skia.h"
 #include "printing/print_settings.h"
+#include "ui/gfx/image/image.h"
 
 namespace extensions {
 
@@ -41,27 +50,47 @@ constexpr char kUnsupportedTicket[] =
     "Ticket is unsupported on the given printer";
 constexpr char kInvalidData[] = "Invalid document";
 
+constexpr int kIconSize = 64;
+
+// Returns true if |extension_id| is in the whitelist.
+bool IsUserConfirmationRequired(content::BrowserContext* browser_context,
+                                const std::string& extension_id) {
+  const base::ListValue* list =
+      Profile::FromBrowserContext(browser_context)
+          ->GetPrefs()
+          ->GetList(prefs::kPrintingAPIExtensionsWhitelist);
+  base::Value value(extension_id);
+  return list->Find(value) == list->end();
+}
+
 }  // namespace
 
 PrintJobSubmitter::PrintJobSubmitter(
+    gfx::NativeWindow native_window,
     content::BrowserContext* browser_context,
     chromeos::CupsPrintersManager* printers_manager,
     PrinterCapabilitiesProvider* printer_capabilities_provider,
     PrintJobController* print_job_controller,
     mojo::Remote<printing::mojom::PdfFlattener>* pdf_flattener,
-    const std::string& extension_id,
+    scoped_refptr<const extensions::Extension> extension,
     api::printing::SubmitJobRequest request)
-    : browser_context_(browser_context),
+    : native_window_(native_window),
+      browser_context_(browser_context),
       printers_manager_(printers_manager),
       printer_capabilities_provider_(printer_capabilities_provider),
       print_job_controller_(print_job_controller),
       pdf_flattener_(pdf_flattener),
-      extension_id_(extension_id),
-      request_(std::move(request)) {}
+      extension_(extension),
+      request_(std::move(request)) {
+  DCHECK(extension);
+  if (native_window)
+    native_window_tracker_ = NativeWindowTracker::Create(native_window);
+}
 
 PrintJobSubmitter::~PrintJobSubmitter() = default;
 
 void PrintJobSubmitter::Start(SubmitJobCallback callback) {
+  DCHECK(!callback_);
   callback_ = std::move(callback);
   if (!CheckContentType()) {
     FireErrorCallback(kUnsupportedContentType);
@@ -95,6 +124,7 @@ void PrintJobSubmitter::CheckPrinter() {
     FireErrorCallback(kInvalidPrinterId);
     return;
   }
+  printer_name_ = base::UTF8ToUTF16(printer->display_name());
   printer_capabilities_provider_->GetPrinterCapabilities(
       request_.job.printer_id,
       base::BindOnce(&PrintJobSubmitter::CheckCapabilitiesCompatibility,
@@ -150,30 +180,83 @@ void PrintJobSubmitter::OnDocumentDataRead(std::unique_ptr<std::string> data,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
+void PrintJobSubmitter::OnPdfFlattenerDisconnected() {
+  FireErrorCallback(kInvalidData);
+}
+
 void PrintJobSubmitter::OnPdfFlattened(
     base::ReadOnlySharedMemoryRegion flattened_pdf) {
-  const auto mapping = flattened_pdf.Map();
+  auto mapping = flattened_pdf.Map();
   if (!mapping.IsValid()) {
     FireErrorCallback(kInvalidData);
     return;
   }
 
-  auto metafile = std::make_unique<printing::MetafileSkia>();
-  CHECK(metafile->InitFromData(mapping.memory(), mapping.size()));
+  flattened_pdf_mapping_ = std::move(mapping);
 
+  // Directly submit the job if the extension is whitelisted.
+  if (!IsUserConfirmationRequired(browser_context_, extension_->id())) {
+    StartPrintJob();
+    return;
+  }
+  extensions::ImageLoader::Get(browser_context_)
+      ->LoadImageAtEveryScaleFactorAsync(
+          extension_.get(), gfx::Size(kIconSize, kIconSize),
+          base::BindOnce(&PrintJobSubmitter::ShowPrintJobConfirmationDialog,
+                         weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrintJobSubmitter::ShowPrintJobConfirmationDialog(
+    const gfx::Image& extension_icon) {
+  // If the browser window was closed during API request handling, change
+  // |native_window_| appropriately.
+  if (native_window_tracker_ && native_window_tracker_->WasNativeWindowClosed())
+    native_window_ = gfx::kNullNativeWindow;
+
+  chrome::ShowPrintJobConfirmationDialog(
+      native_window_, extension_->id(), base::UTF8ToUTF16(extension_->name()),
+      extension_icon.AsImageSkia(), settings_->title(), printer_name_,
+      base::BindOnce(&PrintJobSubmitter::OnPrintJobConfirmationDialogClosed,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrintJobSubmitter::OnPrintJobConfirmationDialogClosed(bool accepted) {
+  // If the user hasn't accepted a print job or the extension is
+  // unloaded/disabled by the time the dialog is closed, reject the request.
+  if (!accepted || !ExtensionRegistry::Get(browser_context_)
+                        ->enabled_extensions()
+                        .Contains(extension_->id())) {
+    OnPrintJobRejected();
+    return;
+  }
+  StartPrintJob();
+}
+
+void PrintJobSubmitter::StartPrintJob() {
+  auto metafile = std::make_unique<printing::MetafileSkia>();
+  CHECK(metafile->InitFromData(flattened_pdf_mapping_.memory(),
+                               flattened_pdf_mapping_.size()));
+
+  DCHECK(extension_);
+  DCHECK(settings_);
   print_job_controller_->StartPrintJob(
-      extension_id_, std::move(metafile), std::move(settings_),
+      extension_->id(), std::move(metafile), std::move(settings_),
       base::BindOnce(&PrintJobSubmitter::OnPrintJobSubmitted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PrintJobSubmitter::OnPdfFlattenerDisconnected() {
-  FireErrorCallback(kInvalidData);
+void PrintJobSubmitter::OnPrintJobRejected() {
+  DCHECK(callback_);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_),
+                                api::printing::SUBMIT_JOB_STATUS_USER_REJECTED,
+                                nullptr, base::nullopt));
 }
 
 void PrintJobSubmitter::OnPrintJobSubmitted(
     std::unique_ptr<std::string> job_id) {
   DCHECK(job_id);
+  DCHECK(callback_);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback_), api::printing::SUBMIT_JOB_STATUS_OK,
@@ -181,6 +264,7 @@ void PrintJobSubmitter::OnPrintJobSubmitted(
 }
 
 void PrintJobSubmitter::FireErrorCallback(const std::string& error) {
+  DCHECK(callback_);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback_), base::nullopt, nullptr, error));

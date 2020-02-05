@@ -179,11 +179,17 @@ void SpellCheckHostChromeImpl::RequestTextCheck(
   // language code for text breaking to the renderer. (Text breaking is required
   // for the context menu to show spelling suggestions.) Initialization must
   // happen on UI thread.
-  GetSpellcheckService();
+  SpellcheckService* spellcheck = GetSpellcheckService();
+
+  if (!spellcheck) {  // Teardown.
+    std::move(callback).Run({});
+    return;
+  }
 
   // OK to store unretained |this| in a |SpellingRequest| owned by |this|.
   requests_.insert(std::make_unique<SpellingRequest>(
-      &client_, text, render_process_id_, route_id, std::move(callback),
+      spellcheck->platform_spell_checker(), &client_, text, render_process_id_,
+      route_id, std::move(callback),
       base::BindOnce(&SpellCheckHostChromeImpl::OnRequestFinished,
                      base::Unretained(this))));
 }
@@ -192,7 +198,15 @@ void SpellCheckHostChromeImpl::RequestTextCheck(
 void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
     const base::string16& word,
     GetPerLanguageSuggestionsCallback callback) {
-  spellcheck_platform::GetPerLanguageSuggestions(word, std::move(callback));
+  SpellcheckService* spellcheck = GetSpellcheckService();
+
+  if (!spellcheck) {  // Teardown.
+    std::move(callback).Run({});
+    return;
+  }
+
+  spellcheck_platform::GetPerLanguageSuggestions(
+      spellcheck->platform_spell_checker(), word, std::move(callback));
 }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 

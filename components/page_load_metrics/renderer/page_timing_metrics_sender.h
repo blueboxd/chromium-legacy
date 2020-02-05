@@ -56,7 +56,7 @@ class PageTimingMetricsSender {
   void DidStartResponse(const url::Origin& origin_of_final_response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        content::ResourceType resource_type,
+                        blink::mojom::ResourceType resource_type,
                         content::PreviewsState previews_state);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);
   void DidCompleteResponse(int resource_id,

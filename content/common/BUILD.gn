@@ -495,7 +495,6 @@ mojom("mojo_bindings") {
     "//cc/mojom",
     "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
-    "//content/public/common:resource_type_bindings",
     "//content/public/common:web_preferences_mojom",
     "//ipc:mojom",
     "//ipc:mojom_constants",

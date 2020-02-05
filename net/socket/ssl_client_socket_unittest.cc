@@ -59,6 +59,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/read_buffering_stream_socket.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/stream_socket.h"
@@ -117,174 +118,6 @@ const uint8_t kGoodHashValueVectorInput = 0;
 // not sha256/AA...=, and hence will cause pin validation failure with the
 // TestSPKI pin.
 const uint8_t kBadHashValueVectorInput = 3;
-
-// ReadBufferingStreamSocket is a wrapper for an existing StreamSocket that
-// will ensure a certain amount of data is internally buffered before
-// satisfying a Read() request. It exists to mimic OS-level internal
-// buffering, but in a way to guarantee that X number of bytes will be
-// returned to callers of Read(), regardless of how quickly the OS receives
-// them from the TestServer.
-class ReadBufferingStreamSocket : public WrappedStreamSocket {
- public:
-  explicit ReadBufferingStreamSocket(std::unique_ptr<StreamSocket> transport);
-  ~ReadBufferingStreamSocket() override = default;
-
-  // Socket implementation:
-  int Read(IOBuffer* buf,
-           int buf_len,
-           CompletionOnceCallback callback) override;
-
-  int ReadIfReady(IOBuffer* buf,
-                  int buf_len,
-                  CompletionOnceCallback callback) override;
-
-  // Sets the internal buffer to |size|. This must not be greater than
-  // the largest value supplied to Read() - that is, it does not handle
-  // having "leftovers" at the end of Read().
-  // Each call to Read() will be prevented from completion until at least
-  // |size| data has been read.
-  // Set to 0 to turn off buffering, causing Read() to transparently
-  // read via the underlying transport.
-  void SetBufferSize(int size);
-
- private:
-  enum State {
-    STATE_NONE,
-    STATE_READ,
-    STATE_READ_COMPLETE,
-  };
-
-  int DoLoop(int result);
-  int DoRead();
-  int DoReadComplete(int result);
-  void OnReadCompleted(int result);
-  int CopyToCaller(IOBuffer* buf);
-
-  State state_;
-  scoped_refptr<GrowableIOBuffer> read_buffer_;
-  int buffer_size_;
-
-  scoped_refptr<IOBuffer> user_read_buf_;
-  CompletionOnceCallback user_read_callback_;
-};
-
-ReadBufferingStreamSocket::ReadBufferingStreamSocket(
-    std::unique_ptr<StreamSocket> transport)
-    : WrappedStreamSocket(std::move(transport)),
-      read_buffer_(base::MakeRefCounted<GrowableIOBuffer>()),
-      buffer_size_(0) {}
-
-void ReadBufferingStreamSocket::SetBufferSize(int size) {
-  DCHECK(!user_read_buf_);
-  buffer_size_ = size;
-  read_buffer_->SetCapacity(size);
-}
-
-int ReadBufferingStreamSocket::Read(IOBuffer* buf,
-                                    int buf_len,
-                                    CompletionOnceCallback callback) {
-  DCHECK(!user_read_buf_);
-  if (buffer_size_ == 0)
-    return transport_->Read(buf, buf_len, std::move(callback));
-  int rv = ReadIfReady(buf, buf_len, std::move(callback));
-  if (rv == ERR_IO_PENDING)
-    user_read_buf_ = buf;
-  return rv;
-}
-
-int ReadBufferingStreamSocket::ReadIfReady(IOBuffer* buf,
-                                           int buf_len,
-                                           CompletionOnceCallback callback) {
-  DCHECK(!user_read_buf_);
-  if (buffer_size_ == 0)
-    return transport_->ReadIfReady(buf, buf_len, std::move(callback));
-
-  if (read_buffer_->RemainingCapacity() == 0) {
-    memcpy(buf->data(), read_buffer_->StartOfBuffer(),
-           read_buffer_->capacity());
-    read_buffer_->set_offset(0);
-    return read_buffer_->capacity();
-  }
-
-  if (buf_len < buffer_size_)
-    return ERR_UNEXPECTED;
-
-  state_ = STATE_READ;
-  int rv = DoLoop(OK);
-  if (rv == OK) {
-    rv = CopyToCaller(buf);
-  } else if (rv == ERR_IO_PENDING) {
-    user_read_callback_ = std::move(callback);
-  }
-  return rv;
-}
-
-int ReadBufferingStreamSocket::DoLoop(int result) {
-  int rv = result;
-  do {
-    State current_state = state_;
-    state_ = STATE_NONE;
-    switch (current_state) {
-      case STATE_READ:
-        rv = DoRead();
-        break;
-      case STATE_READ_COMPLETE:
-        rv = DoReadComplete(rv);
-        break;
-      case STATE_NONE:
-      default:
-        NOTREACHED() << "Unexpected state: " << current_state;
-        rv = ERR_UNEXPECTED;
-        break;
-    }
-  } while (rv != ERR_IO_PENDING && state_ != STATE_NONE);
-  return rv;
-}
-
-int ReadBufferingStreamSocket::DoRead() {
-  state_ = STATE_READ_COMPLETE;
-  return transport_->Read(
-      read_buffer_.get(), read_buffer_->RemainingCapacity(),
-      base::BindOnce(&ReadBufferingStreamSocket::OnReadCompleted,
-                     base::Unretained(this)));
-}
-
-int ReadBufferingStreamSocket::DoReadComplete(int result) {
-  state_ = STATE_NONE;
-
-  if (result <= 0)
-    return result;
-
-  read_buffer_->set_offset(read_buffer_->offset() + result);
-  if (read_buffer_->RemainingCapacity() > 0) {
-    // Keep reading until |read_buffer_| is full.
-    state_ = STATE_READ;
-  }
-  return OK;
-}
-
-void ReadBufferingStreamSocket::OnReadCompleted(int result) {
-  DCHECK_NE(ERR_IO_PENDING, result);
-  DCHECK(user_read_callback_);
-
-  result = DoLoop(result);
-  if (result == ERR_IO_PENDING)
-    return;
-  if (result == OK && user_read_buf_) {
-    // If the user called Read(), return the data to the caller.
-    result = CopyToCaller(user_read_buf_.get());
-    user_read_buf_ = nullptr;
-  }
-  std::move(user_read_callback_).Run(result);
-}
-
-int ReadBufferingStreamSocket::CopyToCaller(IOBuffer* buf) {
-  // Note this assumes |buf| is large enough for |read_buffer_|. ReadIfReady()
-  // rejects small reads.
-  memcpy(buf->data(), read_buffer_->StartOfBuffer(), read_buffer_->capacity());
-  read_buffer_->set_offset(0);
-  return read_buffer_->capacity();
-}
 
 // Simulates synchronously receiving an error during Read() or Write()
 class SynchronousErrorStreamSocket : public WrappedStreamSocket {
@@ -2455,7 +2288,7 @@ TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
   // 15K was chosen because 15K is smaller than the 17K (max) read issued by
   // the SSLClientSocket implementation, and larger than the minimum amount
   // of ciphertext necessary to contain the 8K of plaintext requested below.
-  raw_transport->SetBufferSize(15000);
+  raw_transport->BufferNextRead(15000);
 
   scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(8192);
   rv = ReadAndWaitForCompletion(sock.get(), buffer.get(), 8192);

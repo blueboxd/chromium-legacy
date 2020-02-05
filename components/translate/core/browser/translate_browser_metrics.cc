@@ -32,6 +32,7 @@ const char kTranslateUnsupportedLanguageAtInitiation[] =
 const char kTranslateSourceLanguage[] = "Translate.SourceLanguage";
 const char kTranslateTargetLanguage[] = "Translate.TargetLanguage";
 const char kTranslateHrefHintStatus[] = "Translate.HrefHint.Status";
+const char kTranslateTargetLanguageOrigin[] = "Translate.TargetLanguage.Origin";
 
 struct MetricsEntry {
   TranslateBrowserMetrics::MetricsNameIndex index;
@@ -57,6 +58,8 @@ const MetricsEntry kMetricsEntries[] = {
      kTranslateTargetLanguage},
     {TranslateBrowserMetrics::UMA_TRANSLATE_HREF_HINT_STATUS,
      kTranslateHrefHintStatus},
+    {TranslateBrowserMetrics::UMA_TRANSLATE_TARGET_LANGUAGE_ORIGIN,
+     kTranslateTargetLanguageOrigin},
 };
 
 static_assert(base::size(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
@@ -106,6 +109,10 @@ void ReportTranslateTargetLanguage(const std::string& language) {
 
 void ReportTranslateHrefHintStatus(HrefTranslateStatus status) {
   base::UmaHistogramEnumeration(kTranslateHrefHintStatus, status);
+}
+
+void ReportTranslateTargetLanguageOrigin(TargetLanguageOrigin origin) {
+  base::UmaHistogramEnumeration(kTranslateTargetLanguageOrigin, origin);
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {

@@ -398,11 +398,15 @@ bool ActivityUserData::CreateSnapshot(Snapshot* output_snapshot) const {
       } break;
       case BOOL_VALUE:
       case CHAR_VALUE:
-        value.short_value_ = *reinterpret_cast<char*>(entry.second.memory);
+        value.short_value_ =
+            reinterpret_cast<std::atomic<char>*>(entry.second.memory)
+                ->load(std::memory_order_relaxed);
         break;
       case SIGNED_VALUE:
       case UNSIGNED_VALUE:
-        value.short_value_ = *reinterpret_cast<uint64_t*>(entry.second.memory);
+        value.short_value_ =
+            reinterpret_cast<std::atomic<uint64_t>*>(entry.second.memory)
+                ->load(std::memory_order_relaxed);
         break;
       case END_OF_VALUES:  // Included for completeness purposes.
         NOTREACHED();
@@ -446,17 +450,17 @@ bool ActivityUserData::GetOwningProcessId(const void* memory,
   return OwningProcess::GetOwningProcessId(&header->owner, out_id, out_stamp);
 }
 
-void ActivityUserData::Set(StringPiece name,
-                           ValueType type,
-                           const void* memory,
-                           size_t size) {
+void* ActivityUserData::Set(StringPiece name,
+                            ValueType type,
+                            const void* memory,
+                            size_t size) {
   DCHECK_GE(std::numeric_limits<uint8_t>::max(), name.length());
   size = std::min(std::numeric_limits<uint16_t>::max() - (kMemoryAlignment - 1),
                   size);
 
   // It's possible that no user data is being stored.
   if (!memory_)
-    return;
+    return nullptr;
 
   // The storage of a name is limited so use that limit during lookup.
   if (name.length() > kMaxUserDataNameLength)
@@ -482,7 +486,7 @@ void ActivityUserData::Set(StringPiece name,
     // now if there's not room enough for even this.
     size_t base_size = sizeof(FieldHeader) + name_extent;
     if (base_size > available_)
-      return;
+      return nullptr;
 
     // The "full size" is the size for storing the entire value.
     size_t full_size = std::min(base_size + value_extent, available_);
@@ -500,7 +504,7 @@ void ActivityUserData::Set(StringPiece name,
     if (size != 0) {
       size = std::min(full_size - base_size, size);
       if (size == 0)
-        return;
+        return nullptr;
     }
 
     // Allocate a chunk of memory.
@@ -542,6 +546,10 @@ void ActivityUserData::Set(StringPiece name,
   info->size_ptr->store(0, std::memory_order_seq_cst);
   memcpy(info->memory, memory, size);
   info->size_ptr->store(size, std::memory_order_release);
+
+  // The address of the stored value is returned so it can be re-used by the
+  // caller, so long as it's done in an atomic way.
+  return info->memory;
 }
 
 void ActivityUserData::SetReference(StringPiece name,
@@ -1229,12 +1237,12 @@ GlobalActivityTracker::ThreadSafeUserData::ThreadSafeUserData(void* memory,
 
 GlobalActivityTracker::ThreadSafeUserData::~ThreadSafeUserData() = default;
 
-void GlobalActivityTracker::ThreadSafeUserData::Set(StringPiece name,
-                                                    ValueType type,
-                                                    const void* memory,
-                                                    size_t size) {
+void* GlobalActivityTracker::ThreadSafeUserData::Set(StringPiece name,
+                                                     ValueType type,
+                                                     const void* memory,
+                                                     size_t size) {
   AutoLock lock(data_lock_);
-  ActivityUserData::Set(name, type, memory, size);
+  return ActivityUserData::Set(name, type, memory, size);
 }
 
 GlobalActivityTracker::ManagedActivityTracker::ManagedActivityTracker(

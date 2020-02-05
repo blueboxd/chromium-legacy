@@ -8,8 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
+#include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -47,6 +50,10 @@ class TestCertificateProviderExtension final
     return certificate_;
   }
 
+  // Sets the PIN that will be required when doing every signature request.
+  // (By default, no PIN is requested.)
+  void set_require_pin(const std::string& pin) { required_pin_ = pin; }
+
   // Sets whether the extension should respond with a failure to the
   // onCertificatesRequested requests.
   void set_should_fail_certificate_requests(
@@ -62,18 +69,26 @@ class TestCertificateProviderExtension final
   }
 
  private:
+  using ReplyToJsCallback =
+      base::OnceCallback<void(const base::Value& response)>;
+
   // content::NotificationObserver implementation:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  base::Value HandleCertificatesRequest();
-  base::Value HandleSignDigestRequest(const base::Value& sign_request);
+  void HandleCertificatesRequest(ReplyToJsCallback callback);
+  void HandleSignatureRequest(const base::Value& sign_request,
+                              const base::Value& pin_user_input,
+                              ReplyToJsCallback callback);
 
   content::BrowserContext* const browser_context_;
   const std::string extension_id_;
   const scoped_refptr<net::X509Certificate> certificate_;
   const bssl::UniquePtr<EVP_PKEY> private_key_;
+  // When non-empty, contains the expected PIN; the implementation will request
+  // the PIN on every signature request in this case.
+  base::Optional<std::string> required_pin_;
   bool should_fail_certificate_requests_ = false;
   bool should_fail_sign_digest_requests_ = false;
   content::NotificationRegistrar notification_registrar_;

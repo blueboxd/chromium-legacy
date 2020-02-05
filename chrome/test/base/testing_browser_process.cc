@@ -422,6 +422,14 @@ TestingBrowserProcess::resource_coordinator_parts() {
   return resource_coordinator_parts_.get();
 }
 
+BuildState* TestingBrowserProcess::GetBuildState() {
+#if !defined(OS_ANDROID)
+  return &build_state_;
+#else
+  return nullptr;
+#endif
+}
+
 resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
   return resource_coordinator_parts()->tab_manager();
 }

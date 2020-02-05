@@ -26,7 +26,7 @@ void ResourceLoadObserver::CheckResourceLoaded(
     const GURL& original_url,
     const GURL& referrer,
     const std::string& load_method,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     const base::FilePath::StringPieceType& served_file_name,
     const std::string& mime_type,
     const std::string& ip_address,
@@ -83,7 +83,7 @@ void ResourceLoadObserver::CheckResourceLoaded(
 }
 
 // Returns the resource with the given url if found, otherwise nullptr.
-mojom::ResourceLoadInfoPtr* ResourceLoadObserver::FindResource(
+blink::mojom::ResourceLoadInfoPtr* ResourceLoadObserver::FindResource(
     const GURL& original_url) {
   for (auto& resource : resource_load_infos_) {
     if (resource->original_url == original_url)
@@ -116,7 +116,7 @@ void ResourceLoadObserver::WaitForResourceCompletion(const GURL& original_url) {
 void ResourceLoadObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const GlobalRequestID& request_id,
-    const mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   EXPECT_NE(nullptr, render_frame_host);
   resource_load_infos_.push_back(resource_load_info.Clone());
   resource_is_associated_with_main_frame_.push_back(
@@ -133,7 +133,7 @@ void ResourceLoadObserver::ResourceLoadComplete(
 void ResourceLoadObserver::DidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& mime_type,
-    ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   memory_cached_loaded_urls_.push_back(url);
 }
 

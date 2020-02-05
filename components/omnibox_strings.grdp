@@ -238,7 +238,4 @@
   <message name="IDS_ACC_REMOVE_SUGGESTION_BUTTON" desc="Announcement when remove suggestion button is focused.">
     Remove Suggestion button, press Enter to remove this suggestion
   </message>
-  <message name="IDS_ACC_EXIT_SEARCH_MODE" desc="Announcement when Omnibox exits keyword search mode.">
-    Exiting search mode
-  </message>
 </grit-part>

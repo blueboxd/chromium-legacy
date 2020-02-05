@@ -96,22 +96,22 @@ class VIEWS_EXPORT FlexSpecification {
   // view's preferred size).
   FlexSpecification();
 
-  FlexSpecification(const FlexSpecification& other);
-  FlexSpecification& operator=(const FlexSpecification& other);
-
-  ~FlexSpecification();
-
   // Creates a flex specification with a custom flex rule. Note that any copies
   // or mutations of this specification will also inherit the rule.
-  static FlexSpecification ForCustomRule(FlexRule rule);
+  explicit FlexSpecification(FlexRule rule);
 
   // Creates a flex specification using the specififed minimum size and size
   // bounds rules. If |adjust_height_for_width| is specified, extra calculations
   // will be done to ensure that the view can become taller if it is made
   // narrower (typically only useful for multiline text controls).
-  static FlexSpecification ForSizeRule(MinimumFlexSizeRule minimum_size_rule,
-                                       MaximumFlexSizeRule maximum_size_rule,
-                                       bool adjust_height_for_width = false);
+  FlexSpecification(MinimumFlexSizeRule minimum_size_rule,
+                    MaximumFlexSizeRule maximum_size_rule,
+                    bool adjust_height_for_width = false);
+
+  FlexSpecification(const FlexSpecification& other);
+  FlexSpecification& operator=(const FlexSpecification& other);
+
+  ~FlexSpecification();
 
   // Makes a copy of this specification with a different order.
   FlexSpecification WithOrder(int order) const;
@@ -134,11 +134,6 @@ class VIEWS_EXPORT FlexSpecification {
   LayoutAlignment alignment() const { return alignment_; }
 
  private:
-  FlexSpecification(FlexRule rule,
-                    int order,
-                    int weight,
-                    LayoutAlignment alignment);
-
   FlexRule rule_;
   int order_ = 1;
   int weight_ = 0;

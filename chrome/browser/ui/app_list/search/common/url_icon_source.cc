@@ -45,7 +45,7 @@ void UrlIconSource::StartIconFetch() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = icon_url_;
-  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("url_icon_source_fetch", R"(
           semantics {
@@ -60,8 +60,7 @@ void UrlIconSource::StartIconFetch() {
             destination: WEBSITE
           }
           policy {
-            cookies_allowed: YES
-            cookies_store: "user"
+            cookies_allowed: NO
             setting: "Unconditionally enabled on Chrome OS."
             policy_exception_justification:
               "Not implemented, considered not useful."

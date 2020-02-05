@@ -1745,8 +1745,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void AbsoluteQuads(Vector<FloatQuad>&,
                              MapCoordinatesFlags mode = 0) const {}
 
-  static FloatRect AbsoluteBoundingBoxRectForRange(const EphemeralRange&);
-
   // The bounding box (see: absoluteBoundingBoxRect) including all descendant
   // bounding boxes.
   IntRect AbsoluteBoundingBoxRectIncludingDescendants() const;

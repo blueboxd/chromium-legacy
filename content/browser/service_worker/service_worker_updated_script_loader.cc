@@ -181,7 +181,8 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version)
     : request_url_(original_request.url),
-      resource_type_(static_cast<ResourceType>(original_request.resource_type)),
+      resource_type_(static_cast<blink::mojom::ResourceType>(
+          original_request.resource_type)),
       options_(options),
       version_(std::move(version)),
       network_watcher_(FROM_HERE,
@@ -338,7 +339,7 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteInfo(
   const net::HttpResponseInfo* info = response_info->http_info.get();
   DCHECK(info);
 
-  if (resource_type_ == ResourceType::kServiceWorker) {
+  if (resource_type_ == blink::mojom::ResourceType::kServiceWorker) {
     version_->SetMainScriptHttpResponseInfo(*info);
   }
 
@@ -479,9 +480,9 @@ void ServiceWorkerUpdatedScriptLoader::CheckVersionStatusBeforeLoad() {
   // defines importScripts() works only on the initial script evaluation and the
   // install event. Update this check once importScripts() is fixed.
   // (https://crbug.com/719052)
-  DCHECK((resource_type_ == ResourceType::kServiceWorker &&
+  DCHECK((resource_type_ == blink::mojom::ResourceType::kServiceWorker &&
           version_->status() == ServiceWorkerVersion::NEW) ||
-         (resource_type_ == ResourceType::kScript &&
+         (resource_type_ == blink::mojom::ResourceType::kScript &&
           version_->status() != ServiceWorkerVersion::REDUNDANT));
 }
 #endif  // DCHECK_IS_ON()

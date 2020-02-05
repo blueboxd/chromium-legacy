@@ -199,6 +199,10 @@ struct NavigateParams {
   // NO_ACTION, |window_action| will be set to SHOW_WINDOW.
   WindowAction window_action = NO_ACTION;
 
+  // Whether the browser is being created for captive portal resolution. If
+  // true, |disposition| should be NEW_POPUP.
+  bool is_captive_portal_popup = false;
+
   // If false then the navigation was not initiated by a user gesture.
   bool user_gesture = true;
 

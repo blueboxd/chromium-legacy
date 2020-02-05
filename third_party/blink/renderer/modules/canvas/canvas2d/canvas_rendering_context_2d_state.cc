@@ -330,7 +330,8 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
   if (!resolved_filter_) {
     // Update the filter value to the proper base URL if needed.
     if (filter_value_->MayContainUrl()) {
-      style_resolution_host->GetDocument().UpdateStyleAndLayout();
+      style_resolution_host->GetDocument().UpdateStyleAndLayout(
+          DocumentUpdateReason::kCanvas);
       filter_value_->ReResolveUrl(style_resolution_host->GetDocument());
     }
 

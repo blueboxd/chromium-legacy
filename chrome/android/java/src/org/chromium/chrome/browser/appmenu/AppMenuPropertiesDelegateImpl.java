@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -182,8 +182,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 menuGroup = MenuGroup.TABLET_EMPTY_MODE_MENU;
             }
         } else if (isOverview) {
-            menuGroup = FeatureUtilities.isStartSurfaceEnabled() ? MenuGroup.START_SURFACE_MODE_MENU
-                                                                 : MenuGroup.OVERVIEW_MODE_MENU;
+            menuGroup = CachedFeatureFlags.isStartSurfaceEnabled()
+                    ? MenuGroup.START_SURFACE_MODE_MENU
+                    : MenuGroup.OVERVIEW_MODE_MENU;
         }
         assert menuGroup != MenuGroup.INVALID;
 
@@ -256,7 +257,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     mContext, menu.findItem(R.id.direct_share_menu_id));
 
             menu.findItem(R.id.paint_preview_capture_id)
-                    .setVisible(FeatureUtilities.isPaintPreviewTestEnabled()
+                    .setVisible(CachedFeatureFlags.isPaintPreviewTestEnabled()
                             && !isChromeOrInterstitialPage && !isIncognito);
 
             // Disable find in page on the native NTP.
@@ -295,7 +296,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
-        boolean isMenuGroupTabsVisible = FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+        boolean isMenuGroupTabsVisible =
+                CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
                 && !DeviceClassManager.enableAccessibilityLayout();
         boolean isMenuGroupTabsEnabled = mTabModelSelector.getTabModelFilterProvider()
                                                  .getCurrentTabModelFilter()

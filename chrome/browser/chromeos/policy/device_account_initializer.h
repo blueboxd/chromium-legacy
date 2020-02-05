@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/policy/enrollment_status.h"
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"

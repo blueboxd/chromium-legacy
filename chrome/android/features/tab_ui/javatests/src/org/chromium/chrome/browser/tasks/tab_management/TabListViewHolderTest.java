@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
@@ -117,7 +117,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        FeatureUtilities.enableTabThumbnailAspectRatioForTesting(false);
+        CachedFeatureFlags.enableTabThumbnailAspectRatioForTesting(false);
         ViewGroup view = new LinearLayout(getActivity());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -487,7 +487,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mStripMCP.destroy();
         mGridMCP.destroy();
         mSelectableMCP.destroy();
-        FeatureUtilities.enableTabThumbnailAspectRatioForTesting(null);
+        CachedFeatureFlags.enableTabThumbnailAspectRatioForTesting(null);
         super.tearDownTest();
     }
 }

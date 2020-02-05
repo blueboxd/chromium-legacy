@@ -343,6 +343,11 @@ void ChromeBrowserCloudManagementController::OnClientError(
     UnenrollBrowser();
 }
 
+void ChromeBrowserCloudManagementController::ShutDown() {
+  if (report_scheduler_)
+    report_scheduler_.reset();
+}
+
 void ChromeBrowserCloudManagementController::NotifyPolicyRegisterFinished(
     bool succeeded) {
   for (auto& observer : observers_) {
@@ -354,6 +359,12 @@ void ChromeBrowserCloudManagementController::NotifyBrowserUnenrolled(
     bool succeeded) {
   for (auto& observer : observers_)
     observer.OnBrowserUnenrolled(succeeded);
+}
+
+void ChromeBrowserCloudManagementController::NotifyCloudReportingLaunched() {
+  for (auto& observer : observers_) {
+    observer.OnCloudReportingLaunched();
+  }
 }
 
 bool ChromeBrowserCloudManagementController::GetEnrollmentTokenAndClientId(
@@ -447,6 +458,8 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
       cloud_policy_client_.get(), std::move(generator));
+
+  NotifyCloudReportingLaunched();
 }
 
 }  // namespace policy

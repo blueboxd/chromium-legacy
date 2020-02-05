@@ -558,95 +558,128 @@ TEST_F(DeepLinkUtilTest, IsDeepLinkUrl) {
 }
 
 TEST_F(DeepLinkUtilTest, GetAssistantUrl) {
-  using TestCase = std::pair<DeepLinkType, base::Optional<std::string>>;
+  using TestCase = std::pair<DeepLinkType, std::map<std::string, std::string>>;
 
-  auto CreateTestCase = [](DeepLinkType type, base::Optional<std::string> id) {
-    return std::make_pair(type, id);
+  auto CreateTestCase = [](DeepLinkType type,
+                           std::map<std::string, std::string> params) {
+    return std::make_pair(type, params);
   };
 
   auto CreateIgnoreCase = [](DeepLinkType type,
-                             base::Optional<std::string> id) {
-    return std::make_pair(std::make_pair(type, id), base::nullopt);
+                             std::map<std::string, std::string> params) {
+    return std::make_pair(std::make_pair(type, params), base::nullopt);
   };
 
   const std::map<TestCase, base::Optional<GURL>> test_cases = {
       // OK: Top-level lists.
 
-      {CreateTestCase(DeepLinkType::kLists, /*id=*/base::nullopt),
+      {CreateTestCase(DeepLinkType::kLists,
+                      /*params=*/{{"eid", "112233"}}),
        GURL("https://assistant.google.com/lists/"
-            "mainview?hl=en-US&source=Assistant")},
+            "mainview?eid=112233&hl=en-US&source=Assistant")},
 
-      {CreateTestCase(DeepLinkType::kLists, /*id=*/std::string()),
+      {CreateTestCase(DeepLinkType::kLists,
+                      /*params=*/{}),
        GURL("https://assistant.google.com/lists/"
             "mainview?hl=en-US&source=Assistant")},
 
       // OK: List by |id|.
 
-      {CreateTestCase(DeepLinkType::kLists, /*id=*/"123456"),
+      {CreateTestCase(DeepLinkType::kLists,
+                      /*params=*/
+                      {{"eid", "112233"}, {"id", "123456"}}),
        GURL("https://assistant.google.com/lists/list/"
-            "123456?hl=en-US&source=Assistant")},
+            "123456?eid=112233&hl=en-US&source=Assistant")},
+
+      // OK: Shoppinglist by |id|.
+
+      {CreateTestCase(DeepLinkType::kLists,
+                      /*params=*/
+                      {{"type", "shopping"}, {"id", "123456"}}),
+       GURL("https://shoppinglist.google.com/lists/123456"
+            "?hl=en-US&source=Assistant")},
 
       // OK: Top-level notes.
 
-      {CreateTestCase(DeepLinkType::kNotes, /*id=*/base::nullopt),
+      {CreateTestCase(DeepLinkType::kNotes,
+                      /*params=*/{{"eid", "112233"}}),
        GURL("https://assistant.google.com/lists/"
-            "mainview?note_tap=true&hl=en-US&source=Assistant")},
+            "mainview?note_tap=true&eid=112233&hl=en-US&source=Assistant")},
 
-      {CreateTestCase(DeepLinkType::kNotes, /*id=*/std::string()),
+      {CreateTestCase(DeepLinkType::kNotes,
+                      /*params=*/{}),
        GURL("https://assistant.google.com/lists/"
             "mainview?note_tap=true&hl=en-US&source=Assistant")},
 
       // OK: Note by |id|.
 
-      {CreateTestCase(DeepLinkType::kNotes, /*id=*/"123456"),
+      {CreateTestCase(DeepLinkType::kNotes,
+                      /*params=*/
+                      {{"eid", "112233"}, {"id", "123456"}}),
        GURL("https://assistant.google.com/lists/note/"
-            "123456?hl=en-US&source=Assistant")},
+            "123456?eid=112233&hl=en-US&source=Assistant")},
 
       // OK: Top-level reminders.
 
-      {CreateTestCase(DeepLinkType::kReminders, /*id=*/base::nullopt),
-       GURL("https://assistant.google.com/reminders/"
-            "mainview?hl=en-US&source=Assistant")},
-
-      {CreateTestCase(DeepLinkType::kReminders, /*id=*/std::string()),
+      {CreateTestCase(DeepLinkType::kReminders,
+                      /*params=*/{}),
        GURL("https://assistant.google.com/reminders/"
             "mainview?hl=en-US&source=Assistant")},
 
       // OK: Reminder by |id|.
 
-      {CreateTestCase(DeepLinkType::kReminders, /*id=*/"123456"),
+      {CreateTestCase(DeepLinkType::kReminders,
+                      /*params=*/{{"id", "123456"}}),
        GURL("https://assistant.google.com/reminders/id/"
             "123456?hl=en-US&source=Assistant")},
 
       // IGNORE: Deep links of other types.
 
-      CreateIgnoreCase(DeepLinkType::kUnsupported, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kUnsupported, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kUnsupported, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kChromeSettings, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kChromeSettings, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kChromeSettings, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kFeedback, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kFeedback, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kFeedback, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kOnboarding, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kOnboarding, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kOnboarding, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kQuery, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kQuery, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kQuery, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kScreenshot, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kScreenshot, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kScreenshot, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kSettings, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kSettings, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kSettings, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kTaskManager, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kTaskManager, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kTaskManager, /*id=*/"123456"),
-      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen, /*id=*/base::nullopt),
-      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen, /*id=*/std::string()),
-      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen, /*id=*/"123456")};
+      CreateIgnoreCase(DeepLinkType::kUnsupported,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kUnsupported,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kChromeSettings,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kChromeSettings,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kFeedback,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kFeedback,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kOnboarding,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kOnboarding,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kQuery,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kQuery,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kScreenshot,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kScreenshot,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kSettings,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kSettings,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kTaskManager,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kTaskManager,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}}),
+      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen,
+                       /*params=*/{}),
+      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen,
+                       /*params=*/
+                       {{"eid", "112233"}, {"id", "123456"}})};
 
   // For deep links that are not one of type {kLists, kNotes, kReminders}, we
   // will hit NOTREACHED since this API isn't meant to be used in such cases.
@@ -660,7 +693,7 @@ TEST_F(DeepLinkUtilTest, GetAssistantUrl) {
   for (const auto& test_case : test_cases) {
     const base::Optional<GURL>& expected = test_case.second;
     const base::Optional<GURL> actual = GetAssistantUrl(
-        /*type=*/test_case.first.first, /*id=*/test_case.first.second);
+        /*type=*/test_case.first.first, /*params=*/test_case.first.second);
 
     // Assert |has_value| equivalence.
     ASSERT_EQ(expected, actual);
@@ -697,11 +730,12 @@ TEST_F(DeepLinkUtilTest, GetChromeSettingsUrl) {
 TEST_F(DeepLinkUtilTest, GetWebUrl) {
   const std::map<std::string, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep links.
-      {"googleassistant://lists", GURL("https://assistant.google.com/lists/"
-                                       "mainview?hl=en-US&source=Assistant")},
-      {"googleassistant://notes",
+      {"googleassistant://lists?eid=123456",
        GURL("https://assistant.google.com/lists/"
-            "mainview?note_tap=true&hl=en-US&source=Assistant")},
+            "mainview?eid=123456&hl=en-US&source=Assistant")},
+      {"googleassistant://notes?eid=123456",
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&eid=123456&hl=en-US&source=Assistant")},
       {"googleassistant://reminders",
        GURL("https://assistant.google.com/reminders/"
             "mainview?hl=en-US&source=Assistant")},
@@ -709,12 +743,15 @@ TEST_F(DeepLinkUtilTest, GetWebUrl) {
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // OK: Parameterized deep links.
-      {"googleassistant://lists?id=123456",
+      {"googleassistant://lists?id=123456&eid=112233",
        GURL("https://assistant.google.com/lists/list/"
+            "123456?eid=112233&hl=en-US&source=Assistant")},
+      {"googleassistant://lists?id=123456&type=shopping",
+       GURL("https://shoppinglist.google.com/lists/"
             "123456?hl=en-US&source=Assistant")},
-      {"googleassistant://notes?id=123456",
+      {"googleassistant://notes?id=123456&eid=112233",
        GURL("https://assistant.google.com/lists/note/"
-            "123456?hl=en-US&source=Assistant")},
+            "123456?eid=112233&hl=en-US&source=Assistant")},
       {"googleassistant://reminders?id=123456",
        GURL("https://assistant.google.com/reminders/id/"
             "123456?hl=en-US&source=Assistant")},
@@ -769,6 +806,11 @@ TEST_F(DeepLinkUtilTest, GetWebUrlByType) {
         return std::make_pair(type, params);
       };
 
+  // Creates a test case with multiple parameter.
+  auto CreateTestCaseWithParams = [](DeepLinkType type, DeepLinkParams params) {
+    return std::make_pair(type, params);
+  };
+
   // Creates a test case with no parameters.
   auto CreateTestCase = [&CreateTestCaseWithParam](DeepLinkType type) {
     return CreateTestCaseWithParam(type);
@@ -776,20 +818,26 @@ TEST_F(DeepLinkUtilTest, GetWebUrlByType) {
 
   const std::map<TestCase, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep link types.
-      {CreateTestCase(DeepLinkType::kLists),
-       GURL("https://assistant.google.com/lists/"
-            "mainview?hl=en-US&source=Assistant")},
       {CreateTestCaseWithParam(DeepLinkType::kLists,
-                               std::make_pair("id", "123456")),
-       GURL("https://assistant.google.com/lists/list/"
-            "123456?hl=en-US&source=Assistant")},
-      {CreateTestCase(DeepLinkType::kNotes),
+                               std::make_pair("eid", "123456")),
        GURL("https://assistant.google.com/lists/"
-            "mainview?note_tap=true&hl=en-US&source=Assistant")},
-      {CreateTestCaseWithParam(DeepLinkType::kNotes,
-                               std::make_pair("id", "123456")),
-       GURL("https://assistant.google.com/lists/note/"
+            "mainview?eid=123456&hl=en-US&source=Assistant")},
+      {CreateTestCaseWithParams(DeepLinkType::kLists,
+                                {{"id", "123456"}, {"eid", "112233"}}),
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?eid=112233&hl=en-US&source=Assistant")},
+      {CreateTestCaseWithParams(DeepLinkType::kLists,
+                                {{"id", "123456"}, {"type", "shopping"}}),
+       GURL("https://shoppinglist.google.com/lists/"
             "123456?hl=en-US&source=Assistant")},
+      {CreateTestCaseWithParam(DeepLinkType::kNotes,
+                               std::make_pair("eid", "123456")),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&eid=123456&hl=en-US&source=Assistant")},
+      {CreateTestCaseWithParams(DeepLinkType::kNotes,
+                                {{"id", "123456"}, {"eid", "112233"}}),
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?eid=112233&hl=en-US&source=Assistant")},
       {CreateTestCase(DeepLinkType::kReminders),
        GURL("https://assistant.google.com/reminders/"
             "mainview?hl=en-US&source=Assistant")},

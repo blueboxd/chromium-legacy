@@ -62,7 +62,7 @@ class FakeSafeBrowsingDatabaseManager
   bool IsSupported() const override;
   bool ChecksAreAlwaysAsync() const override;
   bool CanCheckResourceType(
-      content::ResourceType /* resource_type */) const override;
+      blink::mojom::ResourceType /* resource_type */) const override;
 
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;

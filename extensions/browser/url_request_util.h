@@ -9,7 +9,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -27,7 +27,7 @@ namespace url_request_util {
 // renderer A to access a resource in an extension running in renderer B.
 // Returns false when it couldn't determine if the resource is allowed or not
 bool AllowCrossRendererResourceLoad(const GURL& url,
-                                    content::ResourceType resource_type,
+                                    blink::mojom::ResourceType resource_type,
                                     ui::PageTransition page_transition,
                                     int child_id,
                                     bool is_incognito,

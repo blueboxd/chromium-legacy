@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/track/track_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -41,7 +42,12 @@ class CORE_EXPORT AudioTrack final : public ScriptWrappable, public TrackBase {
   bool enabled_;
 };
 
-DEFINE_TRACK_TYPE_CASTS(AudioTrack, WebMediaPlayer::kAudioTrack);
+template <>
+struct DowncastTraits<AudioTrack> {
+  static bool AllowFrom(const TrackBase& track) {
+    return track.GetType() == WebMediaPlayer::kAudioTrack;
+  }
+};
 
 }  // namespace blink
 

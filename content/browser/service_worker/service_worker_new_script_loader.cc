@@ -72,7 +72,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : request_url_(original_request.url),
-      resource_type_(static_cast<ResourceType>(original_request.resource_type)),
+      resource_type_(static_cast<blink::mojom::ResourceType>(
+          original_request.resource_type)),
       original_options_(options),
       version_(version),
       network_watcher_(FROM_HERE,
@@ -97,7 +98,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // ServiceWorkerVersion keeps the registration alive while the service
   // worker is starting up, and it must be starting up here.
   DCHECK(registration);
-  const bool is_main_script = resource_type_ == ResourceType::kServiceWorker;
+  const bool is_main_script =
+      resource_type_ == blink::mojom::ResourceType::kServiceWorker;
   if (is_main_script) {
     ServiceWorkerVersion* stored_version = registration->waiting_version()
                                                ? registration->waiting_version()
@@ -209,7 +211,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     return;
   }
 
-  if (resource_type_ == ResourceType::kServiceWorker) {
+  if (resource_type_ == blink::mojom::ResourceType::kServiceWorker) {
     // Check the path restriction defined in the spec:
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;
@@ -348,9 +350,9 @@ void ServiceWorkerNewScriptLoader::CheckVersionStatusBeforeLoad() {
   // defines importScripts() works only on the initial script evaluation and the
   // install event. Update this check once importScripts() is fixed.
   // (https://crbug.com/719052)
-  DCHECK((resource_type_ == ResourceType::kServiceWorker &&
+  DCHECK((resource_type_ == blink::mojom::ResourceType::kServiceWorker &&
           version_->status() == ServiceWorkerVersion::NEW) ||
-         (resource_type_ == ResourceType::kScript &&
+         (resource_type_ == blink::mojom::ResourceType::kScript &&
           version_->status() != ServiceWorkerVersion::REDUNDANT));
 }
 #endif  // DCHECK_IS_ON()

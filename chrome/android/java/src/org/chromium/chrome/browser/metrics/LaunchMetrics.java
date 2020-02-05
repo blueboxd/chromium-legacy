@@ -95,6 +95,10 @@ public class LaunchMetrics {
         }
         sHomeScreenLaunches.clear();
 
+        String cachedMetricsGroup =
+                CachedMetrics.histogramsBypassCache() ? "HistogramsBypassCache" : "Control";
+        UmaSessionStats.registerSyntheticFieldTrial("AndroidCachedMetrics", cachedMetricsGroup);
+
         // Record generic cached events.
         CachedMetrics.commitCachedMetrics();
     }

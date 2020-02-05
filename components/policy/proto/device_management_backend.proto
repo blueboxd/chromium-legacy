@@ -3002,7 +3002,7 @@ message DeviceManagementRequest {
 
   // Request to start / continue client certificate provisioning process.
   optional ClientCertificateProvisioningRequest
-      client_certificate_provisionining_request = 34;
+      client_certificate_provisioning_request = 34;
 
   // Next id: 35.
 }

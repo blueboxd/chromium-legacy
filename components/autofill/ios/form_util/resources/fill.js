@@ -815,8 +815,7 @@ __gCrWeb.fill.webFormElementToFormData = function(
   }
 
   form['name'] = __gCrWeb.form.getFormIdentifier(formElement);
-  form['origin'] =
-      __gCrWeb.common.removeQueryAndReferenceFromURL(frame.location.href);
+  form['origin'] = __gCrWeb.common.removeQueryAndReferenceFromURL(frame.origin);
   form['action'] = __gCrWeb.fill.getCanonicalActionForForm(formElement);
 
   // The raw name and id attributes, which may be empty.

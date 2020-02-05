@@ -39,6 +39,13 @@
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "components/spellcheck/browser/windows_spell_checker.h"
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
 using content::BrowserThread;
 
 namespace {
@@ -61,6 +68,17 @@ SpellcheckService::EventType g_status_type =
 SpellcheckService::SpellcheckService(content::BrowserContext* context)
     : context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  // The Windows spell checker must be created before the dictionaries are
+  // initialized.
+  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
+    platform_spell_checker_ = std::make_unique<WindowsSpellChecker>(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()}));
+  }
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
   StringListPrefMember dictionaries_pref;
@@ -438,13 +456,13 @@ std::vector<std::string> SpellcheckService::GetNormalizedAcceptLanguages(
 #if defined(OS_WIN)
 void SpellcheckService::RecordSpellcheckLocalesStats() {
   if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
-      !hunspell_dictionaries_.empty()) {
+      platform_spell_checker() && !hunspell_dictionaries_.empty()) {
     std::vector<std::string> hunspell_locales;
     for (auto& dict : hunspell_dictionaries_) {
       hunspell_locales.push_back(dict->GetLanguage());
     }
     spellcheck_platform::RecordSpellcheckLocalesStats(
-        std::move(hunspell_locales), metrics_.get());
+        platform_spell_checker(), std::move(hunspell_locales), metrics_.get());
   }
 }
 
@@ -452,9 +470,9 @@ void SpellcheckService::RecordChromeLocalesStats() {
   const auto& accept_languages =
       GetNormalizedAcceptLanguages(/* normalize_for_spellcheck */ false);
   if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
-      !accept_languages.empty()) {
-    spellcheck_platform::RecordChromeLocalesStats(std::move(accept_languages),
-                                                  metrics_.get());
+      platform_spell_checker() && !accept_languages.empty()) {
+    spellcheck_platform::RecordChromeLocalesStats(
+        platform_spell_checker(), std::move(accept_languages), metrics_.get());
   }
 }
 #endif  // defined(OS_WIN)

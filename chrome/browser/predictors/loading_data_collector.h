@@ -12,8 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/navigation_id.h"
-#include "content/public/common/resource_load_info.mojom.h"
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -41,7 +40,7 @@ struct PageRequestSummary {
   PageRequestSummary(const PageRequestSummary& other);
   ~PageRequestSummary();
   void UpdateOrAddToOrigins(
-      const content::mojom::ResourceLoadInfo& resource_load_info);
+      const blink::mojom::ResourceLoadInfo& resource_load_info);
 
   GURL main_frame_url;
   GURL initial_url;
@@ -54,7 +53,7 @@ struct PageRequestSummary {
  private:
   void UpdateOrAddToOrigins(
       const url::Origin& origin,
-      const content::mojom::CommonNetworkInfoPtr& network_info);
+      const blink::mojom::CommonNetworkInfoPtr& network_info);
 };
 
 // Records navigation events as reported by various observers to the database
@@ -76,7 +75,7 @@ class LoadingDataCollector {
                                       bool is_error_page);
   virtual void RecordResourceLoadComplete(
       const NavigationID& navigation_id,
-      const content::mojom::ResourceLoadInfo& resource_load_info);
+      const blink::mojom::ResourceLoadInfo& resource_load_info);
 
   // Called when the main frame of a page completes loading. We treat this point
   // as the "completion" of the navigation. The resources requested by the page
@@ -113,10 +112,10 @@ class LoadingDataCollector {
 
   bool ShouldRecordResourceLoad(
       const NavigationID& navigation_id,
-      const content::mojom::ResourceLoadInfo& resource_load_info) const;
+      const blink::mojom::ResourceLoadInfo& resource_load_info) const;
 
   // Returns true if the subresource has a supported type.
-  static bool IsHandledResourceType(content::ResourceType resource_type,
+  static bool IsHandledResourceType(blink::mojom::ResourceType resource_type,
                                     const std::string& mime_type);
 
   // Cleanup inflight_navigations_ and call a cleanup for stats_collector_.

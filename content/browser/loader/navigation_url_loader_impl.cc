@@ -228,9 +228,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
 
-  new_request->resource_type =
-      static_cast<int>(request_info->is_main_frame ? ResourceType::kMainFrame
-                                                   : ResourceType::kSubFrame);
+  new_request->resource_type = static_cast<int>(
+      request_info->is_main_frame ? blink::mojom::ResourceType::kMainFrame
+                                  : blink::mojom::ResourceType::kSubFrame);
   if (request_info->is_main_frame)
     new_request->update_first_party_url_on_redirect = true;
 
@@ -368,10 +368,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // request. The net::OK check may not be necessary - the case where OK is
     // received without receiving any headers looks broken, anyways.
     if (!received_response_ && (!status_ || status_->error_code != net::OK)) {
-      RecordLoadHistograms(
-          url::Origin::Create(url_),
-          static_cast<ResourceType>(resource_request_->resource_type),
-          status_ ? status_->error_code : net::ERR_ABORTED);
+      RecordLoadHistograms(url::Origin::Create(url_),
+                           static_cast<blink::mojom::ResourceType>(
+                               resource_request_->resource_type),
+                           status_ ? status_->error_code : net::ERR_ABORTED);
     }
   }
 
@@ -711,7 +711,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             resource_request_->url, web_contents_getter_,
             ChildProcessHost::kInvalidUniqueID, navigation_ui_data_.get(),
             resource_request_->resource_type ==
-                static_cast<int>(ResourceType::kMainFrame),
+                static_cast<int>(blink::mojom::ResourceType::kMainFrame),
             static_cast<ui::PageTransition>(resource_request_->transition_type),
             resource_request_->has_user_gesture,
             resource_request_->request_initiator, &loader_factory);
@@ -765,9 +765,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       }
     }
     url_chain_.push_back(resource_request_->url);
-    *out_options =
-        GetURLLoaderOptions(resource_request_->resource_type ==
-                            static_cast<int>(ResourceType::kMainFrame));
+    *out_options = GetURLLoaderOptions(
+        resource_request_->resource_type ==
+        static_cast<int>(blink::mojom::ResourceType::kMainFrame));
     return factory;
   }
 
@@ -804,12 +804,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // See if navigation network isolation key needs to be updated.
     if (resource_request_->resource_type ==
-        static_cast<int>(ResourceType::kMainFrame)) {
+        static_cast<int>(blink::mojom::ResourceType::kMainFrame)) {
       url::Origin origin = url::Origin::Create(resource_request_->url);
       resource_request_->trusted_params->network_isolation_key =
           net::NetworkIsolationKey(origin, origin);
     } else {
-      DCHECK_EQ(static_cast<int>(ResourceType::kSubFrame),
+      DCHECK_EQ(static_cast<int>(blink::mojom::ResourceType::kSubFrame),
                 resource_request_->resource_type);
       url::Origin subframe_origin = url::Origin::Create(resource_request_->url);
       resource_request_->trusted_params->network_isolation_key =

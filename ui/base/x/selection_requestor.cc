@@ -10,8 +10,8 @@
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -55,7 +55,7 @@ scoped_refptr<base::RefCountedMemory> CombineRefCountedMemory(
 
 SelectionRequestor::SelectionRequestor(XDisplay* x_display,
                                        XID x_window,
-                                       PlatformEventDispatcher* dispatcher)
+                                       XEventDispatcher* dispatcher)
     : x_display_(x_display),
       x_window_(x_window),
       x_property_(x11::None),
@@ -247,7 +247,7 @@ void SelectionRequestor::ConvertSelectionForCurrentRequest() {
 }
 
 void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
-  if (PlatformEventSource::GetInstance()) {
+  if (X11EventSource::HasInstance()) {
     if (!abort_timer_.IsRunning()) {
       abort_timer_.Start(
           FROM_HERE,
@@ -265,13 +265,13 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
     // for request 'A' without first ending the RunLoop for request 'B'.
   } else {
     // This occurs if PerformBlockingConvertSelection() is called during
-    // shutdown and the PlatformEventSource has already been destroyed.
+    // shutdown and the X11EventSource has already been destroyed.
     while (!request->completed &&
            request->timeout > base::TimeTicks::Now()) {
       if (XPending(x_display_)) {
         XEvent event;
         XNextEvent(x_display_, &event);
-        dispatcher_->DispatchEvent(&event);
+        dispatcher_->DispatchXEvent(&event);
       }
     }
   }

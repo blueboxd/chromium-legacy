@@ -6,7 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_COMMON_HEADER_UTIL_H_
 
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 class GURL;
 
@@ -19,7 +19,7 @@ namespace data_reduction_proxy {
 // Adds a previews-specific directive to the Chrome-Proxy-Accept-Transform
 // header if needed.
 void MaybeSetAcceptTransformHeader(const GURL& url,
-                                   content::ResourceType resource_type,
+                                   blink::mojom::ResourceType resource_type,
                                    content::PreviewsState previews_state,
                                    net::HttpRequestHeaders* headers);
 

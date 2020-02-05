@@ -37,7 +37,7 @@ class AudioClockSimulator : public AudioProvider {
       kInterpolateWindow / (kInterpolateWindow + 1.0);
 
   // Maximum channels that this class supports.
-  static constexpr size_t kMaxChannels = 8;
+  static constexpr size_t kMaxChannels = 32;
 
   explicit AudioClockSimulator(AudioProvider* provider);
   ~AudioClockSimulator() override;

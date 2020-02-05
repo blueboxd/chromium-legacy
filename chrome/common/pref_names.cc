@@ -1318,6 +1318,13 @@ const char kPrintPreviewDefaultDestinationSelectionRules[] =
 // OS default printer instead of the most recently used destination.
 const char kPrintPreviewUseSystemDefaultPrinter[] =
     "printing.use_system_default_printer";
+
+// A prefs that limits how many snapshots of the user's data directory there can
+// be on the disk at any time. Following each major version update, Chrome will
+// create a snapshot of certain portions of the user's browsing data for use in
+// case of a later emergency version rollback.
+const char kUserDataSnapshotRentionLimit[] =
+    "downgrade.snapshot_retention_limit";
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)

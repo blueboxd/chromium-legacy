@@ -11,13 +11,13 @@
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -87,7 +87,7 @@ void SignedExchangeValidityPinger::Start(
   resource_request->url = validity_url;
   resource_request->method = "HEAD";
   resource_request->resource_type =
-      static_cast<int>(ResourceType::kSubResource);
+      static_cast<int>(blink::mojom::ResourceType::kSubResource);
   // Set empty origin as the initiator and attach no cookies.
   resource_request->request_initiator = url::Origin();
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;

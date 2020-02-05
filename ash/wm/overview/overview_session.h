@@ -172,20 +172,23 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void AddItem(aura::Window* window,
                bool reposition,
                bool animate,
-               const base::flat_set<OverviewItem*>& ignored_items = {},
-               size_t index = 0);
+               const base::flat_set<OverviewItem*>& ignored_items,
+               size_t index);
 
   // Similar to the above function, but adds the window at the end of the grid.
   // This will use the spawn-item animation.
   // TODO(afakhry): Expose |use_spawn_animation| if needed.
   void AppendItem(aura::Window* window, bool reposition, bool animate);
 
-  // Similar to |AddItem| with reposition=true, but adds the window at the
-  // correct position according to MRU order. If |animate| and |restack| are
-  // both true, the stacking order will be adjusted after the animation. If
-  // |animate| is false and |restack| is true, the stacking order will be
-  // adjusted immediately.
-  void AddItemInMruOrder(aura::Window* window, bool animate, bool restack);
+  // Like |AddItem|, but adds |window| at the correct position according to MRU
+  // order. If |reposition|, |animate|, and |restack| are all true, the stacking
+  // order will be adjusted after the animation. If |restack| is true but at
+  // least one of |reposition| and |animate| is false, the stacking order will
+  // be adjusted immediately.
+  void AddItemInMruOrder(aura::Window* window,
+                         bool reposition,
+                         bool animate,
+                         bool restack);
 
   // Removes |overview_item| from the corresponding grid. No items are
   // repositioned.

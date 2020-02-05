@@ -64,7 +64,7 @@ void WorkerScriptFetchInitiator::Start(
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     ServiceWorkerMainResourceHandle* service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
@@ -75,8 +75,8 @@ void WorkerScriptFetchInitiator::Start(
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(storage_partition);
-  DCHECK(resource_type == ResourceType::kWorker ||
-         resource_type == ResourceType::kSharedWorker)
+  DCHECK(resource_type == blink::mojom::ResourceType::kWorker ||
+         resource_type == blink::mojom::ResourceType::kSharedWorker)
       << static_cast<int>(resource_type);
 
   BrowserContext* browser_context = storage_partition->browser_context();
@@ -92,7 +92,8 @@ void WorkerScriptFetchInitiator::Start(
 
   // TODO(https://crbug.com/987517): Filesystem URL support on shared workers
   // are now broken.
-  bool filesystem_url_support = resource_type == ResourceType::kWorker;
+  bool filesystem_url_support =
+      resource_type == blink::mojom::ResourceType::kWorker;
 
   // Set up the factory bundle for non-NetworkService URLs, e.g.,
   // chrome-extension:// URLs. One factory bundle is consumed by the browser
@@ -144,13 +145,13 @@ void WorkerScriptFetchInitiator::Start(
   resource_request->mode = network::mojom::RequestMode::kSameOrigin;
 
   switch (resource_type) {
-    case ResourceType::kWorker:
+    case blink::mojom::ResourceType::kWorker:
       resource_request->fetch_request_context_type =
           static_cast<int>(blink::mojom::RequestContextType::WORKER);
       resource_request->destination =
           network::mojom::RequestDestination::kWorker;
       break;
-    case ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
       resource_request->fetch_request_context_type =
           static_cast<int>(blink::mojom::RequestContextType::SHARED_WORKER);
       resource_request->destination =

@@ -157,7 +157,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
   if (EndingSelection().IsRange()) {
     if (PerformTrivialReplace(text_))
       return;
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     bool end_of_selection_was_at_start_of_block =
         IsStartOfBlock(EndingVisibleSelection().VisibleEnd());
     if (!DeleteSelection(editing_state, DeleteSelectionOptions::Builder()
@@ -181,7 +181,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
       return;
   }
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // Reached by InsertTextCommandTest.NoVisibleSelectionAfterDeletingSelection
   ABORT_EDITING_COMMAND_IF(EndingVisibleSelection().IsNone());
@@ -222,7 +222,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
   // TODO(editing-dev): Use of UpdateStyleAndLayout()
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (!start_position.IsConnected())
     start_position = position_before_start_node;
@@ -302,7 +302,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
 Position InsertTextCommand::InsertTab(const Position& pos,
                                       EditingState* editing_state) {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   Position insert_pos = CreateVisiblePosition(pos).DeepEquivalent();
   if (insert_pos.IsNull())

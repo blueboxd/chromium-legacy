@@ -129,6 +129,16 @@ PerfettoFileTracer::~PerfettoFileTracer() = default;
 
 void PerfettoFileTracer::OnTracingEnabled() {}
 
+void PerfettoFileTracer::SetBackgroundTaskPriorityForTesting(
+    base::TaskPriority priority) {
+  background_drainer_.Reset();
+  background_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), priority,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+  background_drainer_ =
+      base::SequenceBound<BackgroundDrainer>(background_task_runner_);
+}
+
 void PerfettoFileTracer::OnTracingDisabled() {
   has_been_disabled_ = true;
 }

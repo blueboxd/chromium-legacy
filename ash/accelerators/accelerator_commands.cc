@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -95,6 +96,36 @@ void UnpinWindow() {
       Shell::Get()->screen_pinning_controller()->pinned_window();
   if (pinned_window)
     WindowState::Get(pinned_window)->Restore();
+}
+
+void ShiftPrimaryDisplay() {
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+
+  CHECK_GE(display_manager->GetNumDisplays(), 2U);
+
+  const int64_t primary_display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  const display::Displays& active_display_list =
+      display_manager->active_display_list();
+
+  auto primary_display_iter =
+      std::find_if(active_display_list.begin(), active_display_list.end(),
+                   [id = primary_display_id](const display::Display& display) {
+                     return display.id() == id;
+                   });
+
+  DCHECK(primary_display_iter != active_display_list.end());
+
+  ++primary_display_iter;
+
+  // If we've reach the end of |active_display_list|, wrap back around to the
+  // front.
+  if (primary_display_iter == active_display_list.end())
+    primary_display_iter = active_display_list.begin();
+
+  Shell::Get()->display_configuration_controller()->SetPrimaryDisplayId(
+      primary_display_iter->id(), true /* throttle */);
 }
 
 }  // namespace accelerators

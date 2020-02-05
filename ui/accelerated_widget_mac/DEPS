@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/metal_util",
   "+gpu/GLES2",
   "+third_party/skia",
   "+ui/base/cocoa",

@@ -20,10 +20,10 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
@@ -257,10 +257,8 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
     config.mode = EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED;
     config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE;
     config.management_domain = device_state_management_domain;
-  } else if (pref_enrollment_auto_start_present &&
-             pref_enrollment_auto_start &&
-             pref_enrollment_can_exit_present &&
-             !pref_enrollment_can_exit) {
+  } else if (pref_enrollment_auto_start_present && pref_enrollment_auto_start &&
+             pref_enrollment_can_exit_present && !pref_enrollment_can_exit) {
     config.mode = EnrollmentConfig::MODE_LOCAL_FORCED;
   } else if (oem_is_managed && !oem_can_exit_enrollment) {
     config.mode = EnrollmentConfig::MODE_LOCAL_FORCED;

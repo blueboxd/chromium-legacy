@@ -1328,7 +1328,15 @@ AppListStateTransitionSource AppListView::GetAppListStateTransitionSource(
 }
 
 views::View* AppListView::GetInitiallyFocusedView() {
-  return app_list_main_view_->search_box_view()->search_box();
+  views::View* initial_view;
+  if (IsShowingEmbeddedAssistantUI()) {
+    // Assistant page will redirect focus to its subviews.
+    auto* content = app_list_main_view_->contents_view();
+    initial_view = content->GetPageView(content->GetActivePageIndex());
+  } else {
+    initial_view = app_list_main_view_->search_box_view()->search_box();
+  }
+  return initial_view;
 }
 
 void AppListView::OnScrollEvent(ui::ScrollEvent* event) {
@@ -1577,7 +1585,7 @@ void AppListView::SetState(AppListViewState new_state) {
   if (is_in_drag_ && app_list_state_ != AppListViewState::kClosed)
     app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 
-  if (GetWidget()->IsActive() && !IsShowingEmbeddedAssistantUI()) {
+  if (GetWidget()->IsActive()) {
     // Reset the focus to initially focused view. This should be
     // done before updating visibility of views, because setting
     // focused view invisible automatically moves focus to next

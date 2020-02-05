@@ -24,7 +24,7 @@
   <summary>
     Event for unit testing, do not use.
   </summary>
-  <metric name="TestMetricOne" kind="hashed-string">
+  <metric name="TestMetricThree" kind="hashed-string">
     <summary>
       A per-user keyed hashed value.
     </summary>

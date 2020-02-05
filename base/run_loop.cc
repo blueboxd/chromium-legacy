@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -301,6 +302,25 @@ RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting() =
 RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() =
     default;
 #endif  // DCHECK_IS_ON()
+
+void RunLoop::RunUntilConditionForTest(RepeatingCallback<bool()> condition) {
+  CHECK(ScopedRunTimeoutForTest::Current());
+  OnceClosure on_failure = ScopedRunTimeoutForTest::Current()->on_timeout();
+  ScopedRunTimeoutForTest run_timeout(
+      ScopedRunTimeoutForTest::Current()->timeout(), DoNothing());
+  auto check_condition = BindRepeating(
+      [](const RepeatingCallback<bool()>& condition, RunLoop* loop) {
+        if (condition.Run())
+          loop->Quit();
+      },
+      condition, this);
+  RepeatingTimer poll_condition;
+  poll_condition.Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
+                       check_condition);
+  Run();
+  if (!condition.Run())
+    std::move(on_failure).Run();
+}
 
 bool RunLoop::BeforeRun() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

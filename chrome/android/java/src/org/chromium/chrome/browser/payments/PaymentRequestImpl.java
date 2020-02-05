@@ -1093,10 +1093,13 @@ public class PaymentRequestImpl
 
     /** @return Whether the microtransaction UI should be shown. */
     private boolean isMicrotransactionUiApplicable() {
-        if (!mIsUserGestureShow || mPaymentMethodsSection.getSize() != 1) return false;
+        if (!mIsUserGestureShow || mPaymentMethodsSection == null
+                || mPaymentMethodsSection.getSize() != 1) {
+            return false;
+        }
 
         PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
-        if (!instrument.isReadyForMicrotransaction()
+        if (instrument == null || !instrument.isReadyForMicrotransaction()
                 || TextUtils.isEmpty(instrument.accountBalance())) {
             return false;
         }

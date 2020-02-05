@@ -56,7 +56,6 @@
 #include "chrome/browser/ui/ash/launcher/internal_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
-#include "chrome/browser/ui/ash/launcher/launcher_crostini_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
@@ -1376,12 +1375,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
       std::unique_ptr<LauncherAppUpdater> arc_app_updater(
           new LauncherArcAppUpdater(this, profile()));
       app_updaters_.push_back(std::move(arc_app_updater));
-    }
-
-    if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile())) {
-      std::unique_ptr<LauncherAppUpdater> crostini_app_updater(
-          new LauncherCrostiniAppUpdater(this, profile()));
-      app_updaters_.push_back(std::move(crostini_app_updater));
     }
   }
 

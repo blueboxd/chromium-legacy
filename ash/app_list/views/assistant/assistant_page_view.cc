@@ -234,6 +234,10 @@ void AssistantPageView::OnUiVisibilityChanged(
     return;
   }
 
+  // Assistant page will get focus when widget shown.
+  if (GetWidget() && GetWidget()->IsActive())
+    RequestFocus();
+
   const bool prefer_voice =
       assistant_view_delegate_->IsTabletMode() ||
       AssistantState::Get()->launch_with_mic_open().value_or(false);

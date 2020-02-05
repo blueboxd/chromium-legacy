@@ -16,12 +16,12 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -65,10 +65,11 @@ class NetworkHandler : public DevToolsDomainHandler,
   // in network domain.
   static net::Error NetErrorFromString(const std::string& error, bool* ok);
   static std::string NetErrorToString(int net_error);
-  static const char* ResourceTypeToString(ResourceType resource_type);
+  static const char* ResourceTypeToString(
+      blink::mojom::ResourceType resource_type);
   static bool AddInterceptedResourceType(
       const std::string& resource_type,
-      base::flat_set<ResourceType>* intercepted_resource_types);
+      base::flat_set<blink::mojom::ResourceType>* intercepted_resource_types);
   static std::unique_ptr<Array<Network::Cookie>> BuildCookieArray(
       const std::vector<net::CanonicalCookie>& cookie_list);
   static void SetCookies(

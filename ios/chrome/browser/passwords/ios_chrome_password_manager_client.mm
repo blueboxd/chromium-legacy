@@ -115,11 +115,11 @@ void IOSChromePasswordManagerClient::ShowManualFallbackForSaving(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool has_generated_password,
     bool is_update) {
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/1045431): Implement this.
 }
 
 void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/1045431): Implement this.
 }
 
 void IOSChromePasswordManagerClient::FocusedInputChanged(

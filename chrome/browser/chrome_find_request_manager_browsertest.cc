@@ -6,10 +6,8 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -27,7 +25,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "pdf/document_loader_impl.h"
-#include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace content {
@@ -156,7 +153,6 @@ void SendRangeResponse(net::test_server::ControllableHttpResponse* response,
 IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
   constexpr uint32_t kStalledResponseSize =
       chrome_pdf::DocumentLoaderImpl::kDefaultRequestSize + 123;
-  base::HistogramTester histograms;
 
   // Load contents of a big, linearized pdf test file.
   // See also //content/test/data/linearized.pdf.README file.
@@ -242,18 +238,6 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(15, results.number_of_matches);
   EXPECT_EQ(3, results.active_match_ordinal);
-
-  // Verify that there were no |request_initiator_site_lock| mismatches.
-  //
-  // TODO(lukasza): https://crbug.com/920634: Checking CORB status below seems
-  // like a small layering violation - it can be removed once NOTREACHED
-  // assertion is reintroduced for InitiatorLockCompatibility::kIncorrectLock
-  // in CorsURLLoaderFactory::IsSane.
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  const char* kLockUma =
-      "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility";
-  histograms.ExpectBucketCount(
-      kLockUma, network::InitiatorLockCompatibility::kIncorrectLock, 0);
 }
 
 // Tests searching in a page with embedded PDFs. Note that this test, the

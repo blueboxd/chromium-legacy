@@ -465,11 +465,14 @@ void WebContentController::RenderFrameCreated(
   // it later on.
   if (instance)
     SendInitialChannelSet(instance);
+  ObserveRenderWidget(render_frame_host->GetView()->GetRenderWidgetHost());
 }
 
 void WebContentController::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   current_render_frame_set_.erase(render_frame_host);
+  current_render_widget_set_.erase(
+      render_frame_host->GetView()->GetRenderWidgetHost());
 }
 
 void WebContentController::RenderFrameHostChanged(

@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/policy/enrollment_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace policy {
@@ -34,7 +34,7 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
 
   void StartEnrollment() override;
 
-  bool was_start_enrollment_called() {
+  bool was_start_enrollment_called() const {
     return was_start_enrollment_called_;
   }
 

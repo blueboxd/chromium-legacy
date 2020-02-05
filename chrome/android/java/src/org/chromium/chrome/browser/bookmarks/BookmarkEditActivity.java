@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.url.GURL;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -136,8 +137,7 @@ public class BookmarkEditActivity extends SynchronousInitializationActivity {
     @Override
     protected void onStop() {
         if (mModel.doesBookmarkExist(mBookmarkId)) {
-            final String originalUrl =
-                    mModel.getBookmarkById(mBookmarkId).getUrl();
+            final GURL originalUrl = new GURL(mModel.getBookmarkById(mBookmarkId).getUrl());
             final String title = mTitleEditText.getTrimmedText();
             final String url = mUrlEditText.getTrimmedText();
 
@@ -147,9 +147,9 @@ public class BookmarkEditActivity extends SynchronousInitializationActivity {
 
             if (!mUrlEditText.isEmpty()
                     && mModel.getBookmarkById(mBookmarkId).isUrlEditable()) {
-                String fixedUrl = UrlFormatter.fixupUrl(url);
-                if (fixedUrl != null && !fixedUrl.equals(originalUrl)) {
-                    mModel.setBookmarkUrl(mBookmarkId, fixedUrl);
+                GURL fixedUrl = UrlFormatter.fixupUrl(url);
+                if (fixedUrl.isValid() && !fixedUrl.equals(originalUrl)) {
+                    mModel.setBookmarkUrl(mBookmarkId, fixedUrl.getSpec());
                 }
             }
         }

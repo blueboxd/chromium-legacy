@@ -78,7 +78,8 @@ void ColdModeSpellCheckRequester::Invoke(IdleDeadline* deadline) {
   TRACE_EVENT0("blink", "ColdModeSpellCheckRequester::invoke");
 
   // TODO(xiaochengh): Figure out if this has any performance impact.
-  GetFrame().GetDocument()->UpdateStyleAndLayout();
+  GetFrame().GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kSpellCheck);
 
   const Element* current_focused = CurrentFocusedEditable();
   if (!current_focused) {

@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.findinpage.FindToolbar;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -81,7 +81,7 @@ public class TopToolbarCoordinator implements Toolbar {
             ToolbarControlContainer controlContainer, ToolbarLayout toolbarLayout) {
         mToolbarLayout = toolbarLayout;
         if (mToolbarLayout instanceof ToolbarPhone) {
-            if (FeatureUtilities.isStartSurfaceEnabled()) {
+            if (CachedFeatureFlags.isStartSurfaceEnabled()) {
                 mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(
                         controlContainer.getRootView().findViewById(
                                 R.id.tab_switcher_toolbar_stub));
@@ -675,7 +675,7 @@ public class TopToolbarCoordinator implements Toolbar {
     public void showIdentityDiscButton(OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {
         if (mStartSurfaceToolbarCoordinator != null
-                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+                && CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()) {
             mStartSurfaceToolbarCoordinator.showIdentityDiscButton(
                     onClickListener, image, contentDescriptionResId);
         }
@@ -687,7 +687,7 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void hideIdentityDiscButton() {
         if (mStartSurfaceToolbarCoordinator != null
-                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+                && CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()) {
             mStartSurfaceToolbarCoordinator.hideIdentityDiscButton();
         }
         disableExperimentalButton();
@@ -698,7 +698,7 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void updateIdentityDiscButtonImage(Drawable image) {
         if (mStartSurfaceToolbarCoordinator != null
-                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+                && CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()) {
             mStartSurfaceToolbarCoordinator.updateIdentityDiscButtonImage(image);
         }
         updateExperimentalButtonImage(image);

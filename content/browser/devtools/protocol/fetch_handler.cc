@@ -59,13 +59,13 @@ Response ToInterceptionPatterns(
     std::vector<DevToolsURLLoaderInterceptor::Pattern>* result) {
   result->clear();
   if (!maybe_patterns.isJust()) {
-    result->emplace_back("*", base::flat_set<ResourceType>(),
+    result->emplace_back("*", base::flat_set<blink::mojom::ResourceType>(),
                          DevToolsURLLoaderInterceptor::REQUEST);
     return Response::OK();
   }
   Array<Fetch::RequestPattern>& patterns = *maybe_patterns.fromJust();
   for (const std::unique_ptr<Fetch::RequestPattern>& pattern : patterns) {
-    base::flat_set<ResourceType> resource_types;
+    base::flat_set<blink::mojom::ResourceType> resource_types;
     std::string resource_type = pattern->GetResourceType("");
     if (!resource_type.empty()) {
       if (!NetworkHandler::AddInterceptedResourceType(resource_type,

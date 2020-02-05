@@ -71,7 +71,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   const GURL http_url("http://www.example.com");
   WebRequestInfoInitParams match_params;
   match_params.url = http_url;
-  match_params.type = content::ResourceType::kMainFrame;
+  match_params.type = blink::mojom::ResourceType::kMainFrame;
   match_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
   WebRequestInfo match_request_info(std::move(match_params));
   WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);
@@ -83,7 +83,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   const GURL https_url("https://www.example.com");
   WebRequestInfoInitParams wrong_resource_type_params;
   wrong_resource_type_params.url = https_url;
-  wrong_resource_type_params.type = content::ResourceType::kSubFrame;
+  wrong_resource_type_params.type = blink::mojom::ResourceType::kSubFrame;
   wrong_resource_type_params.web_request_type =
       WebRequestResourceType::SUB_FRAME;
   WebRequestInfo wrong_resource_type_request_info(
@@ -120,7 +120,7 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   const GURL first_party_url("http://fpfc.example.com");
   WebRequestInfoInitParams match_params;
   match_params.url = http_url;
-  match_params.type = content::ResourceType::kMainFrame;
+  match_params.type = blink::mojom::ResourceType::kMainFrame;
   match_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
   WebRequestInfo match_request_info(std::move(match_params));
   WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);

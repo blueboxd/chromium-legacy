@@ -113,7 +113,7 @@ DevToolsURLLoaderInterceptor::Pattern::Pattern(const Pattern& other) = default;
 
 DevToolsURLLoaderInterceptor::Pattern::Pattern(
     const std::string& url_pattern,
-    base::flat_set<ResourceType> resource_types,
+    base::flat_set<blink::mojom::ResourceType> resource_types,
     InterceptionStage interception_stage)
     : url_pattern(url_pattern),
       resource_types(std::move(resource_types)),
@@ -121,7 +121,7 @@ DevToolsURLLoaderInterceptor::Pattern::Pattern(
 
 bool DevToolsURLLoaderInterceptor::Pattern::Matches(
     const std::string& url,
-    ResourceType resource_type) const {
+    blink::mojom::ResourceType resource_type) const {
   if (!resource_types.empty() &&
       resource_types.find(resource_type) == resource_types.end()) {
     return false;
@@ -441,7 +441,7 @@ void DevToolsURLLoaderInterceptor::CreateJob(
 
 InterceptionStage DevToolsURLLoaderInterceptor::GetInterceptionStage(
     const GURL& url,
-    ResourceType resource_type) const {
+    blink::mojom::ResourceType resource_type) const {
   InterceptionStage stage = InterceptionStage::DONT_INTERCEPT;
   std::string unused;
   std::string url_str = protocol::NetworkHandler::ExtractFragment(url, &unused);
@@ -711,7 +711,8 @@ bool InterceptionJob::StartJobAndMaybeNotify() {
 
   const network::ResourceRequest& request = create_loader_params_->request;
   stage_ = interceptor_->GetInterceptionStage(
-      request.url, static_cast<ResourceType>(request.resource_type));
+      request.url,
+      static_cast<blink::mojom::ResourceType>(request.resource_type));
 
   if (!(stage_ & InterceptionStage::REQUEST))
     return false;
@@ -1205,11 +1206,13 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
   if (renderer_request_id_.has_value())
     result->renderer_request_id = renderer_request_id_.value();
   result->frame_id = frame_token_;
-  ResourceType resource_type =
-      static_cast<ResourceType>(create_loader_params_->request.resource_type);
+  blink::mojom::ResourceType resource_type =
+      static_cast<blink::mojom::ResourceType>(
+          create_loader_params_->request.resource_type);
   result->resource_type = resource_type;
-  result->is_navigation = resource_type == ResourceType::kMainFrame ||
-                          resource_type == ResourceType::kSubFrame;
+  result->is_navigation =
+      resource_type == blink::mojom::ResourceType::kMainFrame ||
+      resource_type == blink::mojom::ResourceType::kSubFrame;
 
   if (head && head->headers)
     result->response_headers = head->headers;

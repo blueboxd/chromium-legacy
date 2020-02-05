@@ -236,11 +236,6 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     right_highlight_view_ = AddChildView(
         std::make_unique<SplitViewHighlightView>(/*is_right_or_bottom=*/true));
 
-    left_highlight_view_->SetPaintToLayer();
-    right_highlight_view_->SetPaintToLayer();
-    left_highlight_view_->layer()->SetFillsBoundsOpaquely(false);
-    right_highlight_view_->layer()->SetFillsBoundsOpaquely(false);
-
     left_rotated_view_ = AddChildView(
         std::make_unique<RotatedImageLabelView>(/*is_right_or_bottom=*/false));
     right_rotated_view_ = AddChildView(
@@ -464,9 +459,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     }
 
     left_highlight_view_->SetBounds(GetMirroredRect(left_highlight_bounds),
-                                    horizontal, left_highlight_animation_type);
+                                    left_highlight_animation_type);
     right_highlight_view_->SetBounds(GetMirroredRect(right_highlight_bounds),
-                                     horizontal,
                                      right_highlight_animation_type);
 
     // Calculate the bounds of the views which contain the guidance text and

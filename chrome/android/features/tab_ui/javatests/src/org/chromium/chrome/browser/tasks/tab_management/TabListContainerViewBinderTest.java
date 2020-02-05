@@ -26,8 +26,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -95,7 +95,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mRecyclerView = getActivity().findViewById(R.id.tab_list_view); });
@@ -265,7 +265,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void tearDownTest() throws Exception {
         mMCP.destroy();
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
         super.tearDownTest();
     }
 }

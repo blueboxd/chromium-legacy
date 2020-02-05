@@ -27,11 +27,8 @@ class GURL;
 //
 // * Host is not used when the scheme is 'file'.
 // * The path can have embedded '*' characters which act as glob wildcards.
-// * '<all_urls>' is a special pattern that matches any (possibly invalid) URL
-//   that contains a valid scheme (as specified by valid_schemes_).
-//   TODO(crbug.com/1041880): Having the wildcard match invalid URLs is part of
-//   a temporary bugfix that is expected to be reverted as part of the
-//   follow-up, longer-term (but longer-bake-time) fix.
+// * '<all_urls>' is a special pattern that matches any valid URL that contains
+//   a valid scheme (as specified by valid_schemes_).
 // * The '*' scheme pattern excludes file URLs.
 //
 // Examples of valid patterns:
@@ -155,14 +152,8 @@ class URLPattern {
   // false otherwise. Uses valid_schemes_ to determine validity.
   bool IsValidScheme(base::StringPiece scheme) const;
 
-  // Returns true if this instance matches the specified URL. If the pattern
-  // is the wildcard '<all_urls>', this may return true for invalid URLs
-  // (!test.is_valid()) that nonetheless have valid schemes (as determined
-  // by MatchesScheme).
-  //
-  // TODO(crbug.com/1041880): Having the wildcard match invalid URLs is part of
-  // a temporary bugfix that is expected to be reverted as part of the
-  // follow-up, longer-term (but longer-bake-time) fix.
+  // Returns true if this instance matches the specified URL. Always returns
+  // false for invalid URLs.
   bool MatchesURL(const GURL& test) const;
 
   // Returns true if this instance matches the specified security origin.

@@ -24,7 +24,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
 namespace content {

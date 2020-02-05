@@ -496,7 +496,7 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInSVGDocument) {
   ASSERT_TRUE(document->IsSVGDocument());
 
   Element* text_element = document->getElementById("t");
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   FrameSelection& selection = document->GetFrame()->Selection();
 
   // <text> element
@@ -539,7 +539,7 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
   ASSERT_FALSE(IsA<HTMLDocument>(document));
 
   Element* text_element = document->getElementById("t");
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   FrameSelection& selection = document->GetFrame()->Selection();
 
   selection.SelectAll();
@@ -558,7 +558,7 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
 
   Document* document = GetDocument();
   Element* input_element = document->getElementById("sample");
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // Select the 'Sample' of |input|.
   DOMRect* rect = input_element->getBoundingClientRect();
@@ -602,7 +602,7 @@ TEST_F(ContextMenuControllerTest, SelectionRectClipped) {
 
   Document* document = GetDocument();
   Element* editable_element = document->getElementById("text-area");
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   FrameSelection& selection = document->GetFrame()->Selection();
 
   // Select the 'Sample' of |textarea|.

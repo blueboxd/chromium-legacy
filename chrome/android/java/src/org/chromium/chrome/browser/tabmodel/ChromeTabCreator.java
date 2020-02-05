@@ -34,6 +34,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * This class creates various kinds of new tabs and adds them to the right {@link TabModel}.
@@ -109,8 +110,10 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             TraceEvent.begin("ChromeTabCreator.createNewTab");
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
 
+            GURL url = UrlFormatter.fixupUrl(loadUrlParams.getUrl());
+
             // Sanitize the url.
-            loadUrlParams.setUrl(UrlFormatter.fixupUrl(loadUrlParams.getUrl()));
+            loadUrlParams.setUrl(url.getValidSpecOrEmpty());
             loadUrlParams.setTransitionType(getTransitionType(type, intent));
 
             // Check if the tab is being created asynchronously.

@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "sync.proto";
+import "components/sync/protocol/sync.proto";
 
 // Sync proto to store entity data similar to what directory stores, used to
 // persist data locally and never sent through the wire.

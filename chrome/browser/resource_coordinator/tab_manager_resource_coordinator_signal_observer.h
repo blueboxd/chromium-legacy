@@ -39,7 +39,7 @@ class TabManager::ResourceCoordinatorSignalObserver
 
   // PageNode::ObserverDefaultImpl:
   // This function run on the performance manager sequence.
-  void OnPageAlmostIdleChanged(const PageNode* page_node) override;
+  void OnIsLoadingChanged(const PageNode* page_node) override;
 
   // GraphOwned implementation:
   void OnPassedToGraph(Graph* graph) override;
@@ -55,11 +55,8 @@ class TabManager::ResourceCoordinatorSignalObserver
       const WebContentsProxy& contents_proxy,
       int64_t navigation_id);
 
-  // Equivalent to the the GraphObserver functions above, but these are the
-  // counterparts that run on the UI thread.
-  static void OnPageAlmostIdleOnUi(const base::WeakPtr<TabManager>& tab_manager,
-                                   const WebContentsProxy& contents_proxy,
-                                   int64_t navigation_id);
+  // Posted to the UI thread from the GraphObserver functions above.
+  static void OnPageStoppedLoadingOnUi(const WebContentsProxy& contents_proxy);
   static void OnExpectedTaskQueueingDurationSampleOnUi(
       const base::WeakPtr<TabManager>& tab_manager,
       const WebContentsProxy& contents_proxy,

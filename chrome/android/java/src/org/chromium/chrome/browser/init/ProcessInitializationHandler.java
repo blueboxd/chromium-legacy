@@ -49,8 +49,8 @@ import org.chromium.chrome.browser.download.DownloadController;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.ExploreOfflineStatusProvider;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.history.HistoryDeletionBridge;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -158,7 +158,7 @@ public class ProcessInitializationHandler {
     protected void handlePreNativeInitialization() {
         BrowserTaskExecutor.register();
         BrowserTaskExecutor.setShouldPrioritizeBootstrapTasks(
-                FeatureUtilities.shouldPrioritizeBootstrapTasks());
+                CachedFeatureFlags.shouldPrioritizeBootstrapTasks());
 
         Context application = ContextUtils.getApplicationContext();
 

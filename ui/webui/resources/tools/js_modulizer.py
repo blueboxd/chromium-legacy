@@ -123,9 +123,9 @@ def ProcessFile(filename, out_folder, namespace_rewrites):
   # Reconstruct file.
   # Specify the newline character so that the exact same file is generated
   # across platforms.
-  with io.open(os.path.join(out_folder, out_filename), 'w', newline='\n') as f:
+  with io.open(os.path.join(out_folder, out_filename), 'wb') as f:
     for l in lines:
-      f.write(unicode(l, 'utf-8'))
+      f.write(l.encode('utf-8'))
   return
 
 def main(argv):

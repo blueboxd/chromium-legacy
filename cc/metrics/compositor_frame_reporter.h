@@ -129,8 +129,6 @@ class CC_EXPORT CompositorFrameReporter {
 
   const viz::BeginFrameId frame_id_;
 
-  void DroppedFrame();
-
   // Note that the started stage may be reported to UMA. If the histogram is
   // intended to be reported then the histograms.xml file must be updated too.
   void StartStage(StageType stage_type, base::TimeTicks start_time);
@@ -151,6 +149,8 @@ class CC_EXPORT CompositorFrameReporter {
   }
 
  private:
+  void DroppedFrame();
+
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
   void ReportStageHistograms() const;

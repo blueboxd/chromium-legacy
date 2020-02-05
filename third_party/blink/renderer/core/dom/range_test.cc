@@ -318,7 +318,7 @@ TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
 TEST_F(RangeTest, BorderAndTextQuadsWithInputInBetween) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<div>foo <u><input> bar</u></div>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* foo = GetDocument().QuerySelector("div")->firstChild();
   Node* bar = GetDocument().QuerySelector("u")->lastChild();
@@ -357,7 +357,7 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
     <p id=sample>abc</p>
     <p id=expected><span style='font-size: 500%'>a</span>bc</p>
   )HTML");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Element* const expected = GetDocument().getElementById("expected");
   Element* const sample = GetDocument().getElementById("sample");
@@ -402,7 +402,7 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterThree) {
     <p id=sample>(a)bc</p>
     <p id=expected><span style='font-size: 500%'>(a)</span>bc</p>
   )HTML");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Element* const expected = GetDocument().getElementById("expected");
   Element* const sample = GetDocument().getElementById("sample");
@@ -463,7 +463,7 @@ TEST_F(RangeTest, CollapsedRangeGetBorderAndTextQuadsWithFirstLetter) {
     <p id=sample>abc</p>
     <p id=expected><span style='font-size: 500%'>a</span>bc</p>
   )HTML");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Element* const expected = GetDocument().getElementById("expected");
   Element* const sample = GetDocument().getElementById("sample");

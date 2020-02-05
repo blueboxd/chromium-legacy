@@ -2637,7 +2637,6 @@
                        'shimazu+serviceworker@chromium.org'],
     'settings': ['michaelpg+watch-settings@chromium.org'],
     'settings_os_settings': ['hsuregan+watch-os-settings@chromium.org',
-                             'jamescook+watch-os-settings@chromium.org',
                              'khorimoto+watch-os-settings@chromium.org',
                              'zentaro+watch-os-settings@chromium.org'],
     'sharing': ['peter@chromium.org',

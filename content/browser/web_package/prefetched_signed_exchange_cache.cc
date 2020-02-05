@@ -29,7 +29,6 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -38,6 +37,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -147,7 +147,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     // or report_raw_headers is set. Users can inspect the certificate for the
     // main frame using the info bubble in Omnibox, and for the subresources in
     // DevTools' Security panel.
-    if ((request.resource_type != static_cast<int>(ResourceType::kMainFrame)) &&
+    if ((request.resource_type !=
+         static_cast<int>(blink::mojom::ResourceType::kMainFrame)) &&
         !request.report_raw_headers) {
       response_->ssl_info = base::nullopt;
     }

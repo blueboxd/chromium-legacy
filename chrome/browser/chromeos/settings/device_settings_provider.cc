@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
+#include "chrome/browser/chromeos/policy/system_proxy_settings_policy_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
@@ -133,6 +134,7 @@ const char* const kKnownSettings[] = {
     kStartUpFlags,
     kStatsReportingPref,
     kSystemLogUploadEnabled,
+    kSystemProxySettings,
     kSystemTimezonePolicy,
     kSystemUse24HourClock,
     kTargetVersionPrefix,
@@ -446,6 +448,16 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
       policy.has_data_roaming_enabled() &&
           policy.data_roaming_enabled().has_data_roaming_enabled() &&
           policy.data_roaming_enabled().data_roaming_enabled());
+
+  if (policy.has_system_proxy_settings()) {
+    const em::SystemProxySettingsProto& settings_proto(
+        policy.system_proxy_settings());
+    if (settings_proto.has_system_proxy_settings()) {
+      SetJsonDeviceSetting(
+          kSystemProxySettings, policy::key::kSystemProxySettings,
+          settings_proto.system_proxy_settings(), new_values_cache);
+    }
+  }
 }
 
 void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,

@@ -1895,7 +1895,7 @@ void PressEscapeWhileDetachedStep2(const BrowserList* browser_list) {
 
 // Detaches a tab and while detached presses escape to revert the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       PressEscapeWhileDetached) {
+                       RevertDragWhileDetached) {
   AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
@@ -2096,20 +2096,20 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   EXPECT_EQ(tab_strip2->GetGroupColorId(groups2[0]), group_color);
 }
 
-// Drags a tab group by the header to a new position and presses escape to
-// revert the drag.
+// Drags a tab group by the header to a new position toward the right and
+// presses escape to revert the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
-                       PressEscapeDuringHeaderDrag) {
+                       RevertHeaderDragRight) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
-  AddTabsAndResetBrowser(browser(), 1);
-  tab_groups::TabGroupId group = model->AddToNewGroup({0});
+  AddTabsAndResetBrowser(browser(), 3);
+  tab_groups::TabGroupId group = model->AddToNewGroup({0, 1});
   StopAnimating(tab_strip);
 
   TabGroupHeader* group_header = tab_strip->group_header(group);
   EXPECT_FALSE(group_header->dragging());
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(group_header)));
-  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
   ASSERT_TRUE(group_header->dragging());
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
@@ -2118,12 +2118,42 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
 
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_FALSE(group_header->dragging());
-  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+  EXPECT_EQ("0 1 2 3", IDString(browser()->tab_strip_model()));
   std::vector<tab_groups::TabGroupId> groups =
       model->group_model()->ListTabGroups();
   EXPECT_EQ(1u, groups.size());
   EXPECT_THAT(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
-              testing::ElementsAre(0));
+              testing::ElementsAre(0, 1));
+}
+
+// Drags a tab group by the header to a new position toward the left and presses
+// escape to revert the drag.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
+                       RevertHeaderDragLeft) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  AddTabsAndResetBrowser(browser(), 3);
+  tab_groups::TabGroupId group = model->AddToNewGroup({2, 3});
+  StopAnimating(tab_strip);
+
+  TabGroupHeader* group_header = tab_strip->group_header(group);
+  EXPECT_FALSE(group_header->dragging());
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(group_header)));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(group_header->dragging());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      browser()->window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
+      false, false));
+
+  EXPECT_EQ(1u, browser_list->size());
+  EXPECT_FALSE(group_header->dragging());
+  EXPECT_EQ("0 1 2 3", IDString(browser()->tab_strip_model()));
+  std::vector<tab_groups::TabGroupId> groups =
+      model->group_model()->ListTabGroups();
+  EXPECT_EQ(1u, groups.size());
+  EXPECT_THAT(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
+              testing::ElementsAre(2, 3));
 }
 
 namespace {
@@ -2156,7 +2186,7 @@ void PressEscapeWhileDetachedHeaderStep2(
 // Drags a tab group by the header and while detached presses escape to revert
 // the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
-                       PressEscapeDuringHeaderDragWhileDetached) {
+                       RevertHeaderDragWhileDetached) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
   AddTabsAndResetBrowser(browser(), 1);

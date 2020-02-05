@@ -68,6 +68,10 @@ BASE_EXPORT void RemoveActionCallback(const ActionCallback& callback);
 BASE_EXPORT void SetRecordActionTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner);
 
+// Returns the task runner used to record actions. Returns null when not set.
+// This function is thread safe.
+BASE_EXPORT scoped_refptr<SingleThreadTaskRunner> GetRecordActionTaskRunner();
+
 }  // namespace base
 
 #endif  // BASE_METRICS_USER_METRICS_H_

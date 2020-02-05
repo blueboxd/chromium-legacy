@@ -158,9 +158,6 @@ extern const char kLearnMoreReportingURL[];
 // for display.
 extern const char kLegacySupervisedUserManagementDisplayURL[];
 
-// Management URL for Chrome Supervised Users.
-extern const char kLegacySupervisedUserManagementURL[];
-
 // The URL for the Learn More page about policies and enterprise enrollment.
 extern const char kManagedUiLearnMoreUrl[];
 

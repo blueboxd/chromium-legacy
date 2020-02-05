@@ -7,6 +7,7 @@ import("//third_party/protobuf/proto_library.gni")
 import("protocol_sources.gni")
 
 proto_library("protocol") {
+  proto_in_dir = "//"
   sources = sync_protocol_sources
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
@@ -36,7 +37,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 
   proto_java_library("protocol_java") {
-    proto_path = "//components/sync/protocol/"
+    proto_path = "//"
     sources = sync_protocol_sources
   }
 }

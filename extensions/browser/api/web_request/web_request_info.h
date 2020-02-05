@@ -62,7 +62,7 @@ struct WebRequestInfoInitParams {
   std::string method;
   bool is_navigation_request = false;
   base::Optional<url::Origin> initiator;
-  content::ResourceType type = content::ResourceType::kSubResource;
+  blink::mojom::ResourceType type = blink::mojom::ResourceType::kSubResource;
   WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
   bool is_async = false;
   net::HttpRequestHeaders extra_request_headers;
@@ -127,7 +127,7 @@ struct WebRequestInfo {
   ExtensionApiFrameIdMap::FrameData frame_data;
 
   // The type of the request (e.g. main frame, subresource, XHR, etc).
-  const content::ResourceType type;
+  const blink::mojom::ResourceType type;
 
   // A partially mirrored copy of |type| which is slightly less granular and
   // which also identifies WebSocket requests separately from other types.

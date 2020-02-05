@@ -272,7 +272,7 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionNoLiveness) {
   EXPECT_EQ("xyz", Selection().SelectedText());
   sample->insertBefore(Text::Create(GetDocument(), "abc"),
                        sample->firstChild());
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   const VisibleSelection& selection =
       Selection().ComputeVisibleSelectionInDOMTree();
   // Inserting "abc" before "xyz" should not affect to selection.
@@ -307,7 +307,7 @@ TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
   Element* select = GetDocument().CreateRawElement(html_names::kSelectTag);
   GetDocument().ReplaceChild(select, GetDocument().documentElement());
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Selection().SelectAll();
   EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsNone())
       << "Nothing should be selected if the "

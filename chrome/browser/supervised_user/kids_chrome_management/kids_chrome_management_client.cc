@@ -16,6 +16,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "content/public/browser/browser_context.h"
@@ -231,7 +232,9 @@ void KidsChromeManagementClient::StartFetching(
           base::BindOnce(
               &KidsChromeManagementClient::OnAccessTokenFetchComplete,
               base::Unretained(this), it),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+          // This class doesn't care about browser sync consent.
+          signin::ConsentLevel::kNotRequired);
 }
 
 void KidsChromeManagementClient::OnAccessTokenFetchComplete(
@@ -302,7 +305,8 @@ void KidsChromeManagementClient::OnSimpleLoaderComplete(
       req->access_token_expired = true;
       identity::ScopeSet scopes{req->scope};
       identity_manager_->RemoveAccessTokenFromCache(
-          identity_manager_->GetPrimaryAccountId(), scopes, token_info.token);
+          identity_manager_->GetUnconsentedPrimaryAccountId(), scopes,
+          token_info.token);
       StartFetching(it);
       return;
     }

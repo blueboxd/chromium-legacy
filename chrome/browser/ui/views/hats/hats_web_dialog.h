@@ -57,7 +57,7 @@ class HatsWebDialog : public ui::WebDialogDelegate {
                          const content::ContextMenuParams& params) override;
   void OnWebContentsFinishedLoad() override;
   void OnMainFrameResourceLoadComplete(
-      const content::mojom::ResourceLoadInfo& resource_load_info) override;
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
 
   // These are virtual for tests.
   virtual void OnLoadTimedOut();

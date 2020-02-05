@@ -18,7 +18,7 @@ class ClientIncidentReport_IncidentData_ResourceRequestIncident;
 
 struct ResourceRequestInfo {
   GURL url;
-  content::ResourceType resource_type;
+  blink::mojom::ResourceType resource_type;
   int render_process_id;
   int render_frame_id;
 };

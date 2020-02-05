@@ -24,10 +24,9 @@ WebComponent::WebComponent(
     : runner_(runner),
       startup_context_(std::move(context)),
       controller_binding_(this),
-      module_context_(
-          startup_context()
-              ->incoming_services()
-              ->ConnectToService<fuchsia::modular::ModuleContext>()) {
+      module_context_(startup_context()
+                          ->svc()
+                          ->Connect<fuchsia::modular::ModuleContext>()) {
   DCHECK(runner);
 
   // If the ComponentController request is valid then bind it, and configure it

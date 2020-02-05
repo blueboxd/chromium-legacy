@@ -15,6 +15,7 @@ group("all_tests") {
     ":ios_chrome_eg2tests",
     ":ios_chrome_integration_eg2tests_module",
     ":ios_chrome_settings_eg2tests_module",
+    ":ios_chrome_signin_eg2tests_module",
     ":ios_chrome_smoke_eg2tests_module",
     ":ios_chrome_ui_eg2tests_module",
     ":ios_chrome_web_eg2tests_module",
@@ -81,6 +82,12 @@ chrome_ios_eg2_test("ios_chrome_settings_eg2tests_module") {
   ]
 }
 
+chrome_ios_eg2_test("ios_chrome_signin_eg2tests_module") {
+  xcode_test_application_name = "ios_chrome_eg2tests"
+
+  deps = [ "//ios/chrome/browser/ui/signin_interaction:eg2_tests" ]
+}
+
 chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
@@ -109,7 +116,6 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/settings/google_services:eg2_tests",
     "//ios/chrome/browser/ui/settings/sync/utils:eg2_tests",
     "//ios/chrome/browser/ui/side_swipe:eg2_tests",
-    "//ios/chrome/browser/ui/signin_interaction:eg2_tests",
     "//ios/chrome/browser/ui/tab_grid:eg2_tests",
     "//ios/chrome/browser/ui/tabs:eg2_tests",
     "//ios/chrome/browser/ui/toolbar:eg2_tests",

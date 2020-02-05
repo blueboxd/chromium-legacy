@@ -161,8 +161,6 @@ const char kLearnMoreReportingURL[] =
 
 const char kLegacySupervisedUserManagementDisplayURL[] =
     "www.chrome.com/manage";
-const char kLegacySupervisedUserManagementURL[] =
-    "https://www.chrome.com/manage";
 
 const char kManagedUiLearnMoreUrl[] =
 #if defined(OS_CHROMEOS)

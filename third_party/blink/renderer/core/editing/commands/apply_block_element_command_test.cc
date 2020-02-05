@@ -36,7 +36,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
 
   GetDocument().body()->setContentEditable("false", ASSERT_NO_EXCEPTION);
   GetDocument().setDesignMode("on");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(

@@ -194,10 +194,6 @@ class TestDownloadHistoryObserver : public DownloadHistory::Observer {
 
 class DownloadHistoryTest : public testing::Test {
  public:
-  // Generic callback that receives a pointer to a StrictMockDownloadItem.
-  using DownloadItemCallback =
-      base::Callback<void(download::MockDownloadItem*)>;
-
   DownloadHistoryTest()
       : manager_(std::make_unique<content::MockDownloadManager>()) {}
 

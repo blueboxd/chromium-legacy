@@ -1826,7 +1826,8 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
                                                  bool animate) {
   if (!window || !GetOverviewSession())
     return;
-  GetOverviewSession()->AddItemInMruOrder(window, animate, /*restack=*/true);
+  GetOverviewSession()->AddItemInMruOrder(window, /*reposition=*/true, animate,
+                                          /*restack=*/true);
 }
 
 void SplitViewController::FinishWindowResizing(aura::Window* window) {

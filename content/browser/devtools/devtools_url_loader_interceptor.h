@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/network.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -20,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace net {
 class AuthChallengeInfo;
@@ -38,7 +38,7 @@ struct InterceptedRequestInfo {
 
   std::string interception_id;
   base::UnguessableToken frame_id;
-  ResourceType resource_type;
+  blink::mojom::ResourceType resource_type;
   bool is_navigation = false;
   int response_error_code = net::OK;
   std::unique_ptr<protocol::Network::Request> network_request;
@@ -136,13 +136,14 @@ class DevToolsURLLoaderInterceptor {
     ~Pattern();
     Pattern(const Pattern& other);
     Pattern(const std::string& url_pattern,
-            base::flat_set<ResourceType> resource_types,
+            base::flat_set<blink::mojom::ResourceType> resource_types,
             InterceptionStage interception_stage);
 
-    bool Matches(const std::string& url, ResourceType resource_type) const;
+    bool Matches(const std::string& url,
+                 blink::mojom::ResourceType resource_type) const;
 
     const std::string url_pattern;
-    const base::flat_set<ResourceType> resource_types;
+    const base::flat_set<blink::mojom::ResourceType> resource_types;
     const InterceptionStage interception_stage;
   };
 
@@ -208,8 +209,9 @@ class DevToolsURLLoaderInterceptor {
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
 
-  InterceptionStage GetInterceptionStage(const GURL& url,
-                                         ResourceType resource_type) const;
+  InterceptionStage GetInterceptionStage(
+      const GURL& url,
+      blink::mojom::ResourceType resource_type) const;
 
   template <typename Callback>
   InterceptionJob* FindJob(const std::string& id,

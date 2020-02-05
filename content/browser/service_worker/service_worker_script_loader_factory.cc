@@ -169,12 +169,13 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
   if (!version)
     return false;
 
-  // Handle only the service worker main script (ResourceType::kServiceWorker)
-  // or importScripts() (ResourceType::kScript).
+  // Handle only the service worker main script
+  // (blink::mojom::ResourceType::kServiceWorker) or importScripts()
+  // (blink::mojom::ResourceType::kScript).
   if (resource_request.resource_type !=
-          static_cast<int>(ResourceType::kServiceWorker) &&
+          static_cast<int>(blink::mojom::ResourceType::kServiceWorker) &&
       resource_request.resource_type !=
-          static_cast<int>(ResourceType::kScript)) {
+          static_cast<int>(blink::mojom::ResourceType::kScript)) {
     static auto* key = base::debug::AllocateCrashKeyString(
         "swslf_bad_type", base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(

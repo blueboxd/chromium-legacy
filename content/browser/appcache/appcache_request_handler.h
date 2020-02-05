@@ -20,11 +20,11 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace net {
 class NetworkDelegate;
@@ -102,7 +102,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceRequest& request,
       base::WeakPtr<AppCacheHost> appcache_host);
 
-  static bool IsMainResourceType(ResourceType type);
+  static bool IsMainResourceType(blink::mojom::ResourceType type);
 
   // Called by unittests to indicate that we are in test mode.
   static void SetRunningInTests(bool in_tests);
@@ -114,7 +114,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Callers should use AppCacheHost::CreateRequestHandler.
   AppCacheRequestHandler(AppCacheHost* host,
-                         ResourceType resource_type,
+                         blink::mojom::ResourceType resource_type,
                          bool should_reset_appcache,
                          std::unique_ptr<AppCacheRequest> request);
 
@@ -202,7 +202,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   AppCacheHost* host_;
 
   // Frame vs subresource vs sharedworker loads are somewhat different.
-  ResourceType resource_type_;
+  blink::mojom::ResourceType resource_type_;
 
   // True if corresponding AppCache group should be resetted before load.
   bool should_reset_appcache_;

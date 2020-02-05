@@ -194,8 +194,6 @@ class OmniboxViewViews : public OmniboxView,
   void SetAccessibilityLabel(const base::string16& display_text,
                              const AutocompleteMatch& match) override;
 
-  void AnnounceText(const base::string16& message) override;
-
   // Selects the whole omnibox contents as a result of the user gesture. This
   // may also unapply steady state elisions depending on user preferences.
   void SelectAllForUserGesture();

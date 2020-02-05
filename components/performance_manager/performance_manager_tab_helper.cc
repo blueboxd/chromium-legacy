@@ -213,14 +213,6 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                      old_frame, new_frame));
 }
 
-void PerformanceManagerTabHelper::DidStartLoading() {
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsLoading, page_node_.get(), true);
-}
-
-void PerformanceManagerTabHelper::DidStopLoading() {
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsLoading, page_node_.get(), false);
-}
-
 void PerformanceManagerTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
   const bool is_visible = visibility == content::Visibility::VISIBLE;
@@ -330,7 +322,13 @@ int64_t PerformanceManagerTabHelper::LastNavigationId() const {
 FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
-  return it != frames_.end() ? it->second.get() : nullptr;
+  if (it == frames_.end()) {
+    // Avoid dereferencing an invalid iterator because it produces hard to debug
+    // crashes.
+    NOTREACHED();
+    return nullptr;
+  }
+  return it->second.get();
 }
 
 void PerformanceManagerTabHelper::AddObserver(Observer* observer) {

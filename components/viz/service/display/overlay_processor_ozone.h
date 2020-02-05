@@ -36,6 +36,12 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOzone
       const OverlayCandidate& candidate) const override;
 
  private:
+  // Populates |native_pixmap| and |native_pixmap_unique_id| in |candidate|
+  // based on |mailbox|. Return false if the corresponding NativePixmap cannot
+  // be found.
+  bool SetNativePixmapForCandidate(ui::OverlaySurfaceCandidate* candidate,
+                                   const gpu::Mailbox& mailbox);
+
   const bool overlay_enabled_;
 
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;

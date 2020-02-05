@@ -40,3 +40,8 @@
   cursor: pointer;
   text-decoration: none;
 }
+
+.oobe-local-link:focus {
+  outline-color: rgb(77, 144, 254); /* #4D90FE */
+  transition: outline-color 200ms;
+}

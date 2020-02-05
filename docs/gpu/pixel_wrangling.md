@@ -301,8 +301,16 @@ https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel
 
 [telemetry documentation]: https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/docs/run_benchmarks_locally.md
 
-## Extending the GPU Pixel Wrangling Rotation
+## Modifying the GPU Pixel Wrangling Rotation
 
-See the [Chrome Internal GPU Pixel Wrangling Instructions] for information on extending the rotation.
+You may find yourself needing to modify the current rotation. Whether to extend
+the rotation, or if scheduling conflicts arise.
+
+For scheduling conflicts you can swap your shift with another wrangler. A good
+approach is to look at the rotation calendar, finding someone with nearby dates
+to yours. Reach out to them, as they will often be willing to swap.
+
+To actually modify the rotation:
+See the [Chrome Internal GPU Pixel Wrangling Instructions] for information.
 
 [Chrome Internal GPU Pixel Wrangling Instructions]: https://sites.google.com/a/google.com/client3d/documents/chrome-internal-gpu-pixel-wrangling-instructions

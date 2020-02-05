@@ -13,22 +13,22 @@
 namespace {
 
 namespace test1 {
-#include "net/base/registry_controlled_domains/effective_tld_names_unittest1-inc.cc"
+#include "net/base/registry_controlled_domains/effective_tld_names_unittest1-reversed-inc.cc"
 }
 namespace test2 {
-#include "net/base/registry_controlled_domains/effective_tld_names_unittest2-inc.cc"
+#include "net/base/registry_controlled_domains/effective_tld_names_unittest2-reversed-inc.cc"
 }
 namespace test3 {
-#include "net/base/registry_controlled_domains/effective_tld_names_unittest3-inc.cc"
+#include "net/base/registry_controlled_domains/effective_tld_names_unittest3-reversed-inc.cc"
 }
 namespace test4 {
-#include "net/base/registry_controlled_domains/effective_tld_names_unittest4-inc.cc"
+#include "net/base/registry_controlled_domains/effective_tld_names_unittest4-reversed-inc.cc"
 }
 namespace test5 {
-#include "net/base/registry_controlled_domains/effective_tld_names_unittest5-inc.cc"
+#include "net/base/registry_controlled_domains/effective_tld_names_unittest5-reversed-inc.cc"
 }
 namespace test6 {
-#include "net/base/registry_controlled_domains/effective_tld_names_unittest6-inc.cc"
+#include "net/base/registry_controlled_domains/effective_tld_names_unittest6-reversed-inc.cc"
 }
 
 }  // namespace

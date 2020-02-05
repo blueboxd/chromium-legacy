@@ -105,4 +105,10 @@ void LogWebRtcTimingEvent(WebRtcTimingEvent event, base::TimeDelta delay) {
                                 delay);
 }
 
+void LogSharingWebRtcOnMessageReceivedResult(
+    WebRtcOnMessageReceivedResult result) {
+  base::UmaHistogramEnumeration(
+      base::StrCat({kMetricsPrefix, "OnMessageReceivedResult"}), result);
+}
+
 }  // namespace sharing

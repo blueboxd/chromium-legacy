@@ -11,6 +11,8 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
@@ -19,6 +21,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+class PlatformSpellChecker;
 
 class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
  public:
@@ -39,6 +43,9 @@ class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
 
     SpellCheckHostChromeImpl::Create(
         renderer_->GetID(), spell_check_host_.BindNewPipeAndPassReceiver());
+
+    platform_spell_checker_ = SpellcheckServiceFactory::GetForContext(context)
+                                  ->platform_spell_checker();
   }
 
   void TearDownOnMainThread() override { renderer_.reset(); }
@@ -76,6 +83,7 @@ class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  PlatformSpellChecker* platform_spell_checker_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
   mojo::Remote<spellcheck::mojom::SpellCheckHost> spell_check_host_;
@@ -94,9 +102,10 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
   }
 
   spellcheck_platform::SetLanguage(
-      "en-US", base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::
-                                  SetLanguageCompletionCallback,
-                              base::Unretained(this)));
+      platform_spell_checker_, "en-US",
+      base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::
+                         SetLanguageCompletionCallback,
+                     base::Unretained(this)));
   RunUntilResultReceived();
 
   spell_check_host_->RequestTextCheck(
@@ -121,9 +130,10 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
   }
 
   spellcheck_platform::SetLanguage(
-      "en-US", base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::
-                                  SetLanguageCompletionCallback,
-                              base::Unretained(this)));
+      platform_spell_checker_, "en-US",
+      base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::
+                         SetLanguageCompletionCallback,
+                     base::Unretained(this)));
   RunUntilResultReceived();
 
   spell_check_host_->GetPerLanguageSuggestions(

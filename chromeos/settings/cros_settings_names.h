@@ -245,6 +245,14 @@ extern const char kDevicePowerwashAllowed[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceWebBasedAttestationAllowedUrls[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kSystemProxySettings[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kSystemProxySettingsKeyEnabled[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kSystemProxySettingsKeySystemServicesUsername[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kSystemProxySettingsKeySystemServicesPassword[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

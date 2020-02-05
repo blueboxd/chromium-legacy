@@ -98,7 +98,7 @@ SafeBrowsingUrlCheckerImpl::UrlInfo::~UrlInfo() = default;
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     const net::HttpRequestHeaders& headers,
     int load_flags,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     bool has_user_gesture,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
@@ -265,7 +265,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     // side. That would save some IPCs. It requires a method on the
     // SafeBrowsing mojo interface to query all supported resource types.
     if (!database_manager_->CanCheckResourceType(
-            static_cast<content::ResourceType>(resource_type_))) {
+            static_cast<blink::mojom::ResourceType>(resource_type_))) {
       // TODO(vakh): Consider changing this metric to
       // SafeBrowsing.V4ResourceType to be consistent with the other PVer4
       // metrics.

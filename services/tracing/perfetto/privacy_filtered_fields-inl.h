@@ -131,6 +131,10 @@ constexpr MessageInfo kChromeCompositorSchedulerState = {
     kChromeCompositorSchedulerStateIndices,
     kChromeCompositorSchedulerStateComplexMessages};
 
+// Proto Message: ChromeUserEvent
+constexpr int kChromeUserEventIndices[] = {2, -1};
+constexpr MessageInfo kChromeUserEvent = {kChromeUserEventIndices, nullptr};
+
 // Proto Message: ChromeLegacyIpc
 constexpr int kChromeLegacyIpcIndices[] = {1, 2, -1};
 constexpr MessageInfo kChromeLegacyIpc = {kChromeLegacyIpcIndices, nullptr};
@@ -141,8 +145,8 @@ constexpr MessageInfo kChromeHistogramSample = {kChromeHistogramSampleIndices,
                                                 nullptr};
 
 // Proto Message: TrackEvent
-constexpr int kTrackEventIndices[] = {1,  2,  3,  5,  6,  9,  10,
-                                      11, 16, 17, 24, 27, 28, -1};
+constexpr int kTrackEventIndices[] = {1,  2,  3,  5,  6,  9,  10, 11,
+                                      16, 17, 24, 25, 27, 28, -1};
 constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
@@ -155,6 +159,7 @@ constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
     &kChromeCompositorSchedulerState,
+    &kChromeUserEvent,
     &kChromeLegacyIpc,
     &kChromeHistogramSample};
 constexpr MessageInfo kTrackEvent = {kTrackEventIndices,

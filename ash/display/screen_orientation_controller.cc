@@ -229,9 +229,11 @@ ScreenOrientationController::ScreenOrientationController()
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   SplitViewController::Get(Shell::GetPrimaryRootWindow())->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   SplitViewController::Get(Shell::GetPrimaryRootWindow())->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
@@ -454,7 +456,6 @@ void ScreenOrientationController::OnTabletPhysicalStateChanged() {
 
   if (IsAutoRotationAllowed()) {
     AccelerometerReader::GetInstance()->AddObserver(this);
-    shell->window_tree_host_manager()->AddObserver(this);
 
     // Do not exit early, as the internal display can be determined after
     // Maximize Mode has started. (chrome-os-partner:38796) Always start
@@ -472,7 +473,6 @@ void ScreenOrientationController::OnTabletPhysicalStateChanged() {
     ApplyLockForTopMostWindowOnInternalDisplay();
   } else {
     AccelerometerReader::GetInstance()->RemoveObserver(this);
-    shell->window_tree_host_manager()->RemoveObserver(this);
 
     if (!display::Display::HasInternalDisplay())
       return;

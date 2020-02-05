@@ -44,7 +44,6 @@
 #include "content/public/common/fullscreen_video_element.mojom.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/widget_type.h"
 #include "content/public/renderer/render_frame.h"
@@ -906,7 +905,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidStartResponse(const url::Origin& origin_of_final_response_url,
                         int request_id,
                         network::mojom::URLResponseHeadPtr response_head,
-                        content::ResourceType resource_type,
+                        blink::mojom::ResourceType resource_type,
                         PreviewsState previews_state);
   void DidCompleteResponse(int request_id,
                            const network::URLLoaderCompletionStatus& status);
@@ -1176,7 +1175,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // |transition_type| corresponds to the document which triggered this request.
   void WillSendRequestInternal(blink::WebURLRequest& request,
-                               ResourceType resource_type,
+                               blink::mojom::ResourceType resource_type,
                                ui::PageTransition transition_type);
 
   // Returns the URL being loaded by the |frame_|'s request.

@@ -12,7 +12,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
@@ -105,7 +105,7 @@ public class IncognitoTabSnapshotController extends EmptyTabModelSelectorObserve
 
     @VisibleForTesting
     public boolean isGridTabSwitcherEnabled() {
-        return FeatureUtilities.isGridTabSwitcherEnabled();
+        return CachedFeatureFlags.isGridTabSwitcherEnabled();
     }
 
     /**

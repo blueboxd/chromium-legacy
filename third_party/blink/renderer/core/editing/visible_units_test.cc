@@ -331,7 +331,7 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLBodyElement) {
   body->AppendChild(three);
   body->AppendChild(four);
   one->appendChild(body);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(IsVisuallyEquivalentCandidate(
       Position(GetDocument().documentElement(), 0)));

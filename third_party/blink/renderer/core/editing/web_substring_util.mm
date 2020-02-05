@@ -77,7 +77,8 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
 
   // TODO(editing-dev): The use of updateStyleAndLayout
   // needs to be audited.  see http://crbug.com/590369 for more details.
-  range.StartPosition().GetDocument()->UpdateStyleAndLayout();
+  range.StartPosition().GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kEditing);
 
   for (TextIterator it(range.StartPosition(), range.EndPosition());
        !it.AtEnd() && [string length] < length; it.Advance()) {

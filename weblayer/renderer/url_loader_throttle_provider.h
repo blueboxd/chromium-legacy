@@ -28,7 +28,7 @@ class URLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateThrottles(
       int render_frame_id,
       const blink::WebURLRequest& request,
-      content::ResourceType resource_type) override;
+      blink::mojom::ResourceType resource_type) override;
   void SetOnline(bool is_online) override;
 
  private:

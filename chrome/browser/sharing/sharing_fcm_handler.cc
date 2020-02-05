@@ -177,6 +177,7 @@ void SharingFCMHandler::SendAckMessage(
   if (!fcm_channel && !server_channel) {
     LOG(ERROR) << "Unable to find ack channel configuration";
     LogSendSharingAckMessageResult(original_message_type, sender_device_type,
+                                   SharingChannelType::kUnknown,
                                    SharingSendMessageResult::kDeviceNotFound);
     return;
   }
@@ -220,9 +221,10 @@ void SharingFCMHandler::OnAckMessageSent(
     SharingDevicePlatform sender_device_type,
     int trace_id,
     SharingSendMessageResult result,
-    base::Optional<std::string> message_id) {
+    base::Optional<std::string> message_id,
+    SharingChannelType channel_type) {
   LogSendSharingAckMessageResult(original_message_type, sender_device_type,
-                                 result);
+                                 channel_type, result);
   if (result != SharingSendMessageResult::kSuccessful)
     LOG(ERROR) << "Failed to send ack mesage for " << original_message_id;
 

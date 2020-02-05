@@ -11,7 +11,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
@@ -52,7 +52,7 @@ public class HomepageSettings extends PreferenceFragmentCompat {
                 (ChromeSwitchPreference) findPreference(PREF_HOMEPAGE_SWITCH);
         homepageSwitch.setManagedPreferenceDelegate(new HomepageManagedPreferenceDelegate());
 
-        if (FeatureUtilities.isBottomToolbarEnabled()) {
+        if (CachedFeatureFlags.isBottomToolbarEnabled()) {
             homepageSwitch.setVisible(false);
         } else {
             boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();

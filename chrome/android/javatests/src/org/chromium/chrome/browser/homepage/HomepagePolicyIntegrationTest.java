@@ -25,8 +25,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomeButtonPreferenceState;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -80,7 +80,7 @@ public class HomepagePolicyIntegrationTest {
     @Before
     public void setUp() {
         // Disable Histogram for tests.
-        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
 
         // Give some user pref setting, simulate user that have their customized preference.
         // Use shared preference manager, not to change the order object created in tests.
@@ -95,7 +95,7 @@ public class HomepagePolicyIntegrationTest {
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
-        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     @Test

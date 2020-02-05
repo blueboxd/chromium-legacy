@@ -32,9 +32,11 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/service_context.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/scope_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -163,13 +165,16 @@ class Service::Context : public ServiceContext {
 Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
                  std::unique_ptr<network::PendingSharedURLLoaderFactory>
                      pending_url_loader_factory,
+                 signin::IdentityManager* identity_manager,
                  PrefService* profile_prefs)
     : receiver_(this, std::move(receiver)),
+      identity_manager_(identity_manager),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       context_(std::make_unique<Context>(this)),
       pending_url_loader_factory_(std::move(pending_url_loader_factory)),
       profile_prefs_(profile_prefs) {
+  DCHECK(identity_manager_);
   DCHECK(profile_prefs_);
   // TODO(xiaohuic): We will need to setup the power manager dbus client if
   // assistant service runs in its own process.
@@ -203,11 +208,6 @@ void Service::OverrideSettingsManagerForTesting(
 // static
 void Service::OverrideS3ServerUriForTesting(const char* uri) {
   g_s3_server_uri_override = uri;
-}
-
-void Service::SetIdentityAccessorForTesting(
-    mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor) {
-  identity_accessor_.Bind(std::move(identity_accessor));
 }
 
 void Service::SetAssistantManagerServiceForTesting(
@@ -256,6 +256,13 @@ void Service::BindSettingsManager(
   DCHECK(assistant_manager_service_);
   assistant_manager_service_->GetAssistantSettingsManager()->BindReceiver(
       std::move(receiver));
+}
+
+void Service::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (assistant_manager_service_)
+    StopAssistantManagerService();
 }
 
 void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
@@ -427,14 +434,6 @@ void Service::UpdateAssistantManagerState() {
   }
 }
 
-identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_accessor_)
-    client_->RequestIdentityAccessor(
-        identity_accessor_.BindNewPipeAndPassReceiver());
-  return identity_accessor_.get();
-}
-
 void Service::RequestAccessToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -442,57 +441,55 @@ void Service::RequestAccessToken() {
   if (IsSignedOutMode())
     return;
 
+  if (access_token_fetcher_) {
+    LOG(WARNING) << "Access token already requested.";
+    return;
+  }
+
   VLOG(1) << "Start requesting access token.";
-  GetIdentityAccessor()->GetUnconsentedPrimaryAccountInfo(
-      base::BindOnce(&Service::GetUnconsentedPrimaryAccountInfoCallback,
-                     base::Unretained(this)));
-}
+  CoreAccountInfo account_info =
+      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CHECK(!account_info.account_id.empty());
+  CHECK(!account_info.gaia.empty());
 
-void Service::GetUnconsentedPrimaryAccountInfoCallback(
-    const base::Optional<CoreAccountId>& account_id,
-    const base::Optional<std::string>& gaia,
-    const base::Optional<std::string>& email,
-    const identity::AccountState& account_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Validate the remotely-supplied parameters before using them below: if
-  // |account_id| is non-null, the other two should be non-null as well per
-  // the contract of IdentityAccessor::GetUnconsentedPrimaryAccountInfo().
-  CHECK((!account_id.has_value() || (gaia.has_value() && email.has_value())));
-
-  if (!account_id.has_value() || !account_state.has_refresh_token ||
-      gaia->empty()) {
+  if (!identity_manager_->HasAccountWithRefreshToken(account_info.account_id)) {
     LOG(ERROR) << "Failed to retrieve primary account info.";
     RetryRefreshToken();
     return;
   }
-  account_id_ = user_manager::known_user::GetAccountId(*email, *gaia,
-                                                       AccountType::GOOGLE);
+  account_id_ = user_manager::known_user::GetAccountId(
+      account_info.email, account_info.gaia, AccountType::GOOGLE);
   identity::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);
   if (features::IsClearCutLogEnabled())
     scopes.insert(kScopeClearCutLog);
 
-  GetIdentityAccessor()->GetAccessToken(
-      *account_id, scopes, "cros_assistant",
-      base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)));
+  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
+      account_info.account_id, "cros_assistant", scopes,
+      base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)),
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
-void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
-                                     base::Time expiration_time,
-                                     const GoogleServiceAuthError& error) {
+void Service::GetAccessTokenCallback(
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo access_token_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!token.has_value()) {
+  // It's safe to delete AccessTokenFetcher from inside its own callback.
+  access_token_fetcher_.reset();
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
     LOG(ERROR) << "Failed to retrieve token, error: " << error.ToString();
     RetryRefreshToken();
     return;
   }
 
-  access_token_ = token;
+  access_token_ = access_token_info.token;
   UpdateAssistantManagerState();
-  token_refresh_timer_->Start(FROM_HERE, expiration_time - base::Time::Now(),
-                              this, &Service::RequestAccessToken);
+  token_refresh_timer_->Start(
+      FROM_HERE, access_token_info.expiration_time - base::Time::Now(), this,
+      &Service::RequestAccessToken);
 }
 
 void Service::RetryRefreshToken() {

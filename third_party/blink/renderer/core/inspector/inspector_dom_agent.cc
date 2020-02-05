@@ -1249,7 +1249,7 @@ Response InspectorDOMAgent::focus(Maybe<int> node_id,
   auto* element = DynamicTo<Element>(node);
   if (!element)
     return Response::Error("Node is not an Element");
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
   if (!element->IsFocusable())
     return Response::Error("Element is not focusable");
   element->focus();

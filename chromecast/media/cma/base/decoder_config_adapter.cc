@@ -175,6 +175,8 @@ ChannelLayout DecoderConfigAdapter::ToChannelLayout(
       return ChannelLayout::SURROUND_5_1;
     case ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM:
       return ChannelLayout::BITSTREAM;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_DISCRETE:
+      return ChannelLayout::DISCRETE;
 
     default:
       NOTREACHED();
@@ -196,6 +198,8 @@ ChannelLayout DecoderConfigAdapter::ToChannelLayout(
       return ::media::ChannelLayout::CHANNEL_LAYOUT_5_1;
     case ChannelLayout::BITSTREAM:
       return ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM;
+    case ChannelLayout::DISCRETE:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_DISCRETE;
 
     default:
       NOTREACHED();

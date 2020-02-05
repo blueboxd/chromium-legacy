@@ -156,9 +156,6 @@ class OmniboxView {
   virtual void SetAccessibilityLabel(const base::string16& display_text,
                                      const AutocompleteMatch& match) {}
 
-  // Triggers announcement of immediate |message|.
-  virtual void AnnounceText(const base::string16& message) {}
-
   // Called when the temporary text in the model may have changed.
   // |display_text| is the new text to show; |match_type| is the type of the
   // match the new text came from. |save_original_selection| is true when there

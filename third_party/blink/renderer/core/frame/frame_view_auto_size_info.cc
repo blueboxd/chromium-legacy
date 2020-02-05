@@ -63,7 +63,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
   // second iteration.
   for (int i = 0; i < 2; i++) {
     // Update various sizes including contentsSize, scrollHeight, etc.
-    document->UpdateStyleAndLayout();
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kSizeChange);
 
     auto* layout_view = document->GetLayoutView();
     if (!layout_view)

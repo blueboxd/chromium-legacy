@@ -11,7 +11,6 @@
 #include "base/auto_reset.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/web_contents_observer.h"

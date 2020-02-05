@@ -94,9 +94,9 @@ TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
 TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
   // Create a media player watch time and save it to the playbacks table.
   GURL url("http://google.com/test");
-  content::MediaPlayerWatchTime watch_time(
-      url, url.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
-      base::TimeDelta::FromMilliseconds(321), true, false);
+  content::MediaPlayerWatchTime watch_time(url, url.GetOrigin(),
+                                           base::TimeDelta::FromSeconds(60),
+                                           base::TimeDelta(), true, false);
   GetMediaHistoryStore()->SavePlayback(watch_time);
   int64_t now_in_seconds_before =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
@@ -112,8 +112,8 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
 
   // Verify that the playback table contains the expected number of items
   sql::Statement select_from_playback_statement(GetDB().GetUniqueStatement(
-      "SELECT id, url, origin_id, watch_time_ms, timestamp_ms, has_video, "
-      "has_audio, last_updated_time_s FROM playback"));
+      "SELECT id, url, origin_id, watch_time_s, has_video, has_audio, "
+      "last_updated_time_s FROM playback"));
   ASSERT_TRUE(select_from_playback_statement.is_valid());
   int playback_row_count = 0;
   while (select_from_playback_statement.Step()) {
@@ -122,14 +122,13 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
     EXPECT_EQ("http://google.com/test",
               select_from_playback_statement.ColumnString(1));
     EXPECT_EQ(1, select_from_playback_statement.ColumnInt(2));
-    EXPECT_EQ(123, select_from_playback_statement.ColumnInt(3));
-    EXPECT_EQ(321, select_from_playback_statement.ColumnInt(4));
-    EXPECT_EQ(1, select_from_playback_statement.ColumnInt(5));
-    EXPECT_EQ(0, select_from_playback_statement.ColumnInt(6));
+    EXPECT_EQ(60, select_from_playback_statement.ColumnInt(3));
+    EXPECT_EQ(1, select_from_playback_statement.ColumnInt(4));
+    EXPECT_EQ(0, select_from_playback_statement.ColumnInt(5));
     EXPECT_LE(now_in_seconds_before,
-              select_from_playback_statement.ColumnInt64(7));
+              select_from_playback_statement.ColumnInt64(6));
     EXPECT_GE(now_in_seconds_after,
-              select_from_playback_statement.ColumnInt64(7));
+              select_from_playback_statement.ColumnInt64(6));
   }
 
   EXPECT_EQ(2, playback_row_count);

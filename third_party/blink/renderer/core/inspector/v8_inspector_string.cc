@@ -44,21 +44,6 @@ String ToCoreString(std::unique_ptr<v8_inspector::StringBuffer> buffer) {
 }
 
 namespace protocol {
-
-// static
-std::unique_ptr<protocol::Value> StringUtil::parseJSON(const String& string) {
-  if (string.IsNull())
-    return nullptr;
-  if (string.Is8Bit()) {
-    return parseJSONCharacters(
-        reinterpret_cast<const uint8_t*>(string.Characters8()),
-        string.length());
-  }
-  return parseJSONCharacters(
-      reinterpret_cast<const uint16_t*>(string.Characters16()),
-      string.length());
-}
-
 // static
 String StringUtil::fromUTF16LE(const uint16_t* data, size_t length) {
   // Chromium doesn't support big endian architectures, so it's OK to cast here.

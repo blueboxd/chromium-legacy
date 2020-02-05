@@ -60,12 +60,12 @@ source_set("features") {
 source_set("coordinator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "legacy_page_info_mediator.h",
+    "legacy_page_info_mediator.mm",
     "page_info_coordinator.h",
     "page_info_coordinator.mm",
     "page_info_legacy_coordinator.h",
     "page_info_legacy_coordinator.mm",
-    "page_info_mediator.h",
-    "page_info_mediator.mm",
   ]
   deps = [
     ":page_info",
@@ -101,7 +101,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [ "page_info_egtest.mm" ]
+  sources = [ "legacy_page_info_egtest.mm" ]
   deps = [
     ":page_info",
     "//ios/chrome/browser/ui/popup_menu:constants",
@@ -122,7 +122,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [ "page_info_egtest.mm" ]
+  sources = [ "legacy_page_info_egtest.mm" ]
   deps = [
     ":constants",
     "//ios/chrome/browser/ui/popup_menu:constants",

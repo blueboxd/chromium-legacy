@@ -14,6 +14,7 @@ import mock  # pylint: disable=import-error
 from run_simpleperf import SimplePerfRunner
 from run_simpleperf import StackAddressInterpreter
 
+_EXAMPLE_WEBVIEW_PACKAGE_NAME = "com.google.android.webview"
 
 _EXAMPLE_STACK_SCRIPT_INPUT = [
     ("11-15 00:00:00.000 11111 11111 E chromium: #00 0x0000001111111111 "
@@ -144,8 +145,11 @@ class _RunSimpleperfTest(unittest.TestCase):
         return_value=_MOCK_ADDRESS_FUNCTION_NAME_PAIRS)
 
     SimplePerfRunner.RunSimplePerf = mock.Mock()
+    SimplePerfRunner.RunPackageCompile = mock.Mock()
     SimplePerfRunner.GetOriginalReportHtml = mock.Mock(
         return_value=_MOCK_ORIGINAL_REPORT)
+    self.simple_perf_runner.GetCurrentWebViewProvider = mock.Mock(
+        return_value=_EXAMPLE_WEBVIEW_PACKAGE_NAME)
 
     self.simple_perf_runner.GetWebViewLibraryNameAndPath = mock.Mock(
         return_value=(_WEBVIEW_LIB_NAME, _WEBVIEW_LIB_PATH))

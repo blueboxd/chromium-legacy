@@ -64,10 +64,10 @@ MediaControlsProgressView::MediaControlsProgressView(
 
   auto time_spacing = std::make_unique<views::View>();
   time_spacing->SetPreferredSize(kTimeSpacingSize);
-  time_spacing->SetProperty(views::kFlexBehaviorKey,
-                            views::FlexSpecification::ForSizeRule(
-                                views::MinimumFlexSizeRule::kPreferred,
-                                views::MaximumFlexSizeRule::kUnbounded));
+  time_spacing->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded));
   time_view->AddChildView(std::move(time_spacing));
 
   auto duration = std::make_unique<views::Label>();

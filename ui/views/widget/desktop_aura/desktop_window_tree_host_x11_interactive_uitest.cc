@@ -14,6 +14,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -38,7 +39,7 @@ class ActivationWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
+  bool ShouldKeepOnWaiting(XEvent* event) override {
     XID xid = 0;
     ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
     return xid != window_;
@@ -83,18 +84,17 @@ std::unique_ptr<Widget> CreateWidget(const gfx::Rect& bounds) {
   return widget;
 }
 
-// Dispatches an XMotionEvent targeted at |host|'s X window with location
+// Dispatches a XMotionEvent targeted at |host|'s X window with location
 // |point_in_screen|.
 void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
                               const gfx::Point& point_in_screen) {
-  aura::WindowTreeHost* host = static_cast<aura::WindowTreeHost*>(desktop_host);
   gfx::Rect bounds_in_screen = desktop_host->window()->GetBoundsInScreen();
 
   Display* display = gfx::GetXDisplay();
   XEvent xev;
   xev.xmotion.type = MotionNotify;
   xev.xmotion.display = display;
-  xev.xmotion.window = host->GetAcceleratedWidget();
+  xev.xmotion.window = desktop_host->GetAcceleratedWidget();
   xev.xmotion.root = DefaultRootWindow(display);
   xev.xmotion.subwindow = 0;
   xev.xmotion.time = x11::CurrentTime;

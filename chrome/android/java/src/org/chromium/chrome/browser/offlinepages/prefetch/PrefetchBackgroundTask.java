@@ -13,8 +13,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
@@ -107,7 +107,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         if (isBrowserRunningInReducedMode()
                 && !ChromeFeatureList.isEnabled(
                         ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-            FeatureUtilities.cacheNativeFlags(
+            CachedFeatureFlags.cacheNativeFlags(
                     Collections.singletonList(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS));
             mTaskFinishedCallback.taskFinished(true /* needsReschedule */);
             return;
@@ -209,7 +209,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
             return true;
         }
 
-        return FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled();
+        return CachedFeatureFlags.isServiceManagerForBackgroundPrefetchEnabled();
     }
 
     @NativeMethods

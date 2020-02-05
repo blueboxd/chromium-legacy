@@ -50,8 +50,9 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
-using content::ResourceType;
+using blink::mojom::ResourceType;
 using extensions::ExtensionRegistry;
 using network::mojom::URLLoader;
 
@@ -133,7 +134,8 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
       url::Origin::Create(url);  // ensure initiator set.
   request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
   request.resource_type = static_cast<int>(resource_type);
-  request.is_main_frame = resource_type == content::ResourceType::kMainFrame;
+  request.is_main_frame =
+      resource_type == blink::mojom::ResourceType::kMainFrame;
   return request;
 }
 
@@ -235,7 +237,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
                    /*notifications_disabled=*/false);
     }
     return RequestOrLoad(extension->GetResourceURL(relative_path),
-                         content::ResourceType::kMainFrame);
+                         blink::mojom::ResourceType::kMainFrame);
   }
 
   ExtensionRegistry* extension_registry() {
@@ -353,7 +355,7 @@ TEST_F(ExtensionProtocolsIncognitoTest, IncognitoRequest) {
       // is blocked, we should see BLOCKED_BY_CLIENT. Otherwise, the request
       // should just fail because the file doesn't exist.
       auto get_result = RequestOrLoad(extension->GetResourceURL("404.html"),
-                                      content::ResourceType::kMainFrame);
+                                      blink::mojom::ResourceType::kMainFrame);
 
       if (cases[i].should_allow_main_frame_load) {
         EXPECT_EQ(net::ERR_FILE_NOT_FOUND, get_result.result())
@@ -409,7 +411,7 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequestNoMimeType) {
 
   auto get_result =
       RequestOrLoad(extension->GetResourceURL("ink/glcore_base.js.mem"),
-                    content::ResourceType::kXhr);
+                    blink::mojom::ResourceType::kXhr);
   EXPECT_EQ(net::OK, get_result.result());
   CheckForContentLengthHeader(get_result);
   EXPECT_EQ("", get_result.GetResponseHeaderByName(
@@ -430,7 +432,7 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
   {
     auto get_result =
         RequestOrLoad(extension->GetResourceURL("webstore_icon_16.png"),
-                      content::ResourceType::kMedia);
+                      blink::mojom::ResourceType::kMedia);
     EXPECT_EQ(net::OK, get_result.result());
     CheckForContentLengthHeader(get_result);
     EXPECT_EQ("image/png", get_result.GetResponseHeaderByName(
@@ -442,7 +444,7 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
   {
     auto get_result =
         RequestOrLoad(extension->GetResourceURL("webstore_icon_16.png"),
-                      content::ResourceType::kMedia);
+                      blink::mojom::ResourceType::kMedia);
     EXPECT_EQ(net::OK, get_result.result());
     CheckForContentLengthHeader(get_result);
     EXPECT_EQ("image/png", get_result.GetResponseHeaderByName(
@@ -462,7 +464,7 @@ TEST_F(ExtensionProtocolsTest, ResourceRequestResponseHeaders) {
 
   {
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
-                                    content::ResourceType::kMedia);
+                                    blink::mojom::ResourceType::kMedia);
     EXPECT_EQ(net::OK, get_result.result());
 
     // Check that cache-related headers are set.
@@ -495,7 +497,7 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
   // should not succeed.
   {
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
-                                    content::ResourceType::kMainFrame);
+                                    blink::mojom::ResourceType::kMainFrame);
     EXPECT_EQ(net::OK, get_result.result());
   }
 
@@ -506,7 +508,7 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
   // And subresource types, such as media, should fail.
   {
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
-                                    content::ResourceType::kMedia);
+                                    blink::mojom::ResourceType::kMedia);
     EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, get_result.result());
   }
 }
@@ -754,7 +756,7 @@ TEST_F(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(test_case.file_name);
     auto result = RequestOrLoad(extension->GetResourceURL(test_case.file_name),
-                                content::ResourceType::kSubResource);
+                                blink::mojom::ResourceType::kSubResource);
     EXPECT_EQ(
         test_case.expected_mime_type,
         result.GetResponseHeaderByName(net::HttpRequestHeaders::kContentType));

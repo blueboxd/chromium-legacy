@@ -24,7 +24,7 @@ TEST_F(MainThreadDebuggerTest, HitBreakPointDuringLifecycle) {
   // never crash.
   document.View()->ViewportSizeChanged(true, true);
   document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   document.UpdateStyleAndLayoutTree();
 
   postponed_transition_scope.reset();

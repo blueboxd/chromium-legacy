@@ -609,7 +609,8 @@ void Write(WTF::TextStream& ts,
     FrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
     if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
       if (auto* layout_view = local_frame_view->GetLayoutView()) {
-        layout_view->GetDocument().UpdateStyleAndLayout();
+        layout_view->GetDocument().UpdateStyleAndLayout(
+            DocumentUpdateReason::kTest);
         if (auto* layer = layout_view->Layer()) {
           LayoutTreeAsText::WriteLayers(ts, layer, layer, indent + 1, behavior);
         }
@@ -931,8 +932,9 @@ String ExternalRepresentation(LocalFrame* frame,
 String ExternalRepresentation(Element* element, LayoutAsTextBehavior behavior) {
   // Doesn't support printing mode.
   DCHECK(!(behavior & kLayoutAsTextPrintingMode));
-  if (!(behavior & kLayoutAsTextDontUpdateLayout))
-    element->GetDocument().UpdateStyleAndLayout();
+  if (!(behavior & kLayoutAsTextDontUpdateLayout)) {
+    element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  }
 
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object || !layout_object->IsBox())
@@ -958,7 +960,7 @@ static void WriteCounterValuesFromChildren(WTF::TextStream& stream,
 }
 
 String CounterValueForElement(Element* element) {
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   WTF::TextStream stream;
   bool is_first_counter = true;
   // The counter LayoutObjects should be children of ::marker, ::before or
@@ -975,7 +977,7 @@ String CounterValueForElement(Element* element) {
 }
 
 String MarkerTextForListItem(Element* element) {
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   LayoutObject* layout_object = element->GetLayoutObject();
   if (layout_object) {

@@ -602,7 +602,6 @@ using content::ChildProcessSecurityPolicy;
 using content::QuotaPermissionContext;
 using content::RenderFrameHost;
 using content::RenderViewHost;
-using content::ResourceType;
 using content::SiteInstance;
 using content::WebContents;
 using content::WebPreferences;

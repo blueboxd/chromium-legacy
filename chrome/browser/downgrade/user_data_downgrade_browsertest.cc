@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/embedder/result_codes.h"
@@ -51,9 +52,9 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
     return test_name.find("PRE_") != base::StringPiece::npos;
   }
 
-  // Returns some future Chrome version.
+  // Returns the next Chrome milestone version.
   static std::string GetNextChromeVersion() {
-    return base::Version(std::string(chrome::kChromeVersion) + "1").GetString();
+    return base::NumberToString(version_info::GetVersion().components()[0] + 1);
   }
 
   UserDataDowngradeBrowserTestBase()

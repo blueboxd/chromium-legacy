@@ -238,13 +238,13 @@ class AnimatingLayoutManagerTest : public testing::Test {
 };
 
 const FlexSpecification AnimatingLayoutManagerTest::kDropOut =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToZero,
-                                   MaximumFlexSizeRule::kPreferred)
+    FlexSpecification(MinimumFlexSizeRule::kPreferredSnapToZero,
+                      MaximumFlexSizeRule::kPreferred)
         .WithWeight(0);
 
 const FlexSpecification AnimatingLayoutManagerTest::kFlex =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
-                                   MaximumFlexSizeRule::kUnbounded)
+    FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                      MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
 
 TEST_F(AnimatingLayoutManagerTest, SetLayoutManager_NoAnimation) {
@@ -1200,9 +1200,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOutOnVisibilitySet) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1257,9 +1257,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnVisibilitySet) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1319,9 +1319,9 @@ TEST_F(AnimatingLayoutManagerTest,
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1382,9 +1382,9 @@ TEST_F(AnimatingLayoutManagerTest,
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1819,9 +1819,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnAdded) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1879,9 +1879,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeIn) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1935,9 +1935,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOut) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -1991,9 +1991,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOut_NoCrashOnRemove) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -2049,9 +2049,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOut_IgnoreChildView) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -2100,9 +2100,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_SlideAfterViewHidden) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -2152,9 +2152,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_SlideAfterViewRemoved) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -2204,9 +2204,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_RedirectAnimation) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -2263,9 +2263,9 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_ResetAnimation) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
 
   const ProposedLayout expected_start{
       {50, 20},
@@ -3552,10 +3552,9 @@ class AnimatingLayoutManagerFlexRuleTest : public AnimatingLayoutManagerTest {
 
 const FlexSpecification
     AnimatingLayoutManagerFlexRuleTest::kScaleToMinimumSnapToZero =
-        FlexSpecification::ForSizeRule(
-            MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
-            MaximumFlexSizeRule::kUnbounded,
-            true)
+        FlexSpecification(MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
+                          MaximumFlexSizeRule::kUnbounded,
+                          true)
             .WithOrder(2);
 
 TEST_F(AnimatingLayoutManagerFlexRuleTest, ReturnsPreferredSize) {
@@ -3705,9 +3704,9 @@ class AnimatingLayoutManagerInFlexLayoutTest
     root_layout_->SetOrientation(LayoutOrientation::kHorizontal)
         .SetMainAxisAlignment(LayoutAlignment::kStart)
         .SetCrossAxisAlignment(LayoutAlignment::kStart);
-    view()->SetProperty(kFlexBehaviorKey, FlexSpecification::ForCustomRule(
-                                              layout()->GetDefaultFlexRule())
-                                              .WithOrder(2));
+    view()->SetProperty(
+        kFlexBehaviorKey,
+        FlexSpecification(layout()->GetDefaultFlexRule()).WithOrder(2));
     target_layout_ =
         layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
     target_layout_->SetOrientation(LayoutOrientation::kHorizontal)
@@ -4195,9 +4194,9 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestAnimateStretch) {
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kPreferred,
-                                              MaximumFlexSizeRule::kUnbounded));
+  child(1)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                          MaximumFlexSizeRule::kUnbounded));
   InitRootView();
 
   const ProposedLayout expected_start{
@@ -4236,9 +4235,9 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceStopsAnimation) {
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
   InitRootView(kSizeBounds);
-  child(0)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kScaleToZero,
-                                              MaximumFlexSizeRule::kPreferred));
+  child(0)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                          MaximumFlexSizeRule::kPreferred));
   child(0)->SetVisible(false);
   layout()->ResetLayout();
   view()->InvalidateLayout();
@@ -4280,9 +4279,9 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceDoesNotRestart) {
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
   InitRootView(kSizeBounds);
-  child(0)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kScaleToZero,
-                                              MaximumFlexSizeRule::kPreferred));
+  child(0)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                          MaximumFlexSizeRule::kPreferred));
   child(0)->SetVisible(false);
   layout()->ResetLayout();
   view()->InvalidateLayout();
@@ -4328,9 +4327,9 @@ TEST_F(AnimatingLayoutManagerRealtimeTest,
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
   InitRootView(kSizeBounds);
-  child(0)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
-                                              MinimumFlexSizeRule::kScaleToZero,
-                                              MaximumFlexSizeRule::kPreferred));
+  child(0)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                          MaximumFlexSizeRule::kPreferred));
   child(0)->SetVisible(false);
   layout()->ResetLayout();
   view()->InvalidateLayout();

@@ -248,8 +248,6 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   return base::nullopt;
 }
 
-// TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if defined(USE_OZONE)
 void X11EventSource::AddXEventDispatcher(XEventDispatcher* dispatcher) {
   dispatchers_xevent_.AddObserver(dispatcher);
   PlatformEventDispatcher* event_dispatcher =
@@ -347,14 +345,10 @@ void XEventDispatcher::PlatformEventDispatchFinished() {}
 PlatformEventDispatcher* XEventDispatcher::GetPlatformEventDispatcher() {
   return nullptr;
 }
-#endif
 
 void X11EventSource::ProcessXEvent(XEvent* xevent) {
-#if !defined(USE_OZONE)
-  DispatchEvent(xevent);
-#else
   auto translated_event = ui::BuildEventFromXEvent(*xevent);
-  if (translated_event) {
+  if (translated_event && translated_event->type() != ET_UNKNOWN) {
 #if defined(OS_CHROMEOS)
     if (translated_event->IsLocatedEvent()) {
       ui::CursorController::GetInstance()->SetCursorLocation(
@@ -367,7 +361,6 @@ void X11EventSource::ProcessXEvent(XEvent* xevent) {
     // directly to XEventDispatchers.
     DispatchXEventToXEventDispatchers(xevent);
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -446,9 +439,7 @@ ScopedXEventDispatcher::ScopedXEventDispatcher(
 
 ScopedXEventDispatcher::~ScopedXEventDispatcher() {
   DCHECK(X11EventSource::HasInstance());
-#if defined(USE_OZONE)
   X11EventSource::GetInstance()->RestoreOverridenXEventDispatcher();
-#endif
 }
 
 // static

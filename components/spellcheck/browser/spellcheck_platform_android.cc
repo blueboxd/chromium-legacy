@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 
+class PlatformSpellChecker;
+
 namespace spellcheck_platform {
 
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
@@ -35,17 +37,20 @@ void ShowSpellingPanel(bool show) {
 void UpdateSpellingPanelWithMisspelledWord(const base::string16& word) {
 }
 
-void PlatformSupportsLanguage(const std::string& current_language,
+void PlatformSupportsLanguage(PlatformSpellChecker* spell_checker_instance,
+                              const std::string& current_language,
                               base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
 
-void SetLanguage(const std::string& lang_to_set,
+void SetLanguage(PlatformSpellChecker* spell_checker_instance,
+                 const std::string& lang_to_set,
                  base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
 
-void DisableLanguage(const std::string& lang_to_disable) {}
+void DisableLanguage(PlatformSpellChecker* spell_checker_instance,
+                     const std::string& lang_to_disable) {}
 
 bool CheckSpelling(const base::string16& word_to_check, int tag) {
   return true;
@@ -55,26 +60,25 @@ void FillSuggestionList(const base::string16& wrong_word,
                         std::vector<base::string16>* optional_suggestions) {
 }
 
-void AddWord(const base::string16& word) {
-}
+void AddWord(PlatformSpellChecker* spell_checker_instance,
+             const base::string16& word) {}
 
-void RemoveWord(const base::string16& word) {
-}
+void RemoveWord(PlatformSpellChecker* spell_checker_instance,
+                const base::string16& word) {}
 
 int GetDocumentTag() {
   return 1;
 }
 
-void IgnoreWord(const base::string16& word) {
-}
+void IgnoreWord(PlatformSpellChecker* spell_checker_instance,
+                const base::string16& word) {}
 
 void CloseDocumentWithTag(int tag) {
 }
 
-void RequestTextCheck(int document_tag,
+void RequestTextCheck(PlatformSpellChecker* spell_checker_instance,
+                      int document_tag,
                       const base::string16& text,
-                      TextCheckCompleteCallback callback) {
-
-}
+                      TextCheckCompleteCallback callback) {}
 
 }  // namespace spellcheck_platform

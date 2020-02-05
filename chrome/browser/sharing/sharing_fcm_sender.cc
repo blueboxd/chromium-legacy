@@ -46,13 +46,15 @@ void SharingFCMSender::DoSendMessageToDevice(const syncer::DeviceInfo& device,
   auto fcm_configuration = sync_preference_->GetFCMChannel(device);
   if (!fcm_configuration) {
     std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
-                            /*message_id=*/base::nullopt);
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kUnknown);
     return;
   }
 
   if (!SetMessageSenderInfo(&message)) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            /*message_id=*/base::nullopt);
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kUnknown);
     return;
   }
 
@@ -75,7 +77,8 @@ void SharingFCMSender::SendMessageToFcmTarget(
     message.set_message_id(base::GenerateGUID());
     EncryptMessage(
         kSharingSenderID, fcm_configuration.sender_id_p256dh(),
-        fcm_configuration.sender_id_auth_secret(), message, std::move(callback),
+        fcm_configuration.sender_id_auth_secret(), message,
+        SharingChannelType::kFcmSenderId, std::move(callback),
         base::BindOnce(&SharingFCMSender::DoSendMessageToSenderIdTarget,
                        weak_ptr_factory_.GetWeakPtr(),
                        fcm_configuration.sender_id_fcm_token(), time_to_live,
@@ -91,13 +94,15 @@ void SharingFCMSender::SendMessageToFcmTarget(
     if (!fcm_registration || !fcm_registration->authorized_entity) {
       LOG(ERROR) << "Unable to retrieve FCM registration";
       std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                              /*message_id=*/base::nullopt);
+                              /*message_id=*/base::nullopt,
+                              SharingChannelType::kUnknown);
       return;
     }
 
     EncryptMessage(
         *fcm_registration->authorized_entity, fcm_configuration.vapid_p256dh(),
-        fcm_configuration.vapid_auth_secret(), message, std::move(callback),
+        fcm_configuration.vapid_auth_secret(), message,
+        SharingChannelType::kFcmVapid, std::move(callback),
         base::BindOnce(&SharingFCMSender::DoSendMessageToVapidTarget,
                        weak_ptr_factory_.GetWeakPtr(),
                        fcm_configuration.vapid_fcm_token(), time_to_live));
@@ -105,7 +110,8 @@ void SharingFCMSender::SendMessageToFcmTarget(
   }
 
   std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
-                          /*message_id=*/base::nullopt);
+                          /*message_id=*/base::nullopt,
+                          SharingChannelType::kUnknown);
 }
 
 void SharingFCMSender::SendMessageToServerTarget(
@@ -117,14 +123,15 @@ void SharingFCMSender::SendMessageToServerTarget(
   if (!base::FeatureList::IsEnabled(kSharingSendViaSync) ||
       !sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE)) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            /*message_id=*/base::nullopt);
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kServer);
     return;
   }
 
   message.set_message_id(base::GenerateGUID());
   EncryptMessage(
       kSharingSenderID, server_channel.p256dh(), server_channel.auth_secret(),
-      message, std::move(callback),
+      message, SharingChannelType::kServer, std::move(callback),
       base::BindOnce(&SharingFCMSender::DoSendMessageToServerTarget,
                      weak_ptr_factory_.GetWeakPtr(),
                      server_channel.configuration(), message.message_id()));
@@ -134,6 +141,7 @@ void SharingFCMSender::EncryptMessage(const std::string& authorized_entity,
                                       const std::string& p256dh,
                                       const std::string& auth_secret,
                                       const SharingMessage& message,
+                                      SharingChannelType channel_type,
                                       SendMessageCallback callback,
                                       MessageSender message_sender) {
   std::string payload;
@@ -141,18 +149,19 @@ void SharingFCMSender::EncryptMessage(const std::string& authorized_entity,
   gcm_driver_->EncryptMessage(
       kSharingFCMAppID, authorized_entity, p256dh, auth_secret, payload,
       base::BindOnce(&SharingFCMSender::OnMessageEncrypted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(message_sender)));
+                     weak_ptr_factory_.GetWeakPtr(), channel_type,
+                     std::move(callback), std::move(message_sender)));
 }
 
-void SharingFCMSender::OnMessageEncrypted(SendMessageCallback callback,
+void SharingFCMSender::OnMessageEncrypted(SharingChannelType channel_type,
+                                          SendMessageCallback callback,
                                           MessageSender message_sender,
                                           gcm::GCMEncryptionResult result,
                                           std::string message) {
   if (result != gcm::GCMEncryptionResult::ENCRYPTED_DRAFT_08) {
     LOG(ERROR) << "Unable to encrypt message";
     std::move(callback).Run(SharingSendMessageResult::kEncryptionError,
-                            base::nullopt);
+                            /*message_id=*/base::nullopt, channel_type);
     return;
   }
 
@@ -170,7 +179,8 @@ void SharingFCMSender::DoSendMessageToVapidTarget(
   if (!vapid_key) {
     LOG(ERROR) << "Unable to retrieve VAPID key";
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            /*message_id=*/base::nullopt);
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kFcmVapid);
     return;
   }
 
@@ -215,7 +225,8 @@ void SharingFCMSender::OnMessageSentToVapidTarget(
       break;
   }
 
-  std::move(callback).Run(send_message_result, message_id);
+  std::move(callback).Run(send_message_result, message_id,
+                          SharingChannelType::kFcmVapid);
 }
 
 void SharingFCMSender::DoSendMessageToSenderIdTarget(
@@ -229,7 +240,8 @@ void SharingFCMSender::DoSendMessageToSenderIdTarget(
   // Double check that SHARING_MESSAGE is syncing.
   if (!sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE)) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            /*response=*/nullptr);
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kFcmSenderId);
     return;
   }
 
@@ -245,7 +257,7 @@ void SharingFCMSender::DoSendMessageToSenderIdTarget(
       std::move(specifics),
       base::BindOnce(&SharingFCMSender::OnMessageSentViaSync,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     message_id));
+                     message_id, SharingChannelType::kFcmSenderId));
 }
 
 void SharingFCMSender::DoSendMessageToServerTarget(
@@ -258,7 +270,8 @@ void SharingFCMSender::DoSendMessageToServerTarget(
   // Double check that SHARING_MESSAGE is syncing.
   if (!sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE)) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            /*response=*/nullptr);
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kServer);
     return;
   }
 
@@ -270,12 +283,13 @@ void SharingFCMSender::DoSendMessageToServerTarget(
       std::move(specifics),
       base::BindOnce(&SharingFCMSender::OnMessageSentViaSync,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     message_id));
+                     message_id, SharingChannelType::kServer));
 }
 
 void SharingFCMSender::OnMessageSentViaSync(
     SendMessageCallback callback,
     const std::string& message_id,
+    SharingChannelType channel_type,
     const sync_pb::SharingMessageCommitError& error) {
   TRACE_EVENT1("sharing", "SharingFCMSender::OnMessageSentViaSync", "error",
                error.error_code());
@@ -301,9 +315,8 @@ void SharingFCMSender::OnMessageSentViaSync(
       send_message_result = SharingSendMessageResult::kInternalError;
       break;
   }
-  // TODO(alexchau): Cases for SYNC_ERROR and NETWORK_ERROR.
 
-  std::move(callback).Run(send_message_result, message_id);
+  std::move(callback).Run(send_message_result, message_id, channel_type);
 }
 
 bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {

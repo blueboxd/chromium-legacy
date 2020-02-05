@@ -98,6 +98,7 @@
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
@@ -1503,6 +1504,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            UnloadHandlersArePowerful);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
 
   class DroppedInterfaceRequestLogger;
 
@@ -1612,7 +1614,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const url::Origin& origin_of_final_response_url,
       net::CertStatus cert_status) override;
   void ResourceLoadComplete(
-      mojom::ResourceLoadInfoPtr resource_load_info) override;
+      blink::mojom::ResourceLoadInfoPtr resource_load_info) override;
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override;
   void DidSetFramePolicyHeaders(
@@ -1677,6 +1679,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdatePermissionsForNavigation(
       const mojom::CommonNavigationParams& common_params,
       const mojom::CommitNavigationParams& commit_params);
+
+  // Calculates main world origin that will use the URLLoaderFactory if the
+  // factory is sent at this point to the renderer process.  This may be
+  // different from |last_committed_origin_| between ReadyToCommit and DidCommit
+  // states of a navigation.
+  //
+  // TODO(lukasza): https://crbug.com/729021: This method should not be needed
+  // once we swap RenderFrameHost on every document or origin change.  See also
+  // https://crbug.com/1047436.
+  //
+  // TODO(lukasza): Rename and make it more general purpose if we find more
+  // cases where this origin needs to be used instead of GetLastCommittedOrigin
+  // - currently URLLoaderFactory/request_initiator_site_lock computations are
+  // the only known case.  See also https://crbug.com/1047436#c1.
+  url::Origin GetExpectedMainWorldOriginForUrlLoaderFactory();
 
   network::mojom::URLLoaderFactoryParamsPtr
   CreateURLLoaderFactoryParamsForMainWorld(
@@ -2488,7 +2505,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // is necessary so the renderer ID can be mapped to the global ID in
   // |DidCommitProvisionalLoad()|. This situation should only happen when an
   // empty document is loaded.
-  mojom::ResourceLoadInfoPtr deferred_main_frame_load_info_;
+  blink::mojom::ResourceLoadInfoPtr deferred_main_frame_load_info_;
 
   enum class UnloadState {
     // The initial state. The frame is alive.

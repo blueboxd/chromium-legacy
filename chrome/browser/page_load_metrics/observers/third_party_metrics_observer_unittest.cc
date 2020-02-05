@@ -462,7 +462,8 @@ TEST_F(ThirdPartyMetricsObserverTest,
        frame_tree_node_id, false /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::kFontResource, 0, nullptr /* load_timing_info */},
+       blink::mojom::ResourceType::kFontResource, 0,
+       nullptr /* load_timing_info */},
       content::GlobalRequestID());
 
   // Navigate again to force histogram recording.
@@ -498,7 +499,8 @@ TEST_F(ThirdPartyMetricsObserverTest,
        frame_tree_node_id, false /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::kFontResource, 0, nullptr /* load_timing_info */},
+       blink::mojom::ResourceType::kFontResource, 0,
+       nullptr /* load_timing_info */},
       content::GlobalRequestID());
 
   // Navigate again to force histogram recording.
@@ -530,7 +532,8 @@ TEST_F(ThirdPartyMetricsObserverTest,
        frame_tree_node_id, false /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::kFontResource, 0, nullptr /* load_timing_info */},
+       blink::mojom::ResourceType::kFontResource, 0,
+       nullptr /* load_timing_info */},
       content::GlobalRequestID());
 
   // Navigate again to force histogram recording.

@@ -894,8 +894,7 @@ bool TextRunHarfBuzz::FontParams::SetRenderParamsOverrideSkiaFaceFromFont(
     const Font& fallback_font,
     const FontRenderParams& new_render_params) {
   PlatformFont* platform_font = fallback_font.platform_font();
-  sk_sp<SkTypeface> new_skia_face =
-      platform_font->GetNativeSkTypefaceIfAvailable();
+  sk_sp<SkTypeface> new_skia_face = platform_font->GetNativeSkTypeface();
 
   // If pass-through of the Skia native handle fails for PlatformFonts other
   // than PlatformFontSkia, perform rematching.

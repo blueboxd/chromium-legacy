@@ -151,7 +151,7 @@ class FetchEventTestHelper {
 
     fetch_event_dispatch->fetch_dispatcher =
         std::make_unique<ServiceWorkerFetchDispatcher>(
-            std::move(request), ResourceType::kMainFrame,
+            std::move(request), blink::mojom::ResourceType::kMainFrame,
             base::GenerateGUID() /* client_id */, std::move(version),
             base::DoNothing() /* prepare callback */, std::move(fetch_callback),
             fetch_event_dispatch->param_and_expected_result.param

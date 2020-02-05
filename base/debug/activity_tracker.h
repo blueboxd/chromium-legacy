@@ -346,7 +346,7 @@ struct Activity {
 // additional information during debugging. It is also used to store arbitrary
 // global data. All updates must be done from the same thread though other
 // threads can read it concurrently if they create new objects using the same
-// memory.
+// memory. For a thread-safe version, see ThreadSafeUserData later on.
 class BASE_EXPORT ActivityUserData {
  public:
   // List of known value type. REFERENCE types must immediately follow the non-
@@ -423,6 +423,13 @@ class BASE_EXPORT ActivityUserData {
   // This information is stored on a "best effort" basis. It may be dropped if
   // the memory buffer is full or the associated activity is beyond the maximum
   // recording depth.
+  //
+  // Some methods return pointers to the stored value that can be further
+  // modified using normal std::atomic operations without having to go through
+  // this interface, thus avoiding the relatively expensive name lookup.
+  // ==> Use std::memory_order_relaxed as the "order" parameter to atomic ops.
+  // Remember that the return value will be nullptr if the value could not
+  // be stored!
   void Set(StringPiece name, const void* memory, size_t size) {
     Set(name, RAW_VALUE, memory, size);
   }
@@ -432,18 +439,22 @@ class BASE_EXPORT ActivityUserData {
   void SetString(StringPiece name, StringPiece16 value) {
     SetString(name, UTF16ToUTF8(value));
   }
-  void SetBool(StringPiece name, bool value) {
+  std::atomic<bool>* SetBool(StringPiece name, bool value) {
     char cvalue = value ? 1 : 0;
-    Set(name, BOOL_VALUE, &cvalue, sizeof(cvalue));
+    void* addr = Set(name, BOOL_VALUE, &cvalue, sizeof(cvalue));
+    return reinterpret_cast<std::atomic<bool>*>(addr);
   }
-  void SetChar(StringPiece name, char value) {
-    Set(name, CHAR_VALUE, &value, sizeof(value));
+  std::atomic<char>* SetChar(StringPiece name, char value) {
+    void* addr = Set(name, CHAR_VALUE, &value, sizeof(value));
+    return reinterpret_cast<std::atomic<char>*>(addr);
   }
-  void SetInt(StringPiece name, int64_t value) {
-    Set(name, SIGNED_VALUE, &value, sizeof(value));
+  std::atomic<int64_t>* SetInt(StringPiece name, int64_t value) {
+    void* addr = Set(name, SIGNED_VALUE, &value, sizeof(value));
+    return reinterpret_cast<std::atomic<int64_t>*>(addr);
   }
-  void SetUint(StringPiece name, uint64_t value) {
-    Set(name, UNSIGNED_VALUE, &value, sizeof(value));
+  std::atomic<uint64_t>* SetUint(StringPiece name, uint64_t value) {
+    void* addr = Set(name, UNSIGNED_VALUE, &value, sizeof(value));
+    return reinterpret_cast<std::atomic<uint64_t>*>(addr);
   }
 
   // These function as above but don't actually copy the data into the
@@ -478,10 +489,10 @@ class BASE_EXPORT ActivityUserData {
                                  int64_t* out_stamp);
 
  protected:
-  virtual void Set(StringPiece name,
-                   ValueType type,
-                   const void* memory,
-                   size_t size);
+  virtual void* Set(StringPiece name,
+                    ValueType type,
+                    const void* memory,
+                    size_t size);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ActivityTrackerTest, UserDataTest);
@@ -1078,10 +1089,10 @@ class BASE_EXPORT GlobalActivityTracker {
     ~ThreadSafeUserData() override;
 
    private:
-    void Set(StringPiece name,
-             ValueType type,
-             const void* memory,
-             size_t size) override;
+    void* Set(StringPiece name,
+              ValueType type,
+              const void* memory,
+              size_t size) override;
 
     Lock data_lock_;
 

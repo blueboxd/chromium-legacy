@@ -617,6 +617,14 @@ void AppListFolderView::UpdatePreferredBounds() {
   // Calculate the folder icon's bounds relative to this view.
   folder_item_icon_bounds_ =
       icon_bounds_in_container - preferred_bounds_.OffsetFromOrigin();
+
+  // Adjust folder item icon bounds for RTL (cannot use GetMirroredRect(), as
+  // the current view bounds might not match the preferred bounds).
+  if (base::i18n::IsRTL()) {
+    folder_item_icon_bounds_.set_x(preferred_bounds_.width() -
+                                   folder_item_icon_bounds_.x() -
+                                   folder_item_icon_bounds_.width());
+  }
 }
 
 int AppListFolderView::GetYOffsetForFolder() {
@@ -785,7 +793,9 @@ void AppListFolderView::DispatchDragEventForReparent(
     AppsGridView::Pointer pointer,
     const gfx::Point& drag_point_in_folder_grid) {
   AppsGridView* root_grid = container_view_->apps_grid_view();
-  gfx::Point drag_point_in_root_grid = drag_point_in_folder_grid;
+  gfx::Point drag_point_in_root_grid(
+      GetMirroredXInView(drag_point_in_folder_grid.x()),
+      drag_point_in_folder_grid.y());
 
   // Temporarily reset the transform of the contents container so that the point
   // can be correctly converted to the root grid's coordinates.
@@ -794,6 +804,8 @@ void AppListFolderView::DispatchDragEventForReparent(
   ConvertPointToTarget(items_grid_view_, root_grid, &drag_point_in_root_grid);
   contents_container_->SetTransform(original_transform);
 
+  drag_point_in_root_grid.set_x(
+      root_grid->GetMirroredXInView(drag_point_in_root_grid.x()));
   root_grid->UpdateDragFromReparentItem(pointer, drag_point_in_root_grid);
 }
 

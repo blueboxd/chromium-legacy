@@ -313,7 +313,10 @@ blink::WebLocalFrame* MimeHandlerViewContainerManager::GetSourceFrame() {
 }
 
 blink::WebFrame* MimeHandlerViewContainerManager::GetTargetFrame() {
-  return GetSourceFrame()->FirstChild();
+  // Search for the frame using the 'name' attribute, since if an extension
+  // injects other frames into the embedder, there will be more than one frame.
+  return GetSourceFrame()->FindFrameByName(
+      blink::WebString::FromUTF8(internal_id_));
 }
 
 bool MimeHandlerViewContainerManager::IsEmbedded() const {

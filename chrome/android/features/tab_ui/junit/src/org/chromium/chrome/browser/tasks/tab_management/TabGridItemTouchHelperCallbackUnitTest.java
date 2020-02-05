@@ -41,8 +41,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
@@ -170,7 +170,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
         doReturn(mTab3).when(mTabGroupModelFilter).getTabAt(POSITION3);
         doReturn(mTab4).when(mTabGroupModelFilter).getTabAt(POSITION4);
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
         setupRecyclerView();
 
         mModel = new TabListModel();
@@ -213,7 +213,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test

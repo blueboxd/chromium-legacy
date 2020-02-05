@@ -58,9 +58,37 @@
 
   #texts {
     color: var(--ntp-secondary-text-color);
+    display: grid;
     flex-grow: 1;
     font-size: 32px;
     text-align: start;
+  }
+
+  #texts > *,
+  #micContainer > * {
+    grid-column-start: 1;
+    grid-row-start: 1;
+  }
+
+  *[text] {
+    transition-delay: 200ms;
+    transition-duration: 500ms;
+    transition-property: opacity, padding-inline-start;
+    transition-timing-function: ease-out;
+    visibility: hidden;
+    width: 100%;
+  }
+
+  *[text='waiting'],
+  *[text='speak'] {
+    opacity: 0;
+    padding-inline-start: 50px;
+  }
+
+  *[text][visible] {
+    opacity: 1;
+    padding-inline-start: 0;
+    visibility: visible;
   }
 
   #finalResult {
@@ -89,11 +117,6 @@
     height: var(--mic-container-size);
     justify-items: center;
     width: var(--mic-container-size);
-  }
-
-  #micContainer > * {
-    grid-column-start: 1;
-    grid-row-start: 1;
   }
 
   #micVolume {
@@ -151,11 +174,11 @@
 </style>
 <dialog id="dialog" on-close="onOverlayClose_" on-click="onOverlayClick_">
   <button id="closeButton" tabindex="0" title="$i18n{close}">×</button>
-  <!-- TODO(crbug.com/1042534): Add animations. -->
   <!-- TODO(crbug.com/1042534): Add Listening state. -->
   <div id="content">
-    <iron-pages id="texts" selected="[[getText_(state_)]]"
-        attr-for-selected="text" fallback-selection="none" aria-live="polite">
+    <iron-selector id="texts" selected="[[getText_(state_)]]"
+        attr-for-selected="text" fallback-selection="none" aria-live="polite"
+        selected-attribute="visible">
       <div text="none"></div>
       <div text="waiting">$i18n{waiting}</div>
       <div text="speak">$i18n{speak}</div>
@@ -183,10 +206,13 @@
           <a link="details" target="_blank" href="[[helpUrl_]]"><!--
             -->$i18n{details}
           </a>
-          <a link="try-again" href="#">$i18n{tryAgain}</a>
+          <a link="try-again" id="retryLink" href="#"
+              on-click="onRetryClick_"><!--
+            -->$i18n{tryAgain}
+          </a>
         </iron-pages>
       </div>
-    </iron-pages>
+    </iron-selector>
     <div id="micContainer" class$="[[getMicClass_(state_)]]">
       <div id="micVolume"
           style="--mic-volume-level: [[micVolumeLevel_]];
@@ -194,7 +220,7 @@
         <div id="micVolumeCutout">
         </div>
       </div>
-      <cr-button id="micButton">
+      <cr-button id="micButton" on-click="onRetryClick_">
         <div id="micIcon"></div>
       </cr-button>
     </div>

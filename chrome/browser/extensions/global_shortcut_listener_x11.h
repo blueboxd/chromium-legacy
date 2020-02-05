@@ -14,6 +14,10 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/x/x11.h"
 
+namespace ui {
+class KeyEvent;
+}
+
 namespace extensions {
 
 // X11-specific implementation of the GlobalShortcutListener class that
@@ -37,7 +41,7 @@ class GlobalShortcutListenerX11 : public GlobalShortcutListener,
   void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
   // Invoked when a global shortcut is pressed.
-  void OnXKeyPressEvent(::XEvent* x_event);
+  void OnKeyPressEvent(const ui::KeyEvent& event);
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;

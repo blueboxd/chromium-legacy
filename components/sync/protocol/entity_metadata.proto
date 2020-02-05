@@ -14,7 +14,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "unique_position.proto";
+import "components/sync/protocol/unique_position.proto";
 
 // Sync proto to store entity metadata in model type storage.
 message EntityMetadata {

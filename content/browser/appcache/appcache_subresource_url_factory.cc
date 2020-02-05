@@ -86,7 +86,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
     }
     handler_ = host_->CreateRequestHandler(
         std::make_unique<AppCacheRequest>(request_),
-        static_cast<ResourceType>(request_.resource_type),
+        static_cast<blink::mojom::ResourceType>(request_.resource_type),
         request_.should_reset_appcache);
     if (!handler_) {
       CreateAndStartNetworkLoader();

@@ -14,9 +14,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
@@ -25,7 +25,8 @@ class ServiceWorkerMainResourceHandle;
 
 struct ServiceWorkerNavigationLoaderInterceptorParams {
   // For all clients:
-  ResourceType resource_type = ResourceType::kMainFrame;
+  blink::mojom::ResourceType resource_type =
+      blink::mojom::ResourceType::kMainFrame;
   bool skip_service_worker = false;
 
   // For windows:

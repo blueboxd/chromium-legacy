@@ -1905,7 +1905,7 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
             touch_resize_window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, DISABLED_ResizeHistogram) {
+TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
   base::HistogramTester histograms;
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
   std::unique_ptr<WindowResizer> resizer(
@@ -1920,6 +1920,12 @@ TEST_F(WorkspaceWindowResizerTest, DISABLED_ResizeHistogram) {
 
   // Completing the drag should not generate another histogram.
   resizer->CompleteDrag();
+
+  // Ensures a compositor frame will be generated. Otherwise,
+  // ui::WaitForNextFrameToBePresented below could time out.
+  // See https://crbug.com/1047657.
+  window_->GetHost()->compositor()->ScheduleRedrawRect(gfx::Rect(0, 0, 1, 1));
+
   ui::WaitForNextFrameToBePresented(window_->GetHost()->compositor());
   histograms.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 1);
 }

@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -792,11 +793,22 @@ static Document* CreateStagingDocumentForMarkupSanitization() {
   return document;
 }
 
-String SanitizeMarkupWithContext(const String& raw_markup,
-                                 unsigned fragment_start,
-                                 unsigned fragment_end) {
+static bool ContainsStyleElements(const DocumentFragment& fragment) {
+  for (const Node& node : NodeTraversal::DescendantsOf(fragment)) {
+    if (IsA<HTMLStyleElement>(node) || IsA<SVGStyleElement>(node))
+      return true;
+  }
+  return false;
+}
+
+DocumentFragment* CreateSanitizedFragmentFromMarkupWithContext(
+    Document& document,
+    const String& raw_markup,
+    unsigned fragment_start,
+    unsigned fragment_end,
+    const String& base_url) {
   if (raw_markup.IsEmpty())
-    return g_empty_string;
+    return nullptr;
 
   Document* staging_document = CreateStagingDocumentForMarkupSanitization();
   Element* body = staging_document->body();
@@ -804,22 +816,32 @@ String SanitizeMarkupWithContext(const String& raw_markup,
   DocumentFragment* fragment = CreateFragmentFromMarkupWithContext(
       *staging_document, raw_markup, fragment_start, fragment_end, KURL(),
       kDisallowScriptingAndPluginContent);
-  if (!fragment)
-    return g_empty_string;
+  if (!fragment) {
+    staging_document->GetPage()->WillBeDestroyed();
+    return nullptr;
+  }
+
+  if (!ContainsStyleElements(*fragment)) {
+    staging_document->GetPage()->WillBeDestroyed();
+    return CreateFragmentFromMarkupWithContext(
+        document, raw_markup, fragment_start, fragment_end, base_url,
+        kDisallowScriptingAndPluginContent);
+  }
 
   body->appendChild(fragment);
-  staging_document->UpdateStyleAndLayout();
+  staging_document->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // This sanitizes stylesheets in the markup into element inline styles
-  String result = CreateMarkup(Position::FirstPositionInNode(*body),
+  String markup = CreateMarkup(Position::FirstPositionInNode(*body),
                                Position::LastPositionInNode(*body),
                                CreateMarkupOptions::Builder()
                                    .SetShouldAnnotateForInterchange(true)
                                    .SetIsForMarkupSanitization(true)
                                    .Build());
-
   staging_document->GetPage()->WillBeDestroyed();
-  return result;
+
+  return CreateFragmentFromMarkup(document, markup, base_url,
+                                  kDisallowScriptingAndPluginContent);
 }
 
 template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;

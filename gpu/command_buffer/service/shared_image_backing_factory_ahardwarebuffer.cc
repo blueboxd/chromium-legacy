@@ -777,6 +777,7 @@ gl::GLImage* SharedImageBackingAHB::BeginOverlayAccess() {
   if (!overlay_image_) {
     overlay_image_ =
         base::MakeRefCounted<OverlayImage>(hardware_buffer_handle_.get());
+    overlay_image_->SetColorSpace(color_space());
   }
 
   if (write_sync_fd_.is_valid()) {

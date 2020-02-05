@@ -562,8 +562,14 @@ void CastActivityManager::AddNonLocalActivityRecord(
                    /* is_local */ false, /* for_display */ true);
   route.set_media_sink_name(sink.sink().name());
 
-  auto* activity_ptr = AddCastActivityRecord(route, app_id);
-  activity_ptr->SetOrUpdateSession(session, sink, hash_token_);
+  if (cast_source->ContainsStreamingApp()) {
+    route.set_controller_type(RouteControllerType::kMirroring);
+    AddMirroringActivityRecord(route, app_id, -1, sink.cast_data());
+  } else {
+    route.set_controller_type(RouteControllerType::kGeneric);
+    auto* activity_ptr = AddCastActivityRecord(route, app_id);
+    activity_ptr->SetOrUpdateSession(session, sink, hash_token_);
+  }
 }
 
 const MediaRoute* CastActivityManager::GetRoute(

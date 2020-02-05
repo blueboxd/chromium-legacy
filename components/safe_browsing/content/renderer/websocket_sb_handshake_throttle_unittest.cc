@@ -11,7 +11,6 @@
 #include "base/test/task_environment.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
-#include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -19,6 +18,7 @@
 #include "net/http/http_request_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 
@@ -44,7 +44,7 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
       const std::string& method,
       const net::HttpRequestHeaders& headers,
       int32_t load_flags,
-      content::ResourceType resource_type,
+      blink::mojom::ResourceType resource_type,
       bool has_user_gesture,
       bool originated_from_service_worker,
       CreateCheckerAndCheckCallback callback) override {
@@ -73,7 +73,7 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
   std::string method_;
   net::HttpRequestHeaders headers_;
   int32_t load_flags_;
-  content::ResourceType resource_type_;
+  blink::mojom::ResourceType resource_type_;
   bool has_user_gesture_;
   bool originated_from_service_worker_;
   CreateCheckerAndCheckCallback callback_;
@@ -135,7 +135,8 @@ TEST_F(WebSocketSBHandshakeThrottleTest, CheckArguments) {
   EXPECT_EQ("GET", safe_browsing_.method_);
   EXPECT_TRUE(safe_browsing_.headers_.GetHeaderVector().empty());
   EXPECT_EQ(0, safe_browsing_.load_flags_);
-  EXPECT_EQ(content::ResourceType::kSubResource, safe_browsing_.resource_type_);
+  EXPECT_EQ(blink::mojom::ResourceType::kSubResource,
+            safe_browsing_.resource_type_);
   EXPECT_FALSE(safe_browsing_.has_user_gesture_);
   EXPECT_FALSE(safe_browsing_.originated_from_service_worker_);
   EXPECT_TRUE(safe_browsing_.callback_);

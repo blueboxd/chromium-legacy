@@ -95,7 +95,6 @@ AccessibilityTest.define('SettingsA11ySignOut', {
             disconnectButton = parent.$$('#turn-off');
             assert(!!disconnectButton);
             disconnectButton.click();
-            Polymer.dom.flush();
           });
     }
   },

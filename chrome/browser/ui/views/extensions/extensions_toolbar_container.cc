@@ -52,7 +52,7 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
   target_layout_manager()
       ->SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse)
       .SetDefault(views::kFlexBehaviorKey,
-                  views::FlexSpecification::ForSizeRule(
+                  views::FlexSpecification(
                       views::MinimumFlexSizeRule::kPreferredSnapToZero,
                       views::MaximumFlexSizeRule::kPreferred)
                       .WithWeight(0));

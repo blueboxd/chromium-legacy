@@ -915,7 +915,7 @@ DOMRectReadOnly* Internals::absoluteCaretBounds(
     return nullptr;
   }
 
-  document_->UpdateStyleAndLayout();
+  document_->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   return DOMRectReadOnly::FromIntRect(
       GetFrame()->Selection().AbsoluteCaretBounds());
 }
@@ -936,7 +936,7 @@ String Internals::textAffinity() {
 DOMRectReadOnly* Internals::boundingBox(Element* element) {
   DCHECK(element);
 
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object)
     return DOMRectReadOnly::Create(0, 0, 0, 0);
@@ -970,7 +970,7 @@ void Internals::setMarker(Document* document,
     return;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   if (type == DocumentMarker::kSpelling)
     document->Markers().AddSpellingMarker(EphemeralRange(range));
   else
@@ -1105,7 +1105,7 @@ void Internals::addTextMatchMarker(const Range* range,
     return;
   }
 
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range->OwnerDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   range->OwnerDocument().Markers().AddTextMatchMarker(
       EphemeralRange(range), match_status_enum.value());
 
@@ -1166,7 +1166,7 @@ void addStyleableMarkerHelper(const Range* range,
                                                  Color,
                                                  Color)> create_marker) {
   DCHECK(range);
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range->OwnerDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   base::Optional<ImeTextSpanThickness> thickness =
       ThicknessFrom(thickness_value);
@@ -1323,7 +1323,7 @@ String Internals::viewportAsText(Document* document,
     return String();
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Page* page = document->GetPage();
 
@@ -1483,7 +1483,7 @@ Range* Internals::rangeFromLocationAndLength(Element* scope,
   DCHECK(scope);
 
   // TextIterator depends on Layout information, make sure layout it up to date.
-  scope->GetDocument().UpdateStyleAndLayout();
+  scope->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   return CreateRange(
       PlainTextRange(range_location, range_location + range_length)
@@ -1494,7 +1494,7 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range) {
   DCHECK(scope && range);
   // PlainTextRange depends on Layout information, make sure layout it up to
   // date.
-  scope->GetDocument().UpdateStyleAndLayout();
+  scope->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   return PlainTextRange::Create(*scope, *range).Start();
 }
@@ -1503,7 +1503,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
   DCHECK(scope && range);
   // PlainTextRange depends on Layout information, make sure layout it up to
   // date.
-  scope->GetDocument().UpdateStyleAndLayout();
+  scope->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   return PlainTextRange::Create(*scope, *range).length();
 }
@@ -1511,7 +1511,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
 String Internals::rangeAsText(const Range* range) {
   DCHECK(range);
   // Clean layout is required by plain text extraction.
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range->OwnerDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   return range->GetText();
 }
@@ -1526,7 +1526,7 @@ void Internals::HitTestRect(HitTestLocation& location,
                             int width,
                             int height,
                             Document* document) {
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   PhysicalRect rect{LayoutUnit(x), LayoutUnit(y), LayoutUnit(width),
                     LayoutUnit(height)};
@@ -2056,7 +2056,7 @@ bool Internals::hasSpellingMarker(Document* document,
     return false;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   return document->GetFrame()->GetSpellChecker().SelectionStartHasMarkerFor(
       DocumentMarker::kSpelling, from, length);
 }
@@ -2071,7 +2071,7 @@ void Internals::replaceMisspelled(Document* document,
     return;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   document->GetFrame()->GetSpellChecker().ReplaceMisspelledRange(replacement);
 }
 
@@ -2120,7 +2120,7 @@ bool Internals::hasGrammarMarker(Document* document,
     return false;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   return document->GetFrame()->GetSpellChecker().SelectionStartHasMarkerFor(
       DocumentMarker::kGrammar, from, length);
 }
@@ -2612,7 +2612,7 @@ void Internals::updateLayoutAndRunPostLayoutTasks(
         "The node provided is neither a document nor an IFrame.");
     return;
   }
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   if (auto* view = document->View())
     view->FlushAnyPendingPostLayoutTasks();
 }
@@ -2651,7 +2651,7 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
     return MakeGarbageCollected<DOMRectList>();
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   document->View()->UpdateDocumentAnnotatedRegions();
   Vector<AnnotatedRegionValue> regions = document->AnnotatedRegions();
 
@@ -3208,7 +3208,7 @@ String Internals::selectedHTMLForClipboard() {
     return String();
 
   // Selection normalization and markup generation require clean layout.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   return GetFrame()->Selection().SelectedHTMLForClipboard();
 }
@@ -3218,7 +3218,7 @@ String Internals::selectedTextForClipboard() {
     return String();
 
   // Clean layout is required for extracting plain text from selection.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   return GetFrame()->Selection().SelectedTextForClipboard();
 }

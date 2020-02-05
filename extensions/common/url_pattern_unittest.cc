@@ -370,22 +370,11 @@ TEST(ExtensionURLPatternTest, Match12) {
       GURL("data:text/html;charset=utf-8,<html>asdf</html>")));
 }
 
-TEST(ExtensionURLPatternTest, MatchInvalid) {
+TEST(ExtensionURLPatternTest, DoesntMatchInvalid) {
   URLPattern pattern(kAllSchemes);
-  // The all_urls pattern should match even an invalid URL.
-  // TODO(crbug.com/1041880): Having the wildcard match invalid URLs is part of
-  // a temporary bugfix that is expected to be reverted as part of the
-  // follow-up, longer-term (but longer-bake-time) fix.
+  // Even the all_urls pattern shouldn't match an invalid URL.
   EXPECT_EQ(URLPattern::ParseResult::kSuccess,
             pattern.Parse(URLPattern::kAllUrlsPattern));
-  EXPECT_TRUE(pattern.MatchesURL(GURL("http:")));
-}
-
-TEST(ExtensionURLPatternTest, DoesntMatchInvalidIfNotWildcard) {
-  URLPattern pattern(kAllSchemes);
-  // A non-all_urls pattern shouldn't match an invalid URL,
-  // even if the scheme matches.
-  EXPECT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse("*://*/*"));
   EXPECT_FALSE(pattern.MatchesURL(GURL("http:")));
 }
 

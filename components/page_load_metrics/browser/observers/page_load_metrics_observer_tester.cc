@@ -16,13 +16,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/resource_load_info.mojom.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
@@ -221,12 +220,12 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
 void PageLoadMetricsObserverTester::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info,
     const content::GlobalRequestID& request_id) {
-  if (info.resource_type == content::ResourceType::kMainFrame) {
+  if (info.resource_type == blink::mojom::ResourceType::kMainFrame) {
     ASSERT_NE(content::GlobalRequestID(), request_id)
         << "Main frame resources must have a GlobalRequestID.";
   }
 
-  content::mojom::ResourceLoadInfo resource_load_info;
+  blink::mojom::ResourceLoadInfo resource_load_info;
   resource_load_info.origin_of_final_url = info.origin_of_final_url;
   resource_load_info.was_cached = info.was_cached;
   resource_load_info.raw_body_bytes = info.raw_body_bytes;
@@ -234,7 +233,7 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
       info.original_network_content_length;
   resource_load_info.resource_type = info.resource_type;
   resource_load_info.net_error = info.net_error;
-  resource_load_info.network_info = content::mojom::CommonNetworkInfo::New();
+  resource_load_info.network_info = blink::mojom::CommonNetworkInfo::New();
   resource_load_info.network_info->remote_endpoint = info.remote_endpoint;
   if (info.load_timing_info)
     resource_load_info.load_timing_info = *info.load_timing_info;

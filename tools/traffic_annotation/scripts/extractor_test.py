@@ -61,7 +61,8 @@ class ExtractorTest(unittest.TestCase):
       (stdout, stderr) = map(dos2unix, proc.communicate())
 
       self.assertEqual(expected_stderr, remove_tracebacks(stderr))
-      self.assertEqual(int(bool(expected_stderr)), proc.returncode)
+      expected_returncode = 2 if expected_stderr else 0
+      self.assertEqual(expected_returncode, proc.returncode)
       self.assertEqual(expected_stdout, stdout)
 
 

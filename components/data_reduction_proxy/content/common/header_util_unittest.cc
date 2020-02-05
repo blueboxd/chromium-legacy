@@ -20,16 +20,16 @@ constexpr char kHttpsUrl[] = "https://example.com";
 TEST(HeaderUtilTest, MaybeSetAcceptTransformHeader) {
   const struct {
     GURL url;
-    content::ResourceType resource_type;
+    blink::mojom::ResourceType resource_type;
     content::PreviewsState previews_state;
     std::string expected_header;
   } tests[] = {
-      {GURL(kUrl), content::ResourceType::kMedia, 0,
+      {GURL(kUrl), blink::mojom::ResourceType::kMedia, 0,
        compressed_video_directive()},
-      {GURL(kHttpsUrl), content::ResourceType::kMedia, 0, ""},
-      {GURL(kUrl), content::ResourceType::kMainFrame,
+      {GURL(kHttpsUrl), blink::mojom::ResourceType::kMedia, 0, ""},
+      {GURL(kUrl), blink::mojom::ResourceType::kMainFrame,
        content::SERVER_LITE_PAGE_ON, lite_page_directive()},
-      {GURL(kUrl), content::ResourceType::kSubFrame, 0, ""},
+      {GURL(kUrl), blink::mojom::ResourceType::kSubFrame, 0, ""},
   };
 
   for (const auto& test : tests) {

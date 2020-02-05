@@ -99,6 +99,10 @@ void HardwareDisplayController::Disable() {
   TRACE_EVENT0("drm", "HDC::Disable");
 
   for (const auto& controller : crtc_controllers_)
+    // TODO(crbug.com/1015104): Modeset and Disable operations should go
+    // together. The current split is due to how the legacy/atomic split
+    // evolved. It should be cleaned up under the more generic
+    // HardwareDisplayPlaneManager{Legacy,Atomic} calls.
     controller->Disable();
 
   bool ret = GetDrmDevice()->plane_manager()->DisableOverlayPlanes(

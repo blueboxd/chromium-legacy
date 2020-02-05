@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/assistant/assistant_service_connection.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -16,6 +17,7 @@ constexpr const char kConnectionKey[] = "assistant_service_connection";
 AssistantServiceConnection::AssistantServiceConnection(Profile* profile)
     : service_(remote_.BindNewPipeAndPassReceiver(),
                profile->GetURLLoaderFactory()->Clone(),
+               IdentityManagerFactory::GetForProfile(profile),
                profile->GetPrefs()),
       profile_(profile) {
   profile_->AddObserver(this);

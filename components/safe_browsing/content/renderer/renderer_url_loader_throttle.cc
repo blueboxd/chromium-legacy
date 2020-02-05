@@ -55,7 +55,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id_, url_checker_.BindNewPipeAndPassReceiver(), request->url,
       request->method, headers, request->load_flags,
-      static_cast<content::ResourceType>(request->resource_type),
+      static_cast<blink::mojom::ResourceType>(request->resource_type),
       request->has_user_gesture, request->originated_from_service_worker,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      weak_factory_.GetWeakPtr()));

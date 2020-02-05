@@ -33,6 +33,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * This class attempts to preload the tab if the url is known from the intent when the profile
@@ -168,13 +169,13 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
 
     private void loadTab() {
         Intent intent = mIntentSupplier.get();
-        String url = UrlFormatter.fixupUrl(getUrlFromIntent(intent));
+        GURL url = UrlFormatter.fixupUrl(getUrlFromIntent(intent));
 
         ChromeTabCreator chromeTabCreator =
                 (ChromeTabCreator) mTabCreatorManager.getTabCreator(false);
         WebContents webContents = WebContentsFactory.createWebContents(false, false);
 
-        mLoadUrlParams = new LoadUrlParams(url);
+        mLoadUrlParams = new LoadUrlParams(url.getValidSpecOrEmpty());
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
         if (referrer != null && !referrer.isEmpty()) {
             mLoadUrlParams.setReferrer(new Referrer(referrer, ReferrerPolicy.DEFAULT));

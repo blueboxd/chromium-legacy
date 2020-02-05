@@ -946,7 +946,7 @@ void LocalFrameView::WillStartForcedLayout() {
   forced_layout_start_time_ = base::TimeTicks::Now();
 }
 
-void LocalFrameView::DidFinishForcedLayout() {
+void LocalFrameView::DidFinishForcedLayout(DocumentUpdateReason reason) {
   CHECK_GT(forced_layout_stack_depth_, (unsigned)0);
   forced_layout_stack_depth_--;
   if (!forced_layout_stack_depth_ && base::TimeTicks::IsHighResolution()) {
@@ -1028,6 +1028,10 @@ void LocalFrameView::RunIntersectionObserverSteps() {
       !frame_->GetDocument()->IsActive()) {
     return;
   }
+
+  if (frame_->IsMainFrame())
+    EnsureOverlayInterstitialAdDetector().MaybeFireDetection(frame_.Get());
+
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::UpdateViewportIntersectionsForSubtree");
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
@@ -2128,7 +2132,8 @@ void LocalFrameView::NotifyResizeObservers() {
        min_depth != ResizeObserverController::kDepthBottom;
        min_depth = resize_controller.GatherObservations(min_depth)) {
     resize_controller.DeliverObservations();
-    GetFrame().GetDocument()->UpdateStyleAndLayout(Document::IsNotForcedLayout);
+    GetFrame().GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kSizeChange);
   }
 
   if (resize_controller.SkippedObservations()) {
@@ -4457,6 +4462,15 @@ void LocalFrameView::OnPurgeMemory() {
       initial_or_multiple, LocalFrameRootPurgeSignal::kSignalCount);
   if (!received_foreground_compositor_memory_pressure_purge_signal_)
     received_foreground_compositor_memory_pressure_purge_signal_ = true;
+}
+
+OverlayInterstitialAdDetector&
+LocalFrameView::EnsureOverlayInterstitialAdDetector() {
+  if (!overlay_interstitial_ad_detector_) {
+    overlay_interstitial_ad_detector_ =
+        std::make_unique<OverlayInterstitialAdDetector>();
+  }
+  return *overlay_interstitial_ad_detector_.get();
 }
 
 }  // namespace blink

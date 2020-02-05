@@ -305,12 +305,9 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
       //
-      // TODO(lukasza): https://crbug.com/920634: Reintroduce NOTREACHED below
-      // after fixing remaining mismatches that are exposed by existing tests
-      // (e.g. ContentScriptApiTest.ExecuteScriptFileSameSiteCookies).
-      //
       // TODO(lukasza): https://crbug.com/920634: Report bad message and return
       // false below.
+      NOTREACHED();
       break;
   }
 

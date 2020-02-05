@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
@@ -258,6 +259,21 @@ TEST_F(CrosHealthdServiceConnectionTest, RunSmartctlCheckRoutine) {
       &callback_done));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_done);
+}
+
+TEST_F(CrosHealthdServiceConnectionTest, RunAcPowerRoutine) {
+  // Test that we can run the AC power routine.
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunAcPowerRoutine(
+      mojom::AcPowerStatusEnum::kConnected,
+      /*expected_power_type=*/"power_type",
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {

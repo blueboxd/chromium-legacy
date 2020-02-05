@@ -114,7 +114,7 @@ bool WebInputMethodControllerImpl::FinishComposingText(
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kInput);
 
   return GetInputMethodController().FinishComposingText(
       selection_behavior == WebInputMethodController::kKeepSelection
@@ -141,7 +141,7 @@ bool WebInputMethodControllerImpl::CommitText(
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kInput);
 
   if (!replacement_range.IsNull()) {
     return GetInputMethodController().ReplaceText(
@@ -204,7 +204,7 @@ WebRange WebInputMethodControllerImpl::CompositionRange() {
   Element* editable =
       GetFrame()->Selection().RootEditableElementOrDocumentElement();
 
-  editable->GetDocument().UpdateStyleAndLayout();
+  editable->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInput);
 
   return PlainTextRange::Create(*editable, range);
 }
@@ -243,7 +243,7 @@ WebRange WebInputMethodControllerImpl::GetSelectionOffsets() const {
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kInput);
 
   return GetFrame()->GetInputMethodController().GetSelectionOffsets();
 }

@@ -11,6 +11,7 @@
 #include "components/safe_browsing/core/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/render_thread.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 
 namespace android_webview {
 
@@ -48,14 +49,14 @@ std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 AwURLLoaderThrottleProvider::CreateThrottles(
     int render_frame_id,
     const blink::WebURLRequest& request,
-    content::ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
 
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
-  bool is_frame_resource = content::IsResourceTypeFrame(resource_type);
+  bool is_frame_resource = blink::IsResourceTypeFrame(resource_type);
 
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);

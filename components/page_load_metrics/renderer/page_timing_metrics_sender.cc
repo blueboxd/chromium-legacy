@@ -126,7 +126,7 @@ void PageTimingMetricsSender::DidStartResponse(
     const url::Origin& origin_of_final_response_url,
     int resource_id,
     const network::mojom::URLResponseHead& response_head,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     content::PreviewsState previews_state) {
   DCHECK(!base::Contains(page_resource_data_use_, resource_id));
 

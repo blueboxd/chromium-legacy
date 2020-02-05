@@ -106,87 +106,87 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 
 }  // namespace
 
-ResourceType RequestContextToResourceType(
+blink::mojom::ResourceType RequestContextToResourceType(
     blink::mojom::RequestContextType request_context) {
   switch (request_context) {
     // CSP report
     case blink::mojom::RequestContextType::CSP_REPORT:
-      return ResourceType::kCspReport;
+      return blink::mojom::ResourceType::kCspReport;
 
     // Favicon
     case blink::mojom::RequestContextType::FAVICON:
-      return ResourceType::kFavicon;
+      return blink::mojom::ResourceType::kFavicon;
 
     // Font
     case blink::mojom::RequestContextType::FONT:
-      return ResourceType::kFontResource;
+      return blink::mojom::ResourceType::kFontResource;
 
     // Image
     case blink::mojom::RequestContextType::IMAGE:
     case blink::mojom::RequestContextType::IMAGE_SET:
-      return ResourceType::kImage;
+      return blink::mojom::ResourceType::kImage;
 
     // Media
     case blink::mojom::RequestContextType::AUDIO:
     case blink::mojom::RequestContextType::VIDEO:
-      return ResourceType::kMedia;
+      return blink::mojom::ResourceType::kMedia;
 
     // Object
     case blink::mojom::RequestContextType::EMBED:
     case blink::mojom::RequestContextType::OBJECT:
-      return ResourceType::kObject;
+      return blink::mojom::ResourceType::kObject;
 
     // Ping
     case blink::mojom::RequestContextType::BEACON:
     case blink::mojom::RequestContextType::PING:
-      return ResourceType::kPing;
+      return blink::mojom::ResourceType::kPing;
 
     // Subresource of plugins
     case blink::mojom::RequestContextType::PLUGIN:
-      return ResourceType::kPluginResource;
+      return blink::mojom::ResourceType::kPluginResource;
 
     // Prefetch
     case blink::mojom::RequestContextType::PREFETCH:
-      return ResourceType::kPrefetch;
+      return blink::mojom::ResourceType::kPrefetch;
 
     // Script
     case blink::mojom::RequestContextType::IMPORT:
     case blink::mojom::RequestContextType::SCRIPT:
-      return ResourceType::kScript;
+      return blink::mojom::ResourceType::kScript;
 
     // Style
     case blink::mojom::RequestContextType::XSLT:
     case blink::mojom::RequestContextType::STYLE:
-      return ResourceType::kStylesheet;
+      return blink::mojom::ResourceType::kStylesheet;
 
     // Subresource
     case blink::mojom::RequestContextType::DOWNLOAD:
     case blink::mojom::RequestContextType::MANIFEST:
     case blink::mojom::RequestContextType::SUBRESOURCE:
-      return ResourceType::kSubResource;
+      return blink::mojom::ResourceType::kSubResource;
 
     // TextTrack
     case blink::mojom::RequestContextType::TRACK:
-      return ResourceType::kMedia;
+      return blink::mojom::ResourceType::kMedia;
 
     // Workers
     case blink::mojom::RequestContextType::SERVICE_WORKER:
-      return ResourceType::kServiceWorker;
+      return blink::mojom::ResourceType::kServiceWorker;
     case blink::mojom::RequestContextType::SHARED_WORKER:
-      return ResourceType::kSharedWorker;
+      return blink::mojom::ResourceType::kSharedWorker;
     case blink::mojom::RequestContextType::WORKER:
-      return ResourceType::kWorker;
+      return blink::mojom::ResourceType::kWorker;
 
     // Unspecified
     case blink::mojom::RequestContextType::INTERNAL:
     case blink::mojom::RequestContextType::UNSPECIFIED:
-      return ResourceType::kSubResource;
+      return blink::mojom::ResourceType::kSubResource;
 
     // XHR
     case blink::mojom::RequestContextType::EVENT_SOURCE:
     case blink::mojom::RequestContextType::FETCH:
     case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
-      return ResourceType::kXhr;
+      return blink::mojom::ResourceType::kXhr;
 
     // Navigation requests should not go through WebURLLoader.
     case blink::mojom::RequestContextType::FORM:
@@ -195,15 +195,16 @@ ResourceType RequestContextToResourceType(
     case blink::mojom::RequestContextType::FRAME:
     case blink::mojom::RequestContextType::IFRAME:
       NOTREACHED();
-      return ResourceType::kSubResource;
+      return blink::mojom::ResourceType::kSubResource;
 
     default:
       NOTREACHED();
-      return ResourceType::kSubResource;
+      return blink::mojom::ResourceType::kSubResource;
   }
 }
 
-ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
+blink::mojom::ResourceType WebURLRequestToResourceType(
+    const WebURLRequest& request) {
   return RequestContextToResourceType(request.GetRequestContext());
 }
 

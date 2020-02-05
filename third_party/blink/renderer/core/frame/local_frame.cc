@@ -769,7 +769,7 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   document->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   if (View() && View()->DidFirstLayout())
-    document->UpdateStyleAndLayout();
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kSizeChange);
 }
 
 void LocalFrame::DeviceScaleFactorChanged() {
@@ -1990,7 +1990,7 @@ void LocalFrame::CopyImageAtViewportPoint(const IntPoint& viewport_point) {
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument()->UpdateStyleAndLayout();
+  GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   GetEditor().CopyImage(result);
 }

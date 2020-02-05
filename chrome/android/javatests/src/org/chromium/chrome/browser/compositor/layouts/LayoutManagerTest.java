@@ -40,8 +40,8 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -528,7 +528,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testStartSurfaceLayoutDisabled() {
         // clang-format on
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(false);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(false);
         launchedChromeAndEnterTabSwitcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -546,7 +546,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testStartSurfaceLayoutEnabled_Grid() {
         // clang-format on
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
         launchedChromeAndEnterTabSwitcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -573,7 +573,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
             @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
             public void
             testStartSurfaceLayoutEnabled_List() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
         launchedChromeAndEnterTabSwitcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

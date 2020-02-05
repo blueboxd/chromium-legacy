@@ -5,7 +5,7 @@
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 
 #include "base/bind.h"
-#include "components/performance_manager/decorators/page_almost_idle_decorator.h"
+#include "components/performance_manager/decorators/page_load_tracker_decorator.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/public/graph/graph.h"
 
@@ -16,7 +16,7 @@ namespace {
 void DefaultGraphCreatedCallback(
     GraphCreatedCallback external_graph_created_callback,
     GraphImpl* graph) {
-  graph->PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
+  graph->PassToGraph(std::make_unique<PageLoadTrackerDecorator>());
   std::move(external_graph_created_callback).Run(graph);
 }
 

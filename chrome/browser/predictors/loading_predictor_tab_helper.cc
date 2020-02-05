@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 using content::BrowserThread;
 
@@ -20,30 +20,31 @@ namespace predictors {
 
 namespace {
 
-net::RequestPriority GetRequestPriority(content::ResourceType resource_type) {
+net::RequestPriority GetRequestPriority(
+    blink::mojom::ResourceType resource_type) {
   switch (resource_type) {
-    case content::ResourceType::kMainFrame:
-    case content::ResourceType::kStylesheet:
-    case content::ResourceType::kFontResource:
+    case blink::mojom::ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kStylesheet:
+    case blink::mojom::ResourceType::kFontResource:
       return net::HIGHEST;
-    case content::ResourceType::kScript:
+    case blink::mojom::ResourceType::kScript:
       return net::MEDIUM;
-    case content::ResourceType::kSubFrame:
-    case content::ResourceType::kImage:
-    case content::ResourceType::kSubResource:
-    case content::ResourceType::kObject:
-    case content::ResourceType::kMedia:
-    case content::ResourceType::kWorker:
-    case content::ResourceType::kSharedWorker:
-    case content::ResourceType::kPrefetch:
-    case content::ResourceType::kFavicon:
-    case content::ResourceType::kXhr:
-    case content::ResourceType::kPing:
-    case content::ResourceType::kServiceWorker:
-    case content::ResourceType::kCspReport:
-    case content::ResourceType::kPluginResource:
-    case content::ResourceType::kNavigationPreloadMainFrame:
-    case content::ResourceType::kNavigationPreloadSubFrame:
+    case blink::mojom::ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kImage:
+    case blink::mojom::ResourceType::kSubResource:
+    case blink::mojom::ResourceType::kObject:
+    case blink::mojom::ResourceType::kMedia:
+    case blink::mojom::ResourceType::kWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kPrefetch:
+    case blink::mojom::ResourceType::kFavicon:
+    case blink::mojom::ResourceType::kXhr:
+    case blink::mojom::ResourceType::kPing:
+    case blink::mojom::ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kCspReport:
+    case blink::mojom::ResourceType::kPluginResource:
+    case blink::mojom::ResourceType::kNavigationPreloadMainFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadSubFrame:
       return net::LOWEST;
   }
 }
@@ -109,7 +110,7 @@ void LoadingPredictorTabHelper::DidFinishNavigation(
 void LoadingPredictorTabHelper::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!predictor_)
     return;
@@ -129,7 +130,7 @@ void LoadingPredictorTabHelper::ResourceLoadComplete(
 void LoadingPredictorTabHelper::DidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& mime_type,
-    content::ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!predictor_)
     return;
@@ -138,7 +139,7 @@ void LoadingPredictorTabHelper::DidLoadResourceFromMemoryCache(
   if (!navigation_id.is_valid())
     return;
 
-  content::mojom::ResourceLoadInfo resource_load_info;
+  blink::mojom::ResourceLoadInfo resource_load_info;
   resource_load_info.original_url = url;
   resource_load_info.origin_of_final_url = url::Origin::Create(url);
   resource_load_info.mime_type = mime_type;
@@ -147,7 +148,7 @@ void LoadingPredictorTabHelper::DidLoadResourceFromMemoryCache(
   resource_load_info.request_priority =
       GetRequestPriority(resource_load_info.resource_type);
   resource_load_info.network_info =
-      content::mojom::CommonNetworkInfo::New(false, false, base::nullopt);
+      blink::mojom::CommonNetworkInfo::New(false, false, base::nullopt);
   predictor_->loading_data_collector()->RecordResourceLoadComplete(
       navigation_id, resource_load_info);
 }

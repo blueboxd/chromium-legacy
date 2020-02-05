@@ -33,8 +33,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
@@ -127,7 +127,7 @@ public class TabContentManager {
             String commandLineSwitch) {
         int val = -1;
         // TODO(crbug/959054): Convert this to Finch config.
-        if (FeatureUtilities.isGridTabSwitcherEnabled()) {
+        if (CachedFeatureFlags.isGridTabSwitcherEnabled()) {
             // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
             // See crbug.com/959054 for more details.
             if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;
@@ -180,7 +180,7 @@ public class TabContentManager {
 
         float thumbnailScale = 1.f;
         boolean useApproximationThumbnails;
-        boolean saveJpegThumbnails = FeatureUtilities.isGridTabSwitcherEnabled();
+        boolean saveJpegThumbnails = CachedFeatureFlags.isGridTabSwitcherEnabled();
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mContext);
         float deviceDensity = display.getDipScale();
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {
@@ -199,8 +199,8 @@ public class TabContentManager {
 
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
-        if (FeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                || FeatureUtilities.isAllowToRefetchTabThumbnail()) {
+        if (CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
+                || CachedFeatureFlags.isAllowToRefetchTabThumbnail()) {
             mRefectchedTabIds = new HashSet<>();
             mExpectedThumbnailAspectRatio =
                     (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
@@ -455,7 +455,7 @@ public class TabContentManager {
                             new CachedMetrics.EnumeratedHistogramSample(
                                     UMA_THUMBNAIL_FETCHING_RESULT,
                                     ThumbnailFetchingResult.NUM_ENTRIES);
-                    if (FeatureUtilities.isAllowToRefetchTabThumbnail()) {
+                    if (CachedFeatureFlags.isAllowToRefetchTabThumbnail()) {
                         double jpegAspectRatio = jpeg.getHeight() == 0
                                 ? 0
                                 : 1.0 * jpeg.getWidth() / jpeg.getHeight();
@@ -551,7 +551,7 @@ public class TabContentManager {
             Matrix matrix = new Matrix();
             matrix.setScale(downsamplingScale, downsamplingScale);
             Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                    FeatureUtilities.isTabThumbnailAspectRatioNotOne()
+                    CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
                             ? Math.min(bitmap.getHeight(),
                                     (int) (bitmap.getWidth() * 1.0 / mExpectedThumbnailAspectRatio))
                             : min(bitmap.getWidth(), bitmap.getHeight()),

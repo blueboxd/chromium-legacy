@@ -16,6 +16,7 @@
 #include "chromecast/media/base/monotonic_clock.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
+#include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
 #include "media/audio/audio_device_description.h"
@@ -98,7 +99,7 @@ void CmaAudioOutputStream::Initialize(
   AudioConfig audio_config;
   audio_config.codec = kCodecPCM;
   audio_config.channel_layout =
-      ChannelLayoutFromChannelNumber(audio_params_.channels());
+      DecoderConfigAdapter::ToChannelLayout(audio_params_.channel_layout());
   audio_config.sample_format = kSampleFormatS16;
   audio_config.bytes_per_channel = 2;
   audio_config.channel_number = audio_params_.channels();

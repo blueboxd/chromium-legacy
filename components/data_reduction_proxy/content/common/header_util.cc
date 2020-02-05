@@ -11,7 +11,7 @@
 namespace data_reduction_proxy {
 
 void MaybeSetAcceptTransformHeader(const GURL& url,
-                                   content::ResourceType resource_type,
+                                   blink::mojom::ResourceType resource_type,
                                    content::PreviewsState previews_state,
                                    net::HttpRequestHeaders* headers) {
   // Previews only operate on HTTP.
@@ -22,7 +22,7 @@ void MaybeSetAcceptTransformHeader(const GURL& url,
   if (headers->HasHeader(chrome_proxy_accept_transform_header()))
     return;
 
-  if (resource_type == content::ResourceType::kMedia) {
+  if (resource_type == blink::mojom::ResourceType::kMedia) {
     headers->SetHeader(chrome_proxy_accept_transform_header(),
                        compressed_video_directive());
     return;
@@ -37,7 +37,7 @@ void MaybeSetAcceptTransformHeader(const GURL& url,
 
   std::string accept_transform_value;
   if ((previews_state & content::SERVER_LITE_PAGE_ON) &&
-      resource_type == content::ResourceType::kMainFrame) {
+      resource_type == blink::mojom::ResourceType::kMainFrame) {
     accept_transform_value = lite_page_directive();
   }
 

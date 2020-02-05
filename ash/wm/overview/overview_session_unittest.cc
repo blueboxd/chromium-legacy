@@ -1842,7 +1842,8 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorAddItem) {
   EXPECT_TRUE(overview_session()->no_windows_widget_for_testing());
 
   overview_session()->AddItem(window.get(), /*reposition=*/true,
-                              /*animate=*/false);
+                              /*animate=*/false, /*ignored_items=*/{},
+                              /*index=*/0u);
   EXPECT_FALSE(overview_session()->no_windows_widget_for_testing());
 }
 

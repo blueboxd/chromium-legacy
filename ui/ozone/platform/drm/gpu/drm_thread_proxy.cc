@@ -88,6 +88,7 @@ void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
   TRACE_EVENT0("drm", "DrmThreadProxy::CreateBuffer");
   DCHECK(drm_thread_.task_runner())
       << "no task runner! in DrmThreadProxy::CreateBuffer";
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::OnceClosure task =
       base::BindOnce(&DrmThread::CreateBuffer, base::Unretained(&drm_thread_),
                      widget, size, format, usage, flags, buffer, framebuffer);
@@ -129,6 +130,7 @@ void DrmThreadProxy::CreateBufferFromHandle(
     std::unique_ptr<GbmBuffer>* buffer,
     scoped_refptr<DrmFramebuffer>* framebuffer) {
   TRACE_EVENT0("drm", "DrmThreadProxy::CreateBufferFromHandle");
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::OnceClosure task = base::BindOnce(
       &DrmThread::CreateBufferFromHandle, base::Unretained(&drm_thread_),
       widget, size, format, std::move(handle), buffer, framebuffer);
@@ -169,6 +171,7 @@ std::vector<OverlayStatus> DrmThreadProxy::CheckOverlayCapabilitiesSync(
     const std::vector<OverlaySurfaceCandidate>& candidates) {
   TRACE_EVENT0("drm", "DrmThreadProxy::CheckOverlayCapabilitiesSync");
   DCHECK(drm_thread_.task_runner());
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   std::vector<OverlayStatus> result;
   base::OnceClosure task = base::BindOnce(
       &DrmThread::CheckOverlayCapabilitiesSync, base::Unretained(&drm_thread_),

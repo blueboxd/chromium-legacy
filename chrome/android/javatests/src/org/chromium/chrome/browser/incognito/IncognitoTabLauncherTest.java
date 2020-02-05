@@ -6,24 +6,38 @@ package org.chromium.chrome.browser.incognito;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.support.v4.app.BundleCompat;
+
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSession;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for {@link IncognitoTabLauncher}.
@@ -32,10 +46,37 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Features.EnableFeatures({ChromeFeatureList.ALLOW_NEW_INCOGNITO_TAB_INTENTS})
 public class IncognitoTabLauncherTest {
+    private boolean mIsCurrentTestFirstParty;
+
+    private final TestRule mModuleOverridesRule = new ModuleOverridesRule().setOverride(
+            AppHooksModule.Factory.class, AppHooksModuleForTest::new);
+
+    private final ChromeTabbedActivityTestRule mActivityRule = new ChromeTabbedActivityTestRule();
+
+    @Rule
+    public TestRule mOverrideModulesThenLaunchRule =
+            RuleChain.outerRule(mModuleOverridesRule).around(mActivityRule);
+
+    /**
+     * To load a fake module in tests we need to bypass a check if package name of module
+     * is Google-signed. This class overrides this check for testing.
+     */
+    /* package */ class AppHooksModuleForTest extends AppHooksModule {
+        @Override
+        public ExternalAuthUtils provideExternalAuthUtils() {
+            return new ExternalAuthUtils() {
+                @Override
+                public boolean isGoogleSigned(String packageName) {
+                    return mIsCurrentTestFirstParty;
+                }
+            };
+        }
+    }
+
     @Test
     @Feature("Incognito")
     @SmallTest
-    public void testEnableComponent() {
+    public void testEnableComponent() throws TimeoutException {
         Context context = InstrumentationRegistry.getTargetContext();
         IncognitoTabLauncher.setComponentEnabled(true);
         Assert.assertNotNull(
@@ -45,7 +86,7 @@ public class IncognitoTabLauncherTest {
     @Test
     @Feature("Incognito")
     @SmallTest
-    public void testDisableComponent() {
+    public void testDisableComponent() throws TimeoutException {
         Context context = InstrumentationRegistry.getTargetContext();
         IncognitoTabLauncher.setComponentEnabled(false);
         Assert.assertNull(
@@ -55,24 +96,55 @@ public class IncognitoTabLauncherTest {
     @Test
     @Feature("Incognito")
     @MediumTest
-    public void testLaunchIncognitoNewTab() {
-        ChromeTabbedActivity activity = launchIncognitoTab();
+    public void testLaunchIncognitoNewTab() throws TimeoutException {
+        ChromeTabbedActivity activity = launchIncognitoTab(false);
+        assertIncognitoTabLaunched(activity, false);
+    }
 
-        Assert.assertTrue(activity.getTabModelSelector().isIncognitoSelected());
-        Assert.assertTrue(IncognitoTabLauncher.didCreateIntent(activity.getIntent()));
+    @Test
+    @Feature("Incognito")
+    @MediumTest
+    @Features.DisableFeatures({ChromeFeatureList.FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS})
+    public void testLaunchIncognitoNewTab_omniboxFocused_disabled_firstParty()
+            throws TimeoutException {
+        ChromeTabbedActivity activity = launchIncognitoTab(true);
+        assertIncognitoTabLaunched(activity, false);
+    }
+
+    @Test
+    @Feature("Incognito")
+    @MediumTest
+    @Features.DisableFeatures({ChromeFeatureList.FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS})
+    public void testLaunchIncognitoNewTab_omniboxFocused_disabled_thirdParty()
+            throws TimeoutException {
+        ChromeTabbedActivity activity = launchIncognitoTab(false);
+        assertIncognitoTabLaunched(activity, false);
     }
 
     @Test
     @Feature("Incognito")
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS})
-    public void testLaunchIncognitoNewTab_omniboxFocused() {
-        ChromeTabbedActivity activity = launchIncognitoTab();
-        CriteriaHelper.pollUiThread(() -> activity.getToolbarManager().isUrlBarFocused());
+    public void testLaunchIncognitoNewTab_omniboxFocused_enabled_thirdParty()
+            throws TimeoutException {
+        ChromeTabbedActivity activity = launchIncognitoTab(false);
+        assertIncognitoTabLaunched(activity, false);
     }
 
-    private ChromeTabbedActivity launchIncognitoTab() {
-        Context context = InstrumentationRegistry.getTargetContext();
+    @Test
+    @Feature("Incognito")
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS})
+    public void testLaunchIncognitoNewTab_omniboxFocused_enabled_firstParty()
+            throws TimeoutException {
+        ChromeTabbedActivity activity = launchIncognitoTab(true);
+        assertIncognitoTabLaunched(activity, true);
+    }
+
+    private ChromeTabbedActivity launchIncognitoTab(boolean asFirstParty) throws TimeoutException {
+        mIsCurrentTestFirstParty = asFirstParty;
+
+        Context context = InstrumentationRegistry.getContext();
         IncognitoTabLauncher.setComponentEnabled(true);
         Intent intent = createLaunchIntent(context);
 
@@ -82,16 +154,39 @@ public class IncognitoTabLauncherTest {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> context.startActivity(intent));
-
-        return ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
+        return ChromeTabbedActivityTestRule.waitFor(ChromeTabbedActivity.class);
     }
 
-    private Intent createLaunchIntent(Context context) {
+    private Intent createLaunchIntent(Context context) throws TimeoutException {
+        // To emulate first party we create a CustomTabIntent with an associated
+        // session token. Then, we create a normal intent and copy the session token
+        // from CustomTabIntent to the normal intent.
+        CustomTabsConnection connection = CustomTabsTestUtils.setUpConnection();
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(null).session;
+
+        CustomTabsIntent custom_tab_intent = new CustomTabsIntent.Builder(session).build();
+
+        // Restrict ourselves to Chrome's package, on the off chance the testing device has
+        // another application that answers to the ACTION_LAUNCH_NEW_INCOGNITO_TAB action.
         Intent intent = new Intent(IncognitoTabLauncher.ACTION_LAUNCH_NEW_INCOGNITO_TAB);
-        // Restrict ourselves to Chrome's package, on the off chance the testing device has another
-        // application that answers to the ACTION_LAUNCH_NEW_INCOGNITO_TAB action.
         intent.setPackage(context.getPackageName());
 
+        Bundle extras = new Bundle();
+        BundleCompat.putBinder(extras, CustomTabsIntent.EXTRA_SESSION,
+                custom_tab_intent.intent.getExtras().getBinder(CustomTabsIntent.EXTRA_SESSION));
+
+        intent.putExtras(extras);
         return intent;
+    }
+
+    private void assertNonIncognitoTabLaunched(ChromeTabbedActivity activity) {
+        Assert.assertFalse(activity.getTabModelSelector().isIncognitoSelected());
+    }
+
+    private void assertIncognitoTabLaunched(
+            ChromeTabbedActivity activity, boolean isUrlBarFocused) {
+        Assert.assertTrue(activity.getTabModelSelector().isIncognitoSelected());
+        Assert.assertTrue(IncognitoTabLauncher.didCreateIntent(activity.getIntent()));
+        Assert.assertEquals(isUrlBarFocused, activity.getToolbarManager().isUrlBarFocused());
     }
 }

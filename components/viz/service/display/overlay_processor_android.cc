@@ -119,6 +119,11 @@ void OverlayProcessorAndroid::ScheduleOverlays(
 }
 
 void OverlayProcessorAndroid::OverlayPresentationComplete() {
+  // If there is not |processor_on_gpu_| to send information to, we won't have
+  // overlay resources locked, and don't need to clear the locks.
+  if (!processor_on_gpu_)
+    return;
+
   // This is a signal from Display::DidReceiveSwapBuffersAck. We use this to
   // help clear locks on resources from the old frame.
   committed_overlay_locks_.clear();

@@ -365,6 +365,7 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/downgrade/downgrade_prefs.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #endif
 
@@ -775,6 +776,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
+  downgrade::RegisterPrefs(registry);
 #endif
 
   // Obsolete. See MigrateObsoleteBrowserPrefs().

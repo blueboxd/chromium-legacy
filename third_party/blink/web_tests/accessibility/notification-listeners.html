@@ -22,9 +22,6 @@ async_test((t) => {
       ["Blur", new Map([
         ["select", 1],
       ])],
-      ["TextChanged", new Map([
-        ["select", 2],
-      ])],
       ["InvalidStatusChanged", new Map([
         ["select", 1],
       ])],
@@ -40,9 +37,6 @@ async_test((t) => {
       ])],
       ["Blur", new Map([
         ["AXRole: AXPopUpButton", 1],
-      ])],
-      ["TextChanged", new Map([
-        ["AXRole: AXPopUpButton", 2],
       ])],
       ["InvalidStatusChanged", new Map([
         ["AXRole: AXPopUpButton", 1],
@@ -104,9 +98,9 @@ async_test((t) => {
       }
       if (expected_element_notifications.size == 0 &&
         expected_global_notifications.size === 0) {
-        assert_equals(selectNotificationCount, 5);
+        assert_equals(selectNotificationCount, 3);
         assert_equals(sliderNotificationCount, 2);
-        assert_equals(globalNotificationCount, 7);
+        assert_equals(globalNotificationCount, 5);
         accessibilityController.removeNotificationListener();
         select.removeNotificationListener();
         slider.removeNotificationListener();

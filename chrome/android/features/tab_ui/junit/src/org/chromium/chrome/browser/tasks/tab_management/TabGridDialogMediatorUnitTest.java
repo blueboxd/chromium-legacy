@@ -47,8 +47,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -146,7 +146,7 @@ public class TabGridDialogMediatorUnitTest {
 
         MockitoAnnotations.initMocks(this);
 
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
         List<Tab> tabs1 = new ArrayList<>(Arrays.asList(mTab1));
@@ -192,7 +192,7 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(mEditable).when(mTitleTextView).getText();
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mEditable).toString();
 
-        if (!FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+        if (!CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) {
             mTabSelectionEditorController = null;
         }
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
@@ -222,7 +222,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void setupTabGroupsContinuation_flagEnabled() {
-        assertThat(FeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(true));
+        assertThat(CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled(), equalTo(true));
         // Setup editable title.
         assertThat(mMediator.getKeyboardVisibilityListenerForTesting(),
                 instanceOf(KeyboardVisibilityDelegate.KeyboardVisibilityListener.class));
@@ -243,7 +243,7 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void setupTabGroupsContinuation_flagDisabled() {
-        assertThat(FeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(false));
+        assertThat(CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled(), equalTo(false));
 
         assertThat(mMediator.getKeyboardVisibilityListenerForTesting(), equalTo(null));
         assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER), equalTo(null));

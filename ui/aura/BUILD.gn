@@ -216,6 +216,7 @@ jumbo_static_library("test_support") {
     "//ui/base:buildflags",
   ]
   deps = [
+    "//base",
     "//base/test:test_support",
     "//cc:test_support",
     "//components/viz/test:test_support",
@@ -246,7 +247,10 @@ jumbo_static_library("test_support") {
       "test/x11_event_sender.h",
     ]
 
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
   }
 
   if (use_ozone) {

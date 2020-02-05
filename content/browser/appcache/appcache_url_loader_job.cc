@@ -11,11 +11,12 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -149,8 +150,9 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
                                base::SequencedTaskRunnerHandle::Get()),
       loader_callback_(std::move(loader_callback)),
       appcache_request_(appcache_request->GetWeakPtr()),
-      is_main_resource_load_(IsResourceTypeFrame(
-          static_cast<ResourceType>(appcache_request->GetResourceType()))) {}
+      is_main_resource_load_(
+          blink::IsResourceTypeFrame(static_cast<blink::mojom::ResourceType>(
+              appcache_request->GetResourceType()))) {}
 
 void AppCacheURLLoaderJob::CallLoaderCallback(base::OnceClosure continuation) {
   DCHECK(loader_callback_);

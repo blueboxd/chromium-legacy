@@ -169,9 +169,7 @@ class SpellcheckHunspellDictionary
   // Used for downloading the dictionary file.
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
-#if !defined(OS_ANDROID)
   SpellcheckService* const spellcheck_service_;
-#endif
 
   // Observers of Hunspell dictionary events.
   base::ObserverList<Observer>::Unchecked observers_;

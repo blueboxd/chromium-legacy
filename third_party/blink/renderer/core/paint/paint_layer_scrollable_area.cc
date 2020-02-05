@@ -2202,9 +2202,9 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
         CSSPrimitiveValue::UnitType::kPixels);
   }
 
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kSizeChange);
 
-  // FIXME (Radar 4118564): We should also autoscroll the window as necessary to
+  // FIXME: We should also autoscroll the window as necessary to
   // keep the point under the cursor in view.
 }
 

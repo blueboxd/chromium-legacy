@@ -29,7 +29,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sqlite_proto/key_value_data.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"

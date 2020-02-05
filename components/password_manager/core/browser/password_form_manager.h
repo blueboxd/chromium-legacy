@@ -204,6 +204,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
     wait_for_server_predictions_for_filling_ = false;
   }
 
+  const autofill::FormData& observed_form() { return observed_form_; }
+
 #if defined(UNIT_TEST)
   static void set_wait_for_server_predictions_for_filling(bool value) {
     wait_for_server_predictions_for_filling_ = value;
@@ -212,8 +214,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   FormSaver* form_saver() const {
     return password_save_manager_->GetFormSaver();
   }
-
-  const autofill::FormData& observed_form() { return observed_form_; }
 
 #endif
 

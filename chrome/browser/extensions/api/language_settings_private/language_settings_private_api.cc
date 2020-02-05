@@ -38,6 +38,7 @@
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
@@ -499,7 +500,8 @@ LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
-    spellcheck_platform::AddWord(base::UTF8ToUTF16(params->word));
+    spellcheck_platform::AddWord(service->platform_spell_checker(),
+                                 base::UTF8ToUTF16(params->word));
   }
 #endif
 
@@ -524,7 +526,8 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
-    spellcheck_platform::RemoveWord(base::UTF8ToUTF16(params->word));
+    spellcheck_platform::RemoveWord(service->platform_spell_checker(),
+                                    base::UTF8ToUTF16(params->word));
   }
 #endif
 

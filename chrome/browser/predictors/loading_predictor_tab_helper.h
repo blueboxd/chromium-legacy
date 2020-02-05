@@ -36,11 +36,11 @@ class LoadingPredictorTabHelper
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
-      const content::mojom::ResourceLoadInfo& resource_load_info) override;
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
   void DidLoadResourceFromMemoryCache(
       const GURL& url,
       const std::string& mime_type,
-      content::ResourceType resource_type) override;
+      blink::mojom::ResourceType resource_type) override;
   void DocumentOnLoadCompletedInMainFrame() override;
 
   void SetLoadingPredictorForTesting(

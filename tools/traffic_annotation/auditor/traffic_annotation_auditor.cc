@@ -188,8 +188,8 @@ bool TrafficAnnotationAuditor::RunExtractor(
     ExtractorBackend backend,
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
-    bool rerun_on_errors,
-    const base::FilePath& errors_file) {
+    const base::FilePath& errors_file,
+    int* exit_code) {
   DCHECK(backend == ExtractorBackend::CLANG_TOOL ||
          backend == ExtractorBackend::PYTHON_SCRIPT);
 
@@ -243,7 +243,8 @@ bool TrafficAnnotationAuditor::RunExtractor(
   base::FilePath original_path;
   base::GetCurrentDirectory(&original_path);
   base::SetCurrentDirectory(source_path_);
-  bool result = base::GetAppOutput(cmdline, &extractor_raw_output_);
+  bool result = base::GetAppOutputWithExitCode(cmdline, &extractor_raw_output_,
+                                               exit_code);
 
   // If the extractor had no output, it means that the script running it could
   // not perform the task.
@@ -270,10 +271,7 @@ bool TrafficAnnotationAuditor::RunExtractor(
       std::string tool_errors;
       std::string options_file_text;
 
-      if (rerun_on_errors)
-        base::GetAppOutputAndError(cmdline, &tool_errors);
-      else
-        tool_errors = "Not Available.";
+      base::GetAppOutputAndError(cmdline, &tool_errors);
 
       if (!base::ReadFileToString(options_filepath, &options_file_text))
         options_file_text = "Could not read options file.";

@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
@@ -88,14 +89,13 @@ void GlobalShortcutListenerX11::StopListening() {
 
 bool GlobalShortcutListenerX11::CanDispatchEvent(
     const ui::PlatformEvent& event) {
-  return event->type == KeyPress;
+  return event->type() == ui::ET_KEY_PRESSED;
 }
 
 uint32_t GlobalShortcutListenerX11::DispatchEvent(
     const ui::PlatformEvent& event) {
-  CHECK_EQ(KeyPress, event->type);
-  OnXKeyPressEvent(event);
-
+  CHECK_EQ(event->type(), ui::ET_KEY_PRESSED);
+  OnKeyPressEvent(*event->AsKeyEvent());
   return ui::POST_DISPATCH_NONE;
 }
 
@@ -145,15 +145,9 @@ void GlobalShortcutListenerX11::UnregisterAcceleratorImpl(
   registered_hot_keys_.erase(accelerator);
 }
 
-void GlobalShortcutListenerX11::OnXKeyPressEvent(::XEvent* x_event) {
-  DCHECK(x_event->type == KeyPress);
-  int modifiers = 0;
-  modifiers |= (x_event->xkey.state & ShiftMask) ? ui::EF_SHIFT_DOWN : 0;
-  modifiers |= (x_event->xkey.state & ControlMask) ? ui::EF_CONTROL_DOWN : 0;
-  modifiers |= (x_event->xkey.state & Mod1Mask) ? ui::EF_ALT_DOWN : 0;
-
-  ui::Accelerator accelerator(
-      ui::KeyboardCodeFromXKeyEvent(x_event), modifiers);
+void GlobalShortcutListenerX11::OnKeyPressEvent(const ui::KeyEvent& event) {
+  DCHECK_EQ(event.type(), ui::ET_KEY_PRESSED);
+  ui::Accelerator accelerator(event.key_code(), event.flags());
   if (registered_hot_keys_.find(accelerator) != registered_hot_keys_.end())
     NotifyKeyPressed(accelerator);
 }

@@ -24,6 +24,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router_factory.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/gfx/native_widget_types.h"
 
 class PrefRegistrySimple;
 
@@ -83,7 +84,13 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
   // Register the printing API preference with the |registry|.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  void SubmitJob(const std::string& extension_id,
+  // Submits the job to printing pipeline.
+  // If |extension| is not present among PrintingAPIExtensionsWhitelist
+  // extensions, special print job request dialog is shown to the user to ask
+  // for their confirmation.
+  // |native_window| is needed to show this dialog.
+  void SubmitJob(gfx::NativeWindow native_window,
+                 scoped_refptr<const extensions::Extension> extension,
                  std::unique_ptr<api::printing::SubmitJob::Params> params,
                  PrintJobSubmitter::SubmitJobCallback callback);
 

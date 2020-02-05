@@ -19,7 +19,7 @@
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
-class PlatformEventDispatcher;
+class XEventDispatcher;
 class SelectionData;
 
 // Requests and later receives data from the X11 server through the selection
@@ -33,7 +33,7 @@ class UI_BASE_EXPORT SelectionRequestor {
  public:
   SelectionRequestor(XDisplay* xdisplay,
                      XID xwindow,
-                     PlatformEventDispatcher* dispatcher);
+                     XEventDispatcher* dispatcher);
   ~SelectionRequestor();
 
   // Does the work of requesting |target| from |selection|, spinning up the
@@ -134,7 +134,7 @@ class UI_BASE_EXPORT SelectionRequestor {
   // dispatcher directly if PerformBlockingConvertSelection() is called after
   // the PlatformEventSource is destroyed.
   // Not owned.
-  PlatformEventDispatcher* dispatcher_;
+  XEventDispatcher* dispatcher_;
 
   // In progress requests. Requests are added to the list at the start of
   // PerformBlockingConvertSelection() and are removed and destroyed right

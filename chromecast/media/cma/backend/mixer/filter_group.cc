@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromecast/media/audio/interleaved_channel_mixer.h"
+#include "chromecast/media/cma/backend/mixer/channel_layout.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"
@@ -67,8 +68,10 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
   for (auto& input : mixed_inputs_) {
     input.group->Initialize(input_config);
     input.channel_mixer = std::make_unique<InterleavedChannelMixer>(
-        ::media::GuessChannelLayout(input.group->GetOutputChannelCount()),
-        ::media::GuessChannelLayout(num_channels_), input_frames_per_write_);
+        mixer::GuessChannelLayout(input.group->GetOutputChannelCount()),
+        input.group->GetOutputChannelCount(),
+        mixer::GuessChannelLayout(num_channels_), num_channels_,
+        input_frames_per_write_);
   }
   post_processing_pipeline_->SetContentType(content_type_);
   active_inputs_.clear();

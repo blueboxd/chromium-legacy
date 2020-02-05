@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaUtil {
   // Returns the amount of data used for the origin for usage tracking.
   virtual int64_t GetOriginUsageOnFileTaskRunner(
       FileSystemContext* file_system_context,
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type) = 0;
 
   // Creates new reservation object for the origin and the type.

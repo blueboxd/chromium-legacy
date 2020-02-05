@@ -11,8 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -193,7 +193,7 @@ public class HomepagePolicyManager implements PrefObserver {
     }
 
     private static boolean isFeatureFlagEnabled() {
-        return FeatureUtilities.isEnabled(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
     }
 
     @VisibleForTesting

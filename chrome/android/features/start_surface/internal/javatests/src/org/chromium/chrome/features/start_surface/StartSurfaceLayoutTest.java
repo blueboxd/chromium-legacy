@@ -65,8 +65,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -140,7 +140,7 @@ public class StartSurfaceLayoutTest {
     @Before
     public void setUp() {
         // After setUp, Chrome is launched and has one NTP.
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
 
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -170,8 +170,8 @@ public class StartSurfaceLayoutTest {
 
     @After
     public void tearDown() {
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test
@@ -712,7 +712,7 @@ public class StartSurfaceLayoutTest {
                     ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForUndoableClosedTab() throws Exception {
         // clang-format on
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
 
         // Restart Chrome to have Group.
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
@@ -738,7 +738,7 @@ public class StartSurfaceLayoutTest {
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForTabNotInCurrentModel() throws Exception {
         // clang-format on
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
 
         // Restart Chrome to have Group.
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());

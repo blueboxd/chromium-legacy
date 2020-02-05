@@ -48,6 +48,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.url.GURL;
 
 /** Queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
@@ -324,8 +325,8 @@ public class SearchActivity extends AsyncInitializationActivity
         if (TextUtils.isEmpty(url)) return;
 
         // Fix up the URL and send it to the full browser.
-        String fixedUrl = UrlFormatter.fixupUrl(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(fixedUrl));
+        GURL fixedUrl = UrlFormatter.fixupUrl(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(fixedUrl.getValidSpecOrEmpty()));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         intent.setClass(this, ChromeLauncherActivity.class);
         IntentHandler.addTrustedIntentExtras(intent);

@@ -294,29 +294,6 @@ TEST_F(DataReductionProxyParamsTest, QuicEnableNonCoreProxies) {
   }
 }
 
-TEST_F(DataReductionProxyParamsTest, HoldbackEnabledFieldTrial) {
-  const struct {
-    std::string trial_group_name;
-    bool expected_enabled;
-  } tests[] = {
-      {"Enabled", true},
-      {"Enabled_Control", true},
-      {"Disabled", false},
-      {"enabled", false},
-  };
-
-  for (const auto& test : tests) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.Init();
-
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "DataCompressionProxyHoldback", test.trial_group_name));
-    EXPECT_EQ(test.trial_group_name, params::HoldbackFieldTrialGroup());
-    EXPECT_EQ(test.expected_enabled, params::IsIncludedInHoldbackFieldTrial())
-        << test.trial_group_name;
-  }
-}
-
 TEST_F(DataReductionProxyParamsTest, PromoFieldTrial) {
   const struct {
     std::string trial_group_name;

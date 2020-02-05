@@ -4,16 +4,17 @@
 
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 
-#include <gtest/gtest.h>
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
-namespace {
+
+class SerializationTest : public EditingTestBase {};
 
 // Regression test for https://crbug.com/1032673
-TEST(SerializationTest, CantCreateFragmentCrash) {
+TEST_F(SerializationTest, CantCreateFragmentCrash) {
   // CreateFragmentFromMarkupWithContext() fails to create a fragment for the
-  // following markup. Should return an empty string as the sanitized markup
-  // instead of crashing.
+  // following markup. Should return nullptr as the sanitized fragment instead
+  // of crashing.
   const String html =
       "<article><dcell></dcell>A<td><dcol></"
       "dcol>A0<td>&percnt;&lbrack;<command></"
@@ -23,12 +24,13 @@ TEST(SerializationTest, CantCreateFragmentCrash) {
       "animateColor>A000AA0AA000A0<plaintext></"
       "plaintext><title>0A0AA00A0A0AA000A<switch><img "
       "src=\"../resources/abe.png\"> zz";
-  const String sanitized = SanitizeMarkupWithContext(html, 0, html.length());
-  EXPECT_TRUE(sanitized.IsEmpty());
+  DocumentFragment* sanitized = CreateSanitizedFragmentFromMarkupWithContext(
+      GetDocument(), html, 0, html.length(), KURL());
+  EXPECT_FALSE(sanitized);
 }
 
 // Regression test for https://crbug.com/1032389
-TEST(SerializationTest, SVGForeignObjectCrash) {
+TEST_F(SerializationTest, SVGForeignObjectCrash) {
   const String markup =
       "<svg>"
       "  <foreignObject>"
@@ -37,12 +39,11 @@ TEST(SerializationTest, SVGForeignObjectCrash) {
       "  </foreignObject>"
       "</svg>"
       "<span>\u00A0</span>";
-  const String sanitized =
-      SanitizeMarkupWithContext(markup, 0, markup.length());
+  DocumentFragment* sanitized = CreateSanitizedFragmentFromMarkupWithContext(
+      GetDocument(), markup, 0, markup.length(), KURL());
   // This is a crash test. We don't verify the content of the sanitized markup
   // as it's too verbose and not interesting.
-  EXPECT_FALSE(sanitized.IsEmpty());
+  EXPECT_TRUE(sanitized);
 }
 
-}  // namespace
 }  // namespace blink

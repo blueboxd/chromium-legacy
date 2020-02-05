@@ -55,8 +55,8 @@ void SandboxFileSystemTestHelper::SetUp(
 void SandboxFileSystemTestHelper::SetUp(
     const base::FilePath& base_dir,
     storage::QuotaManagerProxy* quota_manager_proxy) {
-  file_system_context_ = CreateFileSystemContextForTesting(
-      quota_manager_proxy, base_dir);
+  file_system_context_ =
+      CreateFileSystemContextForTesting(quota_manager_proxy, base_dir);
 
   SetUpFileSystem();
 }
@@ -98,8 +98,8 @@ FileSystemURL SandboxFileSystemTestHelper::CreateURL(
 
 int64_t SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
   return file_system_context_->GetQuotaUtil(type_)
-      ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(),
-                                       origin_.GetURL(), type_);
+      ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(), origin_,
+                                       type_);
 }
 
 int64_t SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
@@ -122,11 +122,10 @@ FileSystemOperationRunner* SandboxFileSystemTestHelper::operation_runner() {
   return file_system_context_->operation_runner();
 }
 
-FileSystemOperationContext*
-SandboxFileSystemTestHelper::NewOperationContext() {
+FileSystemOperationContext* SandboxFileSystemTestHelper::NewOperationContext() {
   DCHECK(file_system_context_.get());
   FileSystemOperationContext* context =
-    new FileSystemOperationContext(file_system_context_.get());
+      new FileSystemOperationContext(file_system_context_.get());
   context->set_update_observers(
       *file_system_context_->GetUpdateObservers(type_));
   return context;

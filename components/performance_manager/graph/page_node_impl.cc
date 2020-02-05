@@ -232,11 +232,6 @@ const std::string& PageNodeImpl::browser_context_id() const {
   return browser_context_id_;
 }
 
-bool PageNodeImpl::page_almost_idle() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return page_almost_idle_.value();
-}
-
 const GURL& PageNodeImpl::main_frame_url() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_frame_url_.value();
@@ -304,11 +299,6 @@ void PageNodeImpl::LeaveGraph() {
 const std::string& PageNodeImpl::GetBrowserContextID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return browser_context_id();
-}
-
-bool PageNodeImpl::IsPageAlmostIdle() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return page_almost_idle();
 }
 
 bool PageNodeImpl::IsVisible() const {
@@ -395,11 +385,6 @@ bool PageNodeImpl::HadFormInteraction() const {
 
 const WebContentsProxy& PageNodeImpl::GetContentsProxy() const {
   return contents_proxy();
-}
-
-void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  page_almost_idle_.SetAndMaybeNotify(this, page_almost_idle);
 }
 
 void PageNodeImpl::SetLifecycleState(LifecycleState lifecycle_state) {

@@ -75,6 +75,23 @@ public class TabGroupPopupUiMediator {
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
+            public void didSelectTab(Tab tab, int type, int lastId) {
+                List<Tab> tabList = mTabModelSelector.getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()
+                                            .getRelatedTabList(lastId);
+                if (tabList.contains(tab)) return;
+                if (isCurrentTabInGroup()) {
+                    if (isTabStripShowing()) {
+                        mUiUpdater.updateTabGroupPopUi();
+                    } else {
+                        maybeShowTabStrip();
+                    }
+                } else {
+                    hideTabStrip();
+                }
+            }
+
+            @Override
             public void willCloseTab(Tab tab, boolean animate) {
                 if (!isCurrentTabInGroup()) {
                     hideTabStrip();

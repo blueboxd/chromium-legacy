@@ -177,9 +177,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
       ax::mojom::IntAttribute attr) override;
 
   // Given a node ID attribute (one where IsNodeIdIntListAttribute is true),
-  // return a set of all target nodes for which this delegate's node has that
+  // return a vector of all target nodes for which this delegate's node has that
   // relationship attribute.
-  std::set<AXPlatformNode*> GetTargetNodesForRelation(
+  std::vector<AXPlatformNode*> GetTargetNodesForRelation(
       ax::mojom::IntListAttribute attr) override;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return

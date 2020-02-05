@@ -17,7 +17,7 @@ import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.themes.ThemeType;
 
@@ -138,8 +138,8 @@ public class NightModeUtils {
     public static @ThemeType int getThemeSetting() {
         int userSetting = SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING, -1);
         if (userSetting == -1) {
-            return FeatureUtilities.isNightModeDefaultToLight() ? ThemeType.LIGHT
-                                                                : ThemeType.SYSTEM_DEFAULT;
+            return CachedFeatureFlags.isNightModeDefaultToLight() ? ThemeType.LIGHT
+                                                                  : ThemeType.SYSTEM_DEFAULT;
         } else {
             return userSetting;
         }

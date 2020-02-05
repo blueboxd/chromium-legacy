@@ -17,12 +17,8 @@ namespace media {
 
 MockMixerSource::MockMixerSource(int samples_per_second,
                                  const std::string& device_id)
-    : samples_per_second_(samples_per_second),
-      primary_(true),
-      device_id_(device_id),
-      content_type_(AudioContentType::kMedia),
-      playout_channel_(kChannelAll),
-      multiplier_(1.0f) {
+    : samples_per_second_(samples_per_second), device_id_(device_id) {
+  DCHECK_GT(num_channels_, 0);
   ON_CALL(*this, FillAudioPlaybackFrames(_, _, _))
       .WillByDefault(testing::Invoke(this, &MockMixerSource::GetData));
 }

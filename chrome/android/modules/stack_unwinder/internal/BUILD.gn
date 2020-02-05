@@ -23,7 +23,10 @@ group("native") {
 
 component("stack_unwinder") {
   sources = [ "entrypoints.cc" ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//chrome/android/features/stack_unwinder/public:memory_regions_map",
+  ]
 
   # stack unwinder native entrypoints belong in the partition.
   if (use_native_partitions) {

@@ -34,8 +34,8 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -63,7 +63,7 @@ public class StartSurfaceTest {
 
     @Before
     public void setUp() {
-        FeatureUtilities.setStartSurfaceEnabledForTesting(true);
+        CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
         mActivityTestRule.startMainActivityFromLauncher();
     }
 

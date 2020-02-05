@@ -15,6 +15,7 @@
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
 class GURL;
@@ -53,7 +54,7 @@ class MetricsRenderFrameObserver
   void DidStartResponse(const url::Origin& origin_of_final_response_url,
                         int request_id,
                         const network::mojom::URLResponseHead& response_head,
-                        content::ResourceType resource_type,
+                        blink::mojom::ResourceType resource_type,
                         content::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;

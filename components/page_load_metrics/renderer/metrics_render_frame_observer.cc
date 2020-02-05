@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -123,10 +124,10 @@ void MetricsRenderFrameObserver::DidStartResponse(
     const url::Origin& origin_of_final_response_url,
     int request_id,
     const network::mojom::URLResponseHead& response_head,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     content::PreviewsState previews_state) {
   if (provisional_frame_resource_data_use_ &&
-      content::IsResourceTypeFrame(resource_type)) {
+      blink::IsResourceTypeFrame(resource_type)) {
     // TODO(rajendrant): This frame request might start before the provisional
     // load starts, and data use of the frame request might be missed in that
     // case. There should be a guarantee that DidStartProvisionalLoad be called

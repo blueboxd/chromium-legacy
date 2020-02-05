@@ -63,9 +63,11 @@ public class TabGroupPopupUiMediatorUnitTest {
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
     private static final String TAB3_TITLE = "Tab3";
+    private static final String TAB4_TITLE = "Tab4";
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
+    private static final int TAB4_ID = 357;
 
     @Mock
     TabModelSelectorImpl mTabModelSelector;
@@ -159,6 +161,70 @@ public class TabGroupPopupUiMediatorUnitTest {
 
         assertThat(
                 mModel.get(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA), equalTo(1 - hiddenRatio));
+    }
+
+    @Test
+    public void tabSelection_Show() {
+        // Mock that the strip is hidden.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, false);
+        // Mock that tab1 and tab2 are in the same group, and tab 3 is a single tab.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab3)), TAB3_ID);
+
+        doReturn(mTab2).when(mTabModelSelector).getCurrentTab();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab2, TabLaunchType.FROM_CHROME_UI, TAB3_ID);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
+        verify(mUpdater, never()).updateTabGroupPopUi();
+    }
+
+    @Test
+    public void tabSelection_Hide() {
+        // Mock that the strip is showing.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, true);
+        // Mock that tab1 and tab2 are in the same group, and tab 3 is a single tab.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab3)), TAB3_ID);
+
+        doReturn(mTab3).when(mTabModelSelector).getCurrentTab();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab3, TabLaunchType.FROM_CHROME_UI, TAB1_ID);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+        verify(mUpdater, never()).updateTabGroupPopUi();
+    }
+
+    @Test
+    public void tabSelection_Update() {
+        // Mock that the strip is showing.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, true);
+        // Mock that tab1 and tab2 are in the same group, tab3 and new tab are in the same group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+        createTabGroup(
+                new ArrayList<>(Arrays.asList(mTab3, prepareTab(TAB4_ID, TAB4_TITLE))), TAB3_ID);
+
+        doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TAB3_ID);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
+        verify(mUpdater).updateTabGroupPopUi();
+    }
+
+    @Test
+    public void tabSelection_SameGroup() {
+        // Mock that the strip is showing.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, true);
+        // Mock that tab1 and tab2 are in the same group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+
+        doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TAB2_ID);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
+        verify(mUpdater, never()).updateTabGroupPopUi();
     }
 
     @Test

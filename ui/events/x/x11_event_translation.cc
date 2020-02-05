@@ -15,6 +15,38 @@ namespace ui {
 
 namespace {
 
+Event::Properties GetEventPropertiesFromXEvent(EventType type,
+                                               const XEvent& xev) {
+  using Values = std::vector<uint8_t>;
+  Event::Properties properties;
+  if (type == ET_KEY_PRESSED || type == ET_KEY_RELEASED) {
+    // Keyboard group
+    uint8_t group = XkbGroupForCoreState(xev.xkey.state);
+    properties.emplace(kPropertyKeyboardGroup, Values{group});
+
+    // Hardware keycode
+    uint8_t hw_keycode = xev.xkey.keycode;
+    properties.emplace(kPropertyKeyboardHwKeyCode, Values{hw_keycode});
+
+    // IBus-gtk specific flags
+    uint8_t ibus_flags = (xev.xkey.state >> kPropertyKeyboardIBusFlagOffset) &
+                         kPropertyKeyboardIBusFlagMask;
+    if (ibus_flags)
+      properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
+
+  } else if (type == ET_MOUSE_EXITED) {
+    // NotifyVirtual events are created for intermediate windows that the
+    // pointer crosses through. These occur when middle clicking.
+    // Change these into mouse move events.
+    bool crossing_intermediate_window = xev.xcrossing.detail == NotifyVirtual;
+    if (crossing_intermediate_window) {
+      properties.emplace(kPropertyMouseCrossedIntermediateWindow,
+                         crossing_intermediate_window);
+    }
+  }
+  return properties;
+}
+
 std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
                                          const XEvent& xev) {
   KeyboardCode key_code = KeyboardCodeFromXKeyEvent(&xev);
@@ -50,9 +82,10 @@ void SetEventSourceDeviceId(MouseEvent* event, const XEvent& xev) {
 
 std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
                                              const XEvent& xev) {
-  // Don't generate synthetic mouse move events for EnterNotify/LeaveNotify
-  // from nested XWindows. https://crbug.com/792322
-  bool enter_or_leave = xev.type == LeaveNotify || xev.type == EnterNotify;
+  // Ignore EventNotify and LeaveNotify events from children of |xwindow_|.
+  // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
+  // https://crbug.com/792322
+  bool enter_or_leave = xev.type == EnterNotify || xev.type == LeaveNotify;
   if (enter_or_leave && xev.xcrossing.detail == NotifyInferior)
     return nullptr;
 
@@ -197,14 +230,8 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
 // Translates a XEvent into a ui::Event.
 std::unique_ptr<Event> BuildEventFromXEvent(const XEvent& xev) {
   auto event = TranslateFromXEvent(xev);
-  if (event) {
-#if defined(USE_X11)
-    // TODO(crbug.com/965991): Remove once PlatformEvent migration is done.
-    ui::ComputeEventLatencyOS(const_cast<XEvent*>(&xev));
-#else
+  if (event)
     ui::ComputeEventLatencyOS(event.get());
-#endif
-  }
   return event;
 }
 
@@ -239,40 +266,6 @@ std::unique_ptr<MouseWheelEvent> BuildMouseWheelEventFromXEvent(
   if (!event || !event->IsMouseWheelEvent())
     return nullptr;
   return std::unique_ptr<MouseWheelEvent>{event.release()->AsMouseWheelEvent()};
-}
-
-// TODO(crbug.com/965991): Make this private once PlatformEvent migration in
-// Aura/X11 is done.
-Event::Properties GetEventPropertiesFromXEvent(EventType type,
-                                               const XEvent& xev) {
-  using Values = std::vector<uint8_t>;
-  Event::Properties properties;
-  if (type == ET_KEY_PRESSED || type == ET_KEY_RELEASED) {
-    // Keyboard group
-    uint8_t group = XkbGroupForCoreState(xev.xkey.state);
-    properties.emplace(kPropertyKeyboardGroup, Values{group});
-
-    // Hardware keycode
-    uint8_t hw_keycode = xev.xkey.keycode;
-    properties.emplace(kPropertyKeyboardHwKeyCode, Values{hw_keycode});
-
-    // IBus-gtk specific flags
-    uint8_t ibus_flags = (xev.xkey.state >> kPropertyKeyboardIBusFlagOffset) &
-                         kPropertyKeyboardIBusFlagMask;
-    if (ibus_flags)
-      properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
-
-  } else if (type == ET_MOUSE_EXITED) {
-    // NotifyVirtual events are created for intermediate windows that the
-    // pointer crosses through. These occur when middle clicking.
-    // Change these into mouse move events.
-    bool crossing_intermediate_window = xev.xcrossing.detail == NotifyVirtual;
-    if (crossing_intermediate_window) {
-      properties.emplace(kPropertyMouseCrossedIntermediateWindow,
-                         crossing_intermediate_window);
-    }
-  }
-  return properties;
 }
 
 }  // namespace ui

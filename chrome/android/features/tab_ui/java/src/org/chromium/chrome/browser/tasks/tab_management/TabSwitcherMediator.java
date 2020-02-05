@@ -30,8 +30,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.init.FirstDrawDetector;
@@ -282,7 +282,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
             // The start surface checks in this block are for top controls height and shadow margin
             //  to be set correctly for displaying the omnibox above the tab switcher.
-            int topControlsHeight = FeatureUtilities.isStartSurfaceEnabled()
+            int topControlsHeight = CachedFeatureFlags.isStartSurfaceEnabled()
                     ? 0
                     : fullscreenManager.getTopControlsHeight();
             mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
@@ -293,7 +293,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
             mContainerViewModel.set(SHADOW_TOP_MARGIN,
-                    FeatureUtilities.isStartSurfaceEnabled() ? 0 : toolbarHeight);
+                    CachedFeatureFlags.isStartSurfaceEnabled() ? 0 : toolbarHeight);
         }
 
         mContainerView = containerView;
@@ -390,7 +390,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
                 if (fromIndex != toIndex || fromTab.getId() == tab.getId()) {
                     // Only log when you switch a tab page directly from tab switcher.
-                    if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                    if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
                             || getRelatedTabs(tab.getId()).size() == 1) {
                         RecordUserAction.record(
                                 "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
@@ -412,7 +412,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 RecordUserAction.record("MobileTabSwitched");
             }
             // Only log when you switch a tab page directly from tab switcher.
-            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+            if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
                     || getRelatedTabs(tab.getId()).size() == 1) {
                 RecordUserAction.record(
                         "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
@@ -635,7 +635,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Override
     @Nullable
     public TabListMediator.TabActionListener openTabGridDialog(Tab tab) {
-        if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return null;
+        if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) return null;
         if (!ableToOpenDialog(tab)) return null;
         assert getRelatedTabs(tab.getId()).size() != 1;
         assert mTabGridDialogController != null;
@@ -657,7 +657,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     @Nullable
     TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
-        if (!ableToCreateGroup(tab) || FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+        if (!ableToCreateGroup(tab)
+                || CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
             return null;
         }
 
@@ -672,13 +673,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     private boolean ableToCreateGroup(Tab tab) {
-        return FeatureUtilities.isTabGroupsAndroidEnabled()
+        return CachedFeatureFlags.isTabGroupsAndroidEnabled()
                 && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
                 && getRelatedTabs(tab.getId()).size() == 1;
     }
 
     private boolean ableToOpenDialog(Tab tab) {
-        return FeatureUtilities.isTabGroupsAndroidEnabled()
+        return CachedFeatureFlags.isTabGroupsAndroidEnabled()
                 && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
                 && getRelatedTabs(tab.getId()).size() != 1;
     }

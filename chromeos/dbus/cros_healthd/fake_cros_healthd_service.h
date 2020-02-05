@@ -51,6 +51,9 @@ class FakeCrosHealthdService final
       RunBatteryHealthRoutineCallback callback) override;
   void RunSmartctlCheckRoutine(
       RunSmartctlCheckRoutineCallback callback) override;
+  void RunAcPowerRoutine(mojom::AcPowerStatusEnum expected_status,
+                         const base::Optional<std::string>& expected_power_type,
+                         RunAcPowerRoutineCallback callback) override;
 
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(

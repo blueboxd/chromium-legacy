@@ -91,18 +91,18 @@ class CustomTabBarTitleOriginView : public views::View {
 
     title_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
     title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    title_label->SetProperty(views::kFlexBehaviorKey,
-                             views::FlexSpecification::ForSizeRule(
-                                 views::MinimumFlexSizeRule::kScaleToMinimum,
+    title_label->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                  views::MaximumFlexSizeRule::kPreferred));
 
     location_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
     location_label->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
-    location_label->SetProperty(views::kFlexBehaviorKey,
-                                views::FlexSpecification::ForSizeRule(
-                                    views::MinimumFlexSizeRule::kScaleToMinimum,
-                                    views::MaximumFlexSizeRule::kPreferred));
+    location_label->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred));
 
     title_label_ = AddChildView(std::move(title_label));
     location_label_ = AddChildView(std::move(location_label));
@@ -184,9 +184,9 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
 
   auto title_origin_view = std::make_unique<CustomTabBarTitleOriginView>();
   title_origin_view->SetProperty(
-      views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
-                                   views::MinimumFlexSizeRule::kScaleToMinimum,
-                                   views::MaximumFlexSizeRule::kPreferred));
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred));
   title_origin_view_ = AddChildView(std::move(title_origin_view));
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());

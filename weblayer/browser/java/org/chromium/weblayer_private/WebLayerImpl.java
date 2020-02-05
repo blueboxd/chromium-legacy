@@ -20,6 +20,7 @@ import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -184,6 +185,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         R.onResourcesLoaded(resourcesPackageId);
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
+        BundleUtils.setIsBundle(ProductConfig.IS_BUNDLE);
 
         setChildProcessCreationParams(appContext, packageInfo.packageName);
 

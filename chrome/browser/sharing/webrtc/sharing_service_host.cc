@@ -113,11 +113,12 @@ void OnMessageSent(
   switch (result) {
     case sharing::mojom::SendMessageResult::kSuccess:
       std::move(callback).Run(SharingSendMessageResult::kSuccessful,
-                              message_guid);
+                              message_guid, SharingChannelType::kWebRtc);
       break;
     case sharing::mojom::SendMessageResult::kError:
       std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                              base::nullopt);
+                              /*message_id=*/base::nullopt,
+                              SharingChannelType::kWebRtc);
       break;
   }
 }
@@ -162,7 +163,8 @@ void SharingServiceHost::DoSendMessageToDevice(
   auto connection_iter = connections_.find(device.guid());
   if (connection_iter != connections_.end()) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            std::string());
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kWebRtc);
     return;
   }
 
@@ -171,7 +173,8 @@ void SharingServiceHost::DoSendMessageToDevice(
   if (!fcm_configuration || (!HasVapidInfo(*fcm_configuration) &&
                              !HasSenderIdInfo(*fcm_configuration))) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            std::string());
+                            /*message_id=*/base::nullopt,
+                            SharingChannelType::kWebRtc);
     return;
   }
 

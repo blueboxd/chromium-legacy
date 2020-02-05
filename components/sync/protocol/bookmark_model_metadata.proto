@@ -11,8 +11,8 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "model_type_state.proto";
-import "entity_metadata.proto";
+import "components/sync/protocol/model_type_state.proto";
+import "components/sync/protocol/entity_metadata.proto";
 
 // Corresponds to a single bookmark id/metadata pair.
 message BookmarkMetadata {

@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/shared_user_script_master.h"
 #include "extensions/common/extension.h"
@@ -23,7 +22,6 @@
 #include "extensions/common/url_pattern.h"
 
 using content::NavigationThrottle;
-using content::ResourceType;
 
 namespace extensions {
 

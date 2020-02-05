@@ -269,6 +269,11 @@ void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
   NOTREACHED();
 }
 
+bool ProducerClient::IsShmemProvidedByProducer() const {
+  NOTREACHED();
+  return false;
+}
+
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

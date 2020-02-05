@@ -224,11 +224,13 @@ class ConnectionListener
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was accepted.
-  void AcceptedSocket(const net::StreamSocket& connection) override {
-    uint16_t port = GetPort(connection);
+  std::unique_ptr<net::StreamSocket> AcceptedSocket(
+      std::unique_ptr<net::StreamSocket> connection) override {
+    uint16_t port = GetPort(*connection);
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ConnectionTracker::AcceptedSocketWithPort,
                                   base::Unretained(tracker_), port));
+    return connection;
   }
 
   // Get called from the EmbeddedTestServer thread to be notified that

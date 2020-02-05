@@ -16,8 +16,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace {
@@ -117,7 +117,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(WantIntercept)) {
 
   network::ResourceRequest request;
   request.url = TestURL();
-  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   request.method = "GET";
 
   interceptor->MaybeCreateLoader(
@@ -147,7 +148,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(FeatureOff)) {
 
   network::ResourceRequest request;
   request.url = TestURL();
-  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   request.method = "GET";
 
   interceptor->MaybeCreateLoader(
@@ -180,7 +182,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest,
 
   network::ResourceRequest request;
   request.url = TestURL();
-  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   request.method = "GET";
 
   interceptor->MaybeCreateLoader(
@@ -204,7 +207,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(NotAPrerender)) {
 
   network::ResourceRequest request;
   request.url = TestURL();
-  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   request.method = "GET";
 
   interceptor->MaybeCreateLoader(
@@ -227,7 +231,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(NotAFrame)) {
 
   network::ResourceRequest request;
   request.url = TestURL();
-  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   request.method = "GET";
 
   interceptor->MaybeCreateLoader(

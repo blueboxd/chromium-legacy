@@ -6,8 +6,9 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/build_config.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -22,25 +23,35 @@ using PresentationTimeRecorderTest = ash::AshTestBase;
 constexpr char kName[] = "Histogram";
 constexpr char kMaxLatencyName[] = "MaxLatency.Histogram";
 
-// The test is flaky on CrOS. crbug.com/1043465.
-#if defined(OS_CHROMEOS)
-#define MAYBE_Histogram DISABLED_Histogram
-#else
-#define MAYBE_Histogram Histogram
-#endif
-TEST_F(PresentationTimeRecorderTest, MAYBE_Histogram) {
+TEST_F(PresentationTimeRecorderTest, Histogram) {
   base::HistogramTester histogram_tester;
 
   auto* compositor = CurrentContext()->layer()->GetCompositor();
   auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
-
-  // Flush pending draw requests.
-  for (int i = 0; i < 30; i++) {
-    compositor->ScheduleFullRedraw();
-    WaitForNextFrameToBePresented(compositor);
-    base::RunLoop().RunUntilIdle();
-  }
+  bool timeout = false;
+  // Flush pending draw callbask by waiting for presentation until it times out.
+  do {
+    base::RunLoop runloop;
+    base::OneShotTimer timer;
+    // We assume if the new frame wasn't generated for 100ms (6 frames worth
+    // time) there is no pending draw request.
+    timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
+                base::BindLambdaForTesting([&runloop, &timeout]() {
+                  runloop.Quit();
+                  timeout = true;
+                }));
+    base::WeakPtrFactory<base::RunLoop> runloop_factory(&runloop);
+    compositor->RequestPresentationTimeForNextFrame(base::BindOnce(
+        [](base::WeakPtr<base::RunLoop> runloop,
+           const gfx::PresentationFeedback& feedback) {
+          if (runloop)
+            runloop->Quit();
+        },
+        runloop_factory.GetWeakPtr()));
+    runloop.Run();
+    timer.Stop();
+  } while (!timeout);
 
   compositor->ScheduleFullRedraw();
   histogram_tester.ExpectTotalCount(kName, 0);

@@ -107,12 +107,10 @@ class PrintPreviewMessageHandler
                               const PrintHostMsg_PreviewIds& ids,
                               mojom::PrintCompositor::Status status,
                               base::ReadOnlySharedMemoryRegion region);
-  void OnCompositeOrCompleteDocumentToPdfDone(
-      bool composite_document_using_individual_pages,
-      int document_cookie,
-      const PrintHostMsg_PreviewIds& ids,
-      mojom::PrintCompositor::Status status,
-      base::ReadOnlySharedMemoryRegion region);
+  void OnCompositeToPdfDone(int document_cookie,
+                            const PrintHostMsg_PreviewIds& ids,
+                            mojom::PrintCompositor::Status status,
+                            base::ReadOnlySharedMemoryRegion region);
   void OnPrepareForDocumentToPdfDone(const PrintHostMsg_PreviewIds& ids,
                                      mojom::PrintCompositor::Status status);
 

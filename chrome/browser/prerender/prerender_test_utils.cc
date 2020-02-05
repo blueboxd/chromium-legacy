@@ -120,7 +120,7 @@ bool FakeSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
 }
 
 bool FakeSafeBrowsingDatabaseManager::CanCheckResourceType(
-    content::ResourceType /* resource_type */) const {
+    blink::mojom::ResourceType /* resource_type */) const {
   return true;
 }
 

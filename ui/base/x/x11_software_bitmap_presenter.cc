@@ -17,17 +17,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/base/x/x11_shm_image_pool.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/x/x11_shm_image_pool_ozone.h"
-#else
-#include "ui/base/x/x11_shm_image_pool.h"
-#endif
 
 namespace ui {
 
@@ -138,15 +133,9 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     return;
   }
 
-#if defined(USE_OZONE)
-  shm_pool_ = base::MakeRefCounted<ui::X11ShmImagePoolOzone>(
+  shm_pool_ = base::MakeRefCounted<ui::XShmImagePool>(
       host_task_runner, event_task_runner, display_, widget_,
       attributes_.visual, attributes_.depth, kMaxFramesPending);
-#else
-  shm_pool_ = base::MakeRefCounted<ui::X11ShmImagePool>(
-      host_task_runner, event_task_runner, display_, widget_,
-      attributes_.visual, attributes_.depth, kMaxFramesPending);
-#endif
   shm_pool_->Initialize();
 
   // TODO(thomasanderson): Avoid going through the X11 server to plumb this

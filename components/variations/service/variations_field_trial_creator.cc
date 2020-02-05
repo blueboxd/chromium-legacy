@@ -34,6 +34,7 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/service/buildflags.h"
 #include "components/variations/service/safe_seed_manager.h"
+#include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "components/variations/variations_seed_processor.h"
@@ -145,6 +146,17 @@ void ExitWithMessage(const std::string& message) {
   exit(1);
 }
 
+// Retrieves the value of the policy converted to the RestrictionPolicyValues.
+RestrictionPolicy GetVariationPolicyRestriction(PrefService* local_state) {
+  int value = local_state->GetInteger(prefs::kVariationsRestrictionsByPolicy);
+
+  // If the value form the pref is invalid use the default value.
+  if (value < 0 || value > static_cast<int>(RestrictionPolicy::kMaxValue))
+    return RestrictionPolicy::NO_RESTRICTIONS;
+
+  return static_cast<RestrictionPolicy>(value);
+}
+
 }  // namespace
 
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
@@ -192,6 +204,8 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
       GetClientFilterableStateForVersion(current_version);
   base::UmaHistogramSparse("Variations.UserChannel",
                            client_filterable_state->channel);
+  base::UmaHistogramEnumeration("Variations.PolicyRestriction",
+                                client_filterable_state->policy_restriction);
 
   VariationsSeed seed;
   bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode() &&
@@ -259,6 +273,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->session_consistency_country = GetLatestCountry();
   state->permanent_consistency_country = LoadPermanentConsistencyCountry(
       version, state->session_consistency_country);
+  state->policy_restriction = GetVariationPolicyRestriction(local_state());
   return state;
 }
 

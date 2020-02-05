@@ -51,6 +51,9 @@ ReportScheduler::ReportScheduler(
 }
 
 ReportScheduler::~ReportScheduler() {
+  // Stop observing ProfileManager if we are tracking stale profiles.
+  if (stale_profiles_)
+    g_browser_process->profile_manager()->RemoveObserver(this);
   if (IsReportingEnabled() && stale_profiles_) {
     base::UmaHistogramExactLinear("Enterprise.CloudReportingStaleProfileCount",
                                   stale_profiles_->size(),

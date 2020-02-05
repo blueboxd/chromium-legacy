@@ -138,7 +138,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       password_generation_agent_(password_generation_agent),
       autofill_query_id_(0),
       query_node_autofill_state_(WebAutofillState::kNotFilled),
-      ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
       is_generation_popup_possibly_visible_(false),
       is_user_gesture_required_(true),
@@ -993,8 +992,8 @@ void AutofillAgent::OnProvisionallySaveForm(
         }
       }
       formless_elements_user_edited_.insert(element);
-      provisionally_saved_form_ = std::make_unique<FormData>();
-      if (!CollectFormlessElements(provisionally_saved_form_.get())) {
+      provisionally_saved_form_ = base::make_optional<FormData>();
+      if (!CollectFormlessElements(&provisionally_saved_form_.value())) {
         provisionally_saved_form_.reset();
       } else {
         last_interacted_form_.Reset();
@@ -1049,9 +1048,9 @@ void AutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
   if (source == SubmissionSource::FRAME_DETACHED) {
     // Should not access the frame because it is now detached. Instead, use
     // |provisionally_saved_form_|.
-    if (provisionally_saved_form_)
-      FireHostSubmitEvents(*provisionally_saved_form_, /*known_success=*/true,
-                           source);
+    if (provisionally_saved_form_.has_value())
+      FireHostSubmitEvents(provisionally_saved_form_.value(),
+                           /*known_success=*/true, source);
   } else {
     FormData form_data;
     if (GetSubmittedForm(&form_data))
@@ -1073,8 +1072,8 @@ bool AutofillAgent::GetSubmittedForm(FormData* form) {
   if (!last_interacted_form_.IsNull()) {
     if (form_util::ExtractFormData(last_interacted_form_, form)) {
       return true;
-    } else if (provisionally_saved_form_) {
-      *form = *provisionally_saved_form_;
+    } else if (provisionally_saved_form_.has_value()) {
+      *form = provisionally_saved_form_.value();
       return true;
     }
   } else if (formless_elements_user_edited_.size() != 0 &&
@@ -1086,8 +1085,8 @@ bool AutofillAgent::GetSubmittedForm(FormData* form) {
     // construct form.
     if (CollectFormlessElements(form)) {
       return true;
-    } else if (provisionally_saved_form_) {
-      *form = *provisionally_saved_form_;
+    } else if (provisionally_saved_form_.has_value()) {
+      *form = provisionally_saved_form_.value();
       return true;
     }
   }
@@ -1103,9 +1102,9 @@ void AutofillAgent::ResetLastInteractedElements() {
 
 void AutofillAgent::UpdateLastInteractedForm(blink::WebFormElement form) {
   last_interacted_form_ = form;
-  provisionally_saved_form_ = std::make_unique<FormData>();
+  provisionally_saved_form_ = base::make_optional<FormData>();
   if (!form_util::ExtractFormData(last_interacted_form_,
-                                  provisionally_saved_form_.get())) {
+                                  &provisionally_saved_form_.value())) {
     provisionally_saved_form_.reset();
   }
 }

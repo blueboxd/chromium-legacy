@@ -71,6 +71,7 @@ public class ChromeBrowserInitializer {
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
+    private boolean mFullBrowserInitializationComplete;
     private boolean mNetworkChangeNotifierInitializationComplete;
 
     /**
@@ -88,8 +89,7 @@ public class ChromeBrowserInitializer {
      * @return whether native (full browser) initialization is complete.
      */
     public boolean isFullBrowserInitialized() {
-        return mNativeInitializationComplete
-                && getBrowserStartupController().isFullBrowserStarted();
+        return mFullBrowserInitializationComplete;
     }
 
     /**
@@ -304,7 +304,7 @@ public class ChromeBrowserInitializer {
         }
 
         if (!delegate.startServiceManagerOnly()) {
-            tasks.add(UiThreadTaskTraits.DEFAULT, this::runQueuedTasksWithFullBrowser);
+            tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishFullBrowserInitialization);
         }
 
         int startupMode =
@@ -392,7 +392,9 @@ public class ChromeBrowserInitializer {
         SpeechRecognition.initialize();
     }
 
-    private void runQueuedTasksWithFullBrowser() {
+    private void onFinishFullBrowserInitialization() {
+        mFullBrowserInitializationComplete = true;
+
         if (mTasksToRunWithFullBrowser != null) {
             for (Runnable r : mTasksToRunWithFullBrowser) r.run();
             mTasksToRunWithFullBrowser = null;

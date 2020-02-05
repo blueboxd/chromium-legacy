@@ -841,7 +841,7 @@ bool LocalDOMWindow::find(const String& string,
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   // FIXME (13016): Support searchInFrames and showDialog
   FindOptions options =
@@ -903,14 +903,17 @@ IntSize LocalDOMWindow::GetViewportSize() const {
   // enabled, the initial page scale depends on the content width and is set
   // after a layout, perform one now so queries during page load will use the
   // up to date viewport.
-  if (page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame())
-    document()->UpdateStyleAndLayout();
+  if (page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame()) {
+    document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  }
 
   // FIXME: This is potentially too much work. We really only need to know the
   // dimensions of the parent frame's layoutObject.
   if (Frame* parent = GetFrame()->Tree().Parent()) {
-    if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent))
-      parent_local_frame->GetDocument()->UpdateStyleAndLayout();
+    if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent)) {
+      parent_local_frame->GetDocument()->UpdateStyleAndLayout(
+          DocumentUpdateReason::kJavaScript);
+    }
   }
 
   return document()->View()->Size();
@@ -976,7 +979,7 @@ double LocalDOMWindow::scrollX() const {
   if (!view)
     return 0;
 
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
@@ -993,7 +996,7 @@ double LocalDOMWindow::scrollY() const {
   if (!view)
     return 0;
 
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
@@ -1079,7 +1082,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   LocalFrameView* view = GetFrame()->View();
   if (!view)
@@ -1146,7 +1149,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   // clamped, which is never the case for (0, 0).
   if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
       scroll_to_options->left() || scroll_to_options->top()) {
-    document()->UpdateStyleAndLayout();
+    document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   }
 
   float scaled_x = 0.0f;

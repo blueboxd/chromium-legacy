@@ -195,13 +195,6 @@ void RootFrameSink::SubmitChildCompositorFrame(ChildFrame* child_frame) {
       child_frame->local_surface_id, std::move(*child_frame->frame),
       std::move(child_frame->hit_test_region_list));
   child_frame->frame.reset();
-
-  CopyOutputRequestQueue requests;
-  requests.swap(child_frame->copy_requests);
-  for (auto& copy_request : requests) {
-    child_sink_support_->support()->RequestCopyOfOutput(
-        child_frame->local_surface_id, std::move(copy_request));
-  }
 }
 
 viz::FrameTimingDetailsMap RootFrameSink::TakeChildFrameTimingDetailsMap() {

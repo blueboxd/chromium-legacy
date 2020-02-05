@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.url.GURL;
 
 /**
  * Provides the Java-UI for editing the homepage preference.
@@ -77,8 +78,8 @@ public class HomepageEditor extends Fragment implements TextWatcher {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHomepageManager.setPrefHomepageCustomUri(
-                        UrlFormatter.fixupUrl(mHomepageUrlEdit.getText().toString()));
+                GURL url = UrlFormatter.fixupUrl(mHomepageUrlEdit.getText().toString());
+                mHomepageManager.setPrefHomepageCustomUri(url.getValidSpecOrEmpty());
                 mHomepageManager.setPrefHomepageUseDefaultUri(false);
                 getActivity().finish();
             }

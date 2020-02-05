@@ -80,6 +80,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -218,7 +219,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   AddCaptionSubpageStrings(html_source);
 }
 
-void AddAboutStrings(content::WebUIDataSource* html_source) {
+void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   // Top level About Page strings.
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
@@ -240,6 +241,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
+  html_source->AddString("managementPage",
+                         ManagementUI::GetManagementPageSubtitle(profile));
   html_source->AddString(
       "aboutUpgradeUpToDate",
 #if defined(OS_CHROMEOS)
@@ -576,43 +579,6 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
-void AddFingerprintStrings(content::WebUIDataSource* html_source) {
-  int instruction_id, aria_label_id;
-  using FingerprintLocation = chromeos::quick_unlock::FingerprintLocation;
-  switch (chromeos::quick_unlock::GetFingerprintLocation()) {
-    case FingerprintLocation::TABLET_POWER_BUTTON:
-      instruction_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON;
-      aria_label_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON_ARIA_LABEL;
-      break;
-    case FingerprintLocation::KEYBOARD_BOTTOM_LEFT:
-      instruction_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
-      aria_label_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_BOTTOM_LEFT_ARIA_LABEL;
-      break;
-    case FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
-      instruction_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
-      aria_label_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_BOTTOM_RIGHT_ARIA_LABEL;
-      break;
-    case FingerprintLocation::KEYBOARD_TOP_RIGHT:
-      instruction_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
-      aria_label_id =
-          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_TOP_RIGHT_ARIA_LABEL;
-      break;
-  }
-  html_source->AddLocalizedString(
-      "configureFingerprintInstructionLocateScannerStep", instruction_id);
-  html_source->AddLocalizedString("configureFingerprintScannerStepAriaLabel",
-                                  aria_label_id);
-}
-#endif
-
 void AddLanguagesStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -905,243 +871,28 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-    {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
-    {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
-#if defined(OS_CHROMEOS)
-    {"osPeoplePageTitle", IDS_OS_SETTINGS_PEOPLE},
-    {"accountManagerDescription", IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION},
-    {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
-    {"accountManagerSubMenuLabel", IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL},
-    {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER},
-    {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL},
-    {"removeAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL},
-    {"accountManagerPrimaryAccountTooltip",
-     IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP},
-    {"accountManagerSecondaryAccountsDisabledText",
-     IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT},
-    {"accountManagerSecondaryAccountsDisabledChildText",
-     IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_CHILD_TEXT},
-    {"accountManagerSignedOutAccountName",
-     IDS_SETTINGS_ACCOUNT_MANAGER_SIGNED_OUT_ACCOUNT_PLACEHOLDER},
-    {"accountManagerUnmigratedAccountName",
-     IDS_SETTINGS_ACCOUNT_MANAGER_UNMIGRATED_ACCOUNT_PLACEHOLDER},
-    {"accountManagerMigrationLabel",
-     IDS_SETTINGS_ACCOUNT_MANAGER_MIGRATION_LABEL},
-    {"accountManagerReauthenticationLabel",
-     IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_LABEL},
-    {"accountManagerMigrationTooltip",
-     IDS_SETTINGS_ACCOUNT_MANAGER_MIGRATION_TOOLTIP},
-    {"accountManagerReauthenticationTooltip",
-     IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_TOOLTIP},
-    {"accountManagerMoreActionsTooltip",
-     IDS_SETTINGS_ACCOUNT_MANAGER_MORE_ACTIONS_TOOLTIP},
-    {"accountManagerManagedLabel",
-     IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_MANAGED_ACCOUNT},
-    {"accountManagerUnmanagedLabel",
-     IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT},
-    {"configureFingerprintTitle", IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE},
-    {"configureFingerprintInstructionReadyStep",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_READY},
-    {"configureFingerprintLiftFinger",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_LIFT_FINGER},
-    {"configureFingerprintTryAgain",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TRY_AGAIN},
-    {"configureFingerprintImmobile",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_FINGER_IMMOBILE},
-    {"configureFingerprintAddAnotherButton",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_ADD_ANOTHER_BUTTON},
-    {"configurePinChoosePinTitle",
-     IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CHOOSE_PIN_TITLE},
-    {"configurePinConfirmPinTitle",
-     IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONFIRM_PIN_TITLE},
-    {"configurePinMismatched", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED},
-    {"configurePinTooShort", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT},
-    {"configurePinTooLong", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG},
-    {"configurePinWeakPin", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN},
-    {"enableScreenlock", IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK},
-    {"kerberosAccountsSubMenuLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL},
-    {"kerberosAccountsPageTitle", IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE},
-    {"kerberosAccountsListHeader", IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER},
-    {"kerberosAccountsAddAccountLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL},
-    {"kerberosAccountsRefreshNowLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_REFRESH_NOW_LABEL},
-    {"kerberosAccountsSetAsActiveAccountLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL},
-    {"kerberosAccountsRemoveAccountLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL},
-    {"kerberosAccountsAccountRemovedTip",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REMOVED_TIP},
-    {"kerberosAccountsAccountRefreshedTip",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REFRESHED_TIP},
-    {"kerberosAccountsSignedIn", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN},
-    {"kerberosAccountsSignedOut", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT},
-    {"kerberosAccountsReauthenticationLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL},
-    {"kerberosAccountsTicketActive",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_TICKET_ACTIVE},
-    {"addKerberosAccount", IDS_SETTINGS_ADD_KERBEROS_ACCOUNT},
-    {"refreshKerberosAccount", IDS_SETTINGS_REFRESH_KERBEROS_ACCOUNT},
-    {"addKerberosAccountDescription",
-     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_DESCRIPTION},
-    {"addKerberosAccountRememberPassword",
-     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD},
-    {"addKerberosAccountRefreshButtonLabel",
-     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REFRESH_BUTTON_LABEL},
-    {"kerberosUsername", IDS_SETTINGS_KERBEROS_USERNAME},
-    {"kerberosPassword", IDS_SETTINGS_KERBEROS_PASSWORD},
-    {"kerberosAccountsAdvancedConfigLabel",
-     IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL},
-    {"kerberosAdvancedConfigTitle",
-     IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE},
-    {"kerberosAdvancedConfigDesc", IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_DESC},
-    {"kerberosErrorNetworkProblem",
-     IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM},
-    {"kerberosErrorUsernameInvalid",
-     IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID},
-    {"kerberosErrorUsernameUnknown",
-     IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN},
-    {"kerberosErrorDuplicatePrincipalName",
-     IDS_SETTINGS_KERBEROS_ERROR_DUPLICATE_PRINCIPAL_NAME},
-    {"kerberosErrorContactingServer",
-     IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER},
-    {"kerberosErrorPasswordInvalid",
-     IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_INVALID},
-    {"kerberosErrorPasswordExpired",
-     IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_EXPIRED},
-    {"kerberosErrorKdcEncType", IDS_SETTINGS_KERBEROS_ERROR_KDC_ENC_TYPE},
-    {"kerberosErrorGeneral", IDS_SETTINGS_KERBEROS_ERROR_GENERAL},
-    {"kerberosConfigErrorSectionNestedInGroup",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_NESTED_IN_GROUP},
-    {"kerberosConfigErrorSectionSyntax",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_SYNTAX},
-    {"kerberosConfigErrorExpectedOpeningCurlyBrace",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_EXPECTED_OPENING_CURLY_BRACE},
-    {"kerberosConfigErrorExtraCurlyBrace",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_EXTRA_CURLY_BRACE},
-    {"kerberosConfigErrorRelationSyntax",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_RELATION_SYNTAX_ERROR},
-    {"kerberosConfigErrorKeyNotSupported",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_KEY_NOT_SUPPORTED},
-    {"kerberosConfigErrorSectionNotSupported",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_NOT_SUPPORTED},
-    {"kerberosConfigErrorKrb5FailedToParse",
-     IDS_SETTINGS_KERBEROS_CONFIG_ERROR_KRB5_FAILED_TO_PARSE},
-    {"lockScreenAddFingerprint",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ADD_FINGERPRINT_BUTTON},
-    {"lockScreenChangePinButton",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PIN_BUTTON},
-    {"lockScreenEditFingerprints",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS},
-    {"lockScreenEditFingerprintsDescription",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS_DESCRIPTION},
-    {"lockScreenSetupFingerprintButton",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SETUP_BUTTON},
-    {"lockScreenNumberFingerprints",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NUM_FINGERPRINTS},
-    {"lockScreenNone", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NONE},
-    {"lockScreenFingerprintNewName",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME},
-    {"lockScreenFingerprintTitle",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE},
-    {"lockScreenFingerprintWarning",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_LESS_SECURE},
-    {"lockScreenDeleteFingerprintLabel",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_DELETE_FINGERPRINT_ARIA_LABEL},
-    {"lockScreenNotificationHide",
-     IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE},
-    {"lockScreenNotificationHideSensitive",
-     IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE_SENSITIVE},
-    {"lockScreenNotificationShow",
-     IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_SHOW},
-    {"lockScreenNotificationTitle",
-     IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_TITLE},
-    {"lockScreenOptionsLock", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOCK},
-    {"lockScreenOptionsLoginLock",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOGIN_LOCK},
-    {"lockScreenPasswordOnly", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_ONLY},
-    {"lockScreenPinOrPassword",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_OR_PASSWORD},
-    {"lockScreenRegisteredFingerprints",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REGISTERED_FINGERPRINTS_LABEL},
-    {"lockScreenSetupPinButton",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON},
-    {"lockScreenTitleLock", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOCK},
-    {"lockScreenTitleLoginLock",
-     IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK},
-    {"passwordPromptEnterPasswordLock",
-     IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOCK},
-    {"passwordPromptEnterPasswordLoginLock",
-     IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOGIN_LOCK},
-    {"passwordPromptInvalidPassword",
-     IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_INVALID_PASSWORD},
-    {"passwordPromptPasswordLabel",
-     IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL},
-    {"passwordPromptTitle", IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE},
-    {"pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN},
-    {"pinKeyboardPlaceholderPinPassword",
-     IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD},
-    {"pinKeyboardDeleteAccessibleName",
-     IDS_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME},
-    {"changePicturePageDescription", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT},
-    {"takePhoto", IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO},
-    {"captureVideo", IDS_SETTINGS_CHANGE_PICTURE_CAPTURE_VIDEO},
-    {"discardPhoto", IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO},
-    {"switchModeToCamera", IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_CAMERA},
-    {"switchModeToVideo", IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_VIDEO},
-    {"chooseFile", IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE},
-    {"profilePhoto", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO},
-    {"oldPhoto", IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO},
-    {"oldVideo", IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO},
-    {"previewAltText", IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT},
-    {"authorCreditText", IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT},
-    {"photoCaptureAccessibleText", IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT},
-    {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
-    {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
-    {"osSyncPageTitle", IDS_OS_SETTINGS_SYNC_PAGE_TITLE},
-    {"osSyncTurnOn", IDS_OS_SETTINGS_SYNC_TURN_ON},
-    {"osSyncTurnOff", IDS_OS_SETTINGS_SYNC_TURN_OFF},
-    {"osSyncAppsCheckboxLabel", IDS_OS_SETTINGS_SYNC_APPS_CHECKBOX_LABEL},
-    {"osSyncSettingsCheckboxLabel",
-     IDS_OS_SETTINGS_SYNC_SETTINGS_CHECKBOX_LABEL},
-    {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
-    {"wifiConfigurationsCheckboxLabel",
-     IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
-    {"wallpaperCheckboxLabel", IDS_OS_SETTINGS_WALLPAPER_CHECKBOX_LABEL},
-#else   // !defined(OS_CHROMEOS)
-    {"editPerson", IDS_SETTINGS_EDIT_PERSON},
-    {"profileNameAndPicture", IDS_SETTINGS_PROFILE_NAME_AND_PICTURE},
-    {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
-#endif  // defined(OS_CHROMEOS)
-    {"syncWillStart", IDS_SETTINGS_SYNC_WILL_START},
-    {"syncSettingsSavedToast", IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL},
-    {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
-    {"syncSetupCancelDialogTitle", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
-    {"syncSetupCancelDialogBody", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY},
-    {"peopleSignIn", IDS_PROFILES_DICE_SIGNIN_BUTTON},
-    {"peopleSignOut", IDS_SETTINGS_PEOPLE_SIGN_OUT},
-    {"peopleSignInPrompt", IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT},
-    {"peopleSignInPromptSecondaryWithNoAccount",
-     IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
+    // Top level people strings:
     {"peopleSignInPromptSecondaryWithAccount",
      IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
-    {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
-    {"syncingTo", IDS_SETTINGS_PEOPLE_SYNCING_TO_ACCOUNT},
-    {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
-    {"signInAgain", IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON},
-    {"syncNotWorking", IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING},
-    {"syncPasswordsNotWorking", IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING},
-    {"syncPaused", IDS_SETTINGS_PEOPLE_SYNC_PAUSED},
-    {"syncSignInPromptWithAccount",
-     IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_ACCOUNT},
-    {"syncSignInPromptWithNoAccount",
-     IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_NO_ACCOUNT},
-    {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
-    {"syncDisabled", IDS_PROFILES_DICE_SYNC_DISABLED_TITLE},
-    {"syncDisabledByAdministrator", IDS_SIGNED_IN_WITH_SYNC_DISABLED_BY_POLICY},
-    {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
-    {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
+    {"peopleSignInPromptSecondaryWithNoAccount",
+     IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
+    {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
+    {"syncSettingsSavedToast", IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL},
+    {"peopleSignInPrompt", IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT},
+    {"manageGoogleAccount", IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT},
+    {"syncAndNonPersonalizedServices",
+     IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
+#if defined(OS_CHROMEOS)
+    {"accountManagerSubMenuLabel", IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL},
+#else
+    {"editPerson", IDS_SETTINGS_EDIT_PERSON},
+    {"profileNameAndPicture", IDS_SETTINGS_PROFILE_NAME_AND_PICTURE},
+#endif
+
+  // Manage profile strings:
+#if !defined(OS_CHROMEOS)
+    {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
+#endif
     {"syncDisconnectDeleteProfile",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE},
     {"deleteProfileWarningExpandA11yLabel",
@@ -1152,126 +903,34 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITH_COUNTS_PLURAL},
     {"deleteProfileWarningWithoutCounts",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITHOUT_COUNTS},
-    {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
-    {"sync", IDS_SETTINGS_SYNC},
-    {"nonPersonalizedServicesSectionLabel",
-     IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
-    {"syncAndNonPersonalizedServices",
-     IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
-    {"syncPageTitle", IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
-    {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
-    {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
-    {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
-    {"syncEverythingCheckboxLabel",
-     IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL},
-    {"syncEverythingHint", IDS_SETTINGS_SYNC_EVERYTHING_HINT},
-    {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
-    {"customizeSyncHint", IDS_SETTINGS_CUSTOMIZE_SYNC_HINT},
-    {"syncData", IDS_SETTINGS_SYNC_DATA},
-    {"manageGoogleAccount", IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT},
-    {"appCheckboxLabel", IDS_SETTINGS_APPS_CHECKBOX_LABEL},
-    {"extensionsCheckboxLabel", IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL},
-    {"settingsCheckboxLabel", IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL},
-    {"autofillCheckboxLabel", IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL},
-    {"historyCheckboxLabel", IDS_SETTINGS_HISTORY_CHECKBOX_LABEL},
-    {"themesAndWallpapersCheckboxLabel",
-     IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL},
-    {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
-    {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
-    {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
-    {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
-    {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
-    {"manageSyncedDataTitle",
-     IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
-    {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
-    {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
-    {"encryptWithGoogleCredentialsLabel",
-     IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL},
-    {"useDefaultSettingsButton", IDS_SETTINGS_USE_DEFAULT_SETTINGS},
-    {"emptyPassphraseError", IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR},
-    {"mismatchedPassphraseError", IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR},
-    {"incorrectPassphraseError", IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR},
-    {"passphrasePlaceholder", IDS_SETTINGS_PASSPHRASE_PLACEHOLDER},
-    {"passphraseConfirmationPlaceholder",
-     IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
-    {"submitPassphraseButton", IDS_SETTINGS_SUBMIT_PASSPHRASE},
-    {"existingPassphraseTitle", IDS_SETTINGS_EXISTING_PASSPHRASE_TITLE},
-    {"enablePaymentsIntegrationCheckboxLabel",
-     IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-  if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
-    static constexpr webui::LocalizedString
-        kSyncSetupFriendlySettingsStrings[] = {
-            {"personalizeGoogleServicesTitle",
-             IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE},
-            {"sWAAOn", IDS_SETTINGS_SWAA_ON},
-            {"sWAAOff", IDS_SETTINGS_SWAA_OFF},
-            {"sWAAOnHint", IDS_SETTINGS_SWAA_ON_HINT},
-            {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
-            {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
-            {"sWAAOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
-        };
-    AddLocalizedStringsBulk(html_source, kSyncSetupFriendlySettingsStrings);
-  } else {
-    html_source->AddLocalizedString(
-        "personalizeGoogleServicesTitle",
-        IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE);
-  }
-#if defined(OS_CHROMEOS)
-  AddFingerprintStrings(html_source);
-#endif  // OS_CHROMEOS
-  html_source->AddString("managementPage",
-                         ManagementUI::GetManagementPageSubtitle(profile));
 
-  // Format numbers to be used on the pin keyboard.
-  for (int j = 0; j <= 9; j++) {
-    html_source->AddString("pinKeyboard" + base::NumberToString(j),
-                           base::FormatNumber(int64_t{j}));
-  }
-
+  // Top level people strings:
   html_source->AddString("syncLearnMoreUrl", chrome::kSyncLearnMoreURL);
-  html_source->AddString("supervisedUsersUrl",
-                         chrome::kLegacySupervisedUserManagementURL);
-
+  // Add Google Account URL and include UTM parameter to signal the source of
+  // the navigation.
   html_source->AddString(
-      "encryptWithSyncPassphraseLabel",
-      l10n_util::GetStringFUTF8(
-          IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL,
+      "googleAccountUrl",
+      net::AppendQueryParameter(GURL(chrome::kGoogleAccountURL), "utm_source",
+                                "chrome-settings")
+          .spec());
+  html_source->AddBoolean("profileShortcutsEnabled",
+                          ProfileShortcutManager::IsFeatureEnabled());
 #if defined(OS_CHROMEOS)
-          GetHelpUrlWithBoard(chrome::kSyncEncryptionHelpURL)));
-#else
-          base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
+  // Toggles the Chrome OS Account Manager submenu in the People section.
+  html_source->AddBoolean("isAccountManagerEnabled",
+                          chromeos::IsAccountManagerAvailable(profile));
 #endif
 
+  // Signout Dialog strings:
+#if !defined(OS_CHROMEOS)
   std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kSyncGoogleDashboardURL),
           g_browser_process->GetApplicationLocale())
           .spec();
-  html_source->AddString("syncDashboardUrl", sync_dashboard_url);
 
-  html_source->AddString(
-      "passphraseExplanationText",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
-  html_source->AddString(
-      "passphraseResetHintEncryption",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT_ENCRYPTION,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
-  html_source->AddString(
-      "passphraseResetHintToggle",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT_TOGGLE,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
-  html_source->AddString(
-      "passphraseRecover",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
-  html_source->AddString(
-      "syncDisconnectExplanation",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
-#if !defined(OS_CHROMEOS)
   html_source->AddString(
       "syncDisconnectManagedProfileExplanation",
       l10n_util::GetStringFUTF8(
@@ -1297,62 +956,13 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   }
 #endif
 
-  html_source->AddString("activityControlsUrl",
-                         chrome::kGoogleAccountActivityControlsURL);
-
-  // Add Google Account URL and include UTM parameter to signal the source of
-  // the navigation.
-  html_source->AddString(
-      "googleAccountUrl",
-      net::AppendQueryParameter(GURL(chrome::kGoogleAccountURL), "utm_source",
-                                "chrome-settings")
-          .spec());
-
-  html_source->AddBoolean("profileShortcutsEnabled",
-                          ProfileShortcutManager::IsFeatureEnabled());
-
-  html_source->AddBoolean(
-      "changePictureVideoModeEnabled",
-      base::FeatureList::IsEnabled(features::kChangePictureVideoMode));
-
-  html_source->AddBoolean(
-      "driveSuggestAvailable",
-      base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
-
+  AddSignOutDialogStrings(html_source);
+  AddSyncControlsStrings(html_source);
+  AddSyncAccountControlStrings(html_source);
 #if defined(OS_CHROMEOS)
-  // Toggles the Chrome OS Account Manager submenu in the People section.
-  html_source->AddBoolean("isAccountManagerEnabled",
-                          chromeos::IsAccountManagerAvailable(profile));
-
-  PrefService* local_state = g_browser_process->local_state();
-
-  // Toggles the Chrome OS Kerberos Accounts submenu in the People section.
-  // Note that the handler is also dependent on this pref.
-  html_source->AddBoolean("isKerberosEnabled",
-                          local_state->GetBoolean(prefs::kKerberosEnabled));
-
-  // Whether the 'Remember password' checkbox is enabled.
-  html_source->AddBoolean(
-      "kerberosRememberPasswordEnabled",
-      local_state->GetBoolean(prefs::kKerberosRememberPasswordEnabled));
-
-  // Whether new Kerberos accounts may be added.
-  html_source->AddBoolean(
-      "kerberosAddAccountsAllowed",
-      local_state->GetBoolean(prefs::kKerberosAddAccountsAllowed));
-
-  // Kerberos default configuration.
-  html_source->AddString(
-      "defaultKerberosConfig",
-      chromeos::KerberosCredentialsManager::GetDefaultKerberosConfig());
-
-  // Kerberos accounts page with "Learn more" link.
-  html_source->AddString(
-      "kerberosAccountsDescription",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION,
-          GetHelpUrlWithBoard(chrome::kKerberosAccountsLearnMoreURL)));
+  AddPasswordPromptDialogStrings(html_source);
 #endif
+  AddSyncPageStrings(html_source);
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
@@ -1434,7 +1044,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "installedAppsInCbd",
       base::FeatureList::IsEnabled(features::kStoragePressureUI));
-
+  html_source->AddBoolean(
+      "driveSuggestAvailable",
+      base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
   AddPersonalizationOptionsStrings(html_source);
 }
 
@@ -2131,7 +1743,7 @@ void AddBrowserLocalizedStrings(content::WebUIDataSource* html_source,
                                 Profile* profile,
                                 content::WebContents* web_contents) {
   AddA11yStrings(html_source);
-  AddAboutStrings(html_source);
+  AddAboutStrings(html_source, profile);
   AddAutofillStrings(html_source, profile, web_contents);
   AddAppearanceStrings(html_source, profile);
 

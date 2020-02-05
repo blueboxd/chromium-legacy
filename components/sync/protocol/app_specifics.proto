@@ -16,7 +16,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "extension_specifics.proto";
+import "components/sync/protocol/extension_specifics.proto";
 
 // Settings related to push notifications for apps.
 message AppNotificationSettings {

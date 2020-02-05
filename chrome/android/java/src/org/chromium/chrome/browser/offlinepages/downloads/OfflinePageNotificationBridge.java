@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceEntry;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
@@ -207,7 +207,7 @@ public class OfflinePageNotificationBridge {
      */
     @CalledByNative
     public static void showDownloadingToast() {
-        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
+        if (CachedFeatureFlags.isDownloadProgressInfoBarEnabled()) {
             intializeOfflineItemsCollection();
             DownloadManagerService.getDownloadManagerService()
                     .getInfoBarController(false)

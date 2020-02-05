@@ -18,10 +18,10 @@
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -44,7 +44,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerContainerHost> container_host,
-      ResourceType resource_type,
+      blink::mojom::ResourceType resource_type,
       bool skip_service_worker);
   ~ServiceWorkerControlleeRequestHandler();
 
@@ -106,7 +106,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
 
   const base::WeakPtr<ServiceWorkerContextCore> context_;
   const base::WeakPtr<ServiceWorkerContainerHost> container_host_;
-  const ResourceType resource_type_;
+  const blink::mojom::ResourceType resource_type_;
 
   // If true, service workers are bypassed for request interception.
   const bool skip_service_worker_;

@@ -173,7 +173,7 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
       method(request.method),
       is_navigation_request(!!navigation_ui_data),
       initiator(request.request_initiator),
-      type(static_cast<content::ResourceType>(request.resource_type)),
+      type(static_cast<blink::mojom::ResourceType>(request.resource_type)),
       is_async(is_async),
       extra_request_headers(request.headers),
       is_service_worker_script(is_service_worker_script),

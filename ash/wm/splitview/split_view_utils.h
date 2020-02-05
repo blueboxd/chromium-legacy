@@ -112,6 +112,13 @@ void DoSplitviewTransformAnimation(
     const gfx::Transform& target_transform,
     std::unique_ptr<ui::ImplicitAnimationObserver> animation_observer);
 
+// Animates |layer|'s clip rect based on |type|.
+void DoSplitviewClipRectAnimation(
+    ui::Layer* layer,
+    SplitviewAnimationType type,
+    const gfx::Rect& target_clip_rect,
+    std::unique_ptr<ui::ImplicitAnimationObserver> animation_observer);
+
 // Restores split view and overview based on the current split view's state.
 // If |refresh_snapped_windows| is true, it will update the left and right
 // snapped windows based on the MRU windows snapped states.

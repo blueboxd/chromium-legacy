@@ -61,6 +61,14 @@ public final class ChildProcessLauncherHelperImpl {
     private static final String NUM_PRIVILEGED_SERVICES_KEY =
             "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
 
+    // When decrementing the refcount on bindings, delay the decrement by this amount of time in
+    // case a new ref count is added in the mean time. This is a heuristic to avoid temporarily
+    // dropping bindings when inputs to calculating importance change independently.
+    private static final int REMOVE_BINDING_DELAY_MS = 500;
+
+    // To be conservative, only delay removing binding in the initial second of the process.
+    private static final int TIMEOUT_FOR_DELAY_BINDING_REMOVE_MS = 1000;
+
     // Flag to check features after native is initialized.
     private static boolean sCheckedFeatures;
 
@@ -182,6 +190,8 @@ public final class ChildProcessLauncherHelperImpl {
     private final ChildProcessLauncher mLauncher;
 
     private long mNativeChildProcessLauncherHelper;
+
+    private long mStartTimeMs;
 
     // This is the current computed importance from all the inputs from setPriority.
     // The initial value is MODERATE since a newly created connection has moderate bindings.
@@ -448,6 +458,7 @@ public final class ChildProcessLauncherHelperImpl {
 
     private void start() {
         mLauncher.start(true /* doSetupConnection */, true /* queueIfNoFreeConnection */);
+        mStartTimeMs = System.currentTimeMillis();
     }
 
     /**
@@ -552,19 +563,28 @@ public final class ChildProcessLauncherHelperImpl {
             if (mBindingManager != null) mBindingManager.rankingChanged();
         }
 
-        if (mEffectiveImportance != newEffectiveImportance) {
-            switch (mEffectiveImportance) {
-                case ChildProcessImportance.NORMAL:
-                    // Nothing to remove.
-                    break;
-                case ChildProcessImportance.MODERATE:
-                    connection.removeModerateBinding();
-                    break;
-                case ChildProcessImportance.IMPORTANT:
-                    connection.removeStrongBinding();
-                    break;
-                default:
-                    assert false;
+        if (mEffectiveImportance != newEffectiveImportance
+                && mEffectiveImportance != ChildProcessImportance.NORMAL) {
+            final int existingEffectiveImportance = mEffectiveImportance;
+            Runnable removeBindingRunnable = () -> {
+                switch (existingEffectiveImportance) {
+                    case ChildProcessImportance.NORMAL:
+                        // Nothing to remove.
+                        break;
+                    case ChildProcessImportance.MODERATE:
+                        connection.removeModerateBinding();
+                        break;
+                    case ChildProcessImportance.IMPORTANT:
+                        connection.removeStrongBinding();
+                        break;
+                    default:
+                        assert false;
+                }
+            };
+            if (System.currentTimeMillis() - mStartTimeMs < TIMEOUT_FOR_DELAY_BINDING_REMOVE_MS) {
+                LauncherThread.postDelayed(removeBindingRunnable, REMOVE_BINDING_DELAY_MS);
+            } else {
+                removeBindingRunnable.run();
             }
         }
 

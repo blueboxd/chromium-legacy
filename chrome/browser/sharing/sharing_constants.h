@@ -51,4 +51,12 @@ enum class SharingDevicePlatform {
   kWindows,
 };
 
+enum class SharingChannelType {
+  kUnknown,
+  kFcmVapid,
+  kFcmSenderId,
+  kServer,
+  kWebRtc
+};
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_CONSTANTS_H_

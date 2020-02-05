@@ -644,14 +644,6 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   native_event.time =
       (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() & UINT32_MAX;
   ui::KeyEvent keyev(native_event, flags);
-#elif defined(USE_X11)
-  ui::ScopedXI2Event xevent;
-  xevent.InitKeyEvent(is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
-                      key_code,
-                      flags);
-  static_cast<XEvent*>(xevent)->xkey.time =
-      (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() & UINT32_MAX;
-  ui::KeyEvent keyev(xevent);
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
   ui::KeyEvent keyev(type, key_code, flags);

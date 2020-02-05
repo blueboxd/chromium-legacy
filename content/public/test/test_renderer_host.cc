@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -263,6 +264,9 @@ void RenderViewHostTestHarness::SetUp() {
   browser_context_ = CreateBrowserContext();
 
   SetContents(CreateTestWebContents());
+
+  // Create GpuDataManagerImpl here so it always runs on the main thread.
+  GpuDataManagerImpl::GetInstance();
 }
 
 void RenderViewHostTestHarness::TearDown() {

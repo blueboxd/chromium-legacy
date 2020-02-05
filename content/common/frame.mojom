@@ -10,8 +10,6 @@ import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
 import "content/public/common/browser_controls_state.mojom";
-import "content/public/common/resource_type.mojom";
-import "content/public/common/resource_load_info.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -33,6 +31,7 @@ import "third_party/blink/public/mojom/feature_policy/policy_value.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
+import "third_party/blink/public/mojom/loader/resource_load_info.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
@@ -442,7 +441,7 @@ interface FrameHost {
       uint32 cert_status);
 
   // Sent when a resource load finished, successfully or not.
-  ResourceLoadComplete(ResourceLoadInfo url_load_info);
+  ResourceLoadComplete(blink.mojom.ResourceLoadInfo url_load_info);
 
   // Sent when the frame changes its window.name.
   DidChangeName(string name, string unique_name);

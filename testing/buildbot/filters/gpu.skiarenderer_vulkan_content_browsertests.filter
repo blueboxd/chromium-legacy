@@ -8,9 +8,6 @@
 -MSE_*ClearKey/EncryptedMediaTest.*
 -SRC_*ClearKey/EncryptedMediaTest.*
 
-# SkiaOutputSurfaceImplOnGpu::MakeCurrent Fails. https://crbug.com/1012282
--*CompositorImplLowEndBrowserTest.CompositorImplDropsResourcesOnBackground*
-
 # FeatureList Flakes. https://crbug.com/1012372
 -NavigationBrowserTest.HistoryBackCancelPendingNavigationUserGesture/1
 -SitePerProcessBrowserTest.*

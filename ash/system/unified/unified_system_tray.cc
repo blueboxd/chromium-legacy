@@ -275,6 +275,8 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
     return false;
 
   views::Widget* quick_settings_widget = bubble_->GetBubbleWidget();
+  quick_settings_widget->widget_delegate()->SetCanActivate(true);
+
   Shell::Get()->focus_cycler()->FocusWidget(quick_settings_widget);
 
   // Focus an individual element in quick settings if chrome vox is
@@ -444,7 +446,6 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
   if (features::IsUnifiedMessageCenterRefactorEnabled()) {
     message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
     message_center_bubble_->ShowBubble();
-    FocusQuickSettings(false /*reverse*/);
   }
 
   SetIsActive(true);

@@ -152,6 +152,15 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
     without_gpu_->SubmitChildCompositorFrame(child_frame);
   }
 
+  if (!child_frame->copy_requests.empty()) {
+    viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
+    CopyOutputRequestQueue requests;
+    requests.swap(child_frame->copy_requests);
+    for (auto& copy_request : requests) {
+      manager->RequestCopyOfOutput(child_id, std::move(copy_request));
+    }
+  }
+
   gfx::DisplayColorSpaces display_color_spaces(
       color_space.IsValid() ? color_space : gfx::ColorSpace::CreateSRGB());
   display_->SetDisplayColorSpaces(display_color_spaces);

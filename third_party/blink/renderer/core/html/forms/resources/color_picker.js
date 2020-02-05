@@ -1014,6 +1014,7 @@ class ColorSelectionRing extends HTMLElement {
 
   initialize() {
     this.set(this.backingColorPalette_.left, this.backingColorPalette_.top);
+    this.onPositionChange_();
   }
 
   /**

@@ -235,6 +235,39 @@ def AddGnuWinToPath():
     f.write('group: files\n')
 
 
+def AddZlibToPath():
+  """Download and build zlib, and add to PATH."""
+  zlib_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'zlib-1.2.11')
+  if not os.path.exists(zlib_dir):
+    zip_name = 'zlib-1.2.11.tar.gz'
+    DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
+    os.chdir(zlib_dir)
+    zlib_files = [
+        'adler32', 'compress', 'crc32', 'deflate', 'gzclose', 'gzlib',
+        'gzread', 'gzwrite', 'inflate', 'infback', 'inftrees', 'inffast',
+        'trees', 'uncompr', 'zutil'
+        ]
+    cl_flags = [
+        '/nologo', '/O2', '/DZLIB_DLL', '/c', '/D_CRT_SECURE_NO_DEPRECATE',
+        '/D_CRT_NONSTDC_NO_DEPRECATE'
+        ]
+
+    try:
+      RunCommand(['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags,
+                 msvc_arch='x64')
+      RunCommand(['lib.exe'] + [f + '.obj' for f in zlib_files] +
+                 ['/nologo', '/out:zlib.lib'], msvc_arch='x64')
+      # Remove the test directory so it isn't found when trying to find
+      # test.exe.
+      shutil.rmtree('test')
+    except Exception as e:
+      print('Failed to build zlib: ' + str(e))
+      sys.exit(1)
+
+  os.environ['PATH'] = zlib_dir + os.pathsep + os.environ.get('PATH', '')
+  return zlib_dir
+
+
 def MaybeDownloadHostGcc(args):
   """Download a modern GCC host compiler on Linux."""
   if not sys.platform.startswith('linux') or args.gcc_toolchain:
@@ -464,6 +497,12 @@ def main():
 
   if sys.platform == 'win32':
     base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
+
+    # Require zlib compression.
+    zlib_dir = AddZlibToPath()
+    base_cmake_args.append('-DLLVM_ENABLE_ZLIB=FORCE_ON')
+    cflags.append('-I' + zlib_dir)
+    cxxflags.append('-I' + zlib_dir)
 
   if sys.platform == 'darwin':
     # Use the system libc++abi.

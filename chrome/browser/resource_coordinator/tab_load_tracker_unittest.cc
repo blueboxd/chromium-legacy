@@ -51,29 +51,18 @@ std::unique_ptr<content::NavigationSimulator> NavigateAndKeepLoading(
 // Test wrapper of TabLoadTracker that exposes some internals.
 class TestTabLoadTracker : public TabLoadTracker {
  public:
+  using TabLoadTracker::DetermineLoadingState;
+  using TabLoadTracker::DidReceiveResponse;
+  using TabLoadTracker::OnPageStoppedLoading;
+  using TabLoadTracker::RenderProcessGone;
   using TabLoadTracker::StartTracking;
   using TabLoadTracker::StopTracking;
-  using TabLoadTracker::DidStartLoading;
-  using TabLoadTracker::DidReceiveResponse;
-  using TabLoadTracker::DidFailLoad;
-  using TabLoadTracker::RenderProcessGone;
-  using TabLoadTracker::OnPageAlmostIdle;
-  using TabLoadTracker::DetermineLoadingState;
 
   TestTabLoadTracker() : all_tabs_are_non_ui_tabs_(false) {}
   virtual ~TestTabLoadTracker() {}
 
   // Some accessors for TabLoadTracker internals.
   const TabMap& tabs() const { return tabs_; }
-
-  // Determines if the tab has been marked as having received the
-  // DidStartLoading event.
-  bool DidStartLoadingSeen(content::WebContents* web_contents) {
-    auto it = tabs_.find(web_contents);
-    if (it == tabs_.end())
-      return false;
-    return it->second.did_start_loading_seen;
-  }
 
   bool IsUiTab(content::WebContents* web_contents) override {
     if (all_tabs_are_non_ui_tabs_)
@@ -117,14 +106,8 @@ class TestWebContentsObserver : public content::WebContentsObserver {
   ~TestWebContentsObserver() override {}
 
   // content::WebContentsObserver:
-  void DidStartLoading() override { tracker_->DidStartLoading(web_contents()); }
   void DidReceiveResponse() override {
     tracker_->DidReceiveResponse(web_contents());
-  }
-  void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                   const GURL& validated_url,
-                   int error_code) override {
-    tracker_->DidFailLoad(web_contents());
   }
   void RenderProcessGone(base::TerminationStatus status) override {
     tracker_->RenderProcessGone(web_contents(), status);
@@ -290,7 +273,7 @@ void TabLoadTrackerTest::StateTransitionsTest(bool use_non_ui_tabs) {
   } else {
     EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 1, 1);
   }
-  tracker().OnPageAlmostIdle(contents2());
+  tracker().OnPageStoppedLoading(contents2());
 
   if (use_non_ui_tabs) {
     EXPECT_TAB_COUNTS(3, 1, 0, 2);
@@ -314,25 +297,10 @@ void TabLoadTrackerTest::StateTransitionsTest(bool use_non_ui_tabs) {
   }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
-  // Stop the loading with an error. The tab should go back to a LOADED
-  // state.
-  EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents1(), LoadingState::LOADING,
-                                   LoadingState::LOADED));
-  navigation_tab_1->FailLoading(GURL("http://baz.com"), 500);
-  testing::Mock::VerifyAndClearExpectations(&observer());
-  if (use_non_ui_tabs) {
-    EXPECT_TAB_COUNTS(3, 0, 0, 3);
-    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
-  } else {
-    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 0, 0, 3);
-  }
-  testing::Mock::VerifyAndClearExpectations(&observer());
-
   // Crash the render process corresponding to the main frame of a tab. This
   // should cause the tab to transition to the UNLOADED state.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents1(), LoadingState::LOADED,
+              OnLoadingStateChange(contents1(), LoadingState::LOADING,
                                    LoadingState::UNLOADED));
   content::MockRenderProcessHost* rph =
       static_cast<content::MockRenderProcessHost*>(

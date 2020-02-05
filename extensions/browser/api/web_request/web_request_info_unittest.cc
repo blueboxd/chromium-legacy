@@ -24,7 +24,8 @@ TEST(WebRequestInfoTest, CreateRequestBodyDataFromFile) {
 
   network::ResourceRequest request;
   request.method = "POST";
-  request.resource_type = static_cast<int>(content::ResourceType::kSubResource);
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kSubResource);
   request.request_body = base::MakeRefCounted<network::ResourceRequestBody>();
   request.request_body->AppendFileRange(base::FilePath(kFilePath), 0,
                                         std::numeric_limits<uint64_t>::max(),

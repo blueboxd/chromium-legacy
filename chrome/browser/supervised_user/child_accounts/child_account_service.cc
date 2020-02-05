@@ -99,9 +99,10 @@ void ChildAccountService::Init() {
 
   // If we're already signed in, check the account immediately just to be sure.
   // (We might have missed an update before registering as an observer.)
+  // "Unconsented" because this class doesn't care about browser sync consent.
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo());
+          identity_manager_->GetUnconsentedPrimaryAccountInfo());
 
   if (primary_account_info.has_value())
     OnExtendedAccountInfoUpdated(primary_account_info.value());
@@ -258,7 +259,9 @@ void ChildAccountService::OnExtendedAccountInfoUpdated(
     return;
   }
 
-  CoreAccountId auth_account_id = identity_manager_->GetPrimaryAccountId();
+  // This class doesn't care about browser sync consent.
+  CoreAccountId auth_account_id =
+      identity_manager_->GetUnconsentedPrimaryAccountId();
   if (info.account_id != auth_account_id)
     return;
 
@@ -267,7 +270,8 @@ void ChildAccountService::OnExtendedAccountInfoUpdated(
 
 void ChildAccountService::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
-  if (info.account_id != identity_manager_->GetPrimaryAccountId())
+  // This class doesn't care about browser sync consent.
+  if (info.account_id != identity_manager_->GetUnconsentedPrimaryAccountId())
     return;
 
   SetIsChildAccount(false);

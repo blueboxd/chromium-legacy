@@ -6,45 +6,9 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 
 namespace gpu {
-
-#if !defined(USE_OZONE)
-
-class VulkanSurfaceX11::ExposeEventForwarder
-    : public ui::PlatformEventDispatcher {
- public:
-  explicit ExposeEventForwarder(VulkanSurfaceX11* surface) : surface_(surface) {
-    if (auto* event_source = ui::PlatformEventSource::GetInstance()) {
-      XSelectInput(gfx::GetXDisplay(), surface_->window_, ExposureMask);
-      event_source->AddPlatformEventDispatcher(this);
-    }
-  }
-
-  ~ExposeEventForwarder() override {
-    if (auto* event_source = ui::PlatformEventSource::GetInstance())
-      event_source->RemovePlatformEventDispatcher(this);
-  }
-
-  // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override {
-    return surface_->CanDispatchXEvent(event);
-  }
-
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override {
-    surface_->ForwardXExposeEvent(event);
-    return ui::POST_DISPATCH_STOP_PROPAGATION;
-  }
-
- private:
-  VulkanSurfaceX11* const surface_;
-  DISALLOW_COPY_AND_ASSIGN(ExposeEventForwarder);
-};
-
-#else  // defined(USE_OZONE)
 
 class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
  public:
@@ -61,12 +25,6 @@ class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
   }
 
   // ui::XEventDispatcher:
-  void CheckCanDispatchNextPlatformEvent(XEvent* xev) override {}
-  void PlatformEventDispatchFinished() override {}
-  ui::PlatformEventDispatcher* GetPlatformEventDispatcher() override {
-    return nullptr;
-  }
-
   bool DispatchXEvent(XEvent* xevent) override {
     if (!surface_->CanDispatchXEvent(xevent))
       return false;
@@ -78,8 +36,6 @@ class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
   VulkanSurfaceX11* const surface_;
   DISALLOW_COPY_AND_ASSIGN(ExposeEventForwarder);
 };
-
-#endif
 
 // static
 std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(

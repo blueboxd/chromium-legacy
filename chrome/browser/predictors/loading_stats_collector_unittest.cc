@@ -83,11 +83,11 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
 
   // Navigation simulation.
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(
       CreateResourceLoadInfoWithRedirects({initial_url, navigation_url}));
   resources.push_back(
-      CreateResourceLoadInfo(script_url, content::ResourceType::kScript));
+      CreateResourceLoadInfo(script_url, blink::mojom::ResourceType::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(navigation_url, initial_url, resources);
 
@@ -119,12 +119,12 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
 
   // Simulate a page load with 2 resources, one we know, one we don't, plus we
   // know the main frame origin.
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo(main_frame_url));
   resources.push_back(
-      CreateResourceLoadInfo(gen(1), content::ResourceType::kScript));
+      CreateResourceLoadInfo(gen(1), blink::mojom::ResourceType::kScript));
   resources.push_back(
-      CreateResourceLoadInfo(gen(100), content::ResourceType::kScript));
+      CreateResourceLoadInfo(gen(100), blink::mojom::ResourceType::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
@@ -191,14 +191,14 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
 
   {
     // Simulate a page load with 3 origins.
-    std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+    std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
     resources.push_back(CreateResourceLoadInfo(main_frame_url));
     resources.push_back(
-        CreateResourceLoadInfo(gen(1), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(1), blink::mojom::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(2), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(2), blink::mojom::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(100), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(100), blink::mojom::ResourceType::kScript));
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
@@ -226,10 +226,10 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
               PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(Return(false));
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo(main_frame_url));
-  resources.push_back(CreateResourceLoadInfo("http://cdn.google.com/script.js",
-                                             content::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://cdn.google.com/script.js", blink::mojom::ResourceType::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
   stats_collector_->RecordPageRequestSummary(summary);
@@ -274,14 +274,14 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
 
   {
     // Simulate a page load with 3 origins.
-    std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+    std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
     resources.push_back(CreateResourceLoadInfo(main_frame_url));
     resources.push_back(
-        CreateResourceLoadInfo(gen(1), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(1), blink::mojom::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(2), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(2), blink::mojom::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(100), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(100), blink::mojom::ResourceType::kScript));
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 

@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 // static
 base::TimeDelta MergeSessionLoaderThrottle::GetMergeSessionTimeout() {
@@ -42,8 +42,8 @@ bool MergeSessionLoaderThrottle::MaybeDeferForMergeSession(
 void MergeSessionLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  is_xhr_ =
-      request->resource_type == static_cast<int>(content::ResourceType::kXhr);
+  is_xhr_ = request->resource_type ==
+            static_cast<int>(blink::mojom::ResourceType::kXhr);
   if (is_xhr_ && request->url.SchemeIsHTTPOrHTTPS() &&
       MaybeDeferForMergeSession(
           request->url,

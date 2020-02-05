@@ -218,8 +218,12 @@ crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_Rounded_Co
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ RetryOnFailure ]
 
-# Skip dual gpu switch tests on Mac Nvidia
-crbug.com/681341 [ mac nvidia ] Pixel_WebGLLowToHighPower [ Skip ]
+# Skip dual gpu switching tests on Mac Nvidia because this
+# configuration has been forced to use only the low-power GPU due to
+# graphics driver bugs.
+crbug.com/1047573 [ mac nvidia ] Pixel_WebGLLowToHighPower [ Skip ]
+crbug.com/1047573 [ mac nvidia ] Pixel_WebGLLowToHighPowerAlphaFalse [ Skip ]
+crbug.com/1047573 [ mac nvidia ] Pixel_WebGLHighToLowPower [ Skip ]
 
 # Flakes on Linux, Mac and Windows
 crbug.com/1028975 [ linux ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]

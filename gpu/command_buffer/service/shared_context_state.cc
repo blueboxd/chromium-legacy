@@ -363,8 +363,15 @@ void SharedContextState::MarkContextLost() {
     // context_state_ could be nullptr for some unittests.
     if (context_state_)
       context_state_->MarkContextLost();
-    if (gr_context_)
-      gr_context_->abandonContext();
+    // Only abandon the GrContext if it is owned by SharedContextState, because
+    // the passed in GrContext will be reused.
+    // TODO(https://crbug.com/1048692): always abandon GrContext to release all
+    // resources when chrome goes into background with low end device.
+    if (owned_gr_context_) {
+      owned_gr_context_->abandonContext();
+      owned_gr_context_.reset();
+      gr_context_ = nullptr;
+    }
     UpdateSkiaOwnedMemorySize();
     std::move(context_lost_callback_).Run();
     for (auto& observer : context_lost_observers_)

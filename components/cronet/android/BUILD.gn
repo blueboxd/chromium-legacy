@@ -805,6 +805,8 @@ if (!is_component_build) {
       "test/quic_test_server.cc",
       "test/test_upload_data_stream_handler.cc",
       "test/test_upload_data_stream_handler.h",
+      "test/url_request_intercepting_job_factory.cc",
+      "test/url_request_intercepting_job_factory.h",
     ]
 
     deps = [

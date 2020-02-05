@@ -10,6 +10,7 @@ if (is_android) {
 
 source_set("browser") {
   sources = [
+    "platform_spell_checker.h",
     "pref_names.cc",
     "pref_names.h",
     "spell_check_host_impl.cc",

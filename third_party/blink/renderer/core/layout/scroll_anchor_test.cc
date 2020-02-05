@@ -1054,7 +1054,7 @@ TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
   Update();
   GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
                                                        "display:block");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 #if !defined(OS_MACOSX)
   EXPECT_EQ(IntSize(0, 200), LayoutViewport()
                                  ->GetScrollAnimator()
@@ -1062,7 +1062,7 @@ TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
 #endif
   GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
                                                        "");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   // The clamping scroll after resizing layout overflow to be smaller
   // should adjust the animation back to 0.
   EXPECT_EQ(IntSize(0, 0), LayoutViewport()

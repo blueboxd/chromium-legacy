@@ -18,8 +18,13 @@
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
+namespace mojom {
 enum class ResourceType;
+}  // namespace mojom
+}  // namespace blink
+
+namespace content {
 class WebContents;
 }
 
@@ -73,7 +78,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   SafeBrowsingUrlCheckerImpl(
       const net::HttpRequestHeaders& headers,
       int load_flags,
-      content::ResourceType resource_type,
+      blink::mojom::ResourceType resource_type,
       bool has_user_gesture,
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
       const base::RepeatingCallback<content::WebContents*()>&

@@ -14,3 +14,14 @@ android_library("java") {
   annotation_processor_deps =
       [ "//components/module_installer/android:module_interface_processor" ]
 }
+
+source_set("module") {
+  public = [ "module.h" ]
+  sources = [ "module.cc" ]
+  deps = [
+    "//base",
+    "//chrome/android/features/stack_unwinder/public:memory_regions_map",
+    "//chrome/android/modules/stack_unwinder/provider:jni_headers",
+  ]
+  libs = [ "dl" ]
+}

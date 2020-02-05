@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,8 +45,8 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.PAINT_PREVIEW_TEST);
-        FeatureUtilities.cacheNativeFlags(featuresToCache);
-        FeatureUtilities.cacheAdditionalNativeFlags();
+        CachedFeatureFlags.cacheNativeFlags(featuresToCache);
+        CachedFeatureFlags.cacheAdditionalNativeFlags();
         mIsFinishedCachingNativeFlags = true;
     }
 
@@ -58,7 +58,7 @@ public class ChromeCachedFlags {
      */
     public void cacheServiceManagerOnlyFlags() {
         // TODO(crbug.com/995355): Move other related flags from cacheNativeFlags() to here.
-        FeatureUtilities.cacheNativeFlags(
+        CachedFeatureFlags.cacheNativeFlags(
                 Arrays.asList(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD,
                         ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH));
     }

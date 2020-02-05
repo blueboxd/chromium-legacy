@@ -11,7 +11,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -43,8 +42,8 @@ X11DesktopHandler* X11DesktopHandler::get_dont_create() {
 X11DesktopHandler::X11DesktopHandler()
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)) {
-  if (ui::PlatformEventSource::GetInstance())
-    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  if (ui::X11EventSource::HasInstance())
+    ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
   aura::Env::GetInstance()->AddObserver(this);
 
   x_root_window_events_ = std::make_unique<ui::XScopedEventSelector>(
@@ -54,8 +53,8 @@ X11DesktopHandler::X11DesktopHandler()
 
 X11DesktopHandler::~X11DesktopHandler() {
   aura::Env::GetInstance()->RemoveObserver(this);
-  if (ui::PlatformEventSource::GetInstance())
-    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  if (ui::X11EventSource::HasInstance())
+    ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 void X11DesktopHandler::AddObserver(X11DesktopHandlerObserver* observer) {
@@ -81,13 +80,12 @@ bool X11DesktopHandler::UpdateWorkspace() {
   return false;
 }
 
-bool X11DesktopHandler::CanDispatchEvent(const ui::PlatformEvent& event) {
-  return event->type == CreateNotify || event->type == DestroyNotify ||
-         (event->type == PropertyNotify &&
-          event->xproperty.window == x_root_window_);
-}
-
-uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
+bool X11DesktopHandler::DispatchXEvent(XEvent* event) {
+  if (event->type != CreateNotify && event->type != DestroyNotify &&
+      (event->type != PropertyNotify ||
+       event->xproperty.window != x_root_window_)) {
+    return false;
+  }
   switch (event->type) {
     case PropertyNotify: {
       if (event->xproperty.atom == gfx::GetAtom("_NET_CURRENT_DESKTOP")) {
@@ -107,8 +105,7 @@ uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
     default:
       NOTREACHED();
   }
-
-  return ui::POST_DISPATCH_NONE;
+  return false;
 }
 
 void X11DesktopHandler::OnWindowInitialized(aura::Window* window) {

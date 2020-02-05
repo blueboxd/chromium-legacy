@@ -479,7 +479,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // allows the admin to restrict the set of variations applied.
   registry->RegisterIntegerPref(
       prefs::kVariationsRestrictionsByPolicy,
-      static_cast<int>(RestrictionPolicyValues::NO_RESTRICTIONS));
+      static_cast<int>(RestrictionPolicy::NO_RESTRICTIONS));
 }
 
 // static

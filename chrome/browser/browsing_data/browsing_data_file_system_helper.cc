@@ -85,7 +85,7 @@ void BrowsingDataFileSystemHelper::FetchFileSystemInfoInFileThread(
       if (!BrowsingDataHelper::HasWebScheme(current))
         continue;  // Non-websafe state is not considered browsing data.
       int64_t usage = quota_util->GetOriginUsageOnFileTaskRunner(
-          filesystem_context_.get(), current, type);
+          filesystem_context_.get(), url::Origin::Create(current), type);
       auto inserted =
           file_system_info_map
               .insert(std::make_pair(

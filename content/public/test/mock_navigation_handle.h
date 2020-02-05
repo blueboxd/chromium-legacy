@@ -90,6 +90,7 @@ class MockNavigationHandle : public NavigationHandle {
       override {
     return auth_challenge_info_;
   }
+  void SetAuthChallengeInfo(const net::AuthChallengeInfo& challenge);
   net::ResolveErrorInfo GetResolveErrorInfo() override {
     return resolve_error_info_;
   }

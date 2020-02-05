@@ -152,8 +152,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   // |last_seen_server_time_| with this value.
   Time GetCurrentServerTime();
 
-// TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if defined(USE_OZONE)
   // Adds a XEvent dispatcher to the XEvent dispatcher list.
   // Also calls XEventDispatcher::GetPlatformEventDispatcher
   // to explicitly add this |dispatcher| to a list of PlatformEventDispatchers
@@ -181,7 +179,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   // restores the previous override-dispatcher (or null if there wasn't any).
   std::unique_ptr<ScopedXEventDispatcher> OverrideXEventDispatcher(
       XEventDispatcher* dispatcher);
-#endif
 
   void ProcessXEvent(XEvent* xevent);
 
@@ -197,8 +194,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
  private:
   friend class ScopedXEventDispatcher;
 
-// TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if defined(USE_OZONE)
   // Tells XEventDispatchers, which can also have PlatformEventDispatchers, that
   // a translated event is going to be sent next, then dispatches the event and
   // notifies XEventDispatchers the event has been sent out and, most probably,
@@ -207,7 +202,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
 
   // Sends XEvent to registered XEventDispatchers.
   void DispatchXEventToXEventDispatchers(XEvent* xevent);
-#endif
 
   // PlatformEventSource:
   void StopCurrentEventStream() override;
@@ -241,8 +235,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   std::default_random_engine generator_;
   std::uniform_int_distribution<int> distribution_;
 
-// TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if defined(USE_OZONE)
   // Keep track of all XEventDispatcher to send XEvents directly to.
   base::ObserverList<XEventDispatcher>::Unchecked dispatchers_xevent_;
 
@@ -250,7 +242,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
 
   XEventDispatcher* overridden_dispatcher_ = nullptr;
   bool overridden_dispatcher_restored_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

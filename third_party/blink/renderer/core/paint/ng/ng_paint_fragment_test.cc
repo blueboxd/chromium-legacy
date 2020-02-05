@@ -785,7 +785,7 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
   Element& target = *GetDocument().getElementById("target");
   target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
                                     &target);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_TRUE(line1->IsDirty());
   EXPECT_FALSE(line2->IsDirty());
@@ -812,7 +812,7 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
   ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
   Element& target = *GetDocument().getElementById("target");
   target.parentNode()->appendChild(Text::Create(GetDocument(), "XYZ"));
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(line1->IsDirty());
   EXPECT_FALSE(line2->IsDirty());
@@ -840,7 +840,7 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
   Element& target = *GetDocument().getElementById("target");
   target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
                                     target.nextSibling());
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_TRUE(line1->IsDirty());
   EXPECT_FALSE(line2->IsDirty());

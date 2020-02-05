@@ -38,10 +38,6 @@ class PageNode : public Node {
   // Returns the unique ID of the browser context that this page belongs to.
   virtual const std::string& GetBrowserContextID() const = 0;
 
-  // Returns the page almost idle state of this page.
-  // See PageNodeObserver::OnPageAlmostIdleChanged.
-  virtual bool IsPageAlmostIdle() const = 0;
-
   // Returns true if this page is currently visible, false otherwise.
   // See PageNodeObserver::OnIsVisibleChanged.
   virtual bool IsVisible() const = 0;
@@ -54,8 +50,12 @@ class PageNode : public Node {
   // See PageNodeObserver::OnIsAudibleChanged.
   virtual bool IsAudible() const = 0;
 
-  // Returns true if this page is currently loading, false otherwise.
-  // See PageNodeObserver::OnIsLoadingChanged.
+  // Returns true if this page is currently loading, false otherwise. The page
+  // starts loading when incoming data starts arriving for a top-level load to a
+  // different document. It stops loading when it reaches an "almost idle"
+  // state, based on CPU and network quiescence, or after an absolute timeout.
+  // Note: This is different from WebContents::IsLoading(). See
+  // PageNodeObserver::OnIsLoadingChanged.
   virtual bool IsLoading() const = 0;
 
   // Returns the UKM source ID associated with the URL of the main frame of
@@ -166,9 +166,6 @@ class PageNodeObserver {
   // Invoked when the MainFrameUrl property changes.
   virtual void OnMainFrameUrlChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the PageAlmostIdle property changes.
-  virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
-
   // This is fired when a non-same document navigation commits in the main
   // frame. It indicates that the the |NavigationId| property and possibly the
   // |MainFrameUrl| properties have changed.
@@ -212,7 +209,6 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageIsHoldingWebLockChanged(const PageNode* page_node) override {}
   void OnPageIsHoldingIndexedDBLockChanged(const PageNode* page_node) override {
   }
-  void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameUrlChanged(const PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(const PageNode* page_node) override {}
   void OnHadFormInteractionChanged(const PageNode* page_node) override {}

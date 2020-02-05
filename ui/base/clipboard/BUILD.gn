@@ -131,6 +131,7 @@ jumbo_component("clipboard") {
           "//ui/base",
           "//ui/base/x",
           "//ui/events/platform",
+          "//ui/events/platform/x11",
           "//ui/events/x",
           "//ui/gfx/x",
         ]

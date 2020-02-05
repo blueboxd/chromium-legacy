@@ -357,14 +357,6 @@ void ContentsView::ShowEmbeddedAssistantUI(bool show) {
   // Hide or Show results.
   auto* page_view = GetPageView(assistant_page);
   page_view->SetVisible(show);
-  if (show) {
-    page_view->RequestFocus();
-    // RequestFocus() might cause ResetForShow() method through
-    // AppListView::OnHomeLauncherGainingFocusWithoutAnimation() and it can hide
-    // |page_view|. Thus |page_view|'s visibility should be set again. See
-    // b/140831868.
-    page_view->SetVisible(show);
-  }
 
   const int search_results_page =
       GetPageIndexForState(AppListState::kStateSearchResults);

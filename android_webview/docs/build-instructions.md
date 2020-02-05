@@ -129,10 +129,10 @@ to the [next section](#removing-preinstalled-webview). Otherwise, you can change
 the package name for either target by setting the `system_webview_package_name`
 GN arg (ex. `system_webview_package_name = "com.google.android.webview"`).
 
-`monochrome_public_apk`'s package name defaults to `org.chromium.chrome`, so
-you need to modify the package name or choose `system_webview_apk` instead. We
-don't have a GN arg for this, but you can [ask the team][2] for help modifying
-build files for local development.
+`monochrome_public_apk`'s package name defaults to `org.chromium.chrome`.
+Because this not accepted by any build of the OS, you'll want to change this
+with the GN arg `chrome_public_manifest_package =
+"com.google.android.apps.chrome"`, or choose `system_webview_apk` instead.
 
 See [internal instructions][1] for the Google-internal variants of the build
 targets (`system_webview_google_apk`, `monochrome_apk`,

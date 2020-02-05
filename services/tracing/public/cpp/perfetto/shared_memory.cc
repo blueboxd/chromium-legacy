@@ -42,4 +42,8 @@ size_t MojoSharedMemory::size() const {
   return shared_buffer_->GetSize();
 }
 
+int MojoSharedMemory::fd() const {
+  return -1;
+}
+
 }  // namespace tracing

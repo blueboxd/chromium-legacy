@@ -485,7 +485,13 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // Sync password entry pinging is enabled by default.
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
+// Sync password pings are gated by SBER on Android, because warnings are
+// disabled.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(service_->IsPingingEnabled(
+#else
   EXPECT_TRUE(service_->IsPingingEnabled(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 
@@ -495,7 +501,13 @@ TEST_F(ChromePasswordProtectionServiceTest,
       &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
+// Sync password pings are gated by SBER on Android, because warnings are
+// disabled.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(service_->IsPingingEnabled(
+#else
   EXPECT_TRUE(service_->IsPingingEnabled(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 
@@ -511,13 +523,25 @@ TEST_F(ChromePasswordProtectionServiceTest,
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_PROTECTION_OFF);
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
+// Sync password pings are gated by SBER on Android, because warnings are
+// disabled.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(service_->IsPingingEnabled(
+#else
   EXPECT_TRUE(service_->IsPingingEnabled(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
+// Sync password pings are gated by SBER on Android, because warnings are
+// disabled.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(service_->IsPingingEnabled(
+#else
   EXPECT_TRUE(service_->IsPingingEnabled(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 }

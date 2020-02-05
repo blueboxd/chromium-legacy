@@ -30,6 +30,7 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+enum class SharingChannelType;
 class SharingHandlerRegistry;
 class SharingSyncPreference;
 class SharingWebRtcConnectionHost;
@@ -40,8 +41,9 @@ struct SharingWebRtcMojoPipes;
 class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
  public:
   using SendMessageCallback =
-      base::OnceCallback<void(SharingSendMessageResult,
-                              base::Optional<std::string>)>;
+      base::OnceCallback<void(SharingSendMessageResult result,
+                              base::Optional<std::string> message_id,
+                              SharingChannelType channel_type)>;
 
   SharingServiceHost(
       SharingMessageSender* message_sender,

@@ -32,7 +32,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
@@ -68,12 +68,12 @@ public class CustomTabNightModeStateControllerTest {
                 mPowerSavingObserverCaptor.capture());
         mNightModeController = new CustomTabNightModeStateController(mActivityLifecycleDispatcher,
                 mSystemNightModeMonitor, mPowerSavingModeMonitor);
-        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
+        CachedFeatureFlags.setNightModeForCustomTabsAvailableForTesting(true);
     }
 
     @After
     public void tearDown() {
-        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(false);
+        CachedFeatureFlags.setNightModeForCustomTabsAvailableForTesting(false);
     }
 
     @Test

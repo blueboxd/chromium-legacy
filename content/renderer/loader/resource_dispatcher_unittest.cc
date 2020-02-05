@@ -122,7 +122,8 @@ class ResourceDispatcherTest : public testing::Test,
     request->site_for_cookies =
         net::SiteForCookies::FromUrl(GURL(kTestPageUrl));
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
-    request->resource_type = static_cast<int>(ResourceType::kSubResource);
+    request->resource_type =
+        static_cast<int>(blink::mojom::ResourceType::kSubResource);
     request->priority = net::LOW;
     request->mode = network::mojom::RequestMode::kNoCors;
 

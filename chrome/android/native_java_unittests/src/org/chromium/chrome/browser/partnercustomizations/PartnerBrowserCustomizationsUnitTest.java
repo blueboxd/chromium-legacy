@@ -25,6 +25,7 @@ public class PartnerBrowserCustomizationsUnitTest {
         Assert.assertTrue(PartnerBrowserCustomizations.isValidHomepage("chrome-native://newtab/"));
         Assert.assertTrue(PartnerBrowserCustomizations.isValidHomepage("chrome-native://newtab"));
         Assert.assertTrue(PartnerBrowserCustomizations.isValidHomepage("chrome://newtab"));
+        Assert.assertTrue(PartnerBrowserCustomizations.isValidHomepage("chrome:newtab"));
         Assert.assertTrue(PartnerBrowserCustomizations.isValidHomepage("about://newtab"));
         Assert.assertTrue(PartnerBrowserCustomizations.isValidHomepage("about:newtab"));
         Assert.assertTrue(

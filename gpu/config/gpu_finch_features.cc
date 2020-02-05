@@ -13,10 +13,6 @@
 namespace features {
 
 #if defined(OS_ANDROID)
-// Use android AImageReader when playing videos with MediaPlayer.
-const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Used only by webview to disable SurfaceControl.
 const base::Feature kDisableSurfaceControlForWebview{
     "DisableSurfaceControlForWebview", base::FEATURE_DISABLED_BY_DEFAULT};

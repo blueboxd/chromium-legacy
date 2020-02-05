@@ -17,6 +17,9 @@ class GURLAndroid {
   static std::unique_ptr<GURL> ToNativeGURL(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& j_gurl);
+  static base::android::ScopedJavaLocalRef<jobject> FromNativeGURL(
+      JNIEnv* env,
+      const GURL& gurl);
 };
 
 }  // namespace url

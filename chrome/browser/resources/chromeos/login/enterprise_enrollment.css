@@ -55,12 +55,6 @@
   vertical-align: top;
 }
 
-.oauth-enroll-link {
-  color: rgb(17, 85, 204);
-  cursor: pointer;
-  text-decoration: none;
-}
-
 .oauth-enroll-button {
   display: none;
 }

@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
   void ActivateTriggers(const std::vector<std::string>&) override;
+  bool IsShmemProvidedByProducer() const override;
 
   // tracing::PerfettoProducer functions.
   void NewDataSourceAdded(

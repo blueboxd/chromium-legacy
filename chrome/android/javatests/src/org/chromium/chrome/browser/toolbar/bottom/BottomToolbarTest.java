@@ -28,7 +28,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -51,12 +51,12 @@ public class BottomToolbarTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
+        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
     }
 
     @After
     public void tearDown() {
-        FeatureUtilities.setIsBottomToolbarEnabledForTesting(null);
+        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
     }
 
     @Test

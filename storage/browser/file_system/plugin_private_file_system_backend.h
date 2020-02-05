@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
                                          const std::string& host,
                                          std::set<GURL>* origins) override;
   int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
-                                         const GURL& origin_url,
+                                         const url::Origin& origin,
                                          FileSystemType type) override;
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const url::Origin& origin,

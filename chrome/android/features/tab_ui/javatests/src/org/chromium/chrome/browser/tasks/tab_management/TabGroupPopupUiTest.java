@@ -45,8 +45,8 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.FullscreenManagerTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
@@ -80,16 +80,16 @@ public class TabGroupPopupUiTest {
 
     @Before
     public void setUp() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
-        FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
-        FeatureUtilities.setDuetTabStripIntegrationAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
+        CachedFeatureFlags.setDuetTabStripIntegrationAndroidEnabledForTesting(true);
     }
 
     @After
     public void tearDown() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
-        FeatureUtilities.setIsBottomToolbarEnabledForTesting(null);
-        FeatureUtilities.setDuetTabStripIntegrationAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
+        CachedFeatureFlags.setDuetTabStripIntegrationAndroidEnabledForTesting(null);
     }
 
     @Test

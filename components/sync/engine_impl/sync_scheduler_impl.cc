@@ -552,29 +552,6 @@ void SyncSchedulerImpl::HandleFailure(
         WaitInterval::EXPONENTIAL_BACKOFF, next_delay);
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
               << wait_interval_->length.InMilliseconds() << "ms.";
-
-    MaybeRecordNigoriOnlyConfigurationFailedHistograms();
-  }
-}
-
-void SyncSchedulerImpl::MaybeRecordNigoriOnlyConfigurationFailedHistograms() {
-  if (!IsNigoriOnlyConfiguration(pending_configure_params_.get())) {
-    return;
-  }
-  if (!nigori_configuration_failed_recorded) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Sync.HasAccessTokenWhenNigoriOnlyConfigurationFailed",
-        !cycle_context_->connection_manager()->HasInvalidAccessToken());
-    nigori_configuration_failed_recorded = true;
-  }
-  // Guaranteed by calling side.
-  DCHECK(wait_interval_);
-  if (!nigori_configuration_failed_with_5s_backoff_recorded &&
-      wait_interval_->length.InSeconds() > 5) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Sync.HasAccessTokenWhenNigoriOnlyConfigurationFailedWith5SecBackoff",
-        !cycle_context_->connection_manager()->HasInvalidAccessToken());
-    nigori_configuration_failed_with_5s_backoff_recorded = true;
   }
 }
 

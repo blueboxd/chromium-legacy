@@ -252,6 +252,11 @@ CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
   return signin::SetPrimaryAccount(identity_manager(), email);
 }
 
+CoreAccountInfo IdentityTestEnvironment::SetUnconsentedPrimaryAccount(
+    const std::string& email) {
+  return signin::SetUnconsentedPrimaryAccount(identity_manager(), email);
+}
+
 void IdentityTestEnvironment::SetRefreshTokenForPrimaryAccount() {
   signin::SetRefreshTokenForPrimaryAccount(identity_manager());
 }

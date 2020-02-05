@@ -12,7 +12,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
@@ -22,6 +21,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -126,7 +126,7 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
   // updated on redirects.
   const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
       original_request.resource_type ==
-              static_cast<int>(ResourceType::kMainFrame)
+              static_cast<int>(blink::mojom::ResourceType::kMainFrame)
           ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
           : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   return net::RedirectInfo::ComputeRedirectInfo(

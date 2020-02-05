@@ -93,8 +93,7 @@ NavigationID CreateNavigationID(SessionID tab_id,
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
-    const std::vector<content::mojom::ResourceLoadInfoPtr>&
-        resource_load_infos) {
+    const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos) {
   GURL main_frame_gurl(main_frame_url);
   PageRequestSummary summary(main_frame_gurl);
   summary.initial_url = GURL(initial_url);
@@ -103,33 +102,33 @@ PageRequestSummary CreatePageRequestSummary(
   return summary;
 }
 
-content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
+blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     bool always_access_network) {
-  auto resource_load_info = content::mojom::ResourceLoadInfo::New();
+  auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
   resource_load_info->origin_of_final_url = url::Origin::Create(GURL(url));
   resource_load_info->original_url = GURL(url);
   resource_load_info->method = "GET";
   resource_load_info->resource_type = resource_type;
-  resource_load_info->network_info = content::mojom::CommonNetworkInfo::New(
+  resource_load_info->network_info = blink::mojom::CommonNetworkInfo::New(
       true, always_access_network, base::nullopt);
   resource_load_info->request_priority = net::HIGHEST;
   return resource_load_info;
 }
 
-content::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
+blink::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
     const std::string& url,
-    content::ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   auto resource_load_info = CreateResourceLoadInfo(url, resource_type, false);
   resource_load_info->request_priority = net::LOWEST;
   return resource_load_info;
 }
 
-content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
+blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
-    content::ResourceType resource_type) {
-  auto resource_load_info = content::mojom::ResourceLoadInfo::New();
+    blink::mojom::ResourceType resource_type) {
+  auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
   resource_load_info->origin_of_final_url =
       url::Origin::Create(GURL(redirect_chain.back()));
   resource_load_info->original_url = GURL(redirect_chain.front());
@@ -137,11 +136,11 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
   resource_load_info->resource_type = resource_type;
   resource_load_info->request_priority = net::HIGHEST;
   auto common_network_info =
-      content::mojom::CommonNetworkInfo::New(true, false, base::nullopt);
+      blink::mojom::CommonNetworkInfo::New(true, false, base::nullopt);
   resource_load_info->network_info = common_network_info.Clone();
   for (size_t i = 0; i + 1 < redirect_chain.size(); ++i) {
     resource_load_info->redirect_info_chain.push_back(
-        content::mojom::RedirectInfo::New(
+        blink::mojom::RedirectInfo::New(
             url::Origin::Create(GURL(redirect_chain[i])),
             common_network_info.Clone()));
   }
@@ -306,7 +305,7 @@ bool operator==(const PreconnectPrediction& lhs,
 
 }  // namespace predictors
 
-namespace content {
+namespace blink {
 namespace mojom {
 
 std::ostream& operator<<(std::ostream& os, const CommonNetworkInfo& info) {
@@ -333,4 +332,4 @@ bool operator==(const ResourceLoadInfo& lhs, const ResourceLoadInfo& rhs) {
 }
 
 }  // namespace mojom
-}  // namespace content
+}  // namespace blink

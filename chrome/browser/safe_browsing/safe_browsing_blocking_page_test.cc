@@ -152,7 +152,7 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   bool IsSupported() const override { return true; }
   bool ChecksAreAlwaysAsync() const override { return false; }
   bool CanCheckResourceType(
-      content::ResourceType /* resource_type */) const override {
+      blink::mojom::ResourceType /* resource_type */) const override {
     return true;
   }
 

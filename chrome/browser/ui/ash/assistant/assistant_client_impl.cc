@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +29,8 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/service_process_host.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 
@@ -37,6 +40,9 @@ AssistantClientImpl::AssistantClientImpl() {
   // Otherwise, it will not get OnUserProfileLoaded notification.
   DCHECK(session_manager->sessions().empty());
   session_manager->AddObserver(this);
+
+  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                              content::NotificationService::AllSources());
 }
 
 AssistantClientImpl::~AssistantClientImpl() {
@@ -105,6 +111,16 @@ void AssistantClientImpl::BindAssistant(
 
   AssistantServiceConnection::GetForProfile(profile_)->service()->BindAssistant(
       std::move(receiver));
+}
+
+void AssistantClientImpl::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  if (!initialized_)
+    return;
+
+  AssistantServiceConnection::GetForProfile(profile_)->service()->Shutdown();
 }
 
 void AssistantClientImpl::OnAssistantStatusChanged(

@@ -30,6 +30,7 @@
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
+#include "chromecast/media/cma/backend/mixer/channel_layout.h"
 #include "chromecast/media/cma/backend/mixer/filter_group.h"
 #include "chromecast/media/cma/backend/mixer/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer/mixer_service_receiver.h"
@@ -470,8 +471,10 @@ void StreamMixer::Start() {
   CHECK_GT(frames_per_write_, 0);
 
   output_channel_mixer_ = std::make_unique<InterleavedChannelMixer>(
-      ::media::GuessChannelLayout(mixer_pipeline_->GetOutputChannelCount()),
-      ::media::GuessChannelLayout(num_output_channels_), frames_per_write_);
+      mixer::GuessChannelLayout(mixer_pipeline_->GetOutputChannelCount()),
+      mixer_pipeline_->GetOutputChannelCount(),
+      mixer::GuessChannelLayout(num_output_channels_), num_output_channels_,
+      frames_per_write_);
 
   int num_loopback_channels = mixer_pipeline_->GetLoopbackChannelCount();
   if (!enable_dynamic_channel_count_ && num_output_channels_ == 1) {
@@ -480,8 +483,10 @@ void StreamMixer::Start() {
   LOG(INFO) << "Using " << num_loopback_channels << " loopback "
             << ChannelString(num_loopback_channels);
   loopback_channel_mixer_ = std::make_unique<InterleavedChannelMixer>(
-      ::media::GuessChannelLayout(mixer_pipeline_->GetLoopbackChannelCount()),
-      ::media::GuessChannelLayout(num_loopback_channels), frames_per_write_);
+      mixer::GuessChannelLayout(mixer_pipeline_->GetLoopbackChannelCount()),
+      mixer_pipeline_->GetLoopbackChannelCount(),
+      mixer::GuessChannelLayout(num_loopback_channels), num_loopback_channels,
+      frames_per_write_);
 
   loopback_handler_->SetDataSize(frames_per_write_ *
                                  mixer_pipeline_->GetLoopbackChannelCount() *

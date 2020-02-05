@@ -465,7 +465,8 @@ void TracingControllerImpl::EndStartupTracing() {
 
   StopTracing(CreateFileEndpoint(
       startup_trace_file_,
-      base::BindRepeating(OnStoppedStartupTracing, startup_trace_file_)));
+      base::BindRepeating(OnStoppedStartupTracing, startup_trace_file_),
+      startup_file_endpoint_priority_));
 }
 
 void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {

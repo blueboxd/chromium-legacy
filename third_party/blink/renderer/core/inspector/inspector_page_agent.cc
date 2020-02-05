@@ -1166,7 +1166,8 @@ Response InspectorPageAgent::getLayoutMetrics(
   LocalFrame* main_frame = inspected_frames_->Root();
   VisualViewport& visual_viewport = main_frame->GetPage()->GetVisualViewport();
 
-  main_frame->GetDocument()->UpdateStyleAndLayout();
+  main_frame->GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kInspector);
 
   IntRect visible_contents =
       main_frame->View()->LayoutViewport()->VisibleContentRect();

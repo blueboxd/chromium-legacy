@@ -50,12 +50,13 @@ class Task {
     EXTENSION, /* An extension or app process. */
 
     /* Plugin processes last.*/
-    GUEST,          /* A browser plugin guest process. */
-    PLUGIN,         /* A plugin process. */
-    WORKER,         /* A web worker process. */
-    NACL,           /* A NativeClient loader or broker process. */
-    SANDBOX_HELPER, /* A sandbox helper process. */
-    SERVICE_WORKER, /* A service worker running on the renderer process. */
+    GUEST,            /* A browser plugin guest process. */
+    PLUGIN,           /* A plugin process. */
+    NACL,             /* A NativeClient loader or broker process. */
+    SANDBOX_HELPER,   /* A sandbox helper process. */
+    DEDICATED_WORKER, /* A dedicated worker running on the renderer process. */
+    SHARED_WORKER,    /* A shared worker running on the renderer process. */
+    SERVICE_WORKER,   /* A service worker running on the renderer process. */
   };
 
   // Create a task with the given |title| and the given favicon |icon|. This

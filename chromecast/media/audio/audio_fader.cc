@@ -15,7 +15,7 @@ namespace media {
 
 namespace {
 
-constexpr size_t kMaxChannels = 8;
+constexpr size_t kMaxChannels = 32;
 
 }  // namespace
 

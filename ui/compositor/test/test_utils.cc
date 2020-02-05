@@ -4,6 +4,7 @@
 
 #include "ui/compositor/test/test_utils.h"
 
+#include "base/cancelable_callback.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,10 +51,13 @@ void CheckApproximatelyEqual(const gfx::RoundedCornersF& lhs,
 
 void WaitForNextFrameToBePresented(ui::Compositor* compositor) {
   base::RunLoop runloop;
-  compositor->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
-      [&runloop](const gfx::PresentationFeedback& feedback) {
-        runloop.Quit();
-      }));
+  base::CancelableOnceCallback<void(const gfx::PresentationFeedback&)>
+      cancelable_callback(base::BindLambdaForTesting(
+          [&runloop](const gfx::PresentationFeedback& feedback) {
+            runloop.Quit();
+          }));
+  compositor->RequestPresentationTimeForNextFrame(
+      cancelable_callback.callback());
   runloop.Run();
 }
 

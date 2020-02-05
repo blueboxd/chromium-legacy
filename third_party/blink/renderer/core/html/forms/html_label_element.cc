@@ -196,7 +196,7 @@ void HTMLLabelElement::DefaultEventHandler(Event& evt) {
 
     processing_click_ = true;
 
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInput);
     if (element->IsMouseFocusable()) {
       // If the label is *not* selected, or if the click happened on
       // selection of label, only then focus the control element.

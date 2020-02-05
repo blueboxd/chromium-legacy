@@ -24,6 +24,7 @@
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_lock_observer.h"
+#include "components/performance_manager/public/decorators/page_load_tracker_decorator_helper.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -127,6 +128,8 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
 
   page_live_state_data_helper_ =
       std::make_unique<performance_manager::PageLiveStateDecoratorHelper>();
+  page_load_tracker_decorator_helper_ =
+      std::make_unique<performance_manager::PageLoadTrackerDecoratorHelper>();
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
@@ -138,6 +141,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   g_browser_process->profile_manager()->RemoveObserver(this);
   observed_profiles_.RemoveAll();
 
+  page_load_tracker_decorator_helper_.reset();
   page_live_state_data_helper_.reset();
 
   // There may still be WebContents and RenderProcessHosts with attached user

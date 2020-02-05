@@ -24,6 +24,7 @@
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
+#include "media/base/channel_layout.h"
 #include "media/base/media_util.h"
 
 namespace base {
@@ -97,6 +98,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
 
   // MixerInput::Source implementation:
   size_t num_channels() const override;
+  ::media::ChannelLayout channel_layout() const override;
   int sample_rate() const override;
   bool primary() override;
   const std::string& device_id() override;
@@ -147,6 +149,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   const int fill_size_;
   const int algorithm_fill_size_;
   const int num_channels_;
+  const ::media::ChannelLayout channel_layout_;
   const int input_samples_per_second_;
   const mixer_service::SampleFormat sample_format_;
   const bool primary_;

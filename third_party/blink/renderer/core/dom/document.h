@@ -552,14 +552,13 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleAndLayoutTreeForNode(const Node*);
   void UpdateStyleAndLayoutTreeForSubtree(const Node*);
 
-  enum ForcedLayoutStatus { IsForcedLayout, IsNotForcedLayout };
-  void UpdateStyleAndLayout(ForcedLayoutStatus = IsForcedLayout);
+  void UpdateStyleAndLayout(DocumentUpdateReason);
   void LayoutUpdated();
   enum RunPostLayoutTasks {
     kRunPostLayoutTasksAsynchronously,
     kRunPostLayoutTasksSynchronously,
   };
-  void UpdateStyleAndLayoutForNode(const Node*);
+  void UpdateStyleAndLayoutForNode(const Node*, DocumentUpdateReason);
   scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.

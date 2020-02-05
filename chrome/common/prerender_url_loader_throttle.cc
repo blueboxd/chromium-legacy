@@ -13,6 +13,8 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace prerender {
 
@@ -73,7 +75,8 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
                                            kPurposeHeaderValue);
   }
 
-  resource_type_ = static_cast<content::ResourceType>(request->resource_type);
+  resource_type_ =
+      static_cast<blink::mojom::ResourceType>(request->resource_type);
   // Abort any prerenders that spawn requests that use unsupported HTTP
   // methods or schemes.
   if (!IsValidHttpMethod(mode_, request->method)) {
@@ -84,7 +87,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
   }
 
   if (request->resource_type !=
-          static_cast<int>(content::ResourceType::kMainFrame) &&
+          static_cast<int>(blink::mojom::ResourceType::kMainFrame) &&
       !DoesSubresourceURLHaveValidScheme(request->url)) {
     // Destroying the prerender for unsupported scheme only for non-main
     // resource to allow chrome://crash to actually crash in the
@@ -99,7 +102,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
 
 #if defined(OS_ANDROID)
   if (request->resource_type ==
-      static_cast<int>(content::ResourceType::kFavicon)) {
+      static_cast<int>(blink::mojom::ResourceType::kFavicon)) {
     // Delay icon fetching until the contents are getting swapped in
     // to conserve network usage in mobile devices.
     *defer = true;
@@ -137,7 +140,7 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
   redirect_count_++;
   if (mode_ == PREFETCH_ONLY) {
     RecordPrefetchResponseReceived(
-        histogram_prefix_, content::IsResourceTypeFrame(resource_type_),
+        histogram_prefix_, blink::IsResourceTypeFrame(resource_type_),
         true /* is_redirect */, IsNoStoreResponse(response_head));
   }
 
@@ -153,7 +156,7 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
     CallCancelPrerenderForUnsupportedScheme(std::move(canceler_),
                                             redirect_info->new_url);
   } else if (follow_only_when_prerender_shown_header == "1" &&
-             resource_type_ != content::ResourceType::kMainFrame) {
+             resource_type_ != blink::mojom::ResourceType::kMainFrame) {
     // Only defer redirects with the Follow-Only-When-Prerender-Shown
     // header. Do not defer redirects on main frame loads.
     *defer = true;
@@ -168,7 +171,7 @@ void PrerenderURLLoaderThrottle::WillProcessResponse(
   if (mode_ != PREFETCH_ONLY)
     return;
 
-  bool is_main_resource = content::IsResourceTypeFrame(resource_type_);
+  bool is_main_resource = blink::IsResourceTypeFrame(resource_type_);
   RecordPrefetchResponseReceived(histogram_prefix_, is_main_resource,
                                  true /* is_redirect */,
                                  IsNoStoreResponse(*response_head));

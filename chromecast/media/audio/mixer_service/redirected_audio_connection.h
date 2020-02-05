@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "chromecast/media/audio/mixer_service/mixer_connection.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
+#include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/volume_control.h"
 
 namespace chromecast {
@@ -36,6 +37,11 @@ class RedirectedAudioConnection : public MixerConnection,
   struct Config {
     // The number of output channels to send to the redirected output.
     int num_output_channels = 2;
+
+    // Channel layout of the redirected audio, used for up/downmixing if needed.
+    // Leave as UNSUPPORTED to autodetect based on |num_output_channels|.
+    media::ChannelLayout output_channel_layout =
+        media::ChannelLayout::UNSUPPORTED;
 
     // The order of this redirector (used to determine which output receives the
     // audio stream, if more than one redirection applies to a single stream).

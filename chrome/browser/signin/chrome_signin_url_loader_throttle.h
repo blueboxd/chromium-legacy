@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_type.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace signin {
 
@@ -54,7 +54,7 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   GURL request_url_;
   GURL request_referrer_;
   net::HttpRequestHeaders request_headers_;
-  content::ResourceType request_resource_type_;
+  blink::mojom::ResourceType request_resource_type_;
 
   base::OnceClosure destruction_callback_;
 

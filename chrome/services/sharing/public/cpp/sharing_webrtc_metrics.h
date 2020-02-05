@@ -86,6 +86,20 @@ enum class WebRtcTimingEvent {
   kMaxValue = kDestroyed,
 };
 
+// Result of receiving a Sharing message via WebRTC.
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingWebRtcOnMessageReceivedResult" in
+// src/tools/metrics/histograms/enums.xml.
+enum class WebRtcOnMessageReceivedResult {
+  kDecryptionFailed = 0,
+  kParseFailed = 1,
+  kInvalidPayload = 2,
+  kHandlerNotFound = 3,
+  kSuccess = 4,
+  kMaxValue = kSuccess,
+};
+
 // Converts string |type| to WebRtcConnectionType. The valid strings for
 // |type| are defined in https://tools.ietf.org/html/rfc5245.
 // Note that kInvalid does not have a corresponding valid string.
@@ -111,6 +125,10 @@ void LogWebRtcConnectionErrorReason(WebRtcConnectionErrorReason reason);
 
 // Logs the timing for |event| to UMA.
 void LogWebRtcTimingEvent(WebRtcTimingEvent event, base::TimeDelta delay);
+
+// Logs the result of receiving a message via WebRTC.
+void LogSharingWebRtcOnMessageReceivedResult(
+    WebRtcOnMessageReceivedResult result);
 
 }  // namespace sharing
 

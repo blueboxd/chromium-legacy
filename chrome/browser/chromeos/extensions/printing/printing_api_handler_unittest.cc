@@ -29,7 +29,6 @@
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/test_event_router.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/features/feature_channel.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/test_print_backend.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -110,8 +109,7 @@ chromeos::Printer ConstructPrinter(const std::string& id,
 
 class PrintingAPIHandlerUnittest : public testing::Test {
  public:
-  PrintingAPIHandlerUnittest()
-      : scoped_current_channel_(version_info::Channel::DEV) {}
+  PrintingAPIHandlerUnittest() = default;
   ~PrintingAPIHandlerUnittest() override = default;
 
   void SetUp() override {
@@ -186,8 +184,6 @@ class PrintingAPIHandlerUnittest : public testing::Test {
   base::Optional<std::string> error_;
 
  private:
-  // TODO(crbug.com/992889): Remove this once the API is launched for stable.
-  ScopedCurrentChannel scoped_current_channel_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingAPIHandlerUnittest);

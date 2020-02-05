@@ -1511,8 +1511,8 @@ class AppCacheStorageImplTest : public testing::Test {
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");
       handler_ = host2->CreateRequestHandler(
-          std::make_unique<AppCacheRequest>(request), ResourceType::kMainFrame,
-          false);
+          std::make_unique<AppCacheRequest>(request),
+          blink::mojom::ResourceType::kMainFrame, false);
       handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }

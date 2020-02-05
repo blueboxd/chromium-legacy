@@ -7,8 +7,9 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/event.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -19,16 +20,14 @@ X11PropertyChangeWaiter::X11PropertyChangeWaiter(XID window,
                                                  const char* property)
     : x_window_(window), property_(property), wait_(true) {
   // Ensure that we are listening to PropertyNotify events for |window|. This
-  // is not the case for windows which were not created by
-  // DesktopWindowTreeHostX11.
+  // is not the case for windows which were not created by X11Window.
   x_window_events_ =
       std::make_unique<ui::XScopedEventSelector>(x_window_, PropertyChangeMask);
 
-  // Override the dispatcher so that we get events before
-  // DesktopWindowTreeHostX11 does. We must do this because
-  // DesktopWindowTreeHostX11 stops propagation.
+  // Override the dispatcher so that we get events before X11Window does. We
+  // must do this because X11Window stops propagation.
   dispatcher_ =
-      ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
+      ui::X11EventSource::GetInstance()->OverrideXEventDispatcher(this);
 }
 
 X11PropertyChangeWaiter::~X11PropertyChangeWaiter() = default;
@@ -44,30 +43,23 @@ void X11PropertyChangeWaiter::Wait() {
   dispatcher_.reset();
 }
 
-bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(
-    const ui::PlatformEvent& event) {
+bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(XEvent* event) {
   // Stop waiting once we get a property change.
   return true;
 }
 
-bool X11PropertyChangeWaiter::CanDispatchEvent(const ui::PlatformEvent& event) {
-  NOTREACHED();
-  return true;
-}
-
-uint32_t X11PropertyChangeWaiter::DispatchEvent(
-    const ui::PlatformEvent& event) {
-  if (!wait_ || event->type != PropertyNotify ||
-      event->xproperty.window != x_window_ ||
-      event->xproperty.atom != gfx::GetAtom(property_) ||
-      ShouldKeepOnWaiting(event)) {
-    return ui::POST_DISPATCH_PERFORM_DEFAULT;
+bool X11PropertyChangeWaiter::DispatchXEvent(XEvent* xev) {
+  if (!xev || !wait_ || xev->type != PropertyNotify ||
+      xev->xproperty.window != x_window_ ||
+      xev->xproperty.atom != gfx::GetAtom(property_) ||
+      ShouldKeepOnWaiting(xev)) {
+    return false;
   }
 
   wait_ = false;
   if (!quit_closure_.is_null())
     std::move(quit_closure_).Run();
-  return ui::POST_DISPATCH_PERFORM_DEFAULT;
+  return false;
 }
 
 }  // namespace views

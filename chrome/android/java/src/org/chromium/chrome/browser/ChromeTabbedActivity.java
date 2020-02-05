@@ -75,8 +75,8 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
@@ -573,7 +573,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
                     //  enabled, and tab switcher is not shown:
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
-                    if (FeatureUtilities.isGridTabSwitcherEnabled()
+                    if (CachedFeatureFlags.isGridTabSwitcherEnabled()
                             && !mOverviewModeController.overviewVisible()) {
                         if (getTabModelSelector().getTotalTabCount() == 0
                                 || (!getTabModelSelector().isIncognitoSelected()
@@ -618,7 +618,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
             if (isTablet()) {
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
-                if (FeatureUtilities.isGridTabSwitcherEnabled()) {
+                if (CachedFeatureFlags.isGridTabSwitcherEnabled()) {
                     TabManagementDelegate tabManagementDelegate =
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
@@ -658,7 +658,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
                     }
                 }
 
-                if (isInOverviewMode() && !FeatureUtilities.isGridTabSwitcherEnabled()) {
+                if (isInOverviewMode() && !CachedFeatureFlags.isGridTabSwitcherEnabled()) {
                     hideOverview();
                 } else {
                     showOverview(OverviewModeState.SHOWING_TABSWITCHER);
@@ -804,7 +804,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
     public void startNativeInitialization() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.startNativeInitialization")) {
             // This is on the critical path so don't delay.
-            if (FeatureUtilities.isNightModeAvailable()
+            if (CachedFeatureFlags.isNightModeAvailable()
                     && ChromeFeatureList.isEnabled(
                             ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
                 WebContentsDarkModeController.createInstance();
@@ -976,7 +976,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
-            if (FeatureUtilities.isGridTabSwitcherEnabled() && !isTablet()) {
+            if (CachedFeatureFlags.isGridTabSwitcherEnabled() && !isTablet()) {
                 assert !getCurrentTabModel().isIncognito();
                 mStartSurface.getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());
@@ -1193,7 +1193,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
         // If the grid tab switcher is enabled and the tab switcher will be shown on start,
         //  do not create a new tab. With the grid, creating a new tab is now a one tap action.
-        if (shouldShowTabSwitcherOnStart() && FeatureUtilities.isGridTabSwitcherEnabled()) return;
+        if (shouldShowTabSwitcherOnStart() && CachedFeatureFlags.isGridTabSwitcherEnabled()) return;
 
         String url = HomepageManager.getHomepageUri();
         if (TextUtils.isEmpty(url)) {
@@ -1398,7 +1398,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
                         } else if (IncognitoTabLauncher.didCreateIntent(intent)) {
                             Tab tab = getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
                                     TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB);
-                            if (IncognitoTabLauncher.shouldFocusOmnibox()) {
+                            if (IncognitoTabLauncher.shouldFocusOmnibox(intent)) {
                                 // Since the Tab is created in the foreground, its View will gain
                                 // focus, and since the Tab and the URL bar are not yet in the same
                                 // View hierarchy, setting the URL bar's focus here won't clear the

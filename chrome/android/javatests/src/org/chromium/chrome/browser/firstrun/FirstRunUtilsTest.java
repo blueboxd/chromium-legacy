@@ -77,7 +77,7 @@ public class FirstRunUtilsTest {
     // TODO(nyquist): Remove this if the test is not flaky anymore.
     @Test
     @SmallTest
-    @Feature({"FeatureUtilities", "GoogleAccounts"})
+    @Feature({"GoogleAccounts"})
     public void testHasGoogleAccountCorrectlyDetected() {
         // Set up an account manager mock that returns Google account types
         // when queried.
@@ -101,7 +101,7 @@ public class FirstRunUtilsTest {
     // TODO(nyquist): Remove this if the test is not flaky anymore.
     @Test
     @SmallTest
-    @Feature({"FeatureUtilities", "GoogleAccounts"})
+    @Feature({"GoogleAccounts"})
     public void testHasNoGoogleAccountCorrectlyDetected() {
         // Set up an account manager mock that doesn't have any accounts and doesn't have Google
         // account authenticator.

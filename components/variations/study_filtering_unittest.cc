@@ -296,6 +296,49 @@ TEST(VariationsStudyFilteringTest, CheckStudyEnterprise) {
   EXPECT_TRUE(internal::CheckStudyEnterprise(filter, client_non_enterprise));
 }
 
+TEST(VariationsStudyFilteringTest, CheckStudyPolicyRestriction) {
+  Study::Filter filter;
+
+  // Check that if the filter is not set, study applies to clients with no
+  // restrictive policy.
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_FALSE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+
+  // Explicitly set to none filter should be the same as no filter.
+  filter.set_policy_restriction(Study::NONE);
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_FALSE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+
+  // If the filter is set to CRITICAL then apply it to all clients that do not
+  // disable all experiements.
+  filter.set_policy_restriction(Study::CRITICAL);
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+
+  // If the filter is set to CRITICAL_ONLY then apply it only to clients that
+  // have requested critical studies but not to clients with no or full
+  // restrictions.
+  filter.set_policy_restriction(Study::CRITICAL_ONLY);
+  EXPECT_FALSE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+}
+
 TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
   const base::Time now = base::Time::Now();
   const base::TimeDelta delta = base::TimeDelta::FromHours(1);

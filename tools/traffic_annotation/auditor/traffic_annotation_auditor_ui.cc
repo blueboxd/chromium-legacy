@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdlib.h>
+
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -16,6 +18,10 @@
 #include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 
 namespace {
+
+// extractor.py returns 2 if it has a parsing error (from invalid C++ source
+// code). Even in error-resilient mode, this should cause a CQ failure.
+const int EX_PARSE_ERROR = 2;
 
 const char* HELP_TEXT = R"(
 Traffic Annotation Auditor
@@ -313,7 +319,7 @@ int main(int argc, char* argv[]) {
   if (command_line.HasSwitch("help") || command_line.HasSwitch("h") ||
       argc == 1) {
     printf("%s", HELP_TEXT);
-    return 1;
+    return EXIT_FAILURE;
   }
 
   base::FilePath build_path = command_line.GetSwitchValuePath("build-path");
@@ -341,14 +347,14 @@ int main(int argc, char* argv[]) {
           << "The value for 'limit' switch should be a positive integer.";
 
       // This error is always enforced, as it is a commandline switch.
-      return 1;
+      return EXIT_FAILURE;
     }
   }
 
   // If 'error-resilient' switch is provided, 0 will be returned in case of
   // operational errors, otherwise 1.
   bool error_resilient = command_line.HasSwitch("error-resilient");
-  int error_value = error_resilient ? 0 : 1;
+  int error_value = error_resilient ? EXIT_SUCCESS : EXIT_FAILURE;
 
 #if defined(OS_WIN)
   for (const auto& path : command_line.GetArgs()) {
@@ -371,7 +377,7 @@ int main(int argc, char* argv[]) {
         << "You must specify a compiled build directory to run the auditor.\n";
 
     // This error is always enforced, as it is a commandline switch.
-    return 1;
+    return EXIT_FAILURE;
   }
 
   // If source path is not provided, guess it using build path.
@@ -401,9 +407,18 @@ int main(int argc, char* argv[]) {
       auditor.ClearPathFilters();
     }
 
-    if (!auditor.RunExtractor(backend, filter_files, all_files,
-                              !error_resilient, errors_file)) {
-      LOG(ERROR) << "Failed to run clang tool.";
+    int extractor_exit_code = EXIT_SUCCESS;
+    if (!auditor.RunExtractor(backend, filter_files, all_files, errors_file,
+                              &extractor_exit_code)) {
+      LOG(ERROR) << "Failed to run extractor.py. (exit code "
+                 << extractor_exit_code << ")";
+      // Parsing errors cause failures, even in error-resilient mode.
+      if (extractor_exit_code == EX_PARSE_ERROR) {
+        LOG(ERROR) << "The Traffic Annotation Auditor failed to parse a "
+                   << "network annotation definition. (see CppParsingError "
+                   << "above)";
+        return EX_PARSE_ERROR;
+      }
       return error_value;
     }
 

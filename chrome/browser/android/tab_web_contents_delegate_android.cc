@@ -19,7 +19,7 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroid_jni.h"
-#include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/cached_feature_flags.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"

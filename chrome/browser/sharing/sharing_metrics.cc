@@ -26,6 +26,23 @@ const char* GetEnumStringValue(SharingFeatureName feature) {
   }
 }
 
+// Maps SharingChannelType enum values to strings used as histogram
+// suffixes. Keep in sync with "SharingChannelType" in histograms.xml.
+std::string SharingChannelTypeToString(SharingChannelType channel_type) {
+  switch (channel_type) {
+    case SharingChannelType::kUnknown:
+      return "Unknown";
+    case SharingChannelType::kFcmVapid:
+      return "FcmVapid";
+    case SharingChannelType::kFcmSenderId:
+      return "FcmSenderId";
+    case SharingChannelType::kServer:
+      return "Server";
+    case SharingChannelType::kWebRtc:
+      return "WebRTC";
+  }
+}
+
 // Maps SharingDevicePlatform enum values to strings used as histogram
 // suffixes. Keep in sync with "SharingDevicePlatform" in histograms.xml.
 std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
@@ -222,13 +239,16 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
                               SharingDevicePlatform receiver_device_platform,
+                              SharingChannelType channel_type,
                               base::TimeDelta time) {
-  std::string suffixed_name = base::StrCat(
+  std::string type_suffixed_name = base::StrCat(
       {"Sharing.MessageAckTime.", SharingMessageTypeToString(message_type)});
   std::string platform_suffixed_name =
       base::StrCat({"Sharing.MessageAckTime.",
                     DevicePlatformToString(receiver_device_platform), ".",
                     SharingMessageTypeToString(message_type)});
+  std::string channel_suffixed_name = base::StrCat(
+      {"Sharing.MessageAckTime.", SharingChannelTypeToString(channel_type)});
   switch (message_type) {
     case chrome_browser_sharing::MessageType::UNKNOWN_MESSAGE:
     case chrome_browser_sharing::MessageType::PING_MESSAGE:
@@ -237,13 +257,23 @@ void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
     case chrome_browser_sharing::MessageType::PEER_CONNECTION_OFFER_MESSAGE:
     case chrome_browser_sharing::MessageType::
         PEER_CONNECTION_ICE_CANDIDATES_MESSAGE:
-      base::UmaHistogramMediumTimes(suffixed_name, time);
+      base::UmaHistogramMediumTimes(type_suffixed_name, time);
       base::UmaHistogramMediumTimes(platform_suffixed_name, time);
+      base::UmaHistogramMediumTimes(channel_suffixed_name, time);
       break;
     case chrome_browser_sharing::MessageType::SMS_FETCH_REQUEST:
     case chrome_browser_sharing::MessageType::DISCOVERY_REQUEST:
       base::UmaHistogramCustomTimes(
-          suffixed_name, time, /*min=*/base::TimeDelta::FromMilliseconds(1),
+          type_suffixed_name, time,
+          /*min=*/base::TimeDelta::FromMilliseconds(1),
+          /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
+      base::UmaHistogramCustomTimes(
+          platform_suffixed_name, time,
+          /*min=*/base::TimeDelta::FromMilliseconds(1),
+          /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
+      base::UmaHistogramCustomTimes(
+          channel_suffixed_name, time,
+          /*min=*/base::TimeDelta::FromMilliseconds(1),
           /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
       break;
     case chrome_browser_sharing::MessageType::ACK_MESSAGE:
@@ -322,10 +352,12 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
 void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform receiving_device_platform,
+    SharingChannelType channel_type,
     SharingSendMessageResult result) {
   const std::string metric_prefix = "Sharing.SendMessageResult";
 
   base::UmaHistogramEnumeration(metric_prefix, result);
+
   base::UmaHistogramEnumeration(
       base::StrCat(
           {metric_prefix, ".", SharingMessageTypeToString(message_type)}),
@@ -335,20 +367,28 @@ void LogSendSharingMessageResult(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(receiving_device_platform)}),
       result);
+
   base::UmaHistogramEnumeration(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(receiving_device_platform), ".",
                     SharingMessageTypeToString(message_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat(
+          {metric_prefix, ".", SharingChannelTypeToString(channel_type)}),
       result);
 }
 
 void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform ack_receiver_device_type,
+    SharingChannelType channel_type,
     SharingSendMessageResult result) {
   const std::string metric_prefix = "Sharing.SendAckMessageResult";
 
   base::UmaHistogramEnumeration(metric_prefix, result);
+
   base::UmaHistogramEnumeration(
       base::StrCat(
           {metric_prefix, ".", SharingMessageTypeToString(message_type)}),
@@ -358,10 +398,16 @@ void LogSendSharingAckMessageResult(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(ack_receiver_device_type)}),
       result);
+
   base::UmaHistogramEnumeration(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(ack_receiver_device_type), ".",
                     SharingMessageTypeToString(message_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat(
+          {metric_prefix, ".", SharingChannelTypeToString(channel_type)}),
       result);
 }
 

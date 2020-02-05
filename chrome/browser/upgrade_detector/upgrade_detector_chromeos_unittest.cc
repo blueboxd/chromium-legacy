@@ -173,6 +173,8 @@ TEST_F(UpgradeDetectorChromeosTest, PolicyNotEnabled) {
   EXPECT_CALL(mock_observer, OnUpgradeRecommended());
 
   NotifyUpdateReadyToInstall();
+
+  upgrade_detector.Shutdown();
 }
 
 TEST_F(UpgradeDetectorChromeosTest, TestHighAnnoyanceDeadline) {

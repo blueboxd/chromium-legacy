@@ -262,7 +262,10 @@ jumbo_component("gl") {
       "gl_surface_glx_x11.h",
     ]
 
-    deps += [ "//ui/base/x" ]
+    deps += [
+      "//ui/base/x",
+      "//ui/events/platform/x11:x11",
+    ]
 
     assert(use_egl)
     data_deps += [

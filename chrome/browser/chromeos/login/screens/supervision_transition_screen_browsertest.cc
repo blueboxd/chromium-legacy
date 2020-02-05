@@ -50,7 +50,6 @@ class SupervisionTransitionScreenTest
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(arc_temp_dir_.CreateUniqueTempDir());
-    CHECK(logged_in_user_mixin_.GetUserPolicyMixin()->RequestPolicyUpdate());
 
     arc::ArcServiceLauncher::Get()->ResetForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
@@ -67,7 +66,8 @@ class SupervisionTransitionScreenTest
     // WaitForActiveSession() otherwise.
     logged_in_user_mixin_.LogInUser(
         false /*issue_any_scope_token*/,
-        content::IsPreTest() /*wait_for_active_session*/);
+        content::IsPreTest() /*wait_for_active_session*/,
+        true /*request_policy_update*/);
   }
 
   // The tests simulate user type changes between regular and child user.

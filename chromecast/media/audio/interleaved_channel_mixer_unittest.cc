@@ -63,7 +63,8 @@ TEST_P(InterleavedChannelMixerTest, Transform) {
   original->ToInterleaved<::media::Float32SampleTypeTraits>(
       kNumFrames, original_interleaved.data());
 
-  InterleavedChannelMixer interleaved_mixer(input_layout, output_layout,
+  InterleavedChannelMixer interleaved_mixer(input_layout, num_input_channels,
+                                            output_layout, num_output_channels,
                                             kNumFrames);
   float* interleaved_mixed =
       interleaved_mixer.Transform(original_interleaved.data(), kNumFrames);

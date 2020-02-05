@@ -52,6 +52,8 @@ void DummyProducer::NotifyDataSourceStopped(perfetto::DataSourceInstanceID) {}
 
 void DummyProducer::ActivateTriggers(const std::vector<std::string>&) {}
 
+bool DummyProducer::IsShmemProvidedByProducer() const { return false; }
+
 // tracing::PerfettoProducer functions.
 void DummyProducer::NewDataSourceAdded(
     const PerfettoTracedProcess::DataSourceBase* const data_source) {}

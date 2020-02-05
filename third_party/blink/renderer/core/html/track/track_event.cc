@@ -66,13 +66,13 @@ void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& return_value) {
 
   switch (track_->GetType()) {
     case WebMediaPlayer::kTextTrack:
-      return_value.SetTextTrack(ToTextTrack(track_.Get()));
+      return_value.SetTextTrack(To<TextTrack>(track_.Get()));
       break;
     case WebMediaPlayer::kAudioTrack:
-      return_value.SetAudioTrack(ToAudioTrack(track_.Get()));
+      return_value.SetAudioTrack(To<AudioTrack>(track_.Get()));
       break;
     case WebMediaPlayer::kVideoTrack:
-      return_value.SetVideoTrack(ToVideoTrack(track_.Get()));
+      return_value.SetVideoTrack(To<VideoTrack>(track_.Get()));
       break;
     default:
       NOTREACHED();

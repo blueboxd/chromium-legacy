@@ -40,10 +40,10 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/signin/signin_utils.h"
@@ -131,12 +131,12 @@ class AccountReconcilorLockWrapper
 // * Main frame  requests.
 // * XHR requests having Gaia URL as referrer.
 bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
-  content::ResourceType resource_type = request->GetResourceType();
+  blink::mojom::ResourceType resource_type = request->GetResourceType();
 
-  if (resource_type == content::ResourceType::kMainFrame)
+  if (resource_type == blink::mojom::ResourceType::kMainFrame)
     return true;
 
-  return (resource_type == content::ResourceType::kXhr) &&
+  return (resource_type == blink::mojom::ResourceType::kXhr) &&
          gaia::IsGaiaSignonRealm(request->GetReferrerOrigin());
 }
 

@@ -91,15 +91,17 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
   url_chain_.push_back(request->url);
   request_method_ = request->method;
   is_main_frame_ = request->resource_type ==
-                   static_cast<int>(content::ResourceType::kMainFrame);
+                   static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   final_load_flags_ = request->load_flags;
 
   MaybeSetAcceptTransformHeader(
-      request->url, static_cast<content::ResourceType>(request->resource_type),
+      request->url,
+      static_cast<blink::mojom::ResourceType>(request->resource_type),
       request->previews_state, &request->custom_proxy_pre_cache_headers);
   request->custom_proxy_post_cache_headers = post_cache_headers_;
 
-  if (request->resource_type == static_cast<int>(content::ResourceType::kMedia))
+  if (request->resource_type ==
+      static_cast<int>(blink::mojom::ResourceType::kMedia))
     request->custom_proxy_use_alternate_proxy_list = true;
 }
 

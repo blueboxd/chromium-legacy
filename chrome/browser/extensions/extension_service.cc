@@ -1022,6 +1022,12 @@ void ExtensionService::CheckManagementPolicy() {
       disable_reasons &= (~disable_reason::DISABLE_BLOCKED_BY_POLICY);
     }
 
+    // If this profile is not supervised, then remove any supervised user
+    // related disable reasons.
+    if (!profile()->IsChild()) {
+      disable_reasons &= (~disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+    }
+
     extension_prefs_->ReplaceDisableReasons(extension->id(), disable_reasons);
     if (disable_reasons == disable_reason::DISABLE_NONE)
       to_enable.push_back(extension->id());

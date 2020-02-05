@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,12 +66,12 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.mojom.WindowOpenDisposition;
+import org.chromium.url.GURL;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -160,23 +161,12 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public static boolean isNTPUrl(String url) {
         // Also handle the legacy chrome://newtab and about:newtab URLs since they will redirect to
         // chrome-native://newtab natively.
-        if (url == null) return false;
-        try {
-            // URL().getProtocol() throws MalformedURLException if the scheme is "invalid",
-            // including common ones like "about:", so it's not usable for isInternalScheme().
-            URI uri = new URI(url);
-            if (!UrlUtilities.isInternalScheme(uri)) return false;
-
-            String host = uri.getHost();
-            if (host == null) {
-                // "about:newtab" would lead to null host.
-                uri = new URI(uri.getScheme() + "://" + uri.getSchemeSpecificPart());
-                host = uri.getHost();
-            }
-            return UrlConstants.NTP_HOST.equals(host);
-        } catch (URISyntaxException e) {
-            return false;
-        }
+        if (TextUtils.isEmpty(url)) return false;
+        // We need to fixup the URL to handle about: schemes and transform them into the equivalent
+        // chrome:// scheme so that GURL parses the host correctly.
+        GURL gurl = UrlFormatter.fixupUrl(url);
+        if (!gurl.isValid() || !UrlUtilities.isInternalScheme(gurl)) return false;
+        return UrlConstants.NTP_HOST.equals(gurl.getHost());
     }
 
     protected class NewTabPageManagerImpl

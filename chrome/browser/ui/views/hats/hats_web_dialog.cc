@@ -161,7 +161,7 @@ void HatsWebDialog::OnWebContentsFinishedLoad() {
 }
 
 void HatsWebDialog::OnMainFrameResourceLoadComplete(
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   // Due to https://crbug.com/1011433, we don't always get called due to failed
   // loading for javascript resource. So, We monitor all the resource load,
   // and explicitly HaTS library code. We only claim |resource_loaded_| is true

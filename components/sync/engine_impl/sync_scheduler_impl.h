@@ -131,8 +131,6 @@ class SyncSchedulerImpl : public SyncScheduler {
   // Helper function for Do{Nudge,Configuration,Poll}SyncCycleJob.
   void HandleFailure(const ModelNeutralState& model_neutral_state);
 
-  void MaybeRecordNigoriOnlyConfigurationFailedHistograms();
-
   // Invoke the Syncer to perform a poll job.
   void DoPollSyncCycleJob();
 
@@ -287,8 +285,6 @@ class SyncSchedulerImpl : public SyncScheduler {
   // Indicates whether corresponding histograms already recorded.
   // TODO(crbug.com/1041871): remove these members once Nigori metrics
   // descrepancy investigation completed.
-  bool nigori_configuration_failed_recorded = false;
-  bool nigori_configuration_failed_with_5s_backoff_recorded = false;
   bool nigori_configuration_with_invalidated_credentials_recorded = false;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -494,9 +494,6 @@ HostProcess::~HostProcess() {
 
 bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 #if defined(OS_MACOSX)
-  // Ensure we are not running as root (i.e. at the login screen).
-  DCHECK_NE(getuid(), 0U);
-
   if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
     checking_permission_state_ = true;
     permission_granted_ = mac::CanInjectInput();

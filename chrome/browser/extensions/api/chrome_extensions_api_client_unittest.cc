@@ -38,7 +38,7 @@ TEST_F(ChromeExtensionsAPIClientTest, ShouldHideResponseHeader) {
 TEST_F(ChromeExtensionsAPIClientTest, ShouldHideBrowserNetworkRequest) {
   ChromeExtensionsAPIClient client;
 
-  auto create_params = [](content::ResourceType type) {
+  auto create_params = [](blink::mojom::ResourceType type) {
     WebRequestInfoInitParams request_params;
     request_params.url = GURL("https://example.com/script.js");
     request_params.initiator =
@@ -52,16 +52,16 @@ TEST_F(ChromeExtensionsAPIClientTest, ShouldHideBrowserNetworkRequest) {
   // not be visible to extensions.
   EXPECT_TRUE(client.ShouldHideBrowserNetworkRequest(
       nullptr /* context */,
-      WebRequestInfo(create_params(content::ResourceType::kScript))));
+      WebRequestInfo(create_params(blink::mojom::ResourceType::kScript))));
 
   // Main frame requests should always be visible to extensions.
   EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(
       nullptr /* context */,
-      WebRequestInfo(create_params(content::ResourceType::kMainFrame))));
+      WebRequestInfo(create_params(blink::mojom::ResourceType::kMainFrame))));
 
   // Similar requests made by the renderer should be visible to extensions.
   WebRequestInfoInitParams params =
-      create_params(content::ResourceType::kScript);
+      create_params(blink::mojom::ResourceType::kScript);
   params.render_process_id = 2;
   EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(
       nullptr /* context */, WebRequestInfo(std::move(params))));

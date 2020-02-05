@@ -5,20 +5,22 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector_impl.h"
 
 #include <initializer_list>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/upgrade_detector/installed_version_poller.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -113,12 +115,19 @@ class UpgradeDetectorImplTest : public ::testing::Test {
  protected:
   UpgradeDetectorImplTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
-    // Disable the detector's check to see if autoupdates are inabled.
+        scoped_local_state_(TestingBrowserProcess::GetGlobal()),
+        scoped_poller_disabler_(
+            InstalledVersionPoller::MakeScopedDisableForTesting()) {
+    // Disable the detector's check to see if autoupdates are enabled.
     // Without this, tests put the detector into an invalid state by detecting
     // upgrades before the detection task completes.
     scoped_local_state_.Get()->SetUserPref(prefs::kAttemptedToEnableAutoupdate,
                                            std::make_unique<base::Value>(true));
+    UpgradeDetector::GetInstance()->Init();
+  }
+
+  ~UpgradeDetectorImplTest() override {
+    UpgradeDetector::GetInstance()->Shutdown();
   }
 
   const base::Clock* GetMockClock() { return task_environment_.GetMockClock(); }
@@ -149,8 +158,9 @@ class UpgradeDetectorImplTest : public ::testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_local_state_;
+  InstalledVersionPoller::ScopedDisableForTesting scoped_poller_disabler_;
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTest);
 };
@@ -158,6 +168,7 @@ class UpgradeDetectorImplTest : public ::testing::Test {
 TEST_F(UpgradeDetectorImplTest, VariationsChanges) {
   TestUpgradeDetectorImpl detector(GetMockClock(), GetMockTickClock());
   TestUpgradeNotificationListener notifications_listener(&detector);
+  detector.Init();
   EXPECT_FALSE(detector.notify_upgrade());
   EXPECT_EQ(0, notifications_listener.notification_count());
 
@@ -174,11 +185,13 @@ TEST_F(UpgradeDetectorImplTest, VariationsChanges) {
   // Execute tasks posted by |detector| referencing it while it's still in
   // scope.
   RunUntilIdle();
+  detector.Shutdown();
 }
 
 TEST_F(UpgradeDetectorImplTest, VariationsCriticalChanges) {
   TestUpgradeDetectorImpl detector(GetMockClock(), GetMockTickClock());
   TestUpgradeNotificationListener notifications_listener(&detector);
+  detector.Init();
   EXPECT_FALSE(detector.notify_upgrade());
   EXPECT_EQ(0, notifications_listener.notification_count());
 
@@ -195,6 +208,8 @@ TEST_F(UpgradeDetectorImplTest, VariationsCriticalChanges) {
   // Execute tasks posted by |detector| referencing it while it's still in
   // scope.
   RunUntilIdle();
+
+  detector.Shutdown();
 }
 
 // Tests that the proper notifications are sent for the expected stages as the
@@ -207,6 +222,7 @@ TEST_F(UpgradeDetectorImplTest, VariationsCriticalChanges) {
 TEST_F(UpgradeDetectorImplTest, TestPeriodChanges) {
   TestUpgradeDetectorImpl upgrade_detector(GetMockClock(), GetMockTickClock());
   ::testing::StrictMock<MockUpgradeObserver> mock_observer(&upgrade_detector);
+  upgrade_detector.Init();
 
   // Changing the period when no upgrade has been detected updates the
   // thresholds and nothing else.
@@ -362,6 +378,8 @@ TEST_F(UpgradeDetectorImplTest, TestPeriodChanges) {
   ::testing::Mock::VerifyAndClear(&mock_observer);
   EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
             UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
+
+  upgrade_detector.Shutdown();
 }
 
 // Appends the time and stage from detector to |notifications|.
@@ -401,6 +419,7 @@ TEST_P(UpgradeDetectorImplTimerTest, TestNotificationTimer) {
 
   TestUpgradeDetectorImpl detector(GetMockClock(), GetMockTickClock());
   ::testing::StrictMock<MockUpgradeObserver> mock_observer(&detector);
+  detector.Init();
 
   // Cache the thresholds for the detector's annoyance levels.
   const base::TimeDelta thresholds[4] = {
@@ -480,4 +499,6 @@ TEST_P(UpgradeDetectorImplTimerTest, TestNotificationTimer) {
   // No new notifications after high annoyance has been reached.
   FastForwardBy(thresholds[3]);
   ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  detector.Shutdown();
 }

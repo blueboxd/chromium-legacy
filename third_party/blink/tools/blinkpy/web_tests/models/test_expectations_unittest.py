@@ -96,6 +96,32 @@ class BasicTests(Base):
         self.assert_exp('failures/expected/image.html', ResultType.Crash)
 
 
+class FlagExpectationsTests(Base):
+
+    def setup_using_raw_expectations(self, base_exps='', flag_exps='', flag_name=''):
+        self._general_exp_filename = 'TestExpectations'
+        self._port.host.filesystem.write_text_file(self._general_exp_filename, base_exps)
+        expectations_dict = {self._general_exp_filename: base_exps}
+
+        # set up flag specific expectations
+        if flag_name:
+            self._flag_exp_filename = self._port.host.filesystem.join('FlagExpectations', flag_name)
+            self._port.host.filesystem.write_text_file(self._flag_exp_filename, flag_exps)
+            expectations_dict[self._flag_exp_filename] = flag_exps
+
+        self._test_expectations = TestExpectations(self._port, expectations_dict)
+
+    def test_add_flag_test_expectations(self):
+        raw_flag_exps = """
+        # tags: [ Win ]
+        # results: [ Failure ]
+        [ Win ] failures/expected/text.html [ Failure ]
+        """
+        self.setup_using_raw_expectations(flag_exps=raw_flag_exps, flag_name='composite-after-paint')
+        flag_exp = self._test_expectations.get_flag_expectations('failures/expected/text.html')
+        self.assertEqual(flag_exp.results, set([ResultType.Failure]))
+        self.assertEqual(self._test_expectations.flag_name, '/composite-after-paint')
+
 class SystemConfigurationRemoverTests(Base):
 
     def __init__(self, testFunc):

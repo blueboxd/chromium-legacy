@@ -132,9 +132,8 @@ class SimplePerfRunner(object):
                  self.device.product_cpu_abi)
     return arch
 
-  def GetWebViewLibraryNameAndPath(self):
+  def GetWebViewLibraryNameAndPath(self, package_name):
     """Get WebView library name and path on the device."""
-    package_name = self._GetCurrentWebViewProvider()
     apk_path = self._GetWebViewApkPath(package_name)
     logging.debug('WebView APK path:' + apk_path)
     # TODO(changwan): check if we need support for bundle.
@@ -153,12 +152,14 @@ class SimplePerfRunner(object):
 
   def Run(self):
     """Run the simpleperf and do the post processing."""
+    package_name = self.GetCurrentWebViewProvider()
+    SimplePerfRunner.RunPackageCompile(package_name)
     perf_data_path = os.path.join(self.tmp_dir, 'perf.data')
     SimplePerfRunner.RunSimplePerf(perf_data_path, self.args.record_options)
     lines = SimplePerfRunner.GetOriginalReportHtml(
         perf_data_path,
         os.path.join(self.tmp_dir, 'unprocessed_report.html'))
-    lib_name, lib_path = self.GetWebViewLibraryNameAndPath()
+    lib_name, lib_path = self.GetWebViewLibraryNameAndPath(package_name)
     addresses = SimplePerfRunner.CollectAddresses(lines, lib_name)
     logging.info("Extracted %d addresses", len(addresses))
     address_function_pairs = self.address_interpreter.Interpret(
@@ -185,7 +186,16 @@ class SimplePerfRunner(object):
       cmd.extend(['--record_options', record_options])
     subprocess.check_call(cmd)
 
-  def _GetCurrentWebViewProvider(self):
+  @staticmethod
+  def RunPackageCompile(package_name):
+    """Compile the package (dex optimization)."""
+    cmd = [
+        'adb', 'shell', 'cmd', 'package', 'compile', '-m', 'speed', '-f',
+        package_name
+    ]
+    subprocess.check_call(cmd)
+
+  def GetCurrentWebViewProvider(self):
     return self.device.GetWebViewUpdateServiceDump()['CurrentWebViewPackage']
 
   def _GetWebViewApkPath(self, package_name):

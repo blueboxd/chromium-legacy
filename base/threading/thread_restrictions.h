@@ -219,6 +219,7 @@ class ModelSafeWorker;
 namespace ui {
 class CommandBufferClientImpl;
 class CommandBufferLocal;
+class DrmThreadProxy;
 class GpuState;
 class MaterialDesignController;
 }
@@ -499,6 +500,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class media::PaintCanvasVideoRenderer;
   friend class mojo::SyncCallRestrictions;
   friend class net::NetworkConfigWatcherMacThread;
+  friend class ui::DrmThreadProxy;
   friend class viz::HostGpuMemoryBufferManager;
   friend class vr::VrShell;
 

@@ -112,6 +112,12 @@ class ModelTypeInfoChangeTest(unittest.TestCase):
     results = self._testChange('{PROXY_TABS, "", "", "Tabs", -1, 25},')
     self.assertEqual(0, len(results))
 
+  def testValidChangeDeprecatedEntry(self):
+    results = self._testChange('{DEPRECATED_EXPERIMENTS, "EXPERIMENTS",'
+      '"experiments", "Experiments",'
+      'sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},')
+    self.assertEqual(0, len(results))
+
   def testInvalidChangeMismatchedNotificationType(self):
     results = self._testChange('{AUTOFILL, "AUTOFILL_WRONG", "autofill",\n'
      '"Autofill",sync_pb::EntitySpecifics::kAutofillFieldNumber, 6},')

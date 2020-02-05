@@ -62,6 +62,12 @@ void ModelTypeProcessorProxy::OnCommitCompleted(
                      type_state, committed_response_list, error_response_list));
 }
 
+void ModelTypeProcessorProxy::OnCommitFailed() {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ModelTypeProcessor::OnCommitFailed, processor_));
+}
+
 void ModelTypeProcessorProxy::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,
     UpdateResponseDataList updates) {

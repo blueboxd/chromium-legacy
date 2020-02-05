@@ -211,7 +211,7 @@ struct URLRequest {
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
-  // Note: this is an enum of type content::ResourceType.
+  // Note: this is an enum of type blink::mojom::ResourceType.
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
   int32 resource_type;

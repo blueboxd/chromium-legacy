@@ -819,10 +819,6 @@ const char kShowIcons[]                     = "show-icons";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Indicates that this process is the product of a relaunch following migration
-// of User Data.
-const char kUserDataMigrated[] = "user-data-migrated";
-
 // Causes the process to run as a watcher process.
 const char kWatcherProcess[]                = "watcher";
 #endif  // defined(OS_WIN)
@@ -858,12 +854,16 @@ const char kGuest[] = "guest";
 // always enabled on the branded builds.
 const char kEnableChromeBrowserCloudManagement[] =
     "enable-chrome-browser-cloud-management";
-#endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Uses the system default printer as the initially selected destination in
 // print preview, instead of the most recently used destination.
 const char kUseSystemDefaultPrinter[] = "use-system-default-printer";
+#endif
+
+#if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
+// Indicates that this process is the product of a relaunch following migration
+// of User Data.
+const char kUserDataMigrated[] = "user-data-migrated";
 #endif
 
 // -----------------------------------------------------------------------------

@@ -77,6 +77,7 @@ jumbo_source_set("common") {
     "input/web_touch_event.cc",
     "loader/mime_sniffing_throttle.cc",
     "loader/mime_sniffing_url_loader.cc",
+    "loader/resource_type_util.cc",
     "loader/throttling_url_loader.cc",
     "loader/throttling_url_loader.h",
     "loader/url_loader_factory_bundle.cc",

@@ -66,6 +66,9 @@ class ChromeBrowserCloudManagementController
 
     // Called when the browser has been unenrolled.
     virtual void OnBrowserUnenrolled(bool succeeded) {}
+
+    // Called when the cloud reporting is launched.
+    virtual void OnCloudReportingLaunched() {}
   };
 
   // Directory name under the user-data-dir where the policy data is stored.
@@ -100,9 +103,13 @@ class ChromeBrowserCloudManagementController
   void OnRegistrationStateChanged(CloudPolicyClient* client) override;
   void OnClientError(CloudPolicyClient* client) override;
 
+  // Early cleanup during browser shutdown process
+  void ShutDown();
+
  protected:
   void NotifyPolicyRegisterFinished(bool succeeded);
   void NotifyBrowserUnenrolled(bool succeeded);
+  void NotifyCloudReportingLaunched();
 
  private:
   bool GetEnrollmentTokenAndClientId(std::string* enrollment_token,

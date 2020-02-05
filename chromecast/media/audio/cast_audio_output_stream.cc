@@ -177,7 +177,6 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   params.set_start_threshold_frames(start_threshold_frames);
 
   params.set_fill_size_frames(audio_params_.frames_per_buffer());
-  params.set_use_fader(true);
   params.set_fade_frames(::media::AudioTimestampHelper::TimeToFrames(
       kFadeTime, audio_params_.sample_rate()));
   params.set_use_start_timestamp(false);

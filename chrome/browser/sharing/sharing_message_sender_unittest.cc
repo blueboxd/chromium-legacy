@@ -172,7 +172,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckTimedout) {
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message sent successfully.
         std::move(callback).Run(SharingSendMessageResult::kSuccessful,
-                                kSenderMessageID);
+                                kSenderMessageID, SharingChannelType::kUnknown);
         task_environment_.FastForwardBy(kTimeToLive);
 
         // Callback already run with result timeout, ack received for same
@@ -207,7 +207,7 @@ TEST_F(SharingMessageSenderTest, SendMessageToDevice_InternalError) {
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message not sent successfully.
         std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                                base::nullopt);
+                                base::nullopt, SharingChannelType::kUnknown);
 
         // Callback already run with result timeout, ack received for same
         // message id is ignored.
@@ -245,7 +245,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message sent successfully.
         std::move(callback).Run(SharingSendMessageResult::kSuccessful,
-                                kSenderMessageID);
+                                kSenderMessageID, SharingChannelType::kUnknown);
 
         // Check sender info details.
         const syncer::DeviceInfo* local_device =
@@ -318,7 +318,8 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceivedBeforeMessageId) {
 
         // Call FCM send success after receiving the ACK.
         std::move(callback).Run(SharingSendMessageResult::kSuccessful,
-                                kSenderMessageID);
+                                kSenderMessageID,
+                                SharingChannelType::kFcmVapid);
       };
 
   EXPECT_CALL(

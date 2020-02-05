@@ -670,6 +670,11 @@ void OverviewItem::Restack() {
   // |window| and has the same parent.
   for (const std::unique_ptr<OverviewItem>& overview_item :
        overview_grid_->window_list()) {
+    // |Restack| is sometimes called when there is a drop target, but is never
+    // used to restack an item that comes after a drop target. In other words,
+    // |overview_grid_| might have a drop target, but we will break out of the
+    // for loop before reaching it.
+    DCHECK(!overview_grid_->IsDropTargetWindow(overview_item->GetWindow()));
     if (overview_item.get() == this)
       break;
     if (overview_item->GetWindow()->parent() == parent_window)

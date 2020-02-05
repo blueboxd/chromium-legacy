@@ -41,6 +41,8 @@ cast_source_set("mixer") {
     "audio_output_redirector.cc",
     "audio_output_redirector.h",
     "audio_output_redirector_input.h",
+    "channel_layout.cc",
+    "channel_layout.h",
     "filter_group.cc",
     "filter_group.h",
     "mixer_input.cc",

@@ -47,8 +47,9 @@ ServiceWorkerRequestHandler::CreateForNavigation(
   }
 
   ServiceWorkerNavigationLoaderInterceptorParams params;
-  params.resource_type = request_info.is_main_frame ? ResourceType::kMainFrame
-                                                    : ResourceType::kSubFrame;
+  params.resource_type = request_info.is_main_frame
+                             ? blink::mojom::ResourceType::kMainFrame
+                             : blink::mojom::ResourceType::kSubFrame;
   params.skip_service_worker = request_info.begin_params->skip_service_worker;
   params.is_main_frame = request_info.is_main_frame;
   params.are_ancestors_secure = request_info.are_ancestors_secure;
@@ -67,9 +68,9 @@ ServiceWorkerRequestHandler::CreateForWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto resource_type =
-      static_cast<ResourceType>(resource_request.resource_type);
-  DCHECK(resource_type == ResourceType::kWorker ||
-         resource_type == ResourceType::kSharedWorker)
+      static_cast<blink::mojom::ResourceType>(resource_request.resource_type);
+  DCHECK(resource_type == blink::mojom::ResourceType::kWorker ||
+         resource_type == blink::mojom::ResourceType::kSharedWorker)
       << resource_request.resource_type;
 
   // Create the handler even for insecure HTTP since it's used in the

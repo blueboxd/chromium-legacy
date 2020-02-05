@@ -16,8 +16,8 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "get_updates_caller_info.proto";
-import "sync_enums.proto";
+import "components/sync/protocol/get_updates_caller_info.proto";
+import "components/sync/protocol/sync_enums.proto";
 
 // Per-type hint information.
 message TypeHint {

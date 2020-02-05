@@ -285,7 +285,7 @@ std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
       static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
   resource_request->destination = network::mojom::RequestDestination::kEmpty;
   resource_request->resource_type =
-      static_cast<int>(content::ResourceType::kSubResource);
+      static_cast<int>(blink::mojom::ResourceType::kSubResource);
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   resource_request->site_for_cookies = frame->GetDocument().SiteForCookies();

@@ -735,7 +735,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     const DisplayInfoList& updated_displays) {
   if (updated_displays.empty()) {
     VLOG(1) << __func__
-             << "(0): # of current displays=" << active_display_list_.size();
+            << "(0): # of current displays=" << active_display_list_.size();
     // If the device is booted without display, or chrome is started
     // without --ash-host-window-bounds on linux desktop, use the
     // default display.

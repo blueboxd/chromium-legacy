@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
-#include "content/public/common/resource_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace page_load_metrics {
 
@@ -128,7 +128,7 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
     return;
 
   if (extra_request_complete_info.resource_type !=
-      content::ResourceType::kMainFrame) {
+      blink::mojom::ResourceType::kMainFrame) {
     // The waiter confirms loading timing for the main frame only.
     return;
   }

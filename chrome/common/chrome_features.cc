@@ -206,7 +206,7 @@ const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable adding a print server on Chrome OS.
 const base::Feature kPrintServerUi{"PrintServerUi",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable chrome://terminal.  Terminal System App will only run on
 // OS_CHROMEOS, but this flag must be defined for all platforms since

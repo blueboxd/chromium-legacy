@@ -161,7 +161,7 @@ void IdleSpellCheckController::HotModeInvocation(IdleDeadline* deadline) {
   TRACE_EVENT0("blink", "IdleSpellCheckController::hotModeInvocation");
 
   // TODO(xiaochengh): Figure out if this has any performance impact.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   HotModeSpellCheckRequester requester(GetSpellCheckRequester());
 

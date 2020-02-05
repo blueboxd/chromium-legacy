@@ -22,6 +22,7 @@ namespace gcm {
 class GCMDriver;
 }
 
+enum class SharingChannelType;
 class SharingFCMSender;
 class SharingHandlerRegistry;
 class SharingSyncPreference;
@@ -88,7 +89,8 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       SharingDevicePlatform sender_device_type,
       int trace_id,
       SharingSendMessageResult result,
-      base::Optional<std::string> message_id);
+      base::Optional<std::string> message_id,
+      SharingChannelType channel_type);
 
   gcm::GCMDriver* const gcm_driver_;
   SharingFCMSender* sharing_fcm_sender_;

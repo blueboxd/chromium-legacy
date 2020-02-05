@@ -49,7 +49,7 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
     for (int i = 0; i < new_elements; i++)
       builder.Append("<span>a</span>");
     GetDocument().write(builder.ToString());
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
     Detector().NotifyPaint();
   }
 

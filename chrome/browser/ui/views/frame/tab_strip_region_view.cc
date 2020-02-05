@@ -12,13 +12,13 @@ TabStripRegionView::TabStripRegionView() {
       SetLayoutManager(std::make_unique<views::FlexLayout>());
 
   layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetDefault(views::kFlexBehaviorKey,
-                  views::FlexSpecification::ForSizeRule(
-                      views::MinimumFlexSizeRule::kScaleToZero,
-                      views::MaximumFlexSizeRule::kUnbounded));
+      .SetDefault(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                   views::MaximumFlexSizeRule::kUnbounded));
 }
 
-TabStripRegionView::~TabStripRegionView() {}
+TabStripRegionView::~TabStripRegionView() = default;
 
 const char* TabStripRegionView::GetClassName() const {
   return "TabStripRegionView";

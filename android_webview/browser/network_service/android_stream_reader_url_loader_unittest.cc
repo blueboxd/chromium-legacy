@@ -9,12 +9,12 @@
 #include "android_webview/browser/input_stream.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace android_webview {
 
@@ -172,7 +172,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
     request.url = url;
     request.method = "GET";
     request.resource_type =
-        static_cast<int>(content::ResourceType::kSubResource);
+        static_cast<int>(blink::mojom::ResourceType::kSubResource);
     return request;
   }
 

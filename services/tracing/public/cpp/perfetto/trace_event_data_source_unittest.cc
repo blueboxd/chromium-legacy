@@ -16,6 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/metrics/user_metrics.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -1776,6 +1777,34 @@ TEST_F(TraceEventDataSourceTest, HistogramSample) {
   EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name_hash(),
             base::HashMetricName("Foo.Bar"));
   EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().sample(), 1u);
+}
+
+TEST_F(TraceEventDataSourceTest, UserActionEvent) {
+  base::SetRecordActionTaskRunner(base::ThreadTaskRunnerHandle::Get());
+
+  base::trace_event::TraceConfig trace_config(
+      "-*,disabled-by-default-user_action_samples",
+      base::trace_event::RECORD_UNTIL_FULL);
+
+  CreateTraceEventDataSource(/*privacy_filtering_enabled=*/false,
+                             /*start_trace=*/true, trace_config.ToString());
+
+  // Wait for registering callback on current thread.
+  base::RunLoop().RunUntilIdle();
+
+  base::RecordAction(base::UserMetricsAction("Test_Action"));
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 5u);
+  ExpectStandardPreamble();  // 3 preamble packets.
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(3);
+
+  ExpectEventCategories(
+      e_packet, {{1u, TRACE_DISABLED_BY_DEFAULT("user_action_samples")}});
+  ExpectEventNames(e_packet, {{1u, "UserAction"}});
+  ASSERT_TRUE(e_packet->track_event().has_chrome_user_event());
+  EXPECT_EQ(e_packet->track_event().chrome_user_event().action_hash(),
+            base::HashMetricName("Test_Action"));
 }
 
 // TODO(eseckler): Add startup tracing unittests.

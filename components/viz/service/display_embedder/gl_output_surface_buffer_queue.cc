@@ -61,6 +61,7 @@ GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() {
   buffer_queue_textures_.clear();
   current_texture_ = 0u;
   last_bound_texture_ = 0u;
+  last_bound_mailbox_.SetZero();
 
   // Freeing the BufferQueue here ensures that *this is fully alive in case the
   // BufferQueue needs the SyncTokenProvider functionality.
@@ -96,6 +97,7 @@ void GLOutputSurfaceBufferQueue::BindFramebuffer() {
   gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                            texture_target_, current_texture_, 0);
   last_bound_texture_ = current_texture_;
+  last_bound_mailbox_ = current_buffer;
 
 #if DCHECK_IS_ON() && defined(OS_CHROMEOS)
   const GLenum result = gl->CheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -152,6 +154,7 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
       buffer_queue_textures_.clear();
       current_texture_ = 0u;
       last_bound_texture_ = 0u;
+      last_bound_mailbox_.SetZero();
     }
   }
 }
@@ -197,6 +200,10 @@ bool GLOutputSurfaceBufferQueue::IsDisplayedAsOverlayPlane() const {
 unsigned GLOutputSurfaceBufferQueue::GetOverlayTextureId() const {
   DCHECK(last_bound_texture_);
   return last_bound_texture_;
+}
+
+gpu::Mailbox GLOutputSurfaceBufferQueue::GetOverlayMailbox() const {
+  return last_bound_mailbox_;
 }
 
 gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {

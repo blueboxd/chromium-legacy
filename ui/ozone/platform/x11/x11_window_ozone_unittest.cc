@@ -198,6 +198,7 @@ TEST_F(X11WindowOzoneTest, SendPlatformEventToCapturedWindow) {
   EXPECT_CALL(delegate_2, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   DispatchXEvent(xi_event, widget);
+  EXPECT_TRUE(event.get());
   EXPECT_EQ(ET_MOUSE_PRESSED, event->type());
   EXPECT_EQ(gfx::Point(-277, 215), event->AsLocatedEvent()->location());
 }

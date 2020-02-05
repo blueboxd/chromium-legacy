@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -223,6 +224,11 @@ class VoiceSearchOverlayElement extends PolymerElement {
   connectedCallback() {
     super.connectedCallback();
     this.$.dialog.showModal();
+    this.start();
+  }
+
+  /** @private */
+  start() {
     this.voiceRecognition_.start();
     this.state_ = State.STARTED;
     this.resetIdleTimer_();
@@ -237,6 +243,19 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onOverlayClick_() {
     this.$.dialog.close();
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onRetryClick_(e) {
+    if (this.state_ !== State.ERROR_RECEIVED ||
+        this.error_ !== Error.NO_MATCH) {
+      return;
+    }
+    e.stopPropagation();
+    this.start();
   }
 
   /** @private */
@@ -257,6 +276,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
       this.onFinalResult_();
       return;
     }
+    this.voiceRecognition_.abort();
     this.onError_(Error.NO_MATCH);
   }
 

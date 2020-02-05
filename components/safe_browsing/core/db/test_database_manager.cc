@@ -18,7 +18,7 @@ void TestSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
 }
 
 bool TestSafeBrowsingDatabaseManager::CanCheckResourceType(
-    content::ResourceType resource_type) const {
+    blink::mojom::ResourceType resource_type) const {
   NOTIMPLEMENTED();
   return false;
 }

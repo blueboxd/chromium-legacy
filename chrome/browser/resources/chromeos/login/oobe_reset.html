@@ -36,6 +36,7 @@
           [[i18nDynamic(locale, 'resetRestartMessage')]]
         </div>
         <a id="powerwash-help-link-md" href="#"
+            class="oobe-local-link"
             hidden="[[isHelpLinkHidden_(uiState_, isGoogleBranded_)]]"
             on-tap="onLearnMoreTap_">
           [[i18nDynamic(locale, 'learnMore')]]
@@ -70,6 +71,7 @@
             </span>
             <a href="#"
                 hidden="[[isHelpLinkHidden_(uiState_, isGoogleBranded_)]]"
+                class="oobe-local-link"
                 on-tap="onTPMFirmwareUpdateLearnMore_">
               [[i18nDynamic(locale, 'learnMore')]]
             </a>

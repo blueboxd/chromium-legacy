@@ -6646,7 +6646,7 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers) {
       .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(exception_state.HadException());
   auto range = EphemeralRange::RangeOfContents(*element);

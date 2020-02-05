@@ -15,7 +15,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
@@ -25,6 +24,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
@@ -119,7 +119,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   // request.
   network::ResourceRequest resource_request = resource_request_in;
 
-  DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
+  DCHECK_EQ(static_cast<int>(blink::mojom::ResourceType::kPrefetch),
             resource_request.resource_type);
   auto& current_context = *loader_factory_receivers_.current_context();
 

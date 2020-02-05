@@ -135,9 +135,13 @@ body > header {
   height: 56px;
 }
 
-.sshow-unset-checkbox,
+.show-unset-checkbox,
 .search-field-container {
   margin-inline-start: auto;
+}
+
+.search-field-container {
+  flex: 0 1 200px;
 }
 
 .no-policy:not([hidden]) {

@@ -106,6 +106,10 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
   void UnregisterTraceWriter(uint32_t writer_id) override;
 
+  // Used by PerfettoTracedProcess to create trace writers and send triggers.
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
+  void ActivateTriggers(const std::vector<std::string>&) override;
+
   // The rest of these perfetto::TracingService::ProducerEndpoint functions are
   // not currently used.
   void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
@@ -113,8 +117,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
   size_t shared_buffer_page_size_kb() const override;
-  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
-  void ActivateTriggers(const std::vector<std::string>&) override;
+  bool IsShmemProvidedByProducer() const override;
 
  protected:
   // Given our current |state_| determine how to properly connect and set up our

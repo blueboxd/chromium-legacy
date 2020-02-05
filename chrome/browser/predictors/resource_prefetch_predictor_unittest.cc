@@ -254,30 +254,30 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
 // Single navigation that will be recorded. Will check for duplicate
 // resources and also for number of resources saved.
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
   resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style1.css", content::ResourceType::kStylesheet));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
-                                             content::ResourceType::kImage));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
-                                             content::ResourceType::kImage));
+      "http://google.com/style1.css", blink::mojom::ResourceType::kStylesheet));
   resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style2.css", content::ResourceType::kStylesheet));
+      "http://google.com/script1.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/script2.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/script1.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/image1.png", blink::mojom::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/image2.png", blink::mojom::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style2.css", blink::mojom::ResourceType::kStylesheet));
   resources.push_back(
       CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
-                             content::ResourceType::kStylesheet,
+                             blink::mojom::ResourceType::kStylesheet,
                              /* always_access_network */ true));
   resources.push_back(CreateResourceLoadInfoWithRedirects(
       {"http://reader.google.com/style.css",
        "http://dev.null.google.com/style.css"},
-      content::ResourceType::kStylesheet));
+      blink::mojom::ResourceType::kStylesheet));
   resources.back()->network_info->always_access_network = true;
 
   auto page_summary = CreatePageRequestSummary(
@@ -320,30 +320,30 @@ TEST_F(ResourcePrefetchPredictorTest,
   feature_list.InitAndEnableFeature(
       features::kLoadingPredictorDisregardAlwaysAccessesNetwork);
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
   resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style1.css", content::ResourceType::kStylesheet));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
-                                             content::ResourceType::kImage));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
-                                             content::ResourceType::kImage));
+      "http://google.com/style1.css", blink::mojom::ResourceType::kStylesheet));
   resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style2.css", content::ResourceType::kStylesheet));
+      "http://google.com/script1.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/script2.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/script1.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/image1.png", blink::mojom::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/image2.png", blink::mojom::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style2.css", blink::mojom::ResourceType::kStylesheet));
   resources.push_back(
       CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
-                             content::ResourceType::kStylesheet,
+                             blink::mojom::ResourceType::kStylesheet,
                              /* always_access_network */ true));
   resources.push_back(CreateResourceLoadInfoWithRedirects(
       {"http://reader.google.com/style.css",
        "http://dev.null.google.com/style.css"},
-      content::ResourceType::kStylesheet));
+      blink::mojom::ResourceType::kStylesheet));
   resources.back()->network_info->always_access_network = true;
 
   auto page_summary = CreatePageRequestSummary(
@@ -384,25 +384,26 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   ResetPredictor();
   InitializePredictor();
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
   resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style1.css", content::ResourceType::kStylesheet));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
-                                             content::ResourceType::kImage));
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
-                                             content::ResourceType::kImage));
+      "http://google.com/style1.css", blink::mojom::ResourceType::kStylesheet));
   resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style2.css", content::ResourceType::kStylesheet));
+      "http://google.com/script1.js", blink::mojom::ResourceType::kScript));
   resources.push_back(CreateResourceLoadInfo(
-      "http://static.google.com/style2-no-store.css",
-      content::ResourceType::kStylesheet, /* always_access_network */ true));
+      "http://google.com/script2.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/script1.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/image1.png", blink::mojom::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/image2.png", blink::mojom::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style2.css", blink::mojom::ResourceType::kStylesheet));
+  resources.push_back(
+      CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
+                             blink::mojom::ResourceType::kStylesheet,
+                             /* always_access_network */ true));
 
   auto page_summary = CreatePageRequestSummary(
       "http://www.google.com", "http://www.google.com", resources);
@@ -439,12 +440,12 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   ResetPredictor();
   InitializePredictor();
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.nike.com"));
   resources.push_back(CreateResourceLoadInfo(
-      "http://nike.com/style1.css", content::ResourceType::kStylesheet));
-  resources.push_back(CreateResourceLoadInfo("http://nike.com/image2.png",
-                                             content::ResourceType::kImage));
+      "http://nike.com/style1.css", blink::mojom::ResourceType::kStylesheet));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://nike.com/image2.png", blink::mojom::ResourceType::kImage));
 
   auto page_summary = CreatePageRequestSummary(
       "http://www.nike.com", "http://www.nike.com", resources);
@@ -476,7 +477,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
 
 TEST_F(ResourcePrefetchPredictorTest,
        NavigationManyResourcesWithDifferentOrigins) {
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
 
   auto gen = [](int i) {
@@ -485,7 +486,7 @@ TEST_F(ResourcePrefetchPredictorTest,
   const int num_resources = predictor_->config_.max_origins_per_entry + 10;
   for (int i = 1; i <= num_resources; ++i) {
     resources.push_back(
-        CreateResourceLoadInfo(gen(i), content::ResourceType::kScript));
+        CreateResourceLoadInfo(gen(i), blink::mojom::ResourceType::kScript));
   }
 
   auto page_summary = CreatePageRequestSummary(
@@ -513,7 +514,7 @@ TEST_F(ResourcePrefetchPredictorTest,
 }
 
 TEST_F(ResourcePrefetchPredictorTest, RedirectUrlNotInDB) {
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfoWithRedirects(
       {"http://fb.com/google", "https://facebook.com/google"}));
   auto page_summary = CreatePageRequestSummary(
@@ -542,7 +543,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
   ResetPredictor();
   InitializePredictor();
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfoWithRedirects(
       {"http://fb.com/google", "https://facebook.com/google"}));
   auto page_summary = CreatePageRequestSummary(
@@ -576,7 +577,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB_MultipleSchemes) {
   InitializePredictor();
 
   {
-    std::vector<content::mojom::ResourceLoadInfoPtr> resources_https;
+    std::vector<blink::mojom::ResourceLoadInfoPtr> resources_https;
     resources_https.push_back(CreateResourceLoadInfoWithRedirects(
         {"https://fb.com/google", "https://facebook.com/google"}));
     auto page_summary_https =
@@ -614,7 +615,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB_MultipleSchemes) {
                        .url_port());
   }
   {
-    std::vector<content::mojom::ResourceLoadInfoPtr> resources_http;
+    std::vector<blink::mojom::ResourceLoadInfoPtr> resources_http;
     resources_http.push_back(CreateResourceLoadInfoWithRedirects(
         {"http://fb.com/google", "http://facebook.com/google"}));
     auto page_summary_http = CreatePageRequestSummary(

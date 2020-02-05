@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/portal/portal_navigation_throttle.h"
@@ -41,10 +44,19 @@ GURL GetServerRedirectURL(const net::EmbeddedTestServer* server,
 
 class PortalNavigationThrottleBrowserTest : public ContentBrowserTest {
  protected:
+  virtual bool ShouldEnableCrossOriginPortals() const { return false; }
+
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{blink::features::kPortals},
-        /*disabled_features=*/{blink::features::kPortalsCrossOrigin});
+    if (ShouldEnableCrossOriginPortals()) {
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{blink::features::kPortals,
+                                blink::features::kPortalsCrossOrigin},
+          /*disabled_features=*/{});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{blink::features::kPortals},
+          /*disabled_features=*/{blink::features::kPortalsCrossOrigin});
+    }
     ContentBrowserTest::SetUp();
   }
 
@@ -297,6 +309,64 @@ IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTest,
   EXPECT_THAT(console_delegate.message(),
               ::testing::HasSubstr("http://not.portal.test"));
   GetWebContents()->SetDelegate(old_delegate);
+}
+
+class PortalNavigationThrottleBrowserTestCrossOrigin
+    : public PortalNavigationThrottleBrowserTest {
+ protected:
+  bool ShouldEnableCrossOriginPortals() const override { return true; }
+};
+
+void SleepWithRunLoop(base::TimeDelta delay, base::Location from_here) {
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      from_here, run_loop.QuitClosure(), delay);
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTestCrossOrigin,
+                       NonHTTPSchemesBlockedEvenInCrossOriginMode) {
+  ASSERT_TRUE(NavigateToURL(
+      GetWebContents(),
+      embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  GURL referrer_url =
+      embedded_test_server()->GetURL("portal.test", "/title2.html");
+  Portal* portal = InsertAndWaitForPortal(referrer_url);
+
+  // Can't use NavigatePortalViaLocationHref as the checks for data: URLs are
+  // duplicated between Blink and content/browser/, and the former check aborts
+  // before a navigation even begins.
+  //
+  // This is also why we use sleeps to watch for the navigation occurring.
+  // Fortunately, because the sleep only races in the failure case this test
+  // should only be flaky if there is a bug.
+
+  {
+    auto* old_delegate = portal->GetPortalContents()->GetDelegate();
+    ConsoleObserverDelegate console_delegate(portal->GetPortalContents(),
+                                             "*avigat*");
+    portal->GetPortalContents()->SetDelegate(&console_delegate);
+    EXPECT_TRUE(ExecJs(portal->GetPortalContents(),
+                       "location.href = 'data:text/html,hello world';"));
+    console_delegate.Wait();
+    EXPECT_THAT(console_delegate.message(), ::testing::HasSubstr("data"));
+    SleepWithRunLoop(base::TimeDelta::FromSeconds(3), FROM_HERE);
+    EXPECT_EQ(portal->GetPortalContents()->GetLastCommittedURL(), referrer_url);
+    portal->GetPortalContents()->SetDelegate(old_delegate);
+  }
+
+  {
+    auto* old_delegate = GetWebContents()->GetDelegate();
+    ConsoleObserverDelegate console_delegate(GetWebContents(), "*avigat*");
+    GetWebContents()->SetDelegate(&console_delegate);
+    EXPECT_TRUE(ExecJs(portal->GetPortalContents(),
+                       "location.href = 'ftp://user:pass@example.com/';"));
+    console_delegate.Wait();
+    EXPECT_THAT(console_delegate.message(), ::testing::HasSubstr("ftp"));
+    SleepWithRunLoop(base::TimeDelta::FromSeconds(3), FROM_HERE);
+    EXPECT_EQ(portal->GetPortalContents()->GetLastCommittedURL(), referrer_url);
+    GetWebContents()->SetDelegate(old_delegate);
+  }
 }
 
 }  // namespace

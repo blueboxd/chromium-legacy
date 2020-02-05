@@ -28,8 +28,9 @@
 #include "chromeos/services/assistant/test_support/fake_client.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -42,66 +43,6 @@ namespace {
 constexpr base::TimeDelta kDefaultTokenExpirationDelay =
     base::TimeDelta::FromMilliseconds(60000);
 }  // namespace
-
-class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
- public:
-  FakeIdentityAccessor()
-      : access_token_expriation_delay_(kDefaultTokenExpirationDelay) {}
-
-  mojo::PendingRemote<identity::mojom::IdentityAccessor>
-  CreatePendingRemoteAndBind() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
-  void SetAccessTokenExpirationDelay(base::TimeDelta delay) {
-    access_token_expriation_delay_ = delay;
-  }
-
-  void SetShouldFail(bool fail) { should_fail_ = fail; }
-
-  int get_access_token_count() const { return get_access_token_count_; }
-
- private:
-  // identity::mojom::IdentityAccessor:
-  void GetUnconsentedPrimaryAccountInfo(
-      GetUnconsentedPrimaryAccountInfoCallback callback) override {
-    CoreAccountId account_id("account_id");
-    std::string gaia = "fakegaiaid";
-    std::string email = "fake@email";
-
-    identity::AccountState account_state;
-    account_state.has_refresh_token = true;
-    account_state.is_unconsented_primary_account = true;
-
-    std::move(callback).Run(account_id, gaia, email, account_state);
-  }
-
-  void GetUnconsentedPrimaryAccountWhenAvailable(
-      GetUnconsentedPrimaryAccountWhenAvailableCallback callback) override {}
-  void GetAccessToken(const CoreAccountId& account_id,
-                      const ::identity::ScopeSet& scopes,
-                      const std::string& consumer_id,
-                      GetAccessTokenCallback callback) override {
-    GoogleServiceAuthError auth_error(
-        should_fail_ ? GoogleServiceAuthError::CONNECTION_FAILED
-                     : GoogleServiceAuthError::NONE);
-    std::move(callback).Run(
-        should_fail_ ? base::nullopt
-                     : base::Optional<std::string>("fake access token"),
-        base::Time::Now() + access_token_expriation_delay_, auth_error);
-    ++get_access_token_count_;
-  }
-
-  mojo::Receiver<identity::mojom::IdentityAccessor> receiver_{this};
-
-  base::TimeDelta access_token_expriation_delay_;
-
-  int get_access_token_count_ = 0;
-
-  bool should_fail_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeIdentityAccessor);
-};
 
 class FakeAssistantClient : public FakeClient {
  public:
@@ -187,18 +128,23 @@ class AssistantServiceTest : public testing::Test {
     pref_service_.SetBoolean(prefs::kAssistantEnabled, true);
     pref_service_.SetBoolean(prefs::kAssistantHotwordEnabled, true);
 
+    // In production the primary account is set before the service is created.
+    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable("user@gmail.com");
+
     service_ = std::make_unique<Service>(
         remote_service_.BindNewPipeAndPassReceiver(),
-        shared_url_loader_factory_->Clone(), &pref_service_);
+        shared_url_loader_factory_->Clone(),
+        identity_test_env_.identity_manager(), &pref_service_);
     service_->SetAssistantManagerServiceForTesting(
         std::make_unique<FakeAssistantManagerServiceImpl>());
 
-    service_->SetIdentityAccessorForTesting(
-        fake_identity_accessor_.CreatePendingRemoteAndBind());
-
     remote_service_->Init(fake_assistant_client_.MakeRemote(),
                           fake_device_actions_.CreatePendingRemoteAndBind());
+    // Wait for AssistantManagerService to be set.
     base::RunLoop().RunUntilIdle();
+
+    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        "fake access token", base::Time::Now() + kDefaultTokenExpirationDelay);
   }
 
   void TearDown() override {
@@ -216,7 +162,9 @@ class AssistantServiceTest : public testing::Test {
     return result;
   }
 
-  FakeIdentityAccessor* identity_accessor() { return &fake_identity_accessor_; }
+  signin::IdentityTestEnvironment* identity_test_env() {
+    return &identity_test_env_;
+  }
 
   ash::AssistantState* assistant_state() { return &assistant_state_; }
 
@@ -237,7 +185,7 @@ class AssistantServiceTest : public testing::Test {
   mojo::Remote<mojom::AssistantService> remote_service_;
 
   FullyInitializedAssistantState assistant_state_;
-  FakeIdentityAccessor fake_identity_accessor_;
+  signin::IdentityTestEnvironment identity_test_env_;
   FakeAssistantClient fake_assistant_client_{&assistant_state_};
   FakeDeviceActions fake_device_actions_;
 
@@ -252,42 +200,44 @@ class AssistantServiceTest : public testing::Test {
 };
 
 TEST_F(AssistantServiceTest, RefreshTokenAfterExpire) {
-  auto current_count = identity_accessor()->get_access_token_count();
+  ASSERT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   task_environment()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
 
   // Before token expire, should not request new token.
-  EXPECT_EQ(identity_accessor()->get_access_token_count(), current_count);
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
 
   task_environment()->FastForwardBy(kDefaultTokenExpirationDelay);
 
   // After token expire, should request once.
-  EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
+  EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
 }
 
 TEST_F(AssistantServiceTest, RetryRefreshTokenAfterFailure) {
-  auto current_count = identity_accessor()->get_access_token_count();
-  identity_accessor()->SetShouldFail(true);
-  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay);
+  ASSERT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
 
-  // Token request failed.
-  EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
+  // Let the first token expire. Another will be requested.
+  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay);
+  EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
+
+  // Reply with an error.
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError(GoogleServiceAuthError::State::CONNECTION_FAILED));
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
 
   // Token request automatically retry.
-  identity_accessor()->SetShouldFail(false);
   // The failure delay has jitter so fast forward a bit more, but before
   // the returned token would expire again.
   task_environment()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
 
-  EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
+  EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
 }
 
 TEST_F(AssistantServiceTest, RetryRefreshTokenAfterDeviceWakeup) {
-  auto current_count = identity_accessor()->get_access_token_count();
-  FakePowerManagerClient::Get()->SendSuspendDone();
-  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
 
+  FakePowerManagerClient::Get()->SendSuspendDone();
   // Token requested immediately after suspend done.
-  EXPECT_EQ(identity_accessor()->get_access_token_count(), ++current_count);
+  EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
 }
 
 TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
@@ -305,8 +255,10 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
 }
 
 TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
-  // Test is set up as |State::STARTING|, turning settings off will trigger
-  // logic to try to stop it.
+  ASSERT_EQ(assistant_manager()->GetState(),
+            AssistantManagerService::State::STARTING);
+
+  // Turning settings off will trigger logic to try to stop it.
   pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
 
   EXPECT_EQ(assistant_manager()->GetState(),
@@ -366,17 +318,25 @@ TEST_F(AssistantServiceTest,
   assistant_manager()->FinishStart();
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::RUNNING);
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_TRUE(assistant_manager()->access_token().has_value());
   ASSERT_EQ(assistant_manager()->access_token().value(), "fake access token");
 
   ambient_mode_state()->SetAmbientModeEnabled(true);
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_FALSE(assistant_manager()->access_token().has_value());
 
+  // Disabling ambient mode requests a new token.
   ambient_mode_state()->SetAmbientModeEnabled(false);
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
+
+  // Assistant manager receives the new token.
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "new token", base::Time::Now() + kDefaultTokenExpirationDelay);
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_TRUE(assistant_manager()->access_token().has_value());
-  ASSERT_EQ(assistant_manager()->access_token().value(), "fake access token");
+  ASSERT_EQ(assistant_manager()->access_token().value(), "new token");
 }
 
 }  // namespace assistant

@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -89,7 +89,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
             if (startSurface != null) {
-                assert FeatureUtilities.isGridTabSwitcherEnabled();
+                assert CachedFeatureFlags.isGridTabSwitcherEnabled();
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 assert tabManagementDelegate != null;
@@ -158,7 +158,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
      * @param manager The {@link ToolbarManager} for accessing toolbar textures.
      */
     public void setToolbarManager(ToolbarManager manager) {
-        if (FeatureUtilities.isBottomToolbarEnabled()) {
+        if (CachedFeatureFlags.isBottomToolbarEnabled()) {
             manager.getBottomToolbarCoordinator().setToolbarSwipeLayout(mToolbarSwipeLayout);
         }
     }

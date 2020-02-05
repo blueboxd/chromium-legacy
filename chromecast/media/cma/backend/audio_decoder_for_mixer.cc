@@ -190,7 +190,6 @@ void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
   params.set_fill_size_frames(buffer_pool_frames_);
   params.set_start_threshold_frames(StartThreshold(config.samples_per_second));
   params.set_max_buffered_frames(MaxQueuedFrames(config.samples_per_second));
-  params.set_use_fader(true);
   params.set_fade_frames(::media::AudioTimestampHelper::TimeToFrames(
       kFadeTime, config.samples_per_second));
   params.set_use_start_timestamp(!start_playback_asap);

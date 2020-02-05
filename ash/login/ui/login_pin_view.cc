@@ -28,6 +28,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -275,6 +276,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
   void OnEnabledChanged() {
     SkColor color = login_constants::kButtonEnabledColor;
     if (!GetEnabled()) {
+      AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
       color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
       CancelRepeat();
     }

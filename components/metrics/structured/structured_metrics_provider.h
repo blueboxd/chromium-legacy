@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/structured/key_data.h"
 #include "components/metrics/structured/recorder.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_store.h"
@@ -108,6 +109,10 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   void OnInitializationCompleted(bool success) override;
   void OnPrefValueChanged(const std::string& key) override {}
 
+  // Makes the |storage_| PrefStore flush to disk. Used for flushing any
+  // modified but not-yet-written data to disk during unit tests.
+  void CommitPendingWriteForTest();
+
   // Beyond this number of logging events between successive calls to
   // ProvideCurrentSessionData, we stop recording events.
   static int kMaxEventsPerUpload;
@@ -137,7 +142,18 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   // On-device storage within the user's cryptohome for keys and unsent logs.
   // This is constructed as part of initialization and is guaranteed to be
   // initialized if |initialized_| is true.
+  //
+  // For details of key storage, see key_data.h
+  //
+  // Unsent logs are stored in hashed, ready-to-upload form in the structure:
+  //  logs[i].event
+  //         .metrics[j].name
+  //                    .value
   scoped_refptr<JsonPrefStore> storage_;
+
+  // Storage for all event's keys, and hashing logic for values. This stores
+  // keys on-disk using the |storage_| JsonPrefStore.
+  std::unique_ptr<internal::KeyData> key_data_;
 
   base::WeakPtrFactory<StructuredMetricsProvider> weak_factory_{this};
 };

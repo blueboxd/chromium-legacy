@@ -64,7 +64,7 @@ KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetDefault(views::kFlexBehaviorKey,
-                  views::FlexSpecification::ForSizeRule(
+                  views::FlexSpecification(
                       views::MinimumFlexSizeRule::kPreferredSnapToZero,
                       views::MaximumFlexSizeRule::kPreferred, true));
 
@@ -74,9 +74,8 @@ KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
   chip_container->SetLayoutManager(std::make_unique<views::FillLayout>());
   chip_container->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kPreferred,
-          views::MaximumFlexSizeRule::kPreferred, true));
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kPreferred, true));
   chip_container->SizeToPreferredSize();
   chip_container_ = AddChildView(std::move(chip_container));
 

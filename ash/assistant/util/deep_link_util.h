@@ -44,12 +44,14 @@ enum class DeepLinkParam {
   kCategory,    // ga://proactive-suggestions?category=1
   kClientId,    // ga://reminders?action=edit&clientId=1
   kDurationMs,  // ga://alarm-timer?action=addTimeToTimer&durationMs=60000
+  kEid,         // ga://lists?eid=1
   kHref,      // ga://proactive-suggestions?action=cardClick&href=https://g.co/
   kIndex,     // ga://proactive-suggestions?action=cardClick&index=1
   kId,        // ga://alarm-timer?action=addTimeToTimer&id=1
   kPage,      // ga://settings?page=googleAssistant
   kQuery,     // ga://send-query?query=weather
   kRelaunch,  // ga://onboarding?relaunch=true
+  kType,      // ga://lists?id=1&type=shopping
   kVeId,      // ga://proactive-suggestions?action=cardClick&veId=1
 };
 
@@ -175,12 +177,13 @@ COMPONENT_EXPORT(ASSISTANT_UTIL) bool IsDeepLinkUrl(const GURL& url);
 
 // Returns the Assistant URL for the deep link of the specified |type|. A return
 // value will only be present if the deep link type is one of {kLists, kNotes,
-// or kReminders}. If |id| is absent, the returned URL will be for the top-level
-// Assistant URL. Otherwise, the URL will correspond to the resource identified
-// by |id|.
+// or kReminders}. If |id| is not contained in |params|, the returned URL will
+// be for the top-level Assistant URL. Otherwise, the URL will correspond to
+// the resource identified by |id|.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-base::Optional<GURL> GetAssistantUrl(DeepLinkType type,
-                                     const base::Optional<std::string>& id);
+base::Optional<GURL> GetAssistantUrl(
+    DeepLinkType type,
+    const std::map<std::string, std::string>& params);
 
 // Returns the URL for the specified Chrome Settings |page|. If page is absent
 // or not allowed, the URL will be for top-level Chrome Settings.

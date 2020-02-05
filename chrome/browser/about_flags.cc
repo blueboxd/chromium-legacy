@@ -1884,7 +1884,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
     {"message-center-redesign", flag_descriptions::kMessageCenterRedesignName,
-     flag_descriptions::kMessageCenterRedesignName, kOsCrOS,
+     flag_descriptions::kMessageCenterRedesignDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kUnifiedMessageCenterRefactor)},
 #endif  // OS_CHROMEOS
     {

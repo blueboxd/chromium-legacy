@@ -34,20 +34,38 @@ public class GURL {
     private boolean mIsValid;
     private Parsed mParsed;
 
+    private static class Holder { private static GURL sEmptyGURL = new GURL(""); }
+
+    public static GURL emptyGURL() {
+        return Holder.sEmptyGURL;
+    }
+
     /**
      * Create a new GURL.
      *
      * @param uri The string URI representation to parse into a GURL.
      */
     public GURL(String uri) {
+        ensureNativeInitializedForGURL();
+        GURLJni.get().init(uri, this);
+    }
+
+    @CalledByNative
+    protected GURL() {}
+
+    /**
+     * Ensures that the native library is sufficiently loaded for GURL usage.
+     *
+     * This function is public so that GURL-related usage like the UrlFormatter also counts towards
+     * the "Startup.Android.GURLEnsureMainDexInitialized" histogram.
+     */
+    public static void ensureNativeInitializedForGURL() {
+        if (LibraryLoader.getInstance().isInitialized()) return;
         long time = SystemClock.elapsedRealtime();
         LibraryLoader.getInstance().ensureMainDexInitialized();
         RecordHistogram.recordTimesHistogram("Startup.Android.GURLEnsureMainDexInitialized",
                 SystemClock.elapsedRealtime() - time);
-        GURLJni.get().init(uri, this);
     }
-
-    protected GURL() {}
 
     @CalledByNative
     private void init(String spec, boolean isValid, Parsed parsed) {
@@ -76,6 +94,14 @@ public class GURL {
     public String getSpec() {
         if (isValid() || mSpec.isEmpty()) return mSpec;
         assert false : "Trying to get the spec of an invalid URL!";
+        return "";
+    }
+
+    /**
+     * @return Either a valid Spec (see {@link #getSpec}), or an empty string.
+     */
+    public String getValidSpecOrEmpty() {
+        if (isValid()) return mSpec;
         return "";
     }
 

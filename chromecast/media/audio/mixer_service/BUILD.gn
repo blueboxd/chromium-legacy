@@ -135,6 +135,7 @@ cast_source_set("redirected_audio_connection") {
     "//base",
     "//chromecast/net:io_buffer_pool",
     "//chromecast/public",
+    "//chromecast/public/media",
     "//net",
   ]
 }

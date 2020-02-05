@@ -145,6 +145,13 @@ LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
     return content::NavigationThrottle::PROCEED;
   }
 
+  // Do not cancel the navigation if there is no auth challenge. We only want to
+  // cancel the navigation below to show a blank page if there is an auth
+  // challenge for which to show a login prompt.
+  if (!navigation_handle->GetAuthChallengeInfo()) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
   // Otherwise, rewrite the response to a blank page. DidFinishNavigation will
   // show a login prompt on top of this blank page.
   return {content::NavigationThrottle::CANCEL,

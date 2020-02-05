@@ -144,7 +144,7 @@ void TestExtensionsBrowserClient::LoadResourceFromResourceBundle(
 
 bool TestExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const GURL& url,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     ui::PageTransition page_transition,
     int child_id,
     bool is_incognito,

@@ -2573,6 +2573,10 @@
         'app': 'ios_chrome_settings_eg2tests_module',
         'host': 'ios_chrome_eg2tests',
       },
+      'ios_chrome_signin_eg2tests_module': {
+        'app': 'ios_chrome_signin_eg2tests_module',
+        'host': 'ios_chrome_eg2tests',
+      },
       'ios_chrome_smoke_eg2tests_module': {
         'app': 'ios_chrome_smoke_eg2tests_module',
         'host': 'ios_chrome_eg2tests',

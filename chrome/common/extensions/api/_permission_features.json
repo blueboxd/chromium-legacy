@@ -628,7 +628,7 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "printing": {
-    "channel": "dev",
+    "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension"]
   },

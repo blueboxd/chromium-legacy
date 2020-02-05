@@ -87,11 +87,14 @@ api::processes::ProcessType GetProcessType(
     case task_manager::Task::PLUGIN:
       return api::processes::PROCESS_TYPE_PLUGIN;
 
-    case task_manager::Task::WORKER:
-      return api::processes::PROCESS_TYPE_WORKER;
-
     case task_manager::Task::NACL:
       return api::processes::PROCESS_TYPE_NACL;
+
+    // TODO(https://crbug.com/1048715): Assign a different process type for each
+    //                                  worker type.
+    case task_manager::Task::DEDICATED_WORKER:
+    case task_manager::Task::SHARED_WORKER:
+      return api::processes::PROCESS_TYPE_WORKER;
 
     case task_manager::Task::SERVICE_WORKER:
       return api::processes::PROCESS_TYPE_SERVICE_WORKER;

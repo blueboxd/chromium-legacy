@@ -14,9 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/values.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -103,6 +101,11 @@ bool RsaSignPrehashed(const EVP_PKEY& key,
   return true;
 }
 
+void SendReplyToJs(extensions::TestSendMessageFunction* function,
+                   const base::Value& response) {
+  function->Reply(ConvertValueToJson(response));
+}
+
 }  // namespace
 
 TestCertificateProviderExtension::TestCertificateProviderExtension(
@@ -140,39 +143,50 @@ void TestCertificateProviderExtension::Observe(
     return;
   }
 
-  const std::string& message =
-      content::Details<std::pair<std::string, bool*>>(details)->first;
+  const auto typed_details =
+      content::Details<std::pair<std::string, bool*>>(details);
+  const std::string& message = typed_details->first;
+  bool* const listener_will_respond = typed_details->second;
+
+  // Handle the request and reply to it (possibly, asynchronously).
   base::Value message_value = ParseJsonToValue(message);
   CHECK(message_value.is_list());
   CHECK(message_value.GetList().size());
   CHECK(message_value.GetList()[0].is_string());
   const std::string& request_type = message_value.GetList()[0].GetString();
-  base::Value response;
+  ReplyToJsCallback send_reply_to_js_callback =
+      base::BindOnce(&SendReplyToJs, base::Unretained(function));
+  *listener_will_respond = true;
   if (request_type == "onCertificatesRequested") {
     CHECK_EQ(message_value.GetList().size(), 1U);
-    response = HandleCertificatesRequest();
-  } else if (request_type == "onSignDigestRequested") {
-    CHECK_EQ(message_value.GetList().size(), 2U);
-    response =
-        HandleSignDigestRequest(/*sign_request=*/message_value.GetList()[1]);
+    HandleCertificatesRequest(std::move(send_reply_to_js_callback));
+  } else if (request_type == "onSignatureRequested") {
+    CHECK_EQ(message_value.GetList().size(), 3U);
+    HandleSignatureRequest(
+        /*sign_request=*/message_value.GetList()[1],
+        /*pin_user_input=*/message_value.GetList()[2],
+        std::move(send_reply_to_js_callback));
   } else {
     LOG(FATAL) << "Unexpected JS message type: " << request_type;
   }
-  function->Reply(ConvertValueToJson(response));
 }
 
-base::Value TestCertificateProviderExtension::HandleCertificatesRequest() {
+void TestCertificateProviderExtension::HandleCertificatesRequest(
+    ReplyToJsCallback callback) {
   base::Value cert_info_values(base::Value::Type::LIST);
   if (!should_fail_certificate_requests_)
     cert_info_values.Append(MakeCertInfoValue(*certificate_));
-  return cert_info_values;
+  std::move(callback).Run(cert_info_values);
 }
 
-base::Value TestCertificateProviderExtension::HandleSignDigestRequest(
-    const base::Value& sign_request) {
+void TestCertificateProviderExtension::HandleSignatureRequest(
+    const base::Value& sign_request,
+    const base::Value& pin_user_input,
+    ReplyToJsCallback callback) {
   CHECK_EQ(*sign_request.FindKey("certificate"),
            ConvertBytesToValue(GetCertDer(*certificate_)));
 
+  const int sign_request_id = sign_request.FindKey("signRequestId")->GetInt();
   const std::vector<uint8_t> digest =
       ExtractBytesFromValue(*sign_request.FindKey("digest"));
 
@@ -187,10 +201,42 @@ base::Value TestCertificateProviderExtension::HandleSignDigestRequest(
   else
     LOG(FATAL) << "Unexpected signature request hash: " << hash;
 
-  if (should_fail_sign_digest_requests_)
-    return base::Value();
+  if (should_fail_sign_digest_requests_) {
+    // Simulate a failure.
+    std::move(callback).Run(/*response=*/base::Value());
+    return;
+  }
+
+  base::Value response(base::Value::Type::DICTIONARY);
+  if (required_pin_.has_value()) {
+    if (pin_user_input.is_none()) {
+      // The PIN is required but not specified yet, so request it via the JS
+      // side before generating the signature.
+      base::Value pin_request_parameters(base::Value::Type::DICTIONARY);
+      pin_request_parameters.SetIntKey("signRequestId", sign_request_id);
+      response.SetKey("requestPin", std::move(pin_request_parameters));
+      std::move(callback).Run(response);
+      return;
+    }
+    if (pin_user_input.GetString() != *required_pin_) {
+      // The PIN is wrong, so retry the PIN request with displaying an error.
+      base::Value pin_request_parameters(base::Value::Type::DICTIONARY);
+      pin_request_parameters.SetIntKey("signRequestId", sign_request_id);
+      pin_request_parameters.SetStringKey("errorType", "INVALID_PIN");
+      response.SetKey("requestPin", std::move(pin_request_parameters));
+      std::move(callback).Run(response);
+      return;
+    }
+    // The entered PIN is correct. Stop the PIN request and proceed to
+    // generating the signature.
+    base::Value stop_pin_request_parameters(base::Value::Type::DICTIONARY);
+    stop_pin_request_parameters.SetIntKey("signRequestId", sign_request_id);
+    response.SetKey("stopPinRequest", std::move(stop_pin_request_parameters));
+  }
+  // Generate and return a valid signature.
   std::vector<uint8_t> signature;
   CHECK(
       RsaSignPrehashed(*private_key_, openssl_digest_type, digest, &signature));
-  return ConvertBytesToValue(signature);
+  response.SetKey("signature", ConvertBytesToValue(signature));
+  std::move(callback).Run(response);
 }

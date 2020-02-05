@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace blink {
 
@@ -14,7 +15,18 @@ using protocol::ListValue;
 using protocol::Value;
 
 static std::unique_ptr<protocol::Value> ParseJSON(const String& string) {
-  return protocol::StringUtil::parseJSON(string);
+  std::vector<uint8_t> cbor;
+  if (string.Is8Bit()) {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint8_t>(string.Characters8(), string.length()), &cbor);
+  } else {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint16_t>(
+            reinterpret_cast<const uint16_t*>(string.Characters16()),
+            string.length()),
+        &cbor);
+  }
+  return protocol::Value::parseBinary(cbor.data(), cbor.size());
 }
 
 TEST(ProtocolParserTest, Reading) {

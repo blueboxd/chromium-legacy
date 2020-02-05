@@ -3669,14 +3669,16 @@ class ConnectionListener
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was accepted.
-  void AcceptedSocket(const net::StreamSocket& connection) override {
+  std::unique_ptr<net::StreamSocket> AcceptedSocket(
+      std::unique_ptr<net::StreamSocket> connection) override {
     base::AutoLock lock(lock_);
-    uint16_t socket = GetPort(connection);
+    uint16_t socket = GetPort(*connection);
     EXPECT_TRUE(sockets_.find(socket) == sockets_.end());
 
     sockets_[socket] = SOCKET_ACCEPTED;
     total_sockets_seen_++;
     CheckAccepted();
+    return connection;
   }
 
   // Get called from the EmbeddedTestServer thread to be notified that

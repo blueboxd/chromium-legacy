@@ -19,7 +19,7 @@ TEST_F(RelocatablePositionTest, position) {
   RelocatablePosition relocatable_position(
       Position(textarea, PositionAnchorType::kBeforeAnchor));
   textarea->remove();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // RelocatablePosition should track the given Position even if its original
   // anchor node is moved away from the document.

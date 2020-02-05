@@ -4,12 +4,12 @@
 
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
 
-#include <memory>
-
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_send_message_result.h"
 
 WebRtcSignallingHostFCM::WebRtcSignallingHostFCM(
     mojo::PendingReceiver<sharing::mojom::SignallingSender> signalling_sender,
@@ -73,15 +73,7 @@ void WebRtcSignallingHostFCM::SendIceCandidates(
       *device_info_,
       base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
       std::move(sharing_message), SharingMessageSender::DelegateType::kFCM,
-      base::BindOnce([](SharingSendMessageResult result,
-                        std::unique_ptr<chrome_browser_sharing::ResponseMessage>
-                            response) {
-        if (result != SharingSendMessageResult::kSuccessful) {
-          // TODO(crbug.com/1021984): replace this with UMA metrics
-          LOG(ERROR) << "Error sending Ice Candidate";
-          return;
-        }
-      }));
+      base::DoNothing());
 }
 
 void WebRtcSignallingHostFCM::OnOfferReceived(

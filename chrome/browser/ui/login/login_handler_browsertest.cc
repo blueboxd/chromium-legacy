@@ -2150,6 +2150,70 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, FtpAuthWithCache) {
   EXPECT_EQ(0u, observer.handlers().size());
 }
 
+namespace {
+
+// A request handler that returns a 401 Unauthorized response on the
+// /unauthorized path.
+std::unique_ptr<net::test_server::HttpResponse> HandleUnauthorized(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/unauthorized") {
+    return nullptr;
+  }
+
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_code(net::HTTP_UNAUTHORIZED);
+  response->set_content("<html><body>Unauthorized</body></html>");
+  return response;
+}
+
+}  // namespace
+
+// Tests that 401 responses are not cancelled and replaced with a blank page
+// when incorrect credentials were supplied in the request. See
+// https://crbug.com/1047742.
+IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
+                       ResponseNotCancelledWithIncorrectCredentials) {
+  // Register a custom handler that returns a 401 Unauthorized response
+  // regardless of what credentials were supplied in the request.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleUnauthorized));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a page that prompts basic auth and fill in correct
+  // credentials. A subsequent navigation handled by HandleUnauthorized() will
+  // send the credentials cached from the navigation to |test_page|, but return
+  // a 401 Unauthorized response.
+  NavigationController* controller = &web_contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  ui_test_utils::NavigateToURL(browser(), test_page);
+  auth_needed_waiter.Wait();
+  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+  LoginHandler* handler = *observer.handlers().begin();
+  SetAuthFor(handler);
+  auth_supplied_waiter.Wait();
+  base::string16 expected_title = ExpectedTitleFromAuth(
+      base::ASCIIToUTF16("basicuser"), base::ASCIIToUTF16("secret"));
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Now navigate to a page handled by HandleUnauthorized(), for which the
+  // cached credentials are incorrect.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/unauthorized"));
+  // Test that the 401 response body is rendered, instead of the navigation
+  // being cancelled and a blank error page committing.
+  EXPECT_EQ(false,
+            content::EvalJs(
+                web_contents,
+                "document.body.innerHTML.indexOf('Unauthorized') === -1"));
+}
+
 class ProxyBrowserTestWithHttpAuthCommittedInterstitials
     : public ProxyBrowserTest {
  public:

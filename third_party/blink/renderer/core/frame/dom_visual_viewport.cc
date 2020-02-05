@@ -91,7 +91,7 @@ float DOMVisualViewport::pageLeft() const {
   if (!view || !view->LayoutViewport())
     return 0;
 
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   float viewport_x = page->GetVisualViewport().GetScrollOffset().Width() +
                      view->LayoutViewport()->GetScrollOffset().Width();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_x,
@@ -111,7 +111,7 @@ float DOMVisualViewport::pageTop() const {
   if (!view || !view->LayoutViewport())
     return 0;
 
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   float viewport_y = page->GetVisualViewport().GetScrollOffset().Height() +
                      view->LayoutViewport()->GetScrollOffset().Height();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
@@ -125,7 +125,8 @@ double DOMVisualViewport::width() const {
 
   if (!frame->IsMainFrame()) {
     // Update layout to ensure scrollbars are up-to-date.
-    frame->GetDocument()->UpdateStyleAndLayout();
+    frame->GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kJavaScript);
     auto* scrollable_area = frame->View()->LayoutViewport();
     float width =
         scrollable_area->VisibleContentRect(kExcludeScrollbars).Width();
@@ -146,7 +147,8 @@ double DOMVisualViewport::height() const {
 
   if (!frame->IsMainFrame()) {
     // Update layout to ensure scrollbars are up-to-date.
-    frame->GetDocument()->UpdateStyleAndLayout();
+    frame->GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kJavaScript);
     auto* scrollable_area = frame->View()->LayoutViewport();
     float height =
         scrollable_area->VisibleContentRect(kExcludeScrollbars).Height();

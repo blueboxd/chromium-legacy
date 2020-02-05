@@ -67,6 +67,14 @@ std::unique_ptr<GURL> GURLAndroid::ToNativeGURL(
       reinterpret_cast<GURL*>(Java_GURL_toNativeGURL(env, j_gurl)));
 }
 
+// static
+ScopedJavaLocalRef<jobject> GURLAndroid::FromNativeGURL(JNIEnv* env,
+                                                        const GURL& gurl) {
+  ScopedJavaLocalRef<jobject> j_gurl = Java_GURL_Constructor(env);
+  InitFromGURL(env, gurl, j_gurl);
+  return j_gurl;
+}
+
 static void JNI_GURL_GetOrigin(JNIEnv* env,
                                const JavaParamRef<jstring>& j_spec,
                                jboolean is_valid,

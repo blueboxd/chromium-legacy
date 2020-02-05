@@ -24,6 +24,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -73,7 +74,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     bool crosses_incognito,
     WebRequestPermissions::HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator,
-    const base::Optional<content::ResourceType>& resource_type) {
+    const base::Optional<blink::mojom::ResourceType>& resource_type) {
   const extensions::Extension* extension =
       permission_helper->extension_registry()->enabled_extensions().GetByID(
           extension_id);
@@ -114,7 +115,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
           GetHostAccessForURL(*extension, url, tab_id);
 
       bool is_navigation_request =
-          resource_type && content::IsResourceTypeFrame(*resource_type);
+          resource_type && blink::IsResourceTypeFrame(*resource_type);
 
       // For sub-resource (non-navigation) requests, if access to the host was
       // withheld, check if the extension has access to the initiator. If it
@@ -137,7 +138,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
           GetHostAccessForURL(*extension, url, tab_id);
 
       bool is_navigation_request =
-          resource_type && content::IsResourceTypeFrame(*resource_type);
+          resource_type && blink::IsResourceTypeFrame(*resource_type);
 
       // Only require access to the initiator for sub-resource (non-navigation)
       // requests. See crbug.com/918137.
@@ -250,8 +251,8 @@ bool WebRequestPermissions::HideRequest(
     // Browser initiated service worker script requests (e.g., for update check)
     // are not hidden.
     if (request.is_service_worker_script) {
-      DCHECK(request.type == content::ResourceType::kServiceWorker ||
-             request.type == content::ResourceType::kScript);
+      DCHECK(request.type == blink::mojom::ResourceType::kServiceWorker ||
+             request.type == blink::mojom::ResourceType::kScript);
       return false;
     }
 
@@ -259,16 +260,18 @@ bool WebRequestPermissions::HideRequest(
     if (!request.is_navigation_request)
       return true;
 
-    DCHECK(request.type == content::ResourceType::kMainFrame ||
-           request.type == content::ResourceType::kSubFrame ||
-           request.type == content::ResourceType::kNavigationPreloadMainFrame ||
-           request.type == content::ResourceType::kNavigationPreloadSubFrame);
+    DCHECK(request.type == blink::mojom::ResourceType::kMainFrame ||
+           request.type == blink::mojom::ResourceType::kSubFrame ||
+           request.type ==
+               blink::mojom::ResourceType::kNavigationPreloadMainFrame ||
+           request.type ==
+               blink::mojom::ResourceType::kNavigationPreloadSubFrame);
 
     // Hide sub-frame requests to clientsX.google.com.
     // TODO(crbug.com/890006): Determine if the code here can be cleaned up
     // since browser initiated non-navigation requests are now hidden from
     // extensions.
-    if (request.type != content::ResourceType::kMainFrame &&
+    if (request.type != blink::mojom::ResourceType::kMainFrame &&
         IsSensitiveGoogleClientUrl(request)) {
       return true;
     }
@@ -354,7 +357,7 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator,
-    content::ResourceType resource_type) {
+    blink::mojom::ResourceType resource_type) {
   return CanExtensionAccessURLInternal(
       permission_helper, extension_id, url, tab_id, crosses_incognito,
       host_permissions_check, initiator, resource_type);

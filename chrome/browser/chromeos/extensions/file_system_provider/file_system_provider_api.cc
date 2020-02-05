@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 #include "storage/browser/file_system/watcher_manager.h"
@@ -244,12 +245,13 @@ ExtensionFunction::ResponseAction FileSystemProviderGetFunction::Run() {
       api::file_system_provider::Get::Results::Create(file_system_info)));
 }
 
-bool FileSystemProviderNotifyFunction::RunAsync() {
+ExtensionFunction::ResponseAction FileSystemProviderNotifyFunction::Run() {
   using api::file_system_provider::Notify::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  Service* const service = Service::Get(GetProfile());
+  ChromeExtensionFunctionDetails details(this);
+  Service* const service = Service::Get(details.GetProfile());
   DCHECK(service);
 
   ProvidedFileSystemInterface* const file_system =
@@ -257,8 +259,8 @@ bool FileSystemProviderNotifyFunction::RunAsync() {
           ProviderId::CreateFromExtensionId(extension_id()),
           params->options.file_system_id);
   if (!file_system) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND));
-    return false;
+    return RespondNow(
+        Error(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND)));
   }
 
   file_system->Notify(
@@ -270,18 +272,17 @@ bool FileSystemProviderNotifyFunction::RunAsync() {
       params->options.tag.get() ? *params->options.tag.get() : "",
       base::Bind(&FileSystemProviderNotifyFunction::OnNotifyCompleted, this));
 
-  return true;
+  return RespondLater();
 }
 
 void FileSystemProviderNotifyFunction::OnNotifyCompleted(
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
-    SetError(FileErrorToString(result));
-    SendResponse(false);
+    Respond(Error(FileErrorToString(result)));
     return;
   }
 
-  SendResponse(true);
+  Respond(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

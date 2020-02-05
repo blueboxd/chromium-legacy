@@ -686,8 +686,9 @@ def _Module(tree, path, imports):
     del union.fields_data
     all_defined_kinds[union.spec] = union
   for interface in module.interfaces:
-    interface.methods = map(lambda method:
-        _Method(module, method, interface), interface.methods_data)
+    interface.methods = list(
+        map(lambda method: _Method(module, method, interface),
+            interface.methods_data))
     del interface.methods_data
     all_defined_kinds[interface.spec] = interface
     for enum in interface.enums:

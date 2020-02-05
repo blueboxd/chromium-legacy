@@ -79,6 +79,7 @@ def _CheckAlertDialogBuilder(input_api, output_api):
   # general, preference and FRE related UIs are not relevant to VR mode.
   blacklist = (
       BROWSER_ROOT + 'browserservices/ClearDataDialogActivity.java',
+      BROWSER_ROOT + 'datareduction/settings/DataReductionStatsPreference.java',
       BROWSER_ROOT + 'password_manager/AccountChooserDialog.java',
       BROWSER_ROOT + 'password_manager/AutoSigninFirstRunDialog.java',
       BROWSER_ROOT + r'settings[\\\/].*',

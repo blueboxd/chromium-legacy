@@ -110,8 +110,11 @@ void CmaBackendShim::InitializeOnMediaThread() {
   AudioConfig audio_config;
   audio_config.id = kPrimary;
   audio_config.codec = kCodecPCM;
-  audio_config.channel_layout =
-      ChannelLayoutFromChannelNumber(params_.num_channels());
+  audio_config.channel_layout = ConvertChannelLayout(params_.channel_layout());
+  if (audio_config.channel_layout == media::ChannelLayout::UNSUPPORTED) {
+    audio_config.channel_layout =
+        ChannelLayoutFromChannelNumber(params_.num_channels());
+  }
   audio_config.sample_format = ConvertSampleFormat(params_.sample_format());
   audio_config.bytes_per_channel = GetSampleSizeBytes(params_.sample_format());
   audio_config.channel_number = params_.num_channels();

@@ -44,6 +44,8 @@ namespace media_router {
 
 namespace {
 
+using MirroringType = MirroringActivityRecord::MirroringType;
+
 const std::string GetMirroringNamespace(const base::Value& message) {
   const base::Value* const type_value =
       message.FindKeyOfType("type", base::Value::Type::STRING);
@@ -56,6 +58,12 @@ const std::string GetMirroringNamespace(const base::Value& message) {
   } else {
     return mirroring::mojom::kWebRtcNamespace;
   }
+}
+
+MirroringType GetMirroringType(const MediaRoute& route, int tab_id) {
+  if (!route.is_local())
+    return MirroringType::kNonLocal;
+  return tab_id == -1 ? MirroringType::kDesktop : MirroringType::kTab;
 }
 
 }  // namespace
@@ -73,8 +81,7 @@ MirroringActivityRecord::MirroringActivityRecord(
       channel_id_(cast_data.cast_channel_id),
       // TODO(jrw): MirroringType::kOffscreenTab should be a possible value here
       // once the Presentation API 1UA mode is supported.
-      mirroring_type_(target_tab_id == -1 ? MirroringType::kDesktop
-                                          : MirroringType::kTab),
+      mirroring_type_(GetMirroringType(route, target_tab_id)),
       on_stop_(std::move(callback)) {
   // TODO(jrw): Detect and report errors.
 
@@ -93,6 +100,10 @@ MirroringActivityRecord::MirroringActivityRecord(
       media_router->GetMirroringServiceHostForTab(
           target_tab_id, host_.BindNewPipeAndPassReceiver());
       break;
+    case MirroringType::kNonLocal:
+      // Non-local activity doesn't need to handle messages, so return without
+      // setting up Mojo bindings.
+      return;
     default:
       NOTREACHED();
   }
@@ -155,6 +166,8 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
 
 void MirroringActivityRecord::OnAppMessage(
     const cast::channel::CastMessage& message) {
+  if (!route_.is_local())
+    return;
   if (message.namespace_() != mirroring::mojom::kWebRtcNamespace &&
       message.namespace_() != mirroring::mojom::kRemotingNamespace) {
     // Ignore message with wrong namespace.
@@ -175,6 +188,8 @@ void MirroringActivityRecord::OnAppMessage(
 
 void MirroringActivityRecord::OnInternalMessage(
     const cast_channel::InternalMessage& message) {
+  if (!route_.is_local())
+    return;
   DVLOG(2) << "Relaying internal message from receiver: " << message.message;
   mirroring::mojom::CastMessagePtr ptr = mirroring::mojom::CastMessage::New();
   ptr->message_namespace = message.message_namespace;

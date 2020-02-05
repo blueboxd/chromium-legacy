@@ -1864,12 +1864,14 @@ size_t OverviewGrid::GetOverviewItemIndex(OverviewItem* item) const {
 }
 
 size_t OverviewGrid::FindInsertionIndex(const aura::Window* window) {
-  DCHECK(!GetDropTarget());
   size_t index = 0u;
   for (aura::Window* mru_window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
-    if (index == window_list_.size() || mru_window == window)
+    if (index == size() ||
+        IsDropTargetWindow(window_list_[index]->GetWindow()) ||
+        mru_window == window) {
       return index;
+    }
     // As we iterate over the whole MRU window list, the windows in this grid
     // will be encountered in the same order, but possibly with other windows in
     // between. Ignore those other windows, and only increment |index| when we
@@ -1909,8 +1911,8 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     dragged_window->ClearProperty(kCanAttachToAnotherWindowKey);
   }
 
-  overview_session_->AddItem(dragged_window, /*reposition=*/false,
-                             /*animate=*/false);
+  overview_session_->AddItemInMruOrder(dragged_window, /*reposition=*/false,
+                                       /*animate=*/false, /*restack=*/true);
 }
 
 // Returns the desks widget bounds in root, given the screen bounds of the

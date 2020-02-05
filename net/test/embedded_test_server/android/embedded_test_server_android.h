@@ -76,7 +76,8 @@ class EmbeddedTestServerAndroid {
     ConnectionListener(EmbeddedTestServerAndroid* test_server_android);
     ~ConnectionListener() override;
 
-    void AcceptedSocket(const StreamSocket& socket) override;
+    std::unique_ptr<StreamSocket> AcceptedSocket(
+        std::unique_ptr<StreamSocket> socket) override;
     void ReadFromSocket(const StreamSocket& socket, int rv) override;
 
    private:

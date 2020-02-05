@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -265,13 +266,15 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       if (spellcheck) {
         spellcheck->GetCustomDictionary()->AddWord(base::UTF16ToUTF8(
             misspelled_word_));
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+        if (spellcheck::UseBrowserSpellChecker()) {
+          spellcheck_platform::AddWord(spellcheck->platform_spell_checker(),
+                                       misspelled_word_);
+        }
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
       }
     }
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    if (spellcheck::UseBrowserSpellChecker()) {
-      spellcheck_platform::AddWord(misspelled_word_);
-    }
-#endif
   }
 
   Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());

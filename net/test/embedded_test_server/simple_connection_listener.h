@@ -37,7 +37,8 @@ class SimpleConnectionListener : public EmbeddedTestServerConnectionListener {
   // shut down.
   ~SimpleConnectionListener() override;
 
-  void AcceptedSocket(const StreamSocket& socket) override;
+  std::unique_ptr<StreamSocket> AcceptedSocket(
+      std::unique_ptr<StreamSocket> socket) override;
   void ReadFromSocket(const StreamSocket& socket, int rv) override;
 
   // Wait until the expected number of connections have been seen.

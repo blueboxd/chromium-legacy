@@ -318,7 +318,7 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
   if (!paint_order_map_)
-    document->UpdateStyleAndLayout();
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
 
   DocumentType* doc_type = document->doctype();
 
@@ -687,7 +687,7 @@ void InspectorDOMSnapshotAgent::TraversePaintLayerTree(
     PaintOrderMap* paint_order_map) {
   // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees.
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
 
   PaintLayer* root_layer = document->GetLayoutView()->Layer();
   // LayoutView requires a PaintLayer.

@@ -1952,10 +1952,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledNTP79",
+                    "name": "EnabledNTP80",
                     "params": {
-                        "en_site_id": "ty52vxwjrabfvhusawtrmkmx6m",
-                        "probability": "0.4",
+                        "en_site_id": "tbl7ghvx6q4sth3jzfxynlvnxi",
+                        "probability": "0.01",
                         "survey": "satisfaction"
                     },
                     "enable_features": [
@@ -4697,6 +4697,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AlwaysAllowJustInTimePaymentApp"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PaymentRequestSkipToGPayIfNoCard": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PaymentRequestSkipToGPayIfNoCard"
                     ]
                 }
             ]
@@ -7752,6 +7767,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewWakeMetricsService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WindowsHybridSpellCheck": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WinUseBrowserSpellChecker",
+                        "WinUseHybridSpellChecker"
                     ]
                 }
             ]

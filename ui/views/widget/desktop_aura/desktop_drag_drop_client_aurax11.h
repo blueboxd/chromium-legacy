@@ -16,7 +16,8 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/x/x11_drag_drop_client.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -53,7 +54,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
     : public ui::XDragDropClient,
       public ui::XDragDropClient::Delegate,
       public aura::client::DragDropClient,
-      public ui::PlatformEventDispatcher,
+      public ui::XEventDispatcher,
       public aura::WindowObserver,
       public X11MoveLoopDelegate {
  public:
@@ -78,9 +79,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
   void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
 
-  // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  // XEventDispatcher:
+  bool DispatchXEvent(XEvent* event) override;
 
   // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;

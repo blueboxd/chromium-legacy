@@ -104,6 +104,9 @@ class WavMixerInputSource : public MixerInput::Source {
   size_t num_channels() const override {
     return input_handler_->num_channels();
   }
+  ::media::ChannelLayout channel_layout() const override {
+    return ::media::GuessChannelLayout(num_channels());
+  }
   int sample_rate() const override { return input_handler_->sample_rate(); }
   bool primary() override { return true; }
   bool active() override { return true; }

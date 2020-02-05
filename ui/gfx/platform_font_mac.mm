@@ -312,7 +312,7 @@ NativeFont PlatformFontMac::GetNativeFont() const {
   return [[native_font_.get() retain] autorelease];
 }
 
-sk_sp<SkTypeface> PlatformFontMac::GetNativeSkTypefaceIfAvailable() const {
+sk_sp<SkTypeface> PlatformFontMac::GetNativeSkTypeface() const {
   return SkMakeTypefaceFromCTFont(base::mac::NSToCFCast(GetNativeFont()));
 }
 

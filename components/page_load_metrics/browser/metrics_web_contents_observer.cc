@@ -28,7 +28,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/resource_load_info.mojom.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "ui/base/page_transition_types.h"
@@ -248,9 +247,9 @@ void MetricsWebContentsObserver::WillProcessNavigationResponse(
 PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     const content::GlobalRequestID& request_id,
     content::RenderFrameHost* render_frame_host_or_null,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     base::TimeTicks creation_time) {
-  if (resource_type == content::ResourceType::kMainFrame) {
+  if (resource_type == blink::mojom::ResourceType::kMainFrame) {
     DCHECK(request_id != content::GlobalRequestID());
     // The main frame request can complete either before or after commit, so we
     // look at both provisional loads and the committed load to find a
@@ -279,7 +278,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     // TODO(bmcquade): consider tracking GlobalRequestIDs for sub-frame
     // navigations in each PageLoadTracker, and performing a lookup for
     // sub-frames similar to the main-frame lookup above.
-    if (resource_type == content::ResourceType::kSubFrame)
+    if (resource_type == blink::mojom::ResourceType::kSubFrame)
       return committed_load_.get();
 
     // This was originally a DCHECK but it fails when the document load happened
@@ -308,7 +307,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
 void MetricsWebContentsObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   if (resource_load_info.origin_of_final_url.scheme() != url::kHttpScheme &&
       resource_load_info.origin_of_final_url.scheme() != url::kHttpsScheme) {
     return;
@@ -328,7 +327,7 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
         data_reduction_proxy_data;
 
-    const content::mojom::CommonNetworkInfoPtr& network_info =
+    const blink::mojom::CommonNetworkInfoPtr& network_info =
         resource_load_info.network_info;
     ExtraRequestCompleteInfo extra_request_complete_info(
         resource_load_info.origin_of_final_url,

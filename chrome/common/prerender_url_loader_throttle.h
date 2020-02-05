@@ -12,9 +12,9 @@
 #include "base/timer/timer.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_types.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace prerender {
 
@@ -57,7 +57,7 @@ class PrerenderURLLoaderThrottle
 
   bool deferred_ = false;
   int redirect_count_ = 0;
-  content::ResourceType resource_type_;
+  blink::mojom::ResourceType resource_type_;
 
   mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler_;
 

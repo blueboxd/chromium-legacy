@@ -252,9 +252,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
       ax::mojom::IntAttribute attr) = 0;
 
   // Given a node ID attribute (one where IsNodeIdIntListAttribute is true),
-  // return a set of all target nodes for which this delegate's node has that
+  // return a vector of all target nodes for which this delegate's node has that
   // relationship attribute.
-  virtual std::set<AXPlatformNode*> GetTargetNodesForRelation(
+  virtual std::vector<AXPlatformNode*> GetTargetNodesForRelation(
       ax::mojom::IntListAttribute attr) = 0;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return

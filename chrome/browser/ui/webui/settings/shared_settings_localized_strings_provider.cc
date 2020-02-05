@@ -6,14 +6,24 @@
 
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/google/core/common/google_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
+#include "media/base/media_switches.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -21,6 +31,19 @@
 #endif
 
 namespace settings {
+#if defined(OS_CHROMEOS)
+namespace {
+
+// Generates a Google Help URL which includes a "board type" parameter. Some
+// help pages need to be adjusted depending on the type of CrOS device that is
+// accessing the page.
+base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
+  return base::ASCIIToUTF16(original_url +
+                            "&b=" + base::SysInfo::GetLsbReleaseBoard());
+}
+
+}  // namespace
+#endif
 
 void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -77,8 +100,162 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
     {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
     {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
     {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
+    {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
+    {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
+void AddSignOutDialogStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
+      {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
+      {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
+void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"autofillCheckboxLabel", IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL},
+      {"historyCheckboxLabel", IDS_SETTINGS_HISTORY_CHECKBOX_LABEL},
+      {"extensionsCheckboxLabel", IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL},
+      {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
+      {"syncEverythingCheckboxLabel",
+       IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL},
+      {"appCheckboxLabel", IDS_SETTINGS_APPS_CHECKBOX_LABEL},
+      {"enablePaymentsIntegrationCheckboxLabel",
+       IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
+      {"nonPersonalizedServicesSectionLabel",
+       IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
+      {"syncEverythingHint", IDS_SETTINGS_SYNC_EVERYTHING_HINT},
+      {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
+      {"customizeSyncHint", IDS_SETTINGS_CUSTOMIZE_SYNC_HINT},
+      {"syncData", IDS_SETTINGS_SYNC_DATA},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
+void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"syncingTo", IDS_SETTINGS_PEOPLE_SYNCING_TO_ACCOUNT},
+      {"peopleSignIn", IDS_PROFILES_DICE_SIGNIN_BUTTON},
+      {"syncPaused", IDS_SETTINGS_PEOPLE_SYNC_PAUSED},
+      {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+      {"settingsCheckboxLabel", IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL},
+      {"syncNotWorking", IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING},
+      {"syncDisabled", IDS_PROFILES_DICE_SYNC_DISABLED_TITLE},
+      {"syncPasswordsNotWorking",
+       IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING},
+      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
+      {"peopleSignOut", IDS_SETTINGS_PEOPLE_SIGN_OUT},
+      {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
+      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE}};
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
+#if defined(OS_CHROMEOS)
+void AddPasswordPromptDialogStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"passwordPromptTitle", IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE},
+      {"passwordPromptInvalidPassword",
+       IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_INVALID_PASSWORD},
+      {"passwordPromptPasswordLabel",
+       IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+#endif
+
+void AddSyncPageStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"syncDisabledByAdministrator",
+       IDS_SIGNED_IN_WITH_SYNC_DISABLED_BY_POLICY},
+      {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
+      {"passphrasePlaceholder", IDS_SETTINGS_PASSPHRASE_PLACEHOLDER},
+      {"peopleSignInSyncPagePromptSecondaryWithAccount",
+       IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
+      {"peopleSignInSyncPagePromptSecondaryWithNoAccount",
+       IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
+      {"existingPassphraseTitle", IDS_SETTINGS_EXISTING_PASSPHRASE_TITLE},
+      {"submitPassphraseButton", IDS_SETTINGS_SUBMIT_PASSPHRASE},
+      {"encryptWithGoogleCredentialsLabel",
+       IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL},
+      {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
+      {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
+      {"mismatchedPassphraseError", IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR},
+      {"emptyPassphraseError", IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR},
+      {"incorrectPassphraseError", IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR},
+      {"manageSyncedDataTitle",
+       IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
+      {"syncPageTitle", IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
+      {"passphraseConfirmationPlaceholder",
+       IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
+      {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
+      {"themesAndWallpapersCheckboxLabel",
+       IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL},
+      {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
+      {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
+      {"sync", IDS_SETTINGS_SYNC},
+      {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
+      {"syncSetupCancelDialogTitle",
+       IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
+      {"syncSetupCancelDialogBody", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  std::string sync_dashboard_url =
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kSyncGoogleDashboardURL),
+          g_browser_process->GetApplicationLocale())
+          .spec();
+
+  html_source->AddString(
+      "syncDisconnectExplanation",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString(
+      "passphraseResetHintEncryption",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT_ENCRYPTION,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString(
+      "passphraseRecover",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString("activityControlsUrl",
+                         chrome::kGoogleAccountActivityControlsURL);
+  html_source->AddString("syncDashboardUrl", sync_dashboard_url);
+  html_source->AddString(
+      "passphraseExplanationText",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString(
+      "encryptWithSyncPassphraseLabel",
+      l10n_util::GetStringFUTF8(
+          IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL,
+#if defined(OS_CHROMEOS)
+          GetHelpUrlWithBoard(chrome::kSyncEncryptionHelpURL)));
+#else
+          base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
+#endif
+  if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
+    static constexpr webui::LocalizedString
+        kSyncSetupFriendlySettingsStrings[] = {
+            {"personalizeGoogleServicesTitle",
+             IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE},
+            {"sWAAOn", IDS_SETTINGS_SWAA_ON},
+            {"sWAAOff", IDS_SETTINGS_SWAA_OFF},
+            {"sWAAOnHint", IDS_SETTINGS_SWAA_ON_HINT},
+            {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
+            {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
+            {"sWAAOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
+        };
+    AddLocalizedStringsBulk(html_source, kSyncSetupFriendlySettingsStrings);
+  } else {
+    html_source->AddLocalizedString(
+        "personalizeGoogleServicesTitle",
+        IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE);
+  }
 }
 
 }  // namespace settings

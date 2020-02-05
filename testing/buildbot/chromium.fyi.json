@@ -14328,6 +14328,53 @@
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module"
       },
       {
+        "app": "ios_chrome_signin_eg2tests_module",
+        "host": "ios_chrome_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.3",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11c29",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.3",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11c29",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11c29",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11c29",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_chrome_signin_eg2tests_module",
+        "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module"
+      },
+      {
         "app": "ios_chrome_smoke_eg2tests_module",
         "host": "ios_chrome_eg2tests",
         "merge": {

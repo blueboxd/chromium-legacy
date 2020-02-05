@@ -40,13 +40,13 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_type.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace previews {
 
@@ -64,7 +64,7 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   // THese should not be possible but there's some evidence it may be happening
   // in production and can't be repro'd.
   if (resource_request.resource_type !=
-      static_cast<int>(content::ResourceType::kMainFrame)) {
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame)) {
     NOTREACHED();
     return false;
   }

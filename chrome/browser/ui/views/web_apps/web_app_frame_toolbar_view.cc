@@ -677,26 +677,26 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
         std::make_unique<NavigationButtonContainer>(browser_view_));
     left_container_->SetProperty(
         views::kFlexBehaviorKey,
-        views::FlexSpecification::ForSizeRule(
+        views::FlexSpecification(
             views::MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
             views::MaximumFlexSizeRule::kPreferred)
             .WithOrder(2));
   }
 
   center_container_ = AddChildView(std::make_unique<views::View>());
-  center_container_->SetProperty(views::kFlexBehaviorKey,
-                                 views::FlexSpecification::ForSizeRule(
-                                     views::MinimumFlexSizeRule::kScaleToZero,
-                                     views::MaximumFlexSizeRule::kUnbounded)
-                                     .WithOrder(3));
+  center_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(3));
 
   right_container_ = AddChildView(
       std::make_unique<ToolbarButtonContainer>(widget, browser_view));
-  right_container_->SetProperty(views::kFlexBehaviorKey,
-                                views::FlexSpecification::ForSizeRule(
-                                    views::MinimumFlexSizeRule::kScaleToZero,
-                                    views::MaximumFlexSizeRule::kPreferred)
-                                    .WithOrder(1));
+  right_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1));
 
   UpdateStatusIconsVisibility();
 

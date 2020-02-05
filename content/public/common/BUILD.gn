@@ -164,7 +164,6 @@ jumbo_source_set("common_sources") {
     "resource_intercept_policy.h",
     "resource_request_body_android.cc",
     "resource_request_body_android.h",
-    "resource_type.cc",
     "resource_usage_reporter_type_converters.cc",
     "resource_usage_reporter_type_converters.h",
     "result_codes.h",
@@ -203,7 +202,6 @@ jumbo_source_set("common_sources") {
 
   public_deps = [
     ":interfaces",
-    ":resource_type_header",
     ":service_names",
     "//content/common",
     "//ipc",
@@ -284,20 +282,6 @@ jumbo_source_set("common_sources") {
   }
 }
 
-# This target exists because mojo bindings use this header and depending
-# on the whole of content/common would create a dependency cycle
-# //content/public/common:resource_type_bindings ->
-# //content/public/common:common ->
-# //content:content
-# //content/public/app:both_sources ->
-# //content/public/common:common_sources ->
-# //content/public/common:interfaces ->
-# //content/public/common:resource_type_bindings ->
-source_set("resource_type_header") {
-  sources = [ "resource_type.h" ]
-  public_deps = [ "//content:export" ]
-}
-
 mojom("interfaces") {
   # We don't want Blink variants of these bindings to be generated.
   disable_variants = true
@@ -316,7 +300,6 @@ mojom("interfaces") {
     "browser_controls_state.mojom",
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
-    "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
     "was_activated_option.mojom",
@@ -330,7 +313,6 @@ mojom("interfaces") {
 
   public_deps = [
     ":client_hints_mojom",
-    ":resource_type_bindings",
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
     "//services/network/public/mojom:mojom_ip_address",
@@ -367,8 +349,4 @@ mojom("client_hints_mojom") {
 
 mojom("service_names") {
   sources = [ "service_names.mojom" ]
-}
-
-mojom("resource_type_bindings") {
-  sources = [ "resource_type.mojom" ]
 }

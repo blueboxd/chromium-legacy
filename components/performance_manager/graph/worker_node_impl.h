@@ -31,7 +31,6 @@ class WorkerNodeImpl
                  const std::string& browser_context_id,
                  WorkerType worker_type,
                  ProcessNodeImpl* process_node,
-                 const GURL& url,
                  const base::UnguessableToken& dev_tools_token);
   ~WorkerNodeImpl() override;
 
@@ -43,14 +42,18 @@ class WorkerNodeImpl
   void AddClientWorker(WorkerNodeImpl* worker_node);
   void RemoveClientWorker(WorkerNodeImpl* worker_node);
 
+  // Invoked when the worker script was fetched and the final response URL is
+  // available.
+  void OnFinalResponseURLDetermined(const GURL& url);
+
   // Getters for const properties. These can be called from any thread.
   const std::string& browser_context_id() const;
   WorkerType worker_type() const;
   ProcessNodeImpl* process_node() const;
-  const GURL& url() const;
   const base::UnguessableToken& dev_tools_token() const;
 
   // Getters for non-const properties. These are not thread safe.
+  const GURL& url() const;
   const base::flat_set<FrameNodeImpl*>& client_frames() const;
   const base::flat_set<WorkerNodeImpl*>& client_workers() const;
   const base::flat_set<WorkerNodeImpl*>& child_workers() const;
@@ -64,8 +67,8 @@ class WorkerNodeImpl
   WorkerType GetWorkerType() const override;
   const std::string& GetBrowserContextID() const override;
   const ProcessNode* GetProcessNode() const override;
-  const GURL& GetURL() const override;
   const base::UnguessableToken& GetDevToolsToken() const override;
+  const GURL& GetURL() const override;
   const base::flat_set<const FrameNode*> GetClientFrames() const override;
   const base::flat_set<const WorkerNode*> GetClientWorkers() const override;
   const base::flat_set<const WorkerNode*> GetChildWorkers() const override;
@@ -83,13 +86,15 @@ class WorkerNodeImpl
   // The process in which this worker lives.
   ProcessNodeImpl* const process_node_;
 
-  // The URL of the worker script.
-  const GURL url_;
-
   // A unique identifier shared with all representations of this node across
   // content and blink. The token is only defined by the browser process and
   // is never sent back from the renderer in control calls.
   const base::UnguessableToken dev_tools_token_;
+
+  // The URL of the worker script. This is the final response URL which takes
+  // into account redirections. This is initially empty and it is set when
+  // OnFinalResponseURLDetermined() is invoked.
+  GURL url_;
 
   // Frames that are clients of this worker.
   base::flat_set<FrameNodeImpl*> client_frames_;

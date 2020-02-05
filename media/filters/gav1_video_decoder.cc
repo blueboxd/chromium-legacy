@@ -121,7 +121,7 @@ int ReleaseFrameBufferImpl(void* private_data,
                            Libgav1FrameBuffer* frame_buffer) {
   DCHECK(private_data);
   DCHECK(frame_buffer);
-  if (frame_buffer->private_data)
+  if (!frame_buffer->private_data)
     return -1;
   auto* pool = reinterpret_cast<FrameBufferPool*>(private_data);
   pool->ReleaseFrameBuffer(frame_buffer->private_data);

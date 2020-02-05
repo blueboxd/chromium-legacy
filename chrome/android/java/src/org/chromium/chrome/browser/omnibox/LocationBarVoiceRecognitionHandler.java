@@ -25,8 +25,8 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -647,7 +647,7 @@ public class LocationBarVoiceRecognitionHandler {
     }
 
     /**
-     * Calls into {@link FeatureUtilities} to determine whether or not the
+     * Calls into {@link CachedFeatureFlags} to determine whether or not the
      * {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent} is handled by any
      * {@link android.app.Activity}s in the system.
      *
@@ -656,6 +656,6 @@ public class LocationBarVoiceRecognitionHandler {
      */
     @VisibleForTesting
     protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
-        return FeatureUtilities.isRecognitionIntentPresent(useCachedValue);
+        return CachedFeatureFlags.isRecognitionIntentPresent(useCachedValue);
     }
 }

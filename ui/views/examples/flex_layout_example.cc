@@ -113,12 +113,11 @@ void FlexLayoutExample::UpdateLayoutManager() {
 
 FlexSpecification FlexLayoutExample::GetFlexSpecification(int weight) const {
   return weight > 0
-             ? FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
-                                              MaximumFlexSizeRule::kUnbounded)
+             ? FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                 MaximumFlexSizeRule::kUnbounded)
                    .WithWeight(weight)
-             : FlexSpecification::ForSizeRule(
-                   MinimumFlexSizeRule::kPreferredSnapToZero,
-                   MaximumFlexSizeRule::kPreferred)
+             : FlexSpecification(MinimumFlexSizeRule::kPreferredSnapToZero,
+                                 MaximumFlexSizeRule::kPreferred)
                    .WithWeight(0);
 }
 

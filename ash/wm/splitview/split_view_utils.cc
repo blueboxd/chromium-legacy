@@ -243,13 +243,9 @@ void DoSplitviewTransformAnimation(
     return;
 
   switch (type) {
-    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
-    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET:
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN:
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
@@ -274,6 +270,42 @@ void DoSplitviewTransformAnimation(
                          ui::LayerAnimationElement::TRANSFORM, duration, tween,
                          preemption_strategy, delay);
   layer->SetTransform(target_transform);
+}
+
+void DoSplitviewClipRectAnimation(
+    ui::Layer* layer,
+    SplitviewAnimationType type,
+    const gfx::Rect& target_clip_rect,
+    std::unique_ptr<ui::ImplicitAnimationObserver> animation_observer) {
+  ui::LayerAnimator* animator = layer->GetAnimator();
+  if (animator->GetTargetClipRect() == target_clip_rect)
+    return;
+
+  switch (type) {
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT:
+      break;
+    default:
+      NOTREACHED() << "Not a valid split view clip rect type.";
+      return;
+  }
+
+  base::TimeDelta duration;
+  gfx::Tween::Type tween;
+  ui::LayerAnimator::PreemptionStrategy preemption_strategy;
+  base::TimeDelta delay;
+  GetAnimationValuesForType(type, &duration, &tween, &preemption_strategy,
+                            &delay);
+
+  ui::ScopedLayerAnimationSettings settings(animator);
+  if (animation_observer.get())
+    settings.AddObserver(animation_observer.release());
+  ApplyAnimationSettings(&settings, animator, ui::LayerAnimationElement::CLIP,
+                         duration, tween, preemption_strategy, delay);
+  layer->SetClipRect(target_clip_rect);
 }
 
 void MaybeRestoreSplitView(bool refresh_snapped_windows) {

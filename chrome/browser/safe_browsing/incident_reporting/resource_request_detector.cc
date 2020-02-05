@@ -17,9 +17,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/common/resource_type.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace {
@@ -143,9 +143,9 @@ void ResourceRequestDetector::ProcessResourceRequest(
   if (!request->url.SchemeIsHTTPOrHTTPS())
     return;
 
-  if (request->resource_type == content::ResourceType::kSubFrame ||
-      request->resource_type == content::ResourceType::kScript ||
-      request->resource_type == content::ResourceType::kObject) {
+  if (request->resource_type == blink::mojom::ResourceType::kSubFrame ||
+      request->resource_type == blink::mojom::ResourceType::kScript ||
+      request->resource_type == blink::mojom::ResourceType::kObject) {
     ResourceRequestDetectorClient::Start(
         request->url, database_manager_,
         base::BindOnce(&ResourceRequestDetector::ReportIncidentOnUIThread,

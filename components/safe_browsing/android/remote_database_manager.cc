@@ -18,8 +18,8 @@
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_type.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 using content::BrowserThread;
 
@@ -101,10 +101,10 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
   // usually wastes a bit of memory, it will still be less than the default
   // vector allocation strategy.
   resource_types_to_check_.reserve(
-      static_cast<int>(content::ResourceType::kMaxValue) + 1);
+      static_cast<int>(blink::mojom::ResourceType::kMaxValue) + 1);
   // Decide which resource types to check. These two are the minimum.
-  resource_types_to_check_.insert(content::ResourceType::kMainFrame);
-  resource_types_to_check_.insert(content::ResourceType::kSubFrame);
+  resource_types_to_check_.insert(blink::mojom::ResourceType::kMainFrame);
+  resource_types_to_check_.insert(blink::mojom::ResourceType::kSubFrame);
 
   // The param is expected to be a comma-separated list of ints
   // corresponding to the enum types.  We're keeping this finch
@@ -113,17 +113,19 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
       kAndroidFieldExperiment, kAndroidTypesToCheckParam);
   if (ints_str.empty()) {
     // By default, we check all types except a few.
-    static_assert(content::ResourceType::kMaxValue ==
-                      content::ResourceType::kNavigationPreloadSubFrame,
+    static_assert(blink::mojom::ResourceType::kMaxValue ==
+                      blink::mojom::ResourceType::kNavigationPreloadSubFrame,
                   "Decide if new resource type should be skipped on mobile.");
     for (int t_int = 0;
-         t_int <= static_cast<int>(content::ResourceType::kMaxValue); t_int++) {
-      content::ResourceType t = static_cast<content::ResourceType>(t_int);
+         t_int <= static_cast<int>(blink::mojom::ResourceType::kMaxValue);
+         t_int++) {
+      blink::mojom::ResourceType t =
+          static_cast<blink::mojom::ResourceType>(t_int);
       switch (t) {
-        case content::ResourceType::kStylesheet:
-        case content::ResourceType::kImage:
-        case content::ResourceType::kFontResource:
-        case content::ResourceType::kFavicon:
+        case blink::mojom::ResourceType::kStylesheet:
+        case blink::mojom::ResourceType::kImage:
+        case blink::mojom::ResourceType::kFontResource:
+        case blink::mojom::ResourceType::kFavicon:
           break;
         default:
           resource_types_to_check_.insert(t);
@@ -135,8 +137,9 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
              ints_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       int i;
       if (base::StringToInt(val_str, &i) && i >= 0 &&
-          i <= static_cast<int>(content::ResourceType::kMaxValue)) {
-        resource_types_to_check_.insert(static_cast<content::ResourceType>(i));
+          i <= static_cast<int>(blink::mojom::ResourceType::kMaxValue)) {
+        resource_types_to_check_.insert(
+            static_cast<blink::mojom::ResourceType>(i));
       }
     }
   }
@@ -162,7 +165,7 @@ void RemoteSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CanCheckResourceType(
-    content::ResourceType resource_type) const {
+    blink::mojom::ResourceType resource_type) const {
   return resource_types_to_check_.count(resource_type) > 0;
 }
 

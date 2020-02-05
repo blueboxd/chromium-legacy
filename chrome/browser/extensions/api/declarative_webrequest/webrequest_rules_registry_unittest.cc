@@ -58,7 +58,7 @@ WebRequestInfoInitParams CreateRequestParams(const GURL& url) {
   WebRequestInfoInitParams info;
   info.url = url;
   info.is_navigation_request = true;
-  info.type = content::ResourceType::kMainFrame;
+  info.type = blink::mojom::ResourceType::kMainFrame;
   info.web_request_type = WebRequestResourceType::MAIN_FRAME;
   return info;
 }

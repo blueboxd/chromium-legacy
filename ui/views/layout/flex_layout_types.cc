@@ -140,42 +140,26 @@ gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
   return gfx::Size(width, height);
 }
 
-FlexRule GetDefaultFlexRule(
-    MinimumFlexSizeRule minimum_size_rule = MinimumFlexSizeRule::kPreferred,
-    MaximumFlexSizeRule maximum_size_rule = MaximumFlexSizeRule::kPreferred,
-    bool adjust_height_for_width = false) {
-  return base::BindRepeating(&GetPreferredSize, minimum_size_rule,
-                             maximum_size_rule, adjust_height_for_width);
-}
-
 }  // namespace
 
 // FlexSpecification -----------------------------------------------------------
 
-FlexSpecification::FlexSpecification() : rule_(GetDefaultFlexRule()) {}
+FlexSpecification::FlexSpecification()
+    : rule_(base::BindRepeating(&GetPreferredSize,
+                                MinimumFlexSizeRule::kPreferred,
+                                MaximumFlexSizeRule::kPreferred,
+                                false)) {}
 
-FlexSpecification FlexSpecification::ForCustomRule(FlexRule rule) {
-  return FlexSpecification(std::move(rule), 1, 1, LayoutAlignment::kStretch);
-}
+FlexSpecification::FlexSpecification(FlexRule rule)
+    : rule_(std::move(rule)), weight_(1) {}
 
-FlexSpecification FlexSpecification::ForSizeRule(
-    MinimumFlexSizeRule minimum_size_rule,
-    MaximumFlexSizeRule maximum_size_rule,
-    bool adjust_height_for_width) {
-  return FlexSpecification(
-      GetDefaultFlexRule(minimum_size_rule, maximum_size_rule,
-                         adjust_height_for_width),
-      1, 1, LayoutAlignment::kStretch);
-}
-
-FlexSpecification::FlexSpecification(FlexRule rule,
-                                     int order,
-                                     int weight,
-                                     LayoutAlignment alignment)
-    : rule_(std::move(rule)),
-      order_(order),
-      weight_(weight),
-      alignment_(alignment) {}
+FlexSpecification::FlexSpecification(MinimumFlexSizeRule minimum_size_rule,
+                                     MaximumFlexSizeRule maximum_size_rule,
+                                     bool adjust_height_for_width)
+    : FlexSpecification(base::BindRepeating(&GetPreferredSize,
+                                            minimum_size_rule,
+                                            maximum_size_rule,
+                                            adjust_height_for_width)) {}
 
 FlexSpecification::FlexSpecification(const FlexSpecification& other) = default;
 
@@ -186,17 +170,23 @@ FlexSpecification::~FlexSpecification() = default;
 
 FlexSpecification FlexSpecification::WithWeight(int weight) const {
   DCHECK_GE(weight, 0);
-  return FlexSpecification(rule_, order_, weight, alignment_);
+  FlexSpecification spec = *this;
+  spec.weight_ = weight;
+  return spec;
 }
 
 FlexSpecification FlexSpecification::WithOrder(int order) const {
   DCHECK_GE(order, 1);
-  return FlexSpecification(rule_, order, weight_, alignment_);
+  FlexSpecification spec = *this;
+  spec.order_ = order;
+  return spec;
 }
 
 FlexSpecification FlexSpecification::WithAlignment(
     LayoutAlignment alignment) const {
-  return FlexSpecification(rule_, order_, weight_, alignment);
+  FlexSpecification spec = *this;
+  spec.alignment_ = alignment;
+  return spec;
 }
 
 // Inset1D ---------------------------------------------------------------------

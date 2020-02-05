@@ -38,17 +38,7 @@ void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAttemptedToEnableAutoupdate, false);
 }
 
-UpgradeDetector::UpgradeDetector(const base::Clock* clock,
-                                 const base::TickClock* tick_clock)
-    : clock_(clock),
-      tick_clock_(tick_clock),
-      upgrade_available_(UPGRADE_AVAILABLE_NONE),
-      best_effort_experiment_updates_available_(false),
-      critical_experiment_updates_available_(false),
-      critical_update_acknowledged_(false),
-      idle_check_timer_(tick_clock_),
-      upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
-      notify_upgrade_(false) {
+void UpgradeDetector::Init() {
   // Not all tests provide a PrefService for local_state().
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -62,7 +52,27 @@ UpgradeDetector::UpgradeDetector(const base::Clock* clock,
   }
 }
 
-UpgradeDetector::~UpgradeDetector() {}
+void UpgradeDetector::Shutdown() {
+  idle_check_timer_.Stop();
+  pref_change_registrar_.RemoveAll();
+}
+
+UpgradeDetector::UpgradeDetector(const base::Clock* clock,
+                                 const base::TickClock* tick_clock)
+    : clock_(clock),
+      tick_clock_(tick_clock),
+      upgrade_available_(UPGRADE_AVAILABLE_NONE),
+      best_effort_experiment_updates_available_(false),
+      critical_experiment_updates_available_(false),
+      critical_update_acknowledged_(false),
+      idle_check_timer_(tick_clock_),
+      upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
+      notify_upgrade_(false) {}
+
+UpgradeDetector::~UpgradeDetector() {
+  // Ensure that Shutdown() was called.
+  DCHECK(pref_change_registrar_.IsEmpty());
+}
 
 void UpgradeDetector::NotifyOutdatedInstall() {
   for (auto& observer : observer_list_)

@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
@@ -93,7 +93,7 @@ public class BottomControlsCoordinator {
         int bottomToolbarHeightId;
         int bottomToolbarHeightWithShadowId;
 
-        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) {
+        if (CachedFeatureFlags.isLabeledBottomToolbarEnabled()) {
             bottomToolbarHeightId = R.dimen.labeled_bottom_toolbar_height;
             bottomToolbarHeightWithShadowId = R.dimen.labeled_bottom_toolbar_height_with_shadow;
         } else {
@@ -109,9 +109,9 @@ public class BottomControlsCoordinator {
                 root.getResources().getDimensionPixelOffset(bottomToolbarHeightWithShadowId));
 
         if (TabManagementModuleProvider.getDelegate() != null
-                && FeatureUtilities.isTabGroupsAndroidEnabled()
-                && !(FeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
-                        && FeatureUtilities.isBottomToolbarEnabled())) {
+                && CachedFeatureFlags.isTabGroupsAndroidEnabled()
+                && !(CachedFeatureFlags.isDuetTabStripIntegrationAndroidEnabled()
+                        && CachedFeatureFlags.isBottomToolbarEnabled())) {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
                     root.findViewById(R.id.bottom_container_slot), themeColorProvider);
         } else {
@@ -122,7 +122,7 @@ public class BottomControlsCoordinator {
         }
 
         Toast.setGlobalExtraYOffset(root.getResources().getDimensionPixelSize(
-                FeatureUtilities.isLabeledBottomToolbarEnabled()
+                CachedFeatureFlags.isLabeledBottomToolbarEnabled()
                         ? R.dimen.labeled_bottom_toolbar_height
                         : R.dimen.bottom_toolbar_height));
     }

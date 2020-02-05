@@ -49,19 +49,16 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
   const std::string kTestBrowserContextId =
       base::UnguessableToken::Create().ToString();
   auto process = CreateNode<ProcessNodeImpl>();
-  static const GURL kTestUrl("testurl.com");
   static const base::UnguessableToken kTestDevToolsToken =
       base::UnguessableToken::Create();
 
-  auto worker_impl = CreateNode<WorkerNodeImpl>(kWorkerType, process.get(),
-                                                kTestBrowserContextId, kTestUrl,
-                                                kTestDevToolsToken);
+  auto worker_impl = CreateNode<WorkerNodeImpl>(
+      kWorkerType, process.get(), kTestBrowserContextId, kTestDevToolsToken);
 
   // Test private interface.
   EXPECT_EQ(worker_impl->browser_context_id(), kTestBrowserContextId);
   EXPECT_EQ(worker_impl->worker_type(), kWorkerType);
   EXPECT_EQ(worker_impl->process_node(), process.get());
-  EXPECT_EQ(worker_impl->url(), kTestUrl);
   EXPECT_EQ(worker_impl->dev_tools_token(), kTestDevToolsToken);
 
   // Test public interface.
@@ -70,8 +67,22 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
   EXPECT_EQ(worker->GetBrowserContextID(), kTestBrowserContextId);
   EXPECT_EQ(worker->GetWorkerType(), kWorkerType);
   EXPECT_EQ(worker->GetProcessNode(), process.get());
-  EXPECT_EQ(worker->GetURL(), kTestUrl);
   EXPECT_EQ(worker->GetDevToolsToken(), kTestDevToolsToken);
+}
+
+TEST_F(WorkerNodeImplTest, OnFinalResponseURLDetermined) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  static const GURL kTestUrl("testurl.com");
+
+  auto worker_impl = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kShared,
+                                                process.get());
+
+  // Initially empty.
+  EXPECT_TRUE(worker_impl->url().is_empty());
+
+  // Set when OnFinalResponseURLDetermined() is called.
+  worker_impl->OnFinalResponseURLDetermined(kTestUrl);
+  EXPECT_EQ(worker_impl->url(), kTestUrl);
 }
 
 // Create a worker of each type and register the frame as a client of each.
@@ -199,6 +210,10 @@ class TestWorkerNodeObserver : public WorkerNodeObserver {
     EXPECT_EQ(client_workers_.erase(worker_node), 1u);
   }
 
+  void OnFinalResponseURLDetermined(const WorkerNode* worker_node) override {
+    on_final_response_url_determined_called_ = true;
+  }
+
   void OnClientFrameAdded(const WorkerNode* worker_node,
                           const FrameNode* client_frame_node) override {
     auto& client_frames = client_frames_.find(worker_node)->second;
@@ -221,16 +236,22 @@ class TestWorkerNodeObserver : public WorkerNodeObserver {
     EXPECT_EQ(client_workers.erase(client_worker_node), 1u);
   }
 
+  bool on_final_response_url_determined_called() const {
+    return on_final_response_url_determined_called_;
+  }
+
   const base::flat_map<const WorkerNode*, base::flat_set<const FrameNode*>>&
-  client_frames() {
+  client_frames() const {
     return client_frames_;
   }
   const base::flat_map<const WorkerNode*, base::flat_set<const WorkerNode*>>&
-  client_workers() {
+  client_workers() const {
     return client_workers_;
   }
 
  private:
+  bool on_final_response_url_determined_called_ = false;
+
   base::flat_map<const WorkerNode*, base::flat_set<const FrameNode*>>
       client_frames_;
   base::flat_map<const WorkerNode*, base::flat_set<const WorkerNode*>>
@@ -315,6 +336,21 @@ TEST_F(WorkerNodeImplTest, Observer_ClientsOfServiceWorkers) {
   service_worker->RemoveClientWorker(shared_worker.get());
   service_worker->RemoveClientWorker(dedicated_worker.get());
   service_worker->RemoveClientFrame(frame.get());
+
+  graph()->RemoveWorkerNodeObserver(&worker_node_observer);
+}
+
+TEST_F(WorkerNodeImplTest, Observer_OnFinalResponseURLDetermined) {
+  TestWorkerNodeObserver worker_node_observer;
+  graph()->AddWorkerNodeObserver(&worker_node_observer);
+
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
+                                           process.get());
+
+  EXPECT_FALSE(worker_node_observer.on_final_response_url_determined_called());
+  worker->OnFinalResponseURLDetermined(GURL("testurl.com"));
+  EXPECT_TRUE(worker_node_observer.on_final_response_url_determined_called());
 
   graph()->RemoveWorkerNodeObserver(&worker_node_observer);
 }

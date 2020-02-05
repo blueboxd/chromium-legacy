@@ -4826,7 +4826,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 
 void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     ui::PageTransition transition_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track) {
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
@@ -4886,7 +4886,8 @@ void RenderFrameImpl::WillSendRequestInternal(
       render_view_->renderer_preferences().allow_cross_origin_auth_prompt);
 
   request.SetDownloadToNetworkCacheOnly(
-      is_for_no_state_prefetch && resource_type != ResourceType::kMainFrame);
+      is_for_no_state_prefetch &&
+      resource_type != blink::mojom::ResourceType::kMainFrame);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
@@ -4937,7 +4938,7 @@ void RenderFrameImpl::DidStartResponse(
     const url::Origin& origin_of_final_response_url,
     int request_id,
     network::mojom::URLResponseHeadPtr response_head,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     PreviewsState previews_state) {
   for (auto& observer : observers_) {
     observer.DidStartResponse(origin_of_final_response_url, request_id,
@@ -6346,10 +6347,11 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  WillSendRequestInternal(
-      request,
-      frame_->Parent() ? ResourceType::kSubFrame : ResourceType::kMainFrame,
-      transition_type);
+  WillSendRequestInternal(request,
+                          frame_->Parent()
+                              ? blink::mojom::ResourceType::kSubFrame
+                              : blink::mojom::ResourceType::kMainFrame,
+                          transition_type);
 
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(base::MakeRefCounted<RequestExtraData>());

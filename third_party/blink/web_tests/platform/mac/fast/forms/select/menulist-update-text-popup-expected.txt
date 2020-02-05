@@ -7,8 +7,8 @@ C
 layer at (0,0) size 39x18
   LayoutBlockFlow (positioned) {DIV} at (8,50) size 39x18
     LayoutMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
-      LayoutBlockFlow (anonymous) at (0,0) size 39x18
-        LayoutText (anonymous) at (8,2) size 8x13
+      LayoutBlockFlow {DIV} at (0,0) size 39x18
+        LayoutText {#text} at (8,2) size 8x13
           text run at (8,2) width 8: "C"
     LayoutText {#text} at (0,0) size 0x0
 

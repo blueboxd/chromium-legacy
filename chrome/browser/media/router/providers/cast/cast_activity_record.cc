@@ -25,9 +25,7 @@ CastActivityRecord::CastActivityRecord(
     const std::string& app_id,
     cast_channel::CastMessageHandler* message_handler,
     CastSessionTracker* session_tracker)
-    : ActivityRecord(route, app_id, message_handler, session_tracker) {
-  route_.set_controller_type(RouteControllerType::kGeneric);
-}
+    : ActivityRecord(route, app_id, message_handler, session_tracker) {}
 
 CastActivityRecord::~CastActivityRecord() = default;
 

@@ -16,8 +16,8 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "user_consent_types.proto";
-import "gaia_password_reuse.proto";
+import "components/sync/protocol/user_consent_types.proto";
+import "components/sync/protocol/gaia_password_reuse.proto";
 
 message UserEventSpecifics {
   // Time of event, as measured by client in microseconds since Windows epoch.

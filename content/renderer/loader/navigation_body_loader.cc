@@ -41,7 +41,8 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       !commit_params->original_method.empty() ? commit_params->original_method
                                               : common_params->method,
       common_params->referrer->url,
-      is_main_frame ? ResourceType::kMainFrame : ResourceType::kSubFrame,
+      is_main_frame ? blink::mojom::ResourceType::kMainFrame
+                    : blink::mojom::ResourceType::kSubFrame,
       is_main_frame ? net::HIGHEST : net::LOWEST);
   size_t redirect_count = commit_params->redirect_response.size();
   navigation_params->redirects.reserve(redirect_count);
@@ -89,7 +90,7 @@ NavigationBodyLoader::NavigationBodyLoader(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int render_frame_id,
-    mojom::ResourceLoadInfoPtr resource_load_info)
+    blink::mojom::ResourceLoadInfoPtr resource_load_info)
     : render_frame_id_(render_frame_id),
       response_head_(std::move(response_head)),
       response_body_(std::move(response_body)),

@@ -146,6 +146,7 @@ bool MockDrmDevice::InitializeStateWithResult(
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {
   crtc_properties_ = crtc_properties;
+  connector_properties_ = connector_properties;
   plane_properties_ = plane_properties;
   property_names_ = property_names;
   if (use_atomic) {
@@ -166,6 +167,12 @@ ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
       drmMalloc(sizeof(uint32_t) * resources->count_crtcs));
   for (size_t i = 0; i < crtc_properties_.size(); ++i)
     resources->crtcs[i] = crtc_properties_[i].id;
+
+  resources->count_connectors = connector_properties_.size();
+  resources->connectors = static_cast<uint32_t*>(
+      drmMalloc(sizeof(uint32_t) * resources->count_connectors));
+  for (size_t i = 0; i < connector_properties_.size(); ++i)
+    resources->connectors[i] = connector_properties_[i].id;
 
   return resources;
 }
@@ -190,6 +197,11 @@ ScopedDrmObjectPropertyPtr MockDrmDevice::GetObjectProperties(
       return CreatePropertyObject(properties->properties);
   } else if (object_type == DRM_MODE_OBJECT_CRTC) {
     CrtcProperties* properties = FindObjectById(object_id, crtc_properties_);
+    if (properties)
+      return CreatePropertyObject(properties->properties);
+  } else if (object_type == DRM_MODE_OBJECT_CONNECTOR) {
+    ConnectorProperties* properties =
+        FindObjectById(object_id, connector_properties_);
     if (properties)
       return CreatePropertyObject(properties->properties);
   }
@@ -484,6 +496,13 @@ bool MockDrmDevice::UpdateProperty(uint32_t object_id,
   CrtcProperties* crtc_properties = FindObjectById(object_id, crtc_properties_);
   if (crtc_properties)
     return UpdateProperty(property_id, value, &crtc_properties->properties);
+
+  ConnectorProperties* connector_properties =
+      FindObjectById(object_id, connector_properties_);
+  if (connector_properties) {
+    return UpdateProperty(property_id, value,
+                          &connector_properties->properties);
+  }
 
   return false;
 }

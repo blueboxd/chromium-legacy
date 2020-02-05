@@ -540,12 +540,12 @@ Value DictionaryPolicyConversions::ToValue() {
     all_policies.SetKey("extensionPolicies",
                         GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
-    all_policies.SetKey("loginScreenExtensionPolicies",
-                        GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS));
+  all_policies.SetKey("loginScreenExtensionPolicies",
+                      GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS));
 #endif  //  BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
-  }
 
 #if defined(OS_CHROMEOS)
   all_policies.SetKey("deviceLocalAccountPolicies",
@@ -599,14 +599,14 @@ Value ArrayPolicyConversions::ToValue() {
       all_policies.Append(std::move(policy));
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
-    for (auto& policy :
-         GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS).TakeList()) {
-      all_policies.Append(std::move(policy));
-    }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
+  for (auto& policy :
+       GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS).TakeList()) {
+    all_policies.Append(std::move(policy));
   }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
   for (auto& device_policy : GetDeviceLocalAccountPolicies().TakeList())

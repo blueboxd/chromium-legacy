@@ -214,10 +214,6 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
   current_stage_.start_time = base::TimeTicks();
 }
 
-void CompositorFrameReporter::DroppedFrame() {
-  report_type_ = DroppedFrameReportType::kDroppedFrame;
-}
-
 void CompositorFrameReporter::TerminateFrame(
     FrameTerminationStatus termination_status,
     base::TimeTicks termination_time) {
@@ -259,6 +255,10 @@ void CompositorFrameReporter::SetVizBreakdown(
     const viz::FrameTimingDetails& viz_breakdown) {
   DCHECK(viz_breakdown_.received_compositor_frame_timestamp.is_null());
   viz_breakdown_ = viz_breakdown;
+}
+
+void CompositorFrameReporter::DroppedFrame() {
+  report_type_ = DroppedFrameReportType::kDroppedFrame;
 }
 
 void CompositorFrameReporter::TerminateReporter() {

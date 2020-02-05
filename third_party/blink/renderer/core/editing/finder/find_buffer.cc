@@ -279,8 +279,10 @@ void FindBuffer::CollectTextUntilBlockBoundary(
 
   if (node) {
     CollectScopedForcedUpdates(*node, end_node, just_after_block);
-    if (!scoped_forced_update_list_.IsEmpty())
-      node->GetDocument().UpdateStyleAndLayout();
+    if (!scoped_forced_update_list_.IsEmpty()) {
+      node->GetDocument().UpdateStyleAndLayout(
+          DocumentUpdateReason::kFindInPage);
+    }
   }
 
   while (node && node != just_after_block) {

@@ -20,7 +20,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -32,6 +31,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 // TODO(eroman): Add unit-tests for "X-Chrome-intent-type"
 //               (see url_request_content_job_unittest.cc).
@@ -84,7 +84,7 @@ void GetMimeType(const network::ResourceRequest& request,
 
   std::string intent_type_header;
   if ((request.resource_type ==
-       static_cast<int>(content::ResourceType::kMainFrame)) &&
+       static_cast<int>(blink::mojom::ResourceType::kMainFrame)) &&
       request.headers.GetHeader("X-Chrome-intent-type", &intent_type_header)) {
     *out_mime_type = intent_type_header;
   }

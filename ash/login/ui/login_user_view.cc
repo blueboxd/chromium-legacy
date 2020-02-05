@@ -329,7 +329,7 @@ LoginUserView::LoginUserView(
         gfx::Size(kDropdownIconSizeDp, kDropdownIconSizeDp));
     dropdown_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kLockScreenDropdownIcon, SK_ColorWHITE));
+        gfx::CreateVectorIcon(kLockScreenDropdownIcon, gfx::kGoogleGrey200));
     dropdown_->SetFocusBehavior(FocusBehavior::ALWAYS);
   }
   tap_button_ = new TapButton(this);

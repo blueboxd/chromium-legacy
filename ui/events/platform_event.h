@@ -9,8 +9,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(USE_X11)
-typedef union _XEvent XEvent;
 #elif defined(OS_MACOSX)
 #if defined(__OBJC__)
 @class NSEvent;
@@ -26,12 +24,10 @@ class Event;
 namespace ui {
 
 // Cross platform typedefs for native event types.
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(USE_X11)
 using PlatformEvent = ui::Event*;
 #elif defined(OS_WIN)
 using PlatformEvent = MSG;
-#elif defined(USE_X11)
-using PlatformEvent = XEvent*;
 #elif defined(OS_MACOSX)
 using PlatformEvent = NSEvent*;
 #else

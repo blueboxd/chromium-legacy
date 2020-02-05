@@ -35,6 +35,9 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#if defined(OS_WIN)
+#include "ui/gl/gl_angle_util_win.h"
+#endif
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_version_info.h"
@@ -49,6 +52,29 @@ const int kMaxGpuIdleTimeMs = 40;
 // Maximum amount of time we keep pinging the GPU waiting for the client to
 // draw.
 const int kMaxKeepAliveTimeMs = 200;
+#endif
+#if defined(OS_WIN)
+void TrimD3DResources() {
+  // Graphics drivers periodically allocate internal memory buffers in
+  // order to speed up subsequent rendering requests. These memory allocations
+  // in general lead to increased memory usage by the overall system.
+  // Calling Trim discards internal memory buffers allocated for the app,
+  // reducing its memory footprint.
+  // Calling Trim method does not change the rendering state of the
+  // graphics device and has no effect on rendering operations.
+  // There is a brief performance hit when internal buffers are reallocated
+  // during the first rendering operations after the Trim call, therefore
+  // apps should only call Trim when going idle for a period of time or during
+  // low memory conditions.
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (d3d11_device) {
+    Microsoft::WRL::ComPtr<IDXGIDevice3> dxgi_device;
+    if (SUCCEEDED(d3d11_device.As(&dxgi_device))) {
+      dxgi_device->Trim();
+    }
+  }
+}
 #endif
 }
 
@@ -424,6 +450,9 @@ void GpuChannelManager::HandleMemoryPressure(
     shared_context_state_->PurgeMemory(memory_pressure_level);
   if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
+#if defined(OS_WIN)
+  TrimD3DResources();
+#endif
 }
 
 scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(

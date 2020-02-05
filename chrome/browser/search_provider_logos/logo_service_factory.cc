@@ -18,7 +18,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/cached_feature_flags.h"
 #endif
 
 using search_provider_logos::LogoService;

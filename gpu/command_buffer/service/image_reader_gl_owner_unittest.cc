@@ -8,12 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/image_reader_gl_owner.h"
 #include "gpu/command_buffer/service/mock_abstract_texture.h"
-#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
@@ -31,8 +29,6 @@ class ImageReaderGLOwnerTest : public testing::Test {
   void SetUp() override {
     if (!IsImageReaderSupported())
       return;
-
-    scoped_feature_list_.InitAndEnableFeature(media::kAImageReaderVideoOutput);
 
     gl::init::InitializeStaticGLBindingsImplementation(
         gl::kGLImplementationEGLGLES2, false);
@@ -73,7 +69,6 @@ class ImageReaderGLOwnerTest : public testing::Test {
     return base::android::AndroidImageReader::GetInstance().IsSupported();
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<TextureOwner> image_reader_;
   GLuint texture_id_ = 0;
 

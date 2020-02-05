@@ -118,11 +118,6 @@ void UpdateActivationForAppListView(AppListView* app_list_view,
     return;
 
   widget->Show();
-
-  // Refocus the embedded assistant page after widget activation.
-  auto* contents_view = app_list_view->app_list_main_view()->contents_view();
-  if (contents_view->IsShowingEmbeddedAssistantUI())
-    contents_view->FocusEmbeddedAssistantPage();
 }
 
 }  // namespace ash

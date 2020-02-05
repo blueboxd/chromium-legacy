@@ -448,6 +448,8 @@ std::string TranslateManager::GetTargetLanguage(
   // If we've recorded the most recent target language, use that.
   if (base::FeatureList::IsEnabled(kTranslateRecentTarget) &&
       !recent_target.empty()) {
+    TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+        TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget);
     return recent_target;
   }
 
@@ -465,29 +467,43 @@ std::string TranslateManager::GetTargetLanguage(
     MoveSkippedLanguagesToEndIfNecessary(&language_codes, skipped_languages);
 
     // Use the first language from the model that translate supports.
-    if (!language_codes.empty())
+    if (!language_codes.empty()) {
+      TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+          TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel);
       return language_codes[0];
-  } else {
-    // Get the browser's user interface language.
-    std::string language = TranslateDownloadManager::GetLanguageCode(
-        TranslateDownloadManager::GetInstance()->application_locale());
-    // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
-    language::ToTranslateLanguageSynonym(&language);
-    if (TranslateDownloadManager::IsSupportedLanguage(language))
-      return language;
-
-    // Will translate to the first supported language on the Accepted Language
-    // list or not at all if no such candidate exists.
-    std::vector<std::string> accept_languages_list;
-    prefs->GetLanguageList(&accept_languages_list);
-    for (const auto& lang : accept_languages_list) {
-      std::string lang_code = TranslateDownloadManager::GetLanguageCode(lang);
-      if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
-        return lang_code;
     }
   }
 
-  return std::string();
+  // Get the browser's user interface language.
+  std::string language = TranslateDownloadManager::GetLanguageCode(
+      TranslateDownloadManager::GetInstance()->application_locale());
+  // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
+  language::ToTranslateLanguageSynonym(&language);
+  if (TranslateDownloadManager::IsSupportedLanguage(language)) {
+    TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+        TranslateBrowserMetrics::TargetLanguageOrigin::kApplicationUI);
+    return language;
+  }
+
+  // Will translate to the first supported language on the Accepted Language
+  // list or not at all if no such candidate exists.
+  std::vector<std::string> accept_languages_list;
+  prefs->GetLanguageList(&accept_languages_list);
+  for (const auto& lang : accept_languages_list) {
+    std::string lang_code = TranslateDownloadManager::GetLanguageCode(lang);
+    if (TranslateDownloadManager::IsSupportedLanguage(lang_code)) {
+      TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+          TranslateBrowserMetrics::TargetLanguageOrigin::kAcceptLanguages);
+      return lang_code;
+    }
+  }
+
+  // If there isn't a target language determined by the above logic, default to
+  // English. Otherwise the user can get stuck not being able to translate. See
+  // https://crbug.com/1041387.
+  TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
+      TranslateBrowserMetrics::TargetLanguageOrigin::kDefaultEnglish);
+  return std::string("en");
 }
 
 // static

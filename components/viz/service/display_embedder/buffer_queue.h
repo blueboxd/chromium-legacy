@@ -148,7 +148,7 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   gfx::Size size_;
   gfx::ColorSpace color_space_;
   size_t allocated_count_;
-  gfx::BufferFormat format_;
+  const gfx::BufferFormat format_;
   // This surface is currently bound. This may be nullptr if no surface has
   // been bound, or if allocation failed at bind.
   std::unique_ptr<AllocatedSurface> current_surface_;

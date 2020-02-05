@@ -54,10 +54,10 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
   page_action_icon_controller_ = std::make_unique<PageActionIconController>();
   page_action_icon_controller_->Init(params, this);
 
-  avatar_->SetProperty(views::kFlexBehaviorKey,
-                       views::FlexSpecification::ForSizeRule(
-                           views::MinimumFlexSizeRule::kScaleToMinimum,
-                           views::MaximumFlexSizeRule::kPreferred));
+  avatar_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred));
 }
 
 ToolbarAccountIconContainerView::~ToolbarAccountIconContainerView() = default;

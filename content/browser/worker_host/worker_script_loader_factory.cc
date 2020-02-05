@@ -51,9 +51,9 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(resource_request.resource_type ==
-             static_cast<int>(ResourceType::kWorker) ||
+             static_cast<int>(blink::mojom::ResourceType::kWorker) ||
          resource_request.resource_type ==
-             static_cast<int>(ResourceType::kSharedWorker))
+             static_cast<int>(blink::mojom::ResourceType::kSharedWorker))
       << resource_request.resource_type;
   DCHECK(!script_loader_);
 

@@ -12,6 +12,10 @@ namespace task_manager {
 
 int GetTaskTitlePrefixMessageId(Task::Type task_type) {
   switch (task_type) {
+    case Task::Type::DEDICATED_WORKER:
+      return IDS_TASK_MANAGER_DEDICATED_WORKER_PREFIX;
+    case Task::Type::SHARED_WORKER:
+      return IDS_TASK_MANAGER_SHARED_WORKER_PREFIX;
     case Task::Type::SERVICE_WORKER:
       return IDS_TASK_MANAGER_SERVICE_WORKER_PREFIX;
     default:

@@ -103,7 +103,7 @@ ScriptPromise FontFaceSetDocument::ready(ScriptState* script_state) {
     // changes and/or layout operations that may cause another font loads.
     // So synchronously update style and layout here.
     // This may trigger font loads, and replace |ready_| with a new Promise.
-    GetDocument()->UpdateStyleAndLayout();
+    GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   }
   return ready_->Promise(script_state->World());
 }

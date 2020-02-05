@@ -17,13 +17,12 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/resource_load_info.mojom-forward.h"
-#include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -271,7 +270,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void DidLoadResourceFromMemoryCache(
       const GURL& url,
       const std::string& mime_type,
-      ResourceType resource_type) {}
+      blink::mojom::ResourceType resource_type) {}
 
   // This method is invoked when a resource associate with the frame
   // |render_frame_host| has been loaded, successfully or not. |request_id| will
@@ -279,7 +278,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void ResourceLoadComplete(
       RenderFrameHost* render_frame_host,
       const GlobalRequestID& request_id,
-      const mojom::ResourceLoadInfo& resource_load_info) {}
+      const blink::mojom::ResourceLoadInfo& resource_load_info) {}
 
   // This method is invoked when a document or resource reads a cookie. Note
   // that this isn't tied to any particular navigation (e.g., it may be called

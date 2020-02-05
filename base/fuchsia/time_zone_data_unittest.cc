@@ -18,6 +18,8 @@ class TimeZoneDataTest : public testing::Test {
  protected:
   TimeZoneDataTest() : env_(base::Environment::Create()) {}
 
+  void SetUp() override { u_cleanup(); }
+
   void TearDown() override { u_cleanup(); }
 
   void GetActualRevision(std::string* icu_version) {
@@ -48,11 +50,22 @@ TEST_F(TimeZoneDataTest, RevisionFromConfig) {
 }
 
 TEST_F(TimeZoneDataTest, RevisionFromTestData) {
+  // TODO(1047475): Adding more asserts in case they give more hints to the
+  // buildbot failures.
+  ASSERT_TRUE(base::DirectoryExists(
+      base::FilePath("/pkg/base/test/data/tzdata/2019a/44/le")));
+  ASSERT_TRUE(base::PathExists(
+      base::FilePath("/pkg/base/test/data/tzdata/2019a/44/le/zoneinfo64.res")));
+  ASSERT_TRUE(base::PathExists(base::FilePath(
+      "/pkg/base/test/data/tzdata/2019a/44/le/timezoneTypes.res")));
+  ASSERT_TRUE(base::PathExists(
+      base::FilePath("/pkg/base/test/data/tzdata/2019a/44/le/metaZones.res")));
+
   // Ensure that timezone data is loaded from test data.
   ASSERT_TRUE(env_->SetVar("ICU_TIMEZONE_FILES_DIR",
                            "/pkg/base/test/data/tzdata/2019a/44/le"));
 
-  InitializeICU();
+  EXPECT_TRUE(InitializeICU());
   std::string actual;
   GetActualRevision(&actual);
   EXPECT_EQ("2019a", actual);

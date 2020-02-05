@@ -114,16 +114,10 @@ class GetFallbackFontTest
   }
 
   bool DoesFontSupportCodePoints(Font font, const base::string16& text) {
-    sk_sp<SkTypeface> skia_face =
-        font.platform_font()->GetNativeSkTypefaceIfAvailable();
+    sk_sp<SkTypeface> skia_face = font.platform_font()->GetNativeSkTypeface();
     if (!skia_face) {
-      skia_face =
-          SkTypeface::MakeFromName(font.GetFontName().c_str(), SkFontStyle());
-    }
-
-    if (!skia_face) {
-      LOG(ERROR) << "Cannot create typeface for '" << font.GetFontName()
-                 << "'.";
+      ADD_FAILURE() << "Cannot create typeface for '" << font.GetFontName()
+                    << "'.";
       return false;
     }
 

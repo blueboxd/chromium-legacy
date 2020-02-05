@@ -247,7 +247,6 @@ extern const char kPrefetchArgumentBrowserBackground[];
 extern const char kPrefetchArgumentWatcher[];
 extern const char kShowIcons[];
 extern const char kUninstall[];
-extern const char kUserDataMigrated[];
 extern const char kWatcherProcess[];
 #endif  // defined(OS_WIN)
 
@@ -269,10 +268,11 @@ extern const char kGuest[];
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Only has an effect in branded builds.
 extern const char kEnableChromeBrowserCloudManagement[];
+extern const char kUseSystemDefaultPrinter[];
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-extern const char kUseSystemDefaultPrinter[];
+#if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
+extern const char kUserDataMigrated[];
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

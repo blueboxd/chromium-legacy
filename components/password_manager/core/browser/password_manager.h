@@ -195,7 +195,8 @@ class PasswordManager : public FormSubmissionObserver {
   // Updates the state if the PasswordFormManager which corresponds to the form
   // with |form_identifier|. In case if there is a presaved credential it
   // updates the presaved credential.
-  void UpdateStateOnUserInput(const base::string16& form_identifier,
+  void UpdateStateOnUserInput(PasswordManagerDriver* driver,
+                              const base::string16& form_identifier,
                               const base::string16& field_identifier,
                               const base::string16& field_value);
 
@@ -296,6 +297,11 @@ class PasswordManager : public FormSubmissionObserver {
   //  to find predictions for the form which contains |possible_username_| in
   //  |predictions_|.
   void TryToFindPredictionsToPossibleUsernameData();
+
+  // Handles a request to show manual fallback for password saving, i.e. the
+  // omnibox icon with the anchored hidden prompt. todo
+  void ShowManualFallbackForSavingImpl(PasswordFormManager* form_manager,
+                                       const autofill::FormData& form_data);
 
   // PasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.

@@ -75,13 +75,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   const gfx::Size& page_size() const { return page_size_; }
 
-  // Determines if the PDF compositor is being used to generate full document
-  // from individual pages, which can avoid the need for an extra composite
-  // request containing all of the pages together.
-  // TODO(awscreen): Can remove this method once all modifiable content is
-  // handled with MSKP document type.
-  bool ShouldCompositeDocumentUsingIndividualPages() const;
-
   // Returns true if |page_number| is the last page in |pages_to_render_|.
   // |page_number| is a 0-based number.
   bool LastPageComposited(int page_number) const;

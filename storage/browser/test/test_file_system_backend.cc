@@ -102,7 +102,7 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
 
   int64_t GetOriginUsageOnFileTaskRunner(
       FileSystemContext* context,
-      const GURL& origin_url,
+      const url::Origin& origin,
       storage::FileSystemType type) override {
     return usage_;
   }

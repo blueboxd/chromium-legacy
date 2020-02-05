@@ -6,11 +6,11 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/page_transition_types.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -40,7 +40,7 @@ AwWebResourceRequest::AwWebResourceRequest(
     : url(request.url.spec()),
       method(request.method),
       is_main_frame(request.resource_type ==
-                    static_cast<int>(content::ResourceType::kMainFrame)),
+                    static_cast<int>(blink::mojom::ResourceType::kMainFrame)),
       has_user_gesture(request.has_user_gesture),
       is_renderer_initiated(ui::PageTransitionIsWebTriggerable(
           static_cast<ui::PageTransition>(request.transition_type))) {

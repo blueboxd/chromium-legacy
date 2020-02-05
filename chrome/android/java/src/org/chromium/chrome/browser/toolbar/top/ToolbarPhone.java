@@ -56,7 +56,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
@@ -498,8 +498,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 }
             });
         }
-        onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
-                || FeatureUtilities.isBottomToolbarEnabled());
+        onHomeButtonUpdate(
+                HomepageManager.isHomepageEnabled() || CachedFeatureFlags.isBottomToolbarEnabled());
 
         setTabSwitcherAnimationMenuDrawable();
         updateVisualsForLocationBarState();
@@ -1659,8 +1659,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         boolean hideHomeButton = !mIsHomeButtonEnabled
                 || (mIsBottomToolbarVisible && BottomToolbarVariationManager.isHomeButtonOnBottom())
-                || (FeatureUtilities.isStartSurfaceEnabled()
-                        && !FeatureUtilities.isStartSurfaceSinglePaneEnabled());
+                || (CachedFeatureFlags.isStartSurfaceEnabled()
+                        && !CachedFeatureFlags.isStartSurfaceSinglePaneEnabled());
         if (hideHomeButton) {
             removeHomeButton();
         } else {

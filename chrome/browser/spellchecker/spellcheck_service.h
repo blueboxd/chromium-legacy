@@ -20,7 +20,9 @@
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/spellcheck/browser/platform_spell_checker.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -143,6 +145,13 @@ class SpellcheckService : public KeyedService,
   void OnHunspellDictionaryDownloadFailure(
       const std::string& language) override;
 
+  // The returned pointer can be null if the current platform doesn't need a
+  // per-profile, platform-specific spell check object. Currently, only Windows
+  // requires one, and only on certain versions.
+  PlatformSpellChecker* platform_spell_checker() {
+    return platform_spell_checker_.get();
+  }
+
   // Allows tests to override how SpellcheckService binds its interface
   // receiver, instead of going through a RenderProcessHost by default.
   using SpellCheckerBinder = base::RepeatingCallback<void(
@@ -193,6 +202,10 @@ class SpellcheckService : public KeyedService,
   // enabled spell check locales.
   void RecordSpellcheckLocalesStats();
 #endif  // defined(OS_WIN)
+
+  // WindowsSpellChecker must be created before the dictionary instantiation and
+  // destroyed after dictionary destruction.
+  std::unique_ptr<PlatformSpellChecker> platform_spell_checker_;
 
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;

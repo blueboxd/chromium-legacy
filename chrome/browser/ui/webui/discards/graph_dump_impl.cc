@@ -287,6 +287,11 @@ void DiscardsGraphDumpImpl::OnBeforeWorkerNodeRemoved(
   SendDeletionNotification(worker_node);
 }
 
+void DiscardsGraphDumpImpl::OnFinalResponseURLDetermined(
+    const performance_manager::WorkerNode* worker_node) {
+  SendWorkerNotification(worker_node, false);
+}
+
 void DiscardsGraphDumpImpl::OnClientFrameAdded(
     const performance_manager::WorkerNode* worker_node,
     const performance_manager::FrameNode* client_frame_node) {

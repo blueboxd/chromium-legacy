@@ -85,6 +85,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void OnActivationChanged(bool active) override;
 
  private:
+  friend class DesktopWindowTreeHostX11Test;
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
 
   // Overridden from display::DisplayObserver via aura::WindowTreeHost:

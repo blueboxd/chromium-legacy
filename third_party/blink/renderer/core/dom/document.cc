@@ -2591,13 +2591,14 @@ void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node) {
   }
 }
 
-void Document::UpdateStyleAndLayoutForNode(const Node* node) {
+void Document::UpdateStyleAndLayoutForNode(const Node* node,
+                                           DocumentUpdateReason reason) {
   DCHECK(node);
   if (!node->InActiveDocument())
     return;
 
   DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);
-  UpdateStyleAndLayout();
+  UpdateStyleAndLayout(reason);
 }
 
 void Document::ApplyScrollRestorationLogic() {
@@ -2688,11 +2689,11 @@ void Document::MarkHasFindInPageRenderSubtreeActiveMatch() {
   had_find_in_page_render_subtree_active_match_ = true;
 }
 
-void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
+void Document::UpdateStyleAndLayout(DocumentUpdateReason reason) {
   DCHECK(IsMainThread());
   LocalFrameView* frame_view = View();
 
-  if (status == IsForcedLayout && frame_view)
+  if (reason != DocumentUpdateReason::kBeginMainFrame && frame_view)
     frame_view->WillStartForcedLayout();
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
@@ -2702,12 +2703,15 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
       << "View layout should not be re-entrant";
 
   if (HTMLFrameOwnerElement* owner = LocalOwner())
-    owner->GetDocument().UpdateStyleAndLayout();
+    owner->GetDocument().UpdateStyleAndLayout(reason);
 
   UpdateStyleAndLayoutTree();
 
-  if (!IsActive())
+  if (!IsActive()) {
+    if (reason != DocumentUpdateReason::kBeginMainFrame && frame_view)
+      frame_view->DidFinishForcedLayout(reason);
     return;
+  }
 
   if (frame_view && frame_view->NeedsLayout())
     frame_view->UpdateLayout();
@@ -2721,8 +2725,8 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
     frame_view_anchored->PerformScrollAnchoringAdjustments();
   PerformScrollSnappingTasks();
 
-  if (status == IsForcedLayout && frame_view)
-    frame_view->DidFinishForcedLayout();
+  if (reason != DocumentUpdateReason::kBeginMainFrame && frame_view)
+    frame_view->DidFinishForcedLayout(reason);
 
   if (update_focus_appearance_after_layout_)
     UpdateFocusAppearance();
@@ -2780,7 +2784,7 @@ void Document::EnsurePaintLocationDataValidForNode(
 
   // For all nodes we must have up-to-date style and have performed layout to do
   // any location-based calculation.
-  UpdateStyleAndLayout();
+  UpdateStyleAndLayout(reason);
 
   // The location of elements that are position: sticky is not known until
   // compositing inputs are cleaned. Therefore, for any elements that are either
@@ -7052,7 +7056,7 @@ void Document::LoadPluginsSoon() {
 }
 
 void Document::PluginLoadingTimerFired(TimerBase*) {
-  UpdateStyleAndLayout();
+  UpdateStyleAndLayout(DocumentUpdateReason::kPlugin);
 }
 
 int Document::RequestAnimationFrame(

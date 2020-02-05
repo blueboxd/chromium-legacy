@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/display/screen.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/views_export.h"
 
@@ -25,7 +25,7 @@ class DesktopScreenX11TestApi;
 
 // Screen implementation that talks to XRandR
 class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
-                                      public ui::PlatformEventDispatcher,
+                                      public ui::XEventDispatcher,
                                       public ui::XDisplayManager::Delegate,
                                       public views::DeviceScaleFactorObserver {
  public:
@@ -52,9 +52,8 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
 
-  // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  // ui::XEventDispatcher:
+  bool DispatchXEvent(XEvent* event) override;
 
   // views::DeviceScaleFactorObserver:
   void OnDeviceScaleFactorChanged() override;

@@ -15,7 +15,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "experiments_specifics.proto";
+import "components/sync/protocol/experiments_specifics.proto";
 
 // This request allows an unauthenticated client to check the status of the
 // experiments which do not require user authentication.  The status of an

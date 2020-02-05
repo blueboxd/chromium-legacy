@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -53,7 +53,7 @@ public class TabSelectionEditorTest {
 
     @Before
     public void setUp() throws Exception {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
 
         mActivityTestRule.startMainActivityFromLauncher();
         TabUiTestHelper.createTabs(mActivityTestRule.getActivity(), false, 2);
@@ -72,7 +72,7 @@ public class TabSelectionEditorTest {
 
     @After
     public void tearDown() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test

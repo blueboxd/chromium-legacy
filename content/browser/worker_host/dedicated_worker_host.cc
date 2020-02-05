@@ -200,7 +200,8 @@ void DedicatedWorkerHost::StartScriptLoad(
   WorkerScriptFetchInitiator::Start(
       worker_process_host_->GetID(), script_url, creator_render_frame_host,
       request_initiator_origin, network_isolation_key_, credentials_mode,
-      std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
+      std::move(outside_fetch_client_settings_object),
+      blink::mojom::ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
       service_worker_handle_.get(),
       appcache_host ? appcache_host->GetWeakPtr() : nullptr,

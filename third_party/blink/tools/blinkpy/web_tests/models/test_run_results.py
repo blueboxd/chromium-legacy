@@ -250,6 +250,13 @@ def summarize_results(port_obj, expectations, initial_results,
         test_dict['expected'] = expected
         test_dict['actual'] = ' '.join(actual)
 
+        # If a flag was added then add flag specific test expectations to the per test field
+        flag_exp = expectations.get_flag_expectations(test_name)
+        if flag_exp:
+            base_exp = expectations.get_base_expectations(test_name)
+            test_dict['flag_expectations'] = list(flag_exp.results)
+            test_dict['base_expectations'] = list(base_exp.results)
+
         # Fields below are optional. To avoid bloating the output results json
         # too much, only add them when they are True or non-empty.
 
@@ -356,6 +363,10 @@ def summarize_results(port_obj, expectations, initial_results,
     if port_obj.get_option('order') == 'random':
         results['random_order_seed'] = port_obj.get_option('seed')
     results['path_delimiter'] = '/'
+
+    # If there is a flag name then add the flag name field
+    if expectations.flag_name:
+        results['flag_name'] = expectations.flag_name
 
     # Don't do this by default since it takes >100ms.
     # It's only used for rebaselining and uploading data to the flakiness dashboard.

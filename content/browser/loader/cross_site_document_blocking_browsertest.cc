@@ -30,7 +30,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -53,6 +52,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -96,7 +96,7 @@ void InspectHistograms(
     const base::HistogramTester& histograms,
     const CorbExpectations& expectations,
     const std::string& resource_name,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     bool special_request_initiator_origin_lock_check_for_appcache = false) {
   FetchHistogramsFromChildProcesses();
 
@@ -503,7 +503,8 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
     interceptor.WaitForRequestCompletion();
 
     // Verify...
-    InspectHistograms(histograms, expectations, resource, ResourceType::kImage);
+    InspectHistograms(histograms, expectations, resource,
+                      blink::mojom::ResourceType::kImage);
     interceptor.Verify(expectations,
                        GetTestFileContents("site_isolation", resource.c_str()));
   }
@@ -667,7 +668,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AllowCorsFetches) {
     // Verify results of the fetch.
     EXPECT_FALSE(was_blocked);
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
-                      ResourceType::kXhr);
+                      blink::mojom::ResourceType::kXhr);
   }
 }
 
@@ -710,7 +711,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // Verify that the response was not blocked.
   EXPECT_EQ("runMe({ \"name\" : \"chromium\" });", fetch_result);
   InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, "nosniff.html",
-                    ResourceType::kXhr);
+                    blink::mojom::ResourceType::kXhr);
 }
 
 // Regression test for https://crbug.com/958421.
@@ -745,7 +746,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
     base::HistogramTester histograms;
     ASSERT_EQ("ok", EvalJs(popup, fetch_script));
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
-                      ResourceType::kXhr);
+                      blink::mojom::ResourceType::kXhr);
   }
 
   // Navigate the popup and then go back to the 'about:blank' URL.
@@ -768,7 +769,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
     base::HistogramTester histograms;
     ASSERT_EQ("ok", EvalJs(popup, fetch_script));
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
-                      ResourceType::kXhr);
+                      blink::mojom::ResourceType::kXhr);
   }
 }
 
@@ -1087,7 +1088,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   // Verify that the response completed successfully, was blocked and was logged
   // as having initially a non-empty body.
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "nosniff.json",
-                    ResourceType::kXhr);
+                    blink::mojom::ResourceType::kXhr);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -1156,7 +1157,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     // Verify...
     bool special_request_initiator_origin_lock_check_for_appcache = true;
     InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
-                      "nosniff.json", ResourceType::kImage,
+                      "nosniff.json", blink::mojom::ResourceType::kImage,
                       special_request_initiator_origin_lock_check_for_appcache);
     interceptor.Verify(kShouldBeBlockedWithoutSniffing,
                        "no resource body needed for blocking verification");
@@ -1378,7 +1379,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
                                          &answer));
   EXPECT_EQ(123, answer);
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "x.html",
-                    ResourceType::kPrefetch);
+                    blink::mojom::ResourceType::kPrefetch);
 
   // Finish the HTTP response - this should store the response in the cache.
   response.Done();
@@ -1744,7 +1745,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
   // Verify that CORB blocked the response from the network (from
   // |cross_origin_https_server_|) to the service worker.
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "network.txt",
-                    ResourceType::kXhr);
+                    blink::mojom::ResourceType::kXhr);
 
   // Verify that the service worker replied with an expected error.
   // Replying with an error means that CORB is only active once (for the

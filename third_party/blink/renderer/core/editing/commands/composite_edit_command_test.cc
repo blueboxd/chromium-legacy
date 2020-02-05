@@ -129,7 +129,7 @@ TEST_F(CompositeEditCommandTest,
   Element* body = GetDocument().body();
   Node* text = body->lastChild();
   body->setAttribute(html_names::kContenteditableAttr, "true");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EditingState editing_state;
   sample.MoveParagraphContentsToNewBlockIfNecessary(Position(text, 0),

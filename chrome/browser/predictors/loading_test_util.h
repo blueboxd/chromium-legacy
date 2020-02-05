@@ -15,6 +15,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/sessions/core/session_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 namespace predictors {
 
@@ -65,21 +66,23 @@ NavigationID CreateNavigationID(SessionID tab_id,
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
-    const std::vector<content::mojom::ResourceLoadInfoPtr>&
-        resource_load_infos);
+    const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos);
 
-content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
+blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,
-    content::ResourceType resource_type = content::ResourceType::kMainFrame,
+    blink::mojom::ResourceType resource_type =
+        blink::mojom::ResourceType::kMainFrame,
     bool always_access_network = false);
 
-content::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
+blink::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
     const std::string& url,
-    content::ResourceType resource_type = content::ResourceType::kMainFrame);
+    blink::mojom::ResourceType resource_type =
+        blink::mojom::ResourceType::kMainFrame);
 
-content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
+blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
-    content::ResourceType resource_type = content::ResourceType::kMainFrame);
+    blink::mojom::ResourceType resource_type =
+        blink::mojom::ResourceType::kMainFrame);
 
 PreconnectPrediction CreatePreconnectPrediction(
     std::string host,
@@ -114,7 +117,7 @@ bool operator==(const PreconnectPrediction& lhs,
 
 }  // namespace predictors
 
-namespace content {
+namespace blink {
 namespace mojom {
 
 std::ostream& operator<<(std::ostream& os, const CommonNetworkInfo& info);
@@ -124,6 +127,6 @@ bool operator==(const CommonNetworkInfo& lhs, const CommonNetworkInfo& rhs);
 bool operator==(const ResourceLoadInfo& lhs, const ResourceLoadInfo& rhs);
 
 }  // namespace mojom
-}  // namespace content
+}  // namespace blink
 
 #endif  // CHROME_BROWSER_PREDICTORS_LOADING_TEST_UTIL_H_

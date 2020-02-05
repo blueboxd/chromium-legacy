@@ -73,7 +73,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
         net::NetworkIsolationKey(url::Origin::Create(url),
                                  url::Origin::Create(url));
     resource_request.resource_type =
-        static_cast<int>(ResourceType::kSharedWorker);
+        static_cast<int>(blink::mojom::ResourceType::kSharedWorker);
     factory->CreateLoaderAndStart(
         loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
         0 /* request_id */, network::mojom::kURLLoadOptionNone,

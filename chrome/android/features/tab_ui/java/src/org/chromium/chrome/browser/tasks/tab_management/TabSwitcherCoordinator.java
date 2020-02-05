@@ -23,8 +23,8 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -133,7 +133,7 @@ public class TabSwitcherCoordinator
                         -> mTabListCoordinator.removeSpecialListItem(
                                 TabProperties.UiType.MESSAGE, identifier));
 
-        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+        if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager,
                     ((ChromeTabbedActivity) context).getCompositorViewHolder(), this, mMediator,
@@ -149,7 +149,7 @@ public class TabSwitcherCoordinator
             mUndoGroupSnackbarController = null;
         }
 
-        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+        if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
                 && mode == TabListCoordinator.TabListMode.GRID
                 && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
             mTabGridIphItemCoordinator = new TabGridIphItemCoordinator(

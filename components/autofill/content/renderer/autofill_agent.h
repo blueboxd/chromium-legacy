@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -35,7 +36,7 @@ class WebView;
 class WebFormControlElement;
 template <typename T>
 class WebVector;
-}
+}  // namespace blink
 
 namespace autofill {
 
@@ -310,7 +311,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.
-  std::unique_ptr<FormData> provisionally_saved_form_;
+  base::Optional<FormData> provisionally_saved_form_;
 
   // Keeps track of the forms for which form submitted event has been sent to
   // AutofillDriver. We use it to avoid fire duplicated submission event when
@@ -322,11 +323,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The query node autofill state prior to previewing the form.
   blink::WebAutofillState query_node_autofill_state_;
-
-  // Whether or not to ignore text changes.  Useful for when we're committing
-  // a composition when we are defocusing the WebView and we don't want to
-  // trigger an autofill popup to show.
-  bool ignore_text_changes_;
 
   // Whether the Autofill popup is possibly visible.  This is tracked as a
   // performance improvement, so that the IPC channel isn't flooded with

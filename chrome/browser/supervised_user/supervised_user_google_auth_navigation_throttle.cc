@@ -135,7 +135,9 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+    // This class doesn't care about browser sync consent.
+    CoreAccountInfo account_info =
+        identity_manager->GetUnconsentedPrimaryAccountInfo();
     ReauthenticateChildAccount(
         web_contents, account_info.email,
         base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::

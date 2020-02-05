@@ -666,7 +666,7 @@ class ContentCaptureSimTest : public SimTest {
     auto* child_frame =
         To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
     child_document_ = child_frame->contentDocument();
-    child_document_->UpdateStyleAndLayout();
+    child_document_->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
     Compositor().BeginFrame();
     InitMainFrameNodeHolders();
     InitChildFrameNodeHolders(*child_document_);

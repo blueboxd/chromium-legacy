@@ -103,7 +103,7 @@ void FakeSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
   DCHECK_EQ(erased, 1u);
 }
 bool FakeSafeBrowsingDatabaseManager::CanCheckResourceType(
-    content::ResourceType /* resource_type */) const {
+    blink::mojom::ResourceType /* resource_type */) const {
   return true;
 }
 

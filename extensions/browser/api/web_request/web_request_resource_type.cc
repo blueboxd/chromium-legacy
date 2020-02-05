@@ -40,44 +40,45 @@ static_assert(kResourceTypesLength ==
 
 }  // namespace
 
-WebRequestResourceType ToWebRequestResourceType(content::ResourceType type) {
+WebRequestResourceType ToWebRequestResourceType(
+    blink::mojom::ResourceType type) {
   switch (type) {
-    case content::ResourceType::kMainFrame:
-    case content::ResourceType::kNavigationPreloadMainFrame:
+    case blink::mojom::ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadMainFrame:
       return WebRequestResourceType::MAIN_FRAME;
-    case content::ResourceType::kSubFrame:
-    case content::ResourceType::kNavigationPreloadSubFrame:
+    case blink::mojom::ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadSubFrame:
       return WebRequestResourceType::SUB_FRAME;
-    case content::ResourceType::kStylesheet:
+    case blink::mojom::ResourceType::kStylesheet:
       return WebRequestResourceType::STYLESHEET;
-    case content::ResourceType::kScript:
+    case blink::mojom::ResourceType::kScript:
       return WebRequestResourceType::SCRIPT;
-    case content::ResourceType::kImage:
+    case blink::mojom::ResourceType::kImage:
       return WebRequestResourceType::IMAGE;
-    case content::ResourceType::kFontResource:
+    case blink::mojom::ResourceType::kFontResource:
       return WebRequestResourceType::FONT;
-    case content::ResourceType::kSubResource:
+    case blink::mojom::ResourceType::kSubResource:
       return WebRequestResourceType::OTHER;
-    case content::ResourceType::kObject:
+    case blink::mojom::ResourceType::kObject:
       return WebRequestResourceType::OBJECT;
-    case content::ResourceType::kMedia:
+    case blink::mojom::ResourceType::kMedia:
       return WebRequestResourceType::MEDIA;
-    case content::ResourceType::kWorker:
-    case content::ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
       return WebRequestResourceType::SCRIPT;
-    case content::ResourceType::kPrefetch:
+    case blink::mojom::ResourceType::kPrefetch:
       return WebRequestResourceType::OTHER;
-    case content::ResourceType::kFavicon:
+    case blink::mojom::ResourceType::kFavicon:
       return WebRequestResourceType::IMAGE;
-    case content::ResourceType::kXhr:
+    case blink::mojom::ResourceType::kXhr:
       return WebRequestResourceType::XHR;
-    case content::ResourceType::kPing:
+    case blink::mojom::ResourceType::kPing:
       return WebRequestResourceType::PING;
-    case content::ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kServiceWorker:
       return WebRequestResourceType::SCRIPT;
-    case content::ResourceType::kCspReport:
+    case blink::mojom::ResourceType::kCspReport:
       return WebRequestResourceType::CSP_REPORT;
-    case content::ResourceType::kPluginResource:
+    case blink::mojom::ResourceType::kPluginResource:
       return WebRequestResourceType::OBJECT;
   }
   NOTREACHED();

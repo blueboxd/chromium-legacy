@@ -126,6 +126,23 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
 // user interaction.
 void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
 
+#if defined(OS_CHROMEOS)
+
+// Shows the print job confirmation dialog bubble anchored to the toolbar icon
+// for the extension.
+// If there's no toolbar icon, shows a modal dialog using
+// CreateBrowserModalDialogViews(). Note that this dialog is shown up even if we
+// have no |parent| window.
+void ShowPrintJobConfirmationDialog(gfx::NativeWindow parent,
+                                    const std::string& extension_id,
+                                    const base::string16& extension_name,
+                                    const gfx::ImageSkia& extension_icon,
+                                    const base::string16& print_job_title,
+                                    const base::string16& printer_name,
+                                    base::OnceCallback<void(bool)> callback);
+
+#endif  // OS_CHROMEOS
+
 #if defined(OS_MACOSX)
 
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
@@ -251,6 +268,7 @@ enum class DialogIdentifier {
   QR_CODE_GENERATOR = 99,
   CROSTINI_FORCE_CLOSE = 100,
   APP_UNINSTALL = 101,
+  PRINT_JOB_CONFIRMATION = 102,
   // Add values above this line with a corresponding label in
   // tools/metrics/histograms/enums.xml
   MAX_VALUE

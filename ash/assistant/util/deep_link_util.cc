@@ -27,6 +27,7 @@ constexpr char kActionParamKey[] = "action";
 constexpr char kCategoryParamKey[] = "category";
 constexpr char kClientIdParamKey[] = "clientId";
 constexpr char kDurationMsParamKey[] = "durationMs";
+constexpr char kEidParamKey[] = "eid";
 constexpr char kHrefParamKey[] = "href";
 constexpr char kIdParamKey[] = "id";
 constexpr char kIndexParamKey[] = "index";
@@ -34,6 +35,7 @@ constexpr char kQueryParamKey[] = "q";
 constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
 constexpr char kSourceParamKey[] = "source";
+constexpr char kTypeParamKey[] = "type";
 constexpr char kVeIdParamKey[] = "veId";
 
 // Supported alarm/timer action deep link param values.
@@ -154,12 +156,14 @@ base::Optional<std::string> GetDeepLinkParam(
       {DeepLinkParam::kCategory, kCategoryParamKey},
       {DeepLinkParam::kClientId, kClientIdParamKey},
       {DeepLinkParam::kDurationMs, kDurationMsParamKey},
+      {DeepLinkParam::kEid, kEidParamKey},
       {DeepLinkParam::kHref, kHrefParamKey},
       {DeepLinkParam::kId, kIdParamKey},
       {DeepLinkParam::kIndex, kIndexParamKey},
       {DeepLinkParam::kPage, kPageParamKey},
       {DeepLinkParam::kQuery, kQueryParamKey},
       {DeepLinkParam::kRelaunch, kRelaunchParamKey},
+      {DeepLinkParam::kType, kTypeParamKey},
       {DeepLinkParam::kVeId, kVeIdParamKey}};
 
   const std::string& key = kDeepLinkParamKeys.at(param);
@@ -310,17 +314,22 @@ bool IsDeepLinkUrl(const GURL& url) {
   return GetDeepLinkType(url) != DeepLinkType::kUnsupported;
 }
 
-base::Optional<GURL> GetAssistantUrl(DeepLinkType type,
-                                     const base::Optional<std::string>& id) {
+base::Optional<GURL> GetAssistantUrl(
+    DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
   std::string top_level_url;
   std::string by_id_url;
 
   switch (type) {
-    case DeepLinkType::kLists:
+    case DeepLinkType::kLists: {
+      const auto& type = GetDeepLinkParam(params, DeepLinkParam::kType);
       top_level_url =
           std::string("https://assistant.google.com/lists/mainview");
-      by_id_url = std::string("https://assistant.google.com/lists/list/");
+      by_id_url = (type && type.value().compare("shopping") == 0)
+                      ? std::string("https://shoppinglist.google.com/lists/")
+                      : std::string("https://assistant.google.com/lists/list/");
       break;
+    }
     case DeepLinkType::kNotes:
       top_level_url = std::string(
           "https://assistant.google.com/lists/mainview?note_tap=true");
@@ -336,13 +345,17 @@ base::Optional<GURL> GetAssistantUrl(DeepLinkType type,
       return base::nullopt;
   }
 
-  const std::string url =
-      (id && !id.value().empty()) ? (by_id_url + id.value()) : top_level_url;
+  const auto& id = GetDeepLinkParam(params, DeepLinkParam::kId);
+  const auto& eid = GetDeepLinkParam(params, DeepLinkParam::kEid);
+  GURL url = (id && !id.value().empty()) ? GURL(by_id_url + id.value())
+                                         : GURL(top_level_url);
+  if (eid && !eid.value().empty())
+    url = net::AppendOrReplaceQueryParameter(url, kEidParamKey, eid.value());
 
   // Source is currently assumed to be |Assistant|. If need be, we can make
   // |source| a deep link parameter in the future.
   constexpr char kDefaultSource[] = "Assistant";
-  return net::AppendOrReplaceQueryParameter(CreateLocalizedGURL(url),
+  return net::AppendOrReplaceQueryParameter(CreateLocalizedGURL(url.spec()),
                                             kSourceParamKey, kDefaultSource);
 }
 
@@ -379,10 +392,8 @@ base::Optional<GURL> GetWebUrl(
   switch (type) {
     case DeepLinkType::kLists:
     case DeepLinkType::kNotes:
-    case DeepLinkType::kReminders: {
-      const auto id = GetDeepLinkParam(params, DeepLinkParam::kId);
-      return GetAssistantUrl(type, id);
-    }
+    case DeepLinkType::kReminders:
+      return GetAssistantUrl(type, params);
     case DeepLinkType::kSettings:
       return CreateLocalizedGURL(kAssistantSettingsWebUrl);
     case DeepLinkType::kUnsupported:

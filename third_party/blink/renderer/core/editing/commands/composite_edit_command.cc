@@ -104,7 +104,7 @@ VisibleSelection CompositeEditCommand::EndingVisibleSelection() const {
   // TODO(editing-dev): The use of
   // |Document::UpdateStyleAndLayout()|
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   return CreateVisibleSelection(ending_selection_);
 }
 
@@ -144,7 +144,7 @@ bool CompositeEditCommand::Apply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(frame);
@@ -289,7 +289,7 @@ void CompositeEditCommand::InsertNodeBefore(
   ABORT_EDITING_COMMAND_IF(!ref_child->parentNode());
   // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*ref_child->parentNode()) &&
                            ref_child->parentNode()->InActiveDocument());
   ApplyCommandToComposite(
@@ -319,7 +319,7 @@ void CompositeEditCommand::InsertNodeAfter(Node* insert_child,
 void CompositeEditCommand::InsertNodeAt(Node* insert_child,
                                         const Position& editing_position,
                                         EditingState* editing_state) {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   ABORT_EDITING_COMMAND_IF(!IsEditablePosition(editing_position));
   // For editing positions like [table, 0], insert before the table,
   // likewise for replaced elements, brs, etc.
@@ -615,7 +615,7 @@ Position CompositeEditCommand::PositionOutsideTabSpan(const Position& pos) {
 
   // TODO(editing-dev): Hoist this UpdateStyleAndLayout
   // to the callers. See crbug.com/590369 for details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (pos.OffsetInContainerNode() <= CaretMinOffset(pos.ComputeContainerNode()))
     return Position::InParentBeforeNode(*tab_span);
@@ -681,7 +681,7 @@ void CompositeEditCommand::SetNodeAttribute(Element* element,
 bool CompositeEditCommand::CanRebalance(const Position& position) const {
   // TODO(editing-dev): Use of UpdateStyleAndLayout()
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   auto* text_node = DynamicTo<Text>(position.ComputeContainerNode());
   if (!position.IsOffsetInAnchor() || !text_node ||
@@ -740,7 +740,7 @@ void CompositeEditCommand::RebalanceWhitespaceOnTextSubstring(Text* text_node,
   if (!length)
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   VisiblePosition visible_upstream_pos =
       CreateVisiblePosition(Position(text_node, upstream));
   VisiblePosition visible_downstream_pos =
@@ -788,14 +788,14 @@ void CompositeEditCommand::PrepareWhitespaceAtPositionForSplit(
   Position upstream_pos = MostBackwardCaretPosition(position);
   DeleteInsignificantText(upstream_pos, MostForwardCaretPosition(position));
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   position = MostForwardCaretPosition(upstream_pos);
   VisiblePosition visible_pos = CreateVisiblePosition(position);
   VisiblePosition previous_visible_pos = PreviousPositionOf(visible_pos);
   ReplaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(
       previous_visible_pos);
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   ReplaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(
       CreateVisiblePosition(position));
 }
@@ -829,7 +829,7 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
   if (!text_node || start >= end)
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   LayoutText* text_layout_object = text_node->GetLayoutObject();
   if (!text_layout_object)
@@ -951,7 +951,7 @@ HTMLBRElement* CompositeEditCommand::AppendBlockPlaceholder(
   if (!container)
     return nullptr;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See
   // 4244964.
@@ -987,7 +987,7 @@ HTMLBRElement* CompositeEditCommand::AddBlockPlaceholderIfNeeded(
   if (!container)
     return nullptr;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   auto* block = DynamicTo<LayoutBlockFlow>(container->GetLayoutObject());
   if (!block)
@@ -1102,7 +1102,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
 
   // Inserting default paragraph element can change visible position. We
   // should update visible positions before use them.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   const VisiblePosition& destination =
       VisiblePosition::FirstPositionInNode(*new_block);
   if (destination.IsNull()) {
@@ -1258,7 +1258,7 @@ void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state) {
 
 void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state,
                                                 VisiblePosition destination) {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   VisiblePosition caret_after_delete = EndingVisibleSelection().VisibleStart();
   Node* destination_node = destination.DeepEquivalent().AnchorNode();
@@ -1360,7 +1360,7 @@ void CompositeEditCommand::MoveParagraphWithClones(
   if (editing_state->IsAborted())
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // Add a br if pruning an empty block level element caused a collapse.  For
   // example:
@@ -1541,7 +1541,7 @@ void CompositeEditCommand::MoveParagraphs(
     return;
   DCHECK(destination.DeepEquivalent().IsConnected()) << destination;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // Add a br if pruning an empty block level element caused a collapse. For
   // example:
@@ -1569,7 +1569,7 @@ void CompositeEditCommand::MoveParagraphs(
   }
 
   // TextIterator::rangeLength requires clean layout.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   destination_index = TextIterator::RangeLength(
       Position::FirstPositionInNode(*GetDocument().documentElement()),
@@ -1599,7 +1599,7 @@ void CompositeEditCommand::MoveParagraphs(
     return;
   ABORT_EDITING_COMMAND_IF(!EndingSelection().IsValidFor(GetDocument()));
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // If the selection is in an empty paragraph, restore styles from the old
   // empty paragraph to the new empty paragraph.
@@ -1620,7 +1620,7 @@ void CompositeEditCommand::MoveParagraphs(
     return;
 
   // We need clean layout in order to compute plain-text ranges below.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // Fragment creation (using createMarkup) incorrectly uses regular spaces
   // instead of nbsps for some spaces that were rendered (11475), which causes
@@ -1770,7 +1770,7 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   if (!EndingSelection().IsCaret())
     return false;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   VisiblePosition caret = EndingVisibleSelection().VisibleStart();
   auto* highest_blockquote = To<HTMLQuoteElement>(HighestEnclosingNodeOfType(
@@ -1796,7 +1796,7 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   if (editing_state->IsAborted())
     return false;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   VisiblePosition at_br = VisiblePosition::BeforeNode(*br);
   // If the br we inserted collapsed, for example:
@@ -1807,7 +1807,7 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
                      editing_state);
     if (editing_state->IsAborted())
       return false;
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   }
   SetEndingSelection(SelectionForUndoStep::From(
       SelectionInDOMTree::Builder()
@@ -1855,7 +1855,7 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
   if (original.IsNull())
     return original;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   VisiblePosition visible_pos = CreateVisiblePosition(original);
   Element* enclosing_anchor = EnclosingAnchorElement(original);
   Position result = original;
@@ -1885,7 +1885,7 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
           return original;
       }
 
-      GetDocument().UpdateStyleAndLayout();
+      GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
       // Don't insert outside an anchor if doing so would skip over a line
       // break.  It would probably be safe to move the line break so that we
@@ -1947,7 +1947,7 @@ Node* CompositeEditCommand::SplitTreeToNode(Node* start,
     if (!parent_element)
       break;
 
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
     // Do not split a node when doing so introduces an empty node.
     VisiblePosition position_in_parent =

@@ -417,6 +417,7 @@ extern const char kPrintPreviewDefaultDestinationSelectionRules[];
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 extern const char kPrintPreviewUseSystemDefaultPrinter[];
+extern const char kUserDataSnapshotRentionLimit[];
 #endif
 
 #if defined(OS_CHROMEOS)

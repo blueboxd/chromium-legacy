@@ -23,6 +23,20 @@ class MainZeroImplSixty(ThroughputMetricStory):
          'main-impl-animations-throughput.html')
 
 
+class MainZeroImplSixtyNoUpdate(ThroughputMetricStory):
+  BASE_NAME = 'main_0fps_impl_60fps_no_update'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-impl-animations-no-update-throughput.html')
+
+
+class MainZeroImplSixtyNoUpdateJank(ThroughputMetricStory):
+  BASE_NAME = 'main_0fps_impl_60fps_no_update_jank'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-impl-animations-no-update-throughput.html?jank')
+
+
 class MainThirtyImplSixty(ThroughputMetricStory):
   BASE_NAME = 'main_30fps_impl_60fps'
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
@@ -40,6 +54,20 @@ class MainSixtyImplSixty(ThroughputMetricStory):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-impl-animations-throughput.html#60')
+
+
+class MainSixtyImplSixtyNoUpdate(ThroughputMetricStory):
+  BASE_NAME = 'main_60fps_impl_60fps_no_update'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-impl-animations-no-update-throughput.html#60')
+
+
+class MainSixtyImplSixtyNoUpdateJank(ThroughputMetricStory):
+  BASE_NAME = 'main_60fps_impl_60fps_no_update_jank'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-impl-animations-no-update-throughput.html?jank#60')
 
 
 class MainFifteenImplZero(ThroughputMetricStory):

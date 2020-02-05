@@ -53,9 +53,9 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
   AddChildView(primary_action_button_);
   primary_action_button_->SetProperty(
-      views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
-                                   views::MinimumFlexSizeRule::kScaleToZero,
-                                   views::MaximumFlexSizeRule::kUnbounded));
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded));
 
   const SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(

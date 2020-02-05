@@ -1551,6 +1551,14 @@ message DeviceLoginScreenWebUsbAllowDevicesForUrlsProto {
   optional string device_login_screen_webusb_allow_devices_for_urls = 1;
 }
 
+// Settings that control the availability of System-proxy service and the web
+// proxy credentials for system services connecting through System-proxy.
+message SystemProxySettingsProto {
+  // This is a JSON string, for details see "SystemProxySettings" in
+  // policy_templates.json.
+  optional string system_proxy_settings = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1671,4 +1679,5 @@ message ChromeDeviceSettingsProto {
   optional BooleanPolicyProto device_show_numeric_keyboard_for_password = 95;
   optional BooleanPolicyProto login_screen_primary_mouse_button_switch = 96;
   optional StringPolicyProto minimum_chrome_version_enforced = 97;
+  optional SystemProxySettingsProto system_proxy_settings = 98;
 }

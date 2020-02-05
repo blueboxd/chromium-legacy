@@ -93,6 +93,9 @@ class TestExpectations(object):
         self._system_condition_tags = self._port.get_platform_tags()
         self._expectations = []
         self._expectations_dict = expectations_dict or port.expectations_dict()
+        self._flags = []
+        self._flag_expectations = []
+        self._base_expectations = []
         filesystem = self._port.host.filesystem
         expectation_errors = []
 
@@ -103,6 +106,15 @@ class TestExpectations(object):
             if ret:
                 expectation_errors.append('Parsing file %s produced following errors\n%s' % (path, errors))
             self._expectations.append(test_expectations)
+            flag_match = re.match('.*' + port.FLAG_EXPECTATIONS_PREFIX + '(.*)', path)
+
+            # If file is a flag specific file, store the typ.TestExpectation
+            # instance in _flag_expectations list, otherwise store it in _base_expectations
+            if flag_match:
+                self._flags.append(flag_match.group(1))
+                self._flag_expectations.append(test_expectations)
+            else:
+                self._base_expectations.append(test_expectations)
 
         if port.get_option('ignore_tests', []):
             content = '# results: [ Skip ]\n'
@@ -123,6 +135,10 @@ class TestExpectations(object):
     @property
     def expectations(self):
         return self._expectations[:]
+
+    @property
+    def flag_name(self):
+        return ' '.join(self._flags)
 
     @property
     def general_expectations(self):
@@ -162,11 +178,12 @@ class TestExpectations(object):
         test_expectations.parse_tagged_list(content)
         self._expectations.append(test_expectations)
 
-    def get_expectations(self, test):
+    @staticmethod
+    def _get_expectations(expectations, test):
         results = set()
         reasons = set()
         is_slow_test = False
-        for test_exp in self._expectations:
+        for test_exp in expectations:
             expected_results = test_exp.expectations_for(test)
             # The return Expectation instance from expectations_for has the default
             # PASS expected result. If there are no expected results in the first
@@ -183,6 +200,18 @@ class TestExpectations(object):
         return typ_types.Expectation(
             test=test, results=results, is_slow_test=is_slow_test,
             reason=' '.join(reasons))
+
+    def get_expectations(self, test):
+        return self._get_expectations(self._expectations, test)
+
+    def get_flag_expectations(self, test):
+        exp = self._get_expectations(self._flag_expectations, test)
+        if exp.is_slow_test or exp.results != set([ResultType.Pass]):
+            return exp
+        return None
+
+    def get_base_expectations(self, test):
+        return self._get_expectations(self._base_expectations, test)
 
     def get_tests_with_expected_result(self, result):
         """This method will return a list of tests and directories which

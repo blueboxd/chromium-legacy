@@ -9,24 +9,29 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.url.GURL;
 
 /**
  * Wrapper for utilities in url_formatter.
  */
 @JNINamespace("url_formatter::android")
+@MainDex
 public final class UrlFormatter {
     /**
      * Refer to url_formatter::FixupURL.
      *
-     * Given a URL-like string, returns a real URL or null. For example:
+     * Given a URL-like string, returns a possibly-invalid GURL. For example:
      *  - "google.com" -> "http://google.com/"
      *  - "about:" -> "chrome://version/"
      *  - "//mail.google.com:/" -> "file:///mail.google.com:/"
-     *  - "..." -> null
+     *  - "0x100.0" -> "http://0x100.0/" (invalid)
      */
-    public static String fixupUrl(String uri) {
-        return TextUtils.isEmpty(uri) ? null : UrlFormatterJni.get().fixupUrl(uri);
+    public static GURL fixupUrl(String uri) {
+        if (TextUtils.isEmpty(uri)) return GURL.emptyGURL();
+        GURL.ensureNativeInitializedForGURL();
+        return UrlFormatterJni.get().fixupUrl(uri);
     }
 
     /**
@@ -125,7 +130,7 @@ public final class UrlFormatter {
     @VisibleForTesting
     @NativeMethods
     public interface Natives {
-        String fixupUrl(String url);
+        GURL fixupUrl(String url);
         String formatUrlForDisplayOmitScheme(String url);
         String formatUrlForDisplayOmitHTTPScheme(String url);
         String formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(String url);

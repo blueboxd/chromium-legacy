@@ -317,7 +317,7 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   Element* element = frame->Selection()
                          .ComputeVisibleSelectionInDOMTreeDeprecated()
@@ -384,7 +384,7 @@ void TypingCommand::InsertText(
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   const PlainTextRange selection_offsets =
       GetSelectionOffsets(selection_for_insertion.AsSelection());
@@ -807,7 +807,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
     TypingAddedToOpenCommand(kDeleteKey);
 
   smart_delete_ = false;
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   SelectionModifier selection_modifier(*frame, EndingSelection().AsSelection());
   selection_modifier.SetSelectionIsDirectional(SelectionIsDirectional());
@@ -983,7 +983,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
   }
 
   smart_delete_ = false;
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   // Handle delete at beginning-of-block case.
   // Do nothing in the case that the caret is at the start of a

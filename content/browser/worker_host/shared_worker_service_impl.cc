@@ -314,7 +314,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       creator_render_frame_host, host->instance().constructor_origin(),
       net::NetworkIsolationKey(origin, origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
-      ResourceType::kSharedWorker, service_worker_context_,
+      blink::mojom::ResourceType::kSharedWorker, service_worker_context_,
       service_worker_handle_raw, std::move(appcache_host),
       std::move(blob_url_loader_factory), url_loader_factory_override_,
       storage_partition_, storage_domain,

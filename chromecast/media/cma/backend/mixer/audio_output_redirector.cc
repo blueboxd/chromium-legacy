@@ -20,8 +20,10 @@
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector_input.h"
+#include "chromecast/media/cma/backend/mixer/channel_layout.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/stream_mixer.h"
+#include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "media/base/audio_bus.h"
 #include "media/base/channel_layout.h"
 #include "media/base/channel_mixer.h"
@@ -34,10 +36,19 @@ namespace {
 using Patterns = std::vector<std::pair<AudioContentType, std::string>>;
 
 constexpr int kDefaultBufferSize = 2048;
-constexpr int kMaxChannels = 8;
+constexpr int kMaxChannels = 32;
 
 constexpr int kAudioMessageHeaderSize =
     mixer_service::MixerSocket::kAudioMessageHeaderSize;
+
+::media::ChannelLayout GetMediaChannelLayout(
+    chromecast::media::ChannelLayout layout,
+    int num_channels) {
+  if (layout == media::ChannelLayout::UNSUPPORTED) {
+    return mixer::GuessChannelLayout(num_channels);
+  }
+  return DecoderConfigAdapter::ToMediaChannelLayout(layout);
+}
 
 }  // namespace
 
@@ -148,6 +159,7 @@ class AudioOutputRedirector::InputImpl : public AudioOutputRedirectorInput {
  private:
   AudioOutputRedirector* const output_redirector_;
   MixerInput* const mixer_input_;
+  const ::media::ChannelLayout output_channel_layout_;
   const int num_output_channels_;
 
   bool previous_ended_in_silence_;
@@ -163,6 +175,7 @@ AudioOutputRedirector::InputImpl::InputImpl(
     MixerInput* mixer_input)
     : output_redirector_(output_redirector),
       mixer_input_(mixer_input),
+      output_channel_layout_(output_redirector_->output_channel_layout()),
       num_output_channels_(output_redirector_->num_output_channels()),
       previous_ended_in_silence_(true) {
   DCHECK_LE(num_output_channels_, kMaxChannels);
@@ -173,8 +186,10 @@ AudioOutputRedirector::InputImpl::InputImpl(
     LOG(INFO) << "Remixing channels for " << mixer_input_->source() << " from "
               << mixer_input_->num_channels() << " to " << num_output_channels_;
     channel_mixer_ = std::make_unique<::media::ChannelMixer>(
-        ::media::GuessChannelLayout(mixer_input_->num_channels()),
-        ::media::GuessChannelLayout(num_output_channels_));
+        mixer::CreateAudioParametersForChannelMixer(
+            mixer_input_->channel_layout(), mixer_input_->num_channels()),
+        mixer::CreateAudioParametersForChannelMixer(output_channel_layout_,
+                                                    num_output_channels_));
   }
 
   temp_buffer_ =
@@ -251,6 +266,12 @@ AudioOutputRedirector::Config AudioOutputRedirector::ParseConfig(
   if (request.has_num_channels()) {
     config.num_output_channels = request.num_channels();
   }
+  if (request.has_channel_layout()) {
+    config.output_channel_layout =
+        ConvertChannelLayout(request.channel_layout());
+  } else {
+    config.output_channel_layout = media::ChannelLayout::UNSUPPORTED;
+  }
   if (request.has_order()) {
     config.order = request.order();
   }
@@ -269,6 +290,9 @@ AudioOutputRedirector::AudioOutputRedirector(
     const mixer_service::Generic& message)
     : mixer_(mixer),
       config_(ParseConfig(message)),
+      output_channel_layout_(
+          GetMediaChannelLayout(config_.output_channel_layout,
+                                config_.num_output_channels)),
       io_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       buffer_pool_(
           base::MakeRefCounted<IOBufferPool>(kDefaultBufferSize,

@@ -507,6 +507,7 @@ public class TabUiTestHelper {
             CriteriaHelper.pollUiThread(
                     Criteria.equals(mExpectedCount, () -> adapter.getItemCount()));
 
+            recyclerView.setItemAnimator(null); // Disable animation to reduce flakiness.
             for (int i = 0; i < mExpectedCount; i++) {
                 RecyclerView.ViewHolder viewHolder =
                         recyclerView.findViewHolderForAdapterPosition(i);

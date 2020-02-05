@@ -26,6 +26,7 @@ namespace performance_manager {
 class BrowserChildProcessWatcher;
 class Graph;
 class PageLiveStateDecoratorHelper;
+class PageLoadTrackerDecoratorHelper;
 class PerformanceManager;
 class PerformanceManagerRegistry;
 }  // namespace performance_manager
@@ -76,9 +77,13 @@ class ChromeBrowserMainExtraPartsPerformanceManager
 
   ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
-  // Needed to properly maintain some of the PageLiveStateDecorator' properties.
+  // Needed to maintain some of the PageLiveStateDecorator' properties.
   std::unique_ptr<performance_manager::PageLiveStateDecoratorHelper>
       page_live_state_data_helper_;
+
+  // Needed to maintain the PageNode::IsLoading() property.
+  std::unique_ptr<performance_manager::PageLoadTrackerDecoratorHelper>
+      page_load_tracker_decorator_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsPerformanceManager);
 };

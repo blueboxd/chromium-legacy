@@ -41,6 +41,10 @@ void ForwardingModelTypeProcessor::OnCommitCompleted(
                                 error_response_list);
 }
 
+void ForwardingModelTypeProcessor::OnCommitFailed() {
+  processor_->OnCommitFailed();
+}
+
 void ForwardingModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,
     UpdateResponseDataList updates) {

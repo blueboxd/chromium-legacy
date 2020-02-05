@@ -20,6 +20,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace offline_pages {
 
@@ -50,7 +51,7 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
 bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   // Ignore the requests not for the main frame.
   if (resource_request.resource_type !=
-      static_cast<int>(content::ResourceType::kMainFrame))
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame))
     return false;
 
   // Ignore non-http/https requests.

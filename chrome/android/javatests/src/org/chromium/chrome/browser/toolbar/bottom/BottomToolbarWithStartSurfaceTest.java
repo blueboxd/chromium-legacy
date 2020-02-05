@@ -19,8 +19,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -42,14 +42,14 @@ public class BottomToolbarWithStartSurfaceTest {
 
     @Before
     public void setUp() {
-        FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
-        FeatureUtilities.setStartSurfaceEnabledForTesting(true);
+        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
+        CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
     }
 
     @After
     public void tearDown() {
-        FeatureUtilities.setIsBottomToolbarEnabledForTesting(null);
-        FeatureUtilities.setStartSurfaceEnabledForTesting(null);
+        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
+        CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
     }
 
     private void launchActivity(@Variations String variation) {

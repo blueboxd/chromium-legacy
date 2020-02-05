@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinis
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -273,7 +273,7 @@ public class SplashController
         // - closing activity (example: https://crbug.com/856544#c41)
         // - send activity to the background (example: https://crbug.com/856544#c30)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && FeatureUtilities.isSwapPixelFormatToFixConvertFromTranslucentEnabled()) {
+                && CachedFeatureFlags.isSwapPixelFormatToFixConvertFromTranslucentEnabled()) {
             return TranslucencyRemoval.ON_SPLASH_HIDDEN;
         }
         return TranslucencyRemoval.ON_SPLASH_SHOWN;

@@ -176,68 +176,64 @@ constexpr Size FlexLayoutTest::kChild2Size;
 constexpr Size FlexLayoutTest::kChild3Size;
 
 const FlexSpecification FlexLayoutTest::kPreferredAdjustHeight =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferred,
-                                   MaximumFlexSizeRule::kPreferred,
-                                   true)
+    FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                      MaximumFlexSizeRule::kPreferred,
+                      true)
         .WithWeight(0);
 const FlexSpecification FlexLayoutTest::kDropOut =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToZero,
-                                   MaximumFlexSizeRule::kPreferred)
+    FlexSpecification(MinimumFlexSizeRule::kPreferredSnapToZero,
+                      MaximumFlexSizeRule::kPreferred)
         .WithWeight(0)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kDropOutHighPriority =
     FlexLayoutTest::kDropOut.WithOrder(1);
 const FlexSpecification FlexLayoutTest::kFlex1ScaleToZero =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
-                                   MaximumFlexSizeRule::kPreferred)
+    FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                      MaximumFlexSizeRule::kPreferred)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kFlex1ScaleToMinimum =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToMinimum,
-                                   MaximumFlexSizeRule::kPreferred)
+    FlexSpecification(MinimumFlexSizeRule::kScaleToMinimum,
+                      MaximumFlexSizeRule::kPreferred)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kFlex2ScaleToMinimum =
     FlexLayoutTest::kFlex1ScaleToMinimum.WithWeight(2);
 const FlexSpecification FlexLayoutTest::kFlex1ScaleToMinimumHighPriority =
     FlexLayoutTest::kFlex1ScaleToMinimum.WithOrder(1);
 const FlexSpecification FlexLayoutTest::kUnbounded =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferred,
-                                   MaximumFlexSizeRule::kUnbounded)
+    FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                      MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kUnboundedSnapToMinimum =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToMinimum,
-                                   MaximumFlexSizeRule::kUnbounded)
+    FlexSpecification(MinimumFlexSizeRule::kPreferredSnapToMinimum,
+                      MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kUnboundedSnapToZero =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToZero,
-                                   MaximumFlexSizeRule::kUnbounded)
+    FlexSpecification(MinimumFlexSizeRule::kPreferredSnapToZero,
+                      MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kUnboundedScaleToMinimumSnapToZero =
-    FlexSpecification::ForSizeRule(
-        MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
-        MaximumFlexSizeRule::kUnbounded)
+    FlexSpecification(MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
+                      MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kUnboundedScaleToZero =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
-                                   MaximumFlexSizeRule::kUnbounded)
+    FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                      MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
 const FlexSpecification FlexLayoutTest::kUnboundedScaleToZeroAdjustHeight =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
-                                   MaximumFlexSizeRule::kUnbounded,
-                                   true)
+    FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                      MaximumFlexSizeRule::kUnbounded,
+                      true)
         .WithOrder(2);
-const FlexSpecification FlexLayoutTest::kUnboundedScaleToMinimumHighPriority =
-    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToMinimum,
-                                   MaximumFlexSizeRule::kUnbounded);
+const FlexSpecification FlexLayoutTest::kUnboundedScaleToMinimumHighPriority(
+    MinimumFlexSizeRule::kScaleToMinimum,
+    MaximumFlexSizeRule::kUnbounded);
 const FlexSpecification FlexLayoutTest::kUnboundedScaleToMinimum =
     kUnboundedScaleToMinimumHighPriority.WithOrder(2);
 
 const FlexSpecification FlexLayoutTest::kCustomFlex =
-    FlexSpecification::ForCustomRule(
-        base::BindRepeating(&CustomFlexImpl, false))
-        .WithOrder(2);
+    FlexSpecification(base::BindRepeating(&CustomFlexImpl, false)).WithOrder(2);
 const FlexSpecification FlexLayoutTest::kCustomFlexSnapToZero =
-    FlexSpecification::ForCustomRule(base::BindRepeating(&CustomFlexImpl, true))
-        .WithOrder(2);
+    FlexSpecification(base::BindRepeating(&CustomFlexImpl, true)).WithOrder(2);
 
 }  // namespace
 
@@ -1727,10 +1723,9 @@ TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_FirstViewFillsAvailableSpace) {
   View* child1 = AddChild(Size(20, 10));
   View* child2 = AddChild(Size(20, 10));
   child1->SetProperty(views::kFlexBehaviorKey, kUnbounded);
-  child2->SetProperty(
-      views::kFlexBehaviorKey,
-      FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferred,
-                                     MaximumFlexSizeRule::kPreferred));
+  child2->SetProperty(views::kFlexBehaviorKey,
+                      FlexSpecification(MinimumFlexSizeRule::kPreferred,
+                                        MaximumFlexSizeRule::kPreferred));
 
   host_->SetSize(Size(70, 20));
   const std::vector<Rect> expected_bounds{{5, 5, 35, 10}, {45, 5, 20, 10}};
@@ -2542,7 +2537,7 @@ TEST_F(FlexLayoutTest, FlexAllocationOrderReverse) {
 // Test case (and example code) for crbug.com/1012119:
 // "FlexLayout ignores custom flex rule if it contradicts preferred size"
 TEST_F(FlexLayoutTest, FlexRuleContradictsPreferredSize) {
-  const FlexSpecification custom_spec = FlexSpecification::ForCustomRule(
+  const FlexSpecification custom_spec(
       base::BindRepeating([](const View* view, const SizeBounds& maximum_size) {
         return gfx::Size(
             (!maximum_size.width() || *maximum_size.width() >= 100) ? 100 : 0,

@@ -29,7 +29,7 @@ class ServiceWorkerFetchContextImplTest : public testing::Test {
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateThrottles(
         int render_frame_id,
         const blink::WebURLRequest& request,
-        ResourceType resource_type) override {
+        blink::mojom::ResourceType resource_type) override {
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
       throttles.emplace_back(std::make_unique<FakeURLLoaderThrottle>());
       return throttles;

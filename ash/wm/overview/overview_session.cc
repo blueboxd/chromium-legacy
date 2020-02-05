@@ -433,6 +433,7 @@ void OverviewSession::AppendItem(aura::Window* window,
 }
 
 void OverviewSession::AddItemInMruOrder(aura::Window* window,
+                                        bool reposition,
                                         bool animate,
                                         bool restack) {
   // Early exit if a grid already contains |window|.
@@ -440,7 +441,7 @@ void OverviewSession::AddItemInMruOrder(aura::Window* window,
   if (!grid || grid->GetOverviewItemContaining(window))
     return;
 
-  grid->AddItemInMruOrder(window, /*reposition=*/true, animate, restack);
+  grid->AddItemInMruOrder(window, reposition, animate, restack);
   OnItemAdded(window);
 }
 

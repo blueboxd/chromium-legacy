@@ -280,11 +280,11 @@ void WebUITabCounterButton::UpdateColors() {
 void WebUITabCounterButton::Init(TabStripModel* tab_strip_model) {
   SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
 
-  SetProperty(views::kFlexBehaviorKey,
-              views::FlexSpecification::ForSizeRule(
-                  views::MinimumFlexSizeRule::kScaleToMinimum,
-                  views::MaximumFlexSizeRule::kPreferred)
-                  .WithOrder(1));
+  SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1));
 
   const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
   SetPreferredSize(gfx::Size(button_height, button_height));

@@ -353,7 +353,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     const ComputedStyle& child_style = child.Style();
     NGConstraintSpace flex_basis_space = BuildSpaceForFlexBasis(child);
-    NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
 
     NGBoxStrut border_padding_in_child_writing_mode =
         ComputeBorders(flex_basis_space, child) +
@@ -370,20 +369,29 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         is_horizontal_flow_ ? physical_border_padding.VerticalSum()
                             : physical_border_padding.HorizontalSum();
 
-    // TODO(dgrogan): Don't layout every time, just when you need to.
-    // Use ChildHasIntrinsicMainAxisSize as a guide.
-    scoped_refptr<const NGLayoutResult> layout_result =
-        child.Layout(child_space, /* break_token */ nullptr);
+    base::Optional<LayoutUnit> intrinsic_block_size;
+    auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
+      if (!intrinsic_block_size) {
+        NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
+        intrinsic_block_size =
+            child.Layout(child_space, /* break_token */ nullptr)
+                ->IntrinsicBlockSize();
+      }
+      return *intrinsic_block_size;
+    };
 
-    // We want the child's min/max size in its writing mode, not ours. We'll
-    // only ever use it if the child's inline axis is our main axis.
-    //
-    // Always calculate the min/max sizes after a layout in order to corrrectly
-    // account for any scrollbars.
-    MinMaxSizeInput input(
-        /* percentage_resolution_block_size */ content_box_size_.block_size);
-    MinMaxSize intrinsic_sizes_border_box = child.ComputeMinMaxSize(
-        child_style.GetWritingMode(), input, &child_space);
+    base::Optional<MinMaxSize> min_max_size;
+    auto MinMaxSizeFunc = [&]() -> MinMaxSize {
+      if (!min_max_size) {
+        // We want the child's min/max size in its writing mode, not ours.
+        // We'll only ever use it if the child's inline axis is our main axis.
+        NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
+        min_max_size = child.ComputeMinMaxSize(
+            child_style.GetWritingMode(),
+            MinMaxSizeInput(content_box_size_.block_size), &child_space);
+      }
+      return *min_max_size;
+    };
 
     LayoutUnit flex_base_border_box;
     const Length& specified_length_in_main_axis =
@@ -396,9 +404,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     // we should interpret it as flex-basis:content.
     if (flex_basis.IsAuto() && specified_length_in_main_axis.IsAuto()) {
       if (MainAxisIsInlineAxis(child))
-        flex_base_border_box = intrinsic_sizes_border_box.max_size;
+        flex_base_border_box = MinMaxSizeFunc().max_size;
       else
-        flex_base_border_box = layout_result->IntrinsicBlockSize();
+        flex_base_border_box = IntrinsicBlockSizeFunc();
     } else {
       // TODO(dgrogan): Check for definiteness.
       // This block covers case A in
@@ -410,13 +418,13 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       if (MainAxisIsInlineAxis(child)) {
         flex_base_border_box = ResolveMainInlineLength(
             flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            intrinsic_sizes_border_box, length_to_resolve);
+            MinMaxSizeFunc, length_to_resolve);
       } else {
         // Flex container's main axis is in child's block direction. Child's
         // flex basis is in child's block direction.
         flex_base_border_box = ResolveMainBlockLength(
             flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            length_to_resolve, layout_result->IntrinsicBlockSize(),
+            length_to_resolve, IntrinsicBlockSizeFunc,
             LengthResolvePhase::kLayout);
       }
     }
@@ -444,28 +452,28 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, max_property_in_main_axis,
+          MinMaxSizeFunc, max_property_in_main_axis,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.max_size = ResolveMaxBlockLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          max_property_in_cross_axis, layout_result->IntrinsicBlockSize(),
+          max_property_in_cross_axis, IntrinsicBlockSizeFunc,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.min_size = ResolveMinBlockLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          min_property_in_cross_axis, layout_result->IntrinsicBlockSize(),
+          min_property_in_cross_axis, IntrinsicBlockSizeFunc,
           LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxBlockLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          max_property_in_main_axis, layout_result->IntrinsicBlockSize(),
+          max_property_in_main_axis, IntrinsicBlockSizeFunc,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.max_size = ResolveMaxInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, max_property_in_cross_axis,
+          MinMaxSizeFunc, max_property_in_cross_axis,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.min_size = ResolveMinInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, min_property_in_cross_axis,
+          MinMaxSizeFunc, min_property_in_cross_axis,
           LengthResolvePhase::kLayout);
     }
 
@@ -486,9 +494,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           // TODO(dgrogan): Do the aspect ratio parts of
           // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
 
-          LayoutUnit content_size_suggestion =
-              MainAxisIsInlineAxis(child) ? intrinsic_sizes_border_box.min_size
-                                          : layout_result->IntrinsicBlockSize();
+          LayoutUnit content_size_suggestion = MainAxisIsInlineAxis(child)
+                                                   ? MinMaxSizeFunc().min_size
+                                                   : IntrinsicBlockSizeFunc();
           content_size_suggestion =
               std::min(content_size_suggestion,
                        min_max_sizes_in_main_axis_direction.max_size);
@@ -518,18 +526,17 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
               // calculation. Reuse that if possible.
               specified_size_suggestion = ResolveMainInlineLength(
                   flex_basis_space, child_style,
-                  border_padding_in_child_writing_mode,
-                  intrinsic_sizes_border_box, specified_length_in_main_axis);
+                  border_padding_in_child_writing_mode, MinMaxSizeFunc,
+                  specified_length_in_main_axis);
             }
           } else if (!BlockLengthUnresolvable(flex_basis_space,
                                               specified_length_in_main_axis,
                                               LengthResolvePhase::kLayout)) {
-            specified_size_suggestion =
-                ResolveMainBlockLength(flex_basis_space, child_style,
-                                       border_padding_in_child_writing_mode,
-                                       specified_length_in_main_axis,
-                                       layout_result->IntrinsicBlockSize(),
-                                       LengthResolvePhase::kLayout);
+            specified_size_suggestion = ResolveMainBlockLength(
+                flex_basis_space, child_style,
+                border_padding_in_child_writing_mode,
+                specified_length_in_main_axis, IntrinsicBlockSizeFunc,
+                LengthResolvePhase::kLayout);
             DCHECK_NE(specified_size_suggestion, kIndefiniteSize);
           }
           // Spec says to clamp specified_size_suggestion by max size but
@@ -544,12 +551,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     } else if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.min_size = ResolveMinInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, min, LengthResolvePhase::kLayout);
+          MinMaxSizeFunc, min, LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.min_size = ResolveMinBlockLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          min, layout_result->IntrinsicBlockSize(),
-          LengthResolvePhase::kLayout);
+          min, IntrinsicBlockSizeFunc, LengthResolvePhase::kLayout);
     }
     min_max_sizes_in_main_axis_direction -= main_axis_border_padding;
 

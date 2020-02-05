@@ -25,9 +25,10 @@ void CustodianProfileDownloaderService::Shutdown() {
 
 void CustodianProfileDownloaderService::DownloadProfile(
     const DownloadProfileCallback& callback) {
-  // The user must be logged in.
+  // The user must be logged in. "Unconsented" because this class doesn't care
+  // about browser sync consent.
   if (!IdentityManagerFactory::GetForProfile(custodian_profile_)
-           ->HasPrimaryAccount()) {
+           ->HasUnconsentedPrimaryAccount()) {
     return;
   }
 

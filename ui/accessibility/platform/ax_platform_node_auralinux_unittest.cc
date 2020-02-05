@@ -2155,6 +2155,89 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAllReverseAtkRelations) {
                          ATK_RELATION_LABELLED_BY, ATK_RELATION_LABEL_FOR);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkRelationsTargetIndex) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData label1;
+  label1.id = 2;
+  label1.role = ax::mojom::Role::kStaticText;
+  root.child_ids.push_back(2);
+
+  AXNodeData label2;
+  label2.id = 3;
+  label2.role = ax::mojom::Role::kList;
+  root.child_ids.push_back(3);
+
+  AXNodeData label3;
+  label3.id = 4;
+  label3.role = ax::mojom::Role::kTable;
+  root.child_ids.push_back(4);
+
+  AXNodeData button1;
+  button1.id = 5;
+  button1.role = ax::mojom::Role::kButton;
+  button1.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                              {2, 3, 4});
+  root.child_ids.push_back(5);
+
+  AXNodeData button2;
+  button2.id = 6;
+  button2.role = ax::mojom::Role::kButton;
+  button2.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                              {4, 3, 2});
+  root.child_ids.push_back(6);
+
+  AXNodeData button3;
+  button3.id = 7;
+  button3.role = ax::mojom::Role::kButton;
+  button3.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                              {4, 4, 2, 2, 3});
+  root.child_ids.push_back(7);
+
+  Init(root, label1, label2, label3, button1, button2, button3);
+
+  auto test_index = [&](AtkObject* source, AtkObject* target,
+                        AtkRelationType relation_type, int index) {
+    AtkRelationSet* relation_set = atk_object_ref_relation_set(source);
+    ASSERT_TRUE(atk_relation_set_contains(relation_set, relation_type));
+
+    AtkRelation* relation =
+        atk_relation_set_get_relation_by_type(relation_set, relation_type);
+    GPtrArray* targets = atk_relation_get_target(relation);
+    ASSERT_TRUE(ATK_IS_OBJECT(g_ptr_array_index(targets, index)));
+    ASSERT_TRUE(ATK_OBJECT(g_ptr_array_index(targets, index)) == target);
+
+    g_object_unref(G_OBJECT(relation_set));
+  };
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+
+  AtkObject* atk_label1(AtkObjectFromNode(GetRootNode()->children()[0]));
+  AtkObject* atk_label2(AtkObjectFromNode(GetRootNode()->children()[1]));
+  AtkObject* atk_label3(AtkObjectFromNode(GetRootNode()->children()[2]));
+  AtkObject* atk_button1(AtkObjectFromNode(GetRootNode()->children()[3]));
+  AtkObject* atk_button2(AtkObjectFromNode(GetRootNode()->children()[4]));
+  AtkObject* atk_button3(AtkObjectFromNode(GetRootNode()->children()[5]));
+
+  test_index(atk_button1, atk_label1, ATK_RELATION_LABELLED_BY, 0);
+  test_index(atk_button1, atk_label2, ATK_RELATION_LABELLED_BY, 1);
+  test_index(atk_button1, atk_label3, ATK_RELATION_LABELLED_BY, 2);
+
+  test_index(atk_button2, atk_label3, ATK_RELATION_LABELLED_BY, 0);
+  test_index(atk_button2, atk_label2, ATK_RELATION_LABELLED_BY, 1);
+  test_index(atk_button2, atk_label1, ATK_RELATION_LABELLED_BY, 2);
+
+  test_index(atk_button3, atk_label3, ATK_RELATION_LABELLED_BY, 0);
+  test_index(atk_button3, atk_label1, ATK_RELATION_LABELLED_BY, 1);
+  test_index(atk_button3, atk_label2, ATK_RELATION_LABELLED_BY, 2);
+
+  g_object_unref(root_atk_object);
+}
+
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldGetNSelectionsZero) {
   Init(BuildTextField());
   AtkObject* root_atk_object(GetRootAtkObject());

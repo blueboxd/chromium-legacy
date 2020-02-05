@@ -216,10 +216,25 @@ message Study {
     OPTIONAL_BOOL_FALSE = 2;
   }
 
+  // Possible states of the severity filter.
+  enum PolicyRestriction {
+    // No restriction configs apply to clients that do not have a
+    // "ChromeVariations" policy set or if it is set to the variations enabled
+    // value.
+    NONE = 0;
+    // Critical studies apply to both clients that have all variations enabled
+    // or if the "ChromeVariations" policy is set to only allow critical
+    // variations.
+    CRITICAL = 1;
+    // Critical-only studies apply *only* to clients that have the
+    // "ChromeVariations" policy set to only allow critical variations.
+    CRITICAL_ONLY = 2;
+  }
+
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 19
+  // Next tag: 20
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
@@ -357,6 +372,10 @@ message Study {
     // - On chromeOS, registered mode determines enterprise status.
     // - Android, iOS, and linux consider all clients as non-enterprise.
     optional bool is_enterprise = 18;
+
+    // Specifies the restrictions applied by the "ChromeVariations" policy to
+    // the study. See the definition of the PolicyRestriction enum for details.
+    optional PolicyRestriction policy_restriction = 19 [default = NONE];
   }
 
   // Filtering criteria for this study. A study that is filtered out for a given

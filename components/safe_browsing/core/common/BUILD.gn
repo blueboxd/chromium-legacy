@@ -63,7 +63,7 @@ source_set("common") {
 
   if (!is_ios) {
     sources += [ "//components/safe_browsing/content/common/safebrowsing_constants_content.cc" ]
-    deps += [ "//content/public/common:resource_type_header" ]
+    deps += [ "//third_party/blink/public/mojom:mojom_platform_headers" ]
   }
 }
 

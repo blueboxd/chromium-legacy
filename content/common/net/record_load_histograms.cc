@@ -14,12 +14,12 @@
 namespace content {
 
 void RecordLoadHistograms(const url::Origin& origin,
-                          ResourceType resource_type,
+                          blink::mojom::ResourceType resource_type,
                           int net_error) {
   // Requests shouldn't complete with net::ERR_IO_PENDING.
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
-  if (resource_type == ResourceType::kMainFrame) {
+  if (resource_type == blink::mojom::ResourceType::kMainFrame) {
     base::UmaHistogramSparse("Net.ErrorCodesForMainFrame4", -net_error);
     if (GURL::SchemeIsCryptographic(origin.scheme())) {
       if (origin.host() == "www.google.com") {
@@ -33,7 +33,7 @@ void RecordLoadHistograms(const url::Origin& origin,
       }
     }
   } else {
-    if (resource_type == ResourceType::kImage) {
+    if (resource_type == blink::mojom::ResourceType::kImage) {
       base::UmaHistogramSparse("Net.ErrorCodesForImages2", -net_error);
     }
     base::UmaHistogramSparse("Net.ErrorCodesForSubresources3", -net_error);

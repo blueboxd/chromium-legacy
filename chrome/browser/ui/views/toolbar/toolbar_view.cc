@@ -697,14 +697,12 @@ void ToolbarView::InitLayout() {
   // TODO(dfried): rename this constant.
   const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
   const views::FlexSpecification account_container_flex_rule =
-      views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kScaleToMinimum,
-          views::MaximumFlexSizeRule::kPreferred)
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
           .WithOrder(1);
   const views::FlexSpecification location_bar_flex_rule =
-      views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kScaleToMinimum,
-          views::MaximumFlexSizeRule::kUnbounded)
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(2);
   constexpr int kExtensionsFlexOrder = 3;
 
@@ -721,8 +719,7 @@ void ToolbarView::InitLayout() {
 
   if (browser_actions_) {
     const views::FlexSpecification browser_actions_flex_rule =
-        views::FlexSpecification::ForCustomRule(
-            BrowserActionsContainer::GetFlexRule())
+        views::FlexSpecification(BrowserActionsContainer::GetFlexRule())
             .WithOrder(kExtensionsFlexOrder);
 
     browser_actions_->SetProperty(views::kFlexBehaviorKey,
@@ -732,7 +729,7 @@ void ToolbarView::InitLayout() {
                                   gfx::Insets(0, location_bar_margin));
   } else if (extensions_container_) {
     const views::FlexSpecification extensions_flex_rule =
-        views::FlexSpecification::ForCustomRule(
+        views::FlexSpecification(
             extensions_container_->animating_layout_manager()
                 ->GetDefaultFlexRule())
             .WithOrder(kExtensionsFlexOrder);

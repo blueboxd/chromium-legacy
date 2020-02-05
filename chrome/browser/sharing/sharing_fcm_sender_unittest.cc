@@ -154,10 +154,13 @@ class SharingFCMSenderTest : public testing::Test {
  public:
   void OnMessageSent(SharingSendMessageResult* result_out,
                      base::Optional<std::string>* message_id_out,
+                     SharingChannelType* channel_type_out,
                      SharingSendMessageResult result,
-                     base::Optional<std::string> message_id) {
+                     base::Optional<std::string> message_id,
+                     SharingChannelType channel_type) {
     *result_out = result;
     *message_id_out = std::move(message_id);
+    *channel_type_out = channel_type;
   }
 
  protected:
@@ -211,15 +214,19 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
       fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(SharingSendMessageResult::kInternalError, result);
+  EXPECT_FALSE(message_id);
+  EXPECT_EQ(SharingChannelType::kUnknown, channel_type);
 }
 
 TEST_F(SharingFCMSenderTest, NoVapidKey) {
@@ -239,15 +246,19 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
       fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(SharingSendMessageResult::kInternalError, result);
+  EXPECT_FALSE(message_id);
+  EXPECT_EQ(SharingChannelType::kFcmVapid, channel_type);
 }
 
 TEST_F(SharingFCMSenderTest, NoChannelsSpecified) {
@@ -266,15 +277,19 @@ TEST_F(SharingFCMSenderTest, NoChannelsSpecified) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
       fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(SharingSendMessageResult::kDeviceNotFound, result);
+  EXPECT_FALSE(message_id);
+  EXPECT_EQ(SharingChannelType::kUnknown, channel_type);
 }
 
 TEST_F(SharingFCMSenderTest, SendViaSyncDisabled) {
@@ -296,15 +311,19 @@ TEST_F(SharingFCMSenderTest, SendViaSyncDisabled) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
       fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(SharingSendMessageResult::kDeviceNotFound, result);
+  EXPECT_FALSE(message_id);
+  EXPECT_EQ(SharingChannelType::kUnknown, channel_type);
 }
 
 struct WebPushResultTestData {
@@ -352,13 +371,15 @@ TEST_P(SharingFCMSenderWebPushResultTest, ResultTest) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
       fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(kSharingFCMAppID, fake_gcm_driver_.app_id());
   EXPECT_EQ(kAuthorizedEntity, fake_gcm_driver_.authorized_entity());
@@ -376,6 +397,7 @@ TEST_P(SharingFCMSenderWebPushResultTest, ResultTest) {
 
   EXPECT_EQ(GetParam().expected_result, result);
   EXPECT_EQ(kMessageId, message_id);
+  EXPECT_EQ(SharingChannelType::kFcmVapid, channel_type);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -424,13 +446,15 @@ TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
       fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(kSharingFCMAppID, fake_gcm_driver_.app_id());
   EXPECT_EQ(kSharingSenderID, fake_gcm_driver_.authorized_entity());
@@ -452,6 +476,7 @@ TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
 
   EXPECT_EQ(GetParam().expected_result, result);
   EXPECT_TRUE(message_id);
+  EXPECT_EQ(SharingChannelType::kFcmSenderId, channel_type);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -472,12 +497,14 @@ TEST_F(SharingFCMSenderTest, ServerTarget) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToServerTarget(
       server_channel, std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
 
   EXPECT_EQ(kSharingFCMAppID, fake_gcm_driver_.app_id());
   EXPECT_EQ(kSharingSenderID, fake_gcm_driver_.authorized_entity());
@@ -495,4 +522,5 @@ TEST_F(SharingFCMSenderTest, ServerTarget) {
 
   EXPECT_EQ(SharingSendMessageResult::kSuccessful, result);
   EXPECT_TRUE(message_id);
+  EXPECT_EQ(SharingChannelType::kServer, channel_type);
 }

@@ -26,9 +26,11 @@ EmbeddedTestServerAndroid::ConnectionListener::ConnectionListener(
 
 EmbeddedTestServerAndroid::ConnectionListener::~ConnectionListener() = default;
 
-void EmbeddedTestServerAndroid::ConnectionListener::AcceptedSocket(
-    const StreamSocket& socket) {
-  test_server_android_->AcceptedSocket(static_cast<const void*>(&socket));
+std::unique_ptr<StreamSocket>
+EmbeddedTestServerAndroid::ConnectionListener::AcceptedSocket(
+    std::unique_ptr<StreamSocket> socket) {
+  test_server_android_->AcceptedSocket(static_cast<const void*>(socket.get()));
+  return socket;
 }
 
 void EmbeddedTestServerAndroid::ConnectionListener::ReadFromSocket(

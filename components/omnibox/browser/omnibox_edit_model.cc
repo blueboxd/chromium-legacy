@@ -43,9 +43,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/strings/grit/components_strings.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
@@ -1080,7 +1078,6 @@ void OmniboxEditModel::ClearKeyword() {
 
     view_->OnAfterPossibleChange(false);
   }
-  view_->AnnounceText(l10n_util::GetStringUTF16(IDS_ACC_EXIT_SEARCH_MODE));
 }
 
 void OmniboxEditModel::OnSetFocus(bool control_down) {

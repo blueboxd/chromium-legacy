@@ -16,11 +16,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 using content::BrowserThread;
 
@@ -46,17 +46,17 @@ const char* const kFontMimeTypes[] = {"font/woff2",
 
 // Determines the ResourceType from the mime type, defaulting to the
 // |fallback| if the ResourceType could not be determined.
-content::ResourceType GetResourceTypeFromMimeType(
+blink::mojom::ResourceType GetResourceTypeFromMimeType(
     const std::string& mime_type,
-    content::ResourceType fallback) {
+    blink::mojom::ResourceType fallback) {
   if (mime_type.empty()) {
     return fallback;
   } else if (blink::IsSupportedImageMimeType(mime_type)) {
-    return content::ResourceType::kImage;
+    return blink::mojom::ResourceType::kImage;
   } else if (blink::IsSupportedJavascriptMimeType(mime_type)) {
-    return content::ResourceType::kScript;
+    return blink::mojom::ResourceType::kScript;
   } else if (net::MatchesMimeType("text/css", mime_type)) {
-    return content::ResourceType::kStylesheet;
+    return blink::mojom::ResourceType::kStylesheet;
   } else {
     bool found =
         std::any_of(std::begin(kFontMimeTypes), std::end(kFontMimeTypes),
@@ -64,23 +64,24 @@ content::ResourceType GetResourceTypeFromMimeType(
                       return net::MatchesMimeType(mime, mime_type);
                     });
     if (found)
-      return content::ResourceType::kFontResource;
+      return blink::mojom::ResourceType::kFontResource;
   }
   return fallback;
 }
 
 // Determines the resource type from the declared one, falling back to MIME
 // type detection when it is not explicit.
-content::ResourceType GetResourceType(content::ResourceType resource_type,
-                                      const std::string& mime_type) {
+blink::mojom::ResourceType GetResourceType(
+    blink::mojom::ResourceType resource_type,
+    const std::string& mime_type) {
   // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
   // of mime types, because these resource types don't communicate how the
   // resources will be used.
-  if (resource_type == content::ResourceType::kPrefetch ||
-      resource_type == content::ResourceType::kSubResource ||
-      resource_type == content::ResourceType::kXhr) {
-    return GetResourceTypeFromMimeType(mime_type,
-                                       content::ResourceType::kSubResource);
+  if (resource_type == blink::mojom::ResourceType::kPrefetch ||
+      resource_type == blink::mojom::ResourceType::kSubResource ||
+      resource_type == blink::mojom::ResourceType::kXhr) {
+    return GetResourceTypeFromMimeType(
+        mime_type, blink::mojom::ResourceType::kSubResource);
   }
   return resource_type;
 }
@@ -101,7 +102,7 @@ PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
     default;
 
 void PageRequestSummary::UpdateOrAddToOrigins(
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   for (const auto& redirect_info : resource_load_info.redirect_info_chain) {
     UpdateOrAddToOrigins(redirect_info->origin_of_new_url,
                          redirect_info->network_info);
@@ -112,7 +113,7 @@ void PageRequestSummary::UpdateOrAddToOrigins(
 
 void PageRequestSummary::UpdateOrAddToOrigins(
     const url::Origin& origin,
-    const content::mojom::CommonNetworkInfoPtr& network_info) {
+    const blink::mojom::CommonNetworkInfoPtr& network_info) {
   if (origin.opaque())
     return;
 
@@ -185,7 +186,7 @@ void LoadingDataCollector::RecordFinishNavigation(
 
 void LoadingDataCollector::RecordResourceLoadComplete(
     const NavigationID& navigation_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   auto nav_it = inflight_navigations_.find(navigation_id);
   if (nav_it == inflight_navigations_.end())
     return;
@@ -234,7 +235,7 @@ void LoadingDataCollector::RecordFirstContentfulPaint(
 
 bool LoadingDataCollector::ShouldRecordResourceLoad(
     const NavigationID& navigation_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) const {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) const {
   const GURL& url = resource_load_info.origin_of_final_url.GetURL();
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
@@ -261,15 +262,15 @@ bool LoadingDataCollector::ShouldRecordResourceLoad(
 
 // static
 bool LoadingDataCollector::IsHandledResourceType(
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     const std::string& mime_type) {
-  content::ResourceType actual_resource_type =
+  blink::mojom::ResourceType actual_resource_type =
       GetResourceType(resource_type, mime_type);
-  return actual_resource_type == content::ResourceType::kMainFrame ||
-         actual_resource_type == content::ResourceType::kStylesheet ||
-         actual_resource_type == content::ResourceType::kScript ||
-         actual_resource_type == content::ResourceType::kImage ||
-         actual_resource_type == content::ResourceType::kFontResource;
+  return actual_resource_type == blink::mojom::ResourceType::kMainFrame ||
+         actual_resource_type == blink::mojom::ResourceType::kStylesheet ||
+         actual_resource_type == blink::mojom::ResourceType::kScript ||
+         actual_resource_type == blink::mojom::ResourceType::kImage ||
+         actual_resource_type == blink::mojom::ResourceType::kFontResource;
 }
 
 void LoadingDataCollector::CleanupAbandonedNavigations(

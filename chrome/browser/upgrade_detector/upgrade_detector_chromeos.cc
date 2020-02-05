@@ -7,21 +7,18 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
-#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -48,69 +45,6 @@ constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(7);
 // from UPGRADE_ANNOYANCE_ELEVATED to UPGRADE_ANNOYANCE_HIGH in ms.
 constexpr base::TimeDelta kDefaultHeadsUpPeriod =
     base::TimeDelta::FromDays(3);  // 3 days.
-
-// The reason of the rollback used in the UpgradeDetector.RollbackReason
-// histogram.
-enum class RollbackReason {
-  kToMoreStableChannel = 0,
-  kEnterpriseRollback = 1,
-  kMaxValue = kEnterpriseRollback,
-};
-
-class ChannelsRequester {
- public:
-  typedef base::OnceCallback<void(std::string, std::string)>
-      OnChannelsReceivedCallback;
-
-  static void Begin(OnChannelsReceivedCallback callback) {
-    ChannelsRequester* instance = new ChannelsRequester(std::move(callback));
-    UpdateEngineClient* client =
-        DBusThreadManager::Get()->GetUpdateEngineClient();
-    // base::Unretained is safe because this instance keeps itself alive until
-    // both callbacks have run.
-    // TODO: use BindOnce here; see https://crbug.com/825993.
-    client->GetChannel(true /* get_current_channel */,
-                       base::Bind(&ChannelsRequester::SetCurrentChannel,
-                                  base::Unretained(instance)));
-    client->GetChannel(false /* get_current_channel */,
-                       base::Bind(&ChannelsRequester::SetTargetChannel,
-                                  base::Unretained(instance)));
-  }
-
- private:
-  explicit ChannelsRequester(OnChannelsReceivedCallback callback)
-      : callback_(std::move(callback)) {}
-
-  ~ChannelsRequester() = default;
-
-  void SetCurrentChannel(const std::string& current_channel) {
-    DCHECK(!current_channel.empty());
-    current_channel_ = current_channel;
-    TriggerCallbackAndDieIfReady();
-  }
-
-  void SetTargetChannel(const std::string& target_channel) {
-    DCHECK(!target_channel.empty());
-    target_channel_ = target_channel;
-    TriggerCallbackAndDieIfReady();
-  }
-
-  void TriggerCallbackAndDieIfReady() {
-    if (current_channel_.empty() || target_channel_.empty())
-      return;
-    if (!callback_.is_null()) {
-      std::move(callback_).Run(std::move(current_channel_),
-                               std::move(target_channel_));
-    }
-    delete this;
-  }
-
-  OnChannelsReceivedCallback callback_;
-  std::string current_channel_;
-  std::string target_channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelsRequester);
-};
 
 }  // namespace
 
@@ -145,7 +79,11 @@ void UpgradeDetectorChromeos::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void UpgradeDetectorChromeos::Init() {
+  UpgradeDetector::Init();
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
+  auto* const build_state = g_browser_process->GetBuildState();
+  build_state->AddObserver(this);
+  installed_version_updater_.emplace(build_state);
   initialized_ = true;
 }
 
@@ -153,10 +91,12 @@ void UpgradeDetectorChromeos::Shutdown() {
   // Init() may not be called from tests.
   if (!initialized_)
     return;
+  installed_version_updater_.reset();
+  g_browser_process->GetBuildState()->RemoveObserver(this);
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
-  // Discard an outstanding request to a ChannelsRequester.
   weak_factory_.InvalidateWeakPtrs();
   upgrade_notification_timer_.Stop();
+  UpgradeDetector::Shutdown();
   initialized_ = false;
 }
 
@@ -166,6 +106,19 @@ base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
 
 base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
   return high_deadline_;
+}
+
+void UpgradeDetectorChromeos::OnUpdate(const BuildState* build_state) {
+  if (upgrade_detected_time().is_null()) {
+    set_upgrade_detected_time(clock()->Now());
+    CalculateDeadlines();
+  }
+
+  set_is_rollback(build_state->update_type() ==
+                  BuildState::UpdateType::kEnterpriseRollback);
+  set_is_factory_reset_required(build_state->update_type() ==
+                                BuildState::UpdateType::kChannelSwitchRollback);
+  NotifyOnUpgrade();
 }
 
 // static
@@ -259,27 +212,7 @@ void UpgradeDetectorChromeos::OnRelaunchPrefChanged() {
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const update_engine::StatusResult& status) {
   if (status.current_operation() ==
-      update_engine::Operation::UPDATED_NEED_REBOOT) {
-    if (upgrade_detected_time().is_null()) {
-      set_upgrade_detected_time(clock()->Now());
-      CalculateDeadlines();
-    }
-
-    if (status.is_enterprise_rollback()) {
-      // Powerwash will be required, determine what kind of notification to show
-      // based on the channel.
-      ChannelsRequester::Begin(
-          base::BindOnce(&UpgradeDetectorChromeos::OnChannelsReceived,
-                         weak_factory_.GetWeakPtr()));
-    } else {
-      // Not going to an earlier version, no powerwash or rollback message is
-      // required.
-      set_is_rollback(false);
-      set_is_factory_reset_required(false);
-      NotifyOnUpgrade();
-    }
-  } else if (status.current_operation() ==
-             update_engine::Operation::NEED_PERMISSION_TO_UPDATE) {
+      update_engine::Operation::NEED_PERMISSION_TO_UPDATE) {
     // Update engine broadcasts this state only when update is available but
     // downloading over cellular connection requires user's agreement.
     NotifyUpdateOverCellularAvailable();
@@ -348,33 +281,6 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
       last_stage != UPGRADE_ANNOYANCE_NONE) {
     NotifyUpgrade();
   }
-}
-
-void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
-                                                 std::string target_channel) {
-  bool to_more_stable_channel = UpdateEngineClient::IsTargetChannelMoreStable(
-      current_channel, target_channel);
-  // As current update engine status is UPDATE_STATUS_UPDATED_NEED_REBOOT,
-  // if target channel is more stable than current channel, powerwash
-  // will be performed after reboot.
-  set_is_factory_reset_required(to_more_stable_channel);
-  // If we are doing a channel switch, we're currently showing the channel
-  // switch message instead of the rollback message (even if the channel switch
-  // was initiated by the admin).
-  // TODO(crbug.com/864672): Fix this by getting is_rollback from update engine.
-  set_is_rollback(!to_more_stable_channel);
-
-  UMA_HISTOGRAM_ENUMERATION("UpgradeDetector.RollbackReason",
-                            to_more_stable_channel
-                                ? RollbackReason::kToMoreStableChannel
-                                : RollbackReason::kEnterpriseRollback);
-  LOG(WARNING) << "Device is rolling back, will require powerwash. Reason: "
-               << to_more_stable_channel
-               << ", current_channel: " << current_channel
-               << ", target_channel: " << target_channel;
-
-  // ChromeOS shows upgrade arrow once the upgrade becomes available.
-  NotifyOnUpgrade();
 }
 
 // static

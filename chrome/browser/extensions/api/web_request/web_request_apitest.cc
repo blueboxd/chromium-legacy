@@ -1375,7 +1375,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
     request->resource_type =
-        static_cast<int>(content::ResourceType::kSubResource);
+        static_cast<int>(blink::mojom::ResourceType::kSubResource);
 
     auto* url_loader_factory =
         content::BrowserContext::GetDefaultStoragePartition(profile())

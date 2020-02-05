@@ -32,7 +32,6 @@ class Transform;
 
 namespace ui {
 
-class Event;
 class XScopedEventSelector;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,7 +237,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowWorkspaceChanged() = 0;
   virtual void OnXWindowLostPointerGrab() = 0;
   virtual void OnXWindowLostCapture() = 0;
-  virtual void OnXWindowEvent(ui::Event* event) = 0;
   virtual void OnXWindowSelectionEvent(XEvent* xev) = 0;
   virtual void OnXWindowDragDropEvent(XEvent* xev) = 0;
   virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;

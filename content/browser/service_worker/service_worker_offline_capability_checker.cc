@@ -87,7 +87,7 @@ void ServiceWorkerOfflineCapabilityChecker::DidFindRegistration(
   request->is_main_resource_load = true;
 
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::move(request), ResourceType::kMainFrame,
+      std::move(request), blink::mojom::ResourceType::kMainFrame,
       base::GenerateGUID() /* client_id */, std::move(preferred_version),
       base::DoNothing() /* prepare callback */,
       base::BindOnce(&ServiceWorkerOfflineCapabilityChecker::OnFetchResult,

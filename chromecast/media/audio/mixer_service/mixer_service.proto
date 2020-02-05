@@ -26,6 +26,16 @@ enum SampleFormat {
   SAMPLE_FORMAT_FLOAT_P = 5;
 }
 
+enum ChannelLayout {
+  CHANNEL_LAYOUT_NONE = 0;
+  CHANNEL_LAYOUT_MONO = 1;
+  CHANNEL_LAYOUT_STEREO = 2;
+  CHANNEL_LAYOUT_5_1 = 3;
+  // CHANNEL_LAYOUT_BITSTREAM not supported.
+  reserved 4;
+  CHANNEL_LAYOUT_DISCRETE = 5;
+}
+
 message OutputStreamParams {
   enum StreamType {
     STREAM_TYPE_DEFAULT = 0;
@@ -40,13 +50,13 @@ message OutputStreamParams {
 
   optional int32 sample_rate = 5;
   optional int32 num_channels = 6;
-  optional sint32 channel_selection = 7 [default = -1];
+  optional ChannelLayout channel_layout = 7;
+  optional sint32 channel_selection = 8 [default = -1];
 
-  optional int32 fill_size_frames = 8;
-  optional int32 start_threshold_frames = 9;
-  optional int32 max_buffered_frames = 10;
+  optional int32 fill_size_frames = 9;
+  optional int32 start_threshold_frames = 10;
+  optional int32 max_buffered_frames = 11;
 
-  optional bool use_fader = 11;
   optional int32 fade_frames = 12;
 
   // If |true|, playback will not start until a start timestamp has been
@@ -141,8 +151,9 @@ message StreamInterruption {
 message RedirectionRequest {
   optional int32 order = 1;
   optional int32 num_channels = 2;
-  optional bool apply_volume = 3;
-  optional int64 extra_delay_microseconds = 4;
+  optional ChannelLayout channel_layout = 3;
+  optional bool apply_volume = 4;
+  optional int64 extra_delay_microseconds = 5;
 }
 
 // Sets the patterns to determine which audio output streams should be

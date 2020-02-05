@@ -6,7 +6,9 @@
 #define CHROMEOS_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_
 
 #include <cstdint>
+#include <string>
 
+#include "base/optional.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 
 namespace chromeos {
@@ -68,6 +70,15 @@ class ServiceConnection {
   // details.
   virtual void RunSmartctlCheckRoutine(
       mojom::CrosHealthdDiagnosticsService::RunSmartctlCheckRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the AC power routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunAcPowerRoutine(
+      mojom::AcPowerStatusEnum expected_status,
+      const base::Optional<std::string>& expected_power_type,
+      mojom::CrosHealthdDiagnosticsService::RunAcPowerRoutineCallback
           callback) = 0;
 
   // Gather pieces of information about the platform. See

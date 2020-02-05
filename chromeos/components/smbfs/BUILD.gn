@@ -11,10 +11,10 @@ component("smbfs") {
     "smbfs_mounter.cc",
     "smbfs_mounter.h",
   ]
+  public_deps = [ "//chromeos/components/smbfs/mojom" ]
   deps = [
     "//base",
     "//chromeos/components/mojo_bootstrap",
-    "//chromeos/components/smbfs/mojom",
     "//chromeos/disks",
     "//mojo/public/cpp/bindings",
     "//net",

@@ -149,11 +149,6 @@ const char kAutofillAssistantChromeEntryName[] = "AutofillAssistantChromeEntry";
 const char kAutofillAssistantChromeEntryDescription[] =
     "Initiate autofill assistant from within Chrome.";
 
-extern const char kAutofillAssistantDirectActionsName[] =
-    "Autofill Assistant direct actions";
-extern const char kAutofillAssistantDirectActionsDescription[] =
-    "When enabled, expose direct actions from the Autofill Assistant.";
-
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =
@@ -2209,6 +2204,11 @@ const char kAutofillAccessoryViewName[] =
 const char kAutofillAccessoryViewDescription[] =
     "Shows Autofill suggestions on top of the keyboard rather than in a "
     "dropdown.";
+
+const char kAutofillAssistantDirectActionsName[] =
+    "Autofill Assistant direct actions";
+const char kAutofillAssistantDirectActionsDescription[] =
+    "When enabled, expose direct actions from the Autofill Assistant.";
 
 const char kAutofillTouchToFillName[] = "Touch To Fill UI for Passwords";
 const char kAutofillTouchToFillDescription[] =

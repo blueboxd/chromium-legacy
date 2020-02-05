@@ -242,8 +242,10 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     // to run.
   }
 
-  if (needs_style_and_layout)
-    frame_->GetDocument()->UpdateStyleAndLayout();
+  if (needs_style_and_layout) {
+    frame_->GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kFindInPage);
+  }
 
   metrics_->DidFindMatch(PlainText(range));
   did_find_match_ = true;

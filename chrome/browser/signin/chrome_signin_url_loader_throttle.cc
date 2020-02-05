@@ -29,7 +29,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
     return throttle_->web_contents_getter_;
   }
 
-  content::ResourceType GetResourceType() const override {
+  blink::mojom::ResourceType GetResourceType() const override {
     return throttle_->request_resource_type_;
   }
 
@@ -90,7 +90,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 
   bool IsMainFrame() const override {
     return throttle_->request_resource_type_ ==
-           content::ResourceType::kMainFrame;
+           blink::mojom::ResourceType::kMainFrame;
   }
 
   GURL GetOrigin() const override {
@@ -143,7 +143,7 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
   request_url_ = request->url;
   request_referrer_ = request->referrer;
   request_resource_type_ =
-      static_cast<content::ResourceType>(request->resource_type);
+      static_cast<blink::mojom::ResourceType>(request->resource_type);
 
   net::HttpRequestHeaders modified_request_headers;
   std::vector<std::string> to_be_removed_request_headers;

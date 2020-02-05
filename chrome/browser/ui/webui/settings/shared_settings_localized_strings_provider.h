@@ -17,6 +17,23 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source);
 // Adds strings used by the <settings-personalization-options> element.
 void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source);
 
+// Adds strings used by the <settings-signout-dialog> element.
+void AddSignOutDialogStrings(content::WebUIDataSource* html_source);
+
+// Adds strings used by the <settings-sync-controls> element.
+void AddSyncControlsStrings(content::WebUIDataSource* html_source);
+
+// Adds strings used by the <settings-sync-account-control> element.
+void AddSyncAccountControlStrings(content::WebUIDataSource* html_source);
+
+#if defined(OS_CHROMEOS)
+// Adds strings used by the <settings-password-prompt-dialog> element.
+void AddPasswordPromptDialogStrings(content::WebUIDataSource* html_source);
+#endif
+
+// Adds strings used by the <settings-sync-page> element.
+void AddSyncPageStrings(content::WebUIDataSource* html_source);
+
 }  // namespace settings
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_SHARED_SETTINGS_LOCALIZED_STRINGS_PROVIDER_H_

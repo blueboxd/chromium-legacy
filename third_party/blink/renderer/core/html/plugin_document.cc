@@ -135,7 +135,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
 
   To<PluginDocument>(GetDocument())->SetPluginNode(embed_element_);
 
-  GetDocument()->UpdateStyleAndLayout();
+  GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kPlugin);
 
   // We need the plugin to load synchronously so we can get the
   // WebPluginContainerImpl below so flush the layout tasks now instead of

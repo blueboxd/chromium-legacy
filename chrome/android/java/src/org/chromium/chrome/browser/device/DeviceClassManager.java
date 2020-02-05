@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.device;
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -46,7 +46,7 @@ public class DeviceClassManager {
         if (SysUtils.isLowEndDevice()) {
             mEnableLayerDecorationCache = true;
             mEnableAccessibilityLayout =
-                    !FeatureUtilities.isTabGroupsAndroidContinuationChromeFlagEnabled()
+                    !CachedFeatureFlags.isTabGroupsAndroidContinuationChromeFlagEnabled()
                     || !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
             mEnableAnimations = false;
             mEnablePrerendering = false;

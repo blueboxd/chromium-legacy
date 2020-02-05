@@ -213,7 +213,8 @@ using content::RenderViewHost;
   // spellcheck_platform::IgnoreWord assumes that is the correct tag.
   NSString* wordToIgnore = [sender stringValue];
   if (wordToIgnore != nil)
-    spellcheck_platform::IgnoreWord(base::SysNSStringToUTF16(wordToIgnore));
+    spellcheck_platform::IgnoreWord(nullptr,
+                                    base::SysNSStringToUTF16(wordToIgnore));
 }
 
 - (void)showGuessPanel:(id)sender {

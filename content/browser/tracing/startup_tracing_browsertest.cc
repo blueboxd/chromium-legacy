@@ -61,6 +61,14 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
 #endif
   }
 
+  void PreRunTestOnMainThread() override {
+    // Ensure that the file is written quickly for these tests.
+    TracingControllerImpl::GetInstance()
+        ->set_startup_file_endpoint_priority_for_testing(
+            base::TaskPriority::USER_BLOCKING);
+    ContentBrowserTest::PreRunTestOnMainThread();
+  }
+
  protected:
   base::FilePath temp_file_path_;
 
@@ -68,9 +76,9 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CommandlineStartupTracingTest);
 };
 
-// Failing on Android ASAN, Linux TSAN and Windows 10. crbug.com/1041392
+// Failing on Android ASAN, Linux TSAN. crbug.com/1041392
 #if (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_LINUX) && defined(THREAD_SANITIZER)) || defined(OS_WIN)
+    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define MAYBE_TestStartupTracing DISABLED_TestStartupTracing
 #else
 #define MAYBE_TestStartupTracing TestStartupTracing
@@ -180,6 +188,15 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
     tracing::EnableStartupTracingIfNeeded();
     command_line->AppendSwitchASCII(switches::kPerfettoOutputFile,
                                     temp_file_path_.AsUTF8Unsafe());
+  }
+
+  void PreRunTestOnMainThread() override {
+    // Ensure that the file is written quickly for these tests.
+    TracingControllerImpl::GetInstance()
+        ->perfetto_file_tracer_for_testing()
+        ->SetBackgroundTaskPriorityForTesting(
+            base::TaskPriority::USER_BLOCKING);
+    ContentBrowserTest::PreRunTestOnMainThread();
   }
 
  protected:

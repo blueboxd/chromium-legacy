@@ -2184,7 +2184,7 @@ TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   ASSERT_TRUE(graphics_layer);
 
   div->setAttribute(html_names::kClassAttr, "hide");
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(paint_layer->GetScrollableArea());
 }
@@ -2619,7 +2619,7 @@ TEST_F(ScrollbarsTest, CheckScrollCornerIfThereIsNoScrollbar) {
 
   // Make the container non-scrollable so the scrollbar and corner disappear.
   element->setAttribute(html_names::kStyleAttr, "width: 100px;");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(scrollable_container->HasScrollbar());
   EXPECT_FALSE(scrollable_container->ScrollCorner());

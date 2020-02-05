@@ -19,13 +19,13 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 using content::NavigationSimulator;
 
@@ -46,18 +46,18 @@ void PopulatePageLoadTiming(mojom::PageLoadTiming* timing) {
   timing->parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
 }
 
-content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
+blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const GURL& url,
-    content::ResourceType resource_type) {
-  content::mojom::ResourceLoadInfoPtr resource_load_info =
-      content::mojom::ResourceLoadInfo::New();
+    blink::mojom::ResourceType resource_type) {
+  blink::mojom::ResourceLoadInfoPtr resource_load_info =
+      blink::mojom::ResourceLoadInfo::New();
   resource_load_info->origin_of_final_url = url::Origin::Create(url);
   resource_load_info->original_url = url;
   resource_load_info->resource_type = resource_type;
   resource_load_info->was_cached = false;
   resource_load_info->raw_body_bytes = 0;
   resource_load_info->net_error = net::OK;
-  resource_load_info->network_info = content::mojom::CommonNetworkInfo::New();
+  resource_load_info->network_info = blink::mojom::CommonNetworkInfo::New();
   resource_load_info->network_info->remote_endpoint = net::IPEndPoint();
   resource_load_info->load_timing_info.request_start = base::TimeTicks::Now();
   return resource_load_info;
@@ -1365,7 +1365,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), request_id,
       *CreateResourceLoadInfo(main_resource_url,
-                              content::ResourceType::kMainFrame));
+                              blink::mojom::ResourceType::kMainFrame));
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(url::Origin::Create(main_resource_url),
             loaded_resources().back().origin_of_final_url);
@@ -1377,7 +1377,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), request_id,
       *CreateResourceLoadInfo(main_resource_url,
-                              content::ResourceType::kMainFrame));
+                              blink::mojom::ResourceType::kMainFrame));
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(url::Origin::Create(main_resource_url),
             loaded_resources().back().origin_of_final_url);
@@ -1391,7 +1391,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), content::GlobalRequestID(),
       *CreateResourceLoadInfo(loaded_resource_url,
-                              content::ResourceType::kScript));
+                              blink::mojom::ResourceType::kScript));
 
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(url::Origin::Create(loaded_resource_url),
@@ -1416,7 +1416,7 @@ TEST_F(MetricsWebContentsObserverTest,
   observer()->ResourceLoadComplete(
       other_web_contents->GetMainFrame(), content::GlobalRequestID(),
       *CreateResourceLoadInfo(GURL("http://www.other.com/"),
-                              content::ResourceType::kScript));
+                              blink::mojom::ResourceType::kScript));
 
   EXPECT_TRUE(loaded_resources().empty());
 }
@@ -1430,7 +1430,7 @@ TEST_F(MetricsWebContentsObserverTest,
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), content::GlobalRequestID(),
       *CreateResourceLoadInfo(loaded_resource_url,
-                              content::ResourceType::kScript));
+                              blink::mojom::ResourceType::kScript));
 
   EXPECT_TRUE(loaded_resources().empty());
 }

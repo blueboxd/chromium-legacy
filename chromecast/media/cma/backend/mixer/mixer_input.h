@@ -14,6 +14,7 @@
 #include "chromecast/media/base/slew_volume.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
+#include "media/base/channel_layout.h"
 
 namespace media {
 class AudioBus;
@@ -48,6 +49,7 @@ class MixerInput {
 
     // TODO(b/139311908) Track channel layout.
     virtual size_t num_channels() const = 0;
+    virtual ::media::ChannelLayout channel_layout() const = 0;
     virtual int sample_rate() const = 0;
     virtual bool primary() = 0;
     virtual const std::string& device_id() = 0;
@@ -96,6 +98,7 @@ class MixerInput {
 
   Source* source() const { return source_; }
   int num_channels() const { return num_channels_; }
+  ::media::ChannelLayout channel_layout() const { return channel_layout_; }
   int input_samples_per_second() const { return input_samples_per_second_; }
   int output_samples_per_second() const { return output_samples_per_second_; }
   bool primary() const { return primary_; }
@@ -156,6 +159,7 @@ class MixerInput {
 
   Source* const source_;
   const int num_channels_;
+  const ::media::ChannelLayout channel_layout_;
   const int input_samples_per_second_;
   const int output_samples_per_second_;
   const bool primary_;

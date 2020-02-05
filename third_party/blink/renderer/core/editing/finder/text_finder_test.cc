@@ -76,7 +76,7 @@ WebFloatRect TextFinderTest::FindInPageRect(Node* start_container,
 
 TEST_F(TextFinderTest, FindTextSimple) {
   GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Node* text_node = GetDocument().body()->firstChild();
 
   int identifier = 0;
@@ -151,7 +151,7 @@ TEST_F(TextFinderTest, FindTextSimple) {
 
 TEST_F(TextFinderTest, FindTextAutosizing) {
   GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
@@ -170,7 +170,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
       IntSize(20, 20));
   GetDocument().GetTextAutosizer()->UpdatePageInfo();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // In case of autosizing, scale _should_ change
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
@@ -182,7 +182,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   visual_viewport.SetScale(20);
   GetDocument().GetSettings()->SetTextAutosizingEnabled(false);
   GetDocument().GetTextAutosizer()->UpdatePageInfo();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame));
@@ -192,7 +192,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
 
 TEST_F(TextFinderTest, FindTextNotFound) {
   GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("Boo"));
@@ -214,7 +214,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   Node* text_in_u_element = shadow_root.childNodes()->item(1)->firstChild();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("foo"));
@@ -309,7 +309,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
 
 TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
   GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -332,7 +332,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
   // Modify the document size and ensure the cached match rects are recomputed
   // to reflect the updated layout.
   GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 2000px");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
@@ -342,7 +342,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
 
 TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
   GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -376,7 +376,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   Node* text_in_u_element = shadow_root.childNodes()->item(1)->firstChild();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("fOO"));
@@ -404,7 +404,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
 
 TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
   GetDocument().body()->SetInnerHTMLFromString("ab ab ab ab ab");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -427,7 +427,7 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
 
 TEST_F(TextFinderTest, OverlappingMatches) {
   GetDocument().body()->SetInnerHTMLFromString("aababaa");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -450,7 +450,7 @@ TEST_F(TextFinderTest, OverlappingMatches) {
 
 TEST_F(TextFinderTest, SequentialMatches) {
   GetDocument().body()->SetInnerHTMLFromString("ababab");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -474,7 +474,7 @@ TEST_F(TextFinderTest, SequentialMatches) {
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   GetDocument().body()->SetInnerHTMLFromString("<b>XXXXFindMeYYYY</b><i></i>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
@@ -500,7 +500,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
   i_element->SetInnerHTMLFromString("ZZFindMe");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame, &active_now));
@@ -531,7 +531,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   GetDocument().body()->SetInnerHTMLFromString("<b>XXXXYYYY</b><i></i>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
@@ -554,7 +554,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
   i_element->SetInnerHTMLFromString("ZZFindMe");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame, &active_now));
@@ -594,7 +594,7 @@ TEST_F(TextFinderTest, ScopeWithTimeouts) {
   }
 
   GetDocument().body()->SetInnerHTMLFromString(text.ToString());
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   auto find_options =

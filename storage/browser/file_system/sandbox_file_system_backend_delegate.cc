@@ -335,8 +335,8 @@ SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
     return nullptr;
   const UpdateObserverList* observers = GetUpdateObservers(type);
   DCHECK(observers);
-  return std::make_unique<SandboxFileStreamWriter>(
-      context, url, offset, *observers);
+  return std::make_unique<SandboxFileStreamWriter>(context, url, offset,
+                                                   *observers);
 }
 
 base::File::Error
@@ -346,8 +346,8 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     const GURL& origin_url,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  int64_t usage =
-      GetOriginUsageOnFileTaskRunner(file_system_context, origin_url, type);
+  int64_t usage = GetOriginUsageOnFileTaskRunner(
+      file_system_context, url::Origin::Create(origin_url), type);
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
       url::Origin::Create(origin_url), GetTypeString(type));
@@ -410,17 +410,18 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
 
 int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* file_system_context,
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
 
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
-  if (base::Contains(sticky_dirty_origins_, std::make_pair(origin_url, type)))
-    return RecalculateUsage(file_system_context, origin_url, type);
+  if (base::Contains(sticky_dirty_origins_,
+                     std::make_pair(origin.GetURL(), type)))
+    return RecalculateUsage(file_system_context, origin.GetURL(), type);
 
   base::FilePath base_path =
-      GetBaseDirectoryForOriginAndType(origin_url, type, false);
+      GetBaseDirectoryForOriginAndType(origin.GetURL(), type, false);
   if (base_path.empty() ||
       !obfuscated_file_util()->delegate()->DirectoryExists(base_path)) {
     return 0;
@@ -432,7 +433,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
   uint32_t dirty_status = 0;
   bool dirty_status_available =
       usage_cache()->GetDirty(usage_file_path, &dirty_status);
-  bool visited = !visited_origins_.insert(origin_url).second;
+  bool visited = !visited_origins_.insert(origin.GetURL()).second;
   if (is_valid && (dirty_status == 0 || (dirty_status_available && visited))) {
     // The usage cache is clean (dirty == 0) or the origin is already
     // initialized and running.  Read the cache file to get the usage.
@@ -443,7 +444,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
   // Get the directory size now and update the cache.
   usage_cache()->Delete(usage_file_path);
 
-  int64_t usage = RecalculateUsage(file_system_context, origin_url, type);
+  int64_t usage = RecalculateUsage(file_system_context, origin.GetURL(), type);
 
   // This clears the dirty flag too.
   usage_cache()->UpdateUsage(usage_file_path, usage);

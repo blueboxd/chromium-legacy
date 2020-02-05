@@ -50,8 +50,10 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
               ->GetScopedForcedUpdate());
     }
   }
-  if (!scoped_forced_update_list_.IsEmpty())
-    range.GetDocument().UpdateStyleAndLayout();
+  if (!scoped_forced_update_list_.IsEmpty()) {
+    range.GetDocument().UpdateStyleAndLayout(
+        DocumentUpdateReason::kDisplayLock);
+  }
   return !scoped_forced_update_list_.IsEmpty();
 }
 

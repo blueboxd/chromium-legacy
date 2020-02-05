@@ -67,9 +67,9 @@ TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
       "<button></button>"
       "</ruby");
   Element* body = GetDocument().body();
-  // The bug does't reproduce with a contenteditable <div> as container.
+  // The bug doesn't reproduce with a contenteditable <div> as container.
   body->setAttribute(html_names::kContenteditableAttr, "true");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Selection().SelectAll();
 
   auto* style =

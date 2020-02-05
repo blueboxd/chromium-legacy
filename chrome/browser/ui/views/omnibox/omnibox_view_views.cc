@@ -888,10 +888,6 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
 #endif
 }
 
-void OmniboxViewViews::AnnounceText(const base::string16& message) {
-  GetViewAccessibility().AnnounceText(message);
-}
-
 void OmniboxViewViews::SelectAllForUserGesture() {
   if (base::FeatureList::IsEnabled(omnibox::kOneClickUnelide) &&
       UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {

@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -183,8 +183,8 @@ public class ToolbarButtonInProductHelpController
 
     // Private methods.
     private static int getDataReductionMenuItemHighlight() {
-        return FeatureUtilities.isBottomToolbarEnabled() ? R.id.data_reduction_menu_item
-                                                         : R.id.app_menu_footer;
+        return CachedFeatureFlags.isBottomToolbarEnabled() ? R.id.data_reduction_menu_item
+                                                           : R.id.app_menu_footer;
     }
 
     // Attempts to show an IPH text bubble for data saver detail.

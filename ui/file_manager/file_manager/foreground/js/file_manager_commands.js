@@ -972,14 +972,18 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = new class extends Command {
 CommandHandler.COMMANDS_['delete'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-    this.deleteEntries_(entries, fileManager);
+
+    // Execute might be called without a call of canExecute method, e.g.,
+    // called directly from code, crbug.com/509483. See toolbar controller
+    // delete button handling, for an example.
+    this.deleteEntries(entries, fileManager);
   }
 
   /** @override */
   canExecute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
-    // If entries contain fake or root entry, hide delete option.
+    // If entries contain fake or root entry, remove delete option.
     if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
             null, fileManager.volumeManager))) {
       event.canExecute = false;
@@ -989,25 +993,26 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
 
     event.canExecute = this.canDeleteEntries_(entries, fileManager);
 
-    // Hide if there isn't anything selected, meaning user clicked in an empty
+    // Remove if nothing is selected, e.g. user clicked in an empty
     // space in the file list.
     const noEntries = entries.length === 0;
     event.command.setHidden(noEntries);
   }
 
   /**
-   * Delete the entries with an optional delete confirm dialog.
+   * Delete the entries (if the entries can be deleted).
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
    * @param {?FilesConfirmDialog} dialog An optional delete confirm dialog.
+   *    The default delete confirm dialog will be used if |dialog| is null.
+   * @public
    */
-  deleteEntries_(entries, fileManager, dialog = null) {
-    // deleteEntries_ might be called without a call of canDeleteEntries_
-    // method, e.g. called directly from code. Double check here not to delete
-    // undeletable entries.
+  deleteEntries(entries, fileManager, dialog = null) {
+    // Verify that the entries are not fake or root entries, and that they
+    // can be deleted.
     if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
             null, fileManager.volumeManager)) ||
-        this.containsReadOnlyEntry_(entries, fileManager)) {
+        !this.canDeleteEntries_(entries, fileManager)) {
       return;
     }
 
@@ -1028,10 +1033,12 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
   }
 
   /**
-   * Returns true if all entries can be deleted.
+   * Returns true if all entries can be deleted Note: This does not check for
+   * root or fake entries.
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
    * @return {boolean}
+   * @private
    */
   canDeleteEntries_(entries, fileManager) {
     return entries.length > 0 &&
@@ -1041,11 +1048,12 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
   }
 
   /**
-   * Returns True if any entry belongs to a read-only volume or is
+   * Returns true if any entry belongs to a read-only volume or is
    * forced to be read-only like MyFiles>Downloads.
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
-   * @return {boolean} True if entries contain read only entry.
+   * @return {boolean}
+   * @private
    */
   containsReadOnlyEntry_(entries, fileManager) {
     return entries.some(entry => {

@@ -561,6 +561,12 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_REMOVE},
       {"crostiniSharedPathsRemoveSharing",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_SHARING},
+      {"crostiniSharedPathsRemoveFailureDialogMessage",
+       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE},
+      {"crostiniSharedPathsRemoveFailureDialogTitle",
+       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_FAILURE_DIALOG_TITLE},
+      {"crostiniSharedPathsRemoveFailureTryAgain",
+       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_FAILURE_TRY_AGAIN},
       {"crostiniSharedPathsListEmptyMessage",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_EMPTY_MESSAGE},
       {"crostiniExportImportTitle", IDS_SETTINGS_CROSTINI_EXPORT_IMPORT_TITLE},
@@ -641,7 +647,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("isEnterpriseManaged",
                           IsDeviceManaged() || IsProfileManaged(profile));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
-                          crostini::ShouldAllowContainerUpgrade());
+                          crostini::ShouldAllowContainerUpgrade(profile));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,

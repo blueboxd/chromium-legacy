@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/frame_impl.h"
 
+#include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 
@@ -27,6 +28,7 @@
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/fuchsia_layout_manager.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -34,7 +36,6 @@
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 #include "ui/aura/client/window_parenting_client.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/ime/input_method_base.h"
@@ -62,60 +63,6 @@ constexpr char kPopupCreationInfo[] = "popup-creation-info";
 class PopupFrameCreationInfoUserData : public base::SupportsUserData::Data {
  public:
   fuchsia::web::PopupFrameCreationInfo info;
-};
-
-// Layout manager used for the root window that hosts the WebContents window.
-// The main WebContents window is stretched to occupy the whole parent. Note
-// that the root window may host other windows (particularly menus for drop-down
-// boxes). These windows get the location and size they request. The main
-// window for the web content is identified by window.type() ==
-// WINDOW_TYPE_CONTROL (set in WebContentsViewAura).
-class LayoutManagerImpl : public aura::LayoutManager {
- public:
-  LayoutManagerImpl() = default;
-  ~LayoutManagerImpl() override = default;
-
-  // aura::LayoutManager implementation.
-  void OnWindowResized() override {
-    // Resize the child to match the size of the parent.
-    if (main_child_) {
-      SetChildBoundsDirect(main_child_,
-                           gfx::Rect(main_child_->parent()->bounds().size()));
-    }
-  }
-
-  void OnWindowAddedToLayout(aura::Window* child) override {
-    if (child->type() == aura::client::WINDOW_TYPE_CONTROL) {
-      DCHECK(!main_child_);
-      main_child_ = child;
-      SetChildBoundsDirect(main_child_,
-                           gfx::Rect(main_child_->parent()->bounds().size()));
-    }
-  }
-
-  void OnWillRemoveWindowFromLayout(aura::Window* child) override {
-    if (child->type() == aura::client::WINDOW_TYPE_CONTROL) {
-      DCHECK_EQ(child, main_child_);
-      main_child_ = nullptr;
-    }
-  }
-
-  void OnWindowRemovedFromLayout(aura::Window* child) override {}
-
-  void OnChildWindowVisibilityChanged(aura::Window* child,
-                                      bool visible) override {}
-
-  void SetChildBounds(aura::Window* child,
-                      const gfx::Rect& requested_bounds) override {
-    if (child != main_child_)
-      SetChildBoundsDirect(child, requested_bounds);
-  }
-
- private:
-  // The main window used for the WebContents.
-  aura::Window* main_child_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
 
 class FrameFocusRules : public wm::BaseFocusRules {
@@ -791,7 +738,12 @@ void FrameImpl::SetWindowTreeHost(
   aura::client::SetFocusClient(root_window(), focus_controller_.get());
 
   wm::SetActivationClient(root_window(), focus_controller_.get());
-  root_window()->SetLayoutManager(new LayoutManagerImpl());
+
+  layout_manager_ = new FuchsiaLayoutManager;
+  root_window()->SetLayoutManager(layout_manager_);  // Transfers ownership.
+  if (!render_size_override_.IsEmpty())
+    layout_manager_->ForceContentDimensions(render_size_override_);
+
   root_window()->AddChild(web_contents_->GetNativeView());
   web_contents_->GetNativeView()->Show();
 
@@ -800,6 +752,27 @@ void FrameImpl::SetWindowTreeHost(
 
 void FrameImpl::SetMediaSessionId(uint64_t session_id) {
   audio_consumer_provider_service_.set_session_id(session_id);
+}
+
+void FrameImpl::ForceContentDimensions(
+    std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) {
+  if (!web_dips) {
+    render_size_override_ = {};
+    if (layout_manager_)
+      layout_manager_->ForceContentDimensions({});
+    return;
+  }
+
+  gfx::Size web_dips_converted(web_dips->x, web_dips->y);
+  if (web_dips_converted.IsEmpty()) {
+    LOG(WARNING) << "Rejecting zero-area size for ForceContentDimensions().";
+    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  render_size_override_ = web_dips_converted;
+  if (layout_manager_)
+    layout_manager_->ForceContentDimensions(web_dips_converted);
 }
 
 void FrameImpl::CloseContents(content::WebContents* source) {

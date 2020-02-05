@@ -337,6 +337,7 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
   }
   MountInternal(provider_options, parsed_url, options.display_name, username,
                 workgroup, password, use_kerberos, save_credentials,
+                false /* skip_connect */,
                 base::BindOnce(&SmbService::MountInternalDone,
                                base::Unretained(this), std::move(callback),
                                should_open_file_manager_after_mount));
@@ -372,6 +373,7 @@ void SmbService::MountInternal(
     const std::string& password,
     bool use_kerberos,
     bool save_credentials,
+    bool skip_connect,
     MountInternalCallback callback) {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
@@ -423,6 +425,7 @@ void SmbService::MountInternal(
     smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
     smb_mount_options.save_password = save_credentials && !use_kerberos;
     smb_mount_options.account_hash = user->username_hash();
+    smb_mount_options.skip_connect = skip_connect;
     GetSmbProviderClient()->Mount(
         base::FilePath(url), smb_mount_options, MakeFdWithContents(password),
         base::BindOnce(&SmbService::OnProviderMountDone, AsWeakPtr(),
@@ -541,8 +544,7 @@ void SmbService::OnHostsDiscovered(
     Remount(file_system);
   }
   for (const auto& url : preconfigured_shares) {
-    const base::FilePath share_path(share_finder_->GetResolvedUrl(url));
-    Premount(share_path);
+    MountPreconfiguredShare(url);
   }
 }
 
@@ -634,42 +636,34 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
   mount_id_map_[file_system_id] = mount_id;
 }
 
-void SmbService::Premount(const base::FilePath& share_path) {
-  // Premounting is equivalent to remounting, but with an empty username and
-  // password.
-  SmbProviderClient::MountOptions smb_mount_options;
-  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
-  smb_mount_options.skip_connect = true;
-  GetSmbProviderClient()->Mount(
-      share_path, smb_mount_options, MakeFdWithContents(""),
-      base::BindOnce(&SmbService::OnPremountResponse, AsWeakPtr(), share_path));
-}
-
-void SmbService::OnPremountResponse(const base::FilePath& share_path,
-                                    smbprovider::ErrorType error,
-                                    int32_t mount_id) {
-  DCHECK_GE(mount_id, 0);
-
+void SmbService::MountPreconfiguredShare(const SmbUrl& share_url) {
   file_system_provider::MountOptions mount_options;
-  mount_options.display_name = share_path.BaseName().value();
+  mount_options.display_name =
+      base::FilePath(share_url.ToString()).BaseName().value();
   mount_options.writable = true;
   // |is_chromad_kerberos| is false because we do not pass user and workgroup
   // at mount time. Premounts also do not get remounted and currently
   // |is_chromad_kerberos| is only used at remounts to determine if the share
   // was mounted with chromad kerberos.
-  // TODO(jimmyxgong): Support chromad kerberos for premount.
-  mount_options.file_system_id =
-      CreateFileSystemId(share_path, false /* is_chromad_kerberos */);
+  // TODO(crbug.com/922269): Support kerberos for preconfigured shares.
+  mount_options.file_system_id = CreateFileSystemId(
+      base::FilePath(share_url.ToString()), false /* is_chromad_kerberos */);
   // Disable remounting of preconfigured shares.
   mount_options.persistent = false;
-  mount_id_map_[mount_options.file_system_id] = mount_id;
 
-  const base::File::Error result =
-      GetProviderService()->MountFileSystem(provider_id_, mount_options);
+  // Note: Preconfigured shares are mounted without credentials.
+  MountInternal(
+      mount_options, share_url, mount_options.display_name, "" /* username */,
+      "" /* workgroup */, "" /* password */, false /* use_kerberos */,
+      false /* save_credentials */, true /* skip_connect */,
+      base::BindOnce(&SmbService::OnMountPreconfiguredShareDone, AsWeakPtr()));
+}
 
-  if (result != base::File::FILE_OK) {
-    LOG(ERROR) << "Error mounting preconfigured share with File Manager.";
-  }
+void SmbService::OnMountPreconfiguredShareDone(
+    SmbMountResult result,
+    const base::FilePath& mount_path) {
+  LOG_IF(ERROR, result != SmbMountResult::kSuccess)
+      << "Error mounting preconfigured share: " << static_cast<int>(result);
 }
 
 bool SmbService::IsKerberosEnabledViaPolicy() const {

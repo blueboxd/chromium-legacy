@@ -852,19 +852,10 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   int minimum_draw_occlusion_width =
       settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
 
-  for (const auto& pass : frame->render_pass_list) {
-    // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
-    // draw occlusion on render pass.
-    if (!pass->filters.IsEmpty() || !pass->backdrop_filters.IsEmpty()) {
-      continue;
-    }
-
-    // TODO(yiyix): Perform draw occlusion inside the render pass with
-    // transparent background.
-    if (pass != frame->render_pass_list.back()) {
-      continue;
-    }
-
+  const auto& pass = frame->render_pass_list.back();
+  // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
+  // draw occlusion on render pass.
+  if (pass->filters.IsEmpty() && pass->backdrop_filters.IsEmpty()) {
     auto quad_list_end = pass->quad_list.end();
     gfx::Rect occlusion_in_quad_content_space;
     for (auto quad = pass->quad_list.begin(); quad != quad_list_end;) {

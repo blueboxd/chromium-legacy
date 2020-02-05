@@ -2103,7 +2103,7 @@ gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
     SkRect paint_rect = MapRect(ctm, op_rect);
     if (flags) {
       SkPaint paint = flags->ToSkPaint();
-      paint_rect = paint.canComputeFastBounds()
+      paint_rect = paint.canComputeFastBounds() && paint_rect.isFinite()
                        ? paint.computeFastBounds(paint_rect, &paint_rect)
                        : clip_rect;
     }

@@ -52,6 +52,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -150,19 +151,6 @@ int GetForgiveMinutes(gpu::GpuMode gpu_mode) {
              ? kForgiveDisplayCompositorCrashMinutes
              : kForgiveGpuCrashMinutes;
 }
-
-#if !defined(OS_ANDROID)
-// Feature controlling whether or not memory pressure signals will be forwarded
-// to the GPU process.
-const base::Feature kForwardMemoryPressureEventsToGpuProcess{
-  "ForwardMemoryPressureEventsToGpuProcess",
-#if defined(OS_FUCHSIA)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-#endif
 
 // This matches base::TerminationStatus.
 // These values are persisted to logs. Entries (except MAX_ENUM) should not be
@@ -678,8 +666,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     in_process_ = true;
   }
 #if !defined(OS_ANDROID)
-  if (!in_process_ &&
-      base::FeatureList::IsEnabled(kForwardMemoryPressureEventsToGpuProcess)) {
+  if (!in_process_ && base::FeatureList::IsEnabled(
+                          features::kForwardMemoryPressureEventsToGpuProcess)) {
     memory_pressure_listener_ =
         std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
             &GpuProcessHost::OnMemoryPressure, base::Unretained(this)));

@@ -109,23 +109,23 @@ cr.define('settings', function() {
       r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
     }
 
-    /* #ignore */ const pageVisibility = settings.pageVisibility || {};
+    const visibility = settings.pageVisibility || {};
 
     // <if expr="not chromeos">
     r.IMPORT_DATA = r.BASIC.createChild('/importData');
     r.IMPORT_DATA.isNavigableDialog = true;
 
-    if (pageVisibility.people !== false) {
+    if (visibility.people !== false) {
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
     }
     // </if>
 
-    if (pageVisibility.appearance !== false) {
+    if (visibility.appearance !== false) {
       r.APPEARANCE = r.BASIC.createSection('/appearance', 'appearance');
       r.FONTS = r.APPEARANCE.createChild('/fonts');
     }
 
-    if (pageVisibility.autofill !== false) {
+    if (visibility.autofill !== false) {
       r.AUTOFILL = r.BASIC.createSection('/autofill', 'autofill');
       r.PASSWORDS = r.AUTOFILL.createChild('/passwords');
       r.PAYMENTS = r.AUTOFILL.createChild('/payments');
@@ -135,25 +135,25 @@ cr.define('settings', function() {
     r.CLEAR_BROWSER_DATA = r.BASIC.createChild('/clearBrowserData');
     r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
 
-    if (pageVisibility.privacy !== false) {
+    if (visibility.privacy !== false) {
       r.PRIVACY = r.BASIC.createSection('/privacy', 'privacy');
       addPrivacyChildRoutes(r);
     }
 
-    if (pageVisibility.defaultBrowser !== false) {
+    if (visibility.defaultBrowser !== false) {
       r.DEFAULT_BROWSER =
           r.BASIC.createSection('/defaultBrowser', 'defaultBrowser');
     }
 
     r.SEARCH_ENGINES = r.SEARCH.createChild('/searchEngines');
 
-    if (pageVisibility.onStartup !== false) {
+    if (visibility.onStartup !== false) {
       r.ON_STARTUP = r.BASIC.createSection('/onStartup', 'onStartup');
       r.STARTUP_PAGES = r.ON_STARTUP.createChild('/startupPages');
     }
 
     // Advanced Routes
-    if (pageVisibility.advancedSettings !== false) {
+    if (visibility.advancedSettings !== false) {
       r.ADVANCED = new settings.Route('/advanced');
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
@@ -161,7 +161,7 @@ cr.define('settings', function() {
       r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
       // </if>
 
-      if (pageVisibility.downloads !== false) {
+      if (visibility.downloads !== false) {
         r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
       }
 
@@ -184,7 +184,7 @@ cr.define('settings', function() {
       r.SYSTEM = r.ADVANCED.createSection('/system', 'system');
       // </if>
 
-      if (pageVisibility.reset !== false) {
+      if (visibility.reset !== false) {
         r.RESET = r.ADVANCED.createSection('/reset', 'reset');
         r.RESET_DIALOG = r.ADVANCED.createChild('/resetProfileSettings');
         r.RESET_DIALOG.isNavigableDialog = true;

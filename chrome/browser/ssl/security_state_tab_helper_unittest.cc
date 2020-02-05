@@ -89,7 +89,7 @@ TEST_F(SecurityStateTabHelperHistogramTest, LegacyTLSFormSubmissionHistogram) {
   InitializeEmptyLegacyTLSConfig();
 
   auto navigation =
-      CreateLegacyTLSNavigation(GURL(kLegacyTLSDefaultURL), web_contents());
+      CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
   StartFormSubmissionNavigation();
@@ -106,7 +106,7 @@ TEST_F(SecurityStateTabHelperHistogramTest,
   InitializeLegacyTLSConfigWithControl();
 
   auto navigation =
-      CreateLegacyTLSNavigation(GURL(kLegacyTLSControlURL), web_contents());
+      CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
   StartFormSubmissionNavigation();

@@ -9,38 +9,34 @@
 #include <hb.h>
 #include <hb-ot.h>
 
-// Entry point for LibFuzzer.
+#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  const char* dataPtr = reinterpret_cast<const char*>(data);
-  hb_blob_t* blob = hb_blob_create(dataPtr, size, HB_MEMORY_MODE_READONLY, NULL,
-                                   NULL);
-  hb_face_t* face = hb_face_create(blob, 0);
-  hb_font_t* font = hb_font_create(face);
-  hb_ot_font_set_funcs(font);
-  hb_font_set_scale(font, 12, 12);
+  const char* data_ptr = reinterpret_cast<const char*>(data);
+  HbScoped<hb_blob_t> blob(hb_blob_create(
+      data_ptr, size, HB_MEMORY_MODE_READONLY, nullptr, nullptr));
+  HbScoped<hb_face_t> face(hb_face_create(blob.get(), 0));
+  HbScoped<hb_font_t> font(hb_font_create(face.get()));
+  hb_ot_font_set_funcs(font.get());
+  hb_font_set_scale(font.get(), 12, 12);
 
   {
     const char text[] = "ABCDEXYZ123@_%&)*$!";
-    hb_buffer_t* buffer = hb_buffer_create();
-    hb_buffer_add_utf8(buffer, text, -1, 0, -1);
-    hb_buffer_guess_segment_properties(buffer);
-    hb_shape(font, buffer, NULL, 0);
-    hb_buffer_destroy(buffer);
+    HbScoped<hb_buffer_t> buffer(hb_buffer_create());
+    hb_buffer_add_utf8(buffer.get(), text, -1, 0, -1);
+    hb_buffer_guess_segment_properties(buffer.get());
+    hb_shape(font.get(), buffer.get(), nullptr, 0);
   }
 
-  uint32_t text32[16] = { 0 };
+  uint32_t text32[16] = {0};
   if (size > sizeof(text32)) {
     memcpy(text32, data + size - sizeof(text32), sizeof(text32));
-    hb_buffer_t* buffer = hb_buffer_create();
-    size_t text32len = sizeof(text32) / sizeof(text32[0]);
-    hb_buffer_add_utf32(buffer, text32, text32len, 0, -1);
-    hb_buffer_guess_segment_properties(buffer);
-    hb_shape(font, buffer, NULL, 0);
-    hb_buffer_destroy(buffer);
+    HbScoped<hb_buffer_t> buffer(hb_buffer_create());
+    size_t text32_len = sizeof(text32) / sizeof(text32[0]);
+    hb_buffer_add_utf32(buffer.get(), text32, text32_len, 0, -1);
+    hb_buffer_guess_segment_properties(buffer.get());
+    hb_shape(font.get(), buffer.get(), nullptr, 0);
   }
 
-  hb_font_destroy(font);
-  hb_face_destroy(face);
-  hb_blob_destroy(blob);
   return 0;
 }

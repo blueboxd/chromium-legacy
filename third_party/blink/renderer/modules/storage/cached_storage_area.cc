@@ -65,19 +65,21 @@ scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
     scoped_refptr<const SecurityOrigin> origin,
     mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    InspectorEventListener* listener) {
+    StorageNamespace* storage_namespace) {
   return base::AdoptRef(new CachedStorageArea(
-      std::move(origin), std::move(area), std::move(ipc_runner), listener));
+      AreaType::kLocalStorage, std::move(origin), std::move(area),
+      std::move(ipc_runner), storage_namespace));
 }
 
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForSessionStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    InspectorEventListener* listener) {
+    StorageNamespace* storage_namespace) {
   return base::AdoptRef(new CachedStorageArea(
-      std::move(origin), std::move(area), std::move(ipc_runner), listener));
+      AreaType::kSessionStorage, std::move(origin), std::move(area),
+      std::move(ipc_runner), storage_namespace));
 }
 
 unsigned CachedStorageArea::GetLength() {
@@ -119,9 +121,10 @@ bool CachedStorageArea::SetItem(const String& key,
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
   String source_string = PackSource(page_url, source_id);
-  mojo_area_->Put(StringToUint8Vector(key, GetKeyFormat()),
-                  StringToUint8Vector(value, value_format), optional_old_value,
-                  source_string, MakeSuccessCallback(source));
+  remote_area_->Put(StringToUint8Vector(key, GetKeyFormat()),
+                    StringToUint8Vector(value, value_format),
+                    optional_old_value, source_string,
+                    MakeSuccessCallback(source));
   if (!IsSessionStorage())
     EnqueuePendingMutation(key, value, old_value, source_string);
   else if (old_value != value)
@@ -143,9 +146,9 @@ void CachedStorageArea::RemoveItem(const String& key, Source* source) {
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
   String source_string = PackSource(page_url, source_id);
-  mojo_area_->Delete(StringToUint8Vector(key, GetKeyFormat()),
-                     optional_old_value, source_string,
-                     MakeSuccessCallback(source));
+  remote_area_->Delete(StringToUint8Vector(key, GetKeyFormat()),
+                       optional_old_value, source_string,
+                       MakeSuccessCallback(source));
   if (!IsSessionStorage())
     EnqueuePendingMutation(key, String(), old_value, source_string);
   else
@@ -180,8 +183,8 @@ void CachedStorageArea::Clear(Source* source) {
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
   String source_string = PackSource(page_url, source_id);
-  mojo_area_->DeleteAll(source_string, std::move(new_observer),
-                        MakeSuccessCallback(source));
+  remote_area_->DeleteAll(source_string, std::move(new_observer),
+                          MakeSuccessCallback(source));
   if (!IsSessionStorage())
     EnqueuePendingMutation(String(), String(), String(), source_string);
   else if (!already_empty)
@@ -194,37 +197,20 @@ String CachedStorageArea::RegisterSource(Source* source) {
   return id;
 }
 
-// LocalStorage constructor.
 CachedStorageArea::CachedStorageArea(
+    AreaType type,
     scoped_refptr<const SecurityOrigin> origin,
     mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    InspectorEventListener* listener)
-    : origin_(std::move(origin)),
-      inspector_event_listener_(listener),
+    StorageNamespace* storage_namespace)
+    : type_(type),
+      origin_(std::move(origin)),
+      storage_namespace_(storage_namespace),
       ipc_task_runner_(std::move(ipc_runner)),
-      mojo_area_remote_(std::move(area), ipc_task_runner_),
-      mojo_area_(mojo_area_remote_.get()),
+      remote_area_(std::move(area), ipc_task_runner_),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  mojo_area_->AddObserver(receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "DOMStorage",
-      ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
-}
-
-// SessionStorage constructor.
-CachedStorageArea::CachedStorageArea(
-    scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    InspectorEventListener* listener)
-    : origin_(std::move(origin)),
-      inspector_event_listener_(listener),
-      ipc_task_runner_(std::move(ipc_runner)),
-      mojo_area_associated_remote_(std::move(area), ipc_task_runner_),
-      mojo_area_(mojo_area_associated_remote_.get()),
-      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  mojo_area_->AddObserver(receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
+  remote_area_->AddObserver(
+      receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DOMStorage",
       ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
@@ -510,7 +496,7 @@ void CachedStorageArea::EnsureLoaded() {
   // replace it with a new receiver whose event sequence is synchronized against
   // the result of |GetAll()| for consistency.
   receiver_.reset();
-  mojo_area_->GetAll(receiver_.BindNewPipeAndPassRemote(), &data);
+  remote_area_->GetAll(receiver_.BindNewPipeAndPassRemote(), &data);
 
   // Determine data formats.
   const FormatOption key_format = GetKeyFormat();
@@ -557,7 +543,7 @@ CachedStorageArea::FormatOption CachedStorageArea::GetValueFormat() const {
 }
 
 bool CachedStorageArea::IsSessionStorage() const {
-  return mojo_area_associated_remote_.is_bound();
+  return type_ == AreaType::kSessionStorage;
 }
 
 void CachedStorageArea::EnqueueStorageEvent(const String& key,
@@ -578,8 +564,10 @@ void CachedStorageArea::EnqueueStorageEvent(const String& key,
     }
   }
   areas_->RemoveAll(areas_to_remove_);
-  inspector_event_listener_->DidDispatchStorageEvent(origin_.get(), key,
-                                                     old_value, new_value);
+  if (storage_namespace_) {
+    storage_namespace_->DidDispatchStorageEvent(origin_.get(), key, old_value,
+                                                new_value);
+  }
 }
 
 // static

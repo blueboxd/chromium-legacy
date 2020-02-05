@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {ExtensionControlBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {SearchEnginesBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {TestExtensionControlBrowserProxy} from 'chrome://test/settings/test_extension_control_browser_proxy.m.js';
+// #import {TestSearchEnginesBrowserProxy} from 'chrome://test/settings/test_search_engines_browser_proxy.m.js';
+// clang-format on
+
 /**
  * @param {number} id
  * @param {string} name

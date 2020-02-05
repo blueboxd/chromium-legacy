@@ -105,7 +105,7 @@ Polymer({
 
   /** @private */
   cancel_() {
-    this.$.dialog.cancel();
+    /** @type {!CrDialogElement} */ (this.$.dialog).cancel();
   },
 
   /** @private */

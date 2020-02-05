@@ -412,7 +412,6 @@ jumbo_static_library("ui") {
     "//chrome/browser/resources/quota_internals:quota_internals_resources",
     "//chrome/browser/resources/usb_internals:resources",
     "//chrome/browser/safe_browsing",
-    "//chrome/browser/ssl:proto",
     "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings",

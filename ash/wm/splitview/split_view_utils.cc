@@ -415,7 +415,9 @@ void ShowAppCannotSnapToast() {
 SplitViewController::SnapPosition GetSnapPosition(
     aura::Window* root_window,
     aura::Window* window,
-    const gfx::Point& location_in_screen) {
+    const gfx::Point& location_in_screen,
+    int horizontal_edge_inset,
+    int vertical_edge_inset) {
   if (!ShouldAllowSplitView() ||
       !SplitViewController::Get(root_window)->CanSnapWindow(window)) {
     return SplitViewController::NONE;
@@ -430,10 +432,7 @@ SplitViewController::SnapPosition GetSnapPosition(
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window));
   if (horizontal) {
-    const int screen_edge_inset_for_drag =
-        area.width() * kHighlightScreenPrimaryAxisRatio +
-        kHighlightScreenEdgePaddingDp;
-    area.Inset(screen_edge_inset_for_drag, 0);
+    area.Inset(horizontal_edge_inset, 0);
     if (location_in_screen.x() <= area.x()) {
       return right_side_up ? SplitViewController::LEFT
                            : SplitViewController::RIGHT;
@@ -445,10 +444,7 @@ SplitViewController::SnapPosition GetSnapPosition(
     return SplitViewController::NONE;
   }
 
-  const int screen_edge_inset_for_drag =
-      area.height() * kHighlightScreenPrimaryAxisRatio +
-      kHighlightScreenEdgePaddingDp;
-  area.Inset(0, screen_edge_inset_for_drag);
+  area.Inset(0, vertical_edge_inset);
   if (location_in_screen.y() <= area.y())
     return right_side_up ? SplitViewController::LEFT
                          : SplitViewController::RIGHT;

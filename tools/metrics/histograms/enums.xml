@@ -20197,6 +20197,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="16384" label="UPDATE_REQUIRED_BY_POLICY"/>
   <int value="32768" label="CUSTODIAN_APPROVAL_REQUIRED"/>
   <int value="65536" label="BLOCKED_BY_POLICY"/>
+  <int value="131072" label="BLOCKED_MATURE"/>
 </enum>
 
 <enum name="ExtensionEvents">

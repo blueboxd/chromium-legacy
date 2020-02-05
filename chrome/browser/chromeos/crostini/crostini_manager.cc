@@ -788,13 +788,11 @@ bool CrostiniManager::ShouldPromptContainerUpgrade(
     return false;
   }
   bool upgradable = IsContainerUpgradeable(container_id);
-  if (upgradable) {
-    // Currently a true return value from this function  implies the
-    // prompt must be shown. Storing this state in CrostiniManager implies that
-    // the prompt will only be shown once per session.
-    container_upgrade_prompt_shown_.insert(container_id);
-  }
   return upgradable;
+}
+
+void CrostiniManager::UpgradePromptShown(const ContainerId& container_id) {
+  container_upgrade_prompt_shown_.insert(container_id);
 }
 
 base::Optional<ContainerInfo> CrostiniManager::GetContainerInfo(
@@ -1545,6 +1543,23 @@ vm_tools::cicerone::UpgradeContainerRequest::Version ConvertVersion(
   }
 }
 
+// Watches the Crostini restarter until the VM started phase, then aborts the
+// sequence.
+class AbortOnVmStartObserver : public CrostiniManager::RestartObserver {
+ public:
+  explicit AbortOnVmStartObserver(
+      base::WeakPtr<CrostiniManager> crostini_manager)
+      : crostini_manager_(crostini_manager) {}
+  void OnVmStarted(bool success) override {
+    if (crostini_manager_) {
+      crostini_manager_->AbortRestartCrostini(restart_id_, base::DoNothing());
+    }
+  }
+
+ private:
+  base::WeakPtr<CrostiniManager> crostini_manager_;
+};
+
 }  // namespace
 
 void CrostiniManager::UpgradeContainer(const ContainerId& key,
@@ -1577,10 +1592,34 @@ void CrostiniManager::UpgradeContainer(const ContainerId& key,
   request.set_container_name(container_name);
   request.set_source_version(ConvertVersion(source_version));
   request.set_target_version(ConvertVersion(target_version));
-  GetCiceroneClient()->UpgradeContainer(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnUpgradeContainer,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  CrostiniResultCallback do_upgrade_container = base::BindOnce(
+      [](base::WeakPtr<CrostiniManager> crostini_manager,
+         vm_tools::cicerone::UpgradeContainerRequest request,
+         CrostiniResultCallback final_callback, CrostiniResult result) {
+        // When we fail to start the VM, we can't continue the upgrade.
+        if (result != CrostiniResult::SUCCESS &&
+            result != CrostiniResult::RESTART_ABORTED) {
+          LOG(ERROR) << "Failed to restart the vm before attempting container "
+                        "upgrade. Result code "
+                     << static_cast<int>(result);
+          std::move(final_callback)
+              .Run(CrostiniResult::UPGRADE_CONTAINER_FAILED);
+          return;
+        }
+        GetCiceroneClient()->UpgradeContainer(
+            std::move(request),
+            base::BindOnce(&CrostiniManager::OnUpgradeContainer,
+                           crostini_manager, std::move(final_callback)));
+      },
+      weak_ptr_factory_.GetWeakPtr(), std::move(request), std::move(callback));
+
+  if (!IsVmRunning(vm_name)) {
+    RestartCrostini(vm_name, container_name, std::move(do_upgrade_container),
+                    new AbortOnVmStartObserver(weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    std::move(do_upgrade_container).Run(CrostiniResult::SUCCESS);
+  }
 }
 
 void CrostiniManager::CancelUpgradeContainer(const ContainerId& key,

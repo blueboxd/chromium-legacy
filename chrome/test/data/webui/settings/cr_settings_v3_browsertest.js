@@ -144,3 +144,15 @@ var CrSettingsToggleButtonV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsToggleButtonV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsSearchEnginesV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/search_engines_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSearchEnginesV3Test', 'All', function() {
+  mocha.run();
+});

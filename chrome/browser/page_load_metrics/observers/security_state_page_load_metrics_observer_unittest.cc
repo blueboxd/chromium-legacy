@@ -10,7 +10,6 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/tls_deprecation_config.h"
-#include "chrome/browser/ssl/tls_deprecation_config.pb.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "content/public/browser/web_contents.h"
@@ -61,7 +60,7 @@ TEST_F(SecurityStatePageLoadMetricsObserverTest, LegacyTLSMetrics) {
   InitializeEmptyLegacyTLSConfig();
 
   auto navigation =
-      CreateLegacyTLSNavigation(GURL(kLegacyTLSDefaultURL), web_contents());
+      CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
   tester()->histogram_tester().ExpectBucketCount("Security.LegacyTLS.OnCommit",
@@ -87,7 +86,7 @@ TEST_F(SecurityStatePageLoadMetricsObserverTest, LegacyTLSControlSiteMetrics) {
   InitializeLegacyTLSConfigWithControl();
 
   auto navigation =
-      CreateLegacyTLSNavigation(GURL(kLegacyTLSControlURL), web_contents());
+      CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
   tester()->histogram_tester().ExpectBucketCount("Security.LegacyTLS.OnCommit",

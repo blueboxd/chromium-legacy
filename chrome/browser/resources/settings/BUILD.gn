@@ -213,6 +213,7 @@ group("closure_compile_module") {
     ":closure_compile_local_module",
     "controls:closure_compile_module",
     "prefs:closure_compile_module",
+    "search_engines_page:closure_compile_module",
   ]
 }
 

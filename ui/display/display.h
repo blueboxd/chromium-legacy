@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
@@ -161,7 +162,9 @@ class DISPLAY_EXPORT Display final {
   void SetRotationAsDegree(int rotation);
 
   // Panel's native rotation. This is same as |rotation()| in normal case.
-  Rotation panel_rotation() const { return panel_rotation_; }
+  Rotation panel_rotation() const {
+    return panel_rotation_ ? *panel_rotation_ : rotation_;
+  }
   void set_panel_rotation(Rotation rotation) { panel_rotation_ = rotation; }
   int PanelRotationAsDegree() const;
 
@@ -291,7 +294,7 @@ class DISPLAY_EXPORT Display final {
   gfx::Rect work_area_;
   float device_scale_factor_;
   Rotation rotation_ = ROTATE_0;
-  Rotation panel_rotation_ = ROTATE_0;
+  base::Optional<Rotation> panel_rotation_;
   TouchSupport touch_support_ = TouchSupport::UNKNOWN;
   AccelerometerSupport accelerometer_support_ = AccelerometerSupport::UNKNOWN;
   gfx::Size maximum_cursor_size_;

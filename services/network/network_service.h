@@ -54,6 +54,7 @@ namespace network {
 class CRLSetDistributor;
 class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
+class LegacyTLSConfigDistributor;
 class NetworkContext;
 class NetworkUsageAccumulator;
 
@@ -145,6 +146,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void UpdateCRLSet(
       base::span<const uint8_t> crl_set,
       mojom::NetworkService::UpdateCRLSetCallback callback) override;
+  void UpdateLegacyTLSConfig(
+      base::span<const uint8_t> config,
+      mojom::NetworkService::UpdateLegacyTLSConfigCallback callback) override;
   void OnCertDBChanged() override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
@@ -209,6 +213,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   CRLSetDistributor* crl_set_distributor() {
     return crl_set_distributor_.get();
+  }
+
+  LegacyTLSConfigDistributor* legacy_tls_config_distributor() {
+    return legacy_tls_config_distributor_.get();
   }
 
   bool os_crypt_config_set() const { return os_crypt_config_set_; }
@@ -313,6 +321,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool os_crypt_config_set_ = false;
 
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
+
+  std::unique_ptr<LegacyTLSConfigDistributor> legacy_tls_config_distributor_;
 
   // A timer that periodically calls UpdateLoadInfo while there are pending
   // loads and not waiting on an ACK from the client for the last sent

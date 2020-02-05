@@ -12,6 +12,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
@@ -100,6 +101,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 // clang-format off
 /** Tests for the {@link StartSurfaceLayout} */
@@ -822,6 +824,31 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Feature("TabSuggestion")
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @CommandLineFlags.Add({BASE_PARAMS +
+            "/cleanup-delay/10000/close_tab_suggestions_stale_time_ms/0"})
+    public void testShowOnlyOneTabSuggestionMessageCard_withSoftCleanup()
+            throws InterruptedException {
+        // clang-format on
+        verifyOnlyOneTabSuggestionMessageCardIsShowing();
+    }
+
+    @Test
+    @MediumTest
+    @Feature("TabSuggestion")
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    public void testShowOnlyOneTabSuggestionMessageCard_withHardCleanup()
+            throws InterruptedException {
+        // clang-format on
+        verifyOnlyOneTabSuggestionMessageCardIsShowing();
+    }
+
+    @Test
+    @MediumTest
     @Feature("NewTabTile")
     // clang-format off
     @Features.DisableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
@@ -1446,5 +1473,37 @@ public class StartSurfaceLayoutTest {
             assertTrue("Actual ratio: " + bitmapRatio + "; Expected ratio: " + ratio,
                     Math.abs(bitmapRatio - ratio) <= TabContentManager.ASPECT_RATIO_PRECISION);
         }
+    }
+
+    private void verifyOnlyOneTabSuggestionMessageCardIsShowing() throws InterruptedException {
+        String suggestionMessageTemplate = mActivityTestRule.getActivity().getString(
+                org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_stale_message);
+        String suggestionMessage =
+                String.format(Locale.getDefault(), suggestionMessageTemplate, "3");
+        prepareTabs(3, 0, mUrl);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
+                        && mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getCurrentModel()
+                                        .getCount()
+                                == 3);
+
+        enterGTSWithThumbnailChecking();
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(allOf(withText(suggestionMessage), withParent(withId(R.id.tab_grid_message_item))))
+                .check(matches(isDisplayed()));
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        // With soft or hard clean up depends on the soft-cleanup-delay and cleanup-delay params.
+        enterGTSWithThumbnailChecking();
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        // This will fail with error "matched multiple views" when there is more than one suggestion
+        // message card.
+        onView(allOf(withText(suggestionMessage), withParent(withId(R.id.tab_grid_message_item))))
+                .check(matches(isDisplayed()));
     }
 }

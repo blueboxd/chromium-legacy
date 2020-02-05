@@ -16,7 +16,6 @@
 #include "components/services/storage/dom_storage/session_storage_data_map.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -177,9 +176,9 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // Connects the given database mojo request to the data map for the given
   // origin. Before connection, it checks to make sure the |process_id| given to
   // the |Bind| method can access the given origin.
-  void OpenArea(const url::Origin& origin,
-                mojo::PendingAssociatedReceiver<blink::mojom::StorageArea>
-                    receiver) override;
+  void OpenArea(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
 
   // Simply calls the |add_namespace_callback_| callback with this namespace's
   // data.

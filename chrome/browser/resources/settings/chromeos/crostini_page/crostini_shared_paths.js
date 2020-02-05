@@ -33,6 +33,16 @@ Polymer({
      * @private {Array<!CrostiniSharedPath>}
      */
     sharedPaths_: Array,
+
+    /**
+     * The shared path which failed to be removed in the most recent attempt
+     * to remove a path. Null indicates that removal succeeded.
+     * @private {?string}
+     */
+    sharedPathWhichFailedRemoval_: {
+      type: String,
+      value: null,
+    },
   },
 
   observers: [
@@ -60,12 +70,45 @@ Polymer({
   },
 
   /**
+   * @param {string} path
+   * @private
+   */
+  removeSharedPath_(path) {
+    this.sharedPathWhichFailedRemoval_ = null;
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .removeCrostiniSharedPath(DEFAULT_CROSTINI_VM, path)
+        .then(result => {
+          if (!result) {
+            this.sharedPathWhichFailedRemoval_ = path;
+            // Flush to make sure that the retry dialog is attached.
+            Polymer.dom.flush();
+            this.$$('#removeSharedPathFailedDialog').showModal();
+          }
+        });
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   onRemoveSharedPathTap_(event) {
-    settings.CrostiniBrowserProxyImpl.getInstance().removeCrostiniSharedPath(
-        DEFAULT_CROSTINI_VM, event.model.item.path);
+    this.removeSharedPath_(event.model.item.path);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onRemoveFailedRetryTap_(event) {
+    this.removeSharedPath_(assert(this.sharedPathWhichFailedRemoval_));
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onRemoveFailedDismissTap_(event) {
+    this.sharedPathWhichFailedRemoval_ = null;
   },
 
   /**

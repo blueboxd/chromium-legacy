@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/services/storage/dom_storage/session_storage_data_map.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace storage {
@@ -30,7 +30,7 @@ SessionStorageAreaImpl::~SessionStorageAreaImpl() {
 }
 
 void SessionStorageAreaImpl::Bind(
-    mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver) {
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   if (IsBound()) {
     receiver_.reset();
   } else {

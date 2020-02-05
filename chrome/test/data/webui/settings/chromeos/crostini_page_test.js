@@ -346,6 +346,28 @@ suite('CrostiniPageTests', function() {
             assertFalse(subpage.$.crostiniListEmpty.hidden);
           });
     });
+
+    test('RemoveFailedRetry', function() {
+      // Remove shared path fails.
+      crostiniBrowserProxy.removeSharedPathResult = false;
+      subpage.$$('.list-item cr-icon-button').click();
+      return crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath')
+          .then(() => {
+            Polymer.dom.flush();
+            assertTrue(subpage.$$('#removeSharedPathFailedDialog').open);
+
+            // Click retry and make sure 'removeCrostiniSharedPath' is called
+            // and dialog is closed/removed.
+            crostiniBrowserProxy.removeSharedPathResult = true;
+            subpage.$$('#removeSharedPathFailedDialog')
+                .querySelector('.action-button')
+                .click();
+            return crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
+          })
+          .then(() => {
+            assertFalse(!!subpage.$$('#removeSharedPathFailedDialog'));
+          });
+    });
   });
 
   suite('SubPageSharedUsbDevices', function() {

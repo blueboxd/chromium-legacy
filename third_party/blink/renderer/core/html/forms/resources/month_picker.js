@@ -10,7 +10,7 @@
 function initializeMonthPicker(config) {
   global.picker = new MonthPicker(config);
   main.append(global.picker);
-  main.style.border = '1px solid transparent';
+  main.style.border = '1px solid #bfbfbf';
   main.style.height = (MonthPicker.Height - 2) + 'px';
   main.style.width = (MonthPicker.Width - 2) + 'px';
   resizeWindow(MonthPicker.Width, MonthPicker.Height);

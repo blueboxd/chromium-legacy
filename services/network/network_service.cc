@@ -49,6 +49,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/http_auth_cache_copier.h"
+#include "services/network/legacy_tls_config_distributor.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
@@ -332,6 +333,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 
+  legacy_tls_config_distributor_ =
+      std::make_unique<LegacyTLSConfigDistributor>();
+
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 }
 
@@ -611,6 +615,13 @@ void NetworkService::UpdateCRLSet(
     base::span<const uint8_t> crl_set,
     mojom::NetworkService::UpdateCRLSetCallback callback) {
   crl_set_distributor_->OnNewCRLSet(crl_set, std::move(callback));
+}
+
+void NetworkService::UpdateLegacyTLSConfig(
+    base::span<const uint8_t> config,
+    mojom::NetworkService::UpdateLegacyTLSConfigCallback callback) {
+  legacy_tls_config_distributor_->OnNewLegacyTLSConfig(config,
+                                                       std::move(callback));
 }
 
 void NetworkService::OnCertDBChanged() {

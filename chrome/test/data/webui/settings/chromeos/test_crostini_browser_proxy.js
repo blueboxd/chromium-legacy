@@ -17,6 +17,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'requestCrostiniContainerUpgradeView',
     ]);
     this.sharedUsbDevices = [];
+    this.removeSharedPathResult = true;
   }
 
   /** @override */
@@ -49,6 +50,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** override */
   removeCrostiniSharedPath(vmName, path) {
     this.methodCalled('removeCrostiniSharedPath', [vmName, path]);
+    return Promise.resolve(this.removeSharedPathResult);
   }
 
   /** @override */

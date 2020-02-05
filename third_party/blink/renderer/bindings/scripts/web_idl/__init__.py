@@ -35,6 +35,8 @@ from .attribute import Attribute
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Component
+from .composition_parts import DebugInfo
+from .composition_parts import Identifier
 from .constant import Constant
 from .constructor import Constructor
 from .constructor import ConstructorGroup
@@ -44,10 +46,17 @@ from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
 from .exposure import Exposure
+from .extended_attribute import ExtendedAttribute
+from .extended_attribute import ExtendedAttributes
 from .function_like import FunctionLike
 from .function_like import OverloadGroup
 from .idl_type import IdlType
 from .interface import Interface
+from .interface import Iterable
+from .interface import Maplike
+from .interface import PropertyAccessors
+from .interface import Setlike
+from .interface import Stringifier
 from .literal_constant import LiteralConstant
 from .namespace import Namespace
 from .operation import Operation

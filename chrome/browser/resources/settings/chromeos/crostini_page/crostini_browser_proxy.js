@@ -48,6 +48,7 @@ cr.define('settings', function() {
     /**
      * @param {string} vmName VM to stop sharing path with.
      * @param {string} path Path to stop sharing.
+     * @return {!Promise<boolean>} Result of unsharing.
      */
     removeCrostiniSharedPath(vmName, path) {}
 
@@ -115,7 +116,7 @@ cr.define('settings', function() {
 
     /** @override */
     removeCrostiniSharedPath(vmName, path) {
-      chrome.send('removeCrostiniSharedPath', [vmName, path]);
+      return cr.sendWithPromise('removeCrostiniSharedPath', vmName, path);
     }
 
     /** @override */

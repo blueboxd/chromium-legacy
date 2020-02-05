@@ -82,7 +82,7 @@ cr.define('settings', function() {
      * Returns the target only when the route is active.
      * @param {HTMLElement} target
      * @param {boolean} active
-     * @return {?HTMLElement}
+     * @return {?HTMLElement|undefined}
      * @private
      */
     getActiveTarget_(target, active) {

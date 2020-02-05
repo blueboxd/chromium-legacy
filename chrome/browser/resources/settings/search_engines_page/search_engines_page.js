@@ -141,7 +141,7 @@ Polymer({
   /** @private */
   extensionsChanged_() {
     if (this.showExtensionsList_ && this.$.extensions) {
-      this.$.extensions.notifyResize();
+      /** @type {!IronListElement} */ (this.$.extensions).notifyResize();
     }
   },
 
@@ -166,7 +166,8 @@ Polymer({
    */
   onAddSearchEngineTap_(e) {
     e.preventDefault();
-    this.openDialog_(null, assert(this.$.addSearchEngine));
+    this.openDialog_(
+        null, assert(/** @type {HTMLElement} */ (this.$.addSearchEngine)));
   },
 
   /** @private */

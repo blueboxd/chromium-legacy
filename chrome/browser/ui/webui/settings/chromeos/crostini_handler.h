@@ -45,6 +45,10 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleGetCrostiniSharedPathsDisplayText(const base::ListValue* args);
   // Remove a specified path from being shared.
   void HandleRemoveCrostiniSharedPath(const base::ListValue* args);
+  void OnCrostiniSharedPathRemoved(const std::string& callback_id,
+                                   const std::string& path,
+                                   bool result,
+                                   const std::string& failure_reason);
   // Returns a list of available USB devices.
   void HandleGetCrostiniSharedUsbDevices(const base::ListValue* args);
   // Set the share state of a USB device.
@@ -70,6 +74,8 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleEnableArcAdbRequest(const base::ListValue* args);
   // Handle a request for disabling adb sideloading in ARC.
   void HandleDisableArcAdbRequest(const base::ListValue* args);
+  // Launch the Crostini terminal.
+  void LaunchTerminal();
   // Handle a request for showing the container upgrade view.
   void HandleRequestContainerUpgradeView(const base::ListValue* args);
   // Callback of HandleQueryArcAdbRequest.

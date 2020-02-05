@@ -3,7 +3,7 @@
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0xa2e
 #         amd amd-0x6613 amd-0x699f amd-0x679e
-#         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3
+#         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
 # tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577 mesa_lt_19.1.2 ]
@@ -201,6 +201,9 @@ crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_f
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/video/* [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/782254 [ d3d11 win nvidia-0x1cb3 ] conformance2/rendering/attrib-type-match.html [ RetryOnFailure ]
+
+# Win / NVIDIA GeForce GTX 1660 / D3D11 flaky failures
+crbug.com/angleproject/4377 [ d3d11 win nvidia-0x2184 ] conformance/attribs/gl-vertex-attrib-unconsumed-out-of-bounds.html [ RetryOnFailure ]
 
 # WIN / OpenGL / NVIDIA failures
 crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]

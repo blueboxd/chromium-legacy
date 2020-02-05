@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/storage/testing/mock_storage_area.h"
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -18,14 +17,6 @@ MockStorageArea::GetInterfaceRemote() {
   mojo::PendingRemote<mojom::blink::StorageArea> result;
   receivers_.Add(this, result.InitWithNewPipeAndPassReceiver());
   return result;
-}
-
-mojo::PendingAssociatedRemote<mojom::blink::StorageArea>
-MockStorageArea::GetAssociatedInterfaceRemote() {
-  mojo::AssociatedRemote<mojom::blink::StorageArea> result;
-  associated_receivers_.Add(
-      this, result.BindNewEndpointAndPassDedicatedReceiverForTesting());
-  return result.Unbind();
 }
 
 void MockStorageArea::AddObserver(

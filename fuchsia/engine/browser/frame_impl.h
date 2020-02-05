@@ -39,6 +39,7 @@ class FromRenderFrameHost;
 }  // namespace content
 
 class ContextImpl;
+class FuchsiaLayoutManager;
 
 // Implementation of fuchsia.web.Frame based on content::WebContents.
 class FrameImpl : public fuchsia::web::Frame,
@@ -164,6 +165,8 @@ class FrameImpl : public fuchsia::web::Frame,
   void EnableHeadlessRendering() override;
   void DisableHeadlessRendering() override;
   void SetMediaSessionId(uint64_t session_id) override;
+  void ForceContentDimensions(
+      std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;
@@ -198,14 +201,18 @@ class FrameImpl : public fuchsia::web::Frame,
                      const GURL& validated_url) override;
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
-  const std::unique_ptr<content::WebContents> web_contents_;
+
+  // Dependents of |window_tree_host_|.
   std::unique_ptr<wm::FocusController> focus_controller_;
+  DiscardingEventFilter discarding_event_filter_;
+  FuchsiaLayoutManager* layout_manager_ = nullptr;
+
+  const std::unique_ptr<content::WebContents> web_contents_;
   ContextImpl* const context_;
   std::unique_ptr<AccessibilityBridge> accessibility_bridge_;
   fuchsia::accessibility::semantics::SemanticsManagerPtr
       semantics_manager_for_test_;
 
-  DiscardingEventFilter discarding_event_filter_;
   NavigationControllerImpl navigation_controller_;
   logging::LogSeverity log_level_;
   std::map<uint64_t, OriginScopedScript> before_load_scripts_;
@@ -218,6 +225,7 @@ class FrameImpl : public fuchsia::web::Frame,
   fuchsia::web::PopupFrameCreationListenerPtr popup_listener_;
   std::list<std::unique_ptr<content::WebContents>> pending_popups_;
   bool popup_ack_outstanding_ = false;
+  gfx::Size render_size_override_;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
 

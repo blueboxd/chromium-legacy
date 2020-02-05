@@ -53,7 +53,7 @@ body.controls-refresh {
 }
 
 .controls-refresh .color-suggestion-picker-main {
-    border: 0;
+    border: 1px solid #bfbfbf;
     box-shadow: none;
     padding: 8px 8px 4px 8px;
 }

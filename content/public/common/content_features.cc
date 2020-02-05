@@ -202,6 +202,19 @@ const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
 const base::Feature kForcedColors{"ForcedColors",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+// Feature controlling whether or not memory pressure signals will be forwarded
+// to the GPU process.
+const base::Feature kForwardMemoryPressureEventsToGpuProcess {
+  "ForwardMemoryPressureEventsToGpuProcess",
+#if defined(OS_FUCHSIA)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+#endif
+
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
 const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",

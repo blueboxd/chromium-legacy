@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 
-#include "mojo/public/cpp/bindings/associated_receiver_set.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,8 +22,6 @@ class MockStorageArea : public mojom::blink::StorageArea {
   ~MockStorageArea() override;
 
   mojo::PendingRemote<mojom::blink::StorageArea> GetInterfaceRemote();
-  mojo::PendingAssociatedRemote<mojom::blink::StorageArea>
-  GetAssociatedInterfaceRemote();
 
   // StorageArea implementation:
   void AddObserver(
@@ -49,9 +45,7 @@ class MockStorageArea : public mojom::blink::StorageArea {
       GetAllCallback callback) override;
 
   // Methods and members for use by test fixtures.
-  bool HasBindings() {
-    return !receivers_.empty() || !associated_receivers_.empty();
-  }
+  bool HasBindings() { return !receivers_.empty(); }
 
   void ResetObservations() {
     observed_get_all_ = false;
@@ -65,12 +59,10 @@ class MockStorageArea : public mojom::blink::StorageArea {
 
   void Flush() {
     receivers_.FlushForTesting();
-    associated_receivers_.FlushForTesting();
   }
 
   void CloseAllBindings() {
     receivers_.Clear();
-    associated_receivers_.Clear();
   }
 
   bool observed_get_all() const { return observed_get_all_; }
@@ -99,7 +91,6 @@ class MockStorageArea : public mojom::blink::StorageArea {
   Vector<mojom::blink::KeyValuePtr> get_all_return_values_;
 
   mojo::ReceiverSet<mojom::blink::StorageArea> receivers_;
-  mojo::AssociatedReceiverSet<mojom::blink::StorageArea> associated_receivers_;
 };
 
 }  // namespace blink

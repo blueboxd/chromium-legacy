@@ -64,6 +64,11 @@ class ThumbnailTabHelper
 
   bool ShouldKeepUpdatingThumbnail() const;
 
+  // Begins periodic capture of thumbnails from a loading page.
+  // This can be triggered by someone starting to observe a web contents by
+  // incrementing its capture count, or it can happen opportunistically when a
+  // renderer is available, because we want to capture thumbnails while we can
+  // before a page is frozen or swapped out.
   void StartVideoCapture();
   void StopVideoCapture();
   void CaptureThumbnailOnTabSwitch();

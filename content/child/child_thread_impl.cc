@@ -243,13 +243,11 @@ class ChildThreadImpl::IOThreadState
       base::WeakPtr<ChildThreadImpl> weak_main_thread,
       base::RepeatingClosure quit_closure,
       ChildThreadImpl::Options::ServiceBinder service_binder,
-      bool wait_for_interface_binders,
       mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver)
       : main_thread_task_runner_(std::move(main_thread_task_runner)),
         weak_main_thread_(std::move(weak_main_thread)),
         quit_closure_(std::move(quit_closure)),
         service_binder_(std::move(service_binder)),
-        wait_for_interface_binders_(wait_for_interface_binders),
         host_receiver_(std::move(host_receiver)) {}
 
   // Used only in the deprecated Service Manager IPC mode.
@@ -396,7 +394,7 @@ class ChildThreadImpl::IOThreadState
 
   ChildThreadImpl::Options::ServiceBinder service_binder_;
   mojo::BinderMap interface_binders_;
-  bool wait_for_interface_binders_;
+  bool wait_for_interface_binders_ = true;
   mojo::Receiver<mojom::ChildProcess> receiver_{this};
   mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver_;
 
@@ -511,7 +509,16 @@ ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure,
   io_thread_state_ = base::MakeRefCounted<IOThreadState>(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(),
       quit_closure_, std::move(options.service_binder),
-      options.exposes_interfaces_to_browser, std::move(host_receiver));
+      std::move(host_receiver));
+
+  // |ExposeInterfacesToBrowser()| must be called exactly once. Subclasses which
+  // set |exposes_interfaces_to_browser| in Options signify that they take
+  // responsibility for calling it.
+  //
+  // For other process types, we call it to expose only the basic set of
+  // interfaces common to all child process types.
+  if (!options.exposes_interfaces_to_browser)
+    ExposeInterfacesToBrowser(mojo::BinderMap());
 
   Init(options);
 }

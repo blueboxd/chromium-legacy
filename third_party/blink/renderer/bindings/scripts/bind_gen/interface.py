@@ -90,6 +90,8 @@ def callback_function_name(cg_context, overload_index=None):
         kind = "ExposedConstruct"
     elif cg_context.operation_group:
         kind = "Operation"
+    elif cg_context.stringifier:
+        kind = "Operation"
 
     if overload_index is None:
         callback_suffix = "Callback"
@@ -461,7 +463,8 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
         arguments.append("${exception_state}")
 
     func_name = (code_generator_info.property_implemented_as
-                 or cg_context.member_like.identifier)
+                 or cg_context.member_like.identifier
+                 or cg_context.property_.identifier)
     if cg_context.attribute_set:
         func_name = name_style.api_func("set", func_name)
     if cg_context.constructor:
@@ -559,7 +562,6 @@ def bind_return_value(code_node, cg_context):
 
 def make_bindings_trace_event(cg_context):
     assert isinstance(cg_context, CodeGenContext)
-    assert cg_context.property_.identifier
 
     event_name = "{}.{}".format(cg_context.class_like.identifier,
                                 cg_context.property_.identifier)
@@ -675,7 +677,7 @@ def make_check_security_of_return_value(cg_context):
     web_feature = _format(
         "WebFeature::{}",
         name_style.constant("CrossOrigin", cg_context.class_like.identifier,
-                            cg_context.member_like.identifier))
+                            cg_context.property_.identifier))
     use_counter = _format("UseCounter::Count(${execution_context}, {});",
                           web_feature)
     cond = T("!BindingSecurity::ShouldAllowAccessTo("
@@ -1038,7 +1040,7 @@ def make_report_measure_as(cg_context):
         suffix = "_ConstructorGetter"
     elif cg_context.operation:
         suffix = "_Method"
-    name = target.extended_attributes.value_of("MeasureAs")
+    name = ext_attrs.value_of("MeasureAs")
     if name:
         name = "k{}".format(name)
     elif cg_context.constructor:
@@ -1046,7 +1048,8 @@ def make_report_measure_as(cg_context):
     else:
         name = "kV8{}_{}{}".format(
             cg_context.class_like.identifier,
-            name_style.raw.upper_camel_case(target.identifier), suffix)
+            name_style.raw.upper_camel_case(cg_context.property_.identifier),
+            suffix)
 
     node = SequenceNode()
 
@@ -1146,7 +1149,8 @@ def make_runtime_call_timer_scope(cg_context):
     else:
         macro_name = "RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT"
         counter_name = "\"Blink_{}_{}{}\"".format(
-            blink_class_name(cg_context.class_like), target.identifier, suffix)
+            blink_class_name(cg_context.class_like),
+            cg_context.property_.identifier, suffix)
 
     return TextNode(
         _format(
@@ -1625,6 +1629,22 @@ def make_operation_callback_def(cg_context, function_name):
     return node
 
 
+def make_stringifier_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    if cg_context.stringifier.attribute:
+        return make_attribute_get_callback_def(
+            cg_context.make_copy(
+                attribute=cg_context.stringifier.attribute,
+                attribute_get=True), function_name)
+    elif cg_context.stringifier.operation:
+        return make_operation_function_def(
+            cg_context.make_copy(operation=cg_context.stringifier.operation),
+            function_name)
+    assert False
+
+
 # ----------------------------------------------------------------------------
 # Installer functions
 # ----------------------------------------------------------------------------
@@ -1706,45 +1726,45 @@ def bind_installer_local_vars(code_node, cg_context):
             code_node.register_code_symbol(symbol_node)
 
 
-def _make_property_entry_v8_property_attribute(member):
+def _make_property_entry_v8_property_attribute(property_):
     values = []
-    if "NotEnumerable" in member.extended_attributes:
+    if "NotEnumerable" in property_.extended_attributes:
         values.append("v8::DontEnum")
-    if "Unforgeable" in member.extended_attributes:
+    if "Unforgeable" in property_.extended_attributes:
         values.append("v8::DontDelete")
     if not values:
         values.append("v8::None")
     return "static_cast<v8::PropertyAttribute>({})".format(" | ".join(values))
 
 
-def _make_property_entry_on_which_object(member):
+def _make_property_entry_on_which_object(property_):
     ON_INSTANCE = "V8DOMConfiguration::kOnInstance"
     ON_PROTOTYPE = "V8DOMConfiguration::kOnPrototype"
     ON_INTERFACE = "V8DOMConfiguration::kOnInterface"
-    if isinstance(member, web_idl.Constant):
+    if isinstance(property_, web_idl.Constant):
         return ON_INTERFACE
-    if hasattr(member, "is_static") and member.is_static:
+    if hasattr(property_, "is_static") and property_.is_static:
         return ON_INTERFACE
-    if "Global" in member.owner.extended_attributes:
+    if "Global" in property_.owner.extended_attributes:
         return ON_INSTANCE
-    if "Unforgeable" in member.extended_attributes:
+    if "Unforgeable" in property_.extended_attributes:
         return ON_INSTANCE
     return ON_PROTOTYPE
 
 
-def _make_property_entry_check_receiver(member):
-    if ("LenientThis" in member.extended_attributes
-            or (isinstance(member, web_idl.Attribute)
-                and member.idl_type.unwrap().is_promise)
-            or (isinstance(member, web_idl.FunctionLike)
-                and member.return_type.unwrap().is_promise)):
+def _make_property_entry_check_receiver(property_):
+    if ("LenientThis" in property_.extended_attributes
+            or (isinstance(property_, web_idl.Attribute)
+                and property_.idl_type.unwrap().is_promise)
+            or (isinstance(property_, web_idl.OverloadGroup)
+                and property_[0].return_type.unwrap().is_promise)):
         return "V8DOMConfiguration::kDoNotCheckHolder"
     else:
         return "V8DOMConfiguration::kCheckHolder"
 
 
-def _make_property_entry_has_side_effect(member):
-    if member.extended_attributes.value_of("Affects") == "Nothing":
+def _make_property_entry_has_side_effect(property_):
+    if property_.extended_attributes.value_of("Affects") == "Nothing":
         return "V8DOMConfiguration::kHasNoSideEffect"
     else:
         return "V8DOMConfiguration::kHasSideEffect"
@@ -1760,8 +1780,8 @@ def _make_property_entry_world(world):
     assert False
 
 
-def _make_property_entry_constant_type_and_value_format(member):
-    idl_type = member.idl_type.unwrap()
+def _make_property_entry_constant_type_and_value_format(property_):
+    idl_type = property_.idl_type.unwrap()
     if (idl_type.keyword_typename == "long long"
             or idl_type.keyword_typename == "unsigned long long"):
         assert False, "64-bit constants are not yet supported."
@@ -1801,14 +1821,17 @@ def _make_attribute_registration_table(table_name, attribute_entries):
                    "}},")
         text = _format(
             pattern,
-            property_name=entry.member.identifier,
+            property_name=entry.property_.identifier,
             attribute_get_callback=entry.attr_get_callback_name,
             attribute_set_callback=(entry.attr_set_callback_name or "nullptr"),
             v8_property_attribute=_make_property_entry_v8_property_attribute(
-                entry.member),
-            on_which_object=_make_property_entry_on_which_object(entry.member),
-            check_receiver=_make_property_entry_check_receiver(entry.member),
-            has_side_effect=_make_property_entry_has_side_effect(entry.member),
+                entry.property_),
+            on_which_object=_make_property_entry_on_which_object(
+                entry.property_),
+            check_receiver=_make_property_entry_check_receiver(
+                entry.property_),
+            has_side_effect=_make_property_entry_has_side_effect(
+                entry.property_),
             world=_make_property_entry_world(entry.world))
         entry_nodes.append(T(text))
 
@@ -1835,7 +1858,7 @@ def _make_constant_callback_registration_table(table_name, constant_entries):
         pattern = ("{{" "\"{property_name}\", " "{constant_callback}" "}},")
         text = _format(
             pattern,
-            property_name=entry.member.identifier,
+            property_name=entry.property_.identifier,
             constant_callback=entry.const_callback_name)
         entry_nodes.append(T(text))
 
@@ -1864,12 +1887,13 @@ def _make_constant_value_registration_table(table_name, constant_entries):
                    "{constant_value}"
                    "}},")
         constant_type, constant_value_fmt = (
-            _make_property_entry_constant_type_and_value_format(entry.member))
+            _make_property_entry_constant_type_and_value_format(
+                entry.property_))
         constant_value = _format(
             constant_value_fmt, value=entry.const_constant_name)
         text = _format(
             pattern,
-            property_name=entry.member.identifier,
+            property_name=entry.property_.identifier,
             constant_type=constant_type,
             constant_value=constant_value)
         entry_nodes.append(T(text))
@@ -1907,7 +1931,7 @@ def _make_exposed_construct_registration_table(table_name,
                    "}}, ")
         text = _format(
             pattern,
-            property_name=entry.member.identifier,
+            property_name=entry.property_.identifier,
             exposed_construct_callback=entry.prop_callback_name,
             world=_make_property_entry_world(entry.world))
         entry_nodes.append(T(text))
@@ -1944,14 +1968,17 @@ def _make_operation_registration_table(table_name, operation_entries):
                    "}}, ")
         text = _format(
             pattern,
-            property_name=entry.member.identifier,
+            property_name=entry.property_.identifier,
             operation_callback=entry.op_callback_name,
             function_length=entry.op_func_length,
             v8_property_attribute=_make_property_entry_v8_property_attribute(
-                entry.member),
-            on_which_object=_make_property_entry_on_which_object(entry.member),
-            check_receiver=_make_property_entry_check_receiver(entry.member),
-            has_side_effect=_make_property_entry_has_side_effect(entry.member),
+                entry.property_),
+            on_which_object=_make_property_entry_on_which_object(
+                entry.property_),
+            check_receiver=_make_property_entry_check_receiver(
+                entry.property_),
+            has_side_effect=_make_property_entry_has_side_effect(
+                entry.property_),
             world=_make_property_entry_world(entry.world))
         entry_nodes.append(T(text))
 
@@ -1963,78 +1990,72 @@ def _make_operation_registration_table(table_name, operation_entries):
     ])
 
 
-class _PropEntryMember(object):
+class _PropEntryBase(object):
     def __init__(self, is_context_dependent, exposure_conditional, world,
-                 member):
+                 property_):
         assert isinstance(is_context_dependent, bool)
         assert isinstance(exposure_conditional, CodeGenExpr)
 
         self.is_context_dependent = is_context_dependent
         self.exposure_conditional = exposure_conditional
         self.world = world
-        self.member = member
+        self.property_ = property_
 
 
-class _PropEntryAttribute(_PropEntryMember):
+class _PropEntryAttribute(_PropEntryBase):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  attribute, attr_get_callback_name, attr_set_callback_name):
-        assert isinstance(attribute, web_idl.Attribute)
         assert isinstance(attr_get_callback_name, str)
         assert _is_none_or_str(attr_set_callback_name)
 
-        _PropEntryMember.__init__(self, is_context_dependent,
-                                  exposure_conditional, world, attribute)
+        _PropEntryBase.__init__(self, is_context_dependent,
+                                exposure_conditional, world, attribute)
         self.attr_get_callback_name = attr_get_callback_name
         self.attr_set_callback_name = attr_set_callback_name
 
 
-class _PropEntryConstant(_PropEntryMember):
+class _PropEntryConstant(_PropEntryBase):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  constant, const_callback_name, const_constant_name):
-        assert isinstance(constant, web_idl.Constant)
         assert _is_none_or_str(const_callback_name)
         assert isinstance(const_constant_name, str)
 
-        _PropEntryMember.__init__(self, is_context_dependent,
-                                  exposure_conditional, world, constant)
+        _PropEntryBase.__init__(self, is_context_dependent,
+                                exposure_conditional, world, constant)
         self.const_callback_name = const_callback_name
         self.const_constant_name = const_constant_name
 
 
-class _PropEntryConstructorGroup(_PropEntryMember):
+class _PropEntryConstructorGroup(_PropEntryBase):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  constructor_group, ctor_callback_name, ctor_func_length):
-        assert isinstance(constructor_group, web_idl.ConstructorGroup)
         assert isinstance(ctor_callback_name, str)
         assert isinstance(ctor_func_length, (int, long))
 
-        _PropEntryMember.__init__(self, is_context_dependent,
-                                  exposure_conditional, world,
-                                  constructor_group)
+        _PropEntryBase.__init__(self, is_context_dependent,
+                                exposure_conditional, world, constructor_group)
         self.ctor_callback_name = ctor_callback_name
         self.ctor_func_length = ctor_func_length
 
 
-class _PropEntryExposedConstruct(_PropEntryMember):
+class _PropEntryExposedConstruct(_PropEntryBase):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  exposed_construct, prop_callback_name):
         assert isinstance(prop_callback_name, str)
 
-        _PropEntryMember.__init__(self, is_context_dependent,
-                                  exposure_conditional, world,
-                                  exposed_construct)
+        _PropEntryBase.__init__(self, is_context_dependent,
+                                exposure_conditional, world, exposed_construct)
         self.prop_callback_name = prop_callback_name
 
 
-class _PropEntryOperationGroup(_PropEntryMember):
+class _PropEntryOperationGroup(_PropEntryBase):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  operation_group, op_callback_name, op_func_length):
-        assert isinstance(operation_group, web_idl.OperationGroup)
         assert isinstance(op_callback_name, str)
         assert isinstance(op_func_length, (int, long))
 
-        _PropEntryMember.__init__(self, is_context_dependent,
-                                  exposure_conditional, world, operation_group)
+        _PropEntryBase.__init__(self, is_context_dependent,
+                                exposure_conditional, world, operation_group)
         self.op_callback_name = op_callback_name
         self.op_func_length = op_func_length
 
@@ -2202,11 +2223,34 @@ def _make_property_entries_and_callback_defs(
                 op_callback_name=op_callback_name,
                 op_func_length=operation_group.min_num_of_required_arguments))
 
+    def process_stringifier(_, is_context_dependent, exposure_conditional,
+                            world):
+        cgc = cg_context.make_copy(
+            stringifier=interface.stringifier, for_world=world)
+        op_callback_name = callback_function_name(cgc)
+        op_callback_node = make_stringifier_callback_def(cgc, op_callback_name)
+
+        callback_def_nodes.extend([
+            op_callback_node,
+            EmptyNode(),
+        ])
+
+        operation_entries.append(
+            _PropEntryOperationGroup(
+                is_context_dependent=is_context_dependent,
+                exposure_conditional=exposure_conditional,
+                world=world,
+                operation_group=cgc.property_,
+                op_callback_name=op_callback_name,
+                op_func_length=0))
+
     iterate(interface.attributes, process_attribute)
     iterate(interface.constants, process_constant)
     iterate(interface.constructor_groups, process_constructor_group)
     iterate(interface.exposed_constructs, process_exposed_construct)
     iterate(interface.operation_groups, process_operation_group)
+    if interface.stringifier:
+        iterate([interface.stringifier.operation], process_stringifier)
 
     return callback_def_nodes
 
@@ -3214,5 +3258,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Blob")
+    interface = web_idl_database.find("URL")
     generate_interface(interface)

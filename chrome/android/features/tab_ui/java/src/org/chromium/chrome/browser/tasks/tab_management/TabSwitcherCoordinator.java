@@ -304,7 +304,6 @@ public class TabSwitcherCoordinator
     // ResetHandler implementation.
     @Override
     public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode) {
-        sAppendedMessagesForTesting = false;
         List<Tab> tabs = null;
         if (tabList != null) {
             tabs = new ArrayList<>();
@@ -317,6 +316,7 @@ public class TabSwitcherCoordinator
         boolean showQuickly = mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
         if (showQuickly) {
             mTabListCoordinator.removeSpecialListItem(TabProperties.UiType.NEW_TAB_TILE, 0);
+            removeAllAppendedMessage();
         }
 
         int cardsCount = tabs == null ? 0 : tabs.size();
@@ -330,7 +330,13 @@ public class TabSwitcherCoordinator
         return showQuickly;
     }
 
+    private void removeAllAppendedMessage() {
+        mTabListCoordinator.removeSpecialListItem(
+                TabProperties.UiType.MESSAGE, MessageService.MessageType.ALL);
+    }
+
     private void appendMessagesTo(int index) {
+        sAppendedMessagesForTesting = false;
         List<MessageCardProviderMediator.Message> messages =
                 mMessageCardProviderCoordinator.getMessageItems();
         for (int i = 0; i < messages.size(); i++) {

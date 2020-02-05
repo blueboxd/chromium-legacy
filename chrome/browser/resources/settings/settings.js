@@ -12,5 +12,11 @@ import './controls/settings_textarea.m.js';
 import './controls/settings_toggle_button.m.js';
 import './site_favicon.m.js';
 
+import './search_engines_page/omnibox_extension_entry.m.js';
+import './search_engines_page/search_engine_dialog.m.js';
+import './search_engines_page/search_engine_entry.m.js';
+import './search_engines_page/search_engines_page.m.js';
+
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
+export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';

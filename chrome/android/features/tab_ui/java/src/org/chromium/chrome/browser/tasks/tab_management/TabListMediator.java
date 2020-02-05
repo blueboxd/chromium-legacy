@@ -1358,6 +1358,13 @@ class TabListMediator {
     void removeSpecialItemFromModel(@UiType int uiType, int itemIdentifier) {
         int index = TabModel.INVALID_TAB_INDEX;
         if (uiType == UiType.MESSAGE) {
+            if (itemIdentifier == MessageService.MessageType.ALL) {
+                while (mModel.lastIndexForMessageItem() != TabModel.INVALID_TAB_INDEX) {
+                    index = mModel.lastIndexForMessageItem();
+                    mModel.removeAt(index);
+                }
+                return;
+            }
             index = mModel.lastIndexForMessageItemFromType(itemIdentifier);
         } else if (uiType == UiType.NEW_TAB_TILE) {
             index = mModel.getIndexForNewTabTile();

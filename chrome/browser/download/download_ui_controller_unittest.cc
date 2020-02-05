@@ -397,7 +397,7 @@ TEST_F(DownloadUIControllerTest, LegacyTLSMetrics) {
   InitializeEmptyLegacyTLSConfig();
 
   auto navigation =
-      CreateLegacyTLSNavigation(GURL(kLegacyTLSDefaultURL), web_contents());
+      CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
   // Start a download from the same page, setting up the mock item to correctly
@@ -423,7 +423,7 @@ TEST_F(DownloadUIControllerTest, LegacyTLSControlSiteMetrics) {
   InitializeLegacyTLSConfigWithControl();
 
   auto navigation =
-      CreateLegacyTLSNavigation(GURL(kLegacyTLSControlURL), web_contents());
+      CreateLegacyTLSNavigation(GURL(kLegacyTLSURL), web_contents());
   navigation->Commit();
 
   // Start a download from the same page, setting up the mock item to correctly

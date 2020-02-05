@@ -498,6 +498,8 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
 #endif  // !OS_CHROMEOS
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_Immediate[] = {
+    {"close_tab_suggestions_stale_time_ms", "0"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
     {"close_tab_suggestions_stale_time_ms", "14400000"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {
@@ -505,6 +507,8 @@ const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_7Days[] = {
     {"close_tab_suggestions_stale_time_ms", "604800000"}};
 const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
+    {"Immediate", kCloseTabSuggestionsStale_Immediate,
+     base::size(kCloseTabSuggestionsStale_Immediate), nullptr},
     {"4 hours", kCloseTabSuggestionsStale_4Hours,
      base::size(kCloseTabSuggestionsStale_4Hours), nullptr},
     {"8 hours", kCloseTabSuggestionsStale_8Hours,

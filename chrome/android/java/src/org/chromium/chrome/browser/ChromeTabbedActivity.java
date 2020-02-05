@@ -891,10 +891,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
         // showing a glimpse of the tab selector during start up.
         if (!mPendingInitialTabCreation) setInitialOverviewState();
 
-        if (isMainIntentFromLauncher(getIntent()) && isInOverviewMode()) {
-            RecordUserAction.record("MobileStartup.UserEnteredTabSwitcher");
-        }
-
         resetSavedInstanceState();
     }
 
@@ -987,6 +983,10 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
         if (getActivityTab() == null && !isOverviewVisible) {
             showOverview(OverviewModeState.SHOWING_START);
+        }
+
+        if (isMainIntentFromLauncher(getIntent()) && mOverviewModeController.overviewVisible()) {
+            RecordUserAction.record("MobileStartup.UserEnteredTabSwitcher");
         }
     }
 
@@ -1193,24 +1193,24 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
         // If the grid tab switcher is enabled and the tab switcher will be shown on start,
         //  do not create a new tab. With the grid, creating a new tab is now a one tap action.
-        if (shouldShowTabSwitcherOnStart() && CachedFeatureFlags.isGridTabSwitcherEnabled()) return;
-
-        String url = HomepageManager.getHomepageUri();
-        if (TextUtils.isEmpty(url)) {
-            url = UrlConstants.NTP_URL;
-        } else {
-            boolean startupHomepageIsNtp = false;
-            // Migrate legacy NTP URLs (chrome://newtab) to the newer format
-            // (chrome-native://newtab)
-            if (NewTabPage.isNTPUrl(url)) {
+        if (!(shouldShowTabSwitcherOnStart() && CachedFeatureFlags.isGridTabSwitcherEnabled())) {
+            String url = HomepageManager.getHomepageUri();
+            if (TextUtils.isEmpty(url)) {
                 url = UrlConstants.NTP_URL;
-                startupHomepageIsNtp = true;
+            } else {
+                boolean startupHomepageIsNtp = false;
+                // Migrate legacy NTP URLs (chrome://newtab) to the newer format
+                // (chrome-native://newtab)
+                if (NewTabPage.isNTPUrl(url)) {
+                    url = UrlConstants.NTP_URL;
+                    startupHomepageIsNtp = true;
+                }
+                RecordHistogram.recordBooleanHistogram(
+                        "MobileStartup.LoadedHomepageOnColdStart", startupHomepageIsNtp);
             }
-            RecordHistogram.recordBooleanHistogram(
-                    "MobileStartup.LoadedHomepageOnColdStart", startupHomepageIsNtp);
-        }
 
-        getTabCreator(false).launchUrl(url, TabLaunchType.FROM_STARTUP);
+            getTabCreator(false).launchUrl(url, TabLaunchType.FROM_STARTUP);
+        }
 
         // If we didn't call setInitialOverviewState() in startWithNative() because
         // mPendingInitialTabCreation was true then do so now.

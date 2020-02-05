@@ -103,8 +103,7 @@ void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
     is_being_observed_ = is_being_observed;
     if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_) {
       scoped_capture_ = std::make_unique<ScopedCapture>(this);
-      if (GetView())
-        StartVideoCapture();
+      StartVideoCapture();
     } else if (!is_being_observed) {
       scoped_capture_.reset();
     }
@@ -186,13 +185,11 @@ void ThumbnailTabHelper::StartVideoCapture() {
   if (video_capturer_)
     return;
 
-  // This can be triggered by someone starting to observe a web contents by
-  // incrementing its capture count, or it can happen opportunistically when a
-  // renderer is available, because we want to capture thumbnails while we can
-  // before a page is frozen or swapped out.
-
+  // This pointer can become null before this method is called - see
+  // RenderWidgetHost::GetView() for details.
   content::RenderWidgetHostView* const source_view = GetView();
-  DCHECK(source_view);
+  if (!source_view)
+    return;
 
   // Get the source size and scale.
   const float scale_factor = source_view->GetDeviceScaleFactor();

@@ -167,10 +167,8 @@ Polymer({
   hasWarnings_() {
     return this.data.disableReasons.corruptInstall ||
         this.data.disableReasons.suspiciousInstall ||
-        this.data.disableReasons.updateRequired ||
-        this.data.disableReasons.blockedByPolicy ||
-        this.data.disableReasons.custodianApprovalRequired ||
-        !!this.data.blacklistText || this.data.runtimeWarnings.length > 0;
+        this.data.disableReasons.updateRequired || !!this.data.blacklistText ||
+        this.data.runtimeWarnings.length > 0;
   },
 
   /**

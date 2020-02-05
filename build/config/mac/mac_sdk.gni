@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/mac/mac_sdk_overrides.gni")
+import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
 declare_args() {
@@ -79,22 +80,6 @@ if (_verify_sdk) {
   find_sdk_args += [ mac_sdk_min ]
 }
 
-# The tool will print the SDK path on the first line, and the version on the
-# second line.
-find_sdk_lines =
-    exec_script("//build/mac/find_sdk.py", find_sdk_args, "list lines")
-mac_sdk_version = find_sdk_lines[2]
-if (mac_sdk_path == "") {
-  mac_sdk_path = find_sdk_lines[0]
-}
-mac_bin_path = find_sdk_lines[1]
-
-# If we're using hermetic Xcode, then we want the paths to be relative so that
-# generated ninja files are independent of the directory location.
-if (!use_system_xcode) {
-  mac_bin_path = rebase_path(mac_bin_path, root_build_dir)
-}
-
 script_name = "//build/config/mac/sdk_info.py"
 sdk_info_args = []
 if (!use_system_xcode) {
@@ -103,12 +88,41 @@ if (!use_system_xcode) {
     _hermetic_xcode_path,
   ]
 }
+
+# put system xcode under src to avoid absolute path.
+if (use_system_xcode && ios_use_goma_rbe) {
+  sdk_info_args += [
+    "--create_symlink_under_src",
+    "--get_sdk_info",
+  ]
+}
 sdk_info_args += [ mac_sdk_name ]
 
 _mac_sdk_result = exec_script(script_name, sdk_info_args, "scope")
 xcode_version = _mac_sdk_result.xcode_version
 xcode_build = _mac_sdk_result.xcode_build
 machine_os_build = _mac_sdk_result.machine_os_build
+if (mac_sdk_path == "" && use_system_xcode && ios_use_goma_rbe) {
+  mac_sdk_path = _mac_sdk_result.sdk_path
+}
+
+# The tool will print the SDK path on the first line, and the version on the
+# second line.
+find_sdk_lines =
+    exec_script("//build/mac/find_sdk.py", find_sdk_args, "list lines")
+mac_sdk_version = find_sdk_lines[2]
+if (mac_sdk_path == "") {
+  mac_sdk_path = find_sdk_lines[0]
+}
+
+mac_bin_path = find_sdk_lines[1]
+
+# If we're using hermetic Xcode, then we want the paths to be relative so that
+# generated ninja files are independent of the directory location.
+if (!use_system_xcode && !ios_use_goma_rbe) {
+  # If this is called from ios, it is known to point wrong relative path.
+  mac_bin_path = rebase_path(mac_bin_path, root_build_dir)
+}
 
 if (mac_sdk_version != mac_sdk_min &&
     exec_script("//build/check_return_value.py",

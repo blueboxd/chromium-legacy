@@ -5,16 +5,11 @@
 #ifndef CHROME_BROWSER_SSL_TLS_DEPRECATION_CONFIG_H_
 #define CHROME_BROWSER_SSL_TLS_DEPRECATION_CONFIG_H_
 
-#include <memory>
+#include <string>
 
 class GURL;
 
-namespace chrome_browser_ssl {
-class LegacyTLSExperimentConfig;
-}  // namespace chrome_browser_ssl
-
-void SetRemoteTLSDeprecationConfigProto(
-    std::unique_ptr<chrome_browser_ssl::LegacyTLSExperimentConfig> proto);
+void SetRemoteTLSDeprecationConfig(const std::string& binary_config);
 
 bool ShouldSuppressLegacyTLSWarning(const GURL& url);
 

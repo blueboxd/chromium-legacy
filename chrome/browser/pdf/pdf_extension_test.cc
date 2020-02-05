@@ -2335,6 +2335,12 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
   PDFExtensionAccessibilityTextExtractionTest() = default;
   ~PDFExtensionAccessibilityTextExtractionTest() override = default;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(
+        chrome_pdf::features::kAccessiblePDFHighlight);
+  }
+
   void RunTextExtractionTest(const base::FilePath::CharType* pdf_file) {
     base::FilePath test_path = ui_test_utils::GetTestFilePath(
         base::FilePath(FILE_PATH_LITERAL("pdf")),
@@ -2449,6 +2455,8 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
       lines.push_back(line);
     return lines;
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Test that Previous/NextOnLineId attributes are present and properly linked on

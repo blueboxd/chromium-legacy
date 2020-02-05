@@ -184,6 +184,13 @@ suite(extension_detail_view_tests.suiteName, function() {
     item.set('data.disableReasons.blockedByPolicy', false);
     flush();
 
+    item.set('data.disableReasons.blockedMature', true);
+    flush();
+    expectTrue(testIsVisible('#enableToggle'));
+    expectTrue(item.$$('#enableToggle').disabled);
+    item.set('data.disableReasons.blockedMature', false);
+    flush();
+
     item.set('data.disableReasons.custodianApprovalRequired', true);
     flush();
     expectFalse(testIsVisible('#enableToggle'));

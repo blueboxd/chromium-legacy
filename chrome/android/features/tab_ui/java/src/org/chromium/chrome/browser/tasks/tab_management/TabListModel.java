@@ -85,6 +85,19 @@ class TabListModel extends ModelList {
     }
 
     /**
+     * Get the last index of a message item.
+     */
+    public int lastIndexForMessageItem() {
+        for (int i = size() - 1; i >= 0; i--) {
+            PropertyModel model = get(i).model;
+            if (model.get(CARD_TYPE) == MESSAGE) {
+                return i;
+            }
+        }
+        return TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
      * Get the index that matches the new tab tile in TabListModel.
      * @return The index within the model.
      */

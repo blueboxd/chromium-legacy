@@ -75,7 +75,6 @@ source_set("chromeos") {
     "//chrome/browser/extensions",
     "//chrome/browser/image_decoder",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
-    "//chrome/browser/ssl:proto",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings",
     "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
     "//chrome/browser/web_applications",

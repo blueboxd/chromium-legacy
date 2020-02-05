@@ -9,10 +9,10 @@ body {
 
 .time-picker {
   background: #FFFFFF;
-  border: 1px solid transparent;
+  border: 1px solid #bfbfbf;
   display: flex;
   flex-direction: column;
-  height: 260px;
+  height: 258px;
 }
 
 .time-columns {

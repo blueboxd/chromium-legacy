@@ -11,15 +11,20 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/ssl/tls_deprecation_config.h"
-#include "chrome/browser/ssl/tls_deprecation_config.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 using component_updater::ComponentUpdateService;
+
+namespace component_updater {
 
 namespace {
 
@@ -33,37 +38,63 @@ const uint8_t kTLSDeprecationConfigPublicKeySHA256[32] = {
     0x4e, 0xd0, 0x50, 0x1d, 0x0b, 0xed, 0x45, 0x0f, 0xcb, 0x0b, 0x7f,
     0xad, 0x4f, 0xb6, 0x7b, 0x7c, 0x8f, 0xbf, 0xda, 0xa8, 0xe3};
 
-std::unique_ptr<chrome_browser_ssl::LegacyTLSExperimentConfig>
-LoadTLSDeprecationConfigProtoFromDisk(const base::FilePath& pb_path) {
-  std::string binary_pb;
-  if (!base::ReadFileToString(pb_path, &binary_pb)) {
-    // The file won't exist on new installations, so this is not always an
-    // error.
-    DVLOG(1) << "Failed reading from " << pb_path.value();
-    return nullptr;
-  }
-  auto proto =
-      std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
-  if (!proto->ParseFromString(binary_pb)) {
-    DVLOG(1) << "Failed parsing proto " << pb_path.value();
-    return nullptr;
-  }
-  return proto;
+// Singleton object used to configure Network Services and memoize the TLS
+// deprecation configuration, so that it can be reloaded when the Network
+// Service restarts.
+base::FilePath& GetConfigPathInstance() {
+  static base::NoDestructor<base::FilePath> instance;
+  return *instance;
 }
 
 base::FilePath GetInstalledPath(const base::FilePath& base) {
   return base.Append(kTLSDeprecationConfigBinaryPbFileName);
 }
 
-}  // namespace
+// Returns the contents of the file at |config_path|.
+std::string LoadConfig(const base::FilePath& config_path) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+  std::string config_bytes;
+  base::ReadFileToString(config_path, &config_bytes);
+  return config_bytes;
+}
 
-namespace component_updater {
+// Updates the browser and network service with a new binary config.
+void UpdateLegacyTLSConfigOnUI(const std::string& binary_config) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  SetRemoteTLSDeprecationConfig(binary_config);
+
+  network::mojom::NetworkService* network_service =
+      content::GetNetworkService();
+  network_service->UpdateLegacyTLSConfig(
+      base::as_bytes(base::make_span(binary_config)), base::DoNothing());
+}
+
+void SetLegacyTLSConfig() {
+  if (GetConfigPathInstance().empty())
+    return;
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&LoadConfig, GetConfigPathInstance()),
+      base::BindOnce(&UpdateLegacyTLSConfigOnUI));
+}
+
+}  // namespace
 
 TLSDeprecationConfigComponentInstallerPolicy::
     TLSDeprecationConfigComponentInstallerPolicy() = default;
 
 TLSDeprecationConfigComponentInstallerPolicy::
     ~TLSDeprecationConfigComponentInstallerPolicy() = default;
+
+// static
+void TLSDeprecationConfigComponentInstallerPolicy::
+    ReconfigureAfterNetworkRestart() {
+  SetLegacyTLSConfig();
+}
 
 bool TLSDeprecationConfigComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -96,14 +127,13 @@ void TLSDeprecationConfigComponentInstallerPolicy::ComponentReady(
   if (pb_path.empty())
     return;
 
+  // Save the installed component path for future reloads.
+  GetConfigPathInstance() = pb_path;
+
   // The default proto will always be a placeholder since the updated versions
   // are not checked into the repo. Simply load whatever the component updater
   // gave us without checking the default proto from the resource bundle.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&LoadTLSDeprecationConfigProtoFromDisk, pb_path),
-      base::BindOnce(&SetRemoteTLSDeprecationConfigProto));
+  SetLegacyTLSConfig();
 }
 
 // Called during startup and installation before ComponentReady().

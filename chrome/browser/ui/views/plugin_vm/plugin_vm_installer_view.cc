@@ -128,7 +128,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   upper_container_view->AddChildView(message_container_view);
 
   message_label_ = new views::Label(GetMessage(), {kMessageFont});
-  message_label_->SetMultiLine(false);
+  message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_container_view->AddChildView(message_label_);
 

@@ -12,11 +12,13 @@ js_modulizer("modulize") {
     "dropdown_menu_tests.js",
     "extension_controlled_indicator_tests.js",
     "pref_util_tests.js",
+    "search_engines_page_test.js",
     "site_favicon_test.js",
     "settings_slider_tests.js",
     "settings_textarea_tests.js",
     "settings_toggle_button_tests.js",
     "test_extension_control_browser_proxy.js",
+    "test_search_engines_browser_proxy.js",
   ]
   namespace_rewrites = [
     "settings.ExtensionControlBrowserProxyImpl|ExtensionControlBrowserProxyImpl",
@@ -27,5 +29,7 @@ js_modulizer("modulize") {
     "Settings.PrefUtil.prefToString|prefToString",
     "global.traceAssertionsForTesting|window.traceAssertionsForTesting",
     "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
+    "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
+    "settings.SearchEnginesBrowserProxyImpl|SearchEnginesBrowserProxyImpl",
   ]
 }

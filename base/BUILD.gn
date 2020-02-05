@@ -3229,6 +3229,8 @@ if (is_android) {
       "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:com_android_support_collections_java",
       "//third_party/android_deps:com_android_support_multidex_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_compat_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
 
@@ -3393,6 +3395,8 @@ if (is_android) {
       ":base_java_test_support",
       ":jni_java",
       "//base/test:test_support_java",
+      "//third_party/android_deps:androidx_test_monitor_java",
+      "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
@@ -3446,6 +3450,9 @@ if (is_android) {
       ":jni_java",
       "//testing/android/reporter:reporter_java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
+      "//third_party/android_deps:androidx_test_monitor_java",
+      "//third_party/android_deps:androidx_test_runner_java",
+      "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
       "//third_party/android_deps:com_android_support_support_compat_java",
       "//third_party/android_sdk:android_support_chromium_java",
       "//third_party/android_sdk:android_test_base_java",
@@ -3555,6 +3562,8 @@ if (is_android) {
     deps = [
       ":base_java",
       "//testing/android/junit:junit_test_support",
+      "//third_party/android_deps:androidx_test_monitor_java",
+      "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",

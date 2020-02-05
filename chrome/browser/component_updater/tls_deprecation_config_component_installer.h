@@ -25,6 +25,11 @@ class TLSDeprecationConfigComponentInstallerPolicy
   TLSDeprecationConfigComponentInstallerPolicy();
   ~TLSDeprecationConfigComponentInstallerPolicy() override;
 
+  // Queues a task to reconfigure the network service after the Network Service
+  // instance has changed (i.e., as signaled by
+  // content::ContentBrowserClient::OnNetworkServiceCreated).
+  static void ReconfigureAfterNetworkRestart();
+
  private:
   // ComponentInstallerPolicy methods:
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;

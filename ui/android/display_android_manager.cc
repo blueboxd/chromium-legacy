@@ -91,6 +91,8 @@ void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
 
   display->set_size_in_pixels(size_in_pixels);
   display->SetRotationAsDegree(rotationDegrees);
+  DCHECK_EQ(rotationDegrees, display->RotationAsDegree());
+  DCHECK_EQ(rotationDegrees, display->PanelRotationAsDegree());
   display->set_color_depth(bitsPerPixel);
   display->set_depth_per_component(bitsPerComponent);
   display->set_is_monochrome(bitsPerComponent == 0);

@@ -68,6 +68,7 @@
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
+#include "chrome/browser/component_updater/tls_deprecation_config_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -342,7 +343,6 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
-#include "chrome/browser/component_updater/tls_deprecation_config_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
@@ -551,7 +551,6 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #if !defined(OS_ANDROID)
   RegisterInterventionPolicyDatabaseComponent(
       cus, g_browser_process->GetTabManager()->intervention_policy_database());
-  RegisterTLSDeprecationConfigComponent(cus, path);
 #endif
 
 #if BUILDFLAG(ENABLE_VR)
@@ -562,6 +561,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 
   RegisterSafetyTipsComponent(cus, path);
   RegisterCrowdDenyComponent(cus, path);
+  RegisterTLSDeprecationConfigComponent(cus, path);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
   component_updater::RegisterGamesComponent(cus, profile_prefs);

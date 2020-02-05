@@ -7,6 +7,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
@@ -355,9 +356,16 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     return SplitViewController::NONE;
   }
 
+  const gfx::Rect area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          dragged_window_);
   SplitViewController::SnapPosition snap_position =
       ::ash::GetSnapPosition(Shell::GetPrimaryRootWindow(), dragged_window_,
-                             gfx::ToRoundedPoint(location_in_screen));
+                             gfx::ToRoundedPoint(location_in_screen),
+                             area.width() * kHighlightScreenPrimaryAxisRatio +
+                                 kHighlightScreenEdgePaddingDp,
+                             area.height() * kHighlightScreenPrimaryAxisRatio +
+                                 kHighlightScreenEdgePaddingDp);
 
   // For portrait mode, since the drag always starts from the top of the
   // screen, we only allow the window to be dragged to snap to the bottom of

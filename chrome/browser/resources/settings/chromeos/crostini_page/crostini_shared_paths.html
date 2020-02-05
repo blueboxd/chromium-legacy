@@ -47,6 +47,24 @@
         </template>
       </div>
     </div>
+    <template is="dom-if" if="[[sharedPathWhichFailedRemoval_]]" restamp>
+      <cr-dialog id="removeSharedPathFailedDialog" close-text="$i18n{close}">
+        <div slot="title">
+          $i18n{crostiniSharedPathsRemoveFailureDialogTitle}
+        </div>
+        <div slot="body">
+          $i18n{crostiniSharedPathsRemoveFailureDialogMessage}
+        </div>
+        <div slot="button-container">
+          <cr-button id="cancel" class="cancel-button"
+              on-click="onRemoveFailedDismissTap_">$i18n{ok}</cr-button>
+          </cr-button>
+          <cr-button id="retry" class="action-button"
+              on-click="onRemoveFailedRetryTap_">
+              $i18n{crostiniSharedPathsRemoveFailureTryAgain}
+        </div>
+      </cr-dialog>
+    </template>
   </template>
   <script src="crostini_shared_paths.js"></script>
 </dom-module>

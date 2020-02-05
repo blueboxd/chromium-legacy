@@ -140,6 +140,7 @@ class SmbService : public KeyedService,
                      const std::string& password,
                      bool use_kerberos,
                      bool save_credentials,
+                     bool skip_connect,
                      MountInternalCallback callback);
 
   // Handles the response from mounting an SMB share using smbprovider.
@@ -195,14 +196,14 @@ class SmbService : public KeyedService,
                          smbprovider::ErrorType error,
                          int32_t mount_id);
 
-  // Calls SmbProviderClient::Premount().
-  void Premount(const base::FilePath& share_path);
+  // Mounts a preconfigured (by policy) SMB share with path |share_url|. The
+  // share is mounted with empty credentials.
+  void MountPreconfiguredShare(const SmbUrl& share_url);
 
-  // Handles the response from attempting to premount a share configured via
-  // policy. If premounting fails it will log and exit the operation.
-  void OnPremountResponse(const base::FilePath& share_path,
-                          smbprovider::ErrorType error,
-                          int32_t mount_id);
+  // Handles the response from attempting to mount a share configured via
+  // policy.
+  void OnMountPreconfiguredShareDone(SmbMountResult result,
+                                     const base::FilePath& mount_path);
 
   // Completes SmbService setup including ShareFinder initialization and
   // remounting shares.

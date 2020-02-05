@@ -314,9 +314,17 @@ if (use_system_harfbuzz) {
   }
 }
 
+source_set("hb_scoped_util") {
+  sources = [ "utils/hb_scoped.h" ]
+  deps = [ "//third_party:freetype_harfbuzz" ]
+}
+
 fuzzer_test("harfbuzz_fuzzer") {
   sources = [ "fuzz/harfbuzz_fuzzer.cc" ]
-  deps = [ "//third_party:freetype_harfbuzz" ]
+  deps = [
+    ":hb_scoped_util",
+    "//third_party:freetype_harfbuzz",
+  ]
   libfuzzer_options = [ "max_len=16800" ]
   seed_corpus = "fuzz/seed_corpus"
 }

@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "components/services/storage/dom_storage/storage_area_impl.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace storage {
 

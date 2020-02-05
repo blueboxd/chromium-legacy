@@ -39,8 +39,6 @@ class CORE_EXPORT PreloadRequest {
 
   enum ReferrerSource { kDocumentIsReferrer, kBaseUrlIsReferrer };
 
-  // TODO(csharrison): Move the implementation to the cpp file when core/html
-  // gets its own testing source set in html/BUILD.gn.
   static std::unique_ptr<PreloadRequest> CreateIfNeeded(
       const String& initiator_name,
       const TextPosition& initiator_position,
@@ -54,20 +52,7 @@ class CORE_EXPORT PreloadRequest {
           FetchParameters::ResourceWidth(),
       const ClientHintsPreferences& client_hints_preferences =
           ClientHintsPreferences(),
-      RequestType request_type = kRequestTypePreload) {
-    // Never preload data URLs. We also disallow relative ref URLs which become
-    // data URLs if the document's URL is a data URL. We don't want to create
-    // extra resource requests with data URLs to avoid copy / initialization
-    // overhead, which can be significant for large URLs.
-    if (resource_url.IsEmpty() || resource_url.StartsWith("#") ||
-        ProtocolIs(resource_url, "data")) {
-      return nullptr;
-    }
-    return base::WrapUnique(new PreloadRequest(
-        initiator_name, initiator_position, resource_url, base_url,
-        resource_type, resource_width, client_hints_preferences, request_type,
-        referrer_policy, referrer_source, is_image_set));
-  }
+      RequestType request_type = kRequestTypePreload);
 
   Resource* Start(Document*);
 
@@ -167,25 +152,25 @@ class CORE_EXPORT PreloadRequest {
 
   KURL CompleteURL(Document*);
 
-  String initiator_name_;
-  TextPosition initiator_position_;
-  String resource_url_;
-  KURL base_url_;
+  const String initiator_name_;
+  const TextPosition initiator_position_;
+  const String resource_url_;
+  const KURL base_url_;
   String charset_;
-  ResourceType resource_type_;
+  const ResourceType resource_type_;
   mojom::ScriptType script_type_;
   CrossOriginAttributeValue cross_origin_;
   mojom::FetchImportanceMode importance_;
   String nonce_;
   FetchParameters::DeferOption defer_;
-  FetchParameters::ResourceWidth resource_width_;
-  ClientHintsPreferences client_hints_preferences_;
-  RequestType request_type_;
-  network::mojom::ReferrerPolicy referrer_policy_;
-  ReferrerSource referrer_source_;
+  const FetchParameters::ResourceWidth resource_width_;
+  const ClientHintsPreferences client_hints_preferences_;
+  const RequestType request_type_;
+  const network::mojom::ReferrerPolicy referrer_policy_;
+  const ReferrerSource referrer_source_;
   IntegrityMetadataSet integrity_metadata_;
   bool from_insertion_scanner_;
-  ResourceFetcher::IsImageSet is_image_set_;
+  const ResourceFetcher::IsImageSet is_image_set_;
   bool is_lazy_load_image_enabled_;
 };
 

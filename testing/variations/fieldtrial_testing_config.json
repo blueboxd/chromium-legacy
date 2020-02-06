@@ -4203,10 +4203,15 @@
             "experiments": [
                 {
                     "name": "AndroidExperiments",
+                    "params": {
+                        "ZeroSuggestVariant:1:*": "Local",
+                        "ZeroSuggestVariant:7:*": "Local",
+                        "ZeroSuggestVariant:8:*": "Local",
+                        "rounded_edges": "true"
+                    },
                     "enable_features": [
-                        "OmniboxDisplayTitleForCurrentUrl",
-                        "OmniboxUIExperimentHideSteadyStateUrlScheme",
-                        "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains"
+                        "OmniboxDisableInstantExtendedLimit",
+                        "OmniboxOnFocusSuggestions"
                     ]
                 }
             ]
@@ -7224,6 +7229,21 @@
                     ],
                     "disable_features": [
                         "WebAssemblyBaseline"
+                    ]
+                }
+            ]
+        }
+    ],
+    "VaapiH264AMDEncoder": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "VaapiH264AMDEncoder"
                     ]
                 }
             ]

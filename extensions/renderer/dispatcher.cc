@@ -749,6 +749,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS},
       {"automationEvent", IDR_AUTOMATION_EVENT_JS},
       {"automationNode", IDR_AUTOMATION_NODE_JS},
+      {"automationTreeCache", IDR_AUTOMATION_TREE_CACHE_JS},
       {"app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS},
       {"app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS},
       {"declarativeWebRequest", IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS},

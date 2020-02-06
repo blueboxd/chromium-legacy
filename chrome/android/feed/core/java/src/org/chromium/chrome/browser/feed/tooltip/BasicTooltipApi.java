@@ -30,8 +30,8 @@ public class BasicTooltipApi implements TooltipApi {
                 FeedTooltipUtils.getFeatureForIPH(tooltipInfo.getFeatureName());
         if (TextUtils.isEmpty(featureForIPH)) return false;
 
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        final Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         if (!tracker.shouldTriggerHelpUI(featureForIPH)) return false;
 
         ViewRectProvider rectProvider = new ViewRectProvider(view);

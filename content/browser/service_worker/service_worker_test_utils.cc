@@ -397,6 +397,23 @@ CreateProviderHostForServiceWorkerContext(
   return host;
 }
 
+scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
+    ServiceWorkerRegistry* registry,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options) {
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  base::RunLoop run_loop;
+  registry->CreateNewRegistration(
+      options,
+      base::BindLambdaForTesting(
+          [&](scoped_refptr<ServiceWorkerRegistration> new_registration) {
+            registration = std::move(new_registration);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  DCHECK(registration);
+  return registration;
+}
+
 scoped_refptr<ServiceWorkerRegistration>
 CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           const GURL& scope,
@@ -404,7 +421,9 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           int64_t resource_id) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
-  auto registration = context->registry()->CreateNewRegistration(options);
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateNewServiceWorkerRegistration(context->registry(), options);
   auto version = context->registry()->CreateNewVersion(
       registration.get(), script, blink::mojom::ScriptType::kClassic);
   ServiceWorkerDatabase::ResourceRecord record(resource_id, script,

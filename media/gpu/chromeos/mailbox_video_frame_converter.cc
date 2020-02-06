@@ -39,9 +39,11 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
       gpu::SharedImageStub::SharedImageDestructionCallback;
 
   ScopedSharedImage(const gpu::Mailbox& mailbox,
+                    const gfx::Rect& rect,
                     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
                     DestroySharedImageCB destroy_shared_image_cb)
       : mailbox_(mailbox),
+        rect_(rect),
         destroy_shared_image_cb_(std::move(destroy_shared_image_cb)),
         destruction_task_runner_(std::move(gpu_task_runner)) {}
   ~ScopedSharedImage() {
@@ -55,9 +57,11 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
   }
 
   const gpu::Mailbox& mailbox() const { return mailbox_; }
+  const gfx::Rect& rect() const { return rect_; }
 
  private:
   const gpu::Mailbox mailbox_;
+  const gfx::Rect rect_;
   DestroySharedImageCB destroy_shared_image_cb_;
   const scoped_refptr<base::SequencedTaskRunner> destruction_task_runner_;
 
@@ -150,8 +154,14 @@ void MailboxVideoFrameConverter::ConvertFrame(scoped_refptr<VideoFrame> frame) {
 
   gpu::Mailbox mailbox;
   const UniqueID origin_frame_id = origin_frame->unique_id();
-  if (shared_images_.find(origin_frame_id) != shared_images_.end())
-    mailbox = shared_images_[origin_frame_id]->mailbox();
+  if (shared_images_.find(origin_frame_id) != shared_images_.end()) {
+    // If visible_rect() is changed, recreate SharedImage with the new
+    // visible_rect().
+    if (shared_images_[origin_frame_id]->rect() == frame->visible_rect())
+      mailbox = shared_images_[origin_frame_id]->mailbox();
+    else
+      shared_images_[origin_frame_id].reset();
+  }
 
   input_frame_queue_.emplace(frame, origin_frame_id);
 
@@ -223,6 +233,7 @@ void MailboxVideoFrameConverter::ConvertFrameOnGPUThread(
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("media,gpu", "ConvertFrameOnGPUThread", "VideoFrame id",
                origin_frame->unique_id());
+  const gfx::Rect visible_rect = frame->visible_rect();
 
   // |origin_frame| is kept alive by |frame|.
   auto wrap_mailbox_and_video_frame_and_output_cb = base::BindOnce(
@@ -242,7 +253,8 @@ void MailboxVideoFrameConverter::ConvertFrameOnGPUThread(
   }
 
   std::unique_ptr<ScopedSharedImage> scoped_shared_image;
-  scoped_shared_image = GenerateSharedImageOnGPUThread(origin_frame);
+  scoped_shared_image =
+      GenerateSharedImageOnGPUThread(origin_frame, visible_rect);
   if (!scoped_shared_image)
     return;
 
@@ -262,7 +274,8 @@ void MailboxVideoFrameConverter::ConvertFrameOnGPUThread(
 
 std::unique_ptr<MailboxVideoFrameConverter::ScopedSharedImage>
 MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
-    VideoFrame* video_frame) {
+    VideoFrame* video_frame,
+    const gfx::Rect& destination_visible_rect) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "frame: " << video_frame->unique_id();
 
@@ -293,6 +306,10 @@ MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
   DCHECK(shared_image_stub);
 
+  // Destination VideoFrames should have visible rectangles stating at the
+  // origin.
+  DCHECK(destination_visible_rect.origin().IsOrigin());
+
   // The allocated SharedImages should be usable for the (Display) compositor
   // and, potentially, for overlays (Scanout).
   const uint32_t shared_image_usage =
@@ -300,7 +317,7 @@ MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   const bool success = shared_image_stub->CreateSharedImage(
       mailbox, shared_image_stub->channel()->client_id(),
       std::move(gpu_memory_buffer_handle), *buffer_format,
-      gpu::kNullSurfaceHandle, video_frame->coded_size(),
+      gpu::kNullSurfaceHandle, destination_visible_rect.size(),
       video_frame->ColorSpace(), shared_image_usage);
   if (!success) {
     OnError(FROM_HERE, "Failed to create shared image.");
@@ -309,7 +326,7 @@ MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   // There's no need to UpdateSharedImage() after CreateSharedImage().
 
   return std::make_unique<ScopedSharedImage>(
-      mailbox, gpu_task_runner_,
+      mailbox, destination_visible_rect, gpu_task_runner_,
       shared_image_stub->GetSharedImageDestructionCallback(mailbox));
 }
 

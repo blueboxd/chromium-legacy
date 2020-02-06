@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 namespace blink {
 
@@ -224,9 +224,7 @@ void FontFaceSetDocument::FontLoadHistogram::UpdateStatus(FontFace* font_face) {
 
 void FontFaceSetDocument::FontLoadHistogram::Record() {
   if (status_ == kHadBlankText || status_ == kDidNotHaveBlankText) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, had_blank_text_histogram,
-                        ("WebFont.HadBlankText", 2));
-    had_blank_text_histogram.Count(status_ == kHadBlankText ? 1 : 0);
+    base::UmaHistogramBoolean("WebFont.HadBlankText", status_ == kHadBlankText);
     status_ = kReported;
   }
 }

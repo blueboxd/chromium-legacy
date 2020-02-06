@@ -5,11 +5,9 @@
 [
     RuntimeEnabled=WebCodecs
 ] interface VideoDecoder {
-    constructor();
-    [CallWith=ScriptState, RaisesException] Promise<void> Initialize(VideoDecoderInitParameters params);
-    [CallWith=ScriptState, RaisesException] Promise<void> Flush();
-    void Close();
+    [CallWith=ScriptState, RaisesException] constructor();
+    [RaisesException] Promise<void> initialize(VideoDecoderInitParameters params);
 
-    readonly attribute WritableStream writable;  // of EncodedVideoFrame
+    readonly attribute WritableStream writable;  // of EncodedVideoChunk
     readonly attribute ReadableStream readable;  // of VideoFrame
 };

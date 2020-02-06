@@ -2532,6 +2532,9 @@ enum WebFeature {
   // allowed. See https://crbug.com/937131.
   kFeaturePolicyProposalWouldChangeBehaviour = 3158,
   kRTCLocalSdpModificationSimulcast = 3159,
+  kTrustedTypesEnabledEnforcing = 3160,
+  kTrustedTypesEnabledReportOnly = 3161,
+  kTrustedTypesAllowDuplicates = 3162,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

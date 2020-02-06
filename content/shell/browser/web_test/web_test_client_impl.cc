@@ -88,4 +88,17 @@ void WebTestClientImpl::SimulateWebContentIndexDelete(const std::string& id) {
                              id);
 }
 
+void WebTestClientImpl::BlockThirdPartyCookies(bool block) {
+  BlinkTestController::Get()->OnBlockThirdPartyCookies(block);
+}
+
+void WebTestClientImpl::ResetPermissions() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  WebTestContentBrowserClient::Get()
+      ->GetWebTestBrowserContext()
+      ->GetWebTestPermissionManager()
+      ->ResetPermissions();
+}
+
 }  // namespace content

@@ -73,7 +73,6 @@ TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
     : ContextClient(context),
       empty_html_(MakeGarbageCollected<TrustedHTML>("")),
       empty_script_(MakeGarbageCollected<TrustedScript>("")) {
-  UseCounter::Count(context, WebFeature::kTrustedTypesEnabled);
 }
 
 Vector<String> TrustedTypePolicyFactory::getPolicyNames() const {

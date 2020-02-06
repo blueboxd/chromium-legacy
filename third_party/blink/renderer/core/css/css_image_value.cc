@@ -73,7 +73,7 @@ StyleImage* CSSImageValue::CacheImage(
     options.initiator_info.name = initiator_name_.IsEmpty()
                                       ? fetch_initiator_type_names::kCSS
                                       : initiator_name_;
-    FetchParameters params(resource_request, options);
+    FetchParameters params(std::move(resource_request), options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {
       params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),

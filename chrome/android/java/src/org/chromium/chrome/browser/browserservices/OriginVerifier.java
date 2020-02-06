@@ -269,8 +269,8 @@ public class OriginVerifier {
             return;
         }
         if (mWebContents != null && mWebContents.isDestroyed()) mWebContents = null;
-        mNativeOriginVerifier = OriginVerifierJni.get().init(OriginVerifier.this, mWebContents,
-                Profile.getLastUsedProfile().getOriginalProfile());
+        mNativeOriginVerifier = OriginVerifierJni.get().init(
+                OriginVerifier.this, mWebContents, Profile.getLastUsedRegularProfile());
         assert mNativeOriginVerifier != 0;
         String relationship = null;
         switch (mRelation) {

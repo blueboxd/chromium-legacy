@@ -1,9 +1,0 @@
-Tests that reloading while paused at a breakpoint doesn't execute code after the breakpoint.
-
-Setting a breakpoint.
-Call stack:
-    0) divergingFunction (diverge-without-breakpoint.html:5)
-    1)  (:1)
-Reloading page...
-Page reloaded.
-

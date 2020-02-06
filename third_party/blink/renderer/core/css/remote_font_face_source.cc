@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/remote_font_face_source.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -341,13 +341,10 @@ void RemoteFontFaceSource::FontLoadHistograms::LongLimitExceeded() {
 void RemoteFontFaceSource::FontLoadHistograms::RecordFallbackTime() {
   if (blank_paint_time_.is_null() || blank_paint_time_recorded_)
     return;
+  // TODO(https://crbug.com/1049257): This time should be recorded using a more
+  // appropriate UMA helper, since >1% of samples are in the overflow bucket.
   base::TimeDelta duration = base::TimeTicks::Now() - blank_paint_time_;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
-                                  blank_text_shown_time_histogram,
-                                  ("WebFont.BlankTextShownTime", 0, 10000, 50));
-  blank_text_shown_time_histogram.Count(
-      base::saturated_cast<base::HistogramBase::Sample>(
-          duration.InMilliseconds()));
+  base::UmaHistogramTimes("WebFont.BlankTextShownTime", duration);
   blank_paint_time_recorded_ = true;
 }
 
@@ -355,9 +352,7 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
     const FontResource* font) {
   MaySetDataSource(DataSourceForLoadFinish(font));
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cache_hit_histogram,
-                                  ("WebFont.CacheHit", kCacheHitEnumMax));
-  cache_hit_histogram.Count(DataSourceMetricsValue());
+  base::UmaHistogramEnumeration("WebFont.CacheHit", DataSourceMetricsValue());
 
   if (data_source_ == kFromDiskCache || data_source_ == kFromNetwork) {
     DCHECK(!load_start_time_.is_null());
@@ -383,98 +378,74 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     base::TimeDelta delta) {
   CHECK_NE(kFromUnknown, data_source_);
 
-  int duration =
-      base::saturated_cast<base::HistogramBase::Sample>(delta.InMilliseconds());
+  // TODO(https://crbug.com/1049257): These times should be recorded using a
+  // more appropriate UMA helper, since >1% of samples are in the overflow
+  // bucket.
   if (font->ErrorOccurred()) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, load_error_histogram,
-        ("WebFont.DownloadTime.LoadError", 0, 10000, 50));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, missed_cache_load_error_histogram,
-        ("WebFont.MissedCache.DownloadTime.LoadError", 0, 10000, 50));
-    load_error_histogram.Count(duration);
-    if (data_source_ == kFromNetwork)
-      missed_cache_load_error_histogram.Count(duration);
+    base::UmaHistogramTimes("WebFont.DownloadTime.LoadError", delta);
+    if (data_source_ == kFromNetwork) {
+      base::UmaHistogramTimes("WebFont.MissedCache.DownloadTime.LoadError",
+                              delta);
+    }
     return;
   }
 
   size_t size = font->EncodedSize();
   if (size < 10 * 1024) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, under10k_histogram,
-        ("WebFont.DownloadTime.0.Under10KB", 0, 10000, 50));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, missed_cache_under10k_histogram,
-        ("WebFont.MissedCache.DownloadTime.0.Under10KB", 0, 10000, 50));
-    under10k_histogram.Count(duration);
-    if (data_source_ == kFromNetwork)
-      missed_cache_under10k_histogram.Count(duration);
+    base::UmaHistogramTimes("WebFont.DownloadTime.0.Under10KB", delta);
+    if (data_source_ == kFromNetwork) {
+      base::UmaHistogramTimes("WebFont.MissedCache.DownloadTime.0.Under10KB",
+                              delta);
+    }
     return;
   }
   if (size < 50 * 1024) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, under50k_histogram,
-        ("WebFont.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, missed_cache_under50k_histogram,
-        ("WebFont.MissedCache.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
-    under50k_histogram.Count(duration);
-    if (data_source_ == kFromNetwork)
-      missed_cache_under50k_histogram.Count(duration);
+    base::UmaHistogramTimes("WebFont.DownloadTime.1.10KBTo50KB", delta);
+    if (data_source_ == kFromNetwork) {
+      base::UmaHistogramTimes("WebFont.MissedCache.DownloadTime.1.10KBTo50KB",
+                              delta);
+    }
     return;
   }
   if (size < 100 * 1024) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, under100k_histogram,
-        ("WebFont.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, missed_cache_under100k_histogram,
-        ("WebFont.MissedCache.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
-    under100k_histogram.Count(duration);
-    if (data_source_ == kFromNetwork)
-      missed_cache_under100k_histogram.Count(duration);
+    base::UmaHistogramTimes("WebFont.DownloadTime.2.50KBTo100KB", delta);
+    if (data_source_ == kFromNetwork) {
+      base::UmaHistogramTimes("WebFont.MissedCache.DownloadTime.2.50KBTo100KB",
+                              delta);
+    }
     return;
   }
   if (size < 1024 * 1024) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, under1mb_histogram,
-        ("WebFont.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, missed_cache_under1mb_histogram,
-        ("WebFont.MissedCache.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
-    under1mb_histogram.Count(duration);
-    if (data_source_ == kFromNetwork)
-      missed_cache_under1mb_histogram.Count(duration);
+    base::UmaHistogramTimes("WebFont.DownloadTime.3.100KBTo1MB", delta);
+    if (data_source_ == kFromNetwork) {
+      base::UmaHistogramTimes("WebFont.MissedCache.DownloadTime.3.100KBTo1MB",
+                              delta);
+    }
     return;
   }
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, over1mb_histogram,
-      ("WebFont.DownloadTime.4.Over1MB", 0, 10000, 50));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, missed_cache_over1mb_histogram,
-      ("WebFont.MissedCache.DownloadTime.4.Over1MB", 0, 10000, 50));
-  over1mb_histogram.Count(duration);
-  if (data_source_ == kFromNetwork)
-    missed_cache_over1mb_histogram.Count(duration);
+  base::UmaHistogramTimes("WebFont.DownloadTime.4.Over1MB", delta);
+  if (data_source_ == kFromNetwork) {
+    base::UmaHistogramTimes("WebFont.MissedCache.DownloadTime.4.Over1MB",
+                            delta);
+  }
 }
 
 RemoteFontFaceSource::FontLoadHistograms::CacheHitMetrics
 RemoteFontFaceSource::FontLoadHistograms::DataSourceMetricsValue() {
   switch (data_source_) {
     case kFromDataURL:
-      return kDataUrl;
+      return CacheHitMetrics::kDataUrl;
     case kFromMemoryCache:
-      return kMemoryHit;
+      return CacheHitMetrics::kMemoryHit;
     case kFromDiskCache:
-      return kDiskHit;
+      return CacheHitMetrics::kDiskHit;
     case kFromNetwork:
-      return kMiss;
+      return CacheHitMetrics::kMiss;
     case kFromUnknown:
-    // Fall through.
-    default:
-      NOTREACHED();
+      return CacheHitMetrics::kMiss;
   }
-  return kMiss;
+  NOTREACHED();
+  return CacheHitMetrics::kMiss;
 }
 
 }  // namespace blink

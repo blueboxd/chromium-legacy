@@ -657,8 +657,6 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
       return system_colors_[SystemThemeColor::kHighlight];
 
     // Highlight/Selected Text Foreground
-    case kColorId_ButtonHoveredColor:
-    case kColorId_ButtonPressedColor:
     case kColorId_TextOnProminentButtonColor:
     case kColorId_SelectedMenuItemForegroundColor:
     case kColorId_TextfieldSelectionColor:

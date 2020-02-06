@@ -81,7 +81,7 @@ void LinkImport::Process() {
   ResourceLoaderOptions options;
   options.initiator_info.name = owner_->localName();
 
-  FetchParameters params(resource_request, options);
+  FetchParameters params(std::move(resource_request), options);
   params.SetCharset(GetCharset());
   params.SetContentSecurityPolicyNonce(owner_->nonce());
 

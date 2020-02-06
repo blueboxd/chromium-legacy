@@ -1666,7 +1666,6 @@ test("content_unittests") {
     "../browser/native_file_system/native_file_system_handle_base_unittest.cc",
     "../browser/native_file_system/native_file_system_manager_impl_unittest.cc",
     "../browser/net/network_quality_observer_impl_unittest.cc",
-    "../browser/net/quota_policy_cookie_store_unittest.cc",
     "../browser/network_context_client_base_impl_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/blink_notification_service_impl_unittest.cc",

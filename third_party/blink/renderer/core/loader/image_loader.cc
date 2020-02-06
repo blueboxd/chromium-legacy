@@ -509,7 +509,8 @@ void ImageLoader::DoUpdateFromElement(
     }
 
     DCHECK(document.GetFrame());
-    FetchParameters params(resource_request, resource_loader_options);
+    FetchParameters params(std::move(resource_request),
+                           resource_loader_options);
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetFrame()->GetClientHintsPreferences());
 

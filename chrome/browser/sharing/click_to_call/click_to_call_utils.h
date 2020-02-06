@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/optional.h"
-#include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,8 +27,7 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
 // Returns the first possible phone number in |selection_text| given the
 // |regex_variant| to be used or base::nullopt if the regex did not match.
 base::Optional<std::string> ExtractPhoneNumber(
-    const std::string& selection_text,
-    PhoneNumberRegexVariant regex_variant);
+    const std::string& selection_text);
 
 // Unescapes and returns the URL contents.
 std::string GetUnescapedURLContent(const GURL& url);

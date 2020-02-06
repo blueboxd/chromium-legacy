@@ -157,7 +157,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         int fromState = getPanelState();
 
         mPanelMetrics.onPanelStateChanged(
-                fromState, toState, reason, Profile.getLastUsedProfile().getOriginalProfile());
+                fromState, toState, reason, Profile.getLastUsedRegularProfile());
 
         if (toState == PanelState.PEEKED
                 && (fromState == PanelState.CLOSED || fromState == PanelState.UNDEFINED)) {

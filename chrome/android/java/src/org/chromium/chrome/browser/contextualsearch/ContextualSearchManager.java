@@ -718,11 +718,11 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         mReceivedContextualCardsEntityData = !quickActionShown && receivedCaptionOrThumbnail;
 
         if (mReceivedContextualCardsEntityData) {
-            Tracker tracker = TrackerFactory.getTrackerForProfile(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
             tracker.notifyEvent(EventConstants.CONTEXTUAL_SEARCH_ENTITY_RESULT);
             mInProductHelp.onEntityDataReceived(
-                    mWasActivatedByTap, Profile.getLastUsedProfile().getOriginalProfile());
+                    mWasActivatedByTap, Profile.getLastUsedRegularProfile());
         }
 
         ContextualSearchUma.logContextualCardsDataShown(mReceivedContextualCardsEntityData);
@@ -1254,7 +1254,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @Override
     public void onPanelFinishedShowing() {
         mInProductHelp.onPanelFinishedShowing(
-                mWasActivatedByTap, Profile.getLastUsedProfile().getOriginalProfile());
+                mWasActivatedByTap, Profile.getLastUsedRegularProfile());
     }
 
     @Override

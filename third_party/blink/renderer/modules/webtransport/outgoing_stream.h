@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_OUTGOING_STREAM_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_OUTGOING_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/containers/span.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
 
@@ -142,7 +142,7 @@ class MODULES_EXPORT OutgoingStream
 
   // The offset into |cached_data_| of the first byte that still needs to be
   // written.
-  wtf_size_t offset_ = 0;
+  size_t offset_ = 0;
 
   Member<WritableStream> writable_;
   Member<WritableStreamDefaultController> controller_;

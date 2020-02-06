@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/local_font_face_source.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/css_custom_font_data.h"
 #include "third_party/blink/renderer/core/css/css_font_face.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -138,9 +138,7 @@ void LocalFontFaceSource::LocalFontHistograms::Record(bool load_success) {
   if (reported_)
     return;
   reported_ = true;
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, local_font_used_histogram,
-                      ("WebFont.LocalFontUsed", 2));
-  local_font_used_histogram.Count(load_success ? 1 : 0);
+  base::UmaHistogramBoolean("WebFont.LocalFontUsed", load_success);
 }
 
 void LocalFontFaceSource::Trace(blink::Visitor* visitor) {

@@ -268,33 +268,16 @@ crbug.com/968791 virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ P
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
 crbug.com/658305 virtual/scalefactor200/css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-after.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-colorspace.html [ Failure Pass ]
 crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-composite.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-composite-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-composite-hw.html [ Timeout Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hidpi.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference.html [ Failure Pass ]
 crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-ordering.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-rename.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-chained-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-colormatrix.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-tile.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/filter-effect-removed.html [ Failure Pass ]
-crbug.com/862716 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-crbug.com/862716 [ Linux ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-crbug.com/862716 [ Win ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
+crbug.com/862716 virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
 crbug.com/869364 virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
 crbug.com/873454 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
@@ -443,6 +426,15 @@ crbug.com/1044742 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-
 crbug.com/1044742 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-video.html [ Failure ]
 crbug.com/1044742 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-with-text.html [ Failure ]
 crbug.com/1044742 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-mask.html [ Failure ]
+
+# These Timeout on Mac 10.10 only, which is odd indeed.
+crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/svgangle-animation-grad-to-rad.html [ Skip ]
+crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/types/scripted/SVGAnimatedLength.html [ Skip ]
+crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/svglength-animation-number-to-number.html [ Skip ]
+crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/animate-marker-orient-from-angle-to-auto.html [ Skip ]
+crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/animate-dynamic-update-attributeName.html [ Skip ]
+crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/short-simple-duration-and-fractional-repeatcount.html [ Skip ]
+
 
 # ====== Paint team owned tests to here ======
 
@@ -1933,10 +1925,6 @@ crbug.com/520736 [ Linux ] media/W3C/video/networkState/networkState_during_prog
 crbug.com/909095 [ Mac ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/909095 virtual/audio-service/media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
-crbug.com/862716 [ Mac ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-crbug.com/862716 [ Linux ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-crbug.com/862716 [ Win ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-
 # gpuBenchmarking.pinchBy is busted on desktops for touchscreen pinch
 crbug.com/787615 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Pass ]
 crbug.com/787615 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Pass ]
@@ -2249,29 +2237,30 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
-crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 css3/filters/effect-reference-after.html [ Failure Pass ]
+crbug.com/862716 css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-colorspace.html [ Failure Pass ]
 crbug.com/658305 crbug.com/758133 css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-composite.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-composite-hw.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-external.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] css3/filters/effect-reference-external.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-hidpi.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference.html [ Failure Pass ]
 crbug.com/658305 crbug.com/758133 css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 css3/filters/effect-reference-image.html [ Pass Failure ]
+crbug.com/658305 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 crbug.com/658305 css3/filters/effect-reference-ordering.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-rename.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-subregion-chained-hw.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-subregion-colormatrix.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-colormatrix.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-subregion.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 css3/filters/effect-reference-tile.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] css3/filters/effect-reference-tile.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-zoom.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/filter-effect-removed.html [ Failure Pass ]
@@ -2881,8 +2870,6 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/top.htt
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/top.meta/unsafe-url/fetch/cross-https.swap-origin.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/service-workers/service-worker/unregister-then-register-new-script.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/xhr/cross-https.keep-origin.http.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/svg/animations/svgangle-animation-grad-to-rad.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/svg/types/scripted/SVGAnimatedLength.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Timeout ]
@@ -2903,7 +2890,6 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/srcdoc-
 crbug.com/626703 [ Mac10.10 ] external/wpt/trusted-types/block-Node-multiple-arguments.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/fetch/cross-https.downgrade.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/upgrade/sharedworker-module/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/svg/animations/svglength-animation-number-to-number.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/webmessaging/with-ports/007.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/upgrade/worklet-layout-import-data/same-http-downgrade.downgrade.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/top.meta/unset/fetch/cross-http.swap-origin.http.html [ Timeout ]
@@ -2912,7 +2898,6 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/worker-
 crbug.com/626703 [ Mac10.10 ] external/wpt/webmessaging/with-ports/021.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/resource-timing/resource_connection_reuse_mixed_content_redirect.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/top.meta/upgrade/worklet-animation-import-data/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/svg/animations/animate-marker-orient-from-angle-to-auto.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/streams/readable-streams/brand-checks.any.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/fetch/same-https.no-redirect.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/worker-module.http-rp/origin/xhr/same-https.swap-origin.http.html [ Timeout ]
@@ -2928,7 +2913,6 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/web-animations/animation-model/keyfra
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-module/same-http.keep-origin.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/resource-timing/buffer-full-increase-buffer-during-callback.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/service-workers/service-worker/clients-matchall-on-evaluation.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/svg/animations/animate-dynamic-update-attributeName.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/worklet-animation-import-data/cross-http-downgrade.no-redirect.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/streams/piping/then-interception.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/xhr/same-http.keep-origin.http.html [ Timeout ]
@@ -2950,7 +2934,6 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/resource-timing/resource_script_types
 crbug.com/626703 [ Mac10.10 ] external/wpt/service-workers/service-worker/multi-globals/url-parsing.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/upgrade/worklet-paint-import-data/same-https.downgrade.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/top.meta/unsafe-url/a-tag/cross-https.no-redirect.http.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/svg/animations/short-simple-duration-and-fractional-repeatcount.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/web-locks/query.tentative.https.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/user-timing/clear_all_measures.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/wake-lock/wakelock-disabled-by-feature-policy.https.sub.html [ Timeout ]
@@ -4746,9 +4729,6 @@ crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [
 crbug.com/722943 [ Win ] media/audio-repaint.html [ Crash ]
 crbug.com/722943 [ Win ] virtual/audio-service/media/audio-repaint.html [ Crash ]
 
-# Sheriff failures 2018-08-13
-crbug.com/873454 css3/filters/effect-reference-image-hw.html [ Failure Pass ]
-
 # Sheriff failures 2018-08-15
 crbug.com/874567 [ Mac ] svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ Pass Failure ]
 crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Pass Failure ]
@@ -6238,9 +6218,6 @@ crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_
 # Timeout media preload test until preloading media destinations gets enabled.
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
-# Sheriff 2019-11-21
-crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
-
 # Sheriff 2019-11-26
 crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
 crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
@@ -6341,7 +6318,6 @@ crbug.com/1034492 http/tests/devtools/unit/soft-drop-down.js [ Pass Failure ]
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1034789 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
 crbug.com/1034789 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
-crbug.com/1034839 css3/filters/effect-reference-image.html [ Pass Failure ]
 
 # Sheriff 2019-12-18
 crbug.com/859169 http/tests/devtools/layers/layer-compositing-reasons.js [ Pass Failure ]

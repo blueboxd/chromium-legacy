@@ -75,6 +75,9 @@ class CORE_EXPORT HTMLSelectElement final
   // TODO(tkent): Rename |size| to |Size|. This is not an implementation of
   // |size| IDL attribute.
   unsigned size() const { return size_; }
+  // The number of items to be shown in the LisBox mode.
+  // Do not call this in the MenuList mode.
+  unsigned ListBoxSize() const;
   bool IsMultiple() const { return is_multiple_; }
 
   bool UsesMenuList() const;

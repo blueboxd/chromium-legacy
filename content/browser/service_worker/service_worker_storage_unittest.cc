@@ -665,11 +665,11 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
 
   // Next available ids should be invalid.
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
-            storage()->NewRegistrationId());
+            storage()->NewRegistrationIdInternal());
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
             storage()->NewVersionId());
   EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
-            storage()->NewRegistrationId());
+            storage()->NewRegistrationIdInternal());
 }
 
 TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
@@ -870,7 +870,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      registry()->CreateNewRegistration(options);
+      CreateNewServiceWorkerRegistration(registry(), options);
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, blink::mojom::ScriptType::kClassic,
       kVersionId, context()->AsWeakPtr());
@@ -1253,7 +1253,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     // Cons up a new registration+version with two script resources.
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope_;
-    registration_ = registry()->CreateNewRegistration(options);
+    registration_ = CreateNewServiceWorkerRegistration(registry(), options);
     scoped_refptr<ServiceWorkerVersion> version = registry()->CreateNewVersion(
         registration_.get(), script_, options.type);
     version->set_fetch_handler_existence(

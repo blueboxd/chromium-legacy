@@ -1387,7 +1387,11 @@ void NGLineBreaker::HandleAtomicInline(
   }
 
   item_result->should_create_line_box = true;
-  item_result->can_break_after = auto_wrap_ && !sticky_images_quirk_;
+  // Atomic inlines have break opportunities before and after, even when the
+  // adjacent character is U+00A0 NO-BREAK SPACE character, except when sticky
+  // images quirk is applied.
+  item_result->can_break_after =
+      auto_wrap_ && !(sticky_images_quirk_ && item.IsImage());
 
   position_ += item_result->inline_size;
   trailing_whitespace_ = WhitespaceState::kNone;

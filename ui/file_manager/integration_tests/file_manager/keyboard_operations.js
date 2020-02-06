@@ -44,7 +44,7 @@ function getVisibleDirectoryTreeItemNames(appId) {
  * @return {!Promise}
  */
 function waitForDirectoryTreeItem(appId, name) {
-  let caller = getCaller();
+  const caller = getCaller();
   return repeatUntil(async () => {
     if ((await getVisibleDirectoryTreeItemNames(appId)).indexOf(name) !== -1) {
       return true;
@@ -61,7 +61,7 @@ function waitForDirectoryTreeItem(appId, name) {
  * @return {!Promise}
  */
 function waitForDirectoryTreeItemLost(appId, name) {
-  let caller = getCaller();
+  const caller = getCaller();
   return repeatUntil(async () => {
     if ((await getVisibleDirectoryTreeItemNames(appId)).indexOf(name) === -1) {
       return true;
@@ -371,7 +371,7 @@ testcase.keyboardDisableCopyWhenDialogDisplayed = async () => {
 
   // Click delete button in the toolbar.
   await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['button#delete-button']);
+      'fakeMouseClick', appId, ['#delete-button']);
 
   // Confirm that the delete confirmation dialog is shown.
   await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');

@@ -389,7 +389,15 @@ class PLATFORM_EXPORT ThreadHeap {
 
   PageBloomFilter* page_bloom_filter() { return page_bloom_filter_.get(); }
 
+  bool IsInLastAllocatedRegion(Address address) const;
+  void SetLastAllocatedRegion(Address start, size_t length);
+
  private:
+  struct LastAllocatedRegion {
+    Address start = nullptr;
+    size_t length = 0;
+  };
+
   static int ArenaIndexForObjectSize(size_t);
 
   void SetupWorklists();
@@ -459,6 +467,8 @@ class PLATFORM_EXPORT ThreadHeap {
   WTF::HashMap<void*, EphemeronCallback> ephemeron_callbacks_;
 
   std::unique_ptr<HeapCompact> compaction_;
+
+  LastAllocatedRegion last_allocated_region_;
 
   BaseArena* arenas_[BlinkGC::kNumberOfArenas];
 
@@ -636,6 +646,17 @@ Address ThreadHeap::Allocate(size_t size) {
   return state->Heap().AllocateOnArenaIndex(
       state, size, ThreadHeap::ArenaIndexForObjectSize(size),
       GCInfoTrait<T>::Index(), type_name);
+}
+
+inline bool ThreadHeap::IsInLastAllocatedRegion(Address address) const {
+  return last_allocated_region_.start <= address &&
+         address <=
+             last_allocated_region_.start + last_allocated_region_.length;
+}
+
+inline void ThreadHeap::SetLastAllocatedRegion(Address start, size_t length) {
+  last_allocated_region_.start = start;
+  last_allocated_region_.length = length;
 }
 
 template <typename T>

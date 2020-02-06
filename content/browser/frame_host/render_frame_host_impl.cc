@@ -159,6 +159,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/service_manager_connection.h"
@@ -1455,8 +1456,14 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
+  // We use the last committed Origin and ClientSecurityState. If the caller
+  // wanted a factory associated to a navigation about to commit, the params
+  // generated won't be correct. There is no good way of fixing this before
+  // RenderDocumentHost (ie swapping RenderFrameHost on each navigation).
   return CreateNetworkServiceDefaultFactoryInternal(
-      CreateURLLoaderFactoryParamsForMainWorld(last_committed_origin_),
+      CreateURLLoaderFactoryParamsForMainWorld(
+          last_committed_origin_,
+          mojo::Clone(last_committed_client_security_state_)),
       std::move(default_factory_receiver));
 }
 
@@ -1488,7 +1495,8 @@ void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
     subresource_loader_factories->pending_isolated_world_factories() =
         CreateURLLoaderFactoriesForIsolatedWorlds(
             GetExpectedMainWorldOriginForUrlLoaderFactory(),
-            isolated_world_origins);
+            isolated_world_origins,
+            mojo::Clone(last_committed_client_security_state_));
     GetNavigationControl()->UpdateSubresourceLoaderFactories(
         std::move(subresource_loader_factories));
   }
@@ -1507,14 +1515,16 @@ bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) {
 blink::PendingURLLoaderFactoryBundle::OriginMap
 RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     const url::Origin& main_world_origin,
-    const base::flat_set<url::Origin>& isolated_world_origins) {
+    const base::flat_set<url::Origin>& isolated_world_origins,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
   WebPreferences preferences = GetRenderViewHost()->GetWebkitPreferences();
 
   blink::PendingURLLoaderFactoryBundle::OriginMap result;
   for (const url::Origin& isolated_world_origin : isolated_world_origins) {
     network::mojom::URLLoaderFactoryParamsPtr factory_params =
         URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
-            this, isolated_world_origin, main_world_origin);
+            this, isolated_world_origin, main_world_origin,
+            mojo::Clone(client_security_state));
 
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateNetworkServiceDefaultFactoryAndObserve(
@@ -3387,11 +3397,17 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   DCHECK(!IsOutOfProcessNetworkService() ||
          network_service_disconnect_handler_holder_.is_bound());
 
+  // We use the last committed Origin and ClientSecurityState. If the caller
+  // wanted a factory associated to a navigation about to commit, the params
+  // generated won't be correct. There is no good way of fixing this before
+  // RenderDocumentHost (ie swapping RenderFrameHost on each navigation).
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = false;
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-        CreateURLLoaderFactoryParamsForMainWorld(last_committed_origin_),
+        CreateURLLoaderFactoryParamsForMainWorld(
+            last_committed_origin_,
+            mojo::Clone(last_committed_client_security_state_)),
         default_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
@@ -3402,7 +3418,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
               blink::PendingURLLoaderFactoryBundle::SchemeMap(),
               CreateURLLoaderFactoriesForIsolatedWorlds(
                   GetExpectedMainWorldOriginForUrlLoaderFactory(),
-                  isolated_worlds_requiring_separate_url_loader_factory_),
+                  isolated_worlds_requiring_separate_url_loader_factory_,
+                  mojo::Clone(last_committed_client_security_state_)),
               bypass_redirect_checks);
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       std::move(subresource_loader_factories));
@@ -4428,7 +4445,8 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
       network::features::kPrefetchMainResourceNetworkIsolationKey));
 
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
-      URLLoaderFactoryParamsHelper::CreateForPrefetch(this);
+      URLLoaderFactoryParamsHelper::CreateForPrefetch(
+          this, mojo::Clone(last_committed_client_security_state_));
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   bool bypass_redirect_checks = false;
@@ -4445,7 +4463,8 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
       blink::PendingURLLoaderFactoryBundle::SchemeMap(),
       CreateURLLoaderFactoriesForIsolatedWorlds(
           GetExpectedMainWorldOriginForUrlLoaderFactory(),
-          isolated_worlds_requiring_separate_url_loader_factory_),
+          isolated_worlds_requiring_separate_url_loader_factory_,
+          mojo::Clone(last_committed_client_security_state_)),
       bypass_redirect_checks);
 }
 
@@ -5511,11 +5530,17 @@ void RenderFrameHostImpl::CommitNavigation(
     if (!pending_default_factory) {
       // Otherwise default to a Network Service-backed loader from the
       // appropriate NetworkContext.
+      // TODO(clamy): Always use the NavigationRequest's ClientSecurityState
+      // when all interstitials are committed and we are guaranteed to have a
+      // NavigationRequest in this function.
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
               CreateURLLoaderFactoryParamsForMainWorld(
-                  main_world_origin_for_url_loader_factory),
+                  main_world_origin_for_url_loader_factory,
+                  navigation_request
+                      ? mojo::Clone(navigation_request->client_security_state())
+                      : network::mojom::ClientSecurityState::New()),
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -5629,10 +5654,16 @@ void RenderFrameHostImpl::CommitNavigation(
           factory.first, std::move(pending_factory_proxy));
     }
 
+    // TODO(clamy): Always use the NavigationRequest's ClientSecurityState
+    // when all interstitials are committed and we are guaranteed to have a
+    // NavigationRequest in this function.
     subresource_loader_factories->pending_isolated_world_factories() =
         CreateURLLoaderFactoriesForIsolatedWorlds(
             main_world_origin_for_url_loader_factory,
-            isolated_worlds_requiring_separate_url_loader_factory_);
+            isolated_worlds_requiring_separate_url_loader_factory_,
+            navigation_request
+                ? mojo::Clone(navigation_request->client_security_state())
+                : network::mojom::ClientSecurityState::New());
   }
 
   // It is imperative that cross-document navigations always provide a set of
@@ -5814,7 +5845,8 @@ void RenderFrameHostImpl::FailedNavigation(
       subresource_loader_factories;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      CreateURLLoaderFactoryParamsForMainWorld(origin),
+      CreateURLLoaderFactoryParamsForMainWorld(
+          origin, mojo::Clone(navigation_request->client_security_state())),
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
       std::make_unique<blink::PendingURLLoaderFactoryBundle>(
@@ -6304,9 +6336,10 @@ RenderFrameHostImpl::GetExpectedMainWorldOriginForUrlLoaderFactory() {
 
 network::mojom::URLLoaderFactoryParamsPtr
 RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
-    const url::Origin& main_world_origin) {
-  return URLLoaderFactoryParamsHelper::CreateForFrame(this, main_world_origin,
-                                                      GetProcess());
+    const url::Origin& main_world_origin,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
+  return URLLoaderFactoryParamsHelper::CreateForFrame(
+      this, main_world_origin, std::move(client_security_state), GetProcess());
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -7426,6 +7459,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }));
   }
 
+  network::mojom::ClientSecurityStatePtr client_security_state =
+      navigation_request->TakeClientSecurityState();
+
   frame_tree_node()->navigator()->DidNavigate(this, *params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
@@ -7441,6 +7477,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     cookie_samesite_none_insecure_deprecation_url_hashes_.clear();
     renderer_reported_scheduler_tracked_features_ = 0;
     browser_reported_scheduler_tracked_features_ = 0;
+    last_committed_client_security_state_ = std::move(client_security_state);
   }
 
   return true;

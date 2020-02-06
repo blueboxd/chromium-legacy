@@ -122,11 +122,6 @@ bool ScreenLockerTester::IsLockShutdownButtonShown() {
          ash::LoginScreenTestApi::IsShutdownButtonShown();
 }
 
-bool ScreenLockerTester::IsAuthErrorBubbleShown() {
-  return IsScreenLockerLocked() &&
-         ash::LoginScreenTestApi::IsAuthErrorBubbleShown();
-}
-
 void ScreenLockerTester::UnlockWithPassword(const AccountId& account_id,
                                             const std::string& password) {
   ash::LoginScreenTestApi::SubmitPassword(account_id, password);

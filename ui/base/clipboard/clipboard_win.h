@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 
 namespace base {
 namespace win {
@@ -83,10 +84,10 @@ class ClipboardWin : public Clipboard {
   void WriteBitmapFromHandle(HBITMAP source_hbitmap, const gfx::Size& size);
 
   // Safely write to system clipboard. Free |handle| on failure.
-  void WriteToClipboard(unsigned int format, HANDLE handle);
+  void WriteToClipboard(ClipboardFormatType format, HANDLE handle);
 
   // Return the window that should be the clipboard owner, creating it
-  // if neccessary.  Marked const for lazily initialization by const methods.
+  // if necessary.  Marked const for lazily initialization by const methods.
   HWND GetClipboardWindow() const;
 
   // Mark this as mutable so const methods can still do lazy initialization.

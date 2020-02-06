@@ -73,6 +73,21 @@ void ConvertPrivateAccessibilityHighlightInfo(
   info->color = highlight.color;
 }
 
+void ConvertPrivateAccessibilityTextFieldInfo(
+    const PDF::PrivateAccessibilityTextFieldInfo& text_field,
+    PP_PrivateAccessibilityTextFieldInfo* info) {
+  info->name = text_field.name.c_str();
+  info->name_length = text_field.name.size();
+  info->value = text_field.value.c_str();
+  info->value_length = text_field.value.size();
+  info->is_read_only = text_field.is_read_only;
+  info->is_required = text_field.is_required;
+  info->is_password = text_field.is_password;
+  info->index_in_page = text_field.index_in_page;
+  info->text_run_index = text_field.text_run_index;
+  info->bounds = text_field.bounds;
+}
+
 }  // namespace
 
 // static
@@ -283,6 +298,15 @@ void PDF::SetAccessibilityPageInfo(
                                                &highlight_info[i]);
     }
 
+    const std::vector<PrivateAccessibilityTextFieldInfo>& text_fields =
+        page_objects.text_fields;
+    std::vector<PP_PrivateAccessibilityTextFieldInfo> text_field_info(
+        text_fields.size());
+    for (size_t i = 0; i < text_fields.size(); ++i) {
+      ConvertPrivateAccessibilityTextFieldInfo(text_fields[i],
+                                               &text_field_info[i]);
+    }
+
     PP_PrivateAccessibilityPageObjects pp_page_objects;
     pp_page_objects.links = link_info.data();
     pp_page_objects.link_count = link_info.size();
@@ -290,6 +314,8 @@ void PDF::SetAccessibilityPageInfo(
     pp_page_objects.image_count = image_info.size();
     pp_page_objects.highlights = highlight_info.data();
     pp_page_objects.highlight_count = highlight_info.size();
+    pp_page_objects.text_fields = text_field_info.data();
+    pp_page_objects.text_field_count = text_field_info.size();
 
     get_interface<PPB_PDF>()->SetAccessibilityPageInfo(
         instance.pp_instance(), page_info, text_run_info.data(), chars.data(),

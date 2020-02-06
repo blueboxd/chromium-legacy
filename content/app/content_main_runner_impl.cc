@@ -602,9 +602,13 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  // See note at the initialization of ExitManager, below; basically,
-  // only Android builds have the ctor/dtor handlers set up to use
-  // TRACE_EVENT right away.
+  // Now that mojo's core is initialized (by service manager's Main()), we can
+  // enable tracing. Note that only Android builds have the ctor/dtor handlers
+  // set up to use trace events at this point (because AtExitManager is already
+  // set up when the library is loaded). Other platforms enable tracing below,
+  // after the initialization of AtExitManager.
+  tracing::EnableStartupTracingIfNeeded();
+
   TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
 
@@ -672,25 +676,23 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
   ContentClientInitializer::Set(process_type, delegate_);
 
 #if !defined(OS_ANDROID)
-    // Enable startup tracing asap to avoid early TRACE_EVENT calls being
-    // ignored. For Android, startup tracing is enabled in an even earlier place
-    // content/app/android/library_loader_hooks.cc.
-    //
-    // Startup tracing flags are not (and should not) passed to Zygote
-    // processes. We will enable tracing when forked, if needed.
-    if (process_type != service_manager::switches::kZygoteProcess)
-      tracing::EnableStartupTracingIfNeeded();
-#endif  // !OS_ANDROID
+  // Enable startup tracing asap to avoid early TRACE_EVENT calls being
+  // ignored. For Android, startup tracing is enabled in an even earlier place
+  // above.
+  //
+  // Startup tracing flags are not (and should not be) passed to Zygote
+  // processes. We will enable tracing when forked, if needed.
+  if (process_type != service_manager::switches::kZygoteProcess)
+    tracing::EnableStartupTracingIfNeeded();
 
 #if defined(OS_WIN)
-    base::trace_event::TraceEventETWExport::EnableETWExport();
+  base::trace_event::TraceEventETWExport::EnableETWExport();
 #endif  // OS_WIN
 
-#if !defined(OS_ANDROID)
-    // Android tracing started at the beginning of the method.
-    // Other OSes have to wait till we get here in order for all the memory
-    // management setup to be completed.
-    TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
+  // Android tracing started at the beginning of the method.
+  // Other OSes have to wait till we get here in order for all the memory
+  // management setup to be completed.
+  TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !OS_ANDROID
 
     // If we are on a platform where the default allocator is overridden (shim

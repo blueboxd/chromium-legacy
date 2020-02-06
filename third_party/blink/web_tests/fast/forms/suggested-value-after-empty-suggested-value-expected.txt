@@ -65,6 +65,7 @@ Input before setting suggested values:
 |       "TX"
 |   <shadow:root>
 |     <div>
+|       aria-hidden="true"
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"
@@ -155,6 +156,7 @@ Input after setting suggestedValue:
 |       "TX"
 |   <shadow:root>
 |     <div>
+|       aria-hidden="true"
 |       "TX"
 |     <slot>
 |       name="user-agent-custom-assign-slot"
@@ -244,6 +246,7 @@ After resetting suggestedValue value:
 |       "TX"
 |   <shadow:root>
 |     <div>
+|       aria-hidden="true"
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"

@@ -190,7 +190,7 @@ bool SendBeaconCommon(LocalFrame* frame,
   request.SetKeepalive(true);
   request.SetRequestContext(mojom::RequestContextType::BEACON);
   beacon.Serialize(request);
-  FetchParameters params(request);
+  FetchParameters params(std::move(request));
   // The spec says:
   //  - If mimeType is not null:
   //   - If mimeType value is a CORS-safelisted request-header value for the
@@ -235,11 +235,11 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   request.SetReferrerString(Referrer::NoReferrer());
   request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
   request.SetRequestContext(mojom::RequestContextType::PING);
-  FetchParameters params(request);
+  FetchParameters params(std::move(request));
   params.MutableOptions().initiator_info.name =
       fetch_initiator_type_names::kPing;
 
-  frame->Client()->DidDispatchPingLoader(request.Url());
+  frame->Client()->DidDispatchPingLoader(ping_url);
   RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
 }
 
@@ -256,11 +256,11 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
   request.SetRequestDestination(network::mojom::RequestDestination::kReport);
   request.SetRequestorOrigin(frame->GetDocument()->GetSecurityOrigin());
   request.SetRedirectMode(network::mojom::RedirectMode::kError);
-  FetchParameters params(request);
+  FetchParameters params(std::move(request));
   params.MutableOptions().initiator_info.name =
       fetch_initiator_type_names::kViolationreport;
 
-  frame->Client()->DidDispatchPingLoader(request.Url());
+  frame->Client()->DidDispatchPingLoader(report_url);
   RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
 }
 

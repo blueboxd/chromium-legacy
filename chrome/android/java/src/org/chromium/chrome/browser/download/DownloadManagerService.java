@@ -1266,7 +1266,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                         .isFullBrowserStarted()) {
             Profile profile = info.isOffTheRecord()
                     ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
-                    : Profile.getLastUsedProfile().getOriginalProfile();
+                    : Profile.getLastUsedRegularProfile();
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_COMPLETED);
         }

@@ -110,6 +110,10 @@ struct InstanceIDTokenInfo final : public RegistrationInfo {
   // E.g. for sending GCM messages, 'GCM' scope should be used.
   std::string scope;
 
+  // Specifies TTL of retrievable token, zero value means unlimited TTL.
+  // Not serialized/deserialized.
+  base::TimeDelta time_to_live;
+
   // Allows including a small number of string key/value pairs that will be
   // associated with the token and may be used in processing the request. These
   // are not serialized/deserialized.

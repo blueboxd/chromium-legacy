@@ -98,7 +98,8 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
   void SetUpRegistrationWithOptions(
       const GURL& script_url,
       blink::mojom::ServiceWorkerRegistrationOptions options) {
-    registration_ = context()->registry()->CreateNewRegistration(options);
+    registration_ =
+        CreateNewServiceWorkerRegistration(context()->registry(), options);
     SetUpVersion(script_url);
   }
 

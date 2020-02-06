@@ -18,6 +18,8 @@ jumbo_source_set("renderer") {
     "api/automation/automation_ax_tree_wrapper.h",
     "api/automation/automation_internal_custom_bindings.cc",
     "api/automation/automation_internal_custom_bindings.h",
+    "api/automation/automation_position.cc",
+    "api/automation/automation_position.h",
     "api/display_source/display_source_session.cc",
     "api/display_source/display_source_session.h",
     "api_activity_logger.cc",

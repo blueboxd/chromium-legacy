@@ -326,6 +326,33 @@ function testGetLocationInfo(callback) {
         assertFalse(driveFilesByIdLocationInfo.isReadOnly);
         assertFalse(driveFilesByIdLocationInfo.isRootEntry);
 
+        const driveShortcutTargetsByIdDirectoryEntry =
+            MockDirectoryEntry.create(
+                new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+                '/.shortcut-targets-by-id/abcdef');
+        const driveShortcutTargetsByIdDirectoryLocationInfo =
+            volumeManager.getLocationInfo(
+                driveShortcutTargetsByIdDirectoryEntry);
+        assertEquals(
+            VolumeManagerCommon.RootType.DRIVE_OTHER,
+            driveShortcutTargetsByIdDirectoryLocationInfo.rootType);
+        assertFalse(
+            driveShortcutTargetsByIdDirectoryLocationInfo.hasFixedLabel);
+        assertTrue(driveShortcutTargetsByIdDirectoryLocationInfo.isReadOnly);
+        assertFalse(driveShortcutTargetsByIdDirectoryLocationInfo.isRootEntry);
+
+        const driveShortcutTargetsByIdEntry = MockDirectoryEntry.create(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/.shortcut-targets-by-id/abcdef/foo');
+        const driveShortcutTargetsByIdLocationInfo =
+            volumeManager.getLocationInfo(driveShortcutTargetsByIdEntry);
+        assertEquals(
+            VolumeManagerCommon.RootType.DRIVE_OTHER,
+            driveShortcutTargetsByIdLocationInfo.rootType);
+        assertFalse(driveShortcutTargetsByIdLocationInfo.hasFixedLabel);
+        assertFalse(driveShortcutTargetsByIdLocationInfo.isReadOnly);
+        assertFalse(driveShortcutTargetsByIdLocationInfo.isRootEntry);
+
         const androidRoot =
             MockFileEntry.create(new MockFileSystem('android_files:0'), '/');
         const androidRootLocationInfo =

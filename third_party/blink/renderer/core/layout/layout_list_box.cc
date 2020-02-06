@@ -43,10 +43,6 @@
 
 namespace blink {
 
-// Default size when the multiple attribute is present but size attribute is
-// absent.
-const int kDefaultSize = 4;
-
 const int kDefaultPaddingBottom = 1;
 
 LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
@@ -59,14 +55,6 @@ LayoutListBox::~LayoutListBox() = default;
 
 inline HTMLSelectElement* LayoutListBox::SelectElement() const {
   return To<HTMLSelectElement>(GetNode());
-}
-
-unsigned LayoutListBox::size() const {
-  unsigned specified_size = SelectElement()->size();
-  if (specified_size >= 1)
-    return specified_size;
-
-  return kDefaultSize;
 }
 
 LayoutUnit LayoutListBox::DefaultItemHeight() const {
@@ -113,7 +101,7 @@ void LayoutListBox::ComputeLogicalHeight(
   if (HasOverrideIntrinsicContentLogicalHeight()) {
     height = OverrideIntrinsicContentLogicalHeight();
   } else {
-    height = ItemHeight() * size();
+    height = ItemHeight() * SelectElement()->ListBoxSize();
   }
 
   // FIXME: The item height should have been added before updateLogicalHeight

@@ -202,8 +202,10 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
     delegate_->SetSandboxFlags(sandbox_mask_);
   }
 
-  if (require_trusted_types_)
+  if (require_trusted_types_) {
     delegate_->SetRequireTrustedTypes();
+    Count(WebFeature::kTrustedTypesEnabled);
+  }
 
   delegate_->AddInsecureRequestPolicy(insecure_request_policy_);
 
@@ -261,6 +263,13 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
                   ? WebFeature::kCSPWithBetterThanReasonableRestrictions
                   : WebFeature::kCSPROWithBetterThanReasonableRestrictions);
       }
+    }
+    if (policy->RequiresTrustedTypes()) {
+      Count(policy->IsReportOnly() ? WebFeature::kTrustedTypesEnabledReportOnly
+                                   : WebFeature::kTrustedTypesEnabledEnforcing);
+    }
+    if (policy->TrustedTypesAllowDuplicates()) {
+      Count(WebFeature::kTrustedTypesAllowDuplicates);
     }
   }
 

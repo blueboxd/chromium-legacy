@@ -265,8 +265,7 @@ TEST_F(AppDataMigratorTest, NoOpMigration) {
                                  base::DoNothing());
 }
 
-// crbug.com/747589
-TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
+TEST_F(AppDataMigratorTest, FileSystemMigration) {
   // When writing files, this touches the quota manager, which then
   // kicks off extra tasks to write to the quota database that fail
   // when the test is over.  Because this test is not about quota,

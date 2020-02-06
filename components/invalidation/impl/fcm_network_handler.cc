@@ -10,6 +10,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,6 +22,7 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/status.h"
 #include "components/invalidation/public/invalidator_state.h"
 
@@ -40,6 +42,37 @@ const char kGCMScope[] = "GCM";
 
 // Lower bound time between two token validations when listening.
 const int kTokenValidationPeriodMinutesDefault = 60 * 24;
+
+// Returns the TTL (time-to-live) for the Instance ID token, or 0 if no TTL
+// should be specified.
+base::TimeDelta GetTimeToLive(const std::string& sender_id) {
+  // This magic value is identical to kInvalidationGCMSenderId, i.e. the value
+  // that Sync uses for its invalidations.
+  if (sender_id == "8181035976") {
+    if (!base::FeatureList::IsEnabled(
+            invalidation::switches::kSyncInstanceIDTokenTTL)) {
+      return base::TimeDelta();
+    }
+
+    return base::TimeDelta::FromSeconds(
+        invalidation::switches::kSyncInstanceIDTokenTTLSeconds.Get());
+  }
+
+  // This magic value is identical to kPolicyFCMInvalidationSenderID, i.e. the
+  // value that ChromeOS policy uses for its invalidations.
+  if (sender_id == "1013309121859") {
+    if (!base::FeatureList::IsEnabled(
+            invalidation::switches::kPolicyInstanceIDTokenTTL)) {
+      return base::TimeDelta();
+    }
+
+    return base::TimeDelta::FromSeconds(
+        invalidation::switches::kPolicyInstanceIDTokenTTLSeconds.Get());
+  }
+
+  // The default for all other FCM clients is no TTL.
+  return base::TimeDelta();
+}
 
 std::string GetValueFromMessage(const gcm::IncomingMessage& message,
                                 const std::string& key) {
@@ -157,7 +190,7 @@ void FCMNetworkHandler::StartListening() {
 
   diagnostic_info_.instance_id_token_requested = base::Time::Now();
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
-      sender_id_, kGCMScope,
+      sender_id_, kGCMScope, GetTimeToLive(sender_id_),
       /*options=*/std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
       base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
@@ -218,7 +251,8 @@ void FCMNetworkHandler::StartTokenValidation() {
   diagnostic_info_.instance_id_token_verification_requested = base::Time::Now();
   diagnostic_info_.token_validation_requested_num++;
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
-      sender_id_, kGCMScope, std::map<std::string, std::string>(),
+      sender_id_, kGCMScope, GetTimeToLive(sender_id_),
+      std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
       base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
                  weak_ptr_factory_.GetWeakPtr()));

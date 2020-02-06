@@ -73,6 +73,21 @@ PdfAccessibilityHighlightInfo::PdfAccessibilityHighlightInfo(
       bounds(highlight.bounds),
       color(highlight.color) {}
 
+PdfAccessibilityTextFieldInfo::PdfAccessibilityTextFieldInfo() = default;
+
+PdfAccessibilityTextFieldInfo::~PdfAccessibilityTextFieldInfo() = default;
+
+PdfAccessibilityTextFieldInfo::PdfAccessibilityTextFieldInfo(
+    const PP_PrivateAccessibilityTextFieldInfo& text_field)
+    : name(std::string(text_field.name, text_field.name_length)),
+      value(std::string(text_field.value, text_field.value_length)),
+      is_read_only(text_field.is_read_only),
+      is_required(text_field.is_required),
+      is_password(text_field.is_password),
+      index_in_page(text_field.index_in_page),
+      text_run_index(text_field.text_run_index),
+      bounds(text_field.bounds) {}
+
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects() = default;
 
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
@@ -90,6 +105,11 @@ PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
   highlights.reserve(page_objects.highlight_count);
   for (size_t i = 0; i < page_objects.highlight_count; i++) {
     highlights.emplace_back(page_objects.highlights[i]);
+  }
+
+  text_fields.reserve(page_objects.text_field_count);
+  for (size_t i = 0; i < page_objects.text_field_count; i++) {
+    text_fields.emplace_back(page_objects.text_fields[i]);
   }
 }
 

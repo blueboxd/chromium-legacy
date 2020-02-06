@@ -295,7 +295,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   ResourceLoaderOptions options;
   options.initiator_info.name = fetch_initiator_type_names::kLink;
   options.parser_disposition = parser_disposition;
-  FetchParameters link_fetch_params(resource_request, options);
+  FetchParameters link_fetch_params(std::move(resource_request), options);
   link_fetch_params.SetCharset(document.Encoding());
 
   if (params.cross_origin != kCrossOriginAttributeNotSet) {
@@ -514,7 +514,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kLink;
 
-    FetchParameters link_fetch_params(resource_request, options);
+    FetchParameters link_fetch_params(std::move(resource_request), options);
     if (params.cross_origin != kCrossOriginAttributeNotSet) {
       link_fetch_params.SetCrossOriginAccessControl(
           document.GetSecurityOrigin(), params.cross_origin);

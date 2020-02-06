@@ -36,7 +36,7 @@ ChromeExtensionCookies::ChromeExtensionCookies(Profile* profile)
     creation_config = std::make_unique<content::CookieStoreConfig>(
         profile_->GetPath().Append(chrome::kExtensionsCookieFilename),
         profile_->ShouldRestoreOldSessionCookies(),
-        profile_->ShouldPersistSessionCookies(), nullptr /* storage_policy */);
+        profile_->ShouldPersistSessionCookies());
     creation_config->crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   }
   creation_config->cookieable_schemes.push_back(extensions::kExtensionScheme);

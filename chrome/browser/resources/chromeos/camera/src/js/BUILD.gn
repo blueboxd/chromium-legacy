@@ -136,6 +136,7 @@ js_library("util") {
     ":tooltip",
     ":type",
     "browser_proxy:browser_proxy",
+    "externs:w3c_fileapi",
     "mojo:chrome_helper",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]

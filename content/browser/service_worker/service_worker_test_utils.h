@@ -33,6 +33,7 @@ namespace content {
 class EmbeddedWorkerTestHelper;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
+class ServiceWorkerRegistry;
 class ServiceWorkerStorage;
 class ServiceWorkerVersion;
 
@@ -140,6 +141,11 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
+
+// Calls CreateNewRegistration() synchronously.
+scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
+    ServiceWorkerRegistry* registry,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options);
 
 // Creates a registration with a waiting version in INSTALLED state.
 // |resource_id| is used as ID to represent script resource (|script|) and

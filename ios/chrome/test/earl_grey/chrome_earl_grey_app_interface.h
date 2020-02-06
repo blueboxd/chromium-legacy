@@ -196,10 +196,15 @@
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;
 
-// Signs the user out, clears the known accounts entirely and checks whether
-// the accounts were correctly removed from the keychain. Returns nil on
-// success, or else an NSError indicating why the operation failed.
-+ (NSError*)signOutAndClearAccounts;
+// Signs the user out from Chrome and then starts clearing the identities.
+//
+// Note: This method does not wait for identities to be cleared from the
+// keychain. To wait for this operation to finish, please use an GREYCondition
+// and wait for +hasIdentities to return NO.
++ (void)signOutAndClearIdentities;
+
+// Returns YES if there is at at least identity in the ChromeIdentityService.
++ (BOOL)hasIdentities;
 
 // Returns the current WebState's VisibleURL.
 + (NSString*)webStateVisibleURL;

@@ -55,8 +55,8 @@ TEST(BrowserFileSystemHelperTest,
       kMountName, storage::FileSystemType::kFileSystemTypeTest,
       storage::FileSystemMountOption(), mount_path));
   storage::FileSystemURL original_file =
-      external_mount_points->CreateExternalFileSystemURL(kSensitiveOrigin,
-                                                         kMountName, kTestPath);
+      external_mount_points->CreateExternalFileSystemURL(
+          url::Origin::Create(kSensitiveOrigin), kMountName, kTestPath);
   EXPECT_TRUE(original_file.is_valid());
   EXPECT_EQ(kSensitiveOrigin, original_file.origin().GetURL());
 

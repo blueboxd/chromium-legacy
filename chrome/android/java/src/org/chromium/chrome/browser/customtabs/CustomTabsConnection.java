@@ -523,7 +523,7 @@ public class CustomTabsConnection {
         boolean atLeastOneUrl = false;
         if (likelyBundles == null) return false;
         WarmupManager warmupManager = WarmupManager.getInstance();
-        Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
         for (Bundle bundle : likelyBundles) {
             Uri uri;
             try {

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,6 +84,7 @@ void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
   instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
       ->GetToken(
           kBinaryFCMServiceSenderId, instance_id::kGCMScope,
+          /*time_to_live=*/base::TimeDelta(),
           /*options=*/{},
           /*flags=*/{},
           base::BindOnce(&BinaryFCMService::OnGetInstanceID,

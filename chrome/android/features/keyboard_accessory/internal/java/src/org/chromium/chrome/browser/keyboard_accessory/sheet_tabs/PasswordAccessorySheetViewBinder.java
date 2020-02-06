@@ -227,7 +227,7 @@ class PasswordAccessorySheetViewBinder {
          */
         void fetchFavicon(String origin, Callback<Drawable> setIconCallback) {
             final LargeIconBridge mIconBridge =
-                    new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
+                    new LargeIconBridge(Profile.getLastUsedRegularProfile());
             mIconBridge.getLargeIconForUrl(origin, mDesiredSize,
                     (icon, fallbackColor, isFallbackColorDefault, iconType) -> {
                         Drawable drawable = FaviconUtils.getIconDrawableWithoutFilter(icon, origin,

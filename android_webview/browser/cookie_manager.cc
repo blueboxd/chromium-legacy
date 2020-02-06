@@ -306,7 +306,7 @@ net::CookieStore* CookieManager::GetCookieStore() {
   if (!cookie_store_) {
     content::CookieStoreConfig cookie_config(
         cookie_store_path_, true /* restore_old_session_cookies */,
-        true /* persist_session_cookies */, nullptr /* storage_policy */);
+        true /* persist_session_cookies */);
     cookie_config.client_task_runner = cookie_store_task_runner_;
     cookie_config.background_task_runner =
         cookie_store_backend_thread_.task_runner();

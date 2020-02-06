@@ -869,17 +869,6 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
 
   big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
   LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
-
-  if (user_state->fingerprint_state ==
-      FingerprintState::DISABLED_FROM_TIMEOUT) {
-    base::string16 error_text = l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT);
-
-    auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
-    auth_error_bubble_->SetTextContent(error_text);
-    auth_error_bubble_->SetPersistent(true);
-    auth_error_bubble_->Show();
-  }
 }
 
 void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
@@ -1664,11 +1653,8 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         }
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
-        if (state->fingerprint_state != FingerprintState::UNAVAILABLE &&
-            state->fingerprint_state !=
-                FingerprintState::DISABLED_FROM_TIMEOUT) {
+        if (state->fingerprint_state != FingerprintState::UNAVAILABLE)
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
-        }
 
         // External binary based authentication is only available for unlock.
         if (screen_type_ == LockScreen::ScreenType::kLock &&

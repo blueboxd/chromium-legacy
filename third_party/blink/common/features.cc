@@ -453,5 +453,8 @@ const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
 const base::Feature kForceExtraRenderingToTrackStickyFrame{
     "ForceExtraRenderingToTrackStickyFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCSSReducedFontLoadingInvalidations{
+    "CSSReducedFontLoadingInvalidations", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

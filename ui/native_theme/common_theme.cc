@@ -67,8 +67,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Button
       case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_ButtonHoveredColor:
-      case NativeTheme::kColorId_ButtonPressedColor:
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_ButtonUncheckedColor:
@@ -195,8 +193,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Buttons
     case NativeTheme::kColorId_ButtonEnabledColor:
-    case NativeTheme::kColorId_ButtonHoveredColor:
-    case NativeTheme::kColorId_ButtonPressedColor:
       return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_ProminentButtonFocusedColor: {
       const SkColor bg = base_theme->GetSystemColor(

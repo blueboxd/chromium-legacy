@@ -20,4 +20,12 @@ interface WebTestClient {
   //   - |title|: the title of the notification.
   //   - |by_user|: whether the user clicks the notification.
   SimulateWebNotificationClose(string title, bool by_user);
+
+  // Sets the cookie policy to:
+  // - allow all cookies when |block| is false
+  // - block only third-party cookies when |block| is true
+  BlockThirdPartyCookies(bool block);
+
+  // Reset all permissions of WebTestPermissionManager.
+  ResetPermissions();
 };

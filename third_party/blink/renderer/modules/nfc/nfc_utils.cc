@@ -12,15 +12,6 @@
 
 namespace blink {
 
-size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message) {
-  size_t message_size = 0;
-  for (wtf_size_t i = 0; i < message.data.size(); ++i) {
-    message_size += message.data[i]->media_type.CharactersSizeInBytes();
-    message_size += message.data[i]->data.size();
-  }
-  return message_size;
-}
-
 DOMException* NDEFErrorTypeToDOMException(
     device::mojom::blink::NDEFErrorType error_type,
     const String& error_message) {

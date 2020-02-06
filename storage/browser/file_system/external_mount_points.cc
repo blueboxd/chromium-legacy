@@ -232,11 +232,11 @@ base::FilePath ExternalMountPoints::CreateVirtualRootPath(
 }
 
 FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& mount_name,
     const base::FilePath& path) const {
   return CreateCrackedFileSystemURL(
-      url::Origin::Create(origin), storage::kFileSystemTypeExternal,
+      origin, storage::kFileSystemTypeExternal,
       // Avoid using FilePath::Append as path may be an absolute path.
       base::FilePath(CreateVirtualRootPath(mount_name).value() +
                      base::FilePath::kSeparators[0] + path.value()));

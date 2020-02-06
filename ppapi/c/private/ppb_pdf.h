@@ -179,6 +179,33 @@ struct PP_PrivateAccessibilityHighlightInfo {
   uint32_t color;
 };
 
+// This holds text form field information provided by the PDF and will be used
+// in accessibility to expose it. Needs to stay in sync with C++ versions
+// (PdfAccessibilityTextFieldInfo and PrivateAccessibilityTextFieldInfo).
+struct PP_PrivateAccessibilityTextFieldInfo {
+  // Represents the name property of text field, if present.
+  const char* name;
+  uint32_t name_length;
+  // Represents the value property of text field, if present.
+  const char* value;
+  uint32_t value_length;
+  // Represents if the text field is non-editable.
+  bool is_read_only;
+  // Represents if the field should have value at the time it is exported by a
+  // submit form action.
+  bool is_required;
+  // Represents if the text field is a password text field type.
+  bool is_password;
+  // Index of the text field in the collection of text fields in the page. Used
+  // to identify the annotation on which action needs to be performed.
+  uint32_t index_in_page;
+  // We anchor the text field to a text run index, this denotes the text run
+  // before which the text field should be inserted in the accessibility tree.
+  uint32_t text_run_index;
+  // Bounding box of the text field.
+  struct PP_FloatRect bounds;
+};
+
 // Holds links, images and highlights within a PDF page so that IPC messages
 // passing accessibility objects do not have too many parameters.
 // Needs to stay in sync with C++ versions (PdfAccessibilityPageObjects and
@@ -190,6 +217,8 @@ struct PP_PrivateAccessibilityPageObjects {
   uint32_t image_count;
   struct PP_PrivateAccessibilityHighlightInfo* highlights;
   uint32_t highlight_count;
+  struct PP_PrivateAccessibilityTextFieldInfo* text_fields;
+  uint32_t text_field_count;
 };
 
 struct PPB_PDF {

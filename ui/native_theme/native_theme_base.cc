@@ -691,7 +691,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     // No other browser seems to support non-square widget, so accidentally
     // having non-square sizes is common (eg. amazon and webkit dev tools).
     if (skrect.width() != skrect.height()) {
-      SkScalar size = SkMinScalar(skrect.width(), skrect.height());
+      SkScalar size = std::min(skrect.width(), skrect.height());
       skrect.inset((skrect.width() - size) / 2, (skrect.height() - size) / 2);
     }
 
@@ -747,7 +747,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   // No other browser seems to support non-square widget, so accidentally
   // having non-square sizes is common (eg. amazon and webkit dev tools).
   if (skrect.width() != skrect.height()) {
-    SkScalar size = SkMinScalar(skrect.width(), skrect.height());
+    SkScalar size = std::min(skrect.width(), skrect.height());
     skrect.inset((skrect.width() - size) / 2, (skrect.height() - size) / 2);
   }
 

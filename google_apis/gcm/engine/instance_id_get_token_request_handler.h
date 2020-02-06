@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "google_apis/gcm/engine/registration_request.h"
 
 namespace gcm {
@@ -22,6 +23,7 @@ class GCM_EXPORT InstanceIDGetTokenRequestHandler
       const std::string& authorized_entity,
       const std::string& scope,
       int gcm_version,
+      base::TimeDelta time_to_live,
       const std::map<std::string, std::string>& options);
   ~InstanceIDGetTokenRequestHandler() override;
 
@@ -35,6 +37,7 @@ class GCM_EXPORT InstanceIDGetTokenRequestHandler
   std::string authorized_entity_;
   std::string scope_;
   int gcm_version_;
+  base::TimeDelta time_to_live_;
   std::map<std::string, std::string> options_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceIDGetTokenRequestHandler);

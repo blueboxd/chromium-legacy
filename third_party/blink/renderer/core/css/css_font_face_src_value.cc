@@ -90,7 +90,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     resource_request.SetReferrerString(referrer_.referrer);
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
-    FetchParameters params(resource_request, options);
+    FetchParameters params(std::move(resource_request), options);
     if (base::FeatureList::IsEnabled(
             features::kWebFontsCacheAwareTimeoutAdaption)) {
       params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);

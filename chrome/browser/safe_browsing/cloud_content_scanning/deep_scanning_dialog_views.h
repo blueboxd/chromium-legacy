@@ -24,13 +24,14 @@ class ImageSkia;
 }  // namespace gfx
 
 namespace views {
-class ImageView;
-class Throbber;
 class Widget;
 }  // namespace views
 
 namespace safe_browsing {
 class DeepScanningTopImageView;
+class DeepScanningSideIconImageView;
+class DeepScanningSideIconSpinnerView;
+class DeepScanningMessageView;
 
 // Dialog shown for Deep Scanning to offer the possibility of cancelling the
 // upload to the user.
@@ -69,9 +70,6 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // nothing should be shown.
   void ShowResult(bool success);
 
-  // Returns the appropriate top image depending on |dialog_status_|.
-  const gfx::ImageSkia* GetTopImage() const;
-
   // Accessors to simplify |dialog_status_| checking.
   inline bool is_success() const {
     return dialog_status_ == DeepScanningDialogStatus::SUCCESS;
@@ -86,6 +84,16 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   inline bool is_pending() const {
     return dialog_status_ == DeepScanningDialogStatus::PENDING;
   }
+
+  // Returns the side image's logo color depending on |dialog_status_|.
+  SkColor GetSideImageLogoColor() const;
+
+  // Returns the side image's background circle color depending on
+  // |dialog_status_|.
+  SkColor GetSideImageBackgroundColor() const;
+
+  // Returns the appropriate top image depending on |dialog_status_|.
+  const gfx::ImageSkia* GetTopImage() const;
 
  private:
   ~DeepScanningDialogViews() override;
@@ -107,9 +115,6 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // Returns the appropriate dialog message depending on |dialog_status_|.
   base::string16 GetDialogMessage() const;
-
-  // Returns the side image's background circle color.
-  SkColor GetSideImageBackgroundColor() const;
 
   // Returns the appropriate dialog message depending on |dialog_status_|.
   base::string16 GetCancelButtonText() const;
@@ -138,11 +143,9 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Views above the buttons. |contents_view_| owns every other view.
   std::unique_ptr<views::View> contents_view_;
   DeepScanningTopImageView* image_;
-  views::ImageView* side_icon_image_;
-  views::Throbber* side_icon_spinner_;
-  views::Label* message_;
-
-  views::Widget* widget_;
+  DeepScanningSideIconImageView* side_icon_image_;
+  DeepScanningSideIconSpinnerView* side_icon_spinner_;
+  DeepScanningMessageView* message_;
 
   bool shown_ = false;
 

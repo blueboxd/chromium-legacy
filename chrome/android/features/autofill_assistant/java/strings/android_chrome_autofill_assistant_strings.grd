@@ -169,6 +169,9 @@
       <message name="IDS_INIT_OK" desc="Init screen confirmation text.">
         I agree
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_TITLE" desc="The title of the onboarding screen.">
+        Try \n Google Assistant \n in Chrome
+      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
         Google Assistant saves you time by helping you complete actions on the web, like search and checkout.
       </message>

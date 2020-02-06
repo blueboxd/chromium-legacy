@@ -662,6 +662,11 @@ class FileManager extends cr.EventTarget {
     for (const button of this.dialogDom_.querySelectorAll('button[command]')) {
       CommandButton.decorate(button);
     }
+    // Hook up the cr-button commands.
+    for (const crButton of this.dialogDom_.querySelectorAll(
+             'cr-button[command]')) {
+      CommandButton.decorate(crButton);
+    }
 
     for (const input of this.getDomInputs_()) {
       this.setContextMenuForInput_(input);

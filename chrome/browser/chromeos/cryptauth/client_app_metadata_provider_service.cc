@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
@@ -215,7 +216,7 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
   GetInstanceId()->GetToken(
       device_sync::
           kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
-      kInstanceIdScope /* scope */,
+      kInstanceIdScope /* scope */, base::TimeDelta() /* time_to_live */,
       std::map<std::string, std::string>() /* options */, {} /* flags */,
       base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
                  weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter,

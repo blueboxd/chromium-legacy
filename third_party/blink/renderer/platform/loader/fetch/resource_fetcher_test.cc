@@ -209,7 +209,7 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   fetcher->ClearContext();
   ResourceRequest resource_request(secure_url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   ASSERT_TRUE(resource);
   EXPECT_TRUE(resource->ErrorOccurred());
@@ -271,7 +271,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   ResourceRequest resource_request(url);
   resource_request.SetIsAdResource();
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
 
@@ -302,7 +302,7 @@ TEST_F(ResourceFetcherTest, Vary) {
       *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin));
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_NE(resource, new_resource);
@@ -344,7 +344,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   ResourceRequest resource_request(url);
   resource_request.SetCacheMode(mojom::FetchCacheMode::kForceCache);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
 }
@@ -399,7 +399,7 @@ class RequestSameResourceOnComplete
                             MakeGarbageCollected<TestLoaderFactory>()));
     ResourceRequest resource_request2(GetResource()->Url());
     resource_request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-    FetchParameters fetch_params2(resource_request2);
+    FetchParameters fetch_params2(std::move(resource_request2));
     Resource* resource2 = MockResource::Fetch(fetch_params2, fetcher2, nullptr);
     EXPECT_EQ(GetResource(), resource2);
     notify_finished_called_ = true;
@@ -435,7 +435,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
       *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin));
   ResourceRequest request1(url);
   request1.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
-  FetchParameters fetch_params1(request1);
+  FetchParameters fetch_params1(std::move(request1));
   Persistent<RequestSameResourceOnComplete> client =
       MakeGarbageCollected<RequestSameResourceOnComplete>(fetch_params1,
                                                           fetcher1);
@@ -456,7 +456,7 @@ TEST_F(ResourceFetcherTest, MAYBE_DontReuseMediaDataUrl) {
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
   options.initiator_info.name = fetch_initiator_type_names::kInternal;
-  FetchParameters fetch_params(request, options);
+  FetchParameters fetch_params(std::move(request), options);
   Resource* resource1 = RawResource::FetchMedia(fetch_params, fetcher, nullptr);
   Resource* resource2 = RawResource::FetchMedia(fetch_params, fetcher, nullptr);
   EXPECT_NE(resource1, resource2);
@@ -512,7 +512,7 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   auto* fetcher = CreateFetcher();
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   Persistent<ServeRequestsOnCompleteClient> client =
       MakeGarbageCollected<ServeRequestsOnCompleteClient>();
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, client);
@@ -552,7 +552,7 @@ class ScopedMockRedirectRequester {
         MakeGarbageCollected<TestLoaderFactory>()));
     ResourceRequest resource_request(url);
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-    FetchParameters fetch_params(resource_request);
+    FetchParameters fetch_params(std::move(resource_request));
     RawResource::Fetch(fetch_params, fetcher, nullptr);
     url_test_helpers::ServeAsynchronousRequests();
   }
@@ -612,7 +612,7 @@ TEST_F(ResourceFetcherTest, SynchronousRequest) {
   auto* fetcher = CreateFetcher();
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   fetch_params.MakeSynchronous();
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_TRUE(resource->IsLoaded());
@@ -627,7 +627,7 @@ TEST_F(ResourceFetcherTest, PingPriority) {
   auto* fetcher = CreateFetcher();
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::PING);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_EQ(ResourceLoadPriority::kVeryLow,
             resource->GetResourceRequest().Priority());
@@ -865,7 +865,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
       *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin));
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params(resource_request);
+  FetchParameters fetch_params(std::move(resource_request));
   platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   fetcher->StopFetching();
@@ -934,7 +934,7 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
   {
     ResourceRequest resource_request(url);
     resource_request.SetRequestContext(mojom::RequestContextType::VIDEO);
-    FetchParameters fetch_params(resource_request);
+    FetchParameters fetch_params(std::move(resource_request));
     RawResource* resource =
         RawResource::FetchMedia(fetch_params, fetcher, nullptr);
     ASSERT_NE(nullptr, resource);
@@ -972,7 +972,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
 
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  FetchParameters fetch_params2 = FetchParameters(resource_request);
+  FetchParameters fetch_params2 = FetchParameters(std::move(resource_request));
   Resource* new_resource = MockResource::Fetch(fetch_params2, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();

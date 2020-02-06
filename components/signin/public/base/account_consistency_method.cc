@@ -9,8 +9,8 @@
 namespace signin {
 
 #if defined(OS_ANDROID)
-const base::Feature kMiceFeature{"MobileIdentityConsistency",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMobileIdentityConsistency{
+    "MobileIdentityConsistency", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 }  // namespace signin

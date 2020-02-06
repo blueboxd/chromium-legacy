@@ -60,6 +60,7 @@ void FakeGCMDriverForInstanceID::GetToken(
     const std::string& app_id,
     const std::string& authorized_entity,
     const std::string& scope,
+    base::TimeDelta time_to_live,
     const std::map<std::string, std::string>& options,
     GetTokenCallback callback) {
   std::string key = app_id + authorized_entity + scope;

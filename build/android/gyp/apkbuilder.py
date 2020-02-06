@@ -226,7 +226,7 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress,
 
   for path in native_libs:
     basename = os.path.basename(path)
-    compress = None
+    compress = True
     if uncompress and os.path.splitext(basename)[1] == '.so':
       # Trichrome
       if has_crazy_linker and has_monochrome:

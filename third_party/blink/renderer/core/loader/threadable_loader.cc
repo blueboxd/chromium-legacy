@@ -1040,7 +1040,7 @@ void ThreadableLoader::LoadRequest(
     }
   }
 
-  FetchParameters new_params(request, resource_loader_options);
+  FetchParameters new_params(std::move(request), resource_loader_options);
   DCHECK(!GetResource());
 
   checker_.WillAddClient();

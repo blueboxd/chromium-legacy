@@ -77,7 +77,6 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
       return database_tracker_->task_runner();
     case WebTestHostMsg_SimulateWebNotificationClick::ID:
     case WebTestHostMsg_SetPermission::ID:
-    case WebTestHostMsg_ResetPermissions::ID:
     case WebTestHostMsg_WebTestRuntimeFlagsChanged::ID:
     case WebTestHostMsg_InitiateCaptureDump::ID:
     case WebTestHostMsg_DeleteAllCookies::ID:
@@ -100,7 +99,6 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnSimulateWebNotificationClick)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetPermission, OnSetPermission)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_ResetPermissions, OnResetPermissions)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_WebTestRuntimeFlagsChanged,
                         OnWebTestRuntimeFlagsChanged)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
@@ -221,15 +219,6 @@ void WebTestMessageFilter::OnSetPermission(
       ->GetWebTestBrowserContext()
       ->GetWebTestPermissionManager()
       ->SetPermission(type, status, origin, embedding_origin);
-}
-
-void WebTestMessageFilter::OnResetPermissions() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  WebTestContentBrowserClient::Get()
-      ->GetWebTestBrowserContext()
-      ->GetWebTestPermissionManager()
-      ->ResetPermissions();
 }
 
 void WebTestMessageFilter::OnWebTestRuntimeFlagsChanged(

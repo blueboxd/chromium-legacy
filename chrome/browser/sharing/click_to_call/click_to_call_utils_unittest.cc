@@ -127,8 +127,7 @@ TEST_F(ClickToCallUtilsTest, NonTelLink_DoNotOfferForLink) {
 
 TEST_F(ClickToCallUtilsTest,
        SelectionText_ValidPhoneNumberRegex_OfferForSelection) {
-  scoped_feature_list_.InitWithFeatures({kClickToCallUI},
-                                        {kClickToCallDetectionV2});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
 
   // Stores a mapping of selected text to expected phone number parsed.
   std::map<std::string, std::string> expectations;
@@ -167,8 +166,7 @@ TEST_F(ClickToCallUtilsTest,
 
 TEST_F(ClickToCallUtilsTest,
        SelectionText_InvalidPhoneNumberRegex_DoNotOfferForSelection) {
-  scoped_feature_list_.InitWithFeatures({kClickToCallUI},
-                                        {kClickToCallDetectionV2});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   std::vector<std::string> invalid_selection_texts;
 
   // Does not contain any number.
@@ -188,50 +186,6 @@ TEST_F(ClickToCallUtilsTest,
   invalid_selection_texts.push_back("9   8   7   6   5   4    3   2   1     0");
   // Space dash space formatting.
   invalid_selection_texts.push_back("999 - 999 - 9999");
-
-  for (auto& text : invalid_selection_texts)
-    ExpectClickToCallDisabledForSelectionText(text);
-}
-
-TEST_F(ClickToCallUtilsTest, SelectionText_LowConfidenceModifiedRegex_Matches) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI, kClickToCallDetectionV2}, {});
-
-  // Stores a mapping of selected text to expected phone number parsed.
-  std::map<std::string, std::string> expectations = {
-      {"+91 77997 12345", "+91 77997 12345"},
-      {"(+0091) 040 12345678", "(+0091) 040 12345678"},
-      {"+1 800 444 4444", "+1 800 444 4444"},
-      {"754-1234", "754-1234"},
-      {"+55-955-1234-1234 (landline)", "+55-955-1234-1234"},
-      {"+44(0)20-1234 1234", "+44(0)20-1234 1234"},
-      {"07700123123", "07700123123"},
-      {"Call +49 231 1234567 now!", "+49 231 1234567"},
-      {"tel:+49-89-636-12345", "+49-89-636-12345"},
-      {"Number (021) 12345678", "(021) 12345678"},
-      {"(private) +90 312 123 12 12", "+90 312 123 12 12"},
-      {"+34 913 12 12 12", "+34 913 12 12 12"},
-      {"(000)\u00A00000000", "(000)\u00A00000000"},
-  };
-
-  for (auto& expectation : expectations) {
-    base::Optional<std::string> phone_number =
-        ExtractPhoneNumberForClickToCall(&profile_, expectation.first);
-    EXPECT_EQ(expectation.second, phone_number.value_or(""));
-  }
-}
-
-TEST_F(ClickToCallUtilsTest, SelectionText_LowConfidenceModifiedRegex_NoMatch) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI, kClickToCallDetectionV2}, {});
-  std::vector<std::string> invalid_selection_texts = {
-      // Example for a credit card
-      "4111 1111 1111 1111",
-      // Chrome version string
-      "78.0.3904.108",
-      // Too many spaces
-      "9 8 7 6 5 4 3 2 1 0",
-  };
 
   for (auto& text : invalid_selection_texts)
     ExpectClickToCallDisabledForSelectionText(text);

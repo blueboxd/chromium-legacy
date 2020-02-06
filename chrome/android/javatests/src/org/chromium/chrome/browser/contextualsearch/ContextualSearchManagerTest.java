@@ -3228,6 +3228,7 @@ public class ContextualSearchManagerTest {
     }
 
     @Test
+    @DisabledTest(message = "See https://crbug.com/1048827")
     @SmallTest
     @Feature({"ContextualSearch"})
     @Features.EnableFeatures("ContextualSearchLongpressResolve")

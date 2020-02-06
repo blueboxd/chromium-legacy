@@ -12,9 +12,10 @@ def _setup_sys_path():
     expected_path = 'third_party/blink/renderer/bindings/scripts/bind_gen/'
 
     this_dir = os.path.dirname(__file__)
-    root_dir = os.path.join(this_dir, *(['..'] * expected_path.count('/')))
+    root_dir = os.path.abspath(
+        os.path.join(this_dir, *(['..'] * expected_path.count('/'))))
 
-    sys.path = [
+    module_dirs = (
         # //third_party/blink/renderer/bindings/scripts/web_idl
         os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'bindings',
                      'scripts'),
@@ -23,7 +24,11 @@ def _setup_sys_path():
                      'scripts'),
         # //third_party/mako/mako
         os.path.join(root_dir, 'third_party', 'mako'),
-    ] + sys.path
+    )
+    for module_dir in reversed(module_dirs):
+        # Preserve sys.path[0] as is.
+        # https://docs.python.org/3/library/sys.html?highlight=path[0]#sys.path
+        sys.path.insert(1, module_dir)
 
 
 _setup_sys_path()

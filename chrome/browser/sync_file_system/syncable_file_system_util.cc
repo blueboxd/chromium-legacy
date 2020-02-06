@@ -15,6 +15,7 @@
 #include "storage/browser/file_system/file_observers.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 using storage::ExternalMountPoints;
 using storage::FileSystemContext;
@@ -34,15 +35,12 @@ const base::FilePath::CharType kSyncFileSystemDir[] =
 
 void RegisterSyncableFileSystem() {
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      kSyncableMountName,
-      storage::kFileSystemTypeSyncable,
-      storage::FileSystemMountOption(),
-      base::FilePath());
+      kSyncableMountName, storage::kFileSystemTypeSyncable,
+      storage::FileSystemMountOption(), base::FilePath());
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kSyncableMountNameForInternalSync,
       storage::kFileSystemTypeSyncableForInternalSync,
-      storage::FileSystemMountOption(),
-      base::FilePath());
+      storage::FileSystemMountOption(), base::FilePath());
 }
 
 void RevokeSyncableFileSystem() {
@@ -64,14 +62,14 @@ FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
     path_for_url = base::FilePath(path.value().substr(1));
 
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
-      origin, kSyncableMountName, path_for_url);
+      url::Origin::Create(origin), kSyncableMountName, path_for_url);
 }
 
 FileSystemURL CreateSyncableFileSystemURLForSync(
     storage::FileSystemContext* file_system_context,
     const FileSystemURL& syncable_url) {
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
-      syncable_url.origin().GetURL(), kSyncableMountNameForInternalSync,
+      syncable_url.origin(), kSyncableMountNameForInternalSync,
       syncable_url.path());
 }
 
@@ -84,8 +82,8 @@ bool SerializeSyncableFileSystemURL(const FileSystemURL& url,
   return true;
 }
 
-bool DeserializeSyncableFileSystemURL(
-    const std::string& serialized_url, FileSystemURL* url) {
+bool DeserializeSyncableFileSystemURL(const std::string& serialized_url,
+                                      FileSystemURL* url) {
 #if !defined(FILE_PATH_USES_WIN_SEPARATORS)
   DCHECK(serialized_url.find('\\') == std::string::npos);
 #endif  // FILE_PATH_USES_WIN_SEPARATORS

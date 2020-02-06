@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -48,6 +49,10 @@
 #include "media/filters/vpx_video_decoder.h"
 #endif
 
+#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+#include "media/filters/gav1_video_decoder.h"
+#endif
+
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
@@ -74,12 +79,20 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
   video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif
 
+#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+  if (base::FeatureList::IsEnabled(kGav1VideoDecoder)) {
+    video_decoders.push_back(
+        std::make_unique<OffloadingGav1VideoDecoder>(media_log));
+  } else
+#endif  // BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+  {
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
-  video_decoders.push_back(
-      std::make_unique<OffloadingDav1dVideoDecoder>(media_log));
+    video_decoders.push_back(
+        std::make_unique<OffloadingDav1dVideoDecoder>(media_log));
 #elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
-  video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
+    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
+  }
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders.push_back(std::make_unique<FFmpegVideoDecoder>(media_log));

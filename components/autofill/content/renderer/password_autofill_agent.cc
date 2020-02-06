@@ -241,9 +241,9 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 
 // Helper function that calculates form signature for |password_form| and
 // returns it as WebString.
-WebString GetFormSignatureAsWebString(const PasswordForm& password_form) {
+WebString GetFormSignatureAsWebString(const FormData& form_data) {
   return WebString::FromUTF8(
-      base::NumberToString(CalculateFormSignature(password_form.form_data)));
+      base::NumberToString(CalculateFormSignature(form_data)));
 }
 
 // Annotate |fields| with field signatures and form signature as HTML
@@ -269,13 +269,12 @@ void AnnotateFieldsWithSignatures(
 void AnnotateFormsAndFieldsWithSignatures(WebLocalFrame* frame,
                                           WebVector<WebFormElement>* forms) {
   for (WebFormElement& form : *forms) {
-    std::unique_ptr<PasswordForm> password_form(
-        CreateSimplifiedPasswordFormFromWebForm(
-            form, /*field_data_manager=*/nullptr,
-            /*username_detector_cache=*/nullptr));
+    std::unique_ptr<FormData> form_data(
+        CreateFormDataFromWebForm(form, /*field_data_manager=*/nullptr,
+                                  /*username_detector_cache=*/nullptr));
     WebString form_signature;
-    if (password_form) {
-      form_signature = GetFormSignatureAsWebString(*password_form);
+    if (form_data) {
+      form_signature = GetFormSignatureAsWebString(*form_data);
       form.SetAttribute(WebString::FromASCII(kDebugAttributeForFormSignature),
                         form_signature);
     }
@@ -287,13 +286,12 @@ void AnnotateFormsAndFieldsWithSignatures(WebLocalFrame* frame,
   std::vector<WebFormControlElement> unowned_elements =
       form_util::GetUnownedAutofillableFormFieldElements(
           frame->GetDocument().All(), nullptr);
-  std::unique_ptr<PasswordForm> password_form(
-      CreateSimplifiedPasswordFormFromUnownedInputElements(
-          *frame, /*field_data_manager=*/nullptr,
-          /*username_detector_cache=*/nullptr));
+  std::unique_ptr<FormData> form_data(CreateFormDataFromUnownedInputElements(
+      *frame, /*field_data_manager=*/nullptr,
+      /*username_detector_cache=*/nullptr));
   WebString form_signature;
-  if (password_form)
-    form_signature = GetFormSignatureAsWebString(*password_form);
+  if (form_data)
+    form_signature = GetFormSignatureAsWebString(*form_data);
   AnnotateFieldsWithSignatures(&unowned_elements, form_signature);
 }
 
@@ -1060,7 +1058,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     if (!sent_request_to_store_ && password_forms_data.empty() &&
         HasPasswordField(*frame)) {
       // Set everything that |FormDigest| needs.
-      password_forms_data.push_back(PasswordForm().form_data);
+      password_forms_data.push_back(FormData());
       password_forms_data.back().url =
           form_util::GetCanonicalOriginForDocument(frame->GetDocument());
     }
@@ -1121,22 +1119,19 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
     LogHTMLForm(logger.get(), Logger::STRING_HTML_FORM_FOR_SUBMIT, form);
   }
 
-  std::unique_ptr<PasswordForm> submitted_form =
-      GetPasswordFormFromWebForm(form);
+  std::unique_ptr<FormData> submitted_form_data = GetFormDataFromWebForm(form);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
   // may have been transformed for submit.
   // TODO(gcasto): Do we need to have this action equality check? Is it trying
   // to prevent accidentally copying over passwords from a different form?
-  if (submitted_form) {
+  if (submitted_form_data) {
     if (logger) {
-      logger->LogPasswordForm(Logger::STRING_CREATED_PASSWORD_FORM,
-                              *submitted_form);
+      logger->LogFormData(Logger::STRING_CREATED_PASSWORD_FORM,
+                          *submitted_form_data);
     }
-    submitted_form->submission_event =
-        SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-    submitted_form->form_data.submission_event =
+    submitted_form_data->submission_event =
         SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
     if (FrameCanAccessPasswordManager()) {
@@ -1144,8 +1139,7 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
       // the frame starts loading. If there are redirects that cause a new
       // RenderView to be instantiated (such as redirects to the WebStore)
       // we will never get to finish the load.
-      GetPasswordManagerDriver()->PasswordFormSubmitted(
-          submitted_form->form_data);
+      GetPasswordManagerDriver()->PasswordFormSubmitted(*submitted_form_data);
     } else {
       if (logger)
         logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
@@ -1356,51 +1350,10 @@ void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
       *input_element, FieldPropertiesFlags::HAD_FOCUS);
 }
 
-std::unique_ptr<PasswordForm> PasswordAutofillAgent::GetPasswordFormFromWebForm(
-    const WebFormElement& web_form) {
-  return CreateSimplifiedPasswordFormFromWebForm(
-      web_form, field_data_manager_.get(), &username_detector_cache_);
-}
-
-std::unique_ptr<PasswordForm>
-PasswordAutofillAgent::GetSimplifiedPasswordFormFromWebForm(
-    const WebFormElement& web_form) {
-  return CreateSimplifiedPasswordFormFromWebForm(
-      web_form, field_data_manager_.get(), &username_detector_cache_);
-}
-
 std::unique_ptr<FormData> PasswordAutofillAgent::GetFormDataFromWebForm(
     const WebFormElement& web_form) {
-  return CreateSimplifiedFormDataFromWebForm(
-      web_form, field_data_manager_.get(), &username_detector_cache_);
-}
-
-std::unique_ptr<PasswordForm>
-PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
-  // The element's frame might have been detached in the meantime (see
-  // http://crbug.com/585363, comments 5 and 6), in which case |frame| will
-  // be null. This was hardly caused by form submission (unless the user is
-  // supernaturally quick), so it is OK to drop the ball here.
-  content::RenderFrame* frame = render_frame();
-  if (!frame)
-    return nullptr;
-  WebLocalFrame* web_frame = frame->GetWebFrame();
-  if (!web_frame)
-    return nullptr;
-  return CreateSimplifiedPasswordFormFromUnownedInputElements(
-      *web_frame, field_data_manager_.get(), &username_detector_cache_);
-}
-
-std::unique_ptr<PasswordForm>
-PasswordAutofillAgent::GetSimplifiedPasswordFormFromUnownedInputElements() {
-  content::RenderFrame* frame = render_frame();
-  if (!frame)
-    return nullptr;
-  WebLocalFrame* web_frame = frame->GetWebFrame();
-  if (!web_frame)
-    return nullptr;
-  return CreateSimplifiedPasswordFormFromUnownedInputElements(
-      *web_frame, field_data_manager_.get(), &username_detector_cache_);
+  return CreateFormDataFromWebForm(web_form, field_data_manager_.get(),
+                                   &username_detector_cache_);
 }
 
 std::unique_ptr<FormData>
@@ -1415,7 +1368,7 @@ PasswordAutofillAgent::GetFormDataFromUnownedInputElements() {
   WebLocalFrame* web_frame = frame->GetWebFrame();
   if (!web_frame)
     return nullptr;
-  return CreateSimplifiedFormDataFromUnownedInputElements(
+  return CreateFormDataFromUnownedInputElements(
       *web_frame, field_data_manager_.get(), &username_detector_cache_);
 }
 
@@ -1509,28 +1462,24 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     ProvisionallySaveRestriction restriction) {
   DCHECK(!form.IsNull() || !element.IsNull());
   SetLastUpdatedFormAndField(form, element);
-  std::unique_ptr<PasswordForm> password_form;
-  if (form.IsNull()) {
-    password_form = GetPasswordFormFromUnownedInputElements();
-  } else {
-    password_form = GetPasswordFormFromWebForm(form);
-  }
-  if (!password_form)
+  std::unique_ptr<FormData> form_data =
+      (form.IsNull() ? GetFormDataFromUnownedInputElements()
+                     : GetFormDataFromWebForm(form));
+  if (!form_data)
     return;
 
-  bool has_password = FormHasNonEmptyPasswordField(password_form->form_data);
+  bool has_password = FormHasNonEmptyPasswordField(*form_data);
   if (restriction == RESTRICTION_NON_EMPTY_PASSWORD && !has_password)
     return;
 
   if (!FrameCanAccessPasswordManager())
     return;
 
-  if (has_password) {
-    GetPasswordManagerDriver()->ShowManualFallbackForSaving(
-        password_form->form_data);
-  } else {
+  if (has_password)
+    GetPasswordManagerDriver()->ShowManualFallbackForSaving(*form_data);
+  else
     GetPasswordManagerDriver()->HideManualFallbackForSaving();
-  }
+
   browser_has_form_to_process_ = true;
 }
 

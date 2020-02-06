@@ -28,7 +28,6 @@ class RE2;
 
 namespace autofill {
 
-struct PasswordForm;
 class FieldDataManager;
 
 // The caller of this function is responsible for deleting the returned object.
@@ -40,27 +39,14 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form);
 // Tests whether the given form is a GAIA form with a skip password argument.
 bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form);
 
-// Creates a |PasswordForm| from DOM which only contains the |form_data| as well
-// as origin, action and gaia flags.
-std::unique_ptr<PasswordForm> CreateSimplifiedPasswordFormFromWebForm(
-    const blink::WebFormElement& form,
-    const FieldDataManager* field_data_manager,
-    UsernameDetectorCache* username_detector_cache);
-
-std::unique_ptr<FormData> CreateSimplifiedFormDataFromWebForm(
+std::unique_ptr<FormData> CreateFormDataFromWebForm(
     const blink::WebFormElement& web_form,
     const FieldDataManager* field_data_manager,
     UsernameDetectorCache* username_detector_cache);
 
-// Same as CreateSimlePasswordFormFromWebForm() but for input elements that are
+// Same as CreateFormDataFromWebForm() but for input elements that are
 // not enclosed in <form> element.
-std::unique_ptr<PasswordForm>
-CreateSimplifiedPasswordFormFromUnownedInputElements(
-    const blink::WebLocalFrame& frame,
-    const FieldDataManager* field_data_manager,
-    UsernameDetectorCache* username_detector_cache);
-
-std::unique_ptr<FormData> CreateSimplifiedFormDataFromUnownedInputElements(
+std::unique_ptr<FormData> CreateFormDataFromUnownedInputElements(
     const blink::WebLocalFrame& frame,
     const FieldDataManager* field_data_manager,
     UsernameDetectorCache* username_detector_cache);

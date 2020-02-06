@@ -60,10 +60,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     STATE_COUNT,
   };
 
-  static constexpr ButtonState kButtonStates[STATE_COUNT] = {
-      ButtonState::STATE_NORMAL, ButtonState::STATE_HOVERED,
-      ButtonState::STATE_PRESSED, ButtonState::STATE_DISABLED};
-
   // An enum describing the events on which a button should be clicked for a
   // given key event.
   enum class KeyClickAction {

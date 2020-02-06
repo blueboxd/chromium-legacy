@@ -223,6 +223,31 @@ bool IsOnlyExactMatchAllowed<LoginReputationClientResponse>(
   return false;
 }
 
+template <typename T>
+std::string GetCacheExpression(T verdict) {
+  NOTREACHED();
+  return "";
+}
+
+template <>
+std::string GetCacheExpression<RTLookupResponse::ThreatInfo>(
+    RTLookupResponse::ThreatInfo verdict) {
+  // The old cache doesn't have |cache_expression_using_match_type| field
+  // setup, so it should fallback to |cache_expression| field. This check
+  // should be removed once |cache_expression| field is deprecated in
+  // RTLookupResponse.
+  if (verdict.cache_expression_match_type() ==
+      RTLookupResponse::ThreatInfo::MATCH_TYPE_UNSPECIFIED)
+    return verdict.cache_expression();
+  return verdict.cache_expression_using_match_type();
+}
+
+template <>
+std::string GetCacheExpression<LoginReputationClientResponse>(
+    LoginReputationClientResponse verdict) {
+  return verdict.cache_expression();
+}
+
 template <class T>
 typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
     const GURL& url,
@@ -273,7 +298,7 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
     // Since verdict content settings are keyed by origin, we only need to
     // compare the path part of the cache_expression and the given url.
     std::string cache_expression_path =
-        GetCacheExpressionPath(verdict.cache_expression());
+        GetCacheExpressionPath(GetCacheExpression(verdict));
 
     match_params.is_only_exact_match_allowed = IsOnlyExactMatchAllowed(verdict);
     match_params.is_exact_path = (root_path == cache_expression_path);
@@ -356,7 +381,7 @@ void VerdictCacheManager::CachePhishGuardVerdict(
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
-  GURL hostname = GetHostNameFromCacheExpression(verdict.cache_expression());
+  GURL hostname = GetHostNameFromCacheExpression(GetCacheExpression(verdict));
 
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
@@ -381,7 +406,7 @@ void VerdictCacheManager::CachePhishGuardVerdict(
 
   // Increases stored verdict count if we haven't seen this cache expression
   // before.
-  if (!verdict_dictionary->FindKey(verdict.cache_expression())) {
+  if (!verdict_dictionary->FindKey(GetCacheExpression(verdict))) {
     base::Optional<size_t>* stored_verdict_count =
         trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE
             ? &stored_verdict_count_password_on_focus_
@@ -392,7 +417,7 @@ void VerdictCacheManager::CachePhishGuardVerdict(
   // If same cache_expression is already in this verdict_dictionary, we simply
   // override it.
   verdict_dictionary->SetKey(
-      verdict.cache_expression(),
+      GetCacheExpression(verdict),
       base::Value::FromUniquePtrValue(std::move(verdict_entry)));
   content_settings_->SetWebsiteSettingDefaultScope(
       hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION, std::string(),
@@ -463,16 +488,19 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
 void VerdictCacheManager::CacheRealTimeUrlVerdict(
     const GURL& url,
     const RTLookupResponse& verdict,
-    const base::Time& receive_time) {
-
+    const base::Time& receive_time,
+    bool store_old_cache) {
   std::vector<std::string> visited_cache_expressions;
   for (const auto& threat_info : verdict.threat_info()) {
     // If |cache_expression_match_type| is unspecified, ignore this entry.
     if (threat_info.cache_expression_match_type() ==
-        RTLookupResponse::ThreatInfo::MATCH_TYPE_UNSPECIFIED) {
+            RTLookupResponse::ThreatInfo::MATCH_TYPE_UNSPECIFIED &&
+        !store_old_cache) {
       continue;
     }
-    std::string cache_expression = threat_info.cache_expression();
+    std::string cache_expression = store_old_cache
+                                       ? threat_info.cache_expression()
+                                       : GetCacheExpression(threat_info);
     // TODO(crbug.com/1033692): For the same cache_expression, threat_info is in
     // decreasing order of severity. To avoid lower severity threat being
     // overridden by higher one, only store threat info that is first seen for a
@@ -480,8 +508,7 @@ void VerdictCacheManager::CacheRealTimeUrlVerdict(
     if (base::Contains(visited_cache_expressions, cache_expression))
       continue;
 
-    GURL hostname =
-        GetHostNameFromCacheExpression(threat_info.cache_expression());
+    GURL hostname = GetHostNameFromCacheExpression(cache_expression);
     std::unique_ptr<base::DictionaryValue> cache_dictionary =
         base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
             hostname, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,

@@ -67,8 +67,8 @@ public class TabGroupUtils {
                 return;
         }
 
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        final Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
         ViewRectProvider rectProvider = new ViewRectProvider(view);

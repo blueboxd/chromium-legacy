@@ -146,6 +146,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyWebGLSwapChain;
 BLINK_COMMON_EXPORT extern const base::Feature
     kForceExtraRenderingToTrackStickyFrame;
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kCSSReducedFontLoadingInvalidations;
+
 }  // namespace features
 }  // namespace blink
 

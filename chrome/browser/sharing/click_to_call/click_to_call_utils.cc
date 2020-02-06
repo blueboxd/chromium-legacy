@@ -60,23 +60,15 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
   if (!IsClickToCallEnabled(browser_context))
     return base::nullopt;
 
-  LogPhoneNumberDetectionMetrics(selection_text, /*sent_to_device=*/false);
-
-  if (base::FeatureList::IsEnabled(kClickToCallDetectionV2)) {
-    return ExtractPhoneNumber(selection_text,
-                              PhoneNumberRegexVariant::kLowConfidenceModified);
-  }
-
-  return ExtractPhoneNumber(selection_text, PhoneNumberRegexVariant::kSimple);
+  return ExtractPhoneNumber(selection_text);
 }
 
 base::Optional<std::string> ExtractPhoneNumber(
-    const std::string& selection_text,
-    PhoneNumberRegexVariant regex_variant) {
-  ScopedUmaHistogramMicrosecondsTimer scoped_uma_timer(regex_variant);
+    const std::string& selection_text) {
+  ScopedUmaHistogramMicrosecondsTimer scoped_uma_timer;
   std::string parsed_number;
 
-  const re2::RE2& regex = GetPhoneNumberRegex(regex_variant);
+  const re2::RE2& regex = GetPhoneNumberRegex();
   if (!re2::RE2::PartialMatch(selection_text, regex, &parsed_number))
     return base::nullopt;
 

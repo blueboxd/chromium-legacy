@@ -1,5 +1,7 @@
 include_rules = [
     "+base/run_loop.h",
+    "+media/base/media_util.h",
+    "+media/base/video_decoder.h",
     "+media/base/video_frame.h",
     "+ui/gfx/geometry/rect.h",
     "+ui/gfx/geometry/size.h",

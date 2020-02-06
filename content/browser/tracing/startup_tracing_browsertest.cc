@@ -51,14 +51,6 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
     command_line->AppendSwitchASCII(switches::kTraceStartupDuration, "3");
     command_line->AppendSwitchASCII(switches::kTraceStartupFile,
                                     temp_file_path_.AsUTF8Unsafe());
-
-#if defined(OS_ANDROID)
-    // On Android the startup tracing is initialized as soon as library load
-    // time, earlier than this point. So, reset the config and enable startup
-    // tracing here.
-    tracing::TraceStartupConfig::GetInstance()->EnableFromCommandLine();
-    tracing::EnableStartupTracingIfNeeded();
-#endif
   }
 
   void PreRunTestOnMainThread() override {
@@ -185,7 +177,6 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
     startup_config->enable_background_tracing_for_testing_ = true;
     startup_config->EnableFromBackgroundTracing();
     startup_config->startup_duration_in_seconds_ = 3;
-    tracing::EnableStartupTracingIfNeeded();
     command_line->AppendSwitchASCII(switches::kPerfettoOutputFile,
                                     temp_file_path_.AsUTF8Unsafe());
   }

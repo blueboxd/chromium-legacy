@@ -73,7 +73,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
                        blink::mojom::PermissionStatus status,
                        const GURL& origin,
                        const GURL& embedding_origin);
-  void OnResetPermissions();
   void OnWebTestRuntimeFlagsChanged(
       const base::DictionaryValue& changed_web_test_runtime_flags);
   void OnInitiateCaptureDump(bool capture_navigation_history,

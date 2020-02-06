@@ -118,7 +118,8 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     RegistrationAndVersionPair pair;
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    pair.first = context()->registry()->CreateNewRegistration(options);
+    pair.first =
+        CreateNewServiceWorkerRegistration(context()->registry(), options);
     pair.second = context()->registry()->CreateNewVersion(
         pair.first.get(), script_url, blink::mojom::ScriptType::kClassic);
     return pair;

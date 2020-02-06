@@ -46,8 +46,8 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
             }
         };
 
-        NotificationSchedulerTaskJni.get().onStartTask(NotificationSchedulerTask.this,
-                Profile.getLastUsedProfile().getOriginalProfile(), taskCallback);
+        NotificationSchedulerTaskJni.get().onStartTask(
+                NotificationSchedulerTask.this, Profile.getLastUsedRegularProfile(), taskCallback);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
     @Override
     protected boolean onStopTaskWithNative(Context context, TaskParameters taskParameters) {
         return NotificationSchedulerTaskJni.get().onStopTask(
-                NotificationSchedulerTask.this, Profile.getLastUsedProfile().getOriginalProfile());
+                NotificationSchedulerTask.this, Profile.getLastUsedRegularProfile());
     }
 
     /**

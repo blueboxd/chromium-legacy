@@ -35,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace crostini {
 
@@ -192,7 +193,7 @@ class CrostiniPackageServiceTest : public testing::Test {
         storage::FileSystemMountOption(),
         file_manager::util::GetDownloadsFolderForProfile(profile_.get()));
     package_file_url_ = mount_points->CreateExternalFileSystemURL(
-        GURL(), mount_point_name, base::FilePath(kPackageFilePath));
+        url::Origin(), mount_point_name, base::FilePath(kPackageFilePath));
 
     auto* crostini_manager = CrostiniManager::GetForProfile(profile_.get());
     ASSERT_TRUE(crostini_manager);

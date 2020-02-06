@@ -23,7 +23,7 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
   // Step 1. ... "script", ... [spec text]
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.initiator_info.name = "script";
-  FetchParameters params(resource_request, resource_loader_options);
+  FetchParameters params(std::move(resource_request), resource_loader_options);
   params.SetRequestContext(mojom::RequestContextType::SCRIPT);
   params.SetRequestDestination(network::mojom::RequestDestination::kScript);
 

@@ -3190,7 +3190,7 @@ if (enable_java_templates) {
           # the proper bitness for the app.
           _has_native_libs =
               defined(invoker.native_libs_filearg) || _loadable_modules != []
-          if (_has_native_libs) {
+          if (_has_native_libs && !defined(native_lib_placeholders)) {
             native_lib_placeholders = [ "libfix.crbug.384638.so" ]
           }
 

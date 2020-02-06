@@ -42,6 +42,7 @@ class URLLoaderFactoryParamsHelper {
   static network::mojom::URLLoaderFactoryParamsPtr CreateForFrame(
       RenderFrameHostImpl* frame,
       const url::Origin& origin,
+      network::mojom::ClientSecurityStatePtr client_security_state,
       RenderProcessHost* process);
 
   // Creates URLLoaderFactoryParams to be used by |isolated_world_origin| hosted
@@ -49,10 +50,12 @@ class URLLoaderFactoryParamsHelper {
   static network::mojom::URLLoaderFactoryParamsPtr CreateForIsolatedWorld(
       RenderFrameHostImpl* frame,
       const url::Origin& isolated_world_origin,
-      const url::Origin& main_world_origin);
+      const url::Origin& main_world_origin,
+      network::mojom::ClientSecurityStatePtr client_security_state);
 
   static network::mojom::URLLoaderFactoryParamsPtr CreateForPrefetch(
-      RenderFrameHostImpl* frame);
+      RenderFrameHostImpl* frame,
+      network::mojom::ClientSecurityStatePtr client_security_state);
 
   // Creates URLLoaderFactoryParams for either fetching the worker script or for
   // fetches initiated from a worker.

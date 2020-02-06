@@ -554,9 +554,8 @@ void ManagementUIHandler::AddReportingInfo(base::Value* report_sources) {
   }
 }
 
-base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
-    Profile* profile) {
-  base::DictionaryValue response;
+base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
+  base::Value response(base::Value::Type::DICTIONARY);
 #if defined(OS_CHROMEOS)
   std::string management_domain = GetDeviceDomain();
   if (management_domain.empty())
@@ -564,26 +563,27 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
 #else
   std::string management_domain = GetAccountDomain(profile);
 
-  response.SetString("browserManagementNotice",
-                     l10n_util::GetStringFUTF16(
-                         managed_() ? IDS_MANAGEMENT_BROWSER_NOTICE
-                                    : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                         base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+  response.SetStringPath(
+      "browserManagementNotice",
+      l10n_util::GetStringFUTF16(
+          managed_() ? IDS_MANAGEMENT_BROWSER_NOTICE
+                     : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+          base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
 #endif
 
   if (management_domain.empty()) {
-    response.SetString(
+    response.SetStringPath(
         "extensionReportingTitle",
         l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
 
 #if !defined(OS_CHROMEOS)
-    response.SetString("pageSubtitle",
-                       l10n_util::GetStringUTF16(
-                           managed_() ? IDS_MANAGEMENT_SUBTITLE
-                                      : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+    response.SetStringPath(
+        "pageSubtitle", l10n_util::GetStringUTF16(
+                            managed_() ? IDS_MANAGEMENT_SUBTITLE
+                                       : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #else
     const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-    response.SetString(
+    response.SetStringPath(
         "pageSubtitle",
         managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
@@ -594,13 +594,13 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
 #endif  // !defined(OS_CHROMEOS)
 
   } else {
-    response.SetString(
+    response.SetStringPath(
         "extensionReportingTitle",
         l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                    base::UTF8ToUTF16(management_domain)));
 
 #if !defined(OS_CHROMEOS)
-    response.SetString(
+    response.SetStringPath(
         "pageSubtitle",
         managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
@@ -608,7 +608,7 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
             : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #else
     const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-    response.SetString(
+    response.SetStringPath(
         "pageSubtitle",
         managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
@@ -619,11 +619,11 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
                   l10n_util::GetStringUTF16(device_type)));
 #endif  // !defined(OS_CHROMEOS)
   }
-  response.SetBoolean("managed", managed_());
+  response.SetBoolPath("managed", managed_());
   GetManagementStatus(profile, &response);
   AsyncUpdateLogo();
   if (!fetched_image_.empty())
-    response.SetKey(kCustomerLogo, base::Value(fetched_image_));
+    response.SetPath(kCustomerLogo, base::Value(fetched_image_));
   return response;
 }
 

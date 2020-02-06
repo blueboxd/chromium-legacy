@@ -72,7 +72,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     @Override
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
-        setAutocompleteProfile(Profile.getLastUsedProfile().getOriginalProfile());
+        setAutocompleteProfile(Profile.getLastUsedRegularProfile());
 
         mPendingSearchPromoDecision = LocaleManager.getInstance().needToCheckForSearchEnginePromo();
         getAutocompleteCoordinator().setShouldPreventOmniboxAutocomplete(

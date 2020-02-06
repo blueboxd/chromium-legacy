@@ -90,6 +90,7 @@ void InstanceIDImpl::DoGetCreationTime(GetCreationTimeCallback callback) {
 
 void InstanceIDImpl::GetToken(const std::string& authorized_entity,
                               const std::string& scope,
+                              base::TimeDelta time_to_live,
                               const std::map<std::string, std::string>& options,
                               std::set<Flags> flags,
                               GetTokenCallback callback) {
@@ -98,20 +99,21 @@ void InstanceIDImpl::GetToken(const std::string& authorized_entity,
 
   UMA_HISTOGRAM_COUNTS_100("InstanceID.GetToken.OptionsCount", options.size());
 
-  RunWhenReady(base::BindOnce(&InstanceIDImpl::DoGetToken,
-                              weak_ptr_factory_.GetWeakPtr(), authorized_entity,
-                              scope, options, std::move(callback)));
+  RunWhenReady(base::BindOnce(
+      &InstanceIDImpl::DoGetToken, weak_ptr_factory_.GetWeakPtr(),
+      authorized_entity, scope, time_to_live, options, std::move(callback)));
 }
 
 void InstanceIDImpl::DoGetToken(
     const std::string& authorized_entity,
     const std::string& scope,
+    base::TimeDelta time_to_live,
     const std::map<std::string, std::string>& options,
     GetTokenCallback callback) {
   EnsureIDGenerated();
 
   Handler()->GetToken(
-      app_id(), authorized_entity, scope, options,
+      app_id(), authorized_entity, scope, time_to_live, options,
       base::BindOnce(&InstanceIDImpl::OnGetTokenCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

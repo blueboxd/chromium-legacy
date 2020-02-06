@@ -26420,6 +26420,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3157" label="CSSComparisonFunctions"/>
   <int value="3158" label="FeaturePolicyProposalWouldChangeBehaviour"/>
   <int value="3159" label="RTCLocalSdpModificationSimulcast"/>
+  <int value="3160" label="TrustedTypesEnabledEnforcing"/>
+  <int value="3161" label="TrustedTypesEnabledReportOnly"/>
+  <int value="3162" label="TrustedTypesAllowDuplicates"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -50952,6 +50955,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PhoneNumberRegexVariantResult">
+  <obsolete>
+    Removed in M82 as the experiment has been stopped.
+  </obsolete>
   <int value="0" label="None match"/>
   <int value="1" label="Only simple matches"/>
   <int value="2" label="Only variant matches"/>

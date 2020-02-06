@@ -34,14 +34,14 @@ using testing::Return;
 using testing::ReturnRef;
 
 struct ContextualManagementSourceUpdate {
-  base::string16* extension_reporting_title;
-  base::string16* subtitle;
+  base::string16 extension_reporting_title;
+  base::string16 subtitle;
 #if defined(OS_CHROMEOS)
-  base::string16* management_overview;
+  base::string16 management_overview;
 #else
-  base::string16* browser_management_notice;
+  base::string16 browser_management_notice;
 #endif  // defined(OS_CHROMEOS)
-  bool* managed;
+  bool managed;
 };
 
 class TestManagementUIHandler : public ManagementUIHandler {
@@ -55,7 +55,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
     cloud_reporting_extension_exists_ = enable;
   }
 
-  base::DictionaryValue GetContextualManagedDataForTesting(Profile* profile) {
+  base::Value GetContextualManagedDataForTesting(Profile* profile) {
     return GetContextualManagedData(profile);
   }
 
@@ -121,20 +121,79 @@ class ManagementUIHandlerTests : public testing::Test {
                  std::make_unique<base::Value>(value), nullptr);
   }
 
-  void ExtractContextualSourceUpdate(
-      const base::DictionaryValue& data,
-      const ContextualManagementSourceUpdate& extracted) {
-    data.GetString("extensionReportingTitle",
-                   extracted.extension_reporting_title);
-    data.GetString("pageSubtitle", extracted.subtitle);
-#if defined(OS_CHROMEOS)
-    data.GetString("overview", extracted.management_overview);
-#else
-    data.GetString("browserManagementNotice",
-                   extracted.browser_management_notice);
-#endif  // defined(OS_CHROMEOS)
-    data.GetBoolean("managed", extracted.managed);
+  base::string16 ExtractPathFromDict(const base::Value& data,
+                                     const std::string path) {
+    const std::string* buf = data.FindStringPath(path);
+    if (!buf)
+      return base::string16();
+    return base::UTF8ToUTF16(*buf);
   }
+
+  void ExtractContextualSourceUpdate(const base::Value& data) {
+    extracted_.extension_reporting_title =
+        ExtractPathFromDict(data, "extensionReportingTitle");
+    extracted_.subtitle = ExtractPathFromDict(data, "pageSubtitle");
+#if defined(OS_CHROMEOS)
+    extracted_.management_overview = ExtractPathFromDict(data, "overview");
+#else
+    extracted_.browser_management_notice =
+        ExtractPathFromDict(data, "browserManagementNotice");
+#endif  // defined(OS_CHROMEOS)
+    base::Optional<bool> managed = data.FindBoolPath("managed");
+    extracted_.managed = managed.has_value() && managed.value();
+  }
+
+  void PrepareProfileAndHandler() {
+    PrepareProfileAndHandler(std::string(), false, true, false,
+                             "devicedomain.com");
+  }
+
+  void PrepareProfileAndHandler(const std::string& profile_name,
+                                bool override_policy_connector_is_managed,
+                                bool use_account,
+                                bool use_device) {
+    PrepareProfileAndHandler(profile_name, override_policy_connector_is_managed,
+                             use_account, use_device, "devicedomain.com");
+  }
+
+  void PrepareProfileAndHandler(const std::string& profile_name,
+                                bool override_policy_connector_is_managed,
+                                bool use_account,
+                                bool use_device,
+                                const std::string& device_domain) {
+    TestingProfile::Builder builder;
+    builder.SetProfileName(profile_name);
+    if (override_policy_connector_is_managed) {
+      builder.OverridePolicyConnectorIsManagedForTesting(true);
+    }
+    profile_ = builder.Build();
+    handler_.SetAccountManagedForTesting(use_account);
+    handler_.SetDeviceManagedForTesting(use_device);
+#if defined(OS_CHROMEOS)
+    handler_.SetDeviceDomain(device_domain);
+#endif
+    base::Value data =
+        handler_.GetContextualManagedDataForTesting(profile_.get());
+    ExtractContextualSourceUpdate(data);
+  }
+
+  bool GetManaged() const { return extracted_.managed; }
+
+#if defined(OS_CHROMEOS)
+  base::string16 GetManagementOverview() const {
+    return extracted_.management_overview;
+  }
+#else
+  base::string16 GetBrowserManagementNotice() const {
+    return extracted_.browser_management_notice;
+  }
+#endif
+
+  base::string16 GetExtensionReportingTitle() const {
+    return extracted_.extension_reporting_title;
+  }
+
+  base::string16 GetPageSubtitle() const { return extracted_.subtitle; }
 
  protected:
   TestManagementUIHandler handler_;
@@ -142,203 +201,131 @@ class ManagementUIHandlerTests : public testing::Test {
   policy::MockPolicyService policy_service_;
   policy::PolicyMap empty_policy_map_;
   base::string16 device_domain_;
+  ContextualManagementSourceUpdate extracted_;
+  std::unique_ptr<TestingProfile> profile_;
 };
+
+void ExpectMessagesToBeEQ(base::Value::ConstListView infolist,
+                          const std::set<std::string>& expected_messages) {
+  ASSERT_EQ(infolist.size(), expected_messages.size());
+  std::set<std::string> tmp_expected(expected_messages);
+  for (const base::Value& info : infolist) {
+    const std::string* message_id = info.FindStringKey("messageId");
+    if (message_id) {
+      EXPECT_EQ(1u, tmp_expected.erase(*message_id));
+    }
+  }
+  EXPECT_TRUE(tmp_expected.empty());
+}
 
 #if !defined(OS_CHROMEOS)
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedNoDomain) {
-  auto profile = TestingProfile::Builder().Build();
+  PrepareProfileAndHandler(
+      /* profile_name= */ "",
+      /* override_policy_connector_is_managed= */ false,
+      /* use_account= */ false,
+      /* use_device= */ false);
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 browser_management_notice;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &browser_management_notice,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(false);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(data.DictSize(), 4u);
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(browser_management_notice,
+  EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedNoDomain) {
-  auto profile = TestingProfile::Builder().Build();
+  PrepareProfileAndHandler();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 browser_management_notice;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &browser_management_notice,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(data.DictSize(), 4u);
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(browser_management_notice,
+  EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(subtitle, l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
-  EXPECT_TRUE(managed);
+  EXPECT_EQ(GetPageSubtitle(),
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedConsumerDomain) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@gmail.com");
-  builder.OverridePolicyConnectorIsManagedForTesting(true);
-  auto profile = builder.Build();
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@gmail.com",
+      /* override_policy_connector_is_managed= */ true,
+      /* use_account= */ true, /* use_device= */ false);
 
-  base::string16 extensions_installed;
-  base::string16 subtitle;
-  base::string16 browser_management_notice;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extensions_installed,
-      &subtitle,
-      &browser_management_notice,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(data.DictSize(), 4u);
-  EXPECT_EQ(extensions_installed,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(browser_management_notice,
+  EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(subtitle, l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
-  EXPECT_TRUE(managed);
+  EXPECT_EQ(GetPageSubtitle(),
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedKnownDomain) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@manager.com");
-  builder.OverridePolicyConnectorIsManagedForTesting(true);
-  auto profile = builder.Build();
+  const std::string domain = "manager.com";
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@" + domain,
+      /* override_policy_connector_is_managed= */ true,
+      /* use_account= */ false, /* use_device= */ false);
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 browser_management_notice;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &browser_management_notice,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(false);
-
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(data.DictSize(), 4u);
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(browser_management_notice,
+                                       base::UTF8ToUTF16(domain)));
+  EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-  EXPECT_FALSE(managed);
+  EXPECT_FALSE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedCustomerDomain) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@googlemail.com");
-  auto profile = builder.Build();
-
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 browser_management_notice;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &browser_management_notice,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(false);
-
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(data.DictSize(), 4u);
-  EXPECT_EQ(extension_reporting_title,
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@googlemail.com",
+      /* override_policy_connector_is_managed= */ false,
+      /* use_account= */ false, /* use_device= */ false);
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(browser_management_notice,
+  EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-  EXPECT_FALSE(managed);
+  EXPECT_FALSE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedKnownDomain) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@gmail.com.manager.com.gmail.com");
-  builder.OverridePolicyConnectorIsManagedForTesting(true);
-  auto profile = builder.Build();
+  const std::string domain = "gmail.com.manager.com.gmail.com";
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@" + domain,
+      /* override_policy_connector_is_managed= */ true,
+      /* use_account_for_testing= */ true, /* use_device= */ false);
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 browser_management_notice;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &browser_management_notice,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  handler_.SetDeviceManagedForTesting(false);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(data.DictSize(), 4u);
-  EXPECT_EQ(extension_reporting_title,
-            l10n_util::GetStringFUTF16(
-                IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
-                base::UTF8ToUTF16("gmail.com.manager.com.gmail.com")));
-  EXPECT_EQ(browser_management_notice,
+  EXPECT_EQ(GetExtensionReportingTitle(),
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                                       base::UTF8ToUTF16(domain)));
+  EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(subtitle,
-            l10n_util::GetStringFUTF16(
-                IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                base::UTF8ToUTF16("gmail.com.manager.com.gmail.com")));
-  EXPECT_TRUE(managed);
+  EXPECT_EQ(GetPageSubtitle(),
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                       base::UTF8ToUTF16(domain)));
+  EXPECT_TRUE(GetManaged());
 }
 
 #endif  // !defined(OS_CHROMEOS)
@@ -346,203 +333,124 @@ TEST_F(ManagementUIHandlerTests,
 #if defined(OS_CHROMEOS)
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedAccountKnownDomain) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@manager.com");
-  builder.OverridePolicyConnectorIsManagedForTesting(true);
-  auto profile = builder.Build();
+  const std::string domain = "manager.com";
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@" + domain,
+      /* override_policy_connector_is_managed= */ true,
+      /* use_account= */ true, /* use_device= */ false,
+      /* device_name= */ "");
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 management_overview;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &management_overview,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  handler_.SetDeviceManagedForTesting(false);
-  handler_.SetDeviceDomain("");
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(subtitle,
+                                       base::UTF8ToUTF16(domain)));
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        l10n_util::GetStringUTF16(device_type),
-                                       base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(management_overview,
+                                       base::UTF8ToUTF16(domain)));
+  EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
-  EXPECT_TRUE(managed);
+                                       base::UTF8ToUTF16(domain)));
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedAccountUnknownDomain) {
-  TestingProfile::Builder builder;
-  auto profile = builder.Build();
+  PrepareProfileAndHandler(
+      /* profile_name= */ "",
+      /* override_policy_connector_is_managed= */ false,
+      /* use_account= */ true, /* use_device= */ false,
+      /* device_name= */ "");
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 management_overview;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &management_overview,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  handler_.SetDeviceManagedForTesting(false);
-  handler_.SetDeviceDomain("");
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                        l10n_util::GetStringUTF16(device_type)));
-  EXPECT_EQ(management_overview, base::string16());
-  EXPECT_TRUE(managed);
+  EXPECT_EQ(GetManagementOverview(), base::string16());
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedDevice) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@manager.com");
-  auto profile = builder.Build();
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@manager.com",
+      /* override_policy_connector_is_managed= */ false,
+      /* use_account= */ false, /* use_device= */ true);
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 management_overview;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &management_overview,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(false);
-  handler_.SetDeviceManagedForTesting(true);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        l10n_util::GetStringUTF16(device_type),
                                        device_domain()));
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
-  EXPECT_EQ(management_overview, base::string16());
-  EXPECT_TRUE(managed);
+  EXPECT_EQ(GetManagementOverview(), base::string16());
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedDeviceAndAccount) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@devicedomain.com");
-  auto profile = builder.Build();
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@devicedomain.com",
+      /* override_policy_connector_is_managed= */ false,
+      /* use_account= */ true, /* use_device= */ true);
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 management_overview;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &management_overview,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  handler_.SetDeviceManagedForTesting(true);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        l10n_util::GetStringUTF16(device_type),
                                        device_domain()));
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
-  EXPECT_EQ(management_overview,
+  EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY, device_domain()));
-  EXPECT_TRUE(managed);
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedDeviceAndAccountMultipleDomains) {
-  TestingProfile::Builder builder;
-  builder.SetProfileName("managed@manager.com");
-  builder.OverridePolicyConnectorIsManagedForTesting(true);
-  auto profile = builder.Build();
+  const std::string domain = "manager.com";
+  PrepareProfileAndHandler(
+      /* profile_name= */ "managed@" + domain,
+      /* override_policy_connector_is_managed= */ true,
+      /* use_account= */ true, /* use_device= */ true);
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 management_overview;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &management_overview,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(true);
-  handler_.SetDeviceManagedForTesting(true);
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        l10n_util::GetStringUTF16(device_type),
                                        device_domain()));
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
-  EXPECT_EQ(management_overview,
+  EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
-                device_domain(), base::UTF8ToUTF16("manager.com")));
-  EXPECT_TRUE(managed);
+                device_domain(), base::UTF8ToUTF16(domain)));
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
-  auto profile = TestingProfile::Builder().Build();
+  PrepareProfileAndHandler(
+      /* profile_name= */ "",
+      /* override_policy_connector_is_managed= */ false,
+      /* use_account= */ false, /* use_device= */ false,
+      /* device_domain= */ "");
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
-  base::string16 extension_reporting_title;
-  base::string16 subtitle;
-  base::string16 management_overview;
-  bool managed;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title,
-      &subtitle,
-      &management_overview,
-      &managed};
-
-  handler_.SetAccountManagedForTesting(false);
-  handler_.SetDeviceDomain("");
-  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
-  ExtractContextualSourceUpdate(data, extracted);
-  EXPECT_EQ(subtitle,
+  EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
                                        l10n_util::GetStringUTF16(device_type)));
-  EXPECT_EQ(extension_reporting_title,
+  EXPECT_EQ(GetExtensionReportingTitle(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(management_overview,
+  EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED));
-  EXPECT_FALSE(managed);
+  EXPECT_FALSE(GetManaged());
 }
 #endif
 
@@ -556,20 +464,14 @@ TEST_F(ManagementUIHandlerTests,
        ExtensionReportingInfoCloudExtensionAddsDefaultPolicies) {
   handler_.EnableCloudReportingExtension(true);
 
-  std::set<std::string> expected_messages = {
+  const std::set<std::string> expected_messages = {
       kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
       kManagementExtensionReportVersion,
       kManagementExtensionReportExtensionsPlugin,
       kManagementExtensionReportSafeBrowsingWarnings};
 
-  auto reporting_info = handler_.GetExtensionReportingInfo();
-  const auto& reporting_info_list = reporting_info.GetList();
-
-  for (const base::Value& info : reporting_info_list) {
-    const std::string* messageId = info.FindStringKey("messageId");
-    EXPECT_TRUE(expected_messages.find(*messageId) != expected_messages.end());
-  }
-  EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
+  ExpectMessagesToBeEQ(handler_.GetExtensionReportingInfo().GetList(),
+                       expected_messages);
 }
 
 TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
@@ -587,14 +489,8 @@ TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
       kManagementExtensionReportVersion,
       kManagementExtensionReportExtensionsPlugin};
 
-  auto reporting_info = handler_.GetExtensionReportingInfo();
-  const auto& reporting_info_list = reporting_info.GetList();
-
-  for (const base::Value& info : reporting_info_list) {
-    const std::string* messageId = info.FindStringKey("messageId");
-    EXPECT_TRUE(expected_messages.find(*messageId) != expected_messages.end());
-  }
-  EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
+  ExpectMessagesToBeEQ(handler_.GetExtensionReportingInfo().GetList(),
+                       expected_messages);
 }
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
@@ -652,15 +548,8 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
       kManagementExtensionReportUserBrowsingData,
       kManagementExtensionReportPerfCrash};
 
-  auto reporting_info = handler_.GetExtensionReportingInfo();
-  const auto& reporting_info_list = reporting_info.GetList();
-
-  for (const base::Value& info : reporting_info_list) {
-    const std::string* message_id = info.FindStringKey("messageId");
-    ASSERT_TRUE(message_id != nullptr);
-    EXPECT_TRUE(expected_messages.find(*message_id) != expected_messages.end());
-  }
-  EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
+  ExpectMessagesToBeEQ(handler_.GetExtensionReportingInfo().GetList(),
+                       expected_messages);
 }
 
 TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {

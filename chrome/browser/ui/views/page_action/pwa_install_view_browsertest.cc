@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   EXPECT_TRUE(pwa_install_view_->GetVisible());
 }
 
-// Tests that the plus icon updates its visibiliy when switching between
+// Tests that the plus icon updates its visibility when switching between
 // installable/non-installable tabs.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
                        IconVisibilityAfterTabSwitching) {
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 
-// Tests that the plus icon updates its visibiliy once the installability check
+// Tests that the plus icon updates its visibility once the installability check
 // completes.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
                        IconVisibilityAfterInstallabilityCheck) {
@@ -284,6 +284,23 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   StartNavigateToUrl(GetNonInstallableAppURL());
   EXPECT_FALSE(pwa_install_view_->GetVisible());
   ASSERT_FALSE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+}
+
+// Tests that the plus icon updates its visibility after installation.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       IconVisibilityAfterInstallation) {
+  StartNavigateToUrl(GetInstallableAppURL());
+  content::WebContents* first_tab = GetCurrentTab();
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->GetVisible());
+
+  OpenTabResult result = OpenTab(GetInstallableAppURL());
+  EXPECT_TRUE(result.installable);
+  EXPECT_NE(first_tab, GetCurrentTab());
+  ExecutePwaInstallIcon();
+  EXPECT_EQ(first_tab, GetCurrentTab());
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 

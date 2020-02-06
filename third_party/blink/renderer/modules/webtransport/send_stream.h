@@ -10,8 +10,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webtransport/outgoing_stream.h"
-#include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -20,7 +18,6 @@ class QuicTransport;
 
 class MODULES_EXPORT SendStream final : public OutgoingStream {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SendStream);
 
  public:
   // SendStream doesn't have a JavaScript constructor. It is only constructed

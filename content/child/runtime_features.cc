@@ -358,6 +358,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {"HTMLImports", blink::features::kWebComponentsV0Enabled,
            kEnableOnly},
+          {"CSSReducedFontLoadingInvalidations",
+           blink::features::kCSSReducedFontLoadingInvalidations,
+           kUseFeatureState},
 
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {

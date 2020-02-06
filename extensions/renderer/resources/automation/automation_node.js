@@ -4,6 +4,7 @@
 
 var AutomationEvent = require('automationEvent').AutomationEvent;
 var automationInternal = getInternalApi('automationInternal');
+var AutomationTreeCache = require('automationTreeCache').AutomationTreeCache;
 var exceptionHandler = require('uncaught_exception_handler');
 
 var natives = requireNative('automationInternal');
@@ -522,6 +523,15 @@ var EventListenerRemoved = natives.EventListenerRemoved;
  */
 var GetMarkers = natives.GetMarkers;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @param {number} offset
+ * @param {boolean} isUpstream
+ * @return {!Object}
+ */
+var createAutomationPosition = natives.CreateAutomationPosition;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -787,6 +797,25 @@ AutomationNodeImpl.prototype = {
 
   get markers() {
     return GetMarkers(this.treeID, this.id);
+  },
+
+  createPosition: function(offset, opt_isUpstream) {
+    var nativePosition = createAutomationPosition(
+        this.treeID, this.id, offset, !!opt_isUpstream);
+
+    // Attach a getter for the node, which is only available in js.
+    Object.defineProperty(nativePosition, 'node', {
+      get: function() {
+        var tree =
+            AutomationTreeCache.idToAutomationRootNode[nativePosition.treeID];
+        if (!tree)
+          return null;
+
+        return privates(tree).impl.get(nativePosition.anchorID);
+      }
+    });
+
+    return nativePosition;
   },
 
   doDefault: function() {
@@ -1440,19 +1469,16 @@ function AutomationRootNodeImpl(treeID) {
   this.axNodeDataCache_ = {__proto__: null};
 }
 
-utils.defineProperty(AutomationRootNodeImpl, 'idToAutomationRootNode_',
-    {__proto__: null});
-
 utils.defineProperty(AutomationRootNodeImpl, 'get', function(treeID) {
-  var result = AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
+  var result = AutomationTreeCache.idToAutomationRootNode[treeID];
   return result || undefined;
 });
 
 utils.defineProperty(AutomationRootNodeImpl, 'getOrCreate', function(treeID) {
-  if (AutomationRootNodeImpl.idToAutomationRootNode_[treeID])
-    return AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
+  if (AutomationTreeCache.idToAutomationRootNode[treeID])
+    return AutomationTreeCache.idToAutomationRootNode[treeID];
   var result = new AutomationRootNode(treeID);
-  AutomationRootNodeImpl.idToAutomationRootNode_[treeID] = result;
+  AutomationTreeCache.idToAutomationRootNode[treeID] = result;
   return result;
 });
 
@@ -1467,7 +1493,7 @@ utils.defineProperty(
 });
 
 utils.defineProperty(AutomationRootNodeImpl, 'destroy', function(treeID) {
-  delete AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
+  delete AutomationTreeCache.idToAutomationRootNode[treeID];
 });
 
 /**
@@ -1731,6 +1757,7 @@ function AutomationNode() {
 }
 utils.expose(AutomationNode, AutomationNodeImpl, {
   functions: [
+    'createPosition',
     'doDefault',
     'find',
     'findAll',

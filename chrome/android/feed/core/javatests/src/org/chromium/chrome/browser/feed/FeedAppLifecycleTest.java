@@ -105,7 +105,7 @@ public class FeedAppLifecycleTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-            Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             mLifecycleBridge = new FeedLifecycleBridge(profile);
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);

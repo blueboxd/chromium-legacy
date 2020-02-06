@@ -53,6 +53,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
                      DeleteAndStartOver_UnrelatedFileExists);
 FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
                      DeleteAndStartOver_OpenedFileExists);
+FORWARD_DECLARE_TEST(ServiceWorkerStorageTest, DisabledStorage);
 }  // namespace service_worker_storage_unittest
 
 // This class provides an interface to store and retrieve ServiceWorker
@@ -265,7 +266,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Returns a new registration id which is guaranteed to be unique in the
   // storage. Returns blink::mojom::kInvalidServiceWorkerRegistrationId if the
   // storage is disabled.
-  int64_t NewRegistrationId();
+  // NOTE: Currently this method is synchronous but intentionally uses async
+  // style because ServiceWorkerStorage will be accessed via mojo calls soon.
+  // See crbug.com/1046335 for details.
+  void NewRegistrationId(
+      base::OnceCallback<void(int64_t registration_id)> callback);
 
   // Returns a new version id which is guaranteed to be unique in the storage.
   // Returns kInvalidServiceWorkerVersionId if the storage is disabled.
@@ -308,6 +313,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
       DeleteAndStartOver_OpenedFileExists);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_storage_unittest::ServiceWorkerStorageTest,
+      DisabledStorage);
 
   struct InitialData {
     int64_t next_registration_id;
@@ -414,6 +422,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                                 ServiceWorkerDatabase::Status status);
 
   void ClearSessionOnlyOrigins();
+
+  int64_t NewRegistrationIdInternal();
 
   // Static cross-thread helpers.
   static void CollectStaleResourcesFromDB(

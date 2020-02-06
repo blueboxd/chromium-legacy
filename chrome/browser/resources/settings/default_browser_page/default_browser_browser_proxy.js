@@ -7,6 +7,10 @@
  * to interact with the browser.
  */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * @typedef {{
  *   canBeDefault: boolean,
@@ -15,11 +19,11 @@
  *   isUnknownError: boolean,
  * }};
  */
-let DefaultBrowserInfo;
+/* #export */ let DefaultBrowserInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  class DefaultBrowserBrowserProxy {
+  /* #export */ class DefaultBrowserBrowserProxy {
     /**
      * Get the initial DefaultBrowserInfo and begin sending updates to
      * 'settings.updateDefaultBrowserState'.
@@ -34,10 +38,8 @@ cr.define('settings', function() {
     setAsDefaultBrowser() {}
   }
 
-  /**
-   * @implements {settings.DefaultBrowserBrowserProxy}
-   */
-  class DefaultBrowserBrowserProxyImpl {
+  /** @implements {settings.DefaultBrowserBrowserProxy} */
+  /* #export */ class DefaultBrowserBrowserProxyImpl {
     /** @override */
     requestDefaultBrowserState() {
       return cr.sendWithPromise('requestDefaultBrowserState');

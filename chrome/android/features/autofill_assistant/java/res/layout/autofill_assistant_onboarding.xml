@@ -5,27 +5,50 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="12dp"
+        android:paddingTop="18dp"
         android:paddingBottom="14dp"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <!-- "Try Google Assistant in Chrome" -->
+
+      <!-- "Try Google Assistant in Chrome" -->
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="center_horizontal"
+          android:layout_marginTop="24dp">
         <ImageView
-            android:id="@+id/onboarding_try_assistant"
-            tools:ignore="contentDescription"
-            android:layout_width="185dp"
+          android:id="@+id/onboarding_title_poodle"
+          tools:ignore="contentDescription"
+            android:layout_width="24dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/autofill_assistant_onboarding_try" />
+            android:layout_gravity="center_vertical"
+          app:srcCompat="@drawable/ic_logo_assistant_24dp" />
+        <TextView
+            android:id="@+id/onboarding_try_assistant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Headline.Primary"
+            android:gravity="center"
+            android:text="@string/autofill_assistant_init_title" />
+        <!-- This balances the picture on the other side to make the text centered-->
+        <Space
+            android:layout_width="24dp"
+            android:layout_height="1dp"/>
+
+      </LinearLayout>
+
+
 
         <!-- Subtitle (e.g., 'Google Assistant saves you time...')-->
         <LinearLayout

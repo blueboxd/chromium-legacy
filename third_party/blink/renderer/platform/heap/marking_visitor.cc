@@ -10,14 +10,6 @@
 
 namespace blink {
 
-namespace {
-
-ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
-  return value == reinterpret_cast<void*>(-1);
-}
-
-}  // namespace
-
 MarkingVisitorCommon::MarkingVisitorCommon(ThreadState* state,
                                            MarkingMode marking_mode,
                                            int task_id)
@@ -136,19 +128,9 @@ void MarkingVisitorCommon::VisitBackingStoreOnly(void* object,
 }
 
 // static
-bool MarkingVisitor::WriteBarrierSlow(void* value) {
-  if (!value || IsHashTableDeleteValue(value))
-    return false;
-
-  // It is guaranteed that managed references point to either GarbageCollected
-  // or GarbageCollectedMixin. Mixins are restricted to regular objects sizes.
-  // It is thus possible to get to the page header by aligning properly.
-  BasePage* base_page = PageFromObject(value);
-
-  ThreadState* const thread_state = base_page->thread_state();
-  if (!thread_state->IsIncrementalMarking())
-    return false;
-
+bool MarkingVisitor::MarkValue(void* value,
+                               BasePage* base_page,
+                               ThreadState* thread_state) {
   HeapObjectHeader* header;
   if (LIKELY(!base_page->IsLargeObjectPage())) {
     header = reinterpret_cast<HeapObjectHeader*>(
@@ -174,6 +156,45 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
 
   visitor->write_barrier_worklist_.Push(header);
   return true;
+}
+
+// static
+bool MarkingVisitor::WriteBarrierSlow(void* value) {
+  if (!value || IsHashTableDeleteValue(value))
+    return false;
+
+  // It is guaranteed that managed references point to either GarbageCollected
+  // or GarbageCollectedMixin. Mixins are restricted to regular objects sizes.
+  // It is thus possible to get to the page header by aligning properly.
+  BasePage* base_page = PageFromObject(value);
+
+  ThreadState* const thread_state = base_page->thread_state();
+  if (!thread_state->IsIncrementalMarking())
+    return false;
+
+  return MarkValue(value, base_page, thread_state);
+}
+
+void MarkingVisitor::GenerationalBarrierSlow(Address slot,
+                                             ThreadState* thread_state) {
+  BasePage* slot_page = thread_state->Heap().LookupPageForAddress(slot);
+  DCHECK(slot_page);
+
+  if (UNLIKELY(slot_page->IsLargeObjectPage())) {
+    auto* large_page = static_cast<LargeObjectPage*>(slot_page);
+    if (LIKELY(!large_page->ObjectHeader()->IsMarked()))
+      return;
+    large_page->SetRemembered(true);
+    return;
+  }
+
+  auto* normal_page = static_cast<NormalPage*>(slot_page);
+  const HeapObjectHeader* source_header = reinterpret_cast<HeapObjectHeader*>(
+      normal_page->object_start_bit_map()->FindHeader(slot));
+  DCHECK_LT(0u, source_header->GcInfoIndex());
+  if (UNLIKELY(source_header->IsMarked())) {
+    normal_page->MarkCard(slot);
+  }
 }
 
 void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {

@@ -182,6 +182,8 @@ void HTMLOptionElement::ParseAttribute(
       SetSelected(!params.new_value.IsNull());
     PseudoStateChanged(CSSSelector::kPseudoDefault);
   } else if (name == html_names::kLabelAttr) {
+    if (HTMLSelectElement* select = OwnerSelectElement())
+      select->OptionElementChildrenChanged(*this);
     UpdateLabel();
   } else {
     HTMLElement::ParseAttribute(params);

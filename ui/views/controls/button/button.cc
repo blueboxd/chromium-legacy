@@ -120,9 +120,6 @@ bool Button::DefaultButtonControllerDelegate::InDrag() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // static
-constexpr Button::ButtonState Button::kButtonStates[STATE_COUNT];
-
-// static
 const Button* Button::AsButton(const views::View* view) {
   return AsButton(const_cast<View*>(view));
 }

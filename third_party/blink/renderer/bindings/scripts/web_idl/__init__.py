@@ -12,8 +12,10 @@ def _setup_sys_path():
     expected_path = 'third_party/blink/renderer/bindings/scripts/web_idl/'
 
     this_dir = os.path.dirname(__file__)
-    root_dir = os.path.join(this_dir, *(['..'] * expected_path.count('/')))
-    sys.path = [
+    root_dir = os.path.abspath(
+        os.path.join(this_dir, *(['..'] * expected_path.count('/'))))
+
+    module_dirs = (
         # //third_party/blink/renderer/build/scripts/blinkbuild
         os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'build',
                      'scripts'),
@@ -23,7 +25,11 @@ def _setup_sys_path():
         os.path.join(root_dir, 'third_party', 'pyjson5', 'src'),
         # //tools/idl_parser
         os.path.join(root_dir, 'tools'),
-    ] + sys.path
+    )
+    for module_dir in reversed(module_dirs):
+        # Preserve sys.path[0] as is.
+        # https://docs.python.org/3/library/sys.html?highlight=path[0]#sys.path
+        sys.path.insert(1, module_dir)
 
 
 _setup_sys_path()

@@ -27,7 +27,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -183,57 +182,6 @@ void ToolbarButton::UpdateColorsAndInsets() {
   // Update spacing on the outer-side of the label to match the current
   // highlight radius.
   SetLabelSideSpacing(highlight_radius / 2);
-}
-
-SkColor ToolbarButton::GetForegroundColor(ButtonState state) const {
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  DCHECK(tp);
-  switch (state) {
-    case ButtonState::STATE_HOVERED:
-      return tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED);
-    case ButtonState::STATE_PRESSED:
-      return tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_PRESSED);
-    case ButtonState::STATE_DISABLED:
-      return tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
-    case ButtonState::STATE_NORMAL:
-      return tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-    default:
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
-  }
-}
-
-void ToolbarButton::UpdateIconsWithColors(const gfx::VectorIcon& icon,
-                                          SkColor normal_color,
-                                          SkColor hovered_color,
-                                          SkColor pressed_color,
-                                          SkColor disabled_color) {
-  SetImage(ButtonState::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, normal_color));
-  SetImage(ButtonState::STATE_HOVERED,
-           gfx::CreateVectorIcon(icon, hovered_color));
-  SetImage(ButtonState::STATE_PRESSED,
-           gfx::CreateVectorIcon(icon, pressed_color));
-
-#if defined(OS_MACOSX)
-  // On Mac OS X, the toolbar is set to disabled any time the current window is
-  // not in focus. This causes the icon to look disabled in weird cases, such as
-  // when the dialog is open. Therefore on Mac we only set the disabled image
-  // when necessary.
-  if (GetEnabled()) {
-    SetImage(views::Button::STATE_DISABLED, gfx::ImageSkia());
-    return;
-  }
-#endif  // defined(OS_MACOSX)
-  SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, disabled_color));
-}
-
-void ToolbarButton::UpdateIconsWithStandardColors(const gfx::VectorIcon& icon) {
-  UpdateIconsWithColors(icon, GetForegroundColor(ButtonState::STATE_NORMAL),
-                        GetForegroundColor(ButtonState::STATE_HOVERED),
-                        GetForegroundColor(ButtonState::STATE_PRESSED),
-                        GetForegroundColor(ButtonState::STATE_DISABLED));
 }
 
 void ToolbarButton::SetLabelSideSpacing(int spacing) {

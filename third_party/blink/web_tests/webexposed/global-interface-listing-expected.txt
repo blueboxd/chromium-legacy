@@ -8667,10 +8667,8 @@ interface VideoDecoder
     attribute @@toStringTag
     getter readable
     getter writable
-    method Close
-    method Flush
-    method Initialize
     method constructor
+    method initialize
 interface VideoFrame
     attribute @@toStringTag
     getter coded_height

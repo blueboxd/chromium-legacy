@@ -305,6 +305,8 @@ class AppBannerManager : public content::WebContentsObserver,
   State state() const { return state_; }
   bool IsRunning() const;
 
+  void SetInstallableWebAppCheckResult(InstallableWebAppCheckResult result);
+
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
 
@@ -358,8 +360,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
-
-  void SetInstallableWebAppCheckResult(InstallableWebAppCheckResult result);
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;

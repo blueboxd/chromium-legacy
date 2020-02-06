@@ -615,7 +615,7 @@ importer.RuntimeCommandWidget = class {
 
     /** @private @const{number} */
     this.cloudImportButtonTabIndex_ =
-        queryRequiredElement('button#cloud-import-button').tabIndex;
+        queryRequiredElement('#cloud-import-button').tabIndex;
   }
 
   /**

@@ -133,9 +133,11 @@
       "pool":"chromium.tests"
     },
     {
-      "app": "crashpad_tests",
+      "app": "ios_crash_xcuitests_module",
+      "host": "ios_crash_xcuitests",
+      "xcode parallelization": true,
       "device type": "iPhone X",
-      "os": "12.4",
+      "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"

@@ -543,10 +543,6 @@ public class NfcImpl implements Nfc {
                 notifyMatchingWatchers(webNdefMessage);
                 return;
             }
-            if (message.getByteArrayLength() > NdefMessage.MAX_SIZE) {
-                Log.w(TAG, "Cannot read data from NFC tag. NdefMessage exceeds allowed size.");
-                return;
-            }
             NdefMessage webNdefMessage = NdefMessageUtils.toNdefMessage(message);
             notifyMatchingWatchers(webNdefMessage);
         } catch (UnsupportedEncodingException e) {

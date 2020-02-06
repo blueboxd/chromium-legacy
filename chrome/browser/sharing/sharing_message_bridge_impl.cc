@@ -9,6 +9,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/dummy_metadata_change_list.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 
@@ -60,6 +61,16 @@ void SharingMessageBridgeImpl::SendSharingMessage(
     ReplyToCallback(std::move(on_commit_callback), sync_disabled_error_message);
     return;
   }
+
+  if (net::NetworkChangeNotifier::GetConnectionType() ==
+      net::NetworkChangeNotifier::CONNECTION_NONE) {
+    sync_pb::SharingMessageCommitError network_error_message;
+    network_error_message.set_error_code(
+        sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR);
+    ReplyToCallback(std::move(on_commit_callback), network_error_message);
+    return;
+  }
+
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
   // Fill in the internal message id with unique generated identifier.

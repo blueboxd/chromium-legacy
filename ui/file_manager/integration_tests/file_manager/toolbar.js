@@ -57,7 +57,7 @@ testcase.toolbarDeleteEntry = async () => {
 
   // Click delete button in the toolbar.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['button#delete-button']));
+      'fakeMouseClick', appId, ['#delete-button']));
 
 
   // Confirm that the confirmation dialog is shown.

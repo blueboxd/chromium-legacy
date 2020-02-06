@@ -20,7 +20,7 @@ public class PermissionSettingsBridge {
     }
 
     private static Profile getProfile() {
-        return Profile.getLastUsedProfile().getOriginalProfile();
+        return Profile.getLastUsedRegularProfile();
     }
 
     @NativeMethods

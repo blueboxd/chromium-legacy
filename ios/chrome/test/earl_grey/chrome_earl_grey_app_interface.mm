@@ -364,13 +364,12 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::SetContentSettingsBlockPopups(setting);
 }
 
-+ (NSError*)signOutAndClearAccounts {
-  bool success = chrome_test_util::SignOutAndClearAccounts();
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Real accounts couldn't be cleared.");
-  }
-  return nil;
++ (void)signOutAndClearIdentities {
+  chrome_test_util::SignOutAndClearIdentities();
+}
+
++ (BOOL)hasIdentities {
+  return chrome_test_util::HasIdentities();
 }
 
 + (NSString*)webStateVisibleURL {

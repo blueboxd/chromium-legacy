@@ -357,8 +357,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
 }
 
+// TODO(crbug.com/1049063): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       RemoveExtensionShowingPopup) {
+                       DISABLED_RemoveExtensionShowingPopup) {
   LoadTestExtension("extensions/simple_with_popup");
   ShowUi("");
   VerifyUi();

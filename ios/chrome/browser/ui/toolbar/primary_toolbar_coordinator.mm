@@ -54,28 +54,24 @@
 
 @dynamic viewController;
 @synthesize popupPresenterDelegate = _popupPresenterDelegate;
+@synthesize commandDispatcher = _commandDispatcher;
 @synthesize delegate = _delegate;
 
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  DCHECK(self.browser);
+  DCHECK(self.commandDispatcher);
   if (self.started)
     return;
 
   self.enableAnimationsForOmniboxFocus = YES;
 
-  [self.browser->GetCommandDispatcher()
-      startDispatchingToTarget:self
-                   forProtocol:@protocol(FakeboxFocuser)];
+  [self.commandDispatcher startDispatchingToTarget:self
+                                       forProtocol:@protocol(FakeboxFocuser)];
 
   self.viewController = [[PrimaryToolbarViewController alloc] init];
   self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-  // clean up.
-  self.viewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
-          self.browser->GetCommandDispatcher());
+  self.viewController.dispatcher = self.dispatcher;
   self.viewController.delegate = self;
 
   self.orchestrator = [[OmniboxFocusOrchestrator alloc] init];
@@ -102,7 +98,7 @@
   if (!self.started)
     return;
   [super stop];
-  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
+  [self.commandDispatcher stopDispatchingToTarget:self];
   [self.locationBarCoordinator stop];
   _fullscreenUIUpdater = nullptr;
   self.started = NO;
@@ -177,8 +173,7 @@
 
 - (void)onFakeboxBlur {
   // Hide the toolbar if the NTP is currently displayed.
-  web::WebState* webState =
-      self.browser->GetWebStateList()->GetActiveWebState();
+  web::WebState* webState = self.webStateList->GetActiveWebState();
   if (webState && IsVisibleURLNewTabPage(webState)) {
     self.viewController.view.hidden = IsSplitToolbarMode();
   }
@@ -196,8 +191,7 @@
   BOOL isNTP = IsVisibleURLNewTabPage(webState);
 
   // Don't do anything for a live non-ntp tab.
-  if (webState == self.browser->GetWebStateList()->GetActiveWebState() &&
-      !isNTP) {
+  if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
     [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
   } else {
     self.viewController.view.hidden = NO;
@@ -217,9 +211,9 @@
   self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
 
   self.locationBarCoordinator.browser = self.browser;
-  self.locationBarCoordinator.dispatcher = self.browser->GetCommandDispatcher();
-  self.locationBarCoordinator.commandDispatcher =
-      self.browser->GetCommandDispatcher();
+  self.locationBarCoordinator.dispatcher =
+      base::mac::ObjCCastStrict<CommandDispatcher>(self.dispatcher);
+  self.locationBarCoordinator.commandDispatcher = self.commandDispatcher;
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.popupPresenterDelegate =
       self.popupPresenterDelegate;

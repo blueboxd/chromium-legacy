@@ -62,6 +62,7 @@ class FakeGCMProfileService::CustomFakeGCMDriver
   void GetToken(const std::string& app_id,
                 const std::string& authorized_entity,
                 const std::string& scope,
+                base::TimeDelta time_to_live,
                 const std::map<std::string, std::string>& options,
                 GetTokenCallback callback) override;
   void DeleteToken(const std::string& app_id,
@@ -187,13 +188,15 @@ void FakeGCMProfileService::CustomFakeGCMDriver::GetToken(
     const std::string& app_id,
     const std::string& authorized_entity,
     const std::string& scope,
+    base::TimeDelta time_to_live,
     const std::map<std::string, std::string>& options,
     GetTokenCallback callback) {
   if (service_->is_offline_)
     return;  // Drop request.
 
   instance_id::FakeGCMDriverForInstanceID::GetToken(
-      app_id, authorized_entity, scope, options, std::move(callback));
+      app_id, authorized_entity, scope, time_to_live, options,
+      std::move(callback));
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::DeleteToken(

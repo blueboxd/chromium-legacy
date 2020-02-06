@@ -69,7 +69,26 @@ cr.define('cr.ui', () => {
      * @return {!cr.ui.MultiMenuButton} Decorated element.
      */
     static decorate(element) {
-      element.__proto__ = MultiMenuButton.prototype;
+      // Add the MultiMenuButton methods to the element we're
+      // decorating, leaving it's prototype chain intact.
+      // Don't copy 'constructor' or property get/setters.
+      Object.getOwnPropertyNames(MultiMenuButton.prototype).forEach(name => {
+        if (name !== 'constructor' &&
+            !Object.getOwnPropertyDescriptor(element, name)) {
+          element[name] = MultiMenuButton.prototype[name];
+        }
+      });
+      // Set up the 'menu' property & setter/getter.
+      Object.defineProperty(element, 'menu', {
+        get() {
+          return this.menu_;
+        },
+        set(menu) {
+          this.setMenu_(menu);
+        },
+        enumerable: true,
+        configurable: true
+      });
       element = /** @type {!cr.ui.MultiMenuButton} */ (element);
       element.decorate();
       return element;
@@ -115,7 +134,7 @@ cr.define('cr.ui', () => {
     get menu() {
       return this.menu_;
     }
-    set menu(menu) {
+    setMenu_(menu) {
       if (typeof menu == 'string' && menu[0] == '#') {
         menu = assert(this.ownerDocument.body.querySelector(menu));
         cr.ui.decorate(menu, cr.ui.Menu);
@@ -127,6 +146,9 @@ cr.define('cr.ui', () => {
           this.setAttribute('menu', '#' + menu.id);
         }
       }
+    }
+    set menu(menu) {
+      this.setMenu_(menu);
     }
 
     /**

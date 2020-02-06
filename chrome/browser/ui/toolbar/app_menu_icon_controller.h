@@ -83,17 +83,15 @@ class AppMenuIconController : public GlobalErrorObserver,
   // Returns the image to be used for the app menu's icon and the upgrade item
   // in the app menu (when the IconType is UPGRADE_NOTIFICATION). |touch_ui|
   // indicates whether the touch-friendly variant is requested.
-  // |severity_none_color|, if provided, will be used when the Severity is NONE.
-  // Otherwise the basic toolbar button icon color will be used.
+  // |promo_highlight_color|, if provided, overrides the basic color when the
+  // app menu icon's Severity is NONE.
   gfx::ImageSkia GetIconImage(
       bool touch_ui,
-      const base::Optional<SkColor>& severity_none_color = base::nullopt) const;
+      base::Optional<SkColor> promo_highlight_color = base::nullopt) const;
 
-  // Gets the color to be used for the app menu's icon.
-  // |severity_none_color|, if provided, will be used when the Severity is NONE.
-  // Otherwise the basic toolbar button icon color will be used.
-  SkColor GetIconColor(
-      const base::Optional<SkColor>& severity_none_color) const;
+  // Gets the color to be used for the app menu's icon. |promo_highlight_color|,
+  // if provided, overrides the basic color when the icon's Severity is NONE.
+  SkColor GetIconColor(base::Optional<SkColor> promo_highlight_color) const;
 
  private:
   // GlobalErrorObserver:

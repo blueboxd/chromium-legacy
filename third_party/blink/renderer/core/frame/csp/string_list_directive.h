@@ -20,6 +20,7 @@ class CORE_EXPORT StringListDirective final : public CSPDirective {
                       ContentSecurityPolicy*);
   void Trace(blink::Visitor*) override;
   bool Allows(const String& string_piece, bool is_duplicate);
+  bool IsAllowDuplicates() const { return allow_duplicates_; }
 
  private:
   // Determine whether a given string is a valid policy name or a special token

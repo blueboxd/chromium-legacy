@@ -17,6 +17,7 @@
 #include "storage/browser/file_system/mount_points.h"
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/origin.h"
 
 namespace base {
 class FilePath;
@@ -106,7 +107,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ExternalMountPoints
   // Returns the virtual root path that looks like /<mount_name>.
   base::FilePath CreateVirtualRootPath(const std::string& mount_name) const;
 
-  FileSystemURL CreateExternalFileSystemURL(const GURL& origin,
+  FileSystemURL CreateExternalFileSystemURL(const url::Origin& origin,
                                             const std::string& mount_name,
                                             const base::FilePath& path) const;
 

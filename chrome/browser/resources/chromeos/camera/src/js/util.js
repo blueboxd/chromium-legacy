@@ -8,75 +8,81 @@ import {Resolution} from './type.js';
 
 /**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
- * position.
+ * position of the photo and drop its orientation information.
  * @param {!Blob} blob JPEG blob that might contain EXIF orientation field.
- * @return {Promise<Object<number, boolean>>}
+ * @return {!Promise<{rotation: number, flip: boolean, blob: !Blob}>} The
+ * rotation, flip information of photo and the photo blob after drop those
+ * information.
  */
-function getPhotoOrientation(blob) {
-  const getOrientation = new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const view = new DataView(event.target.result);
-      if (view.getUint16(0, false) !== 0xFFD8) {
-        resolve(1);
-        return;
-      }
-      const length = view.byteLength;
-      let offset = 2;
-      while (offset < length) {
-        if (view.getUint16(offset + 2, false) <= 8) {
-          break;
-        }
-        const marker = view.getUint16(offset, false);
-        offset += 2;
-        if (marker === 0xFFE1) {
-          if (view.getUint32(offset += 2, false) !== 0x45786966) {
-            break;
-          }
-
-          const little = view.getUint16(offset += 6, false) === 0x4949;
-          offset += view.getUint32(offset + 4, little);
-          const tags = view.getUint16(offset, little);
-          offset += 2;
-          for (let i = 0; i < tags; i++) {
-            if (view.getUint16(offset + (i * 12), little) === 0x0112) {
-              resolve(view.getUint16(offset + (i * 12) + 8, little));
-              return;
-            }
-          }
-        } else if ((marker & 0xFF00) !== 0xFF00) {
-          break;
-        } else {
-          offset += view.getUint16(offset, false);
-        }
-      }
-      resolve(1);
-    };
-    reader.readAsArrayBuffer(blob);
-  });
-
-  return getOrientation.then((orientation) => {
-    switch (orientation) {
-      case 1:
-        return {rotation: 0, flip: false};
-      case 2:
-        return {rotation: 0, flip: true};
-      case 3:
-        return {rotation: 180, flip: false};
-      case 4:
-        return {rotation: 180, flip: true};
-      case 5:
-        return {rotation: 90, flip: true};
-      case 6:
-        return {rotation: 90, flip: false};
-      case 7:
-        return {rotation: 270, flip: true};
-      case 8:
-        return {rotation: 270, flip: false};
-      default:
-        return {rotation: 0, flip: false};
+function dropPhotoOrientation(blob) {
+  let /** !Blob */ blobWithoutOrientation = blob;
+  const getOrientation = (async () => {
+    const buffer = await blob.arrayBuffer();
+    const view = new DataView(buffer);
+    if (view.getUint16(0, false) !== 0xFFD8) {
+      return 1;
     }
-  });
+    const length = view.byteLength;
+    let offset = 2;
+    while (offset < length) {
+      if (view.getUint16(offset + 2, false) <= 8) {
+        break;
+      }
+      const marker = view.getUint16(offset, false);
+      offset += 2;
+      if (marker === 0xFFE1) {
+        if (view.getUint32(offset += 2, false) !== 0x45786966) {
+          break;
+        }
+
+        const little = view.getUint16(offset += 6, false) === 0x4949;
+        offset += view.getUint32(offset + 4, little);
+        const tags = view.getUint16(offset, little);
+        offset += 2;
+        for (let i = 0; i < tags; i++) {
+          if (view.getUint16(offset + (i * 12), little) === 0x0112) {
+            offset += (i * 12) + 8;
+            const orientation = view.getUint16(offset, little);
+            view.setUint16(offset, 1, little);
+            blobWithoutOrientation = new Blob([buffer]);
+            return orientation;
+          }
+        }
+      } else if ((marker & 0xFF00) !== 0xFF00) {
+        break;
+      } else {
+        offset += view.getUint16(offset, false);
+      }
+    }
+    return 1;
+  })();
+
+  return getOrientation
+      .then((orientation) => {
+        switch (orientation) {
+          case 1:
+            return {rotation: 0, flip: false};
+          case 2:
+            return {rotation: 0, flip: true};
+          case 3:
+            return {rotation: 180, flip: false};
+          case 4:
+            return {rotation: 180, flip: true};
+          case 5:
+            return {rotation: 90, flip: true};
+          case 6:
+            return {rotation: 90, flip: false};
+          case 7:
+            return {rotation: 270, flip: true};
+          case 8:
+            return {rotation: 270, flip: false};
+          default:
+            return {rotation: 0, flip: false};
+        }
+      })
+      .then((orientInfo) => {
+        return Object.assign(orientInfo, {blob: blobWithoutOrientation});
+      });
 }
 
 /**
@@ -135,7 +141,7 @@ export function orientPhoto(blob, onSuccess, onFailure) {
     }, 'image/jpeg');
   };
 
-  getPhotoOrientation(blob).then((orientation) => {
+  dropPhotoOrientation(blob).then((orientation) => {
     if (orientation.rotation === 0 && !orientation.flip) {
       onSuccess(blob);
     } else {
@@ -144,7 +150,7 @@ export function orientPhoto(blob, onSuccess, onFailure) {
         drawPhoto(original, orientation, onSuccess, onFailure);
       };
       original.onerror = onFailure;
-      original.src = URL.createObjectURL(blob);
+      original.src = URL.createObjectURL(orientation.blob);
     }
   });
 }

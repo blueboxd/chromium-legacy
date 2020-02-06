@@ -69,14 +69,12 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
 
 ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
 
-scoped_refptr<ServiceWorkerRegistration>
-ServiceWorkerRegistry::CreateNewRegistration(
-    blink::mojom::ServiceWorkerRegistrationOptions options) {
-  int64_t registration_id = storage()->NewRegistrationId();
-  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId)
-    return nullptr;
-  return base::MakeRefCounted<ServiceWorkerRegistration>(
-      std::move(options), registration_id, context_->AsWeakPtr());
+void ServiceWorkerRegistry::CreateNewRegistration(
+    blink::mojom::ServiceWorkerRegistrationOptions options,
+    NewRegistrationCallback callback) {
+  storage()->NewRegistrationId(base::BindOnce(
+      &ServiceWorkerRegistry::DidGetNewRegistrationId,
+      weak_factory_.GetWeakPtr(), std::move(options), std::move(callback)));
 }
 
 scoped_refptr<ServiceWorkerVersion> ServiceWorkerRegistry::CreateNewVersion(
@@ -1056,6 +1054,18 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(
       user_data, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidGetNewRegistrationId(
+    blink::mojom::ServiceWorkerRegistrationOptions options,
+    NewRegistrationCallback callback,
+    int64_t registration_id) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  std::move(callback).Run(base::MakeRefCounted<ServiceWorkerRegistration>(
+      std::move(options), registration_id, context_->AsWeakPtr()));
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {

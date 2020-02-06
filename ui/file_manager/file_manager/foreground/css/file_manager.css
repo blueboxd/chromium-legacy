@@ -361,18 +361,14 @@ html:not([class*='col-resize']) #directory-tree
 }
 
 #directory-tree .tree-row > .root-eject {
-  --active-bg: none;  /* prevent dark-mode activation color */
   --text-color: currentColor;
-  box-shadow: none;
   min-width: 40px;
   padding: 12px;
 }
 
 #directory-tree .tree-row > .file-row > .root-eject {
-  --active-bg: none;  /* prevent dark-mode activation color */
   --text-color: currentColor;
   --hover-bg-color: rgba(0, 0, 0, 0.04);
-  box-shadow: none;
   min-width: 32px;
   padding: 0;
 }
@@ -449,17 +445,22 @@ body[type='open-multi-file'].check-select .dialog-header {
   flex: auto;
 }
 
+/* TODO(adanilo) Move this to common.css */
+cr-button {
+  --active-bg: none;  /* prevent dark-mode activation color */
+  box-shadow: none;
+}
+
 .dialog-header cr-button,
 .dialog-header button {
+  --text-color: white;
+  border: none;
   border-radius: 2px;
+  cursor: pointer;
   height: 32px;
   margin: 0 8px;
   min-width: 32px;
   padding: 0;
-}
-
-.dialog-header button {
-  cursor: pointer;
   position: relative;
   text-transform: uppercase;
   z-index: 1;
@@ -535,7 +536,8 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   right: 2px;
 }
 
-.dialog-header button.icon-button > .icon {
+.dialog-header button.icon-button > .icon,
+.dialog-header cr-button.icon-button > .icon {
   background-position: center;
   background-repeat: no-repeat;
   height: 100%;

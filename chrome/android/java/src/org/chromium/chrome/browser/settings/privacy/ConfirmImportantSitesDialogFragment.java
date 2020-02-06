@@ -255,7 +255,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
             mFaviconURLs = new String[0];
             dismiss();
         }
-        mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+        mProfile = Profile.getLastUsedRegularProfile();
         mLargeIconBridge = new LargeIconBridge(mProfile);
         ActivityManager activityManager =
                 ((ActivityManager) ContextUtils.getApplicationContext().getSystemService(

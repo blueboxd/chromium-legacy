@@ -253,6 +253,7 @@ test("accessibility_unittests") {
     "ax_event_generator_unittest.cc",
     "ax_generated_tree_unittest.cc",
     "ax_language_detection_unittest.cc",
+    "ax_live_region_tracker_unittest.cc",
     "ax_node_data_unittest.cc",
     "ax_node_position_unittest.cc",
     "ax_range_unittest.cc",

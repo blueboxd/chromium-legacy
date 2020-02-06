@@ -181,8 +181,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mCallback = callback;
 
             Resources res = context.getResources();
-            mLargeIconBridge = new LargeIconBridge(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedRegularProfile());
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
             mIconGenerator =

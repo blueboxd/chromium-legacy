@@ -531,6 +531,11 @@ class CONTENT_EXPORT NavigationRequest
     return response_should_be_rendered_;
   }
 
+  const network::mojom::ClientSecurityStatePtr& client_security_state() const {
+    return client_security_state_;
+  }
+  network::mojom::ClientSecurityStatePtr TakeClientSecurityState();
+
  private:
   friend class NavigationRequestTest;
 
@@ -1140,6 +1145,10 @@ class CONTENT_EXPORT NavigationRequest
   // True if we are restarting this navigation request as RenderFrameHost was
   // evicted.
   bool restarting_back_forward_cached_navigation_ = false;
+
+  // Holds a set of values needed to enforce several WebPlatform security APIs
+  // at the network request level.
+  network::mojom::ClientSecurityStatePtr client_security_state_;
 
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
 

@@ -65,3 +65,24 @@ but also avoids relying upon `'strict-dynamic'`, via
 [base-uri]: https://w3c.github.io/webappsec-csp/#directive-base-uri
 [script-src]: https://w3c.github.io/webappsec-csp/#directive-script-src
 [csp-is-dead]: https://research.google/pubs/pub45542/
+
+## Trusted Types
+
+[Trusted Types][tt] gives page authors a means to protect their sites against
+cross-site scripting attacks. In order to understand real-world Trusted Types
+usage we obtain the following usage counts:
+
+* General use:`kTrustedTypesEnabled`, `kTrustedTypesEnabledEnforcing`, and
+  `kTrustedTypesEnabledReportOnly`. The first tells us (relative to all page
+  loads) how many pages have any form of Trusted Types enabled, while the other
+  two allow us to determine which percentage of pages run in enforcing or
+  report-only mode (or both).
+
+* Tracking specific features: `kTrustedTypesDefaultPolicyUsed` notes whether a
+  "default" policy has been used. `kTrustedTyoesAllowDuplicates` records
+  whether an 'allow-duplicates' keyword has been used.
+
+* Error tracking: `kTrustedTypesAssignmentError` tracks whether Trusted Types
+  has blocked a string assignment.
+
+[tt]: https://github.com/w3c/webappsec-trusted-types/

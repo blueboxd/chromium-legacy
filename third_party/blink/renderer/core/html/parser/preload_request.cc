@@ -88,7 +88,7 @@ Resource* PreloadRequest::Start(Document* document) {
 
   ResourceLoaderOptions options;
   options.initiator_info = initiator_info;
-  FetchParameters params(resource_request, options);
+  FetchParameters params(std::move(resource_request), options);
 
   if (resource_type_ == ResourceType::kImportResource) {
     const SecurityOrigin* security_origin =

@@ -98,6 +98,17 @@ class MessageUnittest(unittest.TestCase):
     content = msg.Translate('en')
     self.failUnlessEqual(u'A...B.... %s\u2026 B\u2026 C\u2026', content)
 
+  def testRemoveByteOrderMark(self):
+    root = util.ParseGrdForUnittest(u'''
+        <messages>
+        <message name="IDS_HAS_BOM" desc="">
+        \uFEFFThis\uFEFF i\uFEFFs OK\uFEFF
+        </message>
+        </messages>''')
+    msg, = root.GetChildrenOfType(message.MessageNode)
+    content = msg.Translate('en')
+    self.failUnlessEqual(u'This is OK', content)
+
   def testPlaceholderHasTooManyExamples(self):
     try:
       util.ParseGrdForUnittest("""\

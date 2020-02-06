@@ -179,7 +179,7 @@ std::string InstanceIDDriverTest::GetToken(
   token_.clear();
   result_ = InstanceID::UNKNOWN_ERROR;
   instance_id->GetToken(
-      authorized_entity, scope, options,
+      authorized_entity, scope, /*time_to_live=*/base::TimeDelta(), options,
       /*flags=*/{},
       base::BindRepeating(&InstanceIDDriverTest::GetTokenCompleted,
                           base::Unretained(this)));

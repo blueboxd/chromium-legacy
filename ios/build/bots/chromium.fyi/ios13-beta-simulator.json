@@ -133,6 +133,16 @@
       "pool":"chromium.tests"
     },
     {
+      "app": "ios_crash_xcuitests_module",
+      "host": "ios_crash_xcuitests",
+      "xcode parallelization": true,
+      "device type": "iPhone X",
+      "os": "13.3",
+      "xcode build version": "11c29",
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
+    },
+    {
       "include": "common_tests.json",
       "device type": "iPhone X",
       "os": "12.4",
@@ -195,14 +205,6 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.4",
-      "xcode build version": "11c29",
-      "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
-    },
-    {
-      "app": "crashpad_tests",
-      "device type": "iPhone X",
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",

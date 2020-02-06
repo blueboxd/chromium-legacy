@@ -198,6 +198,13 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   // Returns: JS object with a string key for each state flag that's set.
   void GetState(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Creates the backing AutomationPosition native object given a request from
+  // javascript.
+  // Args: string ax_tree_id, int node_id, int offset, bool is_downstream
+  // Returns: JS object with bindings back to the native AutomationPosition.
+  void CreateAutomationPosition(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   //
   // Helper functions.
   //

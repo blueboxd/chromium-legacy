@@ -253,11 +253,6 @@ const base::Feature kUseAndroidOverlayAggressively{
 const base::Feature kBackgroundVideoPauseOptimization{
     "BackgroundVideoPauseOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// CDM host verification is enabled by default. Can be disabled for testing.
-// Has no effect if ENABLE_CDM_HOST_VERIFICATION buildflag is false.
-const base::Feature kCdmHostVerification{"CdmHostVerification",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.

@@ -119,9 +119,6 @@ bool MaybeAddDevicesAndShowPicker(
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
 
   if (ShouldOfferClickToCallForURL(web_contents->GetBrowserContext(), url)) {
-    LogClickToCallPhoneNumberSize(GetUnescapedURLContent(url),
-                                  SharingClickToCallEntryPoint::kLeftClickLink,
-                                  /*send_to_device=*/false);
     icon_type = PageActionIconType::kClickToCall;
     controller =
         ClickToCallUiController::GetOrCreateFromWebContents(web_contents);

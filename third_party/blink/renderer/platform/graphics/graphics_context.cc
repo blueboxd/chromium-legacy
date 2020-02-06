@@ -793,7 +793,7 @@ void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
     case kNoStroke:
     case kSolidStroke:
     case kDoubleStroke: {
-      int thickness = SkMax32(static_cast<int>(StrokeThickness()), 1);
+      int thickness = std::max(static_cast<int>(StrokeThickness()), 1);
       SkRect r;
       r.fLeft = WebCoreFloatToSkScalar(pt.X());
       // Avoid anti-aliasing lines. Currently, these are always horizontal.

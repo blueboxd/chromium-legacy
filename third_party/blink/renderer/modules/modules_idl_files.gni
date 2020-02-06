@@ -798,7 +798,6 @@ modules_dictionary_idl_files =
           "webgpu/gpu_compute_pass_descriptor.idl",
           "webgpu/gpu_depth_stencil_state_descriptor.idl",
           "webgpu/gpu_device_descriptor.idl",
-          "webgpu/gpu_extensions.idl",
           "webgpu/gpu_extent_3d_dict.idl",
           "webgpu/gpu_fence_descriptor.idl",
           "webgpu/gpu_image_bitmap_copy_view.idl",

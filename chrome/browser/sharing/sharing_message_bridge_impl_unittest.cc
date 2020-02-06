@@ -12,6 +12,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +38,16 @@ ACTION_TEMPLATE(SaveArgPointeeMove,
 MATCHER_P(HasErrorCode, expected_error_code, "") {
   return arg.error_code() == expected_error_code;
 }
+
+// Fake NetworkChangeNotifier to simulate being offline. NetworkChangeNotifier
+// is a singleton, so making this instance will apply globally.
+class OfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  // net::NetworkChangeNotifier:
+  ConnectionType GetCurrentConnectionType() const override {
+    return NetworkChangeNotifier::CONNECTION_NONE;
+  }
+};
 
 class SharingMessageBridgeTest : public testing::Test {
  protected:
@@ -177,6 +188,24 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackIfSyncIsDisabled) {
   histogram_tester.ExpectUniqueSample(
       "Sync.SharingMessage.CommitResult",
       SharingMessageCommitError::SYNC_TURNED_OFF, 1);
+}
+
+TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackWithErrorOffline) {
+  OfflineNetworkChangeNotifier network_change_notifier;
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*processor(), Put).Times(0);
+
+  base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
+  EXPECT_CALL(callback,
+              Run(HasErrorCode(
+                  sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR)));
+
+  bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
+
+  EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
+  histogram_tester.ExpectUniqueSample(
+      "Sync.SharingMessage.CommitResult",
+      sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR, 1);
 }
 
 TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncStoppedEvent) {

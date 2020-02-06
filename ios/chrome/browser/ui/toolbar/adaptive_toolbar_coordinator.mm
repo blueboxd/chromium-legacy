@@ -6,9 +6,7 @@
 
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
@@ -41,7 +39,6 @@
 #pragma mark - ChromeCoordinator
 
 - (instancetype)initWithBrowser:(Browser*)browser {
-  DCHECK(browser);
   return [super initWithBaseViewController:nil browser:browser];
 }
 
@@ -63,7 +60,7 @@
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self.viewController;
-  self.mediator.webStateList = self.browser->GetWebStateList();
+  self.mediator.webStateList = self.webStateList;
   self.mediator.bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
 
@@ -118,17 +115,12 @@
 #pragma mark - Protected
 
 - (ToolbarButtonFactory*)buttonFactoryWithType:(ToolbarType)type {
-  BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
+  BOOL isIncognito = self.browserState->IsOffTheRecord();
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
 
   self.actionHandler = [[ToolbarButtonActionsHandler alloc] init];
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-  // clean up.
-  self.actionHandler.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
-          self.browser->GetCommandDispatcher());
-  self.actionHandler.incognito =
-      self.browser->GetBrowserState()->IsOffTheRecord();
+  self.actionHandler.dispatcher = self.dispatcher;
+  self.actionHandler.incognito = self.browserState->IsOffTheRecord();
 
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
@@ -147,8 +139,8 @@
 }
 
 - (void)resetToolbarAfterSideSwipeSnapshot {
-  [self.mediator updateConsumerForWebState:self.browser->GetWebStateList()
-                                               ->GetActiveWebState()];
+  [self.mediator
+      updateConsumerForWebState:self.webStateList->GetActiveWebState()];
   [self.viewController resetAfterSideSwipeSnapshot];
 }
 

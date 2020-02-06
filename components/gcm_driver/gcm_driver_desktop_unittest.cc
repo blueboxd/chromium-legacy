@@ -949,7 +949,8 @@ void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
   set_async_operation_completed_callback(run_loop.QuitClosure());
   std::map<std::string, std::string> options;
   driver()->GetInstanceIDHandlerInternal()->GetToken(
-      app_id, authorized_entity, scope, options,
+      app_id, authorized_entity, scope, /*time_to_live=*/base::TimeDelta(),
+      options,
       base::BindOnce(&GCMDriverTest::RegisterCompleted,
                      base::Unretained(this)));
   if (wait_to_finish == WAIT)

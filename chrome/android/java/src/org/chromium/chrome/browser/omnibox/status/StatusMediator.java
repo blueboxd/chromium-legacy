@@ -48,7 +48,7 @@ class StatusMediator {
         /** @see {@link SearchEngineLogoUtils#getSearchEngineLogoFavicon} */
         void getSearchEngineLogoFavicon(Resources res, Callback<Bitmap> callback) {
             SearchEngineLogoUtils.getSearchEngineLogoFavicon(
-                    Profile.getLastUsedProfile().getOriginalProfile(), res, callback);
+                    Profile.getLastUsedRegularProfile(), res, callback);
         }
 
         /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */

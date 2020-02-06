@@ -42,8 +42,6 @@ class CORE_EXPORT LayoutListBox final : public LayoutBlockFlow {
   explicit LayoutListBox(Element*);
   ~LayoutListBox() override;
 
-  unsigned size() const;
-
   const char* GetName() const override { return "LayoutListBox"; }
 
  private:
@@ -63,8 +61,6 @@ class CORE_EXPORT LayoutListBox final : public LayoutBlockFlow {
   LayoutUnit DefaultItemHeight() const;
   LayoutUnit ItemHeight() const;
 };
-
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListBox, IsListBox());
 
 }  // namespace blink
 

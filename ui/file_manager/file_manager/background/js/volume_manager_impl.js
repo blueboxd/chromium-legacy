@@ -400,6 +400,15 @@ class VolumeManagerImpl extends cr.EventTarget {
         // read-write.
         isReadOnly = entry.fullPath.split('/').length < 4;
         isRootEntry = entry.fullPath === '/.files-by-id';
+      } else if (
+          entry.fullPath === '/.shortcut-targets-by-id' ||
+          entry.fullPath.indexOf('/.shortcut-targets-by-id/') === 0) {
+        rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
+
+        // /.shortcut-targets-by-id/<id> is read-only, but
+        // /.shortcut-targets-by-id/<id>/foo is read-write.
+        isReadOnly = entry.fullPath.split('/').length < 4;
+        isRootEntry = entry.fullPath === '/.shortcut-targets-by-id';
       } else {
         // Accessing Drive files outside of /drive/root and /drive/other is not
         // allowed, but can happen. Therefore returning null.

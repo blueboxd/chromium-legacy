@@ -92,6 +92,10 @@ namespace blink {
 // signed.
 static const unsigned kMaxListItems = INT_MAX;
 
+// Default size when the multiple attribute is present but size attribute is
+// absent.
+const int kDefaultListBoxSize = 4;
+
 HTMLSelectElement::HTMLSelectElement(Document& document)
     : HTMLFormControlElementWithState(html_names::kSelectTag, document),
       type_ahead_(this),
@@ -198,6 +202,14 @@ void HTMLSelectElement::SelectMultipleOptionsByPopup(
   SetNeedsValidityCheck();
   // TODO(tkent): Using listBoxOnChange() is very confusing.
   ListBoxOnChange();
+}
+
+unsigned HTMLSelectElement::ListBoxSize() const {
+  DCHECK(!UsesMenuList());
+  const unsigned specified_size = size();
+  if (specified_size >= 1)
+    return specified_size;
+  return kDefaultListBoxSize;
 }
 
 bool HTMLSelectElement::UsesMenuList() const {
@@ -545,13 +557,10 @@ HTMLOptionElement* HTMLSelectElement::LastSelectableOption() const {
 HTMLOptionElement* HTMLSelectElement::NextSelectableOptionPageAway(
     HTMLOptionElement* start_option,
     SkipDirection direction) const {
+  DCHECK(!UsesMenuList());
   const ListItems& items = GetListItems();
-  // Can't use size_ because LayoutObject forces a minimum size.
-  int page_size = 0;
-  if (GetLayoutObject()->IsListBox()) {
-    // -1 so we still show context.
-    page_size = ToLayoutListBox(GetLayoutObject())->size() - 1;
-  }
+  // -1 so we still show context.
+  int page_size = ListBoxSize() - 1;
 
   // One page away, but not outside valid bounds.
   // If there is a valid option item one page away, the index is chosen.
@@ -2007,8 +2016,10 @@ void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
     }
   }
   if (UsesMenuList()) {
-    root.insertBefore(MakeGarbageCollected<MenuListInnerElement>(GetDocument()),
-                      root.firstChild());
+    Element* inner_element =
+        MakeGarbageCollected<MenuListInnerElement>(GetDocument());
+    inner_element->setAttribute(html_names::kAriaHiddenAttr, "true");
+    root.insertBefore(inner_element, root.firstChild());
     UpdateMenuListLabel(UpdateFromElement());
   }
 }
@@ -2327,18 +2338,42 @@ String HTMLSelectElement::UpdateFromElement() {
     }
   }
 
-  String stripped = text.StripWhiteSpace();
-  if (auto* layout_object = GetLayoutObject()) {
-    ToLayoutMenuList(layout_object)->SetText(stripped);
-    layout_object->UpdateFromElement();
-    DidUpdateMenuListActiveOption(option);
+  auto& inner_element = InnerElement();
+  const ComputedStyle* inner_style = inner_element.GetComputedStyle();
+  if (inner_style && option_style_ &&
+      ((option_style_->Direction() != inner_style->Direction() ||
+        option_style_->GetUnicodeBidi() != inner_style->GetUnicodeBidi()))) {
+    scoped_refptr<ComputedStyle> cloned_style =
+        ComputedStyle::Clone(*inner_style);
+    cloned_style->SetDirection(option_style_->Direction());
+    cloned_style->SetUnicodeBidi(option_style_->GetUnicodeBidi());
+    if (auto* inner_layout = inner_element.GetLayoutObject()) {
+      inner_layout->SetModifiedStyleOutsideStyleRecalc(
+          std::move(cloned_style), LayoutObject::ApplyStyleChanges::kYes);
+    } else {
+      inner_element.SetComputedStyle(std::move(cloned_style));
+    }
   }
-  return stripped;
+  if (GetLayoutObject())
+    DidUpdateMenuListActiveOption(option);
+
+  return text.StripWhiteSpace();
 }
 
 void HTMLSelectElement::UpdateMenuListLabel(const String& label) {
-  if (UsesMenuList())
-    InnerElement().setTextContent(label);
+  if (!UsesMenuList())
+    return;
+  InnerElement().setTextContent(label);
+  // LayoutMenuList::ControlClipRect() depends on the content box size of
+  // inner_element.
+  if (auto* box = GetLayoutBox()) {
+    box->SetNeedsPaintPropertyUpdate();
+    if (auto* layer = box->Layer())
+      layer->SetNeedsCompositingInputsUpdate();
+
+    if (auto* cache = GetDocument().ExistingAXObjectCache())
+      cache->TextChanged(box);
+  }
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {

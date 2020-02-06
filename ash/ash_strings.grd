@@ -1839,8 +1839,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_FAILED" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
         Not recognized
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
-        To unlock, enter your password
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_PASSWORD_REQUIRED" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
+        Password required for more security
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_PIN_OR_PASSWORD_REQUIRED" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
+        PIN or password required for more security
       </message>
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
         Too many attempts

@@ -14,9 +14,8 @@
 namespace web_app {
 
 // Returns the Windows ProgId for the web app with the passed |app_id| in
-// |profile_path|.
-base::string16 GetProgIdForApp(const base::FilePath& profile_path,
-                               const AppId& app_id);
+// |profile|.
+base::string16 GetProgIdForApp(Profile* profile, const AppId& app_id);
 
 // The name of "Last Browser" file, where UpdateChromeExePath() stores the path
 // of the last Chrome executable to use the containing user-data directory.

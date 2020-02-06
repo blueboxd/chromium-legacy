@@ -201,9 +201,6 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, FingerprintTimedOutTest) {
             session_manager::SessionManager::Get()->session_state());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()
                    ->notify_lock_screen_dismissed_call_count());
-
-  // Auth Error button should be visible as fingerprint has expired.
-  EXPECT_TRUE(tester.IsAuthErrorBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, TimeoutIncludesSuspendedTime) {
@@ -230,9 +227,6 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, TimeoutIncludesSuspendedTime) {
             session_manager::SessionManager::Get()->session_state());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()
                    ->notify_lock_screen_dismissed_call_count());
-
-  // Auth Error button should be visible as fingerprint has expired.
-  EXPECT_TRUE(tester.IsAuthErrorBubbleShown());
 }
 
 }  // namespace chromeos

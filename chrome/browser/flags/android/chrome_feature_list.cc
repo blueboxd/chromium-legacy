@@ -244,7 +244,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordManagerOnboardingAndroid,
     &safe_browsing::kCaptureSafetyNetId,
     &security_state::features::kMarkHttpAsFeature,
-    &signin::kMiceFeature,
+    &signin::kMobileIdentityConsistency,
     &switches::kSyncErrorInfoBarAndroid,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,

@@ -51,6 +51,7 @@
       <include name="IDR_AUTOMATION_CUSTOM_BINDINGS_JS" file="automation\automation_custom_bindings.js" type="BINDATA" />
       <include name="IDR_AUTOMATION_EVENT_JS" file="automation\automation_event.js" type="BINDATA" />
       <include name="IDR_AUTOMATION_NODE_JS" file="automation\automation_node.js" type="BINDATA" />
+      <include name="IDR_AUTOMATION_TREE_CACHE_JS" file="automation\automation_tree_cache.js" type="BINDATA" />
       <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="app_runtime_custom_bindings.js" type="BINDATA" />
       <include name="IDR_APP_WINDOW_CUSTOM_BINDINGS_JS" file="app_window_custom_bindings.js" type="BINDATA" />
       <include name="IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS" file="context_menus_custom_bindings.js" type="BINDATA" />

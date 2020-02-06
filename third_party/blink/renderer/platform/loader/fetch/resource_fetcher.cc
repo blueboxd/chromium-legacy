@@ -2037,7 +2037,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
 
   ResourceLoaderOptions options = resource->Options();
   options.initiator_info.name = initiator_name;
-  FetchParameters params(resource_request, options);
+  FetchParameters params(std::move(resource_request), options);
   Context().CanRequest(resource->GetType(), resource->LastResourceRequest(),
                        resource->LastResourceRequest().Url(), params.Options(),
                        SecurityViolationReportingPolicy::kReport,
@@ -2097,7 +2097,9 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   // purpose this is probably fine.
   // TODO(dtapuska): revisit this when we have a better way to re-dispatch
   // requests.
-  FetchParameters params(stale_resource->GetResourceRequest());
+  ResourceRequest request;
+  request.CopyFrom(stale_resource->GetResourceRequest());
+  FetchParameters params(std::move(request));
   params.SetStaleRevalidation(true);
   params.MutableResourceRequest().SetSkipServiceWorker(true);
   // Stale revalidation resource requests should be very low regardless of

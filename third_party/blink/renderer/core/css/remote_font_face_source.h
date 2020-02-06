@@ -66,12 +66,12 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
    public:
     // Should not change following order in CacheHitMetrics to be used for
     // metrics values.
-    enum CacheHitMetrics {
+    enum class CacheHitMetrics {
       kMiss,
       kDiskHit,
       kDataUrl,
       kMemoryHit,
-      kCacheHitEnumMax
+      kMaxValue = kMemoryHit,
     };
     enum DataSource {
       kFromUnknown,

@@ -425,8 +425,14 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
       scope_, worker_script_type_, update_via_cache_);
-  scoped_refptr<ServiceWorkerRegistration> new_registration =
-      context_->registry()->CreateNewRegistration(options);
+  context_->registry()->CreateNewRegistration(
+      options,
+      base::BindOnce(&ServiceWorkerRegisterJob::ContinueWithNewRegistration,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRegisterJob::ContinueWithNewRegistration(
+    scoped_refptr<ServiceWorkerRegistration> new_registration) {
   if (!new_registration) {
     Complete(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;

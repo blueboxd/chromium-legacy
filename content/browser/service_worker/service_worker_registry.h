@@ -81,8 +81,11 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   // Creates a new in-memory representation of registration. Can be null when
   // storage is disabled. This method must be called after storage is
   // initialized.
-  scoped_refptr<ServiceWorkerRegistration> CreateNewRegistration(
-      blink::mojom::ServiceWorkerRegistrationOptions options);
+  using NewRegistrationCallback = base::OnceCallback<void(
+      scoped_refptr<ServiceWorkerRegistration> registration)>;
+  void CreateNewRegistration(
+      blink::mojom::ServiceWorkerRegistrationOptions options,
+      NewRegistrationCallback callback);
 
   // Create a new instance of ServiceWorkerVersion which is associated with the
   // given |registration|. Can be null when storage is disabled. This method
@@ -290,6 +293,11 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       GetUserDataForAllRegistrationsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerDatabase::Status status);
+
+  void DidGetNewRegistrationId(
+      blink::mojom::ServiceWorkerRegistrationOptions options,
+      NewRegistrationCallback callback,
+      int64_t registration_id);
 
   void ScheduleDeleteAndStartOver();
 

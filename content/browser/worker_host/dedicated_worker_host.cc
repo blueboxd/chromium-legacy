@@ -300,7 +300,10 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
 
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForFrame(
-          ancestor_render_frame_host, origin_, worker_process_host_);
+          ancestor_render_frame_host, origin_,
+          mojo::Clone(ancestor_render_frame_host
+                          ->last_committed_client_security_state()),
+          worker_process_host_);
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host_->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_host_->GetID(),

@@ -448,6 +448,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTestWithDeviceScaleFactor, HitTest) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Position) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "position.html"))
+      << message_;
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions

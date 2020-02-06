@@ -2230,7 +2230,7 @@
       'id': 525,
       'caption': '''Restrict PIN printing mode''',
       'tags': [],
-      'desc': '''Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, USB or IPP-over-USB protocols ''',
+      'desc': '''Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, HTTPS, USB or IPP-over-USB protocols.''',
     },
     {
       'name': 'PrintingAllowedBackgroundGraphicsModes',

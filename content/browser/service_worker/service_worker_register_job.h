@@ -140,6 +140,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
           failure_info);
 
   void RegisterAndContinue();
+  void ContinueWithNewRegistration(
+      scoped_refptr<ServiceWorkerRegistration> new_registration);
   void ContinueWithUninstallingRegistration(
       scoped_refptr<ServiceWorkerRegistration> existing_registration,
       blink::ServiceWorkerStatusCode status);

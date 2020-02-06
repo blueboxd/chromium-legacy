@@ -195,8 +195,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
-    case ui::NativeTheme::kColorId_ButtonHoveredColor:
-    case ui::NativeTheme::kColorId_ButtonPressedColor:
     case ui::NativeTheme::kColorId_ButtonUncheckedColor:
       return GetFgColor("GtkButton#button.text-button GtkLabel");
     case ui::NativeTheme::kColorId_ButtonDisabledColor:

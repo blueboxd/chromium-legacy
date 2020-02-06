@@ -4,10 +4,6 @@
 
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 
-#import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_view_controller.h"
 
@@ -28,11 +24,8 @@
 - (void)start {
   self.viewController = [[SecondaryToolbarViewController alloc] init];
   self.viewController.buttonFactory = [self buttonFactoryWithType:SECONDARY];
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-  // clean up.
-  self.viewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands>>(
-          self.browser->GetCommandDispatcher());
+  self.viewController.dispatcher = self.dispatcher;
+
   [super start];
 }
 

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
@@ -21,6 +22,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decode_status.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
@@ -42,6 +44,10 @@
 
 #if BUILDFLAG(ENABLE_FFMPEG)
 #include "media/filters/ffmpeg_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+#include "media/filters/gav1_video_decoder.h"
 #endif
 
 namespace media {
@@ -304,13 +310,21 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     video_decoder.reset(new VpxVideoDecoder());
 #endif
 
+#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+  if (base::FeatureList::IsEnabled(kGav1VideoDecoder)) {
+    if (config.codec == cdm::kCodecAv1)
+      video_decoder.reset(new Gav1VideoDecoder(null_media_log.get()));
+  } else
+#endif  // BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+  {
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
-  if (config.codec == cdm::kCodecAv1)
-    video_decoder.reset(new Dav1dVideoDecoder(null_media_log.get()));
+    if (config.codec == cdm::kCodecAv1)
+      video_decoder.reset(new Dav1dVideoDecoder(null_media_log.get()));
 #elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
-  if (config.codec == cdm::kCodecAv1)
-    video_decoder.reset(new AomVideoDecoder(null_media_log.get()));
+    if (config.codec == cdm::kCodecAv1)
+      video_decoder.reset(new AomVideoDecoder(null_media_log.get()));
 #endif
+  }
 
 #if BUILDFLAG(ENABLE_FFMPEG)
   if (!video_decoder)

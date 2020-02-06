@@ -41,7 +41,7 @@ public class RlzPingHandler {
                         .getUniqueId(ID_SALT);
         id = generate50CharacterId(id.toUpperCase(Locale.getDefault()));
 
-        RlzPingHandlerJni.get().startPing(Profile.getLastUsedProfile().getOriginalProfile(), brand,
+        RlzPingHandlerJni.get().startPing(Profile.getLastUsedRegularProfile(), brand,
                 Locale.getDefault().getLanguage(), TextUtils.join(",", events), id, callback);
     }
 

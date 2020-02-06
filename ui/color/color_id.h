@@ -41,8 +41,6 @@
   E(kColorButtonBorder, NativeTheme::kColorId_ButtonBorderColor) \
   E(kColorButtonDisabledForeground, NativeTheme::kColorId_ButtonDisabledColor) \
   E(kColorButtonForeground, NativeTheme::kColorId_ButtonEnabledColor) \
-  E(kColorButtonHoveredForeground, NativeTheme::kColorId_ButtonHoveredColor) \
-  E(kColorButtonPressedForeground, NativeTheme::kColorId_ButtonPressedColor) \
   /* TODO(https://crbug.com/1003612): Map this to old color id. */ \
   E_CPONLY(kColorButtonPressedBackground) \
   E(kColorButtonProminentBackground, \

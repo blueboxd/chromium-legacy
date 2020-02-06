@@ -267,7 +267,7 @@ public class BookmarkManager
             mBookmarkModel.finishLoadingBookmarkModel(modelLoadedRunnable);
         }
 
-        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
+        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedRegularProfile());
         ActivityManager activityManager = ((ActivityManager) ContextUtils
                 .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
         int maxSize =

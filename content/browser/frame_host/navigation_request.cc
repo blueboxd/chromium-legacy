@@ -869,7 +869,8 @@ NavigationRequest::NavigationRequest(
       request_navigation_client_(mojo::NullAssociatedRemote()),
       commit_navigation_client_(mojo::NullAssociatedRemote()),
       rfh_restored_from_back_forward_cache_(
-          rfh_restored_from_back_forward_cache) {
+          rfh_restored_from_back_forward_cache),
+      client_security_state_(network::mojom::ClientSecurityState::New()) {
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
@@ -1351,6 +1352,11 @@ mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   return commit_navigation_client_.get();
 }
 
+network::mojom::ClientSecurityStatePtr
+NavigationRequest::TakeClientSecurityState() {
+  return std::move(client_security_state_);
+}
+
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head) {
@@ -1737,6 +1743,9 @@ void NavigationRequest::OnResponseStarted(
   }
   DCHECK(render_frame_host_ || !response_should_be_rendered_);
 
+  // TODO(pmeuleman, ahemery): Only set COOP and COEP values on RenderFrameHost
+  // when the navigation commits. In the meantime, keep them in
+  // NavigationRequest.
   if (render_frame_host_) {
     render_frame_host_->set_cross_origin_embedder_policy(
         cross_origin_embedder_policy);
@@ -1745,6 +1754,8 @@ void NavigationRequest::OnResponseStarted(
           response_head_->cross_origin_opener_policy);
     }
   }
+  client_security_state_->cross_origin_embedder_policy =
+      cross_origin_embedder_policy;
 
   if (!browser_initiated_ && render_frame_host_ &&
       render_frame_host_ != frame_tree_node_->current_frame_host()) {
@@ -3368,9 +3379,13 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   RestartCommitTimeout();
 
   // https://wicg.github.io/cors-rfc1918/#address-space
-  commit_params_->ip_address_space = CalculateIPAddressSpace(
-      GetSocketAddress().address(),
-      response_head_ ? response_head_->headers.get() : nullptr);
+  if (!IsSameDocument()) {
+    network::mojom::IPAddressSpace ip_address_space = CalculateIPAddressSpace(
+        GetSocketAddress().address(),
+        response_head_ ? response_head_->headers.get() : nullptr);
+    commit_params_->ip_address_space = ip_address_space;
+    client_security_state_->ip_address_space = ip_address_space;
+  }
 
   if (appcache_handle_) {
     DCHECK(appcache_handle_->host());

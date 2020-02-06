@@ -1249,6 +1249,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
     cross_origin_opener_policy_ = policy;
   }
 
+  const network::mojom::ClientSecurityStatePtr&
+  last_committed_client_security_state() const {
+    return last_committed_client_security_state_;
+  }
+
   // This function mimics DidCommitProvisionalLoad for navigations served from
   // the back-forward cache.
   void DidCommitBackForwardCacheNavigation(
@@ -1701,7 +1706,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   network::mojom::URLLoaderFactoryParamsPtr
   CreateURLLoaderFactoryParamsForMainWorld(
-      const url::Origin& main_world_origin);
+      const url::Origin& main_world_origin,
+      network::mojom::ClientSecurityStatePtr client_security_state);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
@@ -1935,7 +1941,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::PendingURLLoaderFactoryBundle::OriginMap
   CreateURLLoaderFactoriesForIsolatedWorlds(
       const url::Origin& main_world_origin,
-      const base::flat_set<url::Origin>& isolated_world_origins);
+      const base::flat_set<url::Origin>& isolated_world_origins,
+      network::mojom::ClientSecurityStatePtr client_security_state);
 
   // Based on the termination |status| and |exit_code|, may generate a crash
   // report to be routed to the Reporting API.
@@ -2614,6 +2621,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Salt for generating frame-specific media device IDs.
   std::string media_device_id_salt_base_;
+
+  // Keeps track of various security properties of the last committed document
+  // that are needed by the network service.
+  network::mojom::ClientSecurityStatePtr last_committed_client_security_state_;
 
   // Keep the list of ServiceWorkerContainerHosts so that they can observe when
   // the frame goes in/out of BackForwardCache.

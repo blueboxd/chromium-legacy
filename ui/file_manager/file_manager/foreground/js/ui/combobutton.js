@@ -9,12 +9,9 @@ cr.define('cr.ui', () => {
   /**
    * Creates a new combo button element.
    */
-  class ComboButton extends cr.ui.MenuButton {
-    /**
-     * @param {Object=} opt_propertyBag Optional properties.
-     */
-    constructor(opt_propertyBag) {
-      super(opt_propertyBag);
+  class ComboButton extends cr.ui.MultiMenuButton {
+    constructor() {
+      super();
 
       /** @private {?cr.ui.MenuItem} */
       this.defaultItem_ = null;
@@ -67,27 +64,93 @@ cr.define('cr.ui', () => {
     get defaultItem() {
       return this.defaultItem_;
     }
-    set defaultItem(defaultItem) {
+    setDefaultItem_(defaultItem) {
       this.defaultItem_ = defaultItem;
       this.actionNode_.textContent = defaultItem.label || '';
+    }
+    set defaultItem(defaultItem) {
+      this.setDefaultItem_(defaultItem);
+    }
+
+    /**
+     * Utility function to set a boolean property get/setter.
+     * @param {string} property Name of the property.
+     */
+    addBooleanProperty_(property) {
+      Object.defineProperty(this, property, {
+        get() {
+          return this.getAttribute(property);
+        },
+        set(value) {
+          if (value) {
+            this.setAttribute(property, property);
+          } else {
+            this.removeAttribute(property);
+          }
+        },
+        enumerable: true,
+        configurable: true
+      });
     }
 
     /**
      * cr.ui.decorate expects a static |decorate| method.
      *
-     * @param {HTMLElement} el Element to be ComboButton.
+     * @param {!Element} el Element to be decorated.
+     * @return {!cr.ui.ComboButton} Decorated element.
      * @public
      */
     static decorate(el) {
-      el.__proto__ = cr.ui.ComboButton.prototype;
+      // Add the ComboButton methods to the element we're
+      // decorating, leaving it's prototype chain intact.
+      // Don't copy 'constructor' or property get/setters.
+      Object.getOwnPropertyNames(ComboButton.prototype).forEach(name => {
+        if (name !== 'constructor' && name !== 'multiple' &&
+            name !== 'disabled') {
+          el[name] = ComboButton.prototype[name];
+        }
+      });
+      Object.getOwnPropertyNames(cr.ui.MultiMenuButton.prototype)
+          .forEach(name => {
+            if (name !== 'constructor' &&
+                !Object.getOwnPropertyDescriptor(el, name)) {
+              el[name] = cr.ui.MultiMenuButton.prototype[name];
+            }
+          });
+      // Set up the 'menu, defaultItem, multiple and disabled'
+      // properties & setter/getters.
+      Object.defineProperty(el, 'menu', {
+        get() {
+          return this.menu_;
+        },
+        set(menu) {
+          this.setMenu_(menu);
+        },
+        enumerable: true,
+        configurable: true
+      });
+      Object.defineProperty(el, 'defaultItem', {
+        get() {
+          return this.defaultItem_;
+        },
+        set(defaultItem) {
+          this.setDefaultItem_(defaultItem);
+        },
+        enumerable: true,
+        configurable: true
+      });
+      el.addBooleanProperty_('multiple');
+      el.addBooleanProperty_('disabled');
+      el = /** @type {!cr.ui.ComboButton} */ (el);
       el.decorate();
+      return el;
     }
 
     /**
      * Initializes the element.
      */
     decorate() {
-      cr.ui.MenuButton.prototype.decorate.call(this);
+      cr.ui.MultiMenuButton.prototype.decorate.call(this);
 
       this.classList.add('combobutton');
 
@@ -131,7 +194,7 @@ cr.define('cr.ui', () => {
       this.menu.addEventListener(
           'activate', this.handleMenuActivate_.bind(this));
 
-      // Remove mousedown event listener created by MenuButton::decorate,
+      // Remove mousedown event listener created by MultiMenuButton::decorate,
       // and move it down to trigger_.
       this.removeEventListener('mousedown', this);
       this.trigger_.addEventListener('mousedown', this);

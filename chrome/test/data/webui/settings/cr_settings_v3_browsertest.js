@@ -48,6 +48,23 @@ TEST_F('CrControlledRadioButtonV3Test', 'All', function() {
   mocha.run();
 });
 
+GEN('#if !defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsDefaultBrowserV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/default_browser_browsertest.m.js';
+  }
+};
+
+
+TEST_F('CrSettingsDefaultBrowserV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // !defined(OS_CHROMEOS)');
+
 // eslint-disable-next-line no-var
 var CrSettingsCheckboxV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */

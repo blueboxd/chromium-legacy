@@ -79,6 +79,10 @@ constexpr SkColor kChallengeResponseArrowBackgroundColor =
     SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kChallengeResponseErrorColor = gfx::kGoogleRed300;
 
+// 38% opacity.
+constexpr SkColor kDisabledFingerprintIconColor =
+    SkColorSetA(SK_ColorWHITE, 97);
+
 // Date time format containing only the day of the week, for example: "Tuesday".
 constexpr char kDayOfWeekOnlyTimeFormat[] = "EEEE";
 
@@ -181,8 +185,9 @@ class FingerprintLabel : public views::Label {
     SetSubpixelRenderingEnabled(false);
     SetAutoColorReadabilityEnabled(false);
     SetEnabledColor(login_constants::kAuthMethodsTextColor);
+    SetMultiLine(true);
 
-    SetTextBasedOnState(FingerprintState::AVAILABLE);
+    SetTextBasedOnState(FingerprintState::AVAILABLE, false /*can_use_pin*/);
   }
 
   void SetTextBasedOnAuthAttempt(bool success) {
@@ -194,7 +199,7 @@ class FingerprintLabel : public views::Label {
                 : IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_FAILED));
   }
 
-  void SetTextBasedOnState(FingerprintState state) {
+  void SetTextBasedOnState(FingerprintState state, bool can_use_pin) {
     auto get_displayed_id = [&]() {
       switch (state) {
         case FingerprintState::UNAVAILABLE:
@@ -203,7 +208,9 @@ class FingerprintLabel : public views::Label {
         case FingerprintState::DISABLED_FROM_ATTEMPTS:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS;
         case FingerprintState::DISABLED_FROM_TIMEOUT:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT;
+          if (can_use_pin)
+            return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_PIN_OR_PASSWORD_REQUIRED;
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_PASSWORD_REQUIRED;
       }
       NOTREACHED();
     };
@@ -375,6 +382,14 @@ class LoginAuthUserView::FingerprintView : public views::View {
       FireAlert();
   }
 
+  void SetCanUsePin(bool value) {
+    if (can_use_pin_ == value)
+      return;
+
+    can_use_pin_ = value;
+    label_->SetTextBasedOnState(state_, can_use_pin_);
+  }
+
   void NotifyFingerprintAuthResult(bool success) {
     reset_state_.Stop();
     label_->SetTextBasedOnAuthAttempt(success);
@@ -405,10 +420,9 @@ class LoginAuthUserView::FingerprintView : public views::View {
 
  private:
   void DisplayCurrentState() {
-    SetVisible(state_ != FingerprintState::UNAVAILABLE &&
-               state_ != FingerprintState::DISABLED_FROM_TIMEOUT);
+    SetVisible(state_ != FingerprintState::UNAVAILABLE);
     SetIcon(state_);
-    label_->SetTextBasedOnState(state_);
+    label_->SetTextBasedOnState(state_, can_use_pin_);
   }
 
   void FireAlert() {
@@ -417,12 +431,15 @@ class LoginAuthUserView::FingerprintView : public views::View {
   }
 
   void SetIcon(FingerprintState state) {
+    const SkColor color =
+        (state == FingerprintState::AVAILABLE ? SK_ColorWHITE
+                                              : kDisabledFingerprintIconColor);
     switch (state) {
       case FingerprintState::UNAVAILABLE:
       case FingerprintState::AVAILABLE:
       case FingerprintState::DISABLED_FROM_TIMEOUT:
-        icon_->SetImage(gfx::CreateVectorIcon(
-            kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
+        icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintIcon,
+                                              kFingerprintIconSizeDp, color));
         break;
       case FingerprintState::DISABLED_FROM_ATTEMPTS:
         icon_->SetAnimationDecoder(
@@ -446,6 +463,9 @@ class LoginAuthUserView::FingerprintView : public views::View {
   AnimatedRoundedImageView* icon_ = nullptr;
   base::OneShotTimer reset_state_;
   FingerprintState state_ = FingerprintState::AVAILABLE;
+
+  // Affects DISABLED_FROM_TIMEOUT message.
+  bool can_use_pin_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintView);
 };
@@ -960,6 +980,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
     password_view_->RequestFocus();
 
   fingerprint_view_->SetVisible(has_fingerprint);
+  fingerprint_view_->SetCanUsePin(can_use_pin);
   challenge_response_view_->SetVisible(has_challenge_response);
   external_binary_auth_button_->SetVisible(has_external_binary);
   external_binary_enrollment_button_->SetVisible(has_external_binary);

@@ -69,7 +69,7 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     // TODO(nhiroki): Specify worklet-specific request context (e.g.,
     // "paintworklet").
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
-    FetchParameters fetch_params(resource_request);
+    FetchParameters fetch_params(std::move(resource_request));
     WorkletModuleScriptFetcher* module_fetcher =
         MakeGarbageCollected<WorkletModuleScriptFetcher>(map_.Get());
     module_fetcher->Fetch(fetch_params, fetcher_.Get(),

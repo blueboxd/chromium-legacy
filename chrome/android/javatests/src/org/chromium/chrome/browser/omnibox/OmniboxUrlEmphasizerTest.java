@@ -50,7 +50,7 @@ public class OmniboxUrlEmphasizerTest {
     @Before
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+            mProfile = Profile.getLastUsedRegularProfile();
             mResources =
                     InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
         });

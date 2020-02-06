@@ -2014,7 +2014,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             String url = currentTab != null ? currentTab.getUrl() : "";
             Profile profile = mTabModelSelector.isIncognitoSelected()
                     ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
-                    : Profile.getLastUsedProfile().getOriginalProfile();
+                    : Profile.getLastUsedRegularProfile();
             startHelpAndFeedback(url, "MobileMenuFeedback", profile);
             return true;
         }

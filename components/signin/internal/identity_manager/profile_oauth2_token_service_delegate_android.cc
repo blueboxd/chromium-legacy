@@ -413,8 +413,7 @@ bool ProfileOAuth2TokenServiceDelegateAndroid::UpdateAccountList(
     std::vector<CoreAccountId>* refreshed_ids,
     std::vector<CoreAccountId>* revoked_ids) {
   bool keep_accounts =
-      base::FeatureList::IsEnabled(signin::kMiceFeature) ||
-      (signed_in_id.has_value() && base::Contains(curr_ids, *signed_in_id));
+      signed_in_id.has_value() && base::Contains(curr_ids, *signed_in_id);
   if (keep_accounts) {
     // Revoke token for ids that have been removed from the device.
     for (const CoreAccountId& prev_id : prev_ids) {
@@ -488,8 +487,7 @@ void ProfileOAuth2TokenServiceDelegateAndroid::LoadCredentials(
             load_credentials_state());
   set_load_credentials_state(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
-  if (primary_account_id.empty() &&
-      !base::FeatureList::IsEnabled(signin::kMiceFeature)) {
+  if (primary_account_id.empty()) {
     FireRefreshTokensLoaded();
     return;
   }

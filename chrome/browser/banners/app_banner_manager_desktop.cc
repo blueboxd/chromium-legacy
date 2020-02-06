@@ -192,6 +192,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
       registrar().GetAppUserDisplayMode(*app_id) ==
           blink::mojom::DisplayMode::kStandalone) {
     OnInstall(registrar().GetAppDisplayMode(*app_id));
+    SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
   }
 }
 

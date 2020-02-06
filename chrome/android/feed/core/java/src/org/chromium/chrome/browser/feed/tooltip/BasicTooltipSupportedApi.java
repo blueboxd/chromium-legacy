@@ -24,8 +24,8 @@ public class BasicTooltipSupportedApi implements TooltipSupportedApi {
             return;
         }
 
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        final Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         consumer.accept(tracker.wouldTriggerHelpUI(featureForIPH));
     }
 }

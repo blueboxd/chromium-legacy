@@ -19,6 +19,7 @@ import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
+import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
@@ -551,6 +552,19 @@ struct URLLoaderFactoryOverride {
   pending_receiver<URLLoaderFactory>? overridden_factory_receiver;
 };
 
+struct ClientSecurityState {
+  // https://mikewest.github.io/corpp/#integration-html
+  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
+  CrossOriginEmbedderPolicy cross_origin_embedder_policy =
+      CrossOriginEmbedderPolicy.kNone;
+
+  // Whether the initiator of the requests is in a web secure context.
+  bool is_web_secure_context = false;
+
+  // The initiator's IP AddressSpace.
+  IPAddressSpace ip_address_space = IPAddressSpace.kUnknown;
+};
+
 struct URLLoaderFactoryParams {
   // Process requesting the URLLoaderFactory.
   // Set to kBrowserProcessId to indicate the browser process.
@@ -580,11 +594,6 @@ struct URLLoaderFactoryParams {
   // this factory as initiated by the user agent itself, not from any
   // particular page.
   bool disable_web_security = false;
-
-  // https://mikewest.github.io/corpp/#integration-html
-  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
-  CrossOriginEmbedderPolicy cross_origin_embedder_policy =
-      CrossOriginEmbedderPolicy.kNone;
 
   // If this is set, requests with the kURLLoadOptionUseHeaderClient option will
   // callback to the |header_client|, allowing the Cookie/Referrer request
@@ -616,6 +625,10 @@ struct URLLoaderFactoryParams {
 
   // Replaces the "internal" factory used by security features such as CORS.
   URLLoaderFactoryOverride? factory_override;
+
+  // Used to enforce security properties on the requests loaded by the
+  // URLLoader based on the Fetch client state.
+  ClientSecurityState? client_security_state;
 };
 
 // The |credentials| output parameter is given to URLRequest::SetAuth()

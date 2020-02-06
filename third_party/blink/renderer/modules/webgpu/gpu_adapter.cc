@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_extensions.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_request_adapter_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
@@ -19,9 +18,15 @@ namespace {
 WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   DCHECK_NE(nullptr, descriptor);
 
+  HashSet<String> extension_set;
+  for (auto& extension : descriptor->extensions())
+    extension_set.insert(extension);
+
   WGPUDeviceProperties requested_device_properties = {};
+  // TODO(crbug.com/1048603): We should validate that the extension_set is a
+  // subset of the adapter's extension set.
   requested_device_properties.textureCompressionBC =
-      descriptor->extensions()->textureCompressionBC();
+      extension_set.Contains("textureCompressionBC");
 
   return requested_device_properties;
 }
@@ -35,17 +40,16 @@ GPUAdapter::GPUAdapter(
     : DawnObjectBase(dawn_control_client),
       name_(name),
       adapter_service_id_(adapter_service_id),
-      adapter_properties_(properties) {}
+      adapter_properties_(properties) {
+  InitializeExtensionNameList();
+}
 
 const String& GPUAdapter::name() const {
   return name_;
 }
 
-ScriptValue GPUAdapter::extensions(ScriptState* script_state) const {
-  V8ObjectBuilder object_builder(script_state);
-  object_builder.AddBoolean("textureCompressionBC",
-                            adapter_properties_.textureCompressionBC);
-  return object_builder.GetScriptValue();
+Vector<String> GPUAdapter::extensions(ScriptState* script_state) const {
+  return extension_name_list_;
 }
 
 void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
@@ -60,6 +64,13 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kOperationError,
         "Fail to request GPUDevice with the given GPUDeviceDescriptor"));
+  }
+}
+
+void GPUAdapter::InitializeExtensionNameList() {
+  DCHECK(extension_name_list_.IsEmpty());
+  if (adapter_properties_.textureCompressionBC) {
+    extension_name_list_.emplace_back("textureCompressionBC");
   }
 }
 

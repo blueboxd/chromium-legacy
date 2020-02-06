@@ -378,7 +378,7 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 }
 
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
-  Send(new WebTestHostMsg_BlockThirdPartyCookies(routing_id(), block));
+  GetWebTestClientRemote().BlockThirdPartyCookies(block);
 }
 
 std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
@@ -630,7 +630,7 @@ void BlinkTestRunner::SetPermission(const std::string& name,
 }
 
 void BlinkTestRunner::ResetPermissions() {
-  Send(new WebTestHostMsg_ResetPermissions(routing_id()));
+  GetWebTestClientRemote().ResetPermissions();
 }
 
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(

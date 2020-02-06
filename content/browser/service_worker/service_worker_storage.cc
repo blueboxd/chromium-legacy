@@ -852,11 +852,9 @@ void ServiceWorkerStorage::DiskCacheImplDoneWithDisk() {
   }
 }
 
-int64_t ServiceWorkerStorage::NewRegistrationId() {
-  if (state_ == STORAGE_STATE_DISABLED)
-    return blink::mojom::kInvalidServiceWorkerRegistrationId;
-  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
-  return next_registration_id_++;
+void ServiceWorkerStorage::NewRegistrationId(
+    base::OnceCallback<void(int64_t registration_id)> callback) {
+  std::move(callback).Run(NewRegistrationIdInternal());
 }
 
 int64_t ServiceWorkerStorage::NewVersionId() {
@@ -1233,6 +1231,14 @@ void ServiceWorkerStorage::ClearSessionOnlyOrigins() {
   database_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DeleteAllDataForOriginsFromDB, database_.get(),
                                 session_only_origins));
+}
+
+int64_t ServiceWorkerStorage::NewRegistrationIdInternal() {
+  if (state_ == STORAGE_STATE_DISABLED) {
+    return blink::mojom::kInvalidServiceWorkerRegistrationId;
+  }
+  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
+  return next_registration_id_++;
 }
 
 // static

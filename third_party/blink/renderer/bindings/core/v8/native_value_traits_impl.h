@@ -58,7 +58,21 @@ CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceOrNullArgumentValue(
 
 }  // namespace bindings
 
-// Boolean
+// any
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLAny>
+    : public NativeValueTraitsBase<IDLAny> {
+  static ScriptValue NativeValue(v8::Isolate* isolate,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exception_state) {
+    return ScriptValue(isolate, value);
+  }
+};
+// IDLNullable<IDLAny> must not be used.
+template <>
+struct NativeValueTraits<IDLNullable<IDLAny>>;
+
+// boolean
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLBoolean>
     : public NativeValueTraitsBase<IDLBoolean> {
@@ -441,7 +455,7 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLObject>>
   }
 };
 
-// Promises
+// Promise types
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLPromise>
     : public NativeValueTraitsBase<IDLPromise> {
@@ -456,7 +470,7 @@ struct CORE_EXPORT NativeValueTraits<IDLPromise>
 template <>
 struct NativeValueTraits<IDLNullable<IDLPromise>>;
 
-// Sequences
+// Sequence types
 template <typename T>
 struct NativeValueTraits<IDLSequence<T>>
     : public NativeValueTraitsBase<IDLSequence<T>> {
@@ -584,7 +598,7 @@ struct NativeValueTraits<IDLSequence<T>>
   }
 };
 
-// Records
+// Record types
 template <typename K, typename V>
 struct NativeValueTraits<IDLRecord<K, V>>
     : public NativeValueTraitsBase<IDLRecord<K, V>> {
@@ -708,7 +722,7 @@ struct NativeValueTraits<IDLRecord<K, V>>
   }
 };
 
-// Callback functions
+// Callback function types
 template <typename T>
 struct NativeValueTraits<
     T,
@@ -728,7 +742,7 @@ struct NativeValueTraits<
   }
 };
 
-// Dictionary
+// Dictionary types
 template <typename T>
 struct NativeValueTraits<
     T,
@@ -742,7 +756,7 @@ struct NativeValueTraits<
   }
 };
 
-// Enumeration
+// Enumeration types
 template <typename T>
 struct NativeValueTraits<
     T,
@@ -756,7 +770,7 @@ struct NativeValueTraits<
   }
 };
 
-// Interface
+// Interface types
 template <typename T>
 struct NativeValueTraits<
     T,
@@ -805,7 +819,7 @@ struct NativeValueTraits<
   }
 };
 
-// Union type
+// Union types
 template <typename T>
 struct NativeValueTraits<
     T,
@@ -818,7 +832,7 @@ struct NativeValueTraits<
   }
 };
 
-// Nullable
+// Nullable types
 template <typename InnerType>
 struct NativeValueTraits<
     IDLNullable<InnerType>,

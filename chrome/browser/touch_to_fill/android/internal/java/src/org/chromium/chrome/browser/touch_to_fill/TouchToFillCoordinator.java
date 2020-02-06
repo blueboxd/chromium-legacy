@@ -30,7 +30,7 @@ public class TouchToFillCoordinator implements TouchToFillComponent {
     public void initialize(Context context, BottomSheetController sheetController,
             TouchToFillComponent.Delegate delegate) {
         mMediator.initialize(delegate, mModel,
-                new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile()),
+                new LargeIconBridge(Profile.getLastUsedRegularProfile()),
                 context.getResources().getDimensionPixelSize(R.dimen.touch_to_fill_favicon_size));
         setUpModelChangeProcessors(mModel, new TouchToFillView(context, sheetController));
     }

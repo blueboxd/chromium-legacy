@@ -146,7 +146,7 @@ public class FeedProcessScopeFactory {
         sPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED,
                 FeedProcessScopeFactory::articlesEnabledPrefChange);
 
-        Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
         Configuration configHostApi = FeedConfiguration.createConfiguration();
         ApplicationInfo applicationInfo = FeedApplicationInfo.createApplicationInfo();
 

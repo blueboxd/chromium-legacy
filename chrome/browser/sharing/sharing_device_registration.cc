@@ -10,6 +10,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/buildflags.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
@@ -72,6 +73,7 @@ void SharingDeviceRegistration::RetrieveTargetInfo(
     TargetInfoCallback callback) {
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
       ->GetToken(authorized_entity, instance_id::kGCMScope,
+                 /*time_to_live=*/base::TimeDelta(),
                  /*options=*/{},
                  /*flags=*/{InstanceID::Flags::kBypassScheduler},
                  base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,

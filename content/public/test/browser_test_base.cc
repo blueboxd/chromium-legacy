@@ -404,6 +404,9 @@ void BrowserTestBase::SetUp() {
 
   InitializeMojo();
 
+  // We can only setup startup tracing after mojo is initialized above.
+  tracing::EnableStartupTracingIfNeeded();
+
   {
     SetBrowserClientForTesting(delegate->CreateContentBrowserClient());
     if (command_line->HasSwitch(switches::kSingleProcess))

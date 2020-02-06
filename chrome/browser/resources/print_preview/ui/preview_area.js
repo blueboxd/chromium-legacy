@@ -399,6 +399,14 @@ Polymer({
         pageWidth / this.pageSize.width);
     this.$.marginControlContainer.updateClippingMask(
         new Size(viewportWidth, viewportHeight));
+    // Align the margin control container with the preview content area.
+    // The offset may be caused by the scrollbar on the left in the preview
+    // area in right-to-left direction.
+    const previewDocument = this.$$('.preview-area-plugin').contentDocument;
+    if (previewDocument && previewDocument.documentElement) {
+      this.$.marginControlContainer.style.left =
+          previewDocument.documentElement.offsetLeft + 'px';
+    }
   },
 
   /**

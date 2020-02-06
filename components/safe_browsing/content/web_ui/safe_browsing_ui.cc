@@ -1015,9 +1015,8 @@ base::Value SerializeRTThreatInfo(
       "cache_duration_sec",
       base::Value(static_cast<double>(threat_info.cache_duration_sec())));
 
-  threat_info_dict.SetKey(
-      "cache_expression_covering_match",
-      base::Value(threat_info.cache_expression_covering_match()));
+  threat_info_dict.SetKey("cache_expression",
+                          base::Value(threat_info.cache_expression()));
 
   std::string verdict_type;
   switch (threat_info.verdict_type()) {
@@ -1048,8 +1047,9 @@ base::Value SerializeRTThreatInfo(
 
   threat_info_dict.SetKey("cache_expression_match_type",
                           base::Value(cache_expression_match_type));
-  threat_info_dict.SetKey("cache_expression",
-                          base::Value(threat_info.cache_expression()));
+  threat_info_dict.SetKey(
+      "cache_expression_using_match_type",
+      base::Value(threat_info.cache_expression_using_match_type()));
   return std::move(threat_info_dict);
 }
 

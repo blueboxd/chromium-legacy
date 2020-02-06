@@ -93,12 +93,18 @@ void InstanceIDAndroid::GetCreationTime(GetCreationTimeCallback callback) {
 void InstanceIDAndroid::GetToken(
     const std::string& authorized_entity,
     const std::string& scope,
+    base::TimeDelta time_to_live,
     const std::map<std::string, std::string>& options,
     std::set<Flags> flags,
     GetTokenCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_COUNTS_100("InstanceID.GetToken.OptionsCount", options.size());
+
+  if (!time_to_live.is_zero()) {
+    LOG(WARNING) << "Non-zero TTL requested for InstanceID token, while TTLs"
+                    " are not supported by Android Firebase IID API.";
+  }
 
   int32_t request_id = get_token_callbacks_.Add(
       std::make_unique<GetTokenCallback>(std::move(callback)));

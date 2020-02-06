@@ -1030,7 +1030,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
 
   ResourceRequest resource_request(test_url);
   resource_request.SetHttpHeaderField("range", "bytes=0-2");
-  FetchParameters params(resource_request);
+  FetchParameters params(std::move(resource_request));
   ResourceFetcher* fetcher = CreateFetcher();
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
   auto observer =
@@ -1099,7 +1099,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPostRequest) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceRequest resource_request(test_url);
   resource_request.SetHttpMethod(http_names::kPOST);
-  FetchParameters params(resource_request);
+  FetchParameters params(std::move(resource_request));
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
@@ -1115,7 +1115,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderExistingRangeHeader) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceRequest resource_request(test_url);
   resource_request.SetHttpHeaderField("range", "bytes=128-255");
-  FetchParameters params(resource_request);
+  FetchParameters params(std::move(resource_request));
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
@@ -1201,7 +1201,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
 
     ResourceRequest resource_request(test_url);
     resource_request.SetPreviewsState(test.initial_previews_state);
-    FetchParameters params(resource_request);
+    FetchParameters params(std::move(resource_request));
 
     params.SetAllowImagePlaceholder();
     ImageResource* image_resource =
@@ -1679,7 +1679,7 @@ class ImageResourceCounterTest : public testing::Test {
     ResourceFetcher* fetcher = CreateFetcher();
     KURL test_url(url);
     ResourceRequest request = ResourceRequest(test_url);
-    FetchParameters fetch_params(request);
+    FetchParameters fetch_params(std::move(request));
     scheduler::FakeTaskRunner* task_runner =
         static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get());
     task_runner->SetTime(1);

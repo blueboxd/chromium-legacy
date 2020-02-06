@@ -433,8 +433,8 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
     options.type = script_type;
-    registration_ =
-        wrapper()->context()->registry()->CreateNewRegistration(options);
+    registration_ = CreateNewServiceWorkerRegistration(
+        wrapper()->context()->registry(), options);
     // Set the update check time to avoid triggering updates in the middle of
     // tests.
     registration_->set_last_update_check(base::Time::Now());

@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -690,6 +691,7 @@ void PushMessagingServiceImpl::DoSubscribe(
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
       ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
+                 base::TimeDelta() /* time_to_live */,
                  std::map<std::string, std::string>() /* options */,
                  {} /* flags */,
                  base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,

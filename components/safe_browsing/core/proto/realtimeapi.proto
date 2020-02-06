@@ -60,8 +60,8 @@ message RTLookupResponse {
     // A host-suffix/path-prefix expression for caching the verdict
     // This field is only used by previous versions of Chrome(M81 Canary and
     // Dev) that only support "COVERING_MATCH". This field is deprecated in
-    // favor of "cache_expression" below.
-    optional string cache_expression_covering_match = 3;
+    // favor of "cache_expression_using_match_type" below.
+    optional string cache_expression = 3;
 
     // Type of verdicts issued by the server. Different levels of verdicts from
     // 1 to 100 can be added in future based on the confidence of the verdict.
@@ -97,7 +97,7 @@ message RTLookupResponse {
     // this expression should be used for matching on the client. If
     // “cache_expression_match_type” is not set, it means this expression is not
     // applicable for caching, and the entry should be ignored.
-    optional string cache_expression = 6;
+    optional string cache_expression_using_match_type = 6;
   }
 
   // Each matching url can have multiple threats detected, if the response

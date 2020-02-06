@@ -241,11 +241,17 @@ void PDFResource::SetAccessibilityPageInfo(
   for (size_t i = 0; i < page_objects->highlight_count; i++) {
     highlight_vector.emplace_back(page_objects->highlights[i]);
   }
+  std::vector<ppapi::PdfAccessibilityTextFieldInfo> text_field_vector;
+  text_field_vector.reserve(page_objects->text_field_count);
+  for (size_t i = 0; i < page_objects->text_field_count; i++) {
+    text_field_vector.emplace_back(page_objects->text_fields[i]);
+  }
 
   ppapi::PdfAccessibilityPageObjects ppapi_page_objects;
   ppapi_page_objects.links = std::move(link_vector);
   ppapi_page_objects.images = std::move(image_vector);
   ppapi_page_objects.highlights = std::move(highlight_vector);
+  ppapi_page_objects.text_fields = std::move(text_field_vector);
 
   Post(RENDERER,
        PpapiHostMsg_PDF_SetAccessibilityPageInfo(

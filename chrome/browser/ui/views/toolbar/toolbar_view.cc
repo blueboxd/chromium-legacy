@@ -894,24 +894,38 @@ views::View* ToolbarView::GetViewForDrop() {
 void ToolbarView::LoadImages() {
   DCHECK_EQ(display_mode_, DisplayMode::NORMAL);
 
+  const ui::ThemeProvider* tp = GetThemeProvider();
+
+  const SkColor normal_color =
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  const SkColor disabled_color =
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
+
   if (browser_actions_) {
-    browser_actions_->SetSeparatorColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
+    browser_actions_->SetSeparatorColor(
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
   }
 
   const bool touch_ui = ui::MaterialDesignController::touch_ui();
 
   const gfx::VectorIcon& back_image =
       touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
-  back_->UpdateIconsWithStandardColors(back_image);
+  back_->SetImage(views::Button::STATE_NORMAL,
+                  gfx::CreateVectorIcon(back_image, normal_color));
+  back_->SetImage(views::Button::STATE_DISABLED,
+                  gfx::CreateVectorIcon(back_image, disabled_color));
 
   const gfx::VectorIcon& forward_image =
       touch_ui ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
-  forward_->UpdateIconsWithStandardColors(forward_image);
+  forward_->SetImage(views::Button::STATE_NORMAL,
+                     gfx::CreateVectorIcon(forward_image, normal_color));
+  forward_->SetImage(views::Button::STATE_DISABLED,
+                     gfx::CreateVectorIcon(forward_image, disabled_color));
 
   const gfx::VectorIcon& home_image =
       touch_ui ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
-  home_->UpdateIconsWithStandardColors(home_image);
+  home_->SetImage(views::Button::STATE_NORMAL,
+                  gfx::CreateVectorIcon(home_image, normal_color));
 
   if (extensions_container_)
     extensions_container_->UpdateAllIcons();
@@ -934,6 +948,8 @@ void ToolbarView::LoadImages() {
     toolbar_account_icon_container_->UpdateAllIcons();
 
   app_menu_button_->UpdateIcon();
+
+  reload_->SetColors(normal_color, disabled_color);
 }
 
 void ToolbarView::ShowCriticalNotification() {

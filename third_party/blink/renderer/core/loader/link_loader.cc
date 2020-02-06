@@ -246,7 +246,7 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
 
   ResourceLoaderOptions options;
   options.initiator_info.name = local_name;
-  FetchParameters link_fetch_params(resource_request, options);
+  FetchParameters link_fetch_params(std::move(resource_request), options);
   link_fetch_params.SetCharset(charset);
 
   link_fetch_params.SetDefer(defer_option);

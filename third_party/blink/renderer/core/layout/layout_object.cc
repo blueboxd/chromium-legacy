@@ -2011,9 +2011,18 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded(
                  ? object->Parent()
                  : object->Container();
     if (object) {
-      if (mark_container_chain_layout_overflow_recalc)
+      bool no_changes = true;
+      if (mark_container_chain_layout_overflow_recalc &&
+          !object->SelfNeedsLayoutOverflowRecalc()) {
         object->SetChildNeedsLayoutOverflowRecalc();
-      object->MarkSelfPaintingLayerForVisualOverflowRecalc();
+        no_changes = false;
+      }
+      if (!object->SelfPaintingLayerNeedsVisualOverflowRecalc()) {
+        object->MarkSelfPaintingLayerForVisualOverflowRecalc();
+        no_changes = false;
+      }
+      if (no_changes)
+        return;
     }
 
   } while (object);

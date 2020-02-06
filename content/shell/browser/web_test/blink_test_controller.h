@@ -198,6 +198,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnSetPopupBlockingEnabled(bool block_popups);
   void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
   void OnNavigateSecondaryWindow(const GURL& url);
+  void OnBlockThirdPartyCookies(bool block);
 
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };
@@ -232,7 +233,6 @@ class BlinkTestController : public WebContentsObserver,
   void OnTestFinished();
   void OnCaptureSessionHistory();
   void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);
-  void OnBlockThirdPartyCookies(bool block);
   mojo::AssociatedRemote<mojom::BlinkTestControl>& GetBlinkTestControlRemote(
       RenderFrameHost* frame);
   void HandleBlinkTestControlError(const GlobalFrameRoutingId& key);

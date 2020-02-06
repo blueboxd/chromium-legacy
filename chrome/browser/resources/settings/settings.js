@@ -11,13 +11,20 @@ import './controls/settings_slider.m.js';
 import './controls/settings_textarea.m.js';
 import './controls/settings_toggle_button.m.js';
 import './site_favicon.m.js';
-
 import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './search_engines_page/search_engines_page.m.js';
 import './settings_page/settings_subpage.m.js';
 import './settings_page/settings_animated_pages.m.js';
+
+// <if expr="not chromeos">
+import './default_browser_page/default_browser_page.m.js';
+// </if>
+
+// <if expr="not chromeos">
+export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.m.js';
+// </if>
 
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';

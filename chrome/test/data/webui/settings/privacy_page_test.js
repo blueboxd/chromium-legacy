@@ -166,30 +166,56 @@ cr.define('settings_privacy_page', function() {
               {enabled: {value: true}, scout_reporting_enabled: {value: true}},
         };
         document.body.appendChild(page);
+        Polymer.dom.flush();
       });
 
       teardown(function() {
         page.remove();
       });
 
-      test('LogMangeCerfificatesClick', function() {
+      test('LogAllPrivacyPageClicks', async function() {
         page.$$('#manageCertificates').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
-                  result);
-            });
-      });
+        let result = await testMetricsBrowserProxy.whenCalled(
+            'recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
+            result);
 
-      test('LogClearBrowsingClick', function() {
-        page.$$('#clearBrowsingData').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA,
-                  result);
-            });
+        settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
+        testMetricsBrowserProxy.reset();
+
+        page.$$('#doNotTrack').click();
+        result = await testMetricsBrowserProxy.whenCalled(
+            'recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK, result);
+
+        settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
+        testMetricsBrowserProxy.reset();
+
+        page.$$('#canMakePaymentToggle').click();
+        result = await testMetricsBrowserProxy.whenCalled(
+            'recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD, result);
+
+        settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
+        testMetricsBrowserProxy.reset();
+
+        page.$$('#site-settings-subpage-trigger').click();
+        result = await testMetricsBrowserProxy.whenCalled(
+            'recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS, result);
+
+        settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
+        testMetricsBrowserProxy.reset();
+
+        page.$$('#safeBrowsingToggle').click();
+        result = await testMetricsBrowserProxy.whenCalled(
+            'recordSettingsPageHistogram');
+        assertEquals(
+            settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING, result);
       });
 
       test('LogDoNotTrackClick', function() {
@@ -202,39 +228,7 @@ cr.define('settings_privacy_page', function() {
             });
       });
 
-      test('LogCanMakePaymentToggleClick', function() {
-        page.$$('#canMakePaymentToggle').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD,
-                  result);
-            });
-      });
-
-      test('LogSiteSettingsSubpageClick', function() {
-        page.$$('#site-settings-subpage-trigger').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS,
-                  result);
-            });
-      });
-
-      test('LogSafeBrowsingToggleClick', function() {
-        Polymer.dom.flush();
-        page.$$('#safeBrowsingToggle').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING,
-                  result);
-            });
-      });
-
       test('LogSafeBrowsingReportingToggleClick', function() {
-        Polymer.dom.flush();
         page.$$('#safeBrowsingReportingToggle').click();
         return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {

@@ -37,9 +37,9 @@
     },
     'android_crash_reporting': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/crash/' \
-                  'chrome/browser/android/crash/' \
-                  'components/crash/android/' \
-                  'components/minidump_uploader/'
+                  '|chrome/browser/android/crash/' \
+                  '|components/crash/android/' \
+                  '|components/minidump_uploader/'
     },
     'android_crazy_linker': {
       'filepath': 'third_party/android_crazy_linker/'
@@ -2534,7 +2534,6 @@
                           'sbc@chromium.org'],
     'navigation': ['alexmos+watch@chromium.org',
                    'creis+watch@chromium.org',
-                   'dom+watch@chromium.org',
                    'nasko+codewatch@chromium.org',
                    'navigation-cc+reviews@chromium.org'],
     'net': ['net-reviews@chromium.org'],

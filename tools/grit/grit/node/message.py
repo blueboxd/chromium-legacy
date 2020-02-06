@@ -268,6 +268,8 @@ class MessageNode(base.ContentNode):
                                          ).GetRealContent()
     if self._replace_ellipsis:
       msg = _ELLIPSIS_PATTERN.sub(_ELLIPSIS_SYMBOL, msg)
+    # Always remove all byte order marks (\uFEFF) https://crbug.com/1033305
+    msg = msg.replace(u'\uFEFF','')
     return msg.replace('[GRITLANGCODE]', lang)
 
   def NameOrOffset(self):

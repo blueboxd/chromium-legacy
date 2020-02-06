@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -50,6 +51,7 @@ class InstanceIDHandler {
   virtual void GetToken(const std::string& app_id,
                         const std::string& authorized_entity,
                         const std::string& scope,
+                        base::TimeDelta time_to_live,
                         const std::map<std::string, std::string>& options,
                         GetTokenCallback callback) = 0;
   virtual void ValidateToken(const std::string& app_id,

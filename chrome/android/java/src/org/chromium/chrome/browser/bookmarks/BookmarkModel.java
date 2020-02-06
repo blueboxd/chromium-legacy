@@ -41,7 +41,7 @@ public class BookmarkModel extends BookmarkBridge {
      * Initialize bookmark model for last used non-incognito profile.
      */
     public BookmarkModel() {
-        this(Profile.getLastUsedProfile().getOriginalProfile());
+        this(Profile.getLastUsedRegularProfile());
     }
 
     @VisibleForTesting

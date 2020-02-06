@@ -574,7 +574,7 @@ public class WebsitePreferenceBridge {
     }
 
     private static Profile getProfile() {
-        return Profile.getLastUsedProfile().getOriginalProfile();
+        return Profile.getLastUsedRegularProfile();
     }
 
     @VisibleForTesting

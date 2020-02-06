@@ -71,8 +71,8 @@ class PLATFORM_EXPORT FetchParameters {
     ResourceWidth() : width(0), is_set(false) {}
   };
 
-  explicit FetchParameters(const ResourceRequest&);
-  FetchParameters(const ResourceRequest&, const ResourceLoaderOptions&);
+  explicit FetchParameters(ResourceRequest);
+  FetchParameters(ResourceRequest, const ResourceLoaderOptions&);
   FetchParameters(const FetchParameters&) = delete;
   FetchParameters& operator=(const FetchParameters&) = delete;
   FetchParameters(FetchParameters&&);

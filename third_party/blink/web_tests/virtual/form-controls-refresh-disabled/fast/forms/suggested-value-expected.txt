@@ -91,6 +91,7 @@ instead of "initial value".
 |       "inserted value"
 |   <shadow:root>
 |     <div>
+|       aria-hidden="true"
 |       "initial value"
 |     <slot>
 |       name="user-agent-custom-assign-slot"

@@ -181,6 +181,13 @@ class CORE_EXPORT CSPDirectiveList final
   // this judgement.
   bool IsScriptRestrictionReasonable() const;
 
+  bool RequiresTrustedTypes() const {
+    return require_trusted_types_for_ && require_trusted_types_for_->require();
+  }
+  bool TrustedTypesAllowDuplicates() const {
+    return trusted_types_ && trusted_types_->IsAllowDuplicates();
+  }
+
   void Trace(blink::Visitor*);
 
  private:

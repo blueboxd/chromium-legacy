@@ -12,6 +12,14 @@
 
 namespace blink {
 
+namespace {
+
+ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
+  return value == reinterpret_cast<void*>(-1);
+}
+
+}  // namespace
+
 class BasePage;
 
 // Base visitor used to mark Oilpan objects on any thread.
@@ -164,9 +172,11 @@ class PLATFORM_EXPORT MarkingVisitor
 
   // Write barrier that adds a value the |slot| refers to to the set of marked
   // objects. The barrier bails out if marking is off or the object is not yet
-  // marked. Returns true if the object was marked on this call.
+  // marked. Returns true if the value has been marked on this call.
   template <typename T>
   static bool WriteBarrier(T** slot);
+
+  static bool GenerationalBarrier(Address slot, ThreadState* state);
 
   // Eagerly traces an already marked backing store ensuring that all its
   // children are discovered by the marker. The barrier bails out if marking
@@ -195,8 +205,10 @@ class PLATFORM_EXPORT MarkingVisitor
   void FlushMarkingWorklists();
 
  private:
-  // Exact version of the marking write barriers.
+  // Exact version of the marking and generational write barriers.
   static bool WriteBarrierSlow(void*);
+  static void GenerationalBarrierSlow(Address, ThreadState*);
+  static bool MarkValue(void*, BasePage*, ThreadState*);
   static void TraceMarkedBackingStoreSlow(void*);
 };
 
@@ -210,12 +222,38 @@ ALWAYS_INLINE bool MarkingVisitor::IsInConstruction(HeapObjectHeader* header) {
 // static
 template <typename T>
 ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(T** slot) {
+#if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
+  void* value = *slot;
+  if (!value || IsHashTableDeleteValue(value))
+    return false;
+
+  // Dijkstra barrier if concurrent marking is in progress.
+  BasePage* value_page = PageFromObject(value);
+  ThreadState* thread_state = value_page->thread_state();
+  if (UNLIKELY(thread_state->IsIncrementalMarking()))
+    return MarkValue(value, value_page, thread_state);
+
+  GenerationalBarrier(reinterpret_cast<Address>(slot), thread_state);
+  return false;
+#else
   if (!ThreadState::IsAnyIncrementalMarking())
     return false;
 
   // Avoid any further checks and dispatch to a call at this point. Aggressive
   // inlining otherwise pollutes the regular execution paths.
   return WriteBarrierSlow(*slot);
+#endif
+}
+
+// static
+ALWAYS_INLINE bool MarkingVisitor::GenerationalBarrier(Address slot,
+                                                       ThreadState* state) {
+  if (LIKELY(state->Heap().IsInLastAllocatedRegion(slot)))
+    return false;
+  if (UNLIKELY(state->IsOnStack(slot)))
+    return false;
+  GenerationalBarrierSlow(slot, state);
+  return false;
 }
 
 // static

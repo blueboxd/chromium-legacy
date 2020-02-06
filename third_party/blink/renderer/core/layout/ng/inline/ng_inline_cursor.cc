@@ -755,6 +755,13 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
   for (; descendants; descendants.MoveToNext()) {
     const NGFragmentItem* child_item = descendants.CurrentItem();
     DCHECK(child_item);
+    if (child_item->Type() == NGFragmentItem::kBox &&
+        !child_item->BoxFragment()) {
+      // Skip virtually "culled" inline box, e.g. <span>foo</span>
+      // "editing/selection/shift-click.html" reaches here.
+      DCHECK(child_item->GetLayoutObject()->IsLayoutInline()) << child_item;
+      continue;
+    }
     const LayoutUnit child_inline_offset =
         child_item->OffsetInContainerBlock()
             .ConvertToLogical(writing_mode, direction, container_size,
@@ -822,7 +829,10 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
           return child_item.GetLayoutObject()->PositionForPoint(
               point - child_item.OffsetInContainerBlock());
         }
+      } else {
+        // |LayoutInline| used to be culled.
       }
+      DCHECK(child_item.GetLayoutObject()->IsLayoutInline()) << child_item;
       break;
     case NGFragmentItem::kLine:
       NOTREACHED();

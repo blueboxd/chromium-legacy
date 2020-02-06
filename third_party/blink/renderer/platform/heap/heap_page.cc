@@ -414,9 +414,7 @@ NormalPageArena::NormalPageArena(ThreadState* state, int index)
       current_allocation_point_(nullptr),
       remaining_allocation_size_(0),
       last_remaining_allocation_size_(0),
-      promptly_freed_size_(0) {
-  ClearFreeLists();
-}
+      promptly_freed_size_(0) {}
 
 void NormalPageArena::AddToFreeList(Address address, size_t size) {
 #if DCHECK_IS_ON()
@@ -893,6 +891,10 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
   // Set up a new linear allocation area.
   current_allocation_point_ = point;
   last_remaining_allocation_size_ = remaining_allocation_size_ = size;
+  // Update last allocated region in ThreadHeap. This must also be done if the
+  // allocation point is set to 0 (before doing GC), so that the last allocated
+  // region is automatically reset after GC.
+  GetThreadState()->Heap().SetLastAllocatedRegion(point, size);
   if (point) {
     // Only, update allocated size and object start bitmap if the area is
     // actually set up with a non-null address.
@@ -1011,6 +1013,10 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 
   swept_pages_.PushLocked(large_object);
 
+  // Update last allocated region in ThreadHeap.
+  GetThreadState()->Heap().SetLastAllocatedRegion(large_object->Payload(),
+                                                  large_object->PayloadSize());
+
   // Add all segments of kBlinkPageSize to the bloom filter so that the large
   // object can be kept by derived pointers on stack. An alternative might be to
   // prohibit derived pointers to large objects, but that is dangerous since the
@@ -1067,7 +1073,9 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
   return result;
 }
 
-FreeList::FreeList() : biggest_free_list_index_(0) {}
+FreeList::FreeList() : biggest_free_list_index_(0) {
+  Clear();
+}
 
 void FreeList::Add(Address address, size_t size) {
   DCHECK_LT(size, BlinkPagePayloadSize());

@@ -216,6 +216,9 @@ group("closure_compile_module") {
     "search_engines_page:closure_compile_module",
     "settings_page:closure_compile_module",
   ]
+  if (!is_chromeos) {
+    deps += [ "default_browser_page:closure_compile_module" ]
+  }
 }
 
 js_type_check("closure_compile_local_module") {
@@ -358,7 +361,6 @@ group("polymer3_elements") {
     "chrome_cleanup_page:polymer3_elements",
     "clear_browsing_data_dialog:polymer3_elements",
     "controls:polymer3_elements",
-    "default_browser_page:polymer3_elements",
     "downloads_page:polymer3_elements",
     "incompatible_applications_page:polymer3_elements",
     "languages_page:polymer3_elements",
@@ -376,7 +378,6 @@ group("polymer3_elements") {
     "settings_ui:polymer3_elements",
     "site_settings:polymer3_elements",
     "site_settings_page:polymer3_elements",
-    "system_page:polymer3_elements",
 
     # Local targets
     ":icons_module",
@@ -386,6 +387,13 @@ group("polymer3_elements") {
     ":settings_vars_css_module",
     ":site_favicon_module",
   ]
+
+  if (!is_chromeos) {
+    public_deps += [
+      "default_browser_page:polymer3_elements",
+      "system_page:polymer3_elements",
+    ]
+  }
 }
 
 polymer_modulizer("icons") {

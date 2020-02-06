@@ -3676,11 +3676,6 @@ const char kClickToCallUIDescription[] =
     "Enables click to call feature signals to be handled on desktop by showing "
     "a list of user's available devices with telephony functionality.";
 
-const char kClickToCallDetectionV2Name[] = "Click to call detection V2";
-const char kClickToCallDetectionV2Description[] =
-    "Improves the detection of phone numbers in the context menu for the click "
-    "to call feature.";
-
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

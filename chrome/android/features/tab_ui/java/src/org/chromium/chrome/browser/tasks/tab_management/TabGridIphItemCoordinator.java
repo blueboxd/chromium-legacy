@@ -31,7 +31,7 @@ class TabGridIphItemCoordinator {
                 TabGridIphItemViewBinder::bind);
 
         mMediator = new TabGridIphItemMediator(
-                iphItemPropertyModel, Profile.getLastUsedProfile().getOriginalProfile());
+                iphItemPropertyModel, Profile.getLastUsedRegularProfile());
     }
 
     /**

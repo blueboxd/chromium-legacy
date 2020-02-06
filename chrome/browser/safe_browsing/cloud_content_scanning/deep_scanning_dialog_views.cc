@@ -52,13 +52,8 @@ constexpr base::TimeDelta kSuccessDialogTimeout =
 constexpr base::TimeDelta kResizeAnimationDuration =
     base::TimeDelta::FromMilliseconds(100);
 
-constexpr SkColor kScanSuccessColor = gfx::kGoogleGreen500;
-constexpr SkColor kScanFailureColor = gfx::kGoogleRed500;
-
-constexpr SkColor kScanPendingSideImageColor = gfx::kGoogleBlue400;
-constexpr SkColor kScanDoneSideImageColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
-
 constexpr int kSideImageSize = 24;
+constexpr int kLineHeight = 20;
 
 constexpr gfx::Insets kSideImageInsets = gfx::Insets(8, 8, 8, 8);
 constexpr gfx::Insets kMessageAndIconRowInsets = gfx::Insets(0, 32, 0, 48);
@@ -82,21 +77,83 @@ class CircleBackground : public views::Background {
   }
 };
 
+SkColor GetBackgroundColor(const views::Widget* widget) {
+  return widget->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground);
+}
+
 }  // namespace
 
-// An image class used for the image at the top of the dialog.
-class DeepScanningTopImageView : public views::ImageView {
- public:
-  explicit DeepScanningTopImageView(DeepScanningDialogViews* dialog)
-      : dialog_(dialog) {}
+// View classes used to override OnThemeChanged and update the sub-views to the
+// new theme.
 
-  void Update() { SetImage(dialog_->GetTopImage()); }
+class DeepScanningBaseView {
+ public:
+  explicit DeepScanningBaseView(DeepScanningDialogViews* dialog)
+      : dialog_(dialog) {}
+  DeepScanningDialogViews* dialog() { return dialog_; }
+
+ protected:
+  DeepScanningDialogViews* dialog_;
+};
+
+class DeepScanningTopImageView : public DeepScanningBaseView,
+                                 public views::ImageView {
+ public:
+  using DeepScanningBaseView::DeepScanningBaseView;
+
+  void Update() { SetImage(dialog()->GetTopImage()); }
 
  protected:
   void OnThemeChanged() override { Update(); }
+};
 
- private:
-  DeepScanningDialogViews* dialog_;
+class DeepScanningSideIconImageView : public DeepScanningBaseView,
+                                      public views::ImageView {
+ public:
+  using DeepScanningBaseView::DeepScanningBaseView;
+
+  void Update() {
+    SetImage(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kSideImageSize,
+                                   dialog()->GetSideImageLogoColor()));
+    if (dialog()->is_result()) {
+      SetBackground(std::make_unique<CircleBackground>(
+          dialog()->GetSideImageBackgroundColor()));
+    }
+  }
+
+ protected:
+  void OnThemeChanged() override { Update(); }
+};
+
+class DeepScanningSideIconSpinnerView : public DeepScanningBaseView,
+                                        public views::Throbber {
+ public:
+  using DeepScanningBaseView::DeepScanningBaseView;
+
+  void Update() {
+    if (dialog()->is_result()) {
+      parent()->RemoveChildView(this);
+      delete this;
+    }
+  }
+
+ protected:
+  void OnThemeChanged() override { Update(); }
+};
+
+class DeepScanningMessageView : public DeepScanningBaseView,
+                                public views::Label {
+ public:
+  using DeepScanningBaseView::DeepScanningBaseView;
+
+  void Update() {
+    if (dialog()->is_failure())
+      SetEnabledColor(dialog()->GetSideImageBackgroundColor());
+  }
+
+ protected:
+  void OnThemeChanged() override { Update(); }
 };
 
 DeepScanningDialogViews::DeepScanningDialogViews(
@@ -145,16 +202,14 @@ void DeepScanningDialogViews::ShowResult(bool success) {
   dialog_status_ = success ? DeepScanningDialogStatus::SUCCESS
                            : DeepScanningDialogStatus::FAILURE;
 
-  // Cleanup if the pending dialog wasn't shown and the verdict is safe.
-  if (!shown_ && success) {
-    delete this;
+  // Do nothing if the pending dialog wasn't shown, the delayed |Show| callback
+  // will show the negative result later if that's the verdict.
+  if (!shown_) {
+    // Cleanup if the pending dialog wasn't shown and the verdict is safe.
+    if (success)
+      delete this;
     return;
   }
-
-  // Do nothing if the pending dialog wasn't shown, the delayed |Show| callback
-  // will show the negative result later.
-  if (!shown_ && !success)
-    return;
 
   // Update the pending dialog only after it has been shown for a minimum amount
   // of time.
@@ -177,26 +232,20 @@ const views::Widget* DeepScanningDialogViews::GetWidgetImpl() const {
 
 void DeepScanningDialogViews::UpdateDialog() {
   DCHECK(shown_);
+  views::Widget* widget = GetWidget();
+  DCHECK(widget);
   DCHECK(is_result());
+
+  // Update the style of the dialog to reflect the new state.
+  message_->Update();
+  image_->Update();
+  side_icon_image_->Update();
+  side_icon_spinner_->Update();
 
   // Update the buttons.
   SetupButtons();
 
-  // Update the top image.
-  image_->Update();
-
-  // Update the side icon by changing its image color, adding a background and
-  // removing the spinner.
-  side_icon_image_->SetImage(gfx::CreateVectorIcon(
-      vector_icons::kBusinessIcon, kSideImageSize, kScanDoneSideImageColor));
-  side_icon_image_->SetBackground(
-      std::make_unique<CircleBackground>(GetSideImageBackgroundColor()));
-  side_icon_spinner_->parent()->RemoveChildView(side_icon_spinner_);
-  delete side_icon_spinner_;
-
-  // Update the message. Change the text color only if the scan was negative.
-  if (is_failure())
-    message_->SetEnabledColor(kScanFailureColor);
+  // Update the message's text.
   message_->SetText(GetDialogMessage());
 
   // Resize the dialog's height. This is needed since the button might be
@@ -209,7 +258,7 @@ void DeepScanningDialogViews::UpdateDialog() {
 
   // Update the dialog.
   DialogDelegate::DialogModelChanged();
-  widget_->ScheduleLayout();
+  widget->ScheduleLayout();
 
   // Schedule the dialog to close itself in the success case.
   if (is_success()) {
@@ -223,8 +272,10 @@ void DeepScanningDialogViews::UpdateDialog() {
 void DeepScanningDialogViews::Resize(int height_to_add) {
   // Only resize if the dialog is updated to show a result.
   DCHECK(is_result());
+  views::Widget* widget = GetWidget();
+  DCHECK(widget);
 
-  gfx::Rect dialog_rect = widget_->GetContentsView()->GetContentsBounds();
+  gfx::Rect dialog_rect = widget->GetContentsView()->GetContentsBounds();
   int new_height = dialog_rect.height();
 
   // Remove the button row's height if it's removed in the success case.
@@ -243,12 +294,12 @@ void DeepScanningDialogViews::Resize(int height_to_add) {
 
   // Setup the animation.
   bounds_animator_ =
-      std::make_unique<views::BoundsAnimator>(widget_->GetRootView());
+      std::make_unique<views::BoundsAnimator>(widget->GetRootView());
   bounds_animator_->SetAnimationDuration(kResizeAnimationDuration);
 
-  DCHECK(widget_->GetRootView());
-  DCHECK_EQ(widget_->GetRootView()->children().size(), 1ul);
-  views::View* view_to_resize = widget_->GetRootView()->children()[0];
+  DCHECK(widget->GetRootView());
+  DCHECK_EQ(widget->GetRootView()->children().size(), 1u);
+  views::View* view_to_resize = widget->GetRootView()->children()[0];
 
   // Start the animation.
   bounds_animator_->AnimateViewTo(view_to_resize, dialog_rect);
@@ -256,7 +307,7 @@ void DeepScanningDialogViews::Resize(int height_to_add) {
   // Change the widget's size.
   gfx::Size new_size = view_to_resize->size();
   new_size.set_height(new_height);
-  widget_->SetSize(new_size);
+  widget->SetSize(new_size);
 }
 
 void DeepScanningDialogViews::SetupButtons() {
@@ -300,6 +351,7 @@ base::string16 DeepScanningDialogViews::GetCancelButtonText() const {
 
 void DeepScanningDialogViews::Show() {
   DCHECK(!shown_);
+  DCHECK(is_pending() || is_failure());
   shown_ = true;
   first_shown_timestamp_ = base::TimeTicks::Now();
 
@@ -342,7 +394,9 @@ void DeepScanningDialogViews::Show() {
   icon_and_message_row->AddChildView(CreateSideIcon());
 
   // Add the message.
-  auto label = std::make_unique<views::Label>(GetDialogMessage());
+  auto label = std::make_unique<DeepScanningMessageView>(this);
+  label->SetText(GetDialogMessage());
+  label->SetLineHeight(kLineHeight);
   label->SetMultiLine(true);
   label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -353,7 +407,7 @@ void DeepScanningDialogViews::Show() {
   // Add padding to distance the message from the button(s).
   layout->AddPaddingRow(views::GridLayout::kFixedSize, 10);
 
-  widget_ = constrained_window::ShowWebModalDialogViews(this, web_contents_);
+  constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
 
 std::unique_ptr<views::View> DeepScanningDialogViews::CreateSideIcon() {
@@ -367,21 +421,17 @@ std::unique_ptr<views::View> DeepScanningDialogViews::CreateSideIcon() {
   auto icon = std::make_unique<views::View>();
   icon->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  auto side_image = std::make_unique<views::ImageView>();
+  auto side_image = std::make_unique<DeepScanningSideIconImageView>(this);
   side_image->SetImage(gfx::CreateVectorIcon(
-      vector_icons::kBusinessIcon, kSideImageSize,
-      is_result() ? kScanDoneSideImageColor : kScanPendingSideImageColor));
+      gfx::IconDescription(vector_icons::kBusinessIcon, kSideImageSize)));
   side_image->SetBorder(views::CreateEmptyBorder(kSideImageInsets));
   side_icon_image_ = icon->AddChildView(std::move(side_image));
 
-  // Add a spinner if the scan result is pending, otherwise add a background.
+  // Add a spinner if the scan result is pending.
   if (is_pending()) {
-    auto spinner = std::make_unique<views::Throbber>();
+    auto spinner = std::make_unique<DeepScanningSideIconSpinnerView>(this);
     spinner->Start();
     side_icon_spinner_ = icon->AddChildView(std::move(spinner));
-  } else {
-    side_icon_image_->SetBackground(
-        std::make_unique<CircleBackground>(GetSideImageBackgroundColor()));
   }
 
   return icon;
@@ -389,7 +439,12 @@ std::unique_ptr<views::View> DeepScanningDialogViews::CreateSideIcon() {
 
 SkColor DeepScanningDialogViews::GetSideImageBackgroundColor() const {
   DCHECK(is_result());
-  return is_success() ? kScanSuccessColor : kScanFailureColor;
+  const views::Widget* widget = GetWidget();
+  DCHECK(widget);
+  ui::NativeTheme::ColorId color_id =
+      is_success() ? ui::NativeTheme::kColorId_AlertSeverityLow
+                   : ui::NativeTheme::kColorId_AlertSeverityHigh;
+  return widget->GetNativeTheme()->GetSystemColor(color_id);
 }
 
 int DeepScanningDialogViews::GetPasteImageId(bool use_dark) const {
@@ -445,8 +500,7 @@ int DeepScanningDialogViews::GetFailureMessageId() const {
 }
 
 const gfx::ImageSkia* DeepScanningDialogViews::GetTopImage() const {
-  const bool use_dark =
-      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
+  const bool use_dark = color_utils::IsDark(GetBackgroundColor(GetWidget()));
   const bool treat_as_text_paste =
       access_point_ == DeepScanAccessPoint::PASTE ||
       (access_point_ == DeepScanAccessPoint::DRAG_AND_DROP && !is_file_scan_);
@@ -455,6 +509,22 @@ const gfx::ImageSkia* DeepScanningDialogViews::GetTopImage() const {
                                      : GetUploadImageId(use_dark);
 
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id);
+}
+
+SkColor DeepScanningDialogViews::GetSideImageLogoColor() const {
+  const views::Widget* widget = GetWidget();
+  DCHECK(widget);
+  switch (dialog_status_) {
+    case DeepScanningDialogStatus::PENDING:
+      // Match the spinner in the pending state.
+      return widget->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
+    case DeepScanningDialogStatus::SUCCESS:
+    case DeepScanningDialogStatus::FAILURE:
+      // In a result state the background will have the result's color, so the
+      // logo should have the same color as the background.
+      return GetBackgroundColor(widget);
+  }
 }
 
 }  // namespace safe_browsing

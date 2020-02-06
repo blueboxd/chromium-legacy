@@ -987,6 +987,11 @@
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module",
     "type": "raw",
   },
+  "ios_crash_xcuitests_module": {
+    "args": [],
+    "label": "//third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module",
+    "type": "raw",
+  },
   "ios_web_shell_eg2tests_module": {
     "args": [],
     "label": "//ios/web/shell/test:ios_web_shell_eg2tests_module",

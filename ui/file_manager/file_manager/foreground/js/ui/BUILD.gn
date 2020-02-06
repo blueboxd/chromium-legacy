@@ -124,8 +124,8 @@ js_library("banners") {
 js_library("combobutton") {
   deps = [
     ":files_menu",
+    ":multi_menu",
     "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
-    "//ui/webui/resources/js/cr/ui:menu_button",
   ]
   externs_list = [ "//ui/file_manager/externs/paper_elements.js" ]
 }

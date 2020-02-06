@@ -77,14 +77,6 @@ ScriptPromise NDEFWriter::write(ScriptState* script_state,
   auto message = device::mojom::blink::NDEFMessage::From(ndef_message);
   DCHECK(message);
 
-  if (GetNDEFMessageSize(*message) >
-      device::mojom::blink::NDEFMessage::kMaxSize) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "NDEFMessage exceeds maximum supported size.");
-    return ScriptPromise();
-  }
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   InitNfcProxyIfNeeded();

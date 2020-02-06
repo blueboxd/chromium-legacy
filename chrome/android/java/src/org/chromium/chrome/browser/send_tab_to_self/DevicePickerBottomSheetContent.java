@@ -40,7 +40,7 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
             Context context, NavigationEntry entry, BottomSheetController controller) {
         mContext = context;
         mController = controller;
-        mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+        mProfile = Profile.getLastUsedRegularProfile();
         mAdapter = new DevicePickerBottomSheetAdapter(mProfile);
         mEntry = entry;
 

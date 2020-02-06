@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/instance_id.h"
@@ -128,7 +129,8 @@ ExtensionFunction::ResponseAction InstanceIDGetTokenFunction::DoWork() {
 
   GetInstanceID()->GetToken(
       params->get_token_params.authorized_entity,
-      params->get_token_params.scope, options,
+      params->get_token_params.scope, /*time_to_live=*/base::TimeDelta(),
+      options,
       /*flags=*/{},
       base::Bind(&InstanceIDGetTokenFunction::GetTokenCompleted, this));
 

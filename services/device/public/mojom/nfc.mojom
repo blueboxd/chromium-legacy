@@ -82,12 +82,18 @@ struct NDEFRecord {
   NDEFMessage? payload_message;
 };
 
+// Mojo has a maximum size limit usually in megabytes for messages sent/received
+// via message pipes, possibly like 256M or 128M.
+//
+// On the reading direction, the NDEFMessage is read from an NFC tag which can
+// never have so large storage, so we'll never exceed the size limit above.
+//
+// On the writing direction, if the NDEFMessage input from users exceeds the
+// limit, Mojo will raise a crash for the sender process, which is specifically
+// the renderer process for our WebNFC impl.
 struct NDEFMessage {
   // The body of the NDEFMessage is a collection of NDEFRecord objects.
   array<NDEFRecord> data;
-
-  // Maximum size of NFC message that can be sent over IPC is 32KB.
-  const uint32 kMaxSize = 32768;
 };
 
 struct NDEFWriteOptions {

@@ -229,6 +229,7 @@ bool GetAccessibilityInfo(
                             &page_objects->images);
   GetAccessibilityHighlightInfo(engine, page_index, *text_runs,
                                 &page_objects->highlights);
+  // TODO(crbug.com/1030242): Populate text fields.
   return true;
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -285,8 +286,8 @@ void ColorChooserView::SaturationValueView::ProcessEventAtLocation(
   SkScalar scalar_size = SkIntToScalar(kSaturationValueSize - 1);
   SkScalar saturation = (point.x() - kBorderWidth) / scalar_size;
   SkScalar value = SK_Scalar1 - (point.y() - kBorderWidth) / scalar_size;
-  saturation = SkScalarPin(saturation, 0, SK_Scalar1);
-  value = SkScalarPin(value, 0, SK_Scalar1);
+  saturation = base::ClampToRange(saturation, 0.0f, SK_Scalar1);
+  value = base::ClampToRange(value, 0.0f, SK_Scalar1);
   OnSaturationValueChanged(saturation, value);
   chooser_view_->OnSaturationValueChosen(saturation, value);
 }

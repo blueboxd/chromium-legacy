@@ -930,8 +930,7 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSecureDnsTests', function() {
   mocha.run();
 });
 
-// TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
-TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_UMALoggingTests', function() {
+TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
   settings_privacy_page.registerUMALoggingTests();
   mocha.run();
 });

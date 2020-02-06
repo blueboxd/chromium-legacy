@@ -180,7 +180,7 @@ public final class BrowsingDataBridge {
      *         which is the currently active regular profile.
      */
     private static Profile getProfile() {
-        return Profile.getLastUsedProfile().getOriginalProfile();
+        return Profile.getLastUsedRegularProfile();
     }
 
     /**

@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 
 @protocol ActivityServicePositioner;
+@class CommandDispatcher;
 @protocol OmniboxPopupPresenterDelegate;
 @protocol ToolbarCoordinatorDelegate;
 
@@ -24,6 +25,9 @@
 // Defines where the omnibox popup will be positioned.
 @property(nonatomic, weak) id<OmniboxPopupPresenterDelegate>
     popupPresenterDelegate;
+
+// Command dispatcher.
+@property(nonatomic, strong) CommandDispatcher* commandDispatcher;
 
 // Positioner for activity services attached to the toolbar
 - (id<ActivityServicePositioner>)activityServicePositioner;

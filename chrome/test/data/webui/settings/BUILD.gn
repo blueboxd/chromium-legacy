@@ -9,6 +9,7 @@ js_modulizer("modulize") {
     "checkbox_tests.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",
+    "default_browser_browsertest.js",
     "dropdown_menu_tests.js",
     "extension_controlled_indicator_tests.js",
     "pref_util_tests.js",
@@ -24,6 +25,7 @@ js_modulizer("modulize") {
     "test_util.js",
   ]
   namespace_rewrites = [
+    "settings.DefaultBrowserBrowserProxyImpl|DefaultBrowserBrowserProxyImpl",
     "settings.ExtensionControlBrowserProxyImpl|ExtensionControlBrowserProxyImpl",
     "settings.Route|Route",
     "settings.routes|routes",

@@ -44,9 +44,6 @@
 #include "services/network/public/mojom/websocket.mojom-forward.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/badging/badging.mojom-forward.h"
-#include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-forward.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -83,10 +80,13 @@ class SequencedTaskRunner;
 
 namespace blink {
 namespace mojom {
+class BadgeService;
+class CredentialManager;
 class RendererPreferences;
 class RendererPreferenceWatcher;
 class WebUsbService;
 class WindowFeatures;
+enum class WebFeature : int32_t;
 }  // namespace mojom
 class AssociatedInterfaceRegistry;
 class URLLoaderThrottle;

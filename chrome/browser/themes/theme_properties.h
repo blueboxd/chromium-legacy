@@ -96,10 +96,6 @@ class ThemeProperties {
     // contents.
     COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR,
 
-    // The color of a toolbar button's icon when it is being hovered or pressed.
-    COLOR_TOOLBAR_BUTTON_ICON_HOVERED,
-    COLOR_TOOLBAR_BUTTON_ICON_PRESSED,
-
     // The color of a disabled toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
 

@@ -345,7 +345,7 @@ TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      context()->registry()->CreateNewRegistration(options);
+      CreateNewServiceWorkerRegistration(context()->registry(), options);
   scoped_refptr<ServiceWorkerVersion> version_1 =
       context()->registry()->CreateNewVersion(
           registration.get(), kScript, blink::mojom::ScriptType::kClassic);
@@ -391,7 +391,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = kScope;
-    registration_ = context()->registry()->CreateNewRegistration(options);
+    registration_ =
+        CreateNewServiceWorkerRegistration(context()->registry(), options);
 
     // Create an active version.
     scoped_refptr<ServiceWorkerVersion> version_1 =
@@ -880,7 +881,7 @@ class ServiceWorkerRegistrationObjectHostTest
       const GURL& scope) {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    return context()->registry()->CreateNewRegistration(options);
+    return CreateNewServiceWorkerRegistration(context()->registry(), options);
   }
 
   scoped_refptr<ServiceWorkerVersion> CreateVersion(

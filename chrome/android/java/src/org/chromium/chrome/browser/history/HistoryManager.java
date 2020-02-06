@@ -156,7 +156,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 R.string.history_manager_empty, R.string.history_manager_no_results);
 
         // 6. Create large icon bridge.
-        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
+        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedRegularProfile());
         ActivityManager activityManager = ((ActivityManager) ContextUtils
                 .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
         int maxSize = Math.min(

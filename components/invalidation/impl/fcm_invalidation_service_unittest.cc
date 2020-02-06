@@ -93,9 +93,10 @@ class MockInstanceID : public InstanceID {
 
   MOCK_METHOD1(GetID, void(GetIDCallback callback));
   MOCK_METHOD1(GetCreationTime, void(GetCreationTimeCallback callback));
-  MOCK_METHOD5(GetToken,
+  MOCK_METHOD6(GetToken,
                void(const std::string& authorized_entity,
                     const std::string& scope,
+                    base::TimeDelta time_to_live,
                     const std::map<std::string, std::string>& options,
                     std::set<Flags> flags,
                     GetTokenCallback callback));

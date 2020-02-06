@@ -26,7 +26,10 @@ class ScriptValue;
 // The type names below are named as "IDL" prefix + Web IDL type name.
 // https://heycam.github.io/webidl/#dfn-type-name
 
-// Boolean
+// any
+struct IDLAny final : public IDLBaseHelper<ScriptValue> {};
+
+// boolean
 struct IDLBoolean final : public IDLBaseHelper<bool> {};
 
 // Integer types
@@ -92,11 +95,11 @@ using IDLLongLongEnforceRange =
 using IDLUnsignedLongLongEnforceRange =
     IDLIntegerTypeBase<uint64_t, bindings::IDLIntegerConvMode::kEnforceRange>;
 
-// Float
+// float
 struct IDLFloat final : public IDLBaseHelper<float> {};
 struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
 
-// Double
+// double
 struct IDLDouble final : public IDLBaseHelper<double> {};
 struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
 
@@ -161,10 +164,10 @@ using IDLUSVStringV2 =
 // object
 struct IDLObject final : public IDLBaseHelper<ScriptValue> {};
 
-// Promise
+// Promise types
 struct IDLPromise final : public IDLBaseHelper<ScriptPromise> {};
 
-// Sequence
+// Sequence types
 template <typename T>
 struct IDLSequence final : public IDLBase {
   using ImplType =
@@ -175,7 +178,7 @@ struct IDLSequence final : public IDLBase {
 template <typename T>
 using IDLArray = IDLSequence<T>;
 
-// Record
+// Record types
 template <typename Key, typename Value>
 struct IDLRecord final : public IDLBase {
   static_assert(std::is_same<typename Key::ImplType, String>::value,
@@ -189,7 +192,7 @@ struct IDLRecord final : public IDLBase {
       std::remove_pointer_t<typename NativeValueTraits<Value>::ImplType>>;
 };
 
-// Nullable
+// Nullable types
 template <typename InnerType>
 struct IDLNullable final : public IDLBase {
   using ImplType = std::conditional_t<

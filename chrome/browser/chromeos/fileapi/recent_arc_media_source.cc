@@ -25,6 +25,7 @@
 #include "components/arc/mojom/file_system.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -44,11 +45,11 @@ const char* kMediaDocumentsProviderRootIds[] = {
 };
 
 base::FilePath GetRelativeMountPath(const std::string& root_id) {
-  base::FilePath mount_path = arc::GetDocumentsProviderMountPath(
-      kMediaDocumentsProviderAuthority,
-      // In MediaDocumentsProvider, |root_id| and |root_document_id| are
-      // the same.
-      root_id);
+  base::FilePath mount_path =
+      arc::GetDocumentsProviderMountPath(kMediaDocumentsProviderAuthority,
+                                         // In MediaDocumentsProvider, |root_id|
+                                         // and |root_document_id| are the same.
+                                         root_id);
   base::FilePath relative_mount_path;
   base::FilePath(arc::kDocumentsProviderMountPointPath)
       .AppendRelativePath(mount_path, &relative_mount_path);
@@ -284,8 +285,8 @@ RecentArcMediaSource::MediaRoot::BuildDocumentsProviderUrl(
       storage::ExternalMountPoints::GetSystemInstance();
 
   return mount_points->CreateExternalFileSystemURL(
-      params_.value().origin(), arc::kDocumentsProviderMountPointName,
-      relative_mount_path_.Append(path));
+      url::Origin::Create(params_.value().origin()),
+      arc::kDocumentsProviderMountPointName, relative_mount_path_.Append(path));
 }
 
 bool RecentArcMediaSource::MediaRoot::MatchesFileType(

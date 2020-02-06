@@ -45,6 +45,7 @@ class InstanceIDAndroid : public InstanceID {
   void GetCreationTime(GetCreationTimeCallback callback) override;
   void GetToken(const std::string& audience,
                 const std::string& scope,
+                base::TimeDelta time_to_live,
                 const std::map<std::string, std::string>& options,
                 std::set<Flags> flags,
                 GetTokenCallback callback) override;

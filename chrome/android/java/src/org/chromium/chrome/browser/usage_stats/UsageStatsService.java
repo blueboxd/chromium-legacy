@@ -62,7 +62,7 @@ public class UsageStatsService {
 
     @VisibleForTesting
     UsageStatsService() {
-        Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
         mBridge = new UsageStatsBridge(profile, this);
         mEventTracker = new EventTracker(mBridge);
         mNotificationSuspender = new NotificationSuspender(profile);

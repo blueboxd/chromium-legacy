@@ -14,7 +14,7 @@ namespace schema_org {
 namespace entity {
 
 {% for entity in entities %}
-extern const char k{{entity}}[];
+extern const char k{{entity[0]|upper}}{{entity[1:]}}[];
 {% endfor %}
 
 }  // namespace entity

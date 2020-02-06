@@ -23,6 +23,7 @@ class SingleThreadTaskRunner;
 
 namespace cc {
 class LayerTreeFrameSink;
+class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
 }  // namespace cc
@@ -61,17 +62,14 @@ class CONTENT_EXPORT CompositorDependencies {
   virtual std::unique_ptr<cc::UkmRecorderFactory>
   CreateUkmRecorderFactory() = 0;
 
-  using LayerTreeFrameSinkCallback =
-      base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
+  using LayerTreeFrameSinkCallback = base::OnceCallback<void(
+      std::unique_ptr<cc::LayerTreeFrameSink>,
+      std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
   virtual void RequestNewLayerTreeFrameSink(
       RenderWidget* render_widget,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
-      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
-          render_frame_metadata_observer_client_receiver,
-      mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
-          render_frame_metadata_observer_remote,
       const char* client_name) = 0;
 
 #ifdef OS_ANDROID

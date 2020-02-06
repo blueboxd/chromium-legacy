@@ -44,8 +44,8 @@ static void JNI_EarlyTraceEvent_RecordEarlyStartAsyncEvent(
   std::string name = ConvertJavaStringToUTF8(env, jname);
   int64_t timestamp_us = timestamp_ns / 1000;
 
-  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP_AND_FLAGS0(
-      kEarlyJavaCategory, name.c_str(), id,
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP_AND_FLAGS0(
+      kEarlyJavaCategory, name.c_str(), TRACE_ID_LOCAL(id),
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(timestamp_us),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }
@@ -58,8 +58,8 @@ static void JNI_EarlyTraceEvent_RecordEarlyFinishAsyncEvent(
   std::string name = ConvertJavaStringToUTF8(env, jname);
   int64_t timestamp_us = timestamp_ns / 1000;
 
-  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP_AND_FLAGS0(
-      kEarlyJavaCategory, name.c_str(), id,
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP_AND_FLAGS0(
+      kEarlyJavaCategory, name.c_str(), TRACE_ID_LOCAL(id),
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(timestamp_us),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }

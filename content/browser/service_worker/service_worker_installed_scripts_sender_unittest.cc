@@ -93,8 +93,8 @@ class ExpectedScriptInfo {
 
   ServiceWorkerDatabase::ResourceRecord WriteToDiskCache(
       ServiceWorkerStorage* storage) const {
-    return ::content::WriteToDiskCacheSync(storage, script_url_, resource_id_,
-                                           headers_, body_, meta_data_);
+    return ::content::WriteToDiskCacheWithIdSync(
+        storage, script_url_, resource_id_, headers_, body_, meta_data_);
   }
 
   void CheckIfIdentical(

@@ -579,6 +579,30 @@ void FeatureInfo::InitializeFeatures() {
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
   }
 
+  bool have_bptc =
+      gfx::HasExtension(extensions, "GL_EXT_texture_compression_bptc") ||
+      gl_version_info_->IsAtLeastGL(4, 2);
+  if (have_bptc) {
+    feature_flags_.ext_texture_compression_bptc = true;
+    AddExtensionString("GL_EXT_texture_compression_bptc");
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGBA_BPTC_UNORM_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_RGBA_BPTC_UNORM_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT);
+  }
+
   bool have_astc =
       gfx::HasExtension(extensions, "GL_KHR_texture_compression_astc_ldr");
   if (have_astc) {

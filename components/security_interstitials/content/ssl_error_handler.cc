@@ -347,7 +347,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
       int options_mask,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      CaptivePortalService* captive_portal_service,
+      captive_portal::CaptivePortalService* captive_portal_service,
       std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
       SSLErrorHandler::OnBlockingPageShownCallback
           on_blocking_page_shown_callback,
@@ -407,7 +407,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService* captive_portal_service_;
+  captive_portal::CaptivePortalService* captive_portal_service_;
 #endif
   std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory_;
   SSLErrorHandler::OnBlockingPageShownCallback on_blocking_page_shown_callback_;
@@ -565,7 +565,7 @@ void SSLErrorHandler::HandleSSLError(
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback,
     network_time::NetworkTimeTracker* network_time_tracker,
-    CaptivePortalService* captive_portal_service,
+    captive_portal::CaptivePortalService* captive_portal_service,
     std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
     bool user_can_proceed_past_interstitial /*=true*/) {
   DCHECK(!FromWebContents(web_contents));
@@ -658,7 +658,7 @@ SSLErrorHandler::SSLErrorHandler(
     int cert_error,
     const net::SSLInfo& ssl_info,
     network_time::NetworkTimeTracker* network_time_tracker,
-    CaptivePortalService* captive_portal_service,
+    captive_portal::CaptivePortalService* captive_portal_service,
     const GURL& request_url)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
@@ -790,8 +790,8 @@ void SSLErrorHandler::StartHandlingError() {
   subscription_ = captive_portal_service_->RegisterCallback(
       base::Bind(&SSLErrorHandler::Observe, base::Unretained(this)));
 
-  CaptivePortalTabHelper* captive_portal_tab_helper =
-      CaptivePortalTabHelper::FromWebContents(web_contents_);
+  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+      captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents_);
   if (captive_portal_tab_helper) {
     captive_portal_tab_helper->OnSSLCertError(ssl_info_);
   }
@@ -908,7 +908,8 @@ void SSLErrorHandler::CommonNameMismatchHandlerCallback(
   }
 }
 
-void SSLErrorHandler::Observe(const CaptivePortalService::Results& results) {
+void SSLErrorHandler::Observe(
+    const captive_portal::CaptivePortalService::Results& results) {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   timer_.Stop();
   if (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)

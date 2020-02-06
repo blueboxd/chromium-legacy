@@ -25,7 +25,7 @@ struct VideoMemoryUsageStats;
 
 namespace content {
 enum GpuProcessKind {
-  GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
+  GPU_PROCESS_KIND_INFO_COLLECTION,  // Unsandboxed, no init GL bindings.
   GPU_PROCESS_KIND_SANDBOXED,
   GPU_PROCESS_KIND_COUNT
 };

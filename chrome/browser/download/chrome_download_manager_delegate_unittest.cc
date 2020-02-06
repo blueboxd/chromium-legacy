@@ -24,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -39,6 +40,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/prefs/pref_service.h"
@@ -1189,6 +1192,62 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Block) {
       InsecureDownloadExtensions::kUnknown,
       download::DOWNLOAD_INTERRUPT_REASON_NONE,
       download::DownloadItem::MixedContentStatus::BLOCK);
+}
+
+// TODO(crbug.com/1048957): Checking content settings crashes unit tests on
+// Android. It shouldn't.
+#if defined(OS_ANDROID)
+#define MAYBE_BlockedAsActiveContent_PolicyOverride \
+  DISABLED_BlockedAsActiveContent_PolicyOverride
+#else
+#define MAYBE_BlockedAsActiveContent_PolicyOverride \
+  BlockedAsActiveContent_PolicyOverride
+#endif
+TEST_F(ChromeDownloadManagerDelegateTest,
+       MAYBE_BlockedAsActiveContent_PolicyOverride) {
+  // Verifies that active mixed content download blocking is overridden by the
+  // "Insecure content" site setting.
+  const GURL kInsecureWarnableFile("http://example.com/foo.warn_for_testing");
+  const GURL kInsecureBlockableFile("http://example.com/foo.exe");
+  const GURL kInsecureSilentlyBlockableFile(
+      "http://example.com/foo.silently_blocked_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  std::unique_ptr<download::MockDownloadItem> warned_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureWarnableFile, kSecureOrigin,
+                                         base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> blocked_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureBlockableFile, kSecureOrigin,
+                                         base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> silent_blocked_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureSilentlyBlockableFile,
+                                         kSecureOrigin, base::nullopt);
+
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetContentSettingDefaultScope(kSecureOrigin.GetURL(), GURL(),
+                                      ContentSettingsType::MIXEDSCRIPT,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  VerifyMixedContentExtensionOverride(
+      warned_download_item.get(), {{}}, InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{}},
+      InsecureDownloadExtensions::kMSExecutable,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+  VerifyMixedContentExtensionOverride(
+      silent_blocked_download_item.get(), {{}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {

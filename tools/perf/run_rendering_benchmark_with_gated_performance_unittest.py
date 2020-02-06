@@ -27,7 +27,8 @@ UPPER_LIMIT_DATA_SAMPLE = {
     },
     'story_4': {
         'ci_095': 10,
-        'avg': 10
+        'avg': 10,
+        'control': True,
     },
     'story_5': {
         'ci_095': 20,
@@ -132,6 +133,8 @@ class TestRepresentativePerfScript(unittest.TestCase):
         result_recorder)
     self.assertEquals(result_recorder.tests, 2)
     self.assertEquals(result_recorder.failed_stories, set(['story_2']))
+    (_, overall_return_code) = result_recorder.get_output(0)
+    self.assertEquals(overall_return_code, 1)
 
   def test_compare_values_2(self):
     values_per_story = {
@@ -141,7 +144,7 @@ class TestRepresentativePerfScript(unittest.TestCase):
       },
       'story_3': { # Two of the runs have acceptable CI but high averages.
         'averages': [10, 13],
-        'ci_095': [1.0, 1.4, 1.2],
+        'ci_095': [14, 16, 12]
       },
       'story_4': {  # All runs have high noise.
         'averages': [],
@@ -167,3 +170,6 @@ class TestRepresentativePerfScript(unittest.TestCase):
     self.assertEquals(result_recorder.tests, 5)
     self.assertEquals(result_recorder.failed_stories,
                       set(['story_3', 'story_4', 'story_5']))
+    self.assertTrue(result_recorder.is_control_stories_noisy)
+    (_, overall_return_code) = result_recorder.get_output(0)
+    self.assertEquals(overall_return_code, 0)

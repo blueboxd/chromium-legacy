@@ -48,6 +48,13 @@ class ProtocolParser {
       std::string version;
       std::string browser_min_version;
       std::vector<Package> packages;
+
+      // A path within the CRX archive to an executable to run as part of the
+      // update. The executable is typically an application installer.
+      std::string run;
+
+      // Command-line arguments for the binary specified by |run|.
+      std::string arguments;
     };
 
     Result();
@@ -76,7 +83,8 @@ class ProtocolParser {
     static const char kCohortName[];
 
     // Contains the run action returned by the server as part of an update
-    // check response.
+    // check response. This indicates the need to trigger the execution of
+    // something bound to a component which is already installed.
     std::string action_run;
   };
 

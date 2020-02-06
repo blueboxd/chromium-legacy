@@ -19,7 +19,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
+import org.chromium.chrome.browser.ntp.NewTabPageLayout.SearchBoxContainerView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 
@@ -29,7 +31,7 @@ class TasksView extends CoordinatorLayoutForPointer {
     private FrameLayout mBodyViewContainer;
     private FrameLayout mCarouselTabSwitcherContainer;
     private AppBarLayout mHeaderView;
-    private View mSearchBox;
+    private SearchBoxContainerView mSearchBoxContainerView;
     private TextView mSearchBoxText;
     private IncognitoDescriptionView mIncognitoDescriptionView;
     private View.OnClickListener mIncognitoDescriptionLearnMoreListener;
@@ -40,18 +42,25 @@ class TasksView extends CoordinatorLayoutForPointer {
         mContext = context;
     }
 
+    public void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+        assert mSearchBoxContainerView
+                != null : "#onFinishInflate should be completed before the call to initialize.";
+
+        mSearchBoxContainerView.initialize(activityLifecycleDispatcher);
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
         mCarouselTabSwitcherContainer =
                 (FrameLayout) findViewById(R.id.carousel_tab_switcher_container);
-        mSearchBox = findViewById(R.id.search_box);
+        mSearchBoxContainerView = findViewById(R.id.search_box);
         mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
         AppBarLayout.LayoutParams layoutParams =
-                (AppBarLayout.LayoutParams) mSearchBox.getLayoutParams();
+                (AppBarLayout.LayoutParams) mSearchBoxContainerView.getLayoutParams();
         layoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
-        mSearchBoxText = (TextView) mSearchBox.findViewById(R.id.search_box_text);
+        mSearchBoxText = (TextView) mSearchBoxContainerView.findViewById(R.id.search_box_text);
     }
 
     ViewGroup getCarouselTabSwitcherContainer() {
@@ -92,7 +101,7 @@ class TasksView extends CoordinatorLayoutForPointer {
      * @param isVisible Whether it's visible.
      */
     void setFakeSearchBoxVisibility(boolean isVisible) {
-        mSearchBox.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        mSearchBoxContainerView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -134,7 +143,7 @@ class TasksView extends CoordinatorLayoutForPointer {
         int backgroundColor = ChromeColors.getPrimaryBackgroundColor(resources, isIncognito);
         setBackgroundColor(backgroundColor);
         mHeaderView.setBackgroundColor(backgroundColor);
-        mSearchBox.setBackgroundResource(
+        mSearchBoxContainerView.setBackgroundResource(
                 isIncognito ? R.drawable.fake_search_box_bg_incognito : R.drawable.ntp_search_box);
         int hintTextColor = isIncognito
                 ? ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text)

@@ -47,12 +47,12 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
     return message;
   }
 
-  bool IsOriginAllowed(const std::string& image_url,
-                       const std::string& param_value) {
+  bool IsImageSourceAllowed(const std::string& image_url,
+                            const std::string& param_value) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
         kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, param_value}});
-    return message_handler_->IsOriginAllowed(GURL(image_url));
+    return message_handler_->IsImageSourceAllowed(GURL(image_url));
   }
 
  protected:
@@ -90,15 +90,21 @@ TEST_F(RemoteCopyMessageHandlerTest, NotificationWithDeviceName) {
       kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
 }
 
-TEST_F(RemoteCopyMessageHandlerTest, IsOriginAllowed) {
+TEST_F(RemoteCopyMessageHandlerTest, IsImageSourceAllowed) {
   std::string image_url = "https://foo.com/image.png";
   std::string image_url_with_subdomain = "https://www.foo.com/image.png";
-  std::string image_origin = "https://foo.com";
-  EXPECT_TRUE(IsOriginAllowed(image_url, image_origin));
-  EXPECT_FALSE(IsOriginAllowed(image_url_with_subdomain, image_origin));
-  EXPECT_FALSE(IsOriginAllowed(image_url, ""));
-  EXPECT_FALSE(IsOriginAllowed(image_url, "foo][#';/.,"));
-  EXPECT_FALSE(IsOriginAllowed(image_url, "https://bar.com"));
-  EXPECT_TRUE(IsOriginAllowed(image_url, image_origin + ",https://bar.com"));
-  EXPECT_TRUE(IsOriginAllowed(image_url, "https://bar.com," + image_origin));
+  EXPECT_TRUE(IsImageSourceAllowed(image_url, "https://foo.com"));
+  EXPECT_TRUE(
+      IsImageSourceAllowed(image_url_with_subdomain, "https://foo.com"));
+  EXPECT_FALSE(IsImageSourceAllowed(image_url, ""));
+  EXPECT_FALSE(IsImageSourceAllowed(image_url, "foo][#';/.,"));
+  EXPECT_FALSE(IsImageSourceAllowed(image_url, "https://bar.com"));
+  EXPECT_FALSE(IsImageSourceAllowed(image_url,
+                                    "https://foo.com:80"));  // not default port
+  EXPECT_TRUE(
+      IsImageSourceAllowed(image_url, "https://foo.com:443"));  // default port
+  EXPECT_TRUE(
+      IsImageSourceAllowed(image_url, "https://foo.com,https://bar.com"));
+  EXPECT_TRUE(
+      IsImageSourceAllowed(image_url, "https://bar.com,https://foo.com"));
 }

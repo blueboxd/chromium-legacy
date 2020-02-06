@@ -42,3 +42,11 @@ export class TabGroupElement extends CustomElement {
 }
 
 customElements.define('tabstrip-tab-group', TabGroupElement);
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export function isTabGroupElement(element) {
+  return element.tagName === 'TABSTRIP-TAB-GROUP';
+}

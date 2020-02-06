@@ -1147,6 +1147,15 @@ class AutofillMetrics {
   static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
                                                      bool fido_auth_enabled);
 
+  // Logs the duration of any user-perceived latency between selecting a Google
+  // Payments server card and seeing a card unmask prompt (CVC or FIDO).
+  static void LogUserPerceivedLatencyOnCardSelectionDuration(
+      const base::TimeDelta duration);
+
+  // Logs whether or not the verifying pending dialog timed out between
+  // selecting a Google Payments server card and seeing a card unmask prompt.
+  static void LogUserPerceivedLatencyOnCardSelectionTimedOut(bool did_time_out);
+
   // Logs the duration of WebAuthn's
   // IsUserVerifiablePlatformAuthenticatorAvailable() call. It is supposedly an
   // extremely quick IPC.

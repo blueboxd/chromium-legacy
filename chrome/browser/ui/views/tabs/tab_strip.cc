@@ -2726,6 +2726,11 @@ const Tab* TabStrip::GetLastVisibleTab() const {
 int TabStrip::GetViewInsertionIndex(Tab* tab,
                                     base::Optional<int> from_model_index,
                                     int to_model_index) const {
+  // -1 is treated a sentinel value to indicate a tab is newly added to the
+  // beginning of the tab strip.
+  if (to_model_index < 0)
+    return 0;
+
   // If to_model_index is beyond the end of the tab strip, then the tab is newly
   // added to the end of the tab strip. In that case we can just return the last
   // TabSlotView view index, which should be at the sum of the number of tabs

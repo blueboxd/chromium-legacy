@@ -10,6 +10,9 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
+#include "build/build_config.h"
 #include "chrome/updater/action_handler.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
@@ -23,6 +26,12 @@ namespace {
 
 // Version "0" corresponds to no installed version.
 const char kNullVersion[] = "0.0.0.0";
+
+// This task joins a process, hence .WithBaseSyncPrimitives().
+static constexpr base::TaskTraits kTaskTraitsBlockWithSyncPrimitives = {
+    base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+    base::TaskPriority::BEST_EFFORT,
+    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 // Returns the full path to the installation directory for the application
 // identified by the |app_id|.
@@ -121,7 +130,9 @@ void Installer::FindInstallOfApp() {
     base::DeleteFileRecursively(older_path);
 }
 
-Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
+Installer::Result Installer::InstallHelper(
+    const base::FilePath& unpack_path,
+    std::unique_ptr<InstallParams> install_params) {
   auto local_manifest = update_client::ReadManifest(unpack_path);
   if (!local_manifest)
     return Result(update_client::InstallError::BAD_MANIFEST);
@@ -142,11 +153,8 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
   const base::FilePath app_install_dir = GetAppInstallDir(app_id_);
   if (app_install_dir.empty())
     return Result(update_client::InstallError::NO_DIR_COMPONENT_USER);
-  if (!base::CreateDirectory(app_install_dir)) {
-    return Result(
-        static_cast<int>(update_client::InstallError::CUSTOM_ERROR_BASE) +
-        kCustomInstallErrorCreateAppInstallDirectory);
-  }
+  if (!base::CreateDirectory(app_install_dir))
+    return Result(kErrorCreateAppInstallDirectory);
 
   const auto versioned_install_dir =
       app_install_dir.AppendASCII(manifest_version.GetString());
@@ -157,6 +165,10 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
 
   VLOG(1) << "Install_path=" << versioned_install_dir.AsUTF8Unsafe();
 
+  // TODO(sorin): fix this once crbug.com/1042224 is resolved.
+  // Moving the unpacked files to install this app is just a temporary fix
+  // to make the prototype code work end to end, until app registration for
+  // updates is implemented.
   if (!base::Move(unpack_path, versioned_install_dir)) {
     PLOG(ERROR) << "Move failed.";
     base::DeleteFileRecursively(versioned_install_dir);
@@ -173,7 +185,32 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
       versioned_install_dir.AppendASCII("manifest.fingerprint"),
       &install_info_->fingerprint);
 
-  return Result(update_client::InstallError::NONE);
+  // Resolve the path to an installer file, which is included in the CRX, and
+  // specified by the |run| attribute in the manifest object of an update
+  // response.
+  if (!install_params || install_params->run.empty())
+    return Result(kErrorMissingInstallParams);
+  base::FilePath application_installer;
+  if (!GetInstalledFile(install_params->run, &application_installer))
+    return Result(kErrorMissingRunableFile);
+
+  // TODO(sorin): the installer API needs to be handled here. crbug.com/1014630.
+  const int exit_code =
+      RunApplicationInstaller(application_installer, install_params->arguments);
+  return exit_code == 0 ? Result(update_client::InstallError::NONE)
+                        : Result(kErrorApplicationInstallerFailed, exit_code);
+}
+
+void Installer::InstallWithSyncPrimitives(
+    const base::FilePath& unpack_path,
+    const std::string& public_key,
+    std::unique_ptr<InstallParams> install_params,
+    Callback callback) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+  const auto result = InstallHelper(unpack_path, std::move(install_params));
+  base::DeleteFileRecursively(unpack_path);
+  std::move(callback).Run(result);
 }
 
 void Installer::OnUpdateError(int error) {
@@ -182,14 +219,13 @@ void Installer::OnUpdateError(int error) {
 
 void Installer::Install(const base::FilePath& unpack_path,
                         const std::string& public_key,
+                        std::unique_ptr<InstallParams> install_params,
                         Callback callback) {
-  std::unique_ptr<base::DictionaryValue> manifest;
-  base::Version version;
-  base::FilePath install_path;
-
-  const auto result = InstallHelper(unpack_path);
-  base::DeleteFileRecursively(unpack_path);
-  std::move(callback).Run(result);
+  base::PostTask(
+      FROM_HERE, kTaskTraitsBlockWithSyncPrimitives,
+      base::BindOnce(&Installer::InstallWithSyncPrimitives, this, unpack_path,
+                     public_key, std::move(install_params),
+                     std::move(callback)));
 }
 
 bool Installer::GetInstalledFile(const std::string& file,
@@ -204,5 +240,13 @@ bool Installer::GetInstalledFile(const std::string& file,
 bool Installer::Uninstall() {
   return false;
 }
+
+#if !defined(OS_WIN)
+int Installer::RunApplicationInstaller(const base::FilePath& app_installer,
+                                       const std::string& arguments) {
+  NOTREACHED();
+  return -1;
+}
+#endif  // OS_WIN
 
 }  // namespace updater

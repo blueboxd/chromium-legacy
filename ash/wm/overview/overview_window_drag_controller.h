@@ -106,11 +106,6 @@ class ASH_EXPORT OverviewWindowDragController {
   aura::Window* GetRootWindowBeingDraggedIn() const;
   gfx::Rect GetWorkAreaOfDisplayBeingDraggedIn() const;
 
-  // Dragged items should not attempt to update the indicators or snap if
-  // the drag started in a snap region and has not been dragged pass the
-  // threshold.
-  bool ShouldUpdateDragIndicatorsOrSnap(const gfx::PointF& event_location);
-
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::PointF& location_in_screen) const;
 
@@ -164,10 +159,6 @@ class ASH_EXPORT OverviewWindowDragController {
 
   // True if the Virtual Desks bar is created and dragging to desks is enabled.
   const bool virtual_desks_bar_enabled_;
-
-  // False if the initial drag location was not a snap region, or if it was in
-  // a snap region but the drag has since moved out.
-  bool started_in_snap_region_ = false;
 
   // The opacity of |item_| changes if we are in drag to close mode. Store the
   // orginal opacity of |item_| and restore it to the item when we leave drag

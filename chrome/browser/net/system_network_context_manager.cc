@@ -392,23 +392,25 @@ SystemNetworkContextManager::SystemNetworkContextManager(
                                     base::Value(default_doh_templates));
 
   // If the user has explicitly enabled or disabled the DoH experiment in
-  // chrome://flags, store that choice in the user prefs so that it can be
-  // persisted after the experiment ends. Also make sure to remove the stored
-  // prefs value if the user has changed their chrome://flags selection to the
-  // default.
-  flags_ui::PrefServiceFlagsStorage flags_storage(local_state_);
-  std::set<std::string> entries = flags_storage.GetFlags();
-  if (entries.count("dns-over-https@1")) {
-    // The user has "Enabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode,
-                            chrome_browser_net::kDnsOverHttpsModeAutomatic);
-  } else if (entries.count("dns-over-https@2")) {
-    // The user has "Disabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode,
-                            chrome_browser_net::kDnsOverHttpsModeOff);
-  } else {
-    // The user has "Default" selected.
-    local_state_->ClearPref(prefs::kDnsOverHttpsMode);
+  // chrome://flags and the DoH UI setting is not visible, store that choice
+  // in the user prefs so that it can be persisted after the experiment ends.
+  // Also make sure to remove the stored prefs value if the user has changed
+  // their chrome://flags selection to the default.
+  if (!features::kDnsOverHttpsShowUiParam.Get()) {
+    flags_ui::PrefServiceFlagsStorage flags_storage(local_state_);
+    std::set<std::string> entries = flags_storage.GetFlags();
+    if (entries.count("dns-over-https@1")) {
+      // The user has "Enabled" selected.
+      local_state_->SetString(prefs::kDnsOverHttpsMode,
+                              chrome_browser_net::kDnsOverHttpsModeAutomatic);
+    } else if (entries.count("dns-over-https@2")) {
+      // The user has "Disabled" selected.
+      local_state_->SetString(prefs::kDnsOverHttpsMode,
+                              chrome_browser_net::kDnsOverHttpsModeOff);
+    } else {
+      // The user has "Default" selected.
+      local_state_->ClearPref(prefs::kDnsOverHttpsMode);
+    }
   }
 
   PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =

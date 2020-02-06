@@ -612,6 +612,16 @@ void RenderFrameProxyHost::DidFocusFrame() {
                                                  GetSiteInstance());
 }
 
+void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
+    const gfx::Rect& clip_rect,
+    const base::UnguessableToken& guid) {
+  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
+  if (!rfh->is_active())
+    return;
+  rfh->delegate()->CapturePaintPreviewOfCrossProcessSubframe(clip_rect, guid,
+                                                             rfh);
+}
+
 void RenderFrameProxyHost::OnPrintCrossProcessSubframe(const gfx::Rect& rect,
                                                        int document_cookie) {
   RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();

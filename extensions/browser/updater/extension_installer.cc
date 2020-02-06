@@ -39,9 +39,11 @@ void ExtensionInstaller::OnUpdateError(int error) {
   VLOG(1) << "OnUpdateError (" << extension_id_ << ") " << error;
 }
 
-void ExtensionInstaller::Install(const base::FilePath& unpack_path,
-                                 const std::string& public_key,
-                                 UpdateClientCallback update_client_callback) {
+void ExtensionInstaller::Install(
+    const base::FilePath& unpack_path,
+    const std::string& public_key,
+    std::unique_ptr<InstallParams> /*install_params*/,
+    UpdateClientCallback update_client_callback) {
   auto ui_thread =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
   DCHECK(ui_thread);

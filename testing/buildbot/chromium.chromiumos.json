@@ -774,7 +774,8 @@
               "pool": "chrome-cros-dut"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "shards": 2
         },
         "test_target": "//chrome/test:telemetry_perf_unittests",
         "trigger_script": {

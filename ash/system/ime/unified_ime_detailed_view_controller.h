@@ -33,6 +33,7 @@ class UnifiedIMEDetailedViewController : public DetailedViewController,
 
   // DetailedViewControllerBase:
   views::View* CreateView() override;
+  base::string16 GetAccessibleName() const override;
 
   // VirtualKeyboardObserver:
   void OnKeyboardSuppressionChanged(bool suppressed) override;

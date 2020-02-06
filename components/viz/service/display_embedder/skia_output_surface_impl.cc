@@ -596,6 +596,8 @@ void SkiaOutputSurfaceImpl::CopyOutput(
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(crbug.com/1048251): Remove after finding source of null requests.
+  CHECK(request);
   if (!request->has_result_task_runner())
     request->set_result_task_runner(base::ThreadTaskRunnerHandle::Get());
 

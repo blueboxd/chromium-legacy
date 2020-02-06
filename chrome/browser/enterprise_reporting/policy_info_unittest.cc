@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -98,12 +99,14 @@ TEST_F(PolicyInfoTest, ChromePolicy) {
 
   EXPECT_CALL(*policy_service(), GetPolicies(_));
 
-  AppendChromePolicyInfoIntoProfileReport(policy::DictionaryPolicyConversions()
-                                              .WithBrowserContext(profile())
-                                              .EnableConvertTypes(false)
-                                              .EnablePrettyPrint(false)
-                                              .ToValue(),
-                                          &profile_info);
+  auto client =
+      std::make_unique<policy::ChromePolicyConversionsClient>(profile());
+  AppendChromePolicyInfoIntoProfileReport(
+      policy::DictionaryPolicyConversions(std::move(client))
+          .EnableConvertTypes(false)
+          .EnablePrettyPrint(false)
+          .ToValue(),
+      &profile_info);
   EXPECT_EQ(2, profile_info.chrome_policies_size());
 
   auto policy1 = profile_info.chrome_policies(0);
@@ -144,9 +147,10 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
                               policy::POLICY_SOURCE_PLATFORM,
                               std::make_unique<base::Value>(3), nullptr);
   em::ChromeUserProfileInfo profile_info;
+  auto client =
+      std::make_unique<policy::ChromePolicyConversionsClient>(profile());
   AppendExtensionPolicyInfoIntoProfileReport(
-      policy::DictionaryPolicyConversions()
-          .WithBrowserContext(profile())
+      policy::DictionaryPolicyConversions(std::move(client))
           .EnableConvertTypes(false)
           .EnablePrettyPrint(false)
           .ToValue(),

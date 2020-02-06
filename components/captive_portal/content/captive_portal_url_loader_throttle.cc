@@ -6,6 +6,8 @@
 
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 
+namespace captive_portal {
+
 CaptivePortalURLLoaderThrottle::CaptivePortalURLLoaderThrottle(
     content::WebContents* web_contents) {
   is_captive_portal_window_ =
@@ -24,3 +26,5 @@ void CaptivePortalURLLoaderThrottle::WillStartRequest(
     request->trusted_params = network::ResourceRequest::TrustedParams();
   request->trusted_params->disable_secure_dns = true;
 }
+
+}  // namespace captive_portal

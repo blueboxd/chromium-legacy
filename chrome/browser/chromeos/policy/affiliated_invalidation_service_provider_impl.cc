@@ -7,47 +7,36 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_features.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
-#include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace policy {
 
@@ -77,36 +66,8 @@ constexpr int kTransientErrorDisconnectLimit = 3;
 
 invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
     Profile* profile) {
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-        profile);
-  }
-  return invalidation::DeprecatedProfileInvalidationProviderFactory::
-      GetForProfile(profile);
-}
-
-// Runs on UI thread.
-void RequestProxyResolvingSocketFactoryOnUIThread(
-    base::WeakPtr<invalidation::TiclInvalidationService> owner,
-    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
-        receiver) {
-  if (!owner)
-    return;
-  if (g_browser_process->system_network_context_manager()) {
-    g_browser_process->system_network_context_manager()
-        ->GetContext()
-        ->CreateProxyResolvingSocketFactory(std::move(receiver));
-  }
-}
-
-// Runs on IO thread.
-void RequestProxyResolvingSocketFactory(
-    base::WeakPtr<invalidation::TiclInvalidationService> owner,
-    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
-        receiver) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                                owner, std::move(receiver)));
+  return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+      profile);
 }
 
 }  // namespace
@@ -294,13 +255,9 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
 
   // Create a state observer for the user's invalidation service.
   invalidation::InvalidationService* invalidation_service;
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    invalidation_service =
-        invalidation_provider->GetInvalidationServiceForCustomSender(
-            policy::kPolicyFCMInvalidationSenderID);
-  } else {
-    invalidation_service = invalidation_provider->GetInvalidationService();
-  }
+  invalidation_service =
+      invalidation_provider->GetInvalidationServiceForCustomSender(
+          policy::kPolicyFCMInvalidationSenderID);
   profile_invalidation_service_observers_.push_back(
       std::make_unique<InvalidationServiceObserver>(this,
                                                     invalidation_service));
@@ -483,39 +440,23 @@ AffiliatedInvalidationServiceProviderImpl::
       std::make_unique<chromeos::DeviceIdentityProvider>(
           chromeos::DeviceOAuth2TokenServiceFactory::Get());
 
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    device_instance_id_driver_ =
-        std::make_unique<instance_id::InstanceIDDriver>(
-            g_browser_process->gcm_driver());
-    DCHECK(device_instance_id_driver_);
-    auto device_invalidation_service =
-        std::make_unique<invalidation::FCMInvalidationService>(
-            device_identity_provider_.get(),
-            base::BindRepeating(&syncer::FCMNetworkHandler::Create,
-                                g_browser_process->gcm_driver(),
-                                device_instance_id_driver_.get()),
-            base::BindRepeating(
-                &syncer::PerUserTopicSubscriptionManager::Create,
-                device_identity_provider_.get(),
-                g_browser_process->local_state(),
-                base::RetainedRef(url_loader_factory)),
-            device_instance_id_driver_.get(), g_browser_process->local_state(),
-            policy::kPolicyFCMInvalidationSenderID);
-    device_invalidation_service->Init();
-    return device_invalidation_service;
-  }
-  auto device_invalidation_service =
-      std::make_unique<invalidation::TiclInvalidationService>(
-          GetUserAgent(), device_identity_provider_.get(),
-          g_browser_process->gcm_driver(),
-          base::BindRepeating(&RequestProxyResolvingSocketFactory),
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-          std::move(url_loader_factory),
-          content::GetNetworkConnectionTracker());
+  device_instance_id_driver_ = std::make_unique<instance_id::InstanceIDDriver>(
+      g_browser_process->gcm_driver());
 
-  device_invalidation_service->Init(
-      std::make_unique<invalidation::InvalidatorStorage>(
-          g_browser_process->local_state()));
+  DCHECK(device_instance_id_driver_);
+  auto device_invalidation_service =
+      std::make_unique<invalidation::FCMInvalidationService>(
+          device_identity_provider_.get(),
+          base::BindRepeating(&syncer::FCMNetworkHandler::Create,
+                              g_browser_process->gcm_driver(),
+                              device_instance_id_driver_.get()),
+          base::BindRepeating(&syncer::PerUserTopicSubscriptionManager::Create,
+                              device_identity_provider_.get(),
+                              g_browser_process->local_state(),
+                              base::RetainedRef(url_loader_factory)),
+          device_instance_id_driver_.get(), g_browser_process->local_state(),
+          policy::kPolicyFCMInvalidationSenderID);
+  device_invalidation_service->Init();
   return device_invalidation_service;
 }
 

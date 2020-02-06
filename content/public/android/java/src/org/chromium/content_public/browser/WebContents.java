@@ -16,6 +16,7 @@ import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.util.List;
 
@@ -167,7 +168,15 @@ public interface WebContents extends Parcelable {
     /**
      * @return The URL for the current visible page.
      */
-    String getVisibleUrl();
+    GURL getVisibleUrl();
+
+    /**
+     * @return The URL for the current visible page.
+     *
+     * @deprecated Please use {@link #getVisibleUrl} instead.
+     */
+    @Deprecated
+    String getVisibleUrlString();
 
     /**
      * @return The character encoding for the current visible page.

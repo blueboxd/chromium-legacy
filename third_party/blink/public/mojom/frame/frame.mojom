@@ -373,6 +373,14 @@ interface RemoteFrameHost {
   // loading. This will be forwarded to the renderer hosting the parent's local
   // frame to see if the parent can be marked as completed loading.
   CheckCompleted();
+
+  // Sent by the renderer to request a paint preview of a subframe. |clip_rect|
+  // is the size of the frame in it's parent. |guid| is an an identifier for
+  // all the capture work (regardless of the process captures are happening in)
+  // that allows the results to be grouped together, even if there are multiple
+  // requests in-flight.
+  CapturePaintPreviewOfCrossProcessSubframe(
+    gfx.mojom.Rect clip_rect, mojo_base.mojom.UnguessableToken guid);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

@@ -156,7 +156,9 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
   CrashHandlerHost();
 
   void Init();
-  bool ReceiveClientMessage(int client_fd, base::ScopedFD* handler_fd);
+  bool ReceiveClientMessage(int client_fd,
+                            base::ScopedFD* handler_fd,
+                            bool* write_minidump_to_database);
   void NotifyCrashSignalObservers(base::ProcessId pid, int signo);
 
   // MessagePumbLibevent::Watcher impl:

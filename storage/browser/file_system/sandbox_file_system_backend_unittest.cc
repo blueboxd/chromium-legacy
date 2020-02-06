@@ -112,8 +112,8 @@ class SandboxFileSystemBackendTest
 
   void CreateOriginTypeDirectory(const GURL& origin,
                                  storage::FileSystemType type) {
-    base::FilePath target =
-        delegate_->GetBaseDirectoryForOriginAndType(origin, type, true);
+    base::FilePath target = delegate_->GetBaseDirectoryForOriginAndType(
+        url::Origin::Create(origin), type, true);
     ASSERT_TRUE(!target.empty());
     ASSERT_TRUE(base::DirectoryExists(target));
   }
@@ -131,8 +131,8 @@ class SandboxFileSystemBackendTest
     if (error != base::File::FILE_OK)
       return false;
     base::FilePath returned_root_path =
-        delegate_->GetBaseDirectoryForOriginAndType(origin_url, type,
-                                                    false /* create */);
+        delegate_->GetBaseDirectoryForOriginAndType(
+            url::Origin::Create(origin_url), type, false /* create */);
     if (root_path)
       *root_path = returned_root_path;
     return !returned_root_path.empty();

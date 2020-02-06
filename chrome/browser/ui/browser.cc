@@ -173,6 +173,7 @@
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "components/paint_preview/buildflags/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/triggers/ad_redirect_trigger.h"
 #include "components/search/search.h"
@@ -259,6 +260,10 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/browser/print_composite_client.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+#include "components/paint_preview/browser/paint_preview_client.h"  // nogncheck
 #endif
 
 using base::TimeDelta;
@@ -468,6 +473,10 @@ Browser::Browser(const CreateParams& params)
           std::make_unique<extensions::ExtensionBrowserWindowHelper>(this))
 #endif
 {
+  // TODO(crbug.com/967603): remove when root cause is found.
+  CHECK(g_browser_process);
+  CHECK(!g_browser_process->IsShuttingDown());
+
   // If this causes a crash then a window is being opened using a profile type
   // that is disallowed by policy. The crash prevents the disabled window type
   // from opening at all, but the path that triggered it should be fixed.
@@ -2039,6 +2048,19 @@ void Browser::PrintCrossProcessSubframe(
   auto* client = printing::PrintCompositeClient::FromWebContents(web_contents);
   if (client)
     client->PrintCrossProcessSubframe(rect, document_cookie, subframe_host);
+}
+#endif
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+void Browser::CapturePaintPreviewOfCrossProcessSubframe(
+    content::WebContents* web_contents,
+    const gfx::Rect& rect,
+    const base::UnguessableToken& guid,
+    content::RenderFrameHost* render_frame_host) {
+  auto* client =
+      paint_preview::PaintPreviewClient::FromWebContents(web_contents);
+  if (client)
+    client->CaptureSubframePaintPreview(guid, rect, render_frame_host);
 }
 #endif
 

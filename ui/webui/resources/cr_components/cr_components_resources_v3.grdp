@@ -4,6 +4,7 @@
          file="${root_gen_dir}/ui/webui/resources/cr_components/managed_footnote/managed_footnote.m.js"
          use_base_dir="false"
          type="BINDATA"
+         preprocess="true"
          compress="gzip" />
   <if expr="chromeos">
     <include name="IDR_WEBUI_CHROMEOS_SMB_SHARES_ADD_SMB_SHARE_DIALOG_M_JS"

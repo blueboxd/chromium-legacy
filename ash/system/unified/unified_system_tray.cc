@@ -31,6 +31,7 @@
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_handler.h"
@@ -388,6 +389,9 @@ base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
+  if (bubble_->unified_view()->IsDetailedViewShown())
+    return bubble_->unified_view()->GetDetailedViewAccessibleName();
+
   return l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION);
 }

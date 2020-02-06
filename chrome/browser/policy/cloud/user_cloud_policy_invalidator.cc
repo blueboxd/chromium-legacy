@@ -7,14 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
@@ -24,12 +22,8 @@ namespace {
 
 invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
     Profile* profile) {
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-        profile);
-  }
-  return invalidation::DeprecatedProfileInvalidationProviderFactory::
-      GetForProfile(profile);
+  return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+      profile);
 }
 
 }  // namespace
@@ -86,12 +80,8 @@ void UserCloudPolicyInvalidator::Observe(
       GetInvalidationProvider(profile_);
   if (!invalidation_provider)
     return;
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    Initialize(invalidation_provider->GetInvalidationServiceForCustomSender(
-        policy::kPolicyFCMInvalidationSenderID));
-  } else {
-    Initialize(invalidation_provider->GetInvalidationService());
-  }
+  Initialize(invalidation_provider->GetInvalidationServiceForCustomSender(
+      policy::kPolicyFCMInvalidationSenderID));
 }
 
 }  // namespace policy

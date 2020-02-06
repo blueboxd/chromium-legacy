@@ -35,6 +35,8 @@ constexpr double kMediaNotificationForegroundColorMostPopularMinSaturation =
 // The ratio for the more vibrant foreground color to use.
 constexpr double kMediaNotificationForegroundColorMoreVibrantRatio = 1.0;
 
+constexpr float kMediaNotificationMinimumContrastRatio = 7.0;
+
 bool IsNearlyWhiteOrBlack(SkColor color) {
   color_utils::HSL hsl;
   color_utils::SkColorToHSL(color, &hsl);
@@ -356,7 +358,9 @@ SkColor MediaNotificationBackground::GetForegroundColor(
           ? *foreground_color_
           : views::style::GetColor(owner, views::style::CONTEXT_LABEL,
                                    views::style::STYLE_PRIMARY);
-  return color_utils::BlendForMinContrast(foreground, GetBackgroundColor(owner))
+  return color_utils::BlendForMinContrast(
+             foreground, GetBackgroundColor(owner), base::nullopt,
+             kMediaNotificationMinimumContrastRatio)
       .color;
 }
 

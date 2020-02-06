@@ -552,20 +552,23 @@ void ClientSession::SetMouseClampingFilter(const DisplaySize& size) {
       break;
 
     case protocol::SessionConfig::Protocol::WEBRTC: {
+#if defined(OS_MACOSX)
+      mouse_clamping_filter_.set_input_size(size.WidthAsPixels(),
+                                            size.HeightAsPixels());
+#else
       // When using the WebRTC protocol the client sends mouse coordinates in
       // DIPs, while InputInjector expects them in physical pixels.
       // TODO(sergeyu): Fix InputInjector implementations to use DIPs as well.
       mouse_clamping_filter_.set_input_size(size.WidthAsDips(),
                                             size.HeightAsDips());
+#endif  // defined(OS_MACOSX)
     }
   }
 }
 
 void ClientSession::UpdateMouseClampingFilterOffset() {
   webrtc::DesktopVector origin;
-  if (show_display_id_ != webrtc::kFullDesktopScreenId) {
-    origin = desktop_display_info_.CalcDisplayOffset(show_display_id_);
-  }
+  origin = desktop_display_info_.CalcDisplayOffset(show_display_id_);
   mouse_clamping_filter_.set_output_offset(origin);
 }
 
@@ -703,6 +706,11 @@ void ClientSession::OnDesktopDisplayChanged(
               << display.height() << " [" << display.x_dpi() << ","
               << display.y_dpi() << "]";
   }
+
+  // We need to update the input filters whenever the displays change.
+  DisplaySize display_size =
+      DisplaySize::FromPixels(size.width(), size.height(), default_x_dpi_);
+  SetMouseClampingFilter(display_size);
 
   connection_->client_stub()->SetVideoLayout(layout);
 }

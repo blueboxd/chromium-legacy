@@ -31,11 +31,10 @@
 namespace {
 
 constexpr uint32_t kPlaneOffset = 100;
+constexpr uint32_t kCrtcIdBase = 500;
 constexpr uint32_t kConnectorIdBase = 700;
 
-constexpr uint32_t kTypePropId = 3010;
-constexpr uint32_t kInFormatsPropId = 3011;
-constexpr uint32_t kPlaneCtmId = 3012;
+constexpr uint32_t kActivePropId = 1000;
 constexpr uint32_t kBackgroundColorPropId = 1002;
 constexpr uint32_t kCtmPropId = 1003;
 constexpr uint32_t kGammaLutPropId = 1004;
@@ -43,6 +42,11 @@ constexpr uint32_t kGammaLutSizePropId = 1005;
 constexpr uint32_t kDegammaLutPropId = 1006;
 constexpr uint32_t kDegammaLutSizePropId = 1007;
 constexpr uint32_t kOutFencePtrPropId = 1008;
+
+constexpr uint32_t kTypePropId = 3010;
+constexpr uint32_t kInFormatsPropId = 3011;
+constexpr uint32_t kPlaneCtmId = 3012;
+
 constexpr uint32_t kInFormatsBlobPropId = 400;
 
 const gfx::Size kDefaultBufferSize(2, 2);
@@ -113,7 +117,7 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
     size_t crtc_count,
     size_t planes_per_crtc) {
   std::map<uint32_t, std::string> crtc_property_names = {
-      {1000, "ACTIVE"},
+      {kActivePropId, "ACTIVE"},
       {1001, "MODE_ID"},
   };
 
@@ -154,7 +158,7 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
   for (size_t i = 0; i < crtc_count; ++i) {
     ui::MockDrmDevice::CrtcProperties crtc_prop;
     // Start ID at 1 cause 0 is an invalid ID.
-    crtc_prop.id = i + 1;
+    crtc_prop.id = kCrtcIdBase + i;
     for (const auto& pair : crtc_property_names) {
       crtc_prop.properties.push_back(
           {/* .id = */ pair.first, /* .value = */ 0});
@@ -413,7 +417,32 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, DisableModeset) {
 
   EXPECT_TRUE(fake_drm_->plane_manager()->DisableModeset(
       crtc_properties_[0].id, connector_properties_[0].id));
-  EXPECT_EQ(0, fake_drm_->get_commit_count());
+  EXPECT_EQ(1, fake_drm_->get_commit_count());
+}
+
+TEST_P(HardwareDisplayPlaneManagerAtomicTest, CheckPropsAfterDisable) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_,
+                             /*use_atomic=*/true);
+
+  constexpr uint32_t kFrameBuffer = 2;
+  ui::HardwareDisplayPlaneList state;
+  EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[0].id, kFrameBuffer, connector_properties_[0].id,
+      kDefaultMode, state));
+
+  //  Test props values after disabling.
+  EXPECT_TRUE(fake_drm_->plane_manager()->DisableModeset(
+      crtc_properties_[0].id, connector_properties_[0].id));
+
+  ui::DrmDevice::Property crtc_prop_for_name;
+  ui::ScopedDrmObjectPropertyPtr crtc_props =
+      fake_drm_->GetObjectProperties(kCrtcIdBase, DRM_MODE_OBJECT_CRTC);
+  ui::GetDrmPropertyForName(fake_drm_.get(), crtc_props.get(), "ACTIVE",
+                            &crtc_prop_for_name);
+  EXPECT_EQ(kActivePropId, crtc_prop_for_name.id);
+  EXPECT_EQ(0U, crtc_prop_for_name.value);
 }
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest, MultiplePlaneAssignment) {

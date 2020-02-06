@@ -11,12 +11,21 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'setMetricsReportingEnabled',
       'showManageSSLCertificates',
       'setBlockAutoplayEnabled',
+      'getSecureDnsSetting',
     ]);
 
     /** @type {!MetricsReporting} */
     this.metricsReporting = {
       enabled: true,
       managed: true,
+    };
+
+    /**
+     * @type {!SecureDnsSetting}
+     * @private
+     */
+    this.secureDnsSetting = {
+      mode: 'secure',
     };
   }
 
@@ -44,5 +53,11 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   /** @override */
   setBlockAutoplayEnabled(enabled) {
     this.methodCalled('setBlockAutoplayEnabled', enabled);
+  }
+
+  /** @override */
+  getSecureDnsSetting() {
+    this.methodCalled('getSecureDnsSetting');
+    return Promise.resolve(this.secureDnsSetting);
   }
 }

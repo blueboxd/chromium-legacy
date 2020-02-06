@@ -5,6 +5,7 @@
 module paint_preview.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -68,6 +69,9 @@ struct PaintPreviewCaptureResponse {
 
   // A list of links within the frame.
   array<LinkData> links;
+
+  // The time spent capturing in Blink.
+  mojo_base.mojom.TimeDelta blink_recording_time;
 };
 
 // Service for capturing a paint preview of a RenderFrame's contents. This

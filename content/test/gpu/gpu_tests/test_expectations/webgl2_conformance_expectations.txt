@@ -34,6 +34,8 @@
 [ win ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+[ mac ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
 # Disabling all multiview checks temporarily while ANGLE side changes
@@ -120,7 +122,6 @@ crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dyna
 # Passthrough command decoder / Windows / OpenGL / Intel
 # Recent regressions on passthrough command decoder
 crbug.com/1048861 [ opengl win passthrough intel ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/1048861 [ opengl win passthrough intel ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
 

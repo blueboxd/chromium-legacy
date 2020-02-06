@@ -87,6 +87,7 @@ android_library("content_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojom:mojom_java",
+    "//url:gurl_java",
     "//url:origin_java",
   ]
 
@@ -185,7 +186,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/input/ImeAdapterImpl.java",
     "java/src/org/chromium/content/browser/input/ImeUtils.java",
     "java/src/org/chromium/content/browser/input/InputMethodManagerWrapperImpl.java",
-    "java/src/org/chromium/content/browser/input/InputMethodUma.java",
     "java/src/org/chromium/content/browser/input/Range.java",
     "java/src/org/chromium/content/browser/input/SelectPopup.java",
     "java/src/org/chromium/content/browser/input/SelectPopupAdapter.java",
@@ -437,6 +437,7 @@ android_library("content_javatests") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
     "//ui/gfx/geometry/mojom:mojom_java",
+    "//url:gurl_java",
   ]
 
   sources = [

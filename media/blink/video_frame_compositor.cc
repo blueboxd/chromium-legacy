@@ -261,7 +261,7 @@ void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
 
 void VideoFrameCompositor::SetOnFramePresentedCallback(
     OnNewFramePresentedCB present_cb) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(new_presented_frame_cb_lock_);
   new_presented_frame_cb_ = std::move(present_cb);
 }
 
@@ -284,8 +284,16 @@ bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
   if (new_processed_frame_cb_)
     std::move(new_processed_frame_cb_).Run(tick_clock_->NowTicks());
 
-  if (new_presented_frame_cb_) {
-    std::move(new_presented_frame_cb_)
+  // Copy to a local variable to avoid potential deadlock when executing the
+  // callback.
+  OnNewFramePresentedCB frame_presented_cb;
+  {
+    base::AutoLock lock(new_presented_frame_cb_lock_);
+    frame_presented_cb = std::move(new_presented_frame_cb_);
+  }
+
+  if (frame_presented_cb) {
+    std::move(frame_presented_cb)
         .Run(GetCurrentFrame(), tick_clock_->NowTicks(), presentation_time,
              presentation_counter_);
   }

@@ -33,6 +33,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     public TasksSurfaceCoordinator(ChromeActivity activity, PropertyModel propertyModel,
             FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
+        mView.initialize(activity.getLifecycleDispatcher());
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
         if (isTabCarousel) {

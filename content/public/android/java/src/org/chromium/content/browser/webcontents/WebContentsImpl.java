@@ -53,6 +53,7 @@ import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,7 +167,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                     (int) (coordinateSpace.getContentOffsetYPix()
                             / coordinateSpace.getDeviceScaleFactor()));
             Bundle bundle = new Bundle();
-            bundle.putString("url", getVisibleUrl());
+            bundle.putString("url", getVisibleUrlString());
             bundle.putString("title", getTitle());
             bundle.putString("text", text);
             bundle.putString("html", html);
@@ -406,10 +407,15 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public String getVisibleUrl() {
+    public GURL getVisibleUrl() {
         checkNotDestroyed();
         return WebContentsImplJni.get().getVisibleURL(
                 mNativeWebContentsAndroid, WebContentsImpl.this);
+    }
+
+    @Override
+    public String getVisibleUrlString() {
+        return getVisibleUrl().getSpec();
     }
 
     @Override
@@ -1037,7 +1043,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         WebContentsImpl[] getInnerWebContents(
                 long nativeWebContentsAndroid, WebContentsImpl caller);
         String getTitle(long nativeWebContentsAndroid, WebContentsImpl caller);
-        String getVisibleURL(long nativeWebContentsAndroid, WebContentsImpl caller);
+        GURL getVisibleURL(long nativeWebContentsAndroid, WebContentsImpl caller);
         String getEncoding(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isLoading(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isLoadingToDifferentDocument(long nativeWebContentsAndroid, WebContentsImpl caller);

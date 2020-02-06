@@ -173,6 +173,9 @@ class CrashReporterClient {
   // Returns true if breakpad microdumps should be enabled. This orthogonal to
   // the standard minidump uploader (which depends on the user consent).
   virtual bool ShouldEnableBreakpadMicrodumps();
+
+  // Returns true if minudump should be written to android log.
+  virtual bool ShouldWriteMinidumpToLog();
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)

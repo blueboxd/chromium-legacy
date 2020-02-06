@@ -7,7 +7,6 @@ package org.chromium.base.test.params;
 import org.junit.Assert;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +120,6 @@ public class ParameterSet {
         ret.add(Long.class);
         ret.add(Short.class);
         ret.add(String.class);
-        ret.add(URI.class);
         ret.add(URL.class);
         ret.add(Void.class);
         return ret;

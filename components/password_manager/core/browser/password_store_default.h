@@ -73,15 +73,15 @@ class PasswordStoreDefault : public PasswordStore {
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
   std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
-  void AddCompromisedCredentialsImpl(
+  bool AddCompromisedCredentialsImpl(
       const CompromisedCredentials& compromised_credentials) override;
-  void RemoveCompromisedCredentialsImpl(
+  bool RemoveCompromisedCredentialsImpl(
       const std::string& signon_realm,
       const base::string16& username,
       RemoveCompromisedCredentialsReason reason) override;
   std::vector<CompromisedCredentials> GetAllCompromisedCredentialsImpl()
       override;
-  void RemoveCompromisedCredentialsByUrlAndTimeImpl(
+  bool RemoveCompromisedCredentialsByUrlAndTimeImpl(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;

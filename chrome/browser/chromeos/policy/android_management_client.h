@@ -58,7 +58,7 @@ class AndroidManagementClient {
   ~AndroidManagementClient();
 
   // Starts sending of check Android management request to DM server, issues
-  // access token if neccessary. |callback| is called on check Android
+  // access token if necessary. |callback| is called on check Android
   // management completion.
   void StartCheckAndroidManagement(const StatusCallback& callback);
 

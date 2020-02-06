@@ -535,6 +535,46 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
                   ->NeedsPaintPropertyUpdate());
 }
 
+TEST_P(FrameThrottlingTest, MainFrameOriginChangeInvalidatesDescendants) {
+  // Create a hidden frame which is throttled.
+  SimRequest main_resource("https://sub.example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://sub.example.com/");
+  main_resource.Complete(R"HTML(
+    <iframe id='frame' style='position: absolute; top: 10000px'
+        src='https://example.com/iframe.html'></iframe>
+  )HTML");
+  frame_resource.Complete("");
+
+  CompositeFrame();
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  EXPECT_TRUE(frame_document->View()->CanThrottleRendering());
+  EXPECT_TRUE(frame_document->GetFrame()->IsCrossOriginToMainFrame());
+  EXPECT_FALSE(
+      frame_document->View()->GetLayoutView()->NeedsPaintPropertyUpdate());
+
+  // Set the domain of the child frame first which should be a no-op in terms of
+  // cross-origin status changes.
+  NonThrowableExceptionState exception_state;
+  frame_element->contentDocument()->setDomain(String("example.com"),
+                                              exception_state);
+  EXPECT_TRUE(frame_document->View()->CanThrottleRendering());
+  EXPECT_TRUE(frame_document->GetFrame()->IsCrossOriginToMainFrame());
+  EXPECT_FALSE(
+      frame_document->View()->GetLayoutView()->NeedsPaintPropertyUpdate());
+
+  // Then change the main frame origin which needs to invalidate the newly
+  // cross-origin child.
+  GetDocument().setDomain(String("example.com"), exception_state);
+  EXPECT_FALSE(frame_document->GetFrame()->IsCrossOriginToMainFrame());
+  EXPECT_FALSE(frame_document->View()->CanThrottleRendering());
+  EXPECT_TRUE(
+      frame_document->View()->GetLayoutView()->NeedsPaintPropertyUpdate());
+}
+
 TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   ScopedCompositedSelectionUpdateForTest composited_selection_update(true);

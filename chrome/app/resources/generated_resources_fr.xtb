@@ -172,7 +172,7 @@
 <translation id="1224275271335624810">La plus rapide</translation>
 <translation id="1225177025209879837">Traitement de la demande en cours…</translation>
 <translation id="1227507814927581609">Échec de l'authentification lors de la connexion à l'appareil "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1229587244632896090">Le fichier sélectionné est inconnu et peut présenter un danger. La Protection Avancée vous recommande d'envoyer ce fichier à Google pour la détection de logiciels malveillants.</translation>
+<translation id="1229587244632896090">Le fichier sélectionné est inconnu et peut présenter un danger. La Protection Avancée vous recommande d'envoyer ce fichier à Google pour vérifier la présence éventuelle de logiciels malveillants.</translation>
 <translation id="1231733316453485619">Activer la synchronisation ?</translation>
 <translation id="1232569758102978740">Sans titre</translation>
 <translation id="1233497634904001272">Appuyez de nouveau sur votre clé de sécurité pour finaliser la requête.</translation>
@@ -846,7 +846,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2165421703844373933">Accédez à l'Assistant en disant "Ok Google". Pour économiser la batterie, sélectionnez “Activé (recommandé)”. L'Assistant ne répondra que lorsque votre appareil sera branché ou en charge.</translation>
 <translation id="2166369534954157698">Voici à quoi ressemblera votre texte.</translation>
 <translation id="2169062631698640254">Se connecter quand même</translation>
-<translation id="2170519224423744029">La Protection Avancée vous recommande d'envoyer <ph name="FILE_NAME" /> à Google pour la détection de logiciels malveillants.</translation>
+<translation id="2170519224423744029">La Protection Avancée vous recommande d'envoyer <ph name="FILE_NAME" /> à Google pour vérifier la présence éventuelle de logiciels malveillants.</translation>
 <translation id="2172784515318616985">Continuer</translation>
 <translation id="2173302385160625112">Vérifiez votre connexion Internet</translation>
 <translation id="2173801458090845390">Ajoutez un ID de réquisition sur cet appareil</translation>
@@ -1171,7 +1171,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2604255671529671813">Erreur de connexion réseau</translation>
 <translation id="2606246518223360146">Associer les données</translation>
 <translation id="2607101320794533334">Infos sur la clé publique de l'objet</translation>
-<translation id="2608770217409477136">Utiliser les paramètres par défaut</translation>
 <translation id="2609896558069604090">Créer des raccourcis…</translation>
 <translation id="2610157865375787051">Veille</translation>
 <translation id="2610260699262139870">Taille ré&amp;elle</translation>
@@ -3254,7 +3253,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5565735124758917034">Actif</translation>
 <translation id="5567989639534621706">Caches des applications</translation>
 <translation id="5568069709869097550">Impossible de se connecter</translation>
-<translation id="5568144734023334204">Taille de stockage Android</translation>
 <translation id="5572851009514199876">Veuillez démarrer Chrome et vous connecter à votre compte pour que le navigateur puisse vérifier que vous êtes autorisé à accéder à ce site.</translation>
 <translation id="5575473780076478375">Extension en mode navigation privée :<ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Un problème est survenu avec la demande d'enregistrement en mode de démonstration.</translation>
@@ -5084,7 +5082,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8114875720387900039">Séparation horizontale</translation>
 <translation id="8116972784401310538">&amp;Gestionnaire de favoris</translation>
 <translation id="8117620576188476503">Gérez les connexions, les mises à jour et les paramètres depuis la barre d'état. Pour y accéder depuis le clavier, appuyez sur Alt+Maj+S.</translation>
-<translation id="8117752106453549166">Linux est en cours de configuration par votre administrateur. Cette opération va prendre quelques minutes</translation>
+<translation id="8117752106453549166">Linux est en cours de configuration par votre administrateur. Cette opération va prendre quelques minutes.</translation>
 <translation id="8118076340394175570">Votre organisation exige que cet appareil soit mis à jour</translation>
 <translation id="8118362518458010043">Désactivée par Chrome. Cette extension est peut-être dangereuse.</translation>
 <translation id="8118488170956489476">Votre <ph name="BEGIN_LINK" />navigateur est géré<ph name="END_LINK" /> par votre organisation</translation>

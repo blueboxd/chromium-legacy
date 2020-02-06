@@ -183,10 +183,12 @@ TracingSamplerProfiler::TracingProfileBuilder::BufferedSample::BufferedSample(
 TracingSamplerProfiler::TracingProfileBuilder::TracingProfileBuilder(
     base::PlatformThreadId sampled_thread_id,
     std::unique_ptr<perfetto::TraceWriter> trace_writer,
-    bool should_enable_filtering)
+    bool should_enable_filtering,
+    const base::RepeatingClosure& sample_callback_for_testing)
     : sampled_thread_id_(sampled_thread_id),
       trace_writer_(std::move(trace_writer)),
-      should_enable_filtering_(should_enable_filtering) {}
+      should_enable_filtering_(should_enable_filtering),
+      sample_callback_for_testing_(sample_callback_for_testing) {}
 
 TracingSamplerProfiler::TracingProfileBuilder::~TracingProfileBuilder() {
   // Deleting a TraceWriter can end up triggering a Mojo call which calls
@@ -227,6 +229,10 @@ void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
     buffered_samples_.clear();
   }
   WriteSampleToTrace(BufferedSample(sample_timestamp, std::move(frames)));
+
+  if (sample_callback_for_testing_) {
+    sample_callback_for_testing_.Run();
+  }
 }
 
 void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
@@ -362,21 +368,7 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
     }
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-    // Linux ELF module IDs are 160bit integers, which we need to mangle
-    // down to 128bit integers to match the id that Breakpad outputs.
-    // Example on version '66.0.3359.170' x64:
-    //   Build-ID: "7f0715c2 86f8 b16c 10e4ad349cda3b9b 56c7a773
-    //   Debug-ID  "C215077F F886 6CB1 10E4AD349CDA3B9B 0"
-    if (module_id.size() >= 32) {
-      module_id =
-          base::StrCat({module_id.substr(6, 2), module_id.substr(4, 2),
-                        module_id.substr(2, 2), module_id.substr(0, 2),
-                        module_id.substr(10, 2), module_id.substr(8, 2),
-                        module_id.substr(14, 2), module_id.substr(12, 2),
-                        module_id.substr(16, 16), "0"});
-    }
-#endif
+    MangleModuleIDIfNeeded(&module_id);
 
     // We never emit frame names in privacy filtered mode.
     bool should_emit_frame_names =
@@ -463,6 +455,25 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
 }
 
 // static
+void TracingSamplerProfiler::MangleModuleIDIfNeeded(std::string* module_id) {
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+  // Linux ELF module IDs are 160bit integers, which we need to mangle
+  // down to 128bit integers to match the id that Breakpad outputs.
+  // Example on version '66.0.3359.170' x64:
+  //   Build-ID: "7f0715c2 86f8 b16c 10e4ad349cda3b9b 56c7a773
+  //   Debug-ID  "C215077F F886 6CB1 10E4AD349CDA3B9B 0"
+  if (module_id->size() >= 32) {
+    *module_id =
+        base::StrCat({module_id->substr(6, 2), module_id->substr(4, 2),
+                      module_id->substr(2, 2), module_id->substr(0, 2),
+                      module_id->substr(10, 2), module_id->substr(8, 2),
+                      module_id->substr(14, 2), module_id->substr(12, 2),
+                      module_id->substr(16, 16), "0"});
+  }
+#endif
+}
+
+// static
 std::unique_ptr<TracingSamplerProfiler>
 TracingSamplerProfiler::CreateOnMainThread() {
   return std::make_unique<TracingSamplerProfiler>(
@@ -518,6 +529,12 @@ TracingSamplerProfiler::~TracingSamplerProfiler() {
   TracingSamplerProfilerDataSource::Get()->UnregisterProfiler(this);
 }
 
+void TracingSamplerProfiler::SetSampleCallbackForTesting(
+    const base::RepeatingClosure& sample_callback_for_testing) {
+  base::AutoLock lock(lock_);
+  sample_callback_for_testing_ = sample_callback_for_testing;
+}
+
 void TracingSamplerProfiler::StartTracing(
     std::unique_ptr<perfetto::TraceWriter> trace_writer,
     bool should_enable_filtering) {
@@ -546,7 +563,7 @@ void TracingSamplerProfiler::StartTracing(
 
   auto profile_builder = std::make_unique<TracingProfileBuilder>(
       sampled_thread_token_.id, std::move(trace_writer),
-      should_enable_filtering);
+      should_enable_filtering, sample_callback_for_testing_);
   profile_builder_ = profile_builder.get();
   // Create and start the stack sampling profiler.
 #if defined(OS_ANDROID)

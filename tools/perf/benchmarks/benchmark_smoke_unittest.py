@@ -54,7 +54,6 @@ def SmokeTestGenerator(benchmark_class, num_pages=1):
   # failing or flaky benchmark would disable a much wider swath of coverage
   # than is usually intended. Instead, if a particular benchmark is failing,
   # disable it in tools/perf/benchmarks/*.
-  @decorators.Disabled('chromeos')  # crbug.com/351114
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
     # Some benchmarks are running multiple iterations

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -58,7 +59,12 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   unsigned FontSelectorVersion() const { return font_selector_version_; }
   uint16_t Generation() const { return generation_; }
 
-  ShapeCache* GetShapeCache(const FontDescription& font_description) const {
+  ShapeCache* GetShapeCache(const FontDescription& font_description) {
+    if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+      if (!IsValid())
+        Invalidate(font_selector_);
+    }
+
     if (!shape_cache_) {
       FallbackListCompositeKey key = CompositeKey(font_description);
       shape_cache_ =
@@ -71,7 +77,12 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   }
 
   const SimpleFontData* PrimarySimpleFontData(
-      const FontDescription& font_description) const {
+      const FontDescription& font_description) {
+    if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+      if (!IsValid())
+        Invalidate(font_selector_);
+    }
+
     if (!cached_primary_simple_font_data_) {
       cached_primary_simple_font_data_ =
           DeterminePrimarySimpleFontData(font_description);
@@ -79,11 +90,11 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
     }
     return cached_primary_simple_font_data_;
   }
-  const FontData* FontDataAt(const FontDescription&, unsigned index) const;
+  const FontData* FontDataAt(const FontDescription&, unsigned index);
 
   FallbackListCompositeKey CompositeKey(const FontDescription&) const;
 
-  bool CanShapeWordByWord(const FontDescription&) const;
+  bool CanShapeWordByWord(const FontDescription&);
 
   void SetCanShapeWordByWordForTesting(bool b) {
     can_shape_word_by_word_ = b;
@@ -95,22 +106,21 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   scoped_refptr<FontData> GetFontData(const FontDescription&, int& family_index) const;
 
-  const SimpleFontData* DeterminePrimarySimpleFontData(
-      const FontDescription&) const;
+  const SimpleFontData* DeterminePrimarySimpleFontData(const FontDescription&);
 
   void ReleaseFontData();
-  bool ComputeCanShapeWordByWord(const FontDescription&) const;
+  bool ComputeCanShapeWordByWord(const FontDescription&);
 
-  mutable Vector<scoped_refptr<FontData>, 1> font_list_;
-  mutable const SimpleFontData* cached_primary_simple_font_data_;
+  Vector<scoped_refptr<FontData>, 1> font_list_;
+  const SimpleFontData* cached_primary_simple_font_data_;
   Persistent<FontSelector> font_selector_;
   unsigned font_selector_version_;
-  mutable int family_index_;
+  int family_index_;
   uint16_t generation_;
-  mutable bool has_loading_fallback_ : 1;
-  mutable bool can_shape_word_by_word_ : 1;
-  mutable bool can_shape_word_by_word_computed_ : 1;
-  mutable base::WeakPtr<ShapeCache> shape_cache_;
+  bool has_loading_fallback_ : 1;
+  bool can_shape_word_by_word_ : 1;
+  bool can_shape_word_by_word_computed_ : 1;
+  base::WeakPtr<ShapeCache> shape_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FontFallbackList);
 };

@@ -16,6 +16,8 @@ found in the LICENSE file.
 </body>
 
 <script>
+let window_client_ready = false;
+
 /**
  * Insert a message to the widget called 'log'.
  * @param {string} text - the text that is intended to be inserted
@@ -44,8 +46,24 @@ function cancel() {
   return 'canceled';
 }
 
+function isWindowClientReady() {
+  return window_client_ready;
+}
+
 window.onload = function() {
   navigator.serviceWorker.controller.postMessage('app_is_ready');
   updateLogView('app is ready.');
 }
+
+navigator.serviceWorker.addEventListener('message', (evt) => {
+  if (!evt.data) {
+    updateLogView('Received an empty message');
+    return;
+  }
+
+  if (evt.data === 'window_client_ready') {
+    window_client_ready = true;
+  }
+  updateLogView(evt.data);
+});
 </script>

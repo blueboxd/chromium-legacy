@@ -399,63 +399,6 @@ modules_idl_files =
           "webdatabase/sql_transaction.idl",
           "webdatabase/sql_transaction_callback.idl",
           "webdatabase/sql_transaction_error_callback.idl",
-          "webgl/angle_instanced_arrays.idl",
-          "webgl/ext_blend_min_max.idl",
-          "webgl/ext_color_buffer_float.idl",
-          "webgl/ext_color_buffer_half_float.idl",
-          "webgl/ext_disjoint_timer_query.idl",
-          "webgl/ext_disjoint_timer_query_webgl2.idl",
-          "webgl/ext_float_blend.idl",
-          "webgl/ext_frag_depth.idl",
-          "webgl/ext_shader_texture_lod.idl",
-          "webgl/ext_srgb.idl",
-          "webgl/ext_texture_filter_anisotropic.idl",
-          "webgl/ext_texture_norm_16.idl",
-          "webgl/khr_parallel_shader_compile.idl",
-          "webgl/oes_element_index_uint.idl",
-          "webgl/oes_fbo_render_mipmap.idl",
-          "webgl/oes_standard_derivatives.idl",
-          "webgl/oes_texture_float.idl",
-          "webgl/oes_texture_float_linear.idl",
-          "webgl/oes_texture_half_float.idl",
-          "webgl/oes_texture_half_float_linear.idl",
-          "webgl/oes_vertex_array_object.idl",
-          "webgl/ovr_multiview_2.idl",
-          "webgl/webgl2_rendering_context.idl",
-          "webgl/webgl_active_info.idl",
-          "webgl/webgl_buffer.idl",
-          "webgl/webgl_color_buffer_float.idl",
-          "webgl/webgl_compressed_texture_astc.idl",
-          "webgl/webgl_compressed_texture_etc.idl",
-          "webgl/webgl_compressed_texture_etc1.idl",
-          "webgl/webgl_compressed_texture_pvrtc.idl",
-          "webgl/webgl_compressed_texture_s3tc.idl",
-          "webgl/webgl_compressed_texture_s3tc_srgb.idl",
-          "webgl/webgl_context_event.idl",
-          "webgl/webgl_debug_renderer_info.idl",
-          "webgl/webgl_debug_shaders.idl",
-          "webgl/webgl_depth_texture.idl",
-          "webgl/webgl_draw_buffers.idl",
-          "webgl/webgl_draw_instanced_base_vertex_base_instance.idl",
-          "webgl/webgl_framebuffer.idl",
-          "webgl/webgl_lose_context.idl",
-          "webgl/webgl_multi_draw_instanced_base_vertex_base_instance.idl",
-          "webgl/webgl_multi_draw.idl",
-          "webgl/webgl_program.idl",
-          "webgl/webgl_query.idl",
-          "webgl/webgl_renderbuffer.idl",
-          "webgl/webgl_rendering_context.idl",
-          "webgl/webgl_sampler.idl",
-          "webgl/webgl_shader.idl",
-          "webgl/webgl_shader_precision_format.idl",
-          "webgl/webgl_sync.idl",
-          "webgl/webgl_texture.idl",
-          "webgl/webgl_timer_query_ext.idl",
-          "webgl/webgl_transform_feedback.idl",
-          "webgl/webgl_uniform_location.idl",
-          "webgl/webgl_vertex_array_object.idl",
-          "webgl/webgl_vertex_array_object_oes.idl",
-          "webgl/webgl_video_texture.idl",
           "webgpu/gpu.idl",
           "webgpu/gpu_adapter.idl",
           "webgpu/gpu_bind_group.idl",
@@ -562,11 +505,6 @@ if (!is_android) {
                                        "serial/serial_port.idl",
                                      ],
                                      "abspath")
-}
-
-if (support_webgl2_compute_context) {
-  modules_idl_files +=
-      get_path_info([ "webgl/webgl2_compute_rendering_context.idl" ], "abspath")
 }
 
 modules_callback_function_idl_files =
@@ -844,8 +782,6 @@ modules_dictionary_idl_files =
           "webaudio/wave_shaper_options.idl",
           "webcodecs/video_decoder_init_parameters.idl",
           "webcodecs/video_track_writer_parameters.idl",
-          "webgl/webgl_context_attributes.idl",
-          "webgl/webgl_context_event_init.idl",
           "webgpu/gpu_bind_group_binding.idl",
           "webgpu/gpu_bind_group_descriptor.idl",
           "webgpu/gpu_bind_group_layout_binding.idl",
@@ -1066,7 +1002,6 @@ if (support_webgl2_compute_context) {
           [
             "canvas/htmlcanvas/html_canvas_element_module_support_webgl2_compute.idl",
             "canvas/offscreencanvas/offscreen_canvas_module_support_webgl2_compute.idl",
-            "webgl/webgl2_compute_rendering_context_base.idl",
           ],
           "abspath")
 } else {
@@ -1092,6 +1027,35 @@ modules_testing_dependency_idl_files =
                     "webaudio/testing/internals_web_audio.idl",
                   ],
                   "abspath")
+
+_idl_imports = [ "//third_party/blink/renderer/modules/webgl/idls.gni" ]
+foreach(idl_import, _idl_imports) {
+  # Avoid reassignment error by assigning to empty scope first.
+  _imported = {
+  }
+  _imported = read_file(idl_import, "scope")
+
+  # Paths are potentially relative to the location of the .gni. Rebase them
+  # relative to "." so get_path_info() works as expected.
+  gni_dir = get_path_info(idl_import, "dir")
+  if (defined(_imported.modules_idl_files)) {
+    modules_idl_files +=
+        get_path_info(rebase_path(_imported.modules_idl_files, ".", gni_dir),
+                      "abspath")
+  }
+  if (defined(_imported.modules_dictionary_idl_files)) {
+    modules_dictionary_idl_files +=
+        get_path_info(
+            rebase_path(_imported.modules_dictionary_idl_files, ".", gni_dir),
+            "abspath")
+  }
+  if (defined(_imported.modules_dependency_idl_files)) {
+    modules_dependency_idl_files +=
+        get_path_info(
+            rebase_path(_imported.modules_dependency_idl_files, ".", gni_dir),
+            "abspath")
+  }
+}
 
 modules_definition_idl_files = modules_dictionary_idl_files + modules_idl_files
 

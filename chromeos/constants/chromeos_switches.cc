@@ -260,10 +260,6 @@ const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
-// Enables animated transitions during first-run tutorial.
-// TODO(https://crbug.com/945966): Remove this.
-const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
-
 // Enables the marketing opt-in screen in OOBE.
 const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
 

@@ -59,7 +59,7 @@ const base::Feature kEnableAggregatedMlSearchRanking{
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
-  // Do not show answer card if the embedded Assistant UI is enabled.
+  // Do not show answer card if Assistant search is enabled.
   return base::FeatureList::IsEnabled(kEnableAnswerCard) &&
          !IsAssistantSearchEnabled();
 }
@@ -111,11 +111,6 @@ bool IsSuggestedFilesEnabled() {
 
 bool IsAssistantSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableAssistantSearch);
-}
-
-// TODO(b/148080975): Remove.
-bool IsAssistantLauncherUIEnabled() {
-  return true;
 }
 
 bool IsAppGridGhostEnabled() {

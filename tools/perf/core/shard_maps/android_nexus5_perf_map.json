@@ -246,9 +246,6 @@
             "v8.browsing_mobile": {
                 "abridged": true
             },
-            "v8.browsing_mobile-future": {
-                "abridged": false
-            },
             "webrtc": {
                 "abridged": false
             }

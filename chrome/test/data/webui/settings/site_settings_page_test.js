@@ -25,7 +25,7 @@ cr.define('settings_site_settings_page', function() {
       });
 
       test('LogAllSiteSettingsPageClicks', async function() {
-        page.$$('#all-sites').click();
+        page.$$('#allSites').click();
         let result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -136,7 +136,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#background-sync').click();
+        page.$$('#backgroundSync').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -170,7 +170,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#automatic-downloads').click();
+        page.$$('#automaticDownloads').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -181,7 +181,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#unsandboxed-plugins').click();
+        page.$$('#unsandboxedPlugins').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -194,7 +194,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#protocol-handlers').click();
+          page.$$('#protocolHandlers').click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -205,7 +205,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#midi-devices').click();
+        page.$$('#midiDevices').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -216,7 +216,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#zoom-levels').click();
+        page.$$('#zoomLevels').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -226,7 +226,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#usb-devices').click();
+        page.$$('#usbDevices').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -236,7 +236,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#serial-ports').click();
+        page.$$('#serialPorts').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -250,7 +250,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#native-file-system-write').click();
+          page.$$('#nativeFileSystemWrite').click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -262,7 +262,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#pdf-documents').click();
+        page.$$('#pdfDocuments').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -273,7 +273,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#protected-content').click();
+        page.$$('#protectedContent').click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -310,7 +310,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#mixedscript').click();
+          page.$$('#mixedScript').click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -324,7 +324,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#bluetooth-scanning').click();
+          page.$$('#bluetoothScanning').click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(

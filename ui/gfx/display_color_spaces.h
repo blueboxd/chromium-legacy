@@ -5,10 +5,20 @@
 #ifndef UI_GFX_DISPLAY_COLOR_SPACES_H_
 #define UI_GFX_DISPLAY_COLOR_SPACES_H_
 
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_space_export.h"
 
+namespace mojo {
+template <class T, class U>
+struct StructTraits;
+}  // namespace mojo
+
 namespace gfx {
+
+namespace mojom {
+class DisplayColorSpacesDataView;
+}  // namespace mojom
 
 // The values are set so std::max() can be used to find the widest.
 enum class ContentColorUsage : uint8_t {
@@ -21,31 +31,45 @@ enum class ContentColorUsage : uint8_t {
 // This structure is used by a display::Display to specify the color space that
 // should be used to display content of various types. This lives in here, as
 // opposed to in ui/display because it is used directly by components/viz.
-struct COLOR_SPACE_EXPORT DisplayColorSpaces {
+class COLOR_SPACE_EXPORT DisplayColorSpaces {
+ public:
   // Initialize as sRGB-only.
   DisplayColorSpaces();
 
   // Initialize as |color_space| for all settings.
   explicit DisplayColorSpaces(const ColorSpace& color_space);
 
+  // Set the color space and buffer format for the final output surface when the
+  // specified content is being displayed.
+  void SetOutputColorSpaceAndBufferFormat(ContentColorUsage color_usage,
+                                          bool needs_alpha,
+                                          const gfx::ColorSpace& color_space,
+                                          gfx::BufferFormat buffer_format);
+  ColorSpace GetOutputColorSpace(ContentColorUsage color_usage,
+                                 bool needs_alpha) const;
+  BufferFormat GetOutputBufferFormat(ContentColorUsage color_usage,
+                                     bool needs_alpha) const;
+
+  // Set the custom SDR white level, in nits. This is a non-default value only
+  // on Windows.
+  void SetSDRWhiteLevel(float sdr_white_level) {
+    sdr_white_level_ = sdr_white_level;
+  }
+  float GetSDRWhiteLevel() const { return sdr_white_level_; }
+
   // Return the color space that should be used for rasterization.
+  // TODO: This will eventually need to take a ContentColorUsage.
   gfx::ColorSpace GetRasterColorSpace() const;
 
   // Return the color space in which compositing (and, in particular, blending,
   // should be performed). This space may not (on Windows) be suitable for
   // output.
-  gfx::ColorSpace GetCompositingColorSpace(
-      bool needs_alpha,
-      ContentColorUsage content_color_usage) const;
-
-  // Return the color space to use for output.
-  // TODO: This will take arguments regarding the presence of WCG and HDR
-  // content. For now it assumes all inputs could have HDR content.
-  gfx::ColorSpace GetOutputColorSpace(bool needs_alpha) const;
+  gfx::ColorSpace GetCompositingColorSpace(bool needs_alpha,
+                                           ContentColorUsage color_usage) const;
 
   // Return true if |color_space| is an HDR space, but is not equal to either
-  // |hdr_opaque| or |hdr_transparent|. In this case, output will need to be
-  // converted from |color_space| to either |hdr_opaque| or |hdr_transparent|.
+  // of the HDR output spaces. In this case, output will need to be converted
+  // from |color_space| to one of the output color spaces.
   bool NeedsHDRColorConversionPass(const gfx::ColorSpace& color_space) const;
 
   // Return true if the HDR color spaces are, indeed, HDR.
@@ -54,19 +78,16 @@ struct COLOR_SPACE_EXPORT DisplayColorSpaces {
   bool operator==(const DisplayColorSpaces& other) const;
   bool operator!=(const DisplayColorSpaces& other) const;
 
-  // The color space to use for SDR content that is limited to the sRGB gamut.
-  ColorSpace srgb = ColorSpace::CreateSRGB();
+ private:
+  // Serialization of DisplayColorSpaces directly accesses members.
 
-  // For opaque and transparent SDR content that is larger than the sRGB gamut.
-  ColorSpace wcg_opaque = ColorSpace::CreateSRGB();
-  ColorSpace wcg_transparent = ColorSpace::CreateSRGB();
+  friend struct mojo::StructTraits<gfx::mojom::DisplayColorSpacesDataView,
+                                   gfx::DisplayColorSpaces>;
 
-  // For opaque and transparent HDR content.
-  ColorSpace hdr_opaque = ColorSpace::CreateSRGB();
-  ColorSpace hdr_transparent = ColorSpace::CreateSRGB();
-
-  // The SDR white level in nits. This varies only on Windows.
-  float sdr_white_level = ColorSpace::kDefaultSDRWhiteLevel;
+  static constexpr size_t kConfigCount = 6;
+  gfx::ColorSpace color_spaces_[kConfigCount];
+  gfx::BufferFormat buffer_formats_[kConfigCount];
+  float sdr_white_level_ = ColorSpace::kDefaultSDRWhiteLevel;
 };
 
 }  // namespace gfx

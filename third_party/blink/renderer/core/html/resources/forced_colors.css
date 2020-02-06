@@ -207,4 +207,19 @@
   meter::-webkit-meter-suboptimum-value {
     background: Highlight;
   }
+
+  input:-internal-autofill-previewed,
+  textarea:-internal-autofill-previewed,
+  select:-internal-autofill-previewed {
+    color: WindowText !important;
+    background-color: Window !important;
+  }
+
+  input:-internal-autofill-selected,
+  textarea:-internal-autofill-selected,
+  select:-internal-autofill-selected {
+    color: WindowText !important;
+    background-color: Window !important;
+  }
+
 }

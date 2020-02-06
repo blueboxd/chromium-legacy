@@ -8,6 +8,8 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
+namespace captive_portal {
+
 // CaptivePortalURLLoaderThrottle is used in the browser process to
 // disable secure DNS for requests made from WebContents that belong to a
 // window that was created for captive portal resolution.
@@ -24,5 +26,7 @@ class CaptivePortalURLLoaderThrottle : public blink::URLLoaderThrottle {
   // that was created for captive portal resolution.
   bool is_captive_portal_window_;
 };
+
+}  // namespace captive_portal
 
 #endif  // COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_

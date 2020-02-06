@@ -122,6 +122,7 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   base::TimeTicks start_time = base::TimeTicks::Now();
   bool success = frame->CapturePaintPreview(bounds, canvas);
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
+  response->blink_recording_time = capture_time;
 
   if (is_main_frame_) {
     base::UmaHistogramBoolean("Renderer.PaintPreview.Capture.MainFrameSuccess",

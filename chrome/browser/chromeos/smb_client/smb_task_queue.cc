@@ -25,13 +25,13 @@ void SmbTaskQueue::AddTask(SmbTask task, OperationId operation_id) {
   }
   operation_map_[operation_id].push(std::move(task));
 
-  RunTaskIfNeccessary();
+  RunTaskIfNecessary();
 }
 
 void SmbTaskQueue::TaskFinished() {
   DCHECK_GT(num_pending_, 0u);
   --num_pending_;
-  RunTaskIfNeccessary();
+  RunTaskIfNecessary();
 }
 
 void SmbTaskQueue::AbortOperation(OperationId operation_id) {
@@ -40,7 +40,7 @@ void SmbTaskQueue::AbortOperation(OperationId operation_id) {
   operation_map_.erase(operation_id);
 }
 
-void SmbTaskQueue::RunTaskIfNeccessary() {
+void SmbTaskQueue::RunTaskIfNecessary() {
   PruneOperationQueue();
   if (IsCapacityToRunTask() && IsTaskToRun()) {
     RunNextTask();

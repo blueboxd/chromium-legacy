@@ -96,6 +96,12 @@ class PaintPreviewClient
     // URL of the root frame.
     GURL root_url;
 
+    // UKM Source ID of the WebContent.
+    ukm::SourceId source_id;
+
+    // Main frame capture time.
+    base::TimeDelta main_frame_blink_recording_time;
+
     // Callback that is invoked on completion of data.
     PaintPreviewCallback callback;
 

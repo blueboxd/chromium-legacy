@@ -38,16 +38,17 @@ AutofillKeyboardAccessoryView::~AutofillKeyboardAccessoryView() {
       base::android::AttachCurrentThread(), java_object_);
 }
 
-void AutofillKeyboardAccessoryView::Initialize(
-    unsigned int animation_duration_millis,
-    bool should_limit_label_width) {
+bool AutofillKeyboardAccessoryView::Initialize() {
   ui::ViewAndroid* view_android = controller_->container_view();
-  DCHECK(view_android);
+  if (!view_android)
+    return false;
+  ui::WindowAndroid* window_android = view_android->GetWindowAndroid();
+  if (!window_android)
+    return false;  // The window might not be attached (yet or anymore).
   Java_AutofillKeyboardAccessoryViewBridge_init(
       base::android::AttachCurrentThread(), java_object_,
-      reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject(),
-      animation_duration_millis, should_limit_label_width);
+      reinterpret_cast<intptr_t>(this), window_android->GetJavaObject());
+  return true;
 }
 
 void AutofillKeyboardAccessoryView::Hide() {

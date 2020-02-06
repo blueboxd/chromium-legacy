@@ -39,6 +39,11 @@
 #include <sys/user.h>
 #endif
 
+#if defined(OS_FUCHSIA)
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
+#endif
+
 #include <ostream>
 
 #include "base/debug/alias.h"
@@ -230,8 +235,12 @@ void VerifyDebugger() {
 #elif defined(OS_FUCHSIA)
 
 bool BeingDebugged() {
-  // TODO(fuchsia): No gdb/gdbserver in the SDK yet.
-  return false;
+  zx_info_process_t info = {};
+  // Ignore failures. The 0-initialization above will result in "false" for
+  // error cases.
+  zx_object_get_info(zx_process_self(), ZX_INFO_PROCESS, &info, sizeof(info),
+                     nullptr, nullptr);
+  return info.debugger_attached;
 }
 
 void VerifyDebugger() {}

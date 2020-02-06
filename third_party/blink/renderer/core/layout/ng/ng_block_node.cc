@@ -404,6 +404,11 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
        box_->PreferredLogicalWidthsDirty())) {
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
 
+    // We need to clear any previous results when scrollbars change. For
+    // example - we may have stored a "measure" layout result which will be
+    // incorrect if we try and reuse it.
+    box_->ClearLayoutResults();
+
 #if DCHECK_IS_ON()
     // Ensure turning on/off scrollbars only once at most, when we call
     // |LayoutWithAlgorithm| recursively.

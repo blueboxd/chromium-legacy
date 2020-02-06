@@ -118,6 +118,7 @@ void AudioServiceListener::OnServiceProcessLaunched(
   process_id_ = info.pid;
   metrics_.ServiceCreated();
   metrics_.ServiceStarted();
+  MaybeSetLogFactory();
 }
 
 void AudioServiceListener::OnServiceProcessTerminatedNormally(

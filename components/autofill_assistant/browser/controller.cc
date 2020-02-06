@@ -1198,12 +1198,11 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
     return;
   }
   it->second = value;
+  UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
                                UserData::FieldChange::ADDITIONAL_VALUES);
   }
-  // It is currently not necessary to call |UpdateCollectUserDataActions|
-  // because all additional values are optional.
 }
 
 void Controller::SetShippingAddress(

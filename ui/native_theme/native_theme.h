@@ -330,9 +330,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // FocusableBorder
     kColorId_FocusedBorderColor,
     kColorId_UnfocusedBorderColor,
-    // Button
+    // Button background
     kColorId_ButtonEnabledColor,
     kColorId_ButtonDisabledColor,
+    kColorId_ButtonHoveredColor,
+    kColorId_ButtonPressedColor,
     kColorId_ButtonPressedShade,
     kColorId_ButtonUncheckedColor,
     kColorId_ProminentButtonColor,

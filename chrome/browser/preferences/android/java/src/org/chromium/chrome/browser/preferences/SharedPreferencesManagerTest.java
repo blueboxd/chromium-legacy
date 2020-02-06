@@ -244,6 +244,18 @@ public class SharedPreferencesManagerTest {
         assertEquals(Collections.emptySet(), mSubject.readStringSet("string_set_key"));
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    @SmallTest
+    public void testReadStringSet_nonEmpty_returnsUnmodifiable() {
+        Set<String> exampleStringSet = new HashSet<>(Arrays.asList("d", "e"));
+        mSubject.writeStringSet("string_set_key", exampleStringSet);
+
+        Set<String> unmodifiableSet = mSubject.readStringSet("string_set_key");
+
+        // Should throw an exception
+        unmodifiableSet.add("f");
+    }
+
     @Test
     @SmallTest
     public void testWriteIntSync() {

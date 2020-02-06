@@ -85,3 +85,13 @@ var TabStripTabGroupTest = class extends TabStripBrowserTest {
 TEST_F('TabStripTabGroupTest', 'All', function() {
   mocha.run();
 });
+
+var TabStripDragManagerTest = class extends TabStripBrowserTest {
+  get browsePreload() {
+    return 'chrome://tab-strip/test_loader.html?module=tab_strip/drag_manager_test.js';
+  }
+};
+
+TEST_F('TabStripDragManagerTest', 'All', function() {
+  mocha.run();
+});

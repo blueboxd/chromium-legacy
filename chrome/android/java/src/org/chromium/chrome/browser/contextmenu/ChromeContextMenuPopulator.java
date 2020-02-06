@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClas
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -40,10 +41,10 @@ import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.url.URI;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -680,7 +681,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * compatibility checks.
      *
      * @param context The current application context
-     * @param TemplateUrlService The service which identifies the current default search engine.
+     * @param templateUrlServiceInstance The service which identifies the current default search
+     *         engine.
      * @return Whether to show the menu item
      */
     private boolean shouldShowLensMenuItemAndRecordMetrics(
@@ -696,7 +698,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     ContextMenuUma.LensSupportStatus.ACTIVITY_NOT_ACCESSIBLE);
             return false;
         }
-        if (LensUtils.isAgsaVersionBelowMinimum(versionName)) {
+        if (GSAState.getInstance(context).isAgsaVersionBelowMinimum(
+                    versionName, LensUtils.getMinimumAgsaVersionForLensSupport())) {
             ContextMenuUma.recordLensSupportStatus(ContextMenuUma.LensSupportStatus.OUT_OF_DATE);
             return false;
         }

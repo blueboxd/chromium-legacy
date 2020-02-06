@@ -29,6 +29,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -909,8 +910,9 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
 }
 
 base::Value PolicyUIHandler::GetPolicyValues() const {
-  return policy::ArrayPolicyConversions()
-      .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+  auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  return policy::ArrayPolicyConversions(std::move(client))
       .EnableConvertValues(true)
       .ToValue();
 }
@@ -1066,10 +1068,10 @@ void DoWritePoliciesToJSONFile(const base::FilePath& path,
 
 void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
+  auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
+      web_ui()->GetWebContents()->GetBrowserContext());
   base::Value dict =
-      policy::DictionaryPolicyConversions()
-          .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
-          .ToValue();
+      policy::DictionaryPolicyConversions(std::move(client)).ToValue();
 
   base::Value chrome_metadata(base::Value::Type::DICTIONARY);
 

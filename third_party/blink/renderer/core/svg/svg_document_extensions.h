@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_DOCUMENT_EXTENSIONS_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -48,7 +49,7 @@ class SVGDocumentExtensions final
   // needs applying.
   void AddWebAnimationsPendingSVGElement(SVGElement&);
 
-  static void ServiceOnAnimationFrame(Document&);
+  CORE_EXPORT static void ServiceOnAnimationFrame(Document&);
 
   void StartAnimations();
   void PauseAnimations();

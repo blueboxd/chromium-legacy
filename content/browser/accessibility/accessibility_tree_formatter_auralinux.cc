@@ -537,6 +537,7 @@ const char* const ATK_OBJECT_ATTRIBUTES[] = {
     "container-live",
     "container-relevant",
     "current",
+    "details-roles",
     "display",
     "dropeffect",
     "explicit-name",

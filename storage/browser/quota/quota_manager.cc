@@ -1399,6 +1399,9 @@ void QuotaManager::NotifyStorageModifiedInternal(QuotaClient::ID client_id,
   DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->UpdateUsageCache(client_id, origin, delta);
 
+  if (db_disabled_)
+    return;
+
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
       base::BindOnce(&UpdateModifiedTimeOnDBThread, origin, type,

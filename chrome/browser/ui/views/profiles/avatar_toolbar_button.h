@@ -80,7 +80,8 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnHighlightChanged() override;
 
   base::string16 GetAvatarTooltipText() const;
-  gfx::ImageSkia GetAvatarIcon(const gfx::Image& profile_identity_image) const;
+  gfx::ImageSkia GetAvatarIcon(ButtonState state,
+                               const gfx::Image& profile_identity_image) const;
 
   void SetInsets();
 

@@ -50,6 +50,9 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
 
+  // Returns the estimated memory usage in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   // A node of an Aho Corasick Tree. This is implemented according to
   // http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides04.pdf
@@ -104,6 +107,8 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
     void AddMatch(StringPattern::ID id);
     void AddMatches(const Matches& matches);
     const Matches& matches() const { return matches_; }
+
+    size_t EstimateMemoryUsage() const;
 
    private:
     // Outgoing edges of current node.

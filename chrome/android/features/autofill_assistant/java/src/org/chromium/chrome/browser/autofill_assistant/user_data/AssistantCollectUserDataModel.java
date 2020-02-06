@@ -14,6 +14,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.AssistantInfoPopup;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantPopupListSection;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantStaticTextSection;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
@@ -468,6 +469,14 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     private static void appendTextInputSection(List<AssistantAdditionalSectionFactory> sections,
             String title, List<TextInputFactory> inputs) {
         sections.add(new AssistantTextInputSection.Factory(title, inputs));
+    }
+
+    @CalledByNative
+    private static void appendPopupListSection(List<AssistantAdditionalSectionFactory> sections,
+            String title, String identifier, String[] items, int[] initialSelection,
+            boolean allowMultiselect, boolean selectionMandatory, String noSelectionErrorMessage) {
+        sections.add(new AssistantPopupListSection.Factory(title, identifier, items,
+                initialSelection, allowMultiselect, selectionMandatory, noSelectionErrorMessage));
     }
 
     @CalledByNative

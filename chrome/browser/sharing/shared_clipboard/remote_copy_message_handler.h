@@ -38,7 +38,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   void OnImageDecoded(const SkBitmap& decoded_image) override;
   void OnDecodeImageFailed() override;
 
-  bool IsOriginAllowed(const GURL& image_url);
+  bool IsImageSourceAllowed(const GURL& image_url);
 
  private:
   void HandleText(const std::string& text);

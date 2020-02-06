@@ -172,7 +172,7 @@
 <translation id="1224275271335624810">最快</translation>
 <translation id="1225177025209879837">正在處理要求...</translation>
 <translation id="1227507814927581609">驗證在連線至「<ph name="DEVICE_NAME" />」時失敗。</translation>
-<translation id="1229587244632896090">你選取了一個來路不明的檔案，其中可能含有危險內容。進階保護功能建議將這個檔案傳送至 Google，以進行惡意軟體檢查。</translation>
+<translation id="1229587244632896090">你選取了一個來路不明的檔案，其中可能含有危險內容。進階保護功能建議將這個檔案傳送至 Google，檢查是否含有惡意軟體。</translation>
 <translation id="1231733316453485619">要開啟同步處理功能嗎？</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1233497634904001272">請再次輕觸安全金鑰，即可完成要求。</translation>
@@ -846,7 +846,7 @@
 <translation id="2165421703844373933">只要說出「Ok Google」就能存取 Google 助理。如要節省電力，請選擇「啟用 (建議設定)」。這樣一來，你的 Google 助理就只會在裝置插上電源或充電時回應你的指令。</translation>
 <translation id="2166369534954157698">狐狗大戰</translation>
 <translation id="2169062631698640254">繼續登入</translation>
-<translation id="2170519224423744029">進階保護功能建議將「<ph name="FILE_NAME" />」傳送至 Google，以進行惡意軟體檢查。</translation>
+<translation id="2170519224423744029">進階保護功能建議將「<ph name="FILE_NAME" />」傳送至 Google，檢查是否含有惡意軟體。</translation>
 <translation id="2172784515318616985">繼續</translation>
 <translation id="2173302385160625112">檢查你的網際網路連線</translation>
 <translation id="2173801458090845390">新增這部裝置的申請 ID</translation>
@@ -1126,7 +1126,7 @@
 <translation id="2537178555904266562">同步密碼時發生錯誤</translation>
 <translation id="2537296579376733324">所有 Cookies，僅限這個網站</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> 可以查看及編輯下列檔案和資料夾</translation>
-<translation id="2537464584626495441">開啟你手機上的安全金鑰應用程式</translation>
+<translation id="2537464584626495441">開啟手機上的安全金鑰應用程式</translation>
 <translation id="2538361623464451692">同步處理已停用</translation>
 <translation id="2540449034743108469">按下 [開始] 即可監聽擴充功能活動</translation>
 <translation id="2541002089857695151">要讓全螢幕投放最佳化嗎？</translation>
@@ -1170,7 +1170,6 @@
 <translation id="2604255671529671813">網路連線錯誤</translation>
 <translation id="2606246518223360146">連結資料</translation>
 <translation id="2607101320794533334">主體公開金鑰資訊</translation>
-<translation id="2608770217409477136">使用預設設定</translation>
 <translation id="2609896558069604090">建立捷徑...</translation>
 <translation id="2610157865375787051">休眠</translation>
 <translation id="2610260699262139870">實際大小(&amp;C)</translation>
@@ -3252,7 +3251,6 @@
 <translation id="5565735124758917034">管理中</translation>
 <translation id="5567989639534621706">應用程式快取</translation>
 <translation id="5568069709869097550">無法登入</translation>
-<translation id="5568144734023334204">Android 儲存空間</translation>
 <translation id="5572851009514199876">請啟動 Chrome 並登入帳戶，Chrome 將確認你是否可存取這個網站。</translation>
 <translation id="5575473780076478375">無痕模式擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">示範註冊要求發生問題。</translation>

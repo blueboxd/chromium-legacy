@@ -111,6 +111,12 @@ void MockQuotaManager::DeleteOriginData(const url::Origin& origin,
                                 blink::mojom::QuotaStatusCode::kOk));
 }
 
+void MockQuotaManager::NotifyWriteFailed(const url::Origin& origin) {
+  auto origin_error_log =
+      write_error_tracker_.insert(std::pair<url::Origin, int>(origin, 0)).first;
+  ++origin_error_log->second;
+}
+
 MockQuotaManager::~MockQuotaManager() = default;
 
 void MockQuotaManager::UpdateUsage(const url::Origin& origin,

@@ -101,6 +101,9 @@ cr.define('settings', function() {
 
     /** @type {!FakeChromeEvent} */
     onPairing: new FakeChromeEvent(),
+
+    /** @type {!FakeChromeEvent} */
+    onDeviceAddressChanged: new FakeChromeEvent(),
   };
 
   return {FakeBluetoothPrivate: FakeBluetoothPrivate};

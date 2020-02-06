@@ -99,7 +99,7 @@
 <translation id="1134009406053225289">Åpne i inkognitovindu</translation>
 <translation id="1136712381129578788">Sikkerhetsnøkkelen er låst fordi feil PIN-kode ble skrevet inn for mange ganger. For å låse den opp, ta den ut og sett den inn på nytt.</translation>
 <translation id="1137673463384776352">Åpne linken i <ph name="APP" /></translation>
-<translation id="1139343347646843679">En feil oppsto under konfigureringen av Linux. Kontakt administrator.</translation>
+<translation id="1139343347646843679">Det oppsto en feil under konfigureringen av Linux. Kontakt administratoren din.</translation>
 <translation id="1140351953533677694">bruke Bluetooth og de seriekoblede enhetene dine</translation>
 <translation id="114036956334641753">Lyd og teksting</translation>
 <translation id="1140746652461896221">Blokkér innhold på sider du besøker</translation>
@@ -1168,7 +1168,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2604255671529671813">Feil i nettverkstilkobling</translation>
 <translation id="2606246518223360146">Knytt sammen dataene</translation>
 <translation id="2607101320794533334">Informasjon om enhetens offentlige nøkkel</translation>
-<translation id="2608770217409477136">Bruk standardinnstillinger</translation>
 <translation id="2609896558069604090">Opprett snarveier</translation>
 <translation id="2610157865375787051">Hvilemodus</translation>
 <translation id="2610260699262139870">Fa&amp;ktisk størrelse</translation>
@@ -2615,7 +2614,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4648499713050786492">Du må låse opp profilen din før du kan legge til en person.</translation>
 <translation id="4650591383426000695">Koble telefonen fra <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">Kunne ikke laste inn nettbasert komponent med ressurser for demomodus.</translation>
-<translation id="4653405415038586100">Feil under konfigurering av Linux</translation>
+<translation id="4653405415038586100">Feil under konfigureringen av Linux</translation>
 <translation id="465878909996028221">Bare protokollene http, https og file støttes for viderekobling av nettleseren.</translation>
 <translation id="4659077111144409915">Primærkonto</translation>
 <translation id="4660476621274971848">Den forventede versjonen var «<ph name="EXPECTED_VERSION" />», men den faktiske versjonen var «<ph name="NEW_ID" />»</translation>
@@ -3249,7 +3248,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="5567989639534621706">Programbuffere</translation>
 <translation id="5568069709869097550">Kan ikke logge på</translation>
-<translation id="5568144734023334204">Android-lagring</translation>
 <translation id="5572851009514199876">Start og logg på Chrome, så Chrome kan sjekke om du har tillatelse til å gå til dette nettstedet.</translation>
 <translation id="5575473780076478375">Inkognitoutvidelse: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Det oppsto et problem med en forespørsel om demoregistrering.</translation>
@@ -5078,7 +5076,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8114875720387900039">Del horisontalt</translation>
 <translation id="8116972784401310538">&amp;Bokmerkebehandling</translation>
 <translation id="8117620576188476503">Administrer tilkoblinger, oppdateringer og innstillinger med statusfeltet. For å komme hit kan du også bruke tastekombinasjonen Alt + Shift + S.</translation>
-<translation id="8117752106453549166">Linux konfigureres av administratoren. Konfigureringen kommer til å ta noen minutter.</translation>
+<translation id="8117752106453549166">Linux konfigureres av administratoren din. Det kommer til å ta noen minutter.</translation>
 <translation id="8118076340394175570">Organisasjonen din krever at denne enheten oppdateres</translation>
 <translation id="8118362518458010043">Deaktivert av Chrome. Denne utvidelsen kan være usikker.</translation>
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Nettleseren administreres<ph name="END_LINK" /> av organisasjonen din</translation>
@@ -5242,7 +5240,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8338952601723052325">Utviklernettsted</translation>
 <translation id="8339059274628563283">Data lagret lokalt på <ph name="SITE" /></translation>
 <translation id="833986336429795709">For å åpne denne linken, velg en app</translation>
-<translation id="834057053932610950">En feil oppsto under konfigureringen av Linux. Kontakt administrator.</translation>
+<translation id="834057053932610950">Det oppsto en feil under konfigureringen av Linux. Kontakt administratoren din.</translation>
 <translation id="8342861492835240085">Velg en samling</translation>
 <translation id="834290227245955730">Ugyldig PIN-kode. Gjenværende forsøk: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Denne utvidelsen har tatt kontrollen over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>

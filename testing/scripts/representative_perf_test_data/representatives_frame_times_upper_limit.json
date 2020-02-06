@@ -50,7 +50,8 @@
     },
     "main_30fps_impl_60fps": {
       "ci_095": 0.121,
-      "avg": 16.689
+      "avg": 16.689,
+      "control": true
     },
     "css_value_type_shadow": {
       "ci_095": 1.306,
@@ -96,7 +97,8 @@
     },
     "main_30fps_impl_60fps": {
       "ci_095": 0.185,
-      "avg": 16.695
+      "avg": 16.695,
+      "control": true
     },
     "ie_chalkboard": {
       "ci_095": 43.55,
@@ -142,7 +144,8 @@
     },
     "main_30fps_impl_60fps": {
       "ci_095": 0.603,
-      "avg": 18.009
+      "avg": 18.009,
+      "control": true
     },
     "new_tilings": {
       "ci_095": 1.008,

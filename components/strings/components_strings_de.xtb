@@ -532,7 +532,7 @@
 <translation id="3366477098757335611">Karten ansehen</translation>
 <translation id="3369192424181595722">Fehler bei der Uhrzeit</translation>
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> hat auf Ihrem Browser Enterprise Service Hooks aktiviert. Diese Hooks haben Zugriff auf einige Ihrer Daten.</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> hat Enterprise Service Hooks für Ihren Browser aktiviert. Diese Service Hooks haben Zugriff auf einige Ihrer Daten.</translation>
 <translation id="3377144306166885718">Der Server hat eine veraltete TLS-Version verwendet.</translation>
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="3377736046129930310">Bildschirmsperre verwenden, um Karten schneller zu bestätigen</translation>
@@ -979,7 +979,7 @@
 <translation id="5295292838686006428">Durch eine Datenpanne auf einer Website oder in einer App wurde Ihr Passwort preisgegeben. Chrome empfiehlt, Ihre gespeicherten Passwörter jetzt zu prüfen.</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
-<translation id="5306593769196050043">Beide Tabellen</translation>
+<translation id="5306593769196050043">Beide Auftragsblätter</translation>
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5314967030527622926">Falzmaschine</translation>
@@ -1351,7 +1351,7 @@
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7062635574500127092">Blaugrün</translation>
 <translation id="7064851114919012435">Kontaktdaten</translation>
-<translation id="70705239631109039">Ihre Verbindung ist nicht vollständig abgesichert</translation>
+<translation id="70705239631109039">Ihre Verbindung ist nicht uneingeschränkt sicher</translation>
 <translation id="7075452647191940183">Die Anfrage ist zu groß</translation>
 <translation id="7079718277001814089">Diese Website enthält Malware</translation>
 <translation id="7081308185095828845">Diese Funktion ist auf Ihrem Gerät nicht verfügbar</translation>
@@ -1397,7 +1397,7 @@ Weitere Details:
 <translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zugriff entziehen</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
-<translation id="7288778322931489286">Ihr Administrator hat auf Ihrem Browser Enterprise Service Hooks aktiviert. Diese Hooks haben Zugriff auf einige Ihrer Daten.</translation>
+<translation id="7288778322931489286">Ihr Administrator hat Enterprise Service Hooks für Ihren Browser aktiviert. Diese Service Hooks haben Zugriff auf einige Ihrer Daten.</translation>
 <translation id="7292031607255951991">Name des Empfängers</translation>
 <translation id="7298195798382681320">Empfohlen</translation>
 <translation id="7300012071106347854">Kobaltblau</translation>
@@ -1446,7 +1446,6 @@ Weitere Details:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7455133967321480974">Globalen Standard verwenden (Blockieren)</translation>
 <translation id="7460618730930299168">Die Filmvorführung entspricht nicht Ihrer Auswahl. Möchten Sie fortfahren?</translation>
-<translation id="7464821087936825778">Suchmodus wird beendet</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>

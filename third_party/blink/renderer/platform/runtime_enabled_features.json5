@@ -512,6 +512,12 @@
       status: "experimental",
     },
     {
+      // Perform partial style and layout invalidation on web font loading.
+      // See https://crbug.com/441925 and https://bit.ly/35JjPmq for details.
+      name: "CSSReducedFontLoadingInvalidations",
+      status: "test",
+    },
+    {
       name: "CSSRenderSubtree",
       status: "experimental",
     },
@@ -1710,10 +1716,6 @@
       status: "experimental",
       origin_trial_feature_name: "UnsizedMediaPolicy",
       implied_by: ["ExperimentalProductivityFeatures"]
-    },
-    {
-      name: "UpdateHoverAtBeginFrame",
-      settable_from_internals: true,
     },
     {
       name: "UserActivationAPI",

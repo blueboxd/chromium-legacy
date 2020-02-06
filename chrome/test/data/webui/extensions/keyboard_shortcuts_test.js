@@ -8,7 +8,7 @@ import {isValidKeyCode, Key, keystrokeToString} from 'chrome://extensions/extens
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 import {TestService} from './test_service.js';
 import {createExtensionInfo} from './test_util.js';
@@ -83,7 +83,7 @@ suite(extension_shortcut_tests.suiteName, function() {
     const isVisibleOnCard = function(e, s) {
       // We check the light DOM in the card because it's a regular old div,
       // rather than a fancy-schmancy custom element.
-      return isVisible(e, s, true);
+      return isChildVisible(e, s, true);
     };
     const cards =
         keyboardShortcuts.$$('#container').querySelectorAll('.shortcut-card');

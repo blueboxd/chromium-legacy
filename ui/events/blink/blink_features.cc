@@ -7,7 +7,7 @@
 namespace features {
 
 const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFilteringScrollPrediction{
     "FilteringScrollPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -20,9 +20,6 @@ const base::Feature kKalmanDirectionCutOff{"KalmanDirectionCutOff",
 
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kUpdateHoverAtBeginFrame{"UpdateHoverAtBeginFrame",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

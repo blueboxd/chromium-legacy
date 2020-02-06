@@ -222,22 +222,20 @@ std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
                    : std::vector<InteractionsStats>();
 }
 
-void PasswordStoreDefault::AddCompromisedCredentialsImpl(
-    const CompromisedCredentials& compromised_credentials) {
+bool PasswordStoreDefault::AddCompromisedCredentialsImpl(
+    const CompromisedCredentials& credentials) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  if (login_db_)
-    login_db_->compromised_credentials_table().AddRow(compromised_credentials);
+  return login_db_ &&
+         login_db_->compromised_credentials_table().AddRow(credentials);
 }
 
-void PasswordStoreDefault::RemoveCompromisedCredentialsImpl(
+bool PasswordStoreDefault::RemoveCompromisedCredentialsImpl(
     const std::string& signon_realm,
     const base::string16& username,
     RemoveCompromisedCredentialsReason reason) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  if (login_db_) {
-    login_db_->compromised_credentials_table().RemoveRow(signon_realm, username,
-                                                         reason);
-  }
+  return login_db_ && login_db_->compromised_credentials_table().RemoveRow(
+                          signon_realm, username, reason);
 }
 
 std::vector<CompromisedCredentials>
@@ -247,14 +245,14 @@ PasswordStoreDefault::GetAllCompromisedCredentialsImpl() {
                    : std::vector<CompromisedCredentials>();
 }
 
-void PasswordStoreDefault::RemoveCompromisedCredentialsByUrlAndTimeImpl(
+bool PasswordStoreDefault::RemoveCompromisedCredentialsByUrlAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
-  if (login_db_) {
-    login_db_->compromised_credentials_table().RemoveRowsByUrlAndTime(
-        url_filter, remove_begin, remove_end);
-  }
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  return login_db_ &&
+         login_db_->compromised_credentials_table().RemoveRowsByUrlAndTime(
+             url_filter, remove_begin, remove_end);
 }
 
 void PasswordStoreDefault::AddFieldInfoImpl(const FieldInfo& field_info) {

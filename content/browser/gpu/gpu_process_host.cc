@@ -501,8 +501,9 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
     return nullptr;
   }
 
-  // Do not launch the unsandboxed GPU process if GPU is disabled
-  if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+  // Do not launch the unsandboxed GPU info collection process if GPU is
+  // disabled
+  if (kind == GPU_PROCESS_KIND_INFO_COLLECTION) {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kDisableGpu) ||
         command_line->HasSwitch(switches::kSingleProcess) ||
@@ -564,7 +565,7 @@ void GpuProcessHost::CallOnIO(
     bool force_create,
     base::OnceCallback<void(GpuProcessHost*)> callback) {
 #if !defined(OS_WIN)
-  DCHECK_NE(kind, GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
+  DCHECK_NE(kind, GPU_PROCESS_KIND_INFO_COLLECTION);
 #endif
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&RunCallbackOnIO, kind, force_create,
@@ -735,7 +736,7 @@ GpuProcessHost::~GpuProcessHost() {
 
       message = "The GPU process ";
     } else {
-      message = "The unsandboxed GPU process ";
+      message = "The info collection GPU process ";
     }
 
     switch (info.status) {
@@ -970,7 +971,7 @@ void GpuProcessHost::DidInitialize(
                     "initialization time was "
                  << gpu_info.initialization_time.InMilliseconds() << " ms";
   }
-  if (kind_ != GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+  if (kind_ != GPU_PROCESS_KIND_INFO_COLLECTION) {
     auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
     // Update GpuFeatureInfo first, because UpdateGpuInfo() will notify all
     // listeners.
@@ -1100,7 +1101,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
   cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
 #endif  // defined(OS_WIN)
 
-  if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+  if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION) {
     cmd_line->AppendSwitch(service_manager::switches::kDisableGpuSandbox);
     cmd_line->AppendSwitchASCII(switches::kUseGL,
                                 gl::kGLImplementationDisabledName);

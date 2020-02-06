@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/modules/webgl/ext_frag_depth.h"
 #include "third_party/blink/renderer/modules/webgl/ext_shader_texture_lod.h"
 #include "third_party/blink/renderer/modules/webgl/ext_srgb.h"
+#include "third_party/blink/renderer/modules/webgl/ext_texture_compression_bptc.h"
 #include "third_party/blink/renderer/modules/webgl/ext_texture_filter_anisotropic.h"
 #include "third_party/blink/renderer/modules/webgl/khr_parallel_shader_compile.h"
 #include "third_party/blink/renderer/modules/webgl/oes_element_index_uint.h"
@@ -163,6 +164,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTFloatBlend>(ext_float_blend_);
   RegisterExtension<EXTFragDepth>(ext_frag_depth_);
   RegisterExtension<EXTShaderTextureLOD>(ext_shader_texture_lod_);
+  RegisterExtension<EXTTextureCompressionBPTC>(ext_texture_compression_bptc_);
   RegisterExtension<EXTTextureFilterAnisotropic>(
       ext_texture_filter_anisotropic_, kApprovedExtension, kBothPrefixes);
   RegisterExtension<EXTsRGB>(exts_rgb_);
@@ -204,6 +206,7 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(ext_float_blend_);
   visitor->Trace(ext_frag_depth_);
   visitor->Trace(ext_shader_texture_lod_);
+  visitor->Trace(ext_texture_compression_bptc_);
   visitor->Trace(ext_texture_filter_anisotropic_);
   visitor->Trace(exts_rgb_);
   visitor->Trace(khr_parallel_shader_compile_);

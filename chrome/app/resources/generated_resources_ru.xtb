@@ -95,7 +95,7 @@
 <translation id="1128109161498068552">Запретить сайтам доступ к устройствам MIDI с помощью системных сообщений</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Изменить поисковую систему</translation>
-<translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> – элемент группы "<ph name="GROUP_NAME" />"</translation>
+<translation id="1130589222747246278">"<ph name="WINDOW_TITLE" />" – элемент группы "<ph name="GROUP_NAME" />"</translation>
 <translation id="1134009406053225289">Открыть в режиме инкогнито</translation>
 <translation id="1136712381129578788">Слишком много попыток ввода PIN-кода. Электронный ключ заблокирован. Чтобы разблокировать ключ, извлеките его и вставьте снова.</translation>
 <translation id="1137673463384776352">Открыть ссылку в приложении "<ph name="APP" />"</translation>
@@ -172,7 +172,7 @@
 <translation id="1224275271335624810">Максимальная</translation>
 <translation id="1225177025209879837">Обработка запроса...</translation>
 <translation id="1227507814927581609">При подключении к "<ph name="DEVICE_NAME" />" произошла ошибка аутентификации.</translation>
-<translation id="1229587244632896090">Выбранный файл может представлять опасность. Рекомендуется отправить этот файл в Google для проверки на наличие вредоносного ПО.</translation>
+<translation id="1229587244632896090">Выбранный файл может представлять опасность. Рекомендуется отправить его в Google для проверки на наличие вредоносного ПО.</translation>
 <translation id="1231733316453485619">Включить синхронизацию?</translation>
 <translation id="1232569758102978740">Без имени</translation>
 <translation id="1233497634904001272">Чтобы выполнить запрос, нажмите кнопку на электронном ключе ещё раз.</translation>
@@ -286,7 +286,7 @@
 <translation id="1396963298126346194">Неправильное имя пользователя или пароль</translation>
 <translation id="1397500194120344683">Нет подходящих устройств. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Развернуть</translation>
-<translation id="139911022479327130">Разблокируйте телефон и подтвердите свою личность</translation>
+<translation id="139911022479327130">Разблокируйте телефон и подтвердите, что это вы</translation>
 <translation id="1399511500114202393">Не использовать сертификат пользователя</translation>
 <translation id="1403519882106291341">Условия использования Google Chrome OS</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролируемый профиль)</translation>
@@ -948,7 +948,7 @@
 <translation id="2299734369537008228">Ползунок с минимальным значением "<ph name="MIN_LABEL" />" и максимальным значением "<ph name="MAX_LABEL" />"</translation>
 <translation id="2300383962156589922">Настройка приложения "<ph name="APP_NAME" />" и управление им</translation>
 <translation id="2301382460326681002">Недействительный корневой каталог расширения.</translation>
-<translation id="2302444155926798584">Plugin VM удален.</translation>
+<translation id="2302444155926798584">Плагин Plugin VM удален.</translation>
 <translation id="23030561267973084">Приложение "<ph name="EXTENSION_NAME" />" запросило дополнительные разрешения.</translation>
 <translation id="23055578400314116">Выберите имя пользователя.</translation>
 <translation id="2307462900900812319">Настройка сети</translation>
@@ -1169,7 +1169,6 @@
 <translation id="2604255671529671813">Ошибка подключения к сети</translation>
 <translation id="2606246518223360146">Связать данные</translation>
 <translation id="2607101320794533334">Информация об открытом ключе субъекта</translation>
-<translation id="2608770217409477136">Использовать настройки по умолчанию</translation>
 <translation id="2609896558069604090">Создать ярлык…</translation>
 <translation id="2610157865375787051">Включать спящий режим</translation>
 <translation id="2610260699262139870">&amp;Реальный размер</translation>
@@ -1178,7 +1177,7 @@
 <translation id="2616366145935564096">Просмотр и изменение данных: <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM-карта заблокирована</translation>
 <translation id="2619761439309613843">Обновлять ежедневно</translation>
-<translation id="2620215283731032047">Файл "<ph name="FILE_NAME" />" не может быть безопасно скачан.</translation>
+<translation id="2620215283731032047">Невозможно скачать безопасно файл "<ph name="FILE_NAME" />".</translation>
 <translation id="2620436844016719705">Система</translation>
 <translation id="2621713457727696555">Защищена</translation>
 <translation id="26224892172169984">Запретить обработку протоколов на всех сайтах</translation>
@@ -1285,7 +1284,7 @@
 <translation id="2749756011735116528">Войти в <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Проверять грамматику и правописание</translation>
 <translation id="2751739896257479635">2-й этап аутентификации EAP</translation>
-<translation id="2753677631968972007">Ручное управление разрешениями сайта</translation>
+<translation id="2753677631968972007">Управление доступом к сайтам вручную</translation>
 <translation id="2755367719610958252">Настроить специальные возможности</translation>
 <translation id="275662540872599901">экран выключен</translation>
 <translation id="2762441749940182211">Доступ к камере запрещен</translation>
@@ -1347,7 +1346,7 @@
 <translation id="2825758591930162672">Открытый ключ субъекта</translation>
 <translation id="2825848369316359348">Найдите на обратной стороне электронного ключа его название.</translation>
 <translation id="2828650939514476812">Подключитесь к сети Wi-Fi</translation>
-<translation id="2835294513443818940">Этот файл не может быть безопасно скачан.</translation>
+<translation id="2835294513443818940">Невозможно скачать безопасно этот файл.</translation>
 <translation id="2836269494620652131">Сбой</translation>
 <translation id="2836635946302913370">Вход с этим именем пользователя запрещен администратором.</translation>
 <translation id="283669119850230892">Для использования сети <ph name="NETWORK_ID" /> предварительно подключитесь к Интернету.</translation>
@@ -1599,7 +1598,7 @@
 <translation id="3192947282887913208">Аудиофайлы</translation>
 <translation id="3194737229810486521">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение данных на вашем устройстве.</translation>
 <translation id="3199127022143353223">Серверы</translation>
-<translation id="3200941271596533635">Переключить режим чтения</translation>
+<translation id="3200941271596533635">Включить/выключить режим чтения</translation>
 <translation id="3201306578844503970">Не удалось установить виртуальную машину из-за ошибки сети. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Здесь появятся доступные USB-устройства.</translation>
 <translation id="3202131003361292969">Путь</translation>
@@ -3236,7 +3235,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">Найти</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" и ещё 1 вкладка}one{"<ph name="TAB_TITLE" />" и ещё # вкладка}few{"<ph name="TAB_TITLE" />" и ещё # вкладки}many{"<ph name="TAB_TITLE" />" и ещё # вкладок}other{"<ph name="TAB_TITLE" />" и ещё # вкладки}}</translation>
-<translation id="5549467165017213645">Будут удалены сохраненные данные сайтов и установленных ими приложений (<ph name="TOTAL_USAGE" />).</translation>
+<translation id="5549467165017213645">Будут удалены сохраненные данные сайтов и установленных с них приложений (<ph name="TOTAL_USAGE" />).</translation>
 <translation id="5551573675707792127">Клавиатура и ввод текста</translation>
 <translation id="5553089923092577885">Сопоставления политики сертификатов</translation>
 <translation id="5554489410841842733">Значок будет видимым, если расширение может работать на текущей странице.</translation>
@@ -3252,7 +3251,6 @@
 <translation id="5565735124758917034">Активен</translation>
 <translation id="5567989639534621706">Кеш приложений</translation>
 <translation id="5568069709869097550">Не удается войти</translation>
-<translation id="5568144734023334204">Хранилище Android</translation>
 <translation id="5572851009514199876">Выполните вход, чтобы Chrome определил, разрешен ли вам доступ к этому сайту.</translation>
 <translation id="5575473780076478375">Расширение в режиме инкогнито: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Возникла проблема с запросом на регистрацию демонстрационного режима.</translation>
@@ -3489,7 +3487,7 @@
 <translation id="5906732635754427568">Данные, связанные с этим приложением, будут удалены с устройства.</translation>
 <translation id="5908769186679515905">Блокировать Flash на сайтах</translation>
 <translation id="5910363049092958439">Сохранить изображение как...</translation>
-<translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> не в сети</translation>
+<translation id="5910726859585389579">Устройство <ph name="DEVICE_TYPE" /> не подключено к Интернету</translation>
 <translation id="5911533659001334206">Просмотр ярлыков</translation>
 <translation id="5912378097832178659">&amp;Изменить поисковые системы...</translation>
 <translation id="5914724413750400082">Модуль (<ph name="MODULUS_NUM_BITS" /> бит):
@@ -3624,7 +3622,7 @@
 <translation id="6080515710685820702">Компьютером пользуются несколько человек? Откройте окно в режиме инкогнито.</translation>
 <translation id="6080689532560039067">Проверка системного времени</translation>
 <translation id="6082651258230788217">Добавить на панель инструментов</translation>
-<translation id="608531959444400877"><ph name="WINDOW_TITLE" /> – элемент группы без названия</translation>
+<translation id="608531959444400877">"<ph name="WINDOW_TITLE" />" – элемент группы без названия</translation>
 <translation id="6086846494333236931">Установлено администратором</translation>
 <translation id="6087960857463881712">Модник</translation>
 <translation id="6091761513005122595">Ресурс подключен.</translation>
@@ -3891,7 +3889,7 @@
 <translation id="6467304607960172345">Оптимизация полноэкранного видео</translation>
 <translation id="6468485451923838994">Шрифты</translation>
 <translation id="6472207088655375767">Одноразовый код</translation>
-<translation id="6472804939621540371">Будут удалены все данные и файлы cookie, сохраненные группой сайтов <ph name="SITE_GROUP_NAME" /> и установленным ими приложением.</translation>
+<translation id="6472804939621540371">Будут удалены все данные и файлы cookie, сохраненные группой сайтов <ph name="SITE_GROUP_NAME" /> и установленным с этих сайтов приложением.</translation>
 <translation id="6472893788822429178">Показывать кнопку "Главная страница"</translation>
 <translation id="6473842110411557830">Иллюстрация Powerwash</translation>
 <translation id="6474884162850599008">Отключить аккаунт Google Диска</translation>
@@ -4537,7 +4535,7 @@
 <translation id="7388044238629873883">Почти готово!</translation>
 <translation id="7392118418926456391">Не удалось выполнить проверку на вирусы</translation>
 <translation id="7392915005464253525">О&amp;ткрыть закрытое окно</translation>
-<translation id="7396017167185131589">Здесь будут появляться общие папки</translation>
+<translation id="7396017167185131589">Здесь будут появляться общие папки.</translation>
 <translation id="7396845648024431313">Приложение <ph name="APP_NAME" /> будет запущено при старте системы и продолжит работу в фоновом режиме даже после закрытия всех окон <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923">Настройте соединение на устройстве <ph name="PHONE_NAME" /></translation>
@@ -5047,7 +5045,7 @@
 <translation id="8063235345342641131">Аватар по умолчанию (зеленый)</translation>
 <translation id="8064671687106936412">Ключ:</translation>
 <translation id="8068253693380742035">Нажмите, чтобы войти</translation>
-<translation id="8068809649322155577">Будут удалены все данные и файлы cookie, сохраненные группой сайтов <ph name="SITE_GROUP_NAME" /> и установленными ими приложениями.</translation>
+<translation id="8068809649322155577">Будут удалены все данные и файлы cookie, сохраненные группой сайтов <ph name="SITE_GROUP_NAME" /> и установленными с этих сайтов приложениями.</translation>
 <translation id="8069615408251337349">Виртуальный принтер Google</translation>
 <translation id="8071432093239591881">Печатать как изображение</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Данные приложений – это любая информация, которую приложения сохраняют в соответствии с настройками разработчика. Она может включать контакты, сообщения, фотографии и многое другое.<ph name="END_PARAGRAPH1" />

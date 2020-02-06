@@ -4861,6 +4861,16 @@ void WebContentsImpl::PrintCrossProcessSubframe(
                                        subframe_host);
 }
 
+void WebContentsImpl::CapturePaintPreviewOfCrossProcessSubframe(
+    const gfx::Rect& rect,
+    const base::UnguessableToken& guid,
+    RenderFrameHost* render_frame_host) {
+  if (!delegate_)
+    return;
+  delegate_->CapturePaintPreviewOfCrossProcessSubframe(this, rect, guid,
+                                                       render_frame_host);
+}
+
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaRenderFrameHostDelegate() {

@@ -635,6 +635,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void PrintCrossProcessSubframe(const gfx::Rect& rect,
                                  int document_cookie,
                                  RenderFrameHost* render_frame_host) override;
+  void CapturePaintPreviewOfCrossProcessSubframe(
+      const gfx::Rect& rect,
+      const base::UnguessableToken& guid,
+      RenderFrameHost* render_frame_host) override;
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHostDelegate()
       override;

@@ -447,7 +447,7 @@ std::vector<std::string> MakeMenuItemStringsFor(
   // These constants are based on Safari's context menu because tests are made
   // for it.
   static const char* kNonEditableMenuStrings[] = {
-      "Back",        "Reload Page",     "Open in Dashbaord",
+      "Back",        "Reload Page",     "Open in Dashboard",
       "<separator>", "View Source",     "Save Page As",
       "Print Page",  "Inspect Element", nullptr};
   static const char* kEditableMenuStrings[] = {"Cut",

@@ -11,4 +11,5 @@ include_rules = [
   "+courgette",
   "+third_party/crashpad",
   "+third_party/zlib/google",
+  "+third_party/boringssl/src/include",
 ]

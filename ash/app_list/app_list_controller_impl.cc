@@ -18,7 +18,6 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
-#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
@@ -74,10 +73,8 @@ bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
-// Close current Assistant UI.
 void CloseAssistantUi(AssistantExitPoint exit_point) {
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
+  Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
 }
 
 TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
@@ -179,10 +176,8 @@ AppListControllerImpl::AppListControllerImpl()
   AssistantState::Get()->AddObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
-  if (app_list_features::IsAssistantLauncherUIEnabled()) {
-    shell->assistant_controller()->AddObserver(this);
-    shell->assistant_controller()->ui_controller()->AddModelObserver(this);
-  }
+  shell->assistant_controller()->AddObserver(this);
+  shell->assistant_controller()->ui_controller()->AddModelObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
@@ -554,9 +549,6 @@ void AppListControllerImpl::OnAppListItemUpdated(AppListItem* item) {
 
 void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
                                                   AppListState old_state) {
-  if (!app_list_features::IsAssistantLauncherUIEnabled())
-    return;
-
   UpdateLauncherContainer();
 
   if (new_state == AppListState::kStateEmbeddedAssistant) {
@@ -1065,17 +1057,8 @@ void AppListControllerImpl::RecordShelfAppLaunched(
 // Methods of |client_|:
 
 void AppListControllerImpl::StartAssistant() {
-  if (app_list_features::IsAssistantLauncherUIEnabled()) {
-    Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-        AssistantEntryPoint::kLauncherSearchBoxMic);
-    return;
-  }
-
-  if (!IsTabletMode())
-    DismissAppList();
-
   Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-      AssistantEntryPoint::kLauncherSearchBox);
+      AssistantEntryPoint::kLauncherSearchBoxMic);
 }
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
@@ -1188,12 +1171,8 @@ void AppListControllerImpl::GetSearchResultContextMenuModel(
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
-  if (app_list_features::IsAssistantLauncherUIEnabled() &&
-      GetAssistantViewDelegate()->GetUiModel()->ui_mode() !=
-          AssistantUiMode::kLauncherEmbeddedUi) {
-    CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
-  }
   UpdateAssistantVisibility();
+
   if (client_)
     client_->ViewShown(display_id);
 
@@ -1719,10 +1698,8 @@ void AppListControllerImpl::Shutdown() {
   is_shutdown_ = true;
 
   Shell* shell = Shell::Get();
-  if (app_list_features::IsAssistantLauncherUIEnabled()) {
-    shell->assistant_controller()->RemoveObserver(this);
-    shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
-  }
+  shell->assistant_controller()->RemoveObserver(this);
+  shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
   AssistantState::Get()->RemoveObserver(this);

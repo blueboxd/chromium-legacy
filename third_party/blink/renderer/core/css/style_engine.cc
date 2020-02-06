@@ -822,6 +822,34 @@ void StyleEngine::CollectScopedStyleFeaturesTo(RuleFeatureSet& features) const {
   }
 }
 
+void StyleEngine::InvalidateStyleAndLayoutForFontUpdates() {
+  if (!fonts_need_update_)
+    return;
+
+  DCHECK(RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled());
+  TRACE_EVENT0("blink", "StyleEngine::InvalidateStyleAndLayoutForFontUpdates");
+
+  fonts_need_update_ = false;
+  Element* root = GetDocument().documentElement();
+  if (!root)
+    return;
+
+  {
+    TRACE_EVENT0("blink", "Node::MarkSubtreeNeedsStyleRecalcForFontUpdates");
+    root->MarkSubtreeNeedsStyleRecalcForFontUpdates();
+  }
+
+  if (LayoutObject* root_object = root->GetLayoutObject()) {
+    TRACE_EVENT0("blink", "LayoutObject::InvalidateSubtreeForFontUpdates");
+    root_object->InvalidateSubtreeLayoutForFontUpdates();
+  }
+}
+
+void StyleEngine::MarkFontsNeedUpdate() {
+  fonts_need_update_ = true;
+  GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
+}
+
 void StyleEngine::FontsNeedUpdate(FontSelector*) {
   if (!GetDocument().IsActive())
     return;
@@ -829,8 +857,14 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
   MarkViewportStyleDirty();
-  MarkAllElementsForStyleRecalc(
-      StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
+
+  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+    MarkFontsNeedUpdate();
+  } else {
+    MarkAllElementsForStyleRecalc(
+        StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
+  }
+
   probe::FontsUpdated(document_, nullptr, String(), nullptr);
 }
 

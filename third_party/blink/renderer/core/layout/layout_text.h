@@ -331,6 +331,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
   virtual base::span<NGInlineItem>* GetNGInlineItems() { return nullptr; }
 
+  void InvalidateSubtreeLayoutForFontUpdates() override;
+
  protected:
   void WillBeDestroyed() override;
 

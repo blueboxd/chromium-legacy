@@ -257,6 +257,8 @@ SkColor ThemeHelper::GetDefaultColor(
       return color_utils::GetColorWithMaxContrast(
           GetColor(TP::COLOR_OMNIBOX_BACKGROUND, incognito, theme_supplier));
     case TP::COLOR_TOOLBAR_BUTTON_ICON:
+    case TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
+    case TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
       return color_utils::HSLShift(
           gfx::kChromeIconGrey,
           GetTint(TP::TINT_BUTTONS, incognito, theme_supplier));

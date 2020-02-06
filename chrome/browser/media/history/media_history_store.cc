@@ -119,12 +119,22 @@ void MediaHistoryStoreInternal::SavePlayback(
     return;
   }
 
-  if (CreateOriginId(watch_time.origin.spec()) &&
-      playback_table_->SavePlayback(watch_time)) {
-    DB()->CommitTransaction();
-  } else {
+  auto origin = watch_time.origin.spec();
+
+  if (!(CreateOriginId(origin) && playback_table_->SavePlayback(watch_time))) {
     DB()->RollbackTransaction();
+    return;
   }
+
+  if (watch_time.has_audio && watch_time.has_video) {
+    if (!origin_table_->IncrementAggregateAudioVideoWatchTime(
+            origin, watch_time.cumulative_watch_time)) {
+      DB()->RollbackTransaction();
+      return;
+    }
+  }
+
+  DB()->CommitTransaction();
 }
 
 void MediaHistoryStoreInternal::Initialize() {

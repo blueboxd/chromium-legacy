@@ -76,6 +76,11 @@ void FontFallbackList::ReleaseFontData() {
 }
 
 bool FontFallbackList::LoadingCustomFonts() const {
+  // This function is only used for style and layout invalidation purposes. We
+  // don't need it for invalidation when the feature below is enabled.
+  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled())
+    return false;
+
   if (!has_loading_fallback_)
     return false;
 
@@ -88,6 +93,8 @@ bool FontFallbackList::LoadingCustomFonts() const {
 }
 
 bool FontFallbackList::ShouldSkipDrawing() const {
+  DCHECK(IsValid());
+
   if (!has_loading_fallback_)
     return false;
 
@@ -100,7 +107,7 @@ bool FontFallbackList::ShouldSkipDrawing() const {
 }
 
 const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
-    const FontDescription& font_description) const {
+    const FontDescription& font_description) {
   bool should_load_custom_font = true;
 
   for (unsigned font_index = 0;; ++font_index) {
@@ -228,7 +235,12 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
 
 const FontData* FontFallbackList::FontDataAt(
     const FontDescription& font_description,
-    unsigned realized_font_index) const {
+    unsigned realized_font_index) {
+  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+    if (!IsValid())
+      Invalidate(font_selector_);
+  }
+
   // This fallback font is already in our list.
   if (realized_font_index < font_list_.size())
     return font_list_[realized_font_index].get();
@@ -255,7 +267,7 @@ const FontData* FontFallbackList::FontDataAt(
 }
 
 bool FontFallbackList::ComputeCanShapeWordByWord(
-    const FontDescription& font_description) const {
+    const FontDescription& font_description) {
   if (!font_description.GetTypesettingFeatures())
     return true;
 
@@ -269,7 +281,12 @@ bool FontFallbackList::ComputeCanShapeWordByWord(
 }
 
 bool FontFallbackList::CanShapeWordByWord(
-    const FontDescription& font_description) const {
+    const FontDescription& font_description) {
+  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+    if (!IsValid())
+      Invalidate(font_selector_);
+  }
+
   if (!can_shape_word_by_word_computed_) {
     can_shape_word_by_word_ = ComputeCanShapeWordByWord(font_description);
     can_shape_word_by_word_computed_ = true;

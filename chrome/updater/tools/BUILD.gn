@@ -40,5 +40,8 @@ source_set("unittest") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
+    "//third_party/zlib/google:compression_utils",
   ]
+
+  data = [ "../test/data/signed.exe.gz" ]
 }

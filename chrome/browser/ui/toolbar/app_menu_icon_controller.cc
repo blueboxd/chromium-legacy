@@ -71,17 +71,17 @@ bool IsUnstableChannel() {
 
 // Returns the icon color based on |severity|. |promo_highlight_color|, if
 // specified, overrides the basic color when |severity| is NONE.
-SkColor GetIconColorForSeverity(AppMenuIconController::Delegate* delegate,
-                                AppMenuIconController::Severity severity,
-                                base::Optional<SkColor> promo_highlight_color) {
+SkColor GetIconColorForSeverity(
+    AppMenuIconController::Delegate* delegate,
+    AppMenuIconController::Severity severity,
+    const base::Optional<SkColor>& severity_none_color) {
   ui::NativeTheme::ColorId color_id =
       ui::NativeTheme::kColorId_AlertSeverityHigh;
   switch (severity) {
     case AppMenuIconController::Severity::NONE:
-      if (promo_highlight_color)
-        return promo_highlight_color.value();
-      return delegate->GetViewThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      return severity_none_color.value_or(
+          delegate->GetViewThemeProvider()->GetColor(
+              ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
     case AppMenuIconController::Severity::LOW:
       color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
       break;
@@ -151,7 +151,7 @@ AppMenuIconController::GetTypeAndSeverity() const {
 
 gfx::ImageSkia AppMenuIconController::GetIconImage(
     bool touch_ui,
-    base::Optional<SkColor> promo_highlight_color) const {
+    const base::Optional<SkColor>& severity_none_color) const {
   const auto type_and_severity = GetTypeAndSeverity();
   const gfx::VectorIcon* icon_id =
       touch_ui ? &kBrowserToolsTouchIcon : &kBrowserToolsIcon;
@@ -169,13 +169,13 @@ gfx::ImageSkia AppMenuIconController::GetIconImage(
   }
   return gfx::CreateVectorIcon(
       *icon_id, GetIconColorForSeverity(delegate_, type_and_severity.severity,
-                                        promo_highlight_color));
+                                        severity_none_color));
 }
 
 SkColor AppMenuIconController::GetIconColor(
-    base::Optional<SkColor> promo_highlight_color) const {
+    const base::Optional<SkColor>& severity_none_color) const {
   return GetIconColorForSeverity(delegate_, GetTypeAndSeverity().severity,
-                                 promo_highlight_color);
+                                 severity_none_color);
 }
 
 void AppMenuIconController::OnGlobalErrorsChanged() {

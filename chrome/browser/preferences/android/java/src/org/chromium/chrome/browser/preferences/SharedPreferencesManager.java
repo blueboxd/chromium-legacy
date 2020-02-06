@@ -106,7 +106,9 @@ public class SharedPreferencesManager {
     /**
      * Reads set of String values from preferences.
      *
-     * Note that you must not modify the set instance returned by this call.
+     * If no value was set for the |key|, returns an unmodifiable empty set.
+     *
+     * @return unmodifiable Set with the values
      */
     public Set<String> readStringSet(String key) {
         return readStringSet(key, Collections.emptySet());
@@ -115,11 +117,15 @@ public class SharedPreferencesManager {
     /**
      * Reads set of String values from preferences.
      *
-     * Note that you must not modify the set instance returned by this call.
+     * If no value was set for the |key|, returns an unmodifiable view of |defaultValue|.
+     *
+     * @return unmodifiable Set with the values
      */
-    public Set<String> readStringSet(String key, Set<String> defaultValue) {
+    @Nullable
+    public Set<String> readStringSet(String key, @Nullable Set<String> defaultValue) {
         mKeyChecker.checkIsKeyInUse(key);
-        return ContextUtils.getAppSharedPreferences().getStringSet(key, defaultValue);
+        Set<String> values = ContextUtils.getAppSharedPreferences().getStringSet(key, defaultValue);
+        return (values != null) ? Collections.unmodifiableSet(values) : null;
     }
 
     /**
@@ -417,6 +423,7 @@ public class SharedPreferencesManager {
      * @param defaultValue The default value to return if there's no value stored.
      * @return The value of the preference if stored; defaultValue otherwise.
      */
+    @Nullable
     public String readString(String key, @Nullable String defaultValue) {
         mKeyChecker.checkIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {

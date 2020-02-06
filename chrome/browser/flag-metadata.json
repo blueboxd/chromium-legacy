@@ -3087,6 +3087,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "post-quantum-cecpq2",
+    "owners": [ "agl" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "prefetch-main-resource-network-isolation-key",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85
@@ -3602,11 +3607,6 @@
     "name": "unsafely-treat-insecure-origin-as-secure",
     "owners": [ "security-dev" ],
     "expiry_milestone": 82
-  },
-  {
-    "name": "update-hover-at-begin-frame",
-    "owners": [ "lanwei", "input-dev" ],
-    "expiry_milestone": 81
   },
   {
     "name": "update-menu-item-custom-summary",

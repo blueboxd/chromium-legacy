@@ -443,7 +443,8 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   if (params.is_captive_portal_popup) {
     DCHECK_EQ(WindowOpenDisposition::NEW_POPUP, params.disposition);
-    CaptivePortalTabHelper::FromWebContents(target_contents.get())
+    captive_portal::CaptivePortalTabHelper::FromWebContents(
+        target_contents.get())
         ->set_is_captive_portal_window();
   }
 #endif

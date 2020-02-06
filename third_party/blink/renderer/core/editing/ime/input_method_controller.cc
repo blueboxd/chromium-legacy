@@ -80,7 +80,7 @@ void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
 void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
   // Verify that the caller is using an EventQueueScope to suppress the input
   // event from being fired until the proper time (e.g. after applying an IME
-  // selection update, if necesary).
+  // selection update, if necessary).
   DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
 
   Element* target = frame.GetDocument()->FocusedElement();
@@ -134,7 +134,7 @@ void InsertTextDuringCompositionWithEvents(
     TypingCommand::TextCompositionType composition_type) {
   // Verify that the caller is using an EventQueueScope to suppress the input
   // event from being fired until the proper time (e.g. after applying an IME
-  // selection update, if necesary).
+  // selection update, if necessary).
   DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
   DCHECK(composition_type ==
              TypingCommand::TextCompositionType::kTextCompositionUpdate ||
@@ -572,7 +572,7 @@ bool InputMethodController::ReplaceText(const String& text,
 bool InputMethodController::ReplaceComposition(const String& text) {
   // Verify that the caller is using an EventQueueScope to suppress the input
   // event from being fired until the proper time (e.g. after applying an IME
-  // selection update, if necesary).
+  // selection update, if necessary).
   DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
 
   if (!HasComposition())

@@ -138,7 +138,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles click events on the tree and forwards the event to the relevant
-     * tree items as necesary.
+     * tree items as necessary.
      * @param {Event} e The click event object.
      */
     handleClick(e) {

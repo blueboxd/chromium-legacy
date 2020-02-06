@@ -16,6 +16,7 @@ namespace blink {
 class CanvasContextCreationAttributesCore;
 class EXTColorBufferFloat;
 class EXTFloatBlend;
+class EXTTextureCompressionBPTC;
 class EXTTextureFilterAnisotropic;
 class EXTTextureNorm16;
 class OESTextureFloatLinear;
@@ -70,6 +71,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTColorBufferFloat> ext_color_buffer_float_;
   Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;
   Member<EXTFloatBlend> ext_float_blend_;
+  Member<EXTTextureCompressionBPTC> ext_texture_compression_bptc_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<EXTTextureNorm16> ext_texture_norm16_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;

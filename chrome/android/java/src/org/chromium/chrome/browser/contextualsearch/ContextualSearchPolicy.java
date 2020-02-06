@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -451,6 +452,7 @@ class ContextualSearchPolicy {
      * @return The ISO country code for the user's home country, or an empty string if not
      *         available or privacy-enabled.
      */
+    @NonNull
     String getHomeCountry(Context context) {
         if (ContextualSearchFieldTrial.getSwitch(
                     ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED)) {

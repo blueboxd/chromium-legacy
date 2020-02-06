@@ -22,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -121,8 +120,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow DiskWrites temporarily in main thread to avoid
         // violation during copying under emulator environment.
-        try (CloseableOnMainThread c = new CloseableOnMainThread(
-                     () -> { return StrictModeContext.allowDiskWrites(); })) {
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
             ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                     mDownloadTestRule.getActivity(), tab, "testLink",
                     R.id.contextmenu_copy_link_address);
@@ -138,8 +136,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow DiskWrites temporarily in main thread to avoid
         // violation during copying under emulator environment.
-        try (CloseableOnMainThread c = new CloseableOnMainThread(
-                     () -> { return StrictModeContext.allowDiskWrites(); })) {
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
             ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                     mDownloadTestRule.getActivity(), tab, "testImageLink",
                     R.id.contextmenu_copy_link_address);
@@ -307,8 +304,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow DiskWrites temporarily in main thread to avoid
         // violation during copying under emulator environment.
-        try (CloseableOnMainThread c = new CloseableOnMainThread(
-                     () -> { return StrictModeContext.allowDiskWrites(); })) {
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
             ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                     mDownloadTestRule.getActivity(), tab, "testEmail", R.id.contextmenu_copy);
         }
@@ -326,8 +322,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
         // Allow all thread policies temporarily in main thread to avoid
         // DiskWrite and UnBufferedIo violations during copying under
         // emulator environment.
-        try (CloseableOnMainThread c = new CloseableOnMainThread(
-                     () -> { return StrictModeContext.allowAllThreadPolicies(); })) {
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
             ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                     mDownloadTestRule.getActivity(), tab, "testTel", R.id.contextmenu_copy);
         }

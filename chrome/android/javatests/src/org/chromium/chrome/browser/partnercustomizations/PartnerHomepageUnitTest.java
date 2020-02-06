@@ -23,6 +23,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
@@ -41,6 +42,9 @@ public class PartnerHomepageUnitTest {
     @Rule
     public BasePartnerBrowserCustomizationUnitTestRule mTestRule =
             new BasePartnerBrowserCustomizationUnitTestRule();
+
+    @Rule
+    public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
     public static final String TAG = "PartnerHomepageUnitTest";
 
@@ -82,8 +86,7 @@ public class PartnerHomepageUnitTest {
     @DisabledTest(message = "crbug.com/836700")
     public void testProviderNotFromSystemPackage() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
-        mHomepageManager.setPrefHomepageUseDefaultUri(true);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
 
         // Note that unlike other tests in this file, we test if Chrome ignores a customizations
         // provider that is not from a system package.
@@ -115,8 +118,7 @@ public class PartnerHomepageUnitTest {
     @DisabledTest(message = "crbug.com/836110")
     public void testNoProvider() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
-        mHomepageManager.setPrefHomepageUseDefaultUri(true);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_NO_PROVIDER);
@@ -144,8 +146,7 @@ public class PartnerHomepageUnitTest {
     @RetryOnFailure
     public void testHomepageDisabled() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(false);
-        mHomepageManager.setPrefHomepageUseDefaultUri(true);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
@@ -176,8 +177,7 @@ public class PartnerHomepageUnitTest {
     @RetryOnFailure
     public void testCustomHomepage() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
-        mHomepageManager.setPrefHomepageUseDefaultUri(false);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, false, TEST_CUSTOM_HOMEPAGE_URI);
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
@@ -208,8 +208,7 @@ public class PartnerHomepageUnitTest {
     @Feature({"Homepage"})
     public void testHomepageProviderTimeout() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
-        mHomepageManager.setPrefHomepageUseDefaultUri(true);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
@@ -248,8 +247,7 @@ public class PartnerHomepageUnitTest {
     @DisabledTest(message = "crbug.com/837130")
     public void testHomepageProviderDelayed() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
-        mHomepageManager.setPrefHomepageUseDefaultUri(true);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
@@ -291,8 +289,7 @@ public class PartnerHomepageUnitTest {
     @RetryOnFailure
     public void testReadHomepageProvider() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
-        mHomepageManager.setPrefHomepageUseDefaultUri(true);
-        mHomepageManager.setPrefHomepageCustomUri(TEST_CUSTOM_HOMEPAGE_URI);
+        mHomepageManager.setHomepagePreferences(false, true, TEST_CUSTOM_HOMEPAGE_URI);
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);

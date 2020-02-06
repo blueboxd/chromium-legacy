@@ -11,7 +11,10 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/assistant_web_view.h"
+#include "ash/assistant/ui/assistant_web_view_delegate.h"
+#include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/assistant_web_view_factory.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/background.h"
@@ -22,13 +25,12 @@ namespace ash {
 
 namespace {
 
-constexpr int kPreferredWindowWidthDip = 768;
-
 // This height includes the window's |non_client_frame_view|'s height.
 constexpr int kPreferredWindowHeightDip = 768;
+constexpr int kPreferredWindowWidthDip = 768;
 
-// The minimum padding of the window to the edges of the screen.
-constexpr int kPreferredPaddingMinDip = 48;
+// The minimum margin of the window to the edges of the screen.
+constexpr int kMinWindowMarginDip = 48;
 
 }  // namespace
 
@@ -47,29 +49,96 @@ const char* AssistantWebContainerView::GetClassName() const {
 }
 
 gfx::Size AssistantWebContainerView::CalculatePreferredSize() const {
-  // TODO(b/142565300): Handle virtual keyboard resize.
+  const int non_client_frame_view_height =
+      views::GetCaptionButtonLayoutSize(
+          views::CaptionButtonLayoutSize::kNonBrowserCaption)
+          .height();
+
   const gfx::Rect work_area =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(GetWidget()->GetNativeWindow())
           .work_area();
 
-  const int width = std::min(work_area.width() - 2 * kPreferredPaddingMinDip,
+  const int width = std::min(work_area.width() - 2 * kMinWindowMarginDip,
                              kPreferredWindowWidthDip);
-  const int height = std::min(work_area.height() - 2 * kPreferredPaddingMinDip,
-                              kPreferredWindowHeightDip);
-  const int non_client_frame_view_height =
-      views::GetCaptionButtonLayoutSize(
-          views::CaptionButtonLayoutSize::kNonBrowserCaption)
-          .height();
-  return gfx::Size(width, height - non_client_frame_view_height);
+
+  const int height = std::min(work_area.height() - 2 * kMinWindowMarginDip,
+                              kPreferredWindowHeightDip) -
+                     non_client_frame_view_height;
+
+  return gfx::Size(width, height);
+}
+
+void AssistantWebContainerView::ChildPreferredSizeChanged(views::View* child) {
+  // Because AssistantWebContainerView has a fixed size, it does not re-layout
+  // its children when their preferred size changes. To address this, we need to
+  // explicitly request a layout pass.
+  Layout();
+  SchedulePaint();
+}
+
+void AssistantWebContainerView::DidStopLoading() {
+  // We should only respond to the |DidStopLoading| event the first time, to add
+  // the view for contents to our view hierarchy and perform other one-time view
+  // initializations.
+  if (contents_view_->parent())
+    return;
+
+  contents_view_->SetPreferredSize(GetPreferredSize());
+  AddChildView(contents_view_.get());
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+}
+
+void AssistantWebContainerView::DidSuppressNavigation(
+    const GURL& url,
+    WindowOpenDisposition disposition,
+    bool from_user_gesture) {
+  if (!from_user_gesture)
+    return;
+
+  // Deep links are always handled by the AssistantViewDelegate. If the
+  // |disposition| indicates a desire to open a new foreground tab, we also
+  // defer to the AssistantViewDelegate so that it can open the |url| in the
+  // browser.
+  if (assistant::util::IsDeepLinkUrl(url) ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
+    assistant_view_delegate_->OpenUrlFromView(url);
+    return;
+  }
+
+  // Otherwise we'll allow our WebContents to navigate freely.
+  contents_view_->Navigate(url);
+}
+
+void AssistantWebContainerView::DidChangeCanGoBack(bool can_go_back) {
+  DCHECK(web_container_view_delegate_);
+  web_container_view_delegate_->UpdateBackButtonVisibility(GetWidget(),
+                                                           can_go_back);
 }
 
 bool AssistantWebContainerView::GoBack() {
-  return assistant_web_view_->GoBack();
+  return contents_view_ && contents_view_->GoBack();
 }
 
 void AssistantWebContainerView::OpenUrl(const GURL& url) {
-  assistant_web_view_->OpenUrl(url);
+  RemoveContents();
+
+  AssistantWebView2::InitParams contents_params;
+  contents_params.suppress_navigation = true;
+
+  contents_view_ = AssistantWebViewFactory::Get()->Create(contents_params);
+
+  // We retain ownership of |contents_view_| as it is only added to the view
+  // hierarchy once loading stops and we want to ensure that it is cleaned up in
+  // the rare chance that that never occurs.
+  contents_view_->set_owned_by_client();
+
+  // We observe |contents_view_| so that we can handle events from the
+  // underlying WebContents.
+  contents_view_->AddObserver(this);
+
+  // Navigate to the specified |url|.
+  contents_view_->Navigate(url);
 }
 
 void AssistantWebContainerView::InitLayout() {
@@ -83,10 +152,18 @@ void AssistantWebContainerView::InitLayout() {
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+}
 
-  // Web view.
-  assistant_web_view_ = AddChildView(std::make_unique<AssistantWebView>(
-      assistant_view_delegate_, web_container_view_delegate_));
+void AssistantWebContainerView::RemoveContents() {
+  if (!contents_view_)
+    return;
+
+  RemoveChildView(contents_view_.get());
+
+  SetFocusBehavior(FocusBehavior::NEVER);
+
+  contents_view_->RemoveObserver(this);
+  contents_view_.reset();
 }
 
 }  // namespace ash

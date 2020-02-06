@@ -1027,4 +1027,12 @@ void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style) {
   }
 }
 
+bool LayoutTheme::HasCustomFocusRingColor() const {
+  return has_custom_focus_ring_color_;
+}
+
+Color LayoutTheme::GetCustomFocusRingColor() const {
+  return custom_focus_ring_color_;
+}
+
 }  // namespace blink

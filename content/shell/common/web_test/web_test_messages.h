@@ -32,11 +32,6 @@ IPC_MESSAGE_ROUTED3(WebTestHostMsg_SimulateWebNotificationClick,
                     std::string /* title */,
                     base::Optional<int> /* action_index */,
                     base::Optional<base::string16> /* reply */)
-IPC_MESSAGE_ROUTED2(WebTestHostMsg_SimulateWebNotificationClose,
-                    std::string /* title */,
-                    bool /* by_user */)
-IPC_MESSAGE_ROUTED1(WebTestHostMsg_SimulateWebContentIndexDelete,
-                    std::string /* id */)
 IPC_MESSAGE_ROUTED1(WebTestHostMsg_BlockThirdPartyCookies, bool /* block */)
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_DeleteAllCookies)
 IPC_MESSAGE_ROUTED4(WebTestHostMsg_SetPermission,
@@ -45,7 +40,6 @@ IPC_MESSAGE_ROUTED4(WebTestHostMsg_SetPermission,
                     GURL /* origin */,
                     GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_ResetPermissions)
-IPC_MESSAGE_ROUTED0(WebTestHostMsg_InspectSecondaryWindow)
 IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)
@@ -65,8 +59,5 @@ IPC_MESSAGE_CONTROL1(WebTestHostMsg_WebTestRuntimeFlagsChanged,
 // 2) sending accumulated changes to a single new renderer.
 IPC_MESSAGE_CONTROL1(WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
                      base::DictionaryValue /* changed_web_test_runtime_flags */)
-
-// Sent by secondary test window to notify the test has finished.
-IPC_MESSAGE_CONTROL0(WebTestHostMsg_TestFinishedInSecondaryRenderer)
 
 #endif  // CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_MESSAGES_H_

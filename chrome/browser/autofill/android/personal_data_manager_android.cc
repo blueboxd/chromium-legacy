@@ -38,8 +38,10 @@
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
@@ -745,6 +747,21 @@ jboolean PersonalDataManagerAndroid::HasProfiles(JNIEnv* env) {
 
 jboolean PersonalDataManagerAndroid::HasCreditCards(JNIEnv* env) {
   return !personal_data_manager_->GetCreditCards().empty();
+}
+
+jboolean PersonalDataManagerAndroid::IsFidoAuthenticationAvailable(
+    JNIEnv* env) {
+  // Don't show toggle switch if user is unable to downstream cards.
+  if (personal_data_manager_->GetSyncSigninState() !=
+          autofill::AutofillSyncSigninState::
+              kSignedInAndWalletSyncTransportEnabled &&
+      personal_data_manager_->GetSyncSigninState() !=
+          autofill::AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled) {
+    return false;
+  }
+  // Show the toggle switch only if the authentication flag is enabled.
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillCreditCardAuthentication);
 }
 
 void PersonalDataManagerAndroid::StartRegionSubKeysRequest(

@@ -177,9 +177,8 @@ void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     // Add a dummy ResourceRecord for the main script to the script cache map of
     // the ServiceWorkerVersion.
     WriteToDiskCacheAsync(
-        context()->storage(), version->script_url(),
-        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
-        "I'm a meta data",
+        context()->storage(), version->script_url(), {} /* headers */,
+        "I'm a body", "I'm a meta data",
         base::BindOnce(
             [](scoped_refptr<ServiceWorkerVersion> version,
                base::OnceClosure callback,

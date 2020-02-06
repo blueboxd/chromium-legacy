@@ -126,7 +126,18 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     }
 
     /**
+     * Get the current homepage URI string, if it's enabled. Null otherwise or uninitialized.
+     *
+     * This function checks different source to get the current homepage, which listed below
+     * according to their priority:
+     *
+     * <b>isManagedByPolicy > useChromeNTP > useDefaultUri > useCustomUri</b>
+     *
      * @return Homepage URI string, if it's enabled. Null otherwise or uninitialized.
+     *
+     * @see HomepagePolicyManager#isHomepageManagedByPolicy()
+     * @see #getPrefHomepageUseChromeNTP()
+     * @see #getPrefHomepageUseDefaultUri()
      */
     public static String getHomepageUri() {
         if (!isHomepageEnabled()) return null;
@@ -135,6 +146,8 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
         String homepageUri;
         if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
             homepageUri = HomepagePolicyManager.getHomepageUrl();
+        } else if (manager.getPrefHomepageUseChromeNTP()) {
+            homepageUri = UrlConstants.NTP_NON_NATIVE_URL;
         } else if (manager.getPrefHomepageUseDefaultUri()) {
             homepageUri = getDefaultHomepageUri();
         } else {
@@ -147,7 +160,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      * @return The default homepage URI if the homepage is partner provided or the new tab page
      *         if the homepage button is force enabled via flag.
      */
-    private static String getDefaultHomepageUri() {
+    public static String getDefaultHomepageUri() {
         if (PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) {
             return PartnerBrowserCustomizations.getHomePageUrl();
         }
@@ -183,14 +196,11 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     }
 
     /**
-     * Sets custom homepage URI
-     */
-    public void setPrefHomepageCustomUri(String customUri) {
-        mSharedPreferencesManager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, customUri);
-    }
-
-    /**
-     * @return Whether the homepage URL is the default value.
+     * True if the homepage URL is the default value. False means the homepage URL is using
+     * the user customized URL. Note that this method does not take enterprise policy into account.
+     * Use {@link HomepagePolicyManager#isHomepageManagedByPolicy} if policy information is needed.
+     *
+     * @return Whether if the homepage URL is the default value.
      */
     public boolean getPrefHomepageUseDefaultUri() {
         return mSharedPreferencesManager.readBoolean(
@@ -198,14 +208,42 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     }
 
     /**
-     * Sets whether the homepage URL is the default value.
+     * @return Whether the homepage is set to Chrome NTP in Homepage settings
      */
-    public void setPrefHomepageUseDefaultUri(boolean useDefaultUri) {
-        assert !HomepagePolicyManager.isHomepageManagedByPolicy();
+    public boolean getPrefHomepageUseChromeNTP() {
+        return mSharedPreferencesManager.readBoolean(
+                ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, false);
+    }
 
-        recordHomepageIsCustomized(!useDefaultUri);
+    /**
+     * Set homepage related shared preferences, and notify listeners for the homepage status change.
+     * These shared preference values will reflect what homepage we are using.
+     *
+     * The priority of the input pref values during value checking:
+     * useChromeNTP > useDefaultUri > customUri
+     *
+     * @param useChromeNtp True if homepage is set as Chrome's New tab page.
+     * @param useDefaultUri True if homepage is using default URI.
+     * @param customUri String value for user customized homepage URI.
+     *
+     * @see #getHomepageUri()
+     */
+    public void setHomepagePreferences(
+            boolean useChromeNtp, boolean useDefaultUri, String customUri) {
+        // TODO(wenyufu): Add metrics for how ofter user checks this option.
         mSharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
+                ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, useChromeNtp);
+
+        boolean wasUseDefaultUri = getPrefHomepageUseDefaultUri();
+        if (wasUseDefaultUri != useDefaultUri) {
+            recordHomepageIsCustomized(!useDefaultUri);
+            mSharedPreferencesManager.writeBoolean(
+                    ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
+        }
+
+        mSharedPreferencesManager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, customUri);
+
+        notifyHomepageUpdated();
     }
 
     /**

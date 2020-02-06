@@ -58,6 +58,7 @@ class ElementRareData : public NodeRareData {
 
   void SetPseudoElement(PseudoId, PseudoElement*);
   PseudoElement* GetPseudoElement(PseudoId) const;
+  PseudoElementData::PseudoElementVector GetPseudoElements() const;
 
   void SetTabIndexExplicitly() {
     SetElementFlag(ElementFlags::kTabIndexWasSetExplicitly, true);
@@ -272,6 +273,13 @@ inline PseudoElement* ElementRareData::GetPseudoElement(
   if (!pseudo_element_data_)
     return nullptr;
   return pseudo_element_data_->GetPseudoElement(pseudo_id);
+}
+
+inline PseudoElementData::PseudoElementVector
+ElementRareData::GetPseudoElements() const {
+  if (!pseudo_element_data_)
+    return {};
+  return pseudo_element_data_->GetPseudoElements();
 }
 
 }  // namespace blink

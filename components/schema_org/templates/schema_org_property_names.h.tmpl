@@ -14,8 +14,8 @@ namespace schema_org {
 namespace property {
 
 {% for property in properties %}
-extern const char k{{property}}[];
-{% endfor %}
+extern const char k{{property.name[0]|upper}}{{property.name[1:]}}[];
+{% endfor %} 
 
 }  // namespace property
 }  // namespace schema_org

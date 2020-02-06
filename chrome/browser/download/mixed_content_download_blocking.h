@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
 
 // Each download is recorded with two histograms.
@@ -207,6 +208,7 @@ inline std::string GetDLBlockingHistogramName(const std::string& initiator,
 // Returns the correct mixed content download blocking behavior for the given
 // |item| saved to |path|.  Controlled by kTreatUnsafeDownloadsAsActive.
 download::DownloadItem::MixedContentStatus GetMixedContentStatusForDownload(
+    Profile* profile,
     const base::FilePath& path,
     const download::DownloadItem* item);
 

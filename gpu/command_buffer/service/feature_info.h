@@ -149,6 +149,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool oes_fbo_render_mipmap = false;
     bool webgl_draw_instanced_base_vertex_base_instance = false;
     bool webgl_multi_draw_instanced_base_vertex_base_instance = false;
+    bool ext_texture_compression_bptc = false;
   };
 
   FeatureInfo();

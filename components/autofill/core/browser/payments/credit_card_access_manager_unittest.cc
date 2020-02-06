@@ -349,6 +349,12 @@ class CreditCardAccessManagerTest : public testing::Test {
   }
 #endif
 
+  void InvokeDelayedGetUnmaskDetailsResponse() {
+    credit_card_access_manager_->OnDidGetUnmaskDetails(
+        AutofillClient::PaymentsRpcResult::SUCCESS,
+        *payments_client_->unmask_details());
+  }
+
   void InvokeUnmaskDetailsTimeout() {
     credit_card_access_manager_->ready_to_start_authentication_.Signal();
     credit_card_access_manager_->can_fetch_unmask_details_.Signal();
@@ -832,8 +838,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 }
 
-// Ensures that FetchCreditCard() returns the full PAN upon a successful
-// WebAuthn verification and response from payments.
+// Ensures the existence of user-perceived latency during the preflight call is
+// correctly logged.
 TEST_F(CreditCardAccessManagerTest,
        Metrics_LoggingExistenceOfUserPerceivedLatency) {
   // Setting up a FIDO-enabled user with a local card and a server card.
@@ -886,6 +892,14 @@ TEST_F(CreditCardAccessManagerTest,
           AutofillMetrics::PreflightCallEvent::
               kCardChosenBeforePreflightCallReturned,
           1);
+      histogram_tester.ExpectTotalCount(
+          "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+          "Duration",
+          int(user_is_opted_in));
+      histogram_tester.ExpectTotalCount(
+          "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+          "TimedOutCvcFallback",
+          int(user_is_opted_in));
     }
 
     {
@@ -909,6 +923,73 @@ TEST_F(CreditCardAccessManagerTest,
               kPreflightCallReturnedBeforeCardChosen,
           1);
     }
+  }
+}
+
+// Ensures that falling back to CVC because of preflight timeout is correctly
+// logged.
+TEST_F(CreditCardAccessManagerTest, Metrics_LoggingTimedOutCvcFallback) {
+  // Setting up a FIDO-enabled user with a local card and a server card.
+  std::string server_guid = "00000000-0000-0000-0000-000000000001";
+  CreateServerCard(server_guid, "4594299181086168");
+  CreditCard* server_card =
+      credit_card_access_manager_->GetCreditCard(server_guid);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->ShouldReturnUnmaskDetailsImmediately(false);
+
+  std::string existence_perceived_latency_histogram_name =
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn";
+  std::string perceived_latency_duration_histogram_name =
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "Duration";
+  std::string timeout_cvc_fallback_histogram_name =
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "TimedOutCvcFallback";
+
+  // Preflight call arrived before timeout, after card was chosen.
+  {
+    base::HistogramTester histogram_tester;
+
+    ResetFetchCreditCard();
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+    credit_card_access_manager_->FetchCreditCard(server_card,
+                                                 accessor_->GetWeakPtr());
+
+    // Mock a delayed response.
+    InvokeDelayedGetUnmaskDetailsResponse();
+    WaitForCallbacks();
+
+    histogram_tester.ExpectUniqueSample(
+        existence_perceived_latency_histogram_name,
+        AutofillMetrics::PreflightCallEvent::
+            kCardChosenBeforePreflightCallReturned,
+        1);
+    histogram_tester.ExpectTotalCount(perceived_latency_duration_histogram_name,
+                                      1);
+    histogram_tester.ExpectBucketCount(timeout_cvc_fallback_histogram_name,
+                                       false, 1);
+  }
+
+  // Preflight call timed out and CVC fallback was invoked.
+  {
+    base::HistogramTester histogram_tester;
+
+    ResetFetchCreditCard();
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+    credit_card_access_manager_->FetchCreditCard(server_card,
+                                                 accessor_->GetWeakPtr());
+    WaitForCallbacks();
+
+    histogram_tester.ExpectUniqueSample(
+        existence_perceived_latency_histogram_name,
+        AutofillMetrics::PreflightCallEvent::
+            kCardChosenBeforePreflightCallReturned,
+        1);
+    histogram_tester.ExpectTotalCount(perceived_latency_duration_histogram_name,
+                                      1);
+    histogram_tester.ExpectBucketCount(timeout_cvc_fallback_histogram_name,
+                                       true, 1);
   }
 }
 

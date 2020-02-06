@@ -4027,13 +4027,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7207095846245296855">Forzar Google Búsqueda Segura</translation>
 <translation id="7211368186050418507">No detectar nunca la zona horaria automáticamente</translation>
 <translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de Navegación Segura</translation>
-<translation id="7221822638060296742">Te permite definir si los sitios web pueden ejecutar automáticamente el complemento <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento <ph name="FLASH_PLUGIN_NAME" /> se puede permitir o denegar para todos los sitios web.
-
-          La política Hacer clic para ejecutar permite que el complemento <ph name="FLASH_PLUGIN_NAME" /> se ejecute, pero el usuario debe hacer clic en el marcador de posición para iniciar el proceso.
-
-          La reproducción automática solo se permite en dominios indicados de forma explícita en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitarla en todos los sitios web, añade http://* y https://* a esta lista.
-
-          Si no se asigna ningún valor a esta política, el usuario puede cambiar esta configuración manualmente.</translation>
 <translation id="7222749588229362483">Permite combinar las políticas seleccionadas si proceden de fuentes distintas, con los mismos permisos y el mismo nivel.
 
         La combinación consiste en combinar las claves de primer nivel del diccionario de cada fuente. En caso de que se produzca un conflicto entre las claves, se aplicará la clave que procede de la fuente que tenga la mayor prioridad.
@@ -4422,11 +4415,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       La política ExternalStorageDisabled prevalece frente a esta política. Si se asigna el valor true a ExternalStorageDisabled, se inhabilitará todo acceso a los dispositivos de almacenamiento externo y esta política se ignorará.
 
       La actualización dinámica de esta política se admite en M56 y versiones posteriores.</translation>
-<translation id="7831595031698917016">Especifica el retraso máximo en milisegundos entre la recepción de la invalidación de una política y la recuperación de la nueva política del servicio de administración del dispositivo.
-
-      Al establecer esta política, se anula el valor predeterminado de 5.000 milisegundos. Los valores válidos para esta política oscilan entre 1.000 (1 segundo) y 300.000 (5 minutos). Todos los valores fuera de este intervalo estarán sujetos al límite correspondiente.
-
-      Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS a la que recurrir</translation>
 <translation id="7842317008224536842">Define el estado predeterminado de la función de accesibilidad de contraste alto en la pantalla de inicio de sesión.
 

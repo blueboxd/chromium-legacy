@@ -208,6 +208,10 @@ struct PendingNavigation;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
 
+// True if feature-flags indicate that we should replace crashed RFHs with new
+// instances rather than reusing them. See http://crbug.com/981339.
+CONTENT_EXPORT bool IsRenderDocumentEnabledForCrashedFrame();
+
 // To be called when a RenderFrameHostImpl receives an event.
 // Provides the host, the event fired, and which node id the event was for.
 typedef base::RepeatingCallback<

@@ -315,6 +315,15 @@ class QuicTestPacketMaker {
       uint64_t new_packet_number,
       bool should_include_version);
 
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPriorityUpdatePacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
+      quic::QuicStreamId id,
+      spdy::SpdyPriority priority);
+
   // Removes all stream frames associated with |stream_id|.
   void RemoveSavedStreamFrames(quic::QuicStreamId stream_id);
 

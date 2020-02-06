@@ -5,6 +5,8 @@
 #ifndef CHROME_UPDATER_UPDATER_CONSTANTS_H_
 #define CHROME_UPDATER_UPDATER_CONSTANTS_H_
 
+#include "components/update_client/update_client_errors.h"
+
 namespace updater {
 
 // The updater specific app ID.
@@ -70,10 +72,34 @@ extern const char kAppsDir[];
 // The name of the uninstall script which is invoked by the --uninstall switch.
 extern const char kUninstallScript[];
 
+// Timing constants.
+//
+// How long to wait for an application installer (such as chrome_installer.exe)
+// to complete.
+constexpr int kWaitForAppInstallerSec = 60;
+
 // Errors.
 //
+// Specific install errors for the updater are reported in such a way that
+// their range does not conflict with the range of generic errors defined by
+// the |update_client| module.
+constexpr int kCustomInstallErrorBase =
+    static_cast<int>(update_client::InstallError::CUSTOM_ERROR_BASE);
+
 // The install directory for the application could not be created.
-const int kCustomInstallErrorCreateAppInstallDirectory = 0;
+constexpr int kErrorCreateAppInstallDirectory = kCustomInstallErrorBase;
+
+// The install params are missing. This usually means that the update
+// response does not include the name of the installer and its command line
+// arguments.
+constexpr int kErrorMissingInstallParams = kCustomInstallErrorBase + 1;
+
+// The file specified by the manifest |run| attribute could not be found
+// inside the CRX.
+constexpr int kErrorMissingRunableFile = kCustomInstallErrorBase + 2;
+
+// Running the application installer failed.
+constexpr int kErrorApplicationInstallerFailed = kCustomInstallErrorBase + 3;
 
 }  // namespace updater
 

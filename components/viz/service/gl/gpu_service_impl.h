@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/sequence_id.h"
+#include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -87,6 +88,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                  const base::Optional<gpu::GpuFeatureInfo>&
                      gpu_feature_info_for_hardware_gpu,
                  const gpu::GpuExtraInfo& gpu_extra_info,
+                 const base::Optional<gpu::DevicePerfInfo>& device_perf_info,
                  gpu::VulkanImplementation* vulkan_implementation,
                  base::OnceCallback<void(bool /*immediately*/)> exit_callback);
 
@@ -160,8 +162,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
 #if defined(OS_WIN)
   void RequestCompleteGpuInfo(RequestCompleteGpuInfoCallback callback) override;
-  void GetGpuSupportedRuntimeVersion(
-      GetGpuSupportedRuntimeVersionCallback callback) override;
+  void GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
+      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback) override;
 #endif
   void RequestHDRStatus(RequestHDRStatusCallback callback) override;
   void LoadedShader(int32_t client_id,
@@ -344,6 +346,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // Information about the GPU process populated on creation.
   gpu::GpuExtraInfo gpu_extra_info_;
+
+  // Information related to device perf category, only collected on the second
+  // unsandboxed GPU process.
+  base::Optional<gpu::DevicePerfInfo> device_perf_info_;
 
   mojo::SharedRemote<mojom::GpuHost> gpu_host_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;

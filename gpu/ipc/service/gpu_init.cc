@@ -135,6 +135,12 @@ class GpuWatchdogInit {
  private:
   gpu::GpuWatchdogThread* watchdog_ptr_ = nullptr;
 };
+
+DevicePerfInfo CollectDevicePerfInfo() {
+  // TODO(zmo): Collect perf info.
+  DevicePerfInfo info;
+  return info;
+}
 }  // namespace
 
 GpuInit::GpuInit() = default;
@@ -146,6 +152,12 @@ GpuInit::~GpuInit() {
 bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         const GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
+
+  if (gpu_preferences_.enable_perf_data_collection) {
+    // This is only enabled on the info collection GPU process.
+    device_perf_info_ = CollectDevicePerfInfo();
+  }
+
   // Blacklist decisions based on basic GPUInfo may not be final. It might
   // need more context based GPUInfo. In such situations, switching to
   // SwiftShader needs to wait until creating a context.

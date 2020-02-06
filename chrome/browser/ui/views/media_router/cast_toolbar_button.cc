@@ -185,8 +185,10 @@ void CastToolbarButton::UpdateIcon() {
   if (!GetWidget())
     return;
   const gfx::VectorIcon& icon = GetCurrentIcon();
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, GetIconColor(&icon)));
+  UpdateIconsWithColors(icon, GetIconColor(views::Button::STATE_NORMAL, &icon),
+                        GetIconColor(views::Button::STATE_HOVERED, &icon),
+                        GetIconColor(views::Button::STATE_PRESSED, &icon),
+                        GetIconColor(views::Button::STATE_DISABLED, &icon));
   // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
   // the insets to match.
   SetLayoutInsetDelta(
@@ -197,21 +199,19 @@ MediaRouterActionController* CastToolbarButton::GetActionController() const {
   return MediaRouterUIService::Get(profile_)->action_controller();
 }
 
-SkColor CastToolbarButton::GetIconColor(const gfx::VectorIcon* icon_id) const {
-  if (icon_id == &::vector_icons::kMediaRouterIdleIcon) {
-    return GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  } else if (icon_id == &::vector_icons::kMediaRouterActiveIcon) {
+SkColor CastToolbarButton::GetIconColor(ButtonState state,
+                                        const gfx::VectorIcon* icon_id) const {
+  if (icon_id == &::vector_icons::kMediaRouterIdleIcon)
+    return GetForegroundColor(state);
+  if (icon_id == &::vector_icons::kMediaRouterActiveIcon)
     return gfx::kGoogleBlue500;
-  } else if (icon_id == &::vector_icons::kMediaRouterWarningIcon) {
+  if (icon_id == &::vector_icons::kMediaRouterWarningIcon) {
     return GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_AlertSeverityMedium);
-  } else if (icon_id == &::vector_icons::kMediaRouterErrorIcon) {
-    return GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_AlertSeverityHigh);
   }
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+  DCHECK(icon_id == &::vector_icons::kMediaRouterErrorIcon);
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_AlertSeverityHigh);
 }
 
 }  // namespace media_router

@@ -79,6 +79,23 @@ _INCLUDE_ORDER_WARNING = (
     'collation (LC_COLLATE=C) and check\nhttps://google.github.io/styleguide/'
     'cppguide.html#Names_and_Order_of_Includes')
 
+# Format: Sequence of tuples containing:
+# * Full import path.
+# * Sequence of strings to show when the pattern matches.
+# * Sequence of path or filename exceptions to this rule
+_BANNED_JAVA_IMPORTS = (
+    (
+      'java.net.URI',
+      (
+       'Use org.chromium.url.GURL instead of java.net.URI, where possible.',
+      ),
+      (
+        'net/android/javatests/src/org/chromium/net/'
+        'AndroidProxySelectorTest.java',
+        'components/cronet/',
+      ),
+    ),
+)
 
 # Format: Sequence of tuples containing:
 # * String pattern or, if starting with a slash, a regular expression.
@@ -1883,6 +1900,33 @@ def _CheckNoBannedFunctions(input_api, output_api):
   if (errors):
     result.append(output_api.PresubmitError(
         'Banned functions were used.\n' + '\n'.join(errors)))
+  return result
+
+
+def _CheckAndroidNoBannedImports(input_api, output_api):
+  """Make sure that banned java imports are not used."""
+  errors = []
+
+  def IsException(path, exceptions):
+    for exception in exceptions:
+      if (path.startswith(exception)):
+        return True
+    return False
+
+  file_filter = lambda f: f.LocalPath().endswith(('.java'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      for import_name, message, exceptions in _BANNED_JAVA_IMPORTS:
+        if IsException(f.LocalPath(), exceptions):
+          continue;
+        problems = _GetMessageForMatchingType(input_api, f, line_num, line,
+            'import ' + import_name, message)
+        if problems:
+          errors.extend(problems)
+  result = []
+  if (errors):
+    result.append(output_api.PresubmitError(
+        'Banned imports were used.\n' + '\n'.join(errors)))
   return result
 
 
@@ -4121,6 +4165,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidWebkitImports(input_api, output_api))
   results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
   results.extend(_CheckNewImagesWarning(input_api, output_api))
+  results.extend(_CheckAndroidNoBannedImports(input_api, output_api))
   return results
 
 def _AndroidSpecificOnCommitChecks(input_api, output_api):

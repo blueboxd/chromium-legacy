@@ -48,6 +48,9 @@
       'filepath': 'third_party/android_deps/' \
                   '|tools/android/roll/android_deps/'
     },
+    'android_flags': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/flags/'
+    },
     'android_infobars': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/infobar/'
     },
@@ -2019,6 +2022,7 @@
                                 'wnwen+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_deps': ['wnwen+watch@chromium.org'],
+    'android_flags': ['hnakashima+watch@chromium.org'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['agrieve+watch@chromium.org',
                       'estevenson+watch@chromium.org',

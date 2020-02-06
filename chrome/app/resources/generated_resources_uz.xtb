@@ -1169,7 +1169,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2604255671529671813">Tarmoqqa ulanishda xato</translation>
 <translation id="2606246518223360146">Hisoblarni ulash</translation>
 <translation id="2607101320794533334">Subyekt ochiq kaliti haqida ma’lumot</translation>
-<translation id="2608770217409477136">Standart sozlamalardan foydalanish</translation>
 <translation id="2609896558069604090">Yorliq yaratish...</translation>
 <translation id="2610157865375787051">Uyqu rejimi</translation>
 <translation id="2610260699262139870">&amp;Asl hajmi</translation>
@@ -1599,7 +1598,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3192947282887913208">Audio fayllar</translation>
 <translation id="3194737229810486521"><ph name="URL" /> saytidan ma’lumotlarni mobil qurilmangizda doimiy saqlashga ruxsat so‘rovi keldi</translation>
 <translation id="3199127022143353223">Serverlar</translation>
-<translation id="3200941271596533635">Mutolaa rejimiga oʻtish</translation>
+<translation id="3200941271596533635">Mutolaa rejimiga kirish/chiqish</translation>
 <translation id="3201306578844503970">Tarmoqda muammo yuz bergani uchun virtual mashina oʻrnatilmadi. Qayta urining yoki tashkilotingizning qurilma boʻyicha administratoriga murojaat qiling. Xatolik kodi: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Mavjud USB qurilmalar bu yerda chiqadi.</translation>
 <translation id="3202131003361292969">Fayl yo‘lagi</translation>
@@ -3252,7 +3251,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5565735124758917034">Faol</translation>
 <translation id="5567989639534621706">Ilova keshlari</translation>
 <translation id="5568069709869097550">Kirish amalga oshmadi</translation>
-<translation id="5568144734023334204">Android xotirasi</translation>
 <translation id="5572851009514199876">Chrome brauzerini ishga tushiring va hisobingizga kiring. Shundan keyin Chrome bu saytga ruxsat berilganini tekshira oladi.</translation>
 <translation id="5575473780076478375">Inkognito rejimidagi kengaytma: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Demo rejimni qayd qilish vaqtida xatolik yuz berdi.</translation>

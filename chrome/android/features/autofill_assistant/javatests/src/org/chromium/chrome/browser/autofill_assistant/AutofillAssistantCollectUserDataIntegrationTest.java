@@ -68,6 +68,9 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
+import org.chromium.chrome.browser.autofill_assistant.proto.ModelProto.ModelValue;
+import org.chromium.chrome.browser.autofill_assistant.proto.PopupListSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
@@ -80,6 +83,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.Input
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.VisibilityRequirement;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -597,5 +601,131 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                 equalTo(DateProto.newBuilder().setYear(2020).setMonth(2).setDay(16).build()));
         // Index 5 == 10:30 PM.
         assertThat(result.getDateRangeEndTimeslot(), is(5));
+    }
+
+    /**
+     * Select an item in the popup list section
+     */
+    @Test
+    @MediumTest
+    public void testPopupListSection() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+
+        UserFormSectionProto popupList =
+                UserFormSectionProto.newBuilder()
+                        .setPopupListSection(PopupListSectionProto.newBuilder()
+                                                     .setAdditionalValueKey("id")
+                                                     .addItemNames("item 1")
+                                                     .addItemNames("item 2")
+                                                     .setSelectionMandatory(true)
+                                                     .setNoSelectionErrorMessage("Error"))
+                        .setTitle("Title")
+                        .setSendResultToBackend(true)
+                        .build();
+
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestTermsAndConditions(false)
+                                                     .addAdditionalPrependedSections(popupList))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Title"), isCompletelyDisplayed());
+        onView(withText("Error")).check(matches(isCompletelyDisplayed()));
+        // The "Continue" button should be disabled
+        onView(withContentDescription("Continue")).check(matches(not(isEnabled())));
+        onView(withText("Title")).perform(click());
+
+        waitUntilViewMatchesCondition(withText("item 2"), isCompletelyDisplayed());
+        onView(withText("item 2")).perform(click());
+        onView(withText("Error")).check(matches(not(isDisplayed())));
+        onView(withText("item 2")).check(matches(isCompletelyDisplayed()));
+
+        // Now "Continue" button should be enabled
+        onView(withContentDescription("Continue")).check(matches(isEnabled()));
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withContentDescription("Continue")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        ViewMatchers.assertThat(processedActions, iterableWithSize(1));
+        ViewMatchers.assertThat(processedActions.get(0).getStatus(),
+                CoreMatchers.is(ProcessedActionStatusProto.ACTION_APPLIED));
+        CollectUserDataResultProto result = processedActions.get(0).getCollectUserDataResult();
+        assertThat(result.getAdditionalSectionsValuesCount(), equalTo(1));
+        assertThat(result.getAdditionalSectionsValues(0),
+                equalTo(ModelValue.newBuilder()
+                                .setIdentifier("id")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(1)))
+                                .build()));
+    }
+
+    /**
+     * Verify that preselected items are correctly filled
+     */
+    @Test
+    @MediumTest
+    public void testPopupListSectionPreSelected() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+
+        UserFormSectionProto popupList =
+                UserFormSectionProto.newBuilder()
+                        .setPopupListSection(PopupListSectionProto.newBuilder()
+                                                     .setAdditionalValueKey("id")
+                                                     .addItemNames("item 1")
+                                                     .addItemNames("item 2")
+                                                     .addInitialSelection(1))
+                        .setTitle("Title")
+                        .setSendResultToBackend(true)
+                        .build();
+
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestTermsAndConditions(false)
+                                                     .addAdditionalPrependedSections(popupList))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Title"), isCompletelyDisplayed());
+        onView(withText("item 2")).check(matches(isCompletelyDisplayed()));
+        // Now "Continue" button should be enabled
+        onView(withContentDescription("Continue")).check(matches(isEnabled()));
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withContentDescription("Continue")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        ViewMatchers.assertThat(processedActions, iterableWithSize(1));
+        ViewMatchers.assertThat(processedActions.get(0).getStatus(),
+                CoreMatchers.is(ProcessedActionStatusProto.ACTION_APPLIED));
+        CollectUserDataResultProto result = processedActions.get(0).getCollectUserDataResult();
+        assertThat(result.getAdditionalSectionsValuesCount(), equalTo(1));
+        assertThat(result.getAdditionalSectionsValues(0),
+                equalTo(ModelValue.newBuilder()
+                                .setIdentifier("id")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(1)))
+                                .build()));
     }
 }

@@ -527,7 +527,7 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
   }
 
   // Always change input method even if it is the same.
-  // TODO(komatsu): Revisit if this is neccessary.
+  // TODO(komatsu): Revisit if this is necessary.
   if (IsActive())
     manager_->ChangeInputMethodInternal(*descriptor, profile, show_message,
                                         notify_menu);

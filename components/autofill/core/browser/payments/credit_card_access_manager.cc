@@ -320,6 +320,9 @@ void CreditCardAccessManager::FetchCreditCard(
 #endif
 
   if (should_wait_to_authenticate) {
+    card_selected_without_unmask_details_timestamp_ =
+        AutofillTickClock::NowTicks();
+
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
     auto task_runner =
@@ -363,6 +366,16 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
   // Reset now that we have started authentication.
   ready_to_start_authentication_.Reset();
   unmask_details_request_in_progress_ = false;
+
+  // If the user had to wait for Unmask Details, log the latency.
+  if (card_selected_without_unmask_details_timestamp_.has_value()) {
+    AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionDuration(
+        AutofillTickClock::NowTicks() -
+        card_selected_without_unmask_details_timestamp_.value());
+    AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionTimedOut(
+        /*did_time_out=*/!get_unmask_details_returned);
+    card_selected_without_unmask_details_timestamp_ = base::nullopt;
+  }
 
   bool fido_auth_suggested =
       get_unmask_details_returned && unmask_details_.unmask_auth_method ==

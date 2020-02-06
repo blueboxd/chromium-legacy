@@ -536,7 +536,7 @@
 <translation id="3366477098757335611">Vezi cardurile</translation>
 <translation id="3369192424181595722">Eroare de ceas</translation>
 <translation id="337363190475750230">Scos din uz</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> a activat în browser Enterprise Service Hooks. Acest conținut de captare a atenției are acces la o parte din datele tale.</translation>
+<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> a activat în browser Enterprise Service Hooks. Acest cod de interceptare are acces la o parte din datele tale.</translation>
 <translation id="3377144306166885718">Serverul a folosit o versiune TLS învechită.</translation>
 <translation id="3377188786107721145">Eroare la analizarea politicii</translation>
 <translation id="3377736046129930310">Folosește blocarea ecranului pentru a confirma mai repede cardurile</translation>
@@ -1406,7 +1406,7 @@ Detalii suplimentare:
 <translation id="725866823122871198">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora computerului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="7260504762447901703">Revocă accesul</translation>
 <translation id="7275334191706090484">Marcaje gestionate</translation>
-<translation id="7288778322931489286">Administratorul a activat în browser Enterprise Service Hooks. Acest conținut de captare a atenției are acces la o parte din datele tale.</translation>
+<translation id="7288778322931489286">Administratorul a activat în browser Enterprise Service Hooks. Acest cod de interceptare are acces la o parte din datele tale.</translation>
 <translation id="7292031607255951991">Numele destinatarului</translation>
 <translation id="7298195798382681320">Recomandate</translation>
 <translation id="7300012071106347854">Albastru cobalt</translation>
@@ -1455,7 +1455,6 @@ Detalii suplimentare:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />să afli mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7455133967321480974">Utilizați setarea prestabilită la nivel global (Blocați)</translation>
 <translation id="7460618730930299168">Proiecția este diferită de ce ai selectat. Continui?</translation>
-<translation id="7464821087936825778">Se iese din modul de căutare</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>

@@ -832,6 +832,12 @@
                  file="privacy_page/passwords_leak_detection_toggle.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_SECURE_DNS_HTML"
+                 file="privacy_page/secure_dns.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SECURE_DNS_JS"
+                 file="privacy_page/secure_dns.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SECURITY_PAGE_HTML"
                  file="privacy_page/security_page.html"
                  type="chrome_html"

@@ -4,7 +4,7 @@
 
 /** @fileoverview Common utilities for extension ui tests. */
 import {MockController, MockMethod} from '../mock_controller.m.js';
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 import {TestKioskBrowserProxy} from './test_kiosk_browser_proxy.js';
 
@@ -151,7 +151,7 @@ export function isElementVisible(element) {
  */
 export function testVisible(
     parentEl, selector, expectedVisible, opt_expectedText) {
-  const visible = isVisible(parentEl, selector);
+  const visible = isChildVisible(parentEl, selector);
   expectEquals(expectedVisible, visible, selector);
   if (expectedVisible && visible && opt_expectedText) {
     const element = parentEl.$$(selector);

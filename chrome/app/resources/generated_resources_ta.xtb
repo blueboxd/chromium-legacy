@@ -854,7 +854,7 @@
 <translation id="219008588003277019">நேட்டிவ் கிளையன்ட் மாடியூல்: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(காலி)</translation>
 <translation id="2191223688506386601">இறுதியாக ஒரு விஷயம்</translation>
-<translation id="2191754378957563929">இயக்கு</translation>
+<translation id="2191754378957563929">இயக்கப்பட்டுள்ளது</translation>
 <translation id="2192505247865591433">அனுப்புநர்:</translation>
 <translation id="2193365732679659387">நம்பிக்கை தொடர்பான அமைப்புகள்</translation>
 <translation id="2195331105963583686">இருப்பினும் அதற்குப் பிறகும் இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை நீங்கள் பயன்படுத்த முடியும். ஆனால் மென்பொருளும் பாதுகாப்பும் இனி தானாகவே புதுப்பிக்கப்படாது</translation>
@@ -1152,7 +1152,6 @@
 <translation id="2604255671529671813">நெட்வொர்க் இணைப்புப் பிழை</translation>
 <translation id="2606246518223360146">தரவை இணை</translation>
 <translation id="2607101320794533334">தலைப்பு பொதுவானவை தகவல்</translation>
-<translation id="2608770217409477136">இயல்புநிலை அமைப்புகளைப் பயன்படுத்து</translation>
 <translation id="2609896558069604090">குறுக்குவழிகளை உருவாக்கு...</translation>
 <translation id="2610157865375787051">உறக்கநிலையிலிரு</translation>
 <translation id="2610260699262139870">A&amp;ctual Size</translation>
@@ -2029,7 +2028,7 @@
 <translation id="3819800052061700452">&amp;முழுத்திரை</translation>
 <translation id="3820172043799983114">தவறான பின்.</translation>
 <translation id="3820749202859700794">SECG நீள்வட்ட வளைவான secp521r1 (NIST P-521 எனவும் அறியப்படும்)</translation>
-<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{ஒரு நீட்டிப்பு ஒன்று அங்கீகரிக்கப்பட்டுள்ளது}other{# நீட்டிப்புகள் அங்கீகரிக்கப்பட்டுள்ளன}}</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{நீட்டிப்பு ஒன்று அங்கீகரிக்கப்பட்டுள்ளது}other{# நீட்டிப்புகள் அங்கீகரிக்கப்பட்டுள்ளன}}</translation>
 <translation id="3822559385185038546">உங்கள் நிர்வாகி இந்த ப்ராக்ஸியைச் செயல்படுத்தியுள்ளார்</translation>
 <translation id="3826440694796503677">கூடுதல் Google கணக்குகளைச் சேர்ப்பதை உங்கள் நிர்வாகி முடக்கியுள்ளார்</translation>
 <translation id="3827306204503227641">சாண்ட்பாக்ஸ் செய்யப்படாத செருகுநிரல்களைத் தொடர்ந்து அனுமதி</translation>
@@ -3024,7 +3023,7 @@
 <translation id="5310281978693206542">எனது சாதனங்களுக்கு இணைப்பை அனுப்பு</translation>
 <translation id="5311304534597152726">பின்வரும் முகவரி மூலம் உள்நுழைகிறீர்கள்:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> மீண்டும் முயலவும்.</translation>
-<translation id="5313628438272378649">இந்தப் பதிவேற்றம் உங்கள் நிறுவனத்தின் பாதுகாப்புக் கொள்கைகளை மீறுகிறது, அதனால் இதை நிறைவுசெய்ய முடியாது.</translation>
+<translation id="5313628438272378649">இந்தப் பதிவேற்றம் உங்கள் நிறுவனத்தின் பாதுகாப்புக் கொள்கைகளை மீறுவதால் இதனை நிறைவுசெய்ய முடியாது.</translation>
 <translation id="5314381603623123224">மார்ச் 31 அன்று Chromeமின் சேவை விதிமுறைகள் மாறவுள்ளன</translation>
 <translation id="5315738755890845852">கூடுதல் நெளி அடைப்புக்குறி: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">அடையாளம்</translation>
@@ -3208,7 +3207,6 @@
 <translation id="5565735124758917034">செயலில் உள்ளது</translation>
 <translation id="5567989639534621706">ஆப்ஸ் தற்காலிக சேமிப்புகள்</translation>
 <translation id="5568069709869097550">உள்நுழைய முடியவில்லை</translation>
-<translation id="5568144734023334204">Android சேமிப்பகம்</translation>
 <translation id="5572851009514199876">Chromeமைத் தொடங்கி உள்நுழையவும். அப்போதுதான் இந்தத் தளத்தை அணுகுவதற்கு உங்களுக்கு அனுமதி உள்ளதா என்பதை Chrome சரிபார்க்க முடியும்.</translation>
 <translation id="5575473780076478375">மறைநிலை நீட்டிப்பு: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">டெமோவுக்குப் பதிவு செய்யும் கோரிக்கையில் ஒரு சிக்கல் ஏற்பட்டது.</translation>
@@ -4756,7 +4754,7 @@
 <translation id="7792388396321542707">பகிர்தலை நிறுத்து</translation>
 <translation id="779308894558717334">வெளிர் பச்சை</translation>
 <translation id="7793098747275782155">அடர் நீலம்</translation>
-<translation id="7797571222998226653">முடக்கு</translation>
+<translation id="7797571222998226653">முடக்கப்பட்டுள்ளது</translation>
 <translation id="7799299114731150374">வால்பேப்பர் அமைக்கப்பட்டது</translation>
 <translation id="7800518121066352902">இ&amp;டஞ்சுழியாகச் சுற்று</translation>
 <translation id="780301667611848630">தேவையில்லை</translation>
@@ -5091,7 +5089,7 @@
 <translation id="8227119283605456246">கோப்பை இணை</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" />க்கான கடவுச்சொல்லைச் சேமிக்கவா?</translation>
 <translation id="8234795456569844941">சுயவிவரப் பிழைச் செய்தியைப் பெறும் முன், என்ன நடந்தது என்பதை விவரிப்பதன் மூலம், இந்தச் சிக்கலைச் சரிசெய்ய, எங்கள் பொறியாளர்களுக்கு உதவவும்.</translation>
-<translation id="8236123533334037984">உங்கள் நிறுவனம் இந்தப் பதிவேற்றத்தை ஸ்கேன் செய்கிறது, இது பாதுகாப்பு தொடர்பான அங்கீகாரத்திற்காக!</translation>
+<translation id="8236123533334037984">பாதுகாப்பு தொடர்பான ஒப்புதலுக்காக உங்கள் நிறுவனம் இந்தப் பதிவேற்றத்தை ஸ்கேன் செய்கிறது!</translation>
 <translation id="8236917170563564587">இந்தத் தாவலைப் பகிர்</translation>
 <translation id="8237647586961940482">அடர் இளஞ்சிவப்பு &amp; சிவப்பு</translation>
 <translation id="8241040075392580210">ஷேடி</translation>

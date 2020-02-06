@@ -28,7 +28,7 @@
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/fuchsia_layout_manager.h"
+#include "fuchsia/engine/browser/frame_layout_manager.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -739,7 +739,7 @@ void FrameImpl::SetWindowTreeHost(
 
   wm::SetActivationClient(root_window(), focus_controller_.get());
 
-  layout_manager_ = new FuchsiaLayoutManager;
+  layout_manager_ = new FrameLayoutManager;
   root_window()->SetLayoutManager(layout_manager_);  // Transfers ownership.
   if (!render_size_override_.IsEmpty())
     layout_manager_->ForceContentDimensions(render_size_override_);

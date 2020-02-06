@@ -46,6 +46,10 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
   return CreateInternal<AXWindowObjWrapper>(window, window_to_id_map_);
 }
 
+void AXAuraObjCache::CreateOrReplace(std::unique_ptr<AXAuraObjWrapper> obj) {
+  cache_[obj->GetUniqueId()] = std::move(obj);
+}
+
 int32_t AXAuraObjCache::GetID(View* view) const {
   return GetIDInternal(view, view_to_id_map_);
 }

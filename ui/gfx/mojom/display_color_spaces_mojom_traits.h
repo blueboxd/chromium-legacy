@@ -7,6 +7,7 @@
 
 #include "base/containers/span.h"
 #include "ui/gfx/display_color_spaces.h"
+#include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 #include "ui/gfx/mojom/display_color_spaces.mojom.h"
 
@@ -22,23 +23,12 @@ struct EnumTraits<gfx::mojom::ContentColorUsage, gfx::ContentColorUsage> {
 template <>
 struct StructTraits<gfx::mojom::DisplayColorSpacesDataView,
                     gfx::DisplayColorSpaces> {
-  static gfx::ColorSpace srgb(const gfx::DisplayColorSpaces& input) {
-    return input.srgb;
-  }
-  static gfx::ColorSpace wcg_opaque(const gfx::DisplayColorSpaces& input) {
-    return input.wcg_opaque;
-  }
-  static gfx::ColorSpace wcg_transparent(const gfx::DisplayColorSpaces& input) {
-    return input.wcg_transparent;
-  }
-  static gfx::ColorSpace hdr_opaque(const gfx::DisplayColorSpaces& input) {
-    return input.hdr_opaque;
-  }
-  static gfx::ColorSpace hdr_transparent(const gfx::DisplayColorSpaces& input) {
-    return input.hdr_transparent;
-  }
+  static base::span<const gfx::ColorSpace> color_spaces(
+      const gfx::DisplayColorSpaces& input);
+  static base::span<const gfx::BufferFormat> buffer_formats(
+      const gfx::DisplayColorSpaces& input);
   static float sdr_white_level(const gfx::DisplayColorSpaces& input) {
-    return input.sdr_white_level;
+    return input.GetSDRWhiteLevel();
   }
 
   static bool Read(gfx::mojom::DisplayColorSpacesDataView data,

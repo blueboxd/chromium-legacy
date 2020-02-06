@@ -37,7 +37,7 @@ class MockAccessoryView
     : public AutofillKeyboardAccessoryAdapter::AccessoryView {
  public:
   MockAccessoryView() {}
-  MOCK_METHOD2(Initialize, void(unsigned int, bool));
+  MOCK_METHOD0(Initialize, bool());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD3(ConfirmDeletion,
@@ -116,7 +116,7 @@ class AutofillKeyboardAccessoryAdapterTest : public testing::Test {
 
     autofill_accessory_adapter_ =
         std::make_unique<AutofillKeyboardAccessoryAdapter>(
-            popup_controller_->GetWeakPtr(), 0, false);
+            popup_controller_->GetWeakPtr());
     autofill_accessory_adapter_->SetAccessoryView(std::move(view));
   }
 
@@ -151,11 +151,7 @@ class AutofillKeyboardAccessoryAdapterTest : public testing::Test {
 };
 
 TEST_F(AutofillKeyboardAccessoryAdapterTest, ShowingInitializesAndUpdatesView) {
-  {
-    ::testing::Sequence s;
-    EXPECT_CALL(*view(), Initialize(_, _));
-    EXPECT_CALL(*view(), Show());
-  }
+  EXPECT_CALL(*view(), Show());
   adapter_as_view()->Show();
 }
 

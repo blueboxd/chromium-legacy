@@ -152,6 +152,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      switches::kAcceleratedCanvas2dMSAASampleCount,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
       switches::kEnableFeatures,
@@ -160,6 +161,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kForceGpuMemAvailableMb,
       switches::kForceGpuMemDiscardableLimitMb,
       switches::kForceMaxTextureSize,
+      switches::kGpuRasterizationMSAASampleCount,
       switches::kMinHeightForGpuRasterTile,
       switches::kRendererProcessLimit,
   };

@@ -933,7 +933,6 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   hover_timer_.Stop();
   cursor_update_timer_.Stop();
 
-  mouse_event_manager_->CancelFakeMouseMoveEvent();
   mouse_event_manager_->HandleSvgPanIfNeeded(false);
 
   // Mouse states need to be reset when mouse move with no button down.
@@ -2168,26 +2167,6 @@ void EventHandler::ScheduleCursorUpdate() {
 
 bool EventHandler::CursorUpdatePending() {
   return cursor_update_timer_.IsActive();
-}
-
-bool EventHandler::FakeMouseMovePending() const {
-  return mouse_event_manager_->FakeMouseMovePending();
-}
-
-void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
-    MouseEventManager::UpdateHoverReason update_hover_reason) {
-  if (update_hover_reason ==
-          MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
-    return;
-  }
-  mouse_event_manager_->MayUpdateHoverWhenContentUnderMouseChanged(
-      update_hover_reason);
-}
-
-void EventHandler::MayUpdateHoverAfterScroll(
-    const FloatRect& scroller_rect_in_frame) {
-  mouse_event_manager_->MayUpdateHoverAfterScroll(scroller_rect_in_frame);
 }
 
 void EventHandler::SetResizingFrameSet(HTMLFrameSetElement* frame_set) {

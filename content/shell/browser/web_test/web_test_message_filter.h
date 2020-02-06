@@ -68,8 +68,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const std::string& title,
       const base::Optional<int>& action_index,
       const base::Optional<base::string16>& reply);
-  void OnSimulateWebNotificationClose(const std::string& title, bool by_user);
-  void OnSimulateWebContentIndexDelete(const std::string& id);
   void OnDeleteAllCookies();
   void OnSetPermission(const std::string& name,
                        blink::mojom::PermissionStatus status,
@@ -78,10 +76,8 @@ class WebTestMessageFilter : public BrowserMessageFilter {
   void OnResetPermissions();
   void OnWebTestRuntimeFlagsChanged(
       const base::DictionaryValue& changed_web_test_runtime_flags);
-  void OnTestFinishedInSecondaryRenderer();
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
-  void OnInspectSecondaryWindow();
   void OnGetWritableDirectory(base::FilePath* path);
   void OnSetFilePathForMockFileDialog(const base::FilePath& path);
 

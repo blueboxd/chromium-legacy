@@ -1957,6 +1957,14 @@ void LayoutText::TextDidChangeWithoutInvalidation() {
   SetNeedsCollectInlines();
 }
 
+void LayoutText::InvalidateSubtreeLayoutForFontUpdates() {
+  known_to_have_no_overflow_and_no_fallback_fonts_ = false;
+  valid_ng_items_ = false;
+  SetNeedsCollectInlines();
+  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      layout_invalidation_reason::kFontsChanged);
+}
+
 void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {
   if (full_layout)
     DeleteTextBoxes();

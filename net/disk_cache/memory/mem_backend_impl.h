@@ -72,7 +72,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
   void OnEntryDoomed(MemEntryImpl* entry);
 
   // Adjust the current size of this backend by |delta|. This is used to
-  // determine if eviction is neccessary and when eviction is finished.
+  // determine if eviction is necessary and when eviction is finished.
   void ModifyStorageSize(int32_t delta);
 
   // Returns true if the cache's size is greater than the maximum allowed

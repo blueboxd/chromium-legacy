@@ -164,6 +164,16 @@ luci.console_view(
             short_name = 'lk',
         ),
         luci.console_view_entry(
+            builder = 'ci/Linux Ozone Tester (Wayland)',
+            category = 'linux',
+            short_name = 'low',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux Ozone Tester (X11)',
+            category = 'linux',
+            short_name = 'lox',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Mojo Android',
             category = 'mojo',
             short_name = 'and',

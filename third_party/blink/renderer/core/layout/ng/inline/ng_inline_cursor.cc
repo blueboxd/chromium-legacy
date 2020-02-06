@@ -806,7 +806,8 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
   DCHECK_EQ(&child_item, CurrentItem());
   switch (child_item.Type()) {
     case NGFragmentItem::kText:
-      return child_item.PositionForPointInText(point, *this);
+      return child_item.PositionForPointInText(
+          point - child_item.OffsetInContainerBlock(), *this);
     case NGFragmentItem::kGeneratedText:
       break;
     case NGFragmentItem::kBox:

@@ -6,29 +6,67 @@
 
 namespace gfx {
 
-DisplayColorSpaces::DisplayColorSpaces() = default;
+namespace {
+
+size_t GetIndex(ContentColorUsage color_usage, bool needs_alpha) {
+  switch (color_usage) {
+    case ContentColorUsage::kSRGB:
+      return 3 * needs_alpha;
+    case ContentColorUsage::kWideColorGamut:
+      return 3 * needs_alpha + 1;
+    case ContentColorUsage::kHDR:
+      return 3 * needs_alpha + 2;
+  }
+}
+
+}  // namespace
+
+DisplayColorSpaces::DisplayColorSpaces() {
+  for (auto& color_space : color_spaces_)
+    color_space = gfx::ColorSpace::CreateSRGB();
+  for (auto& buffer_format : buffer_formats_)
+    buffer_format = gfx::BufferFormat::RGBA_8888;
+}
 
 DisplayColorSpaces::DisplayColorSpaces(const gfx::ColorSpace& c)
-    : srgb(c.IsValid() ? c : gfx::ColorSpace::CreateSRGB()),
-      wcg_opaque(srgb),
-      wcg_transparent(srgb),
-      hdr_opaque(srgb),
-      hdr_transparent(srgb) {}
+    : DisplayColorSpaces() {
+  if (!c.IsValid())
+    return;
+  for (auto& color_space : color_spaces_)
+    color_space = c;
+}
+
+void DisplayColorSpaces::SetOutputColorSpaceAndBufferFormat(
+    ContentColorUsage color_usage,
+    bool needs_alpha,
+    const gfx::ColorSpace& color_space,
+    gfx::BufferFormat buffer_format) {
+  size_t i = GetIndex(color_usage, needs_alpha);
+  color_spaces_[i] = color_space;
+  buffer_formats_[i] = buffer_format;
+}
+
+ColorSpace DisplayColorSpaces::GetOutputColorSpace(
+    ContentColorUsage color_usage,
+    bool needs_alpha) const {
+  return color_spaces_[GetIndex(color_usage, needs_alpha)];
+}
+
+BufferFormat DisplayColorSpaces::GetOutputBufferFormat(
+    ContentColorUsage color_usage,
+    bool needs_alpha) const {
+  return buffer_formats_[GetIndex(color_usage, needs_alpha)];
+}
 
 gfx::ColorSpace DisplayColorSpaces::GetRasterColorSpace() const {
-  return hdr_opaque.GetRasterColorSpace();
+  return GetOutputColorSpace(ContentColorUsage::kHDR, false /* needs_alpha */)
+      .GetRasterColorSpace();
 }
 
 gfx::ColorSpace DisplayColorSpaces::GetCompositingColorSpace(
     bool needs_alpha,
-    ContentColorUsage content_color_usage) const {
-  gfx::ColorSpace result = srgb;
-  if (content_color_usage == ContentColorUsage::kWideColorGamut) {
-    result = needs_alpha ? wcg_transparent : wcg_opaque;
-  } else if (content_color_usage == ContentColorUsage::kHDR) {
-    result = needs_alpha ? hdr_transparent : hdr_opaque;
-  }
-
+    ContentColorUsage color_usage) const {
+  gfx::ColorSpace result = GetOutputColorSpace(color_usage, needs_alpha);
   if (result.IsHDR()) {
     // PQ is not an acceptable space to do blending in -- blending 0 and 1
     // evenly will get a result of sRGB 0.259 (instead of 0.5).
@@ -48,30 +86,38 @@ gfx::ColorSpace DisplayColorSpaces::GetCompositingColorSpace(
   return result;
 }
 
-gfx::ColorSpace DisplayColorSpaces::GetOutputColorSpace(
-    bool needs_alpha) const {
-  if (needs_alpha)
-    return hdr_transparent;
-  else
-    return hdr_opaque;
-}
-
 bool DisplayColorSpaces::NeedsHDRColorConversionPass(
     const gfx::ColorSpace& color_space) const {
-  return color_space.IsHDR() && color_space != hdr_opaque &&
-         color_space != hdr_transparent;
+  // Only HDR color spaces need this behavior.
+  if (!color_space.IsHDR())
+    return false;
+
+  // If |color_space| is not one of the output HDR color spaces, then it will
+  // require a conversion pass.
+  if (color_space == GetOutputColorSpace(ContentColorUsage::kHDR, false))
+    return false;
+  if (color_space == GetOutputColorSpace(ContentColorUsage::kHDR, true))
+    return false;
+
+  return true;
 }
 
 bool DisplayColorSpaces::SupportsHDR() const {
-  return hdr_opaque.IsHDR() && hdr_transparent.IsHDR();
+  return GetOutputColorSpace(ContentColorUsage::kHDR, false).IsHDR() ||
+         GetOutputColorSpace(ContentColorUsage::kHDR, true).IsHDR();
 }
 
 bool DisplayColorSpaces::operator==(const DisplayColorSpaces& other) const {
-  return srgb == other.srgb && wcg_opaque == other.wcg_opaque &&
-         wcg_transparent == other.wcg_transparent &&
-         hdr_opaque == other.hdr_opaque &&
-         hdr_transparent == other.hdr_transparent &&
-         sdr_white_level == other.sdr_white_level;
+  for (size_t i = 0; i < kConfigCount; ++i) {
+    if (color_spaces_[i] != other.color_spaces_[i])
+      return false;
+    if (buffer_formats_[i] != other.buffer_formats_[i])
+      return false;
+  }
+  if (sdr_white_level_ != other.sdr_white_level_)
+    return false;
+
+  return true;
 }
 
 bool DisplayColorSpaces::operator!=(const DisplayColorSpaces& other) const {

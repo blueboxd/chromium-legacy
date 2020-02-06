@@ -48,6 +48,8 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/android/gurl_android.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -287,11 +289,10 @@ ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
                                                  web_contents_->GetTitle());
 }
 
-ScopedJavaLocalRef<jstring> WebContentsAndroid::GetVisibleURL(
+ScopedJavaLocalRef<jobject> WebContentsAndroid::GetVisibleURL(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {
-  return base::android::ConvertUTF8ToJavaString(
-      env, web_contents_->GetVisibleURL().spec());
+  return url::GURLAndroid::FromNativeGURL(env, web_contents_->GetVisibleURL());
 }
 
 bool WebContentsAndroid::IsLoading(JNIEnv* env,

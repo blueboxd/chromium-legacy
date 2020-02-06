@@ -330,6 +330,9 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // Checks whether the Autofill PersonalDataManager has credit cards.
   jboolean HasCreditCards(JNIEnv* env);
 
+  // Checks whether FIDO authentication is available.
+  jboolean IsFidoAuthenticationAvailable(JNIEnv* env);
+
   // Gets the subkeys for the region with |jregion_code| code, if the
   // |jregion_code| rules have finished loading. Otherwise, sets up a task to
   // get the subkeys, when the rules are loaded.

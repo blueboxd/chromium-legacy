@@ -241,37 +241,36 @@ SandboxFileSystemBackendDelegate::CreateOriginEnumerator() {
 
 base::FilePath
 SandboxFileSystemBackendDelegate::GetBaseDirectoryForOriginAndType(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type,
     bool create) {
   base::File::Error error = base::File::FILE_OK;
   base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
-      url::Origin::Create(origin_url), GetTypeString(type), create, &error);
+      origin, GetTypeString(type), create, &error);
   if (error != base::File::FILE_OK)
     return base::FilePath();
   return path;
 }
 
 void SandboxFileSystemBackendDelegate::OpenFileSystem(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type,
     OpenFileSystemMode mode,
     OpenFileSystemCallback callback,
     const GURL& root_url) {
-  if (!IsAllowedScheme(origin_url)) {
+  if (!IsAllowedScheme(origin.GetURL())) {
     std::move(callback).Run(GURL(), std::string(),
                             base::File::FILE_ERROR_SECURITY);
     return;
   }
 
-  std::string name = GetFileSystemName(origin_url, type);
+  std::string name = GetFileSystemName(origin.GetURL(), type);
 
   // |quota_manager_proxy_| may be null in unit tests.
   base::OnceClosure quota_callback =
       (quota_manager_proxy_.get())
           ? base::BindOnce(&QuotaManagerProxy::NotifyStorageAccessed,
-                           quota_manager_proxy_,
-                           url::Origin::Create(origin_url),
+                           quota_manager_proxy_, origin,
                            FileSystemTypeToQuotaStorageType(type))
           : base::DoNothing();
 
@@ -279,7 +278,7 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&OpenSandboxFileSystemOnFileTaskRunner,
-                     obfuscated_file_util(), origin_url, type, mode,
+                     obfuscated_file_util(), origin.GetURL(), type, mode,
                      base::Unretained(error_ptr)),
       base::BindOnce(&DidOpenFileSystem, weak_factory_.GetWeakPtr(),
                      std::move(quota_callback),
@@ -421,7 +420,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
     return RecalculateUsage(file_system_context, origin.GetURL(), type);
 
   base::FilePath base_path =
-      GetBaseDirectoryForOriginAndType(origin.GetURL(), type, false);
+      GetBaseDirectoryForOriginAndType(origin, type, false);
   if (base_path.empty() ||
       !obfuscated_file_util()->delegate()->DirectoryExists(base_path)) {
     return 0;
@@ -685,21 +684,21 @@ void SandboxFileSystemBackendDelegate::CopyFileSystem(
     SandboxFileSystemBackendDelegate* destination) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
 
-  base::FilePath base_path =
-      GetBaseDirectoryForOriginAndType(origin_url, type, false /* create */);
+  base::FilePath base_path = GetBaseDirectoryForOriginAndType(
+      url::Origin::Create(origin_url), type, false /* create */);
   if (base::PathExists(base_path)) {
     // Delete any existing file system directories in the destination. A
     // previously failed migration
     // may have left behind partially copied directories.
     base::FilePath dest_path = destination->GetBaseDirectoryForOriginAndType(
-        origin_url, type, false /* create */);
+        url::Origin::Create(origin_url), type, false /* create */);
 
     // Make sure we're not about to delete our own file system.
     CHECK_NE(base_path.value(), dest_path.value());
     base::DeleteFileRecursively(dest_path);
 
     dest_path = destination->GetBaseDirectoryForOriginAndType(
-        origin_url, type, true /* create */);
+        url::Origin::Create(origin_url), type, true /* create */);
 
     obfuscated_file_util()->CloseFileSystemForOriginAndType(
         url::Origin::Create(origin_url), GetTypeString(type));

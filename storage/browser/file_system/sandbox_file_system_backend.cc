@@ -76,7 +76,7 @@ void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
   }
 
   delegate_->OpenFileSystem(
-      url.origin().GetURL(), url.type(), mode, std::move(callback),
+      url.origin(), url.type(), mode, std::move(callback),
       GetFileSystemRootURI(url.origin().GetURL(), url.type()));
 }
 

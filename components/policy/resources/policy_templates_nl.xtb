@@ -3987,13 +3987,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7207095846245296855">Google SafeSearch afdwingen</translation>
 <translation id="7211368186050418507">Tijdzone nooit automatisch detecteren</translation>
 <translation id="7216442368414164495">Hiermee kunnen gebruikers zich aanmelden voor uitgebreide rapportage van Safe Browsing</translation>
-<translation id="7221822638060296742">Hiermee kan worden ingesteld of websites de plug-in <ph name="FLASH_PLUGIN_NAME" /> automatisch mogen uitvoeren. Het automatisch uitvoeren van de plug-in <ph name="FLASH_PLUGIN_NAME" /> kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
-
-          Met 'Klikken om af te spelen' kan de plug-in <ph name="FLASH_PLUGIN_NAME" /> worden uitgevoerd, maar moet de gebruiker op de tijdelijke aanduiding klikken om deze te starten.
-
-          Automatisch afspelen is alleen toegestaan voor domeinen die expliciet worden genoemd in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Als je automatisch afspelen wilt inschakelen voor alle sites, kun je http://* en https://* toevoegen aan deze lijst.
-
-          Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig aanpassen.</translation>
 <translation id="7222749588229362483">Hiermee kunnen de geselecteerde beleidsregels worden samengevoegd als ze afkomstig zijn uit verschillende bronnen en hetzelfde bereik en niveau hebben.
 
         Het samenvoegen bestaat uit het samenvoegen van sleutels op het eerste niveau van het woordenboek uit elke bron. In het geval van een conflict tussen de sleutels wordt de sleutel uit de bron met de hoogste prioriteit toegepast.
@@ -4381,11 +4374,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Het beleid ExternalStorageDisabled krijgt voorrang op dit beleid. Als ExternalStorageDisabled is ingesteld op 'True', wordt de toegang tot alle externe opslag uitgeschakeld en wordt dit beleid daarom genegeerd.
 
       Dynamische vernieuwing van dit beleid wordt ondersteund in M56 en hoger.</translation>
-<translation id="7831595031698917016">Specificeert de maximum vertraging in milliseconden tussen het ontvangen van een ongeldigverklaring van een beleid en het ophalen van het nieuwe beleid uit de apparaatbeheerservice.
-
-      Als je dit beleid instelt, wordt de standaardwaarde van 5000 milliseconden genegeerd. Geldige waarden voor dit beleid vallen binnen het bereik van 1000 (1 seconde) tot 300.000 (5 minuten). Waarden buiten dit bereik worden vast ingesteld op de respectieve grenswaarde.
-
-      Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaardwaarde van 5000 milliseconden.</translation>
 <translation id="7841880500990419427">Minimale TLS-versie om op terug te vallen</translation>
 <translation id="7842317008224536842">De standaardstatus van de toegankelijkheidsfunctie 'Modus voor hoog contrast' op het inlogscherm instellen.
 
@@ -4594,7 +4582,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8217516105848565518">Dit beleid is beëindigd. Gebruik in plaats daarvan RemoteAccessHostDomainList.</translation>
 <translation id="8236323460664833038">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop blokkeerbare (actieve) gecombineerde content (zoals HTTP-content op een HTTPS-site) mag worden weergegeven en waarvoor optioneel blokkeerbare gecombineerde content wordt uitgeschakeld.
 
-          Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd en wordt optioneel blokkeerbare gecombineerde content geüpgraded en kunnen gebruikers uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.</translation>
+          Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd en wordt optioneel blokkeerbare gecombineerde content geüpgraded. Bovendien kunnen gebruikers uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.</translation>
 <translation id="8244171102276095471">RC4-coderingssuites in TLS inschakelen</translation>
 <translation id="8244525275280476362">Maximum vertraging voor ophalen na ongeldigverklaring voor beleid</translation>
 <translation id="8256688113167012935">Hiermee wordt de weergave van de accountnaam in <ph name="PRODUCT_OS_NAME" /> op het aanmeldscherm beheerd voor het bijbehorende lokale account van het apparaat.

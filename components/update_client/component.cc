@@ -99,6 +99,7 @@ void InstallOnBlockingTaskRunner(
     const base::FilePath& unpack_path,
     const std::string& public_key,
     const std::string& fingerprint,
+    std::unique_ptr<CrxInstaller::InstallParams> install_params,
     scoped_refptr<CrxInstaller> installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   DCHECK(base::DirectoryExists(unpack_path));
@@ -120,7 +121,7 @@ void InstallOnBlockingTaskRunner(
   }
 
   installer->Install(
-      unpack_path, public_key,
+      unpack_path, public_key, std::move(install_params),
       base::BindOnce(&InstallComplete, main_task_runner, std::move(callback),
                      unpack_path_owner.Take()));
 }
@@ -129,6 +130,7 @@ void UnpackCompleteOnBlockingTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const base::FilePath& crx_path,
     const std::string& fingerprint,
+    std::unique_ptr<CrxInstaller::InstallParams> install_params,
     scoped_refptr<CrxInstaller> installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback,
     const ComponentUnpacker::Result& result) {
@@ -145,7 +147,8 @@ void UnpackCompleteOnBlockingTaskRunner(
   base::PostTask(FROM_HERE, kTaskTraits,
                  base::BindOnce(&InstallOnBlockingTaskRunner, main_task_runner,
                                 result.unpack_path, result.public_key,
-                                fingerprint, installer, std::move(callback)));
+                                fingerprint, std::move(install_params),
+                                installer, std::move(callback)));
 }
 
 void StartInstallOnBlockingTaskRunner(
@@ -153,6 +156,7 @@ void StartInstallOnBlockingTaskRunner(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& crx_path,
     const std::string& fingerprint,
+    std::unique_ptr<CrxInstaller::InstallParams> install_params,
     scoped_refptr<CrxInstaller> installer,
     std::unique_ptr<Unzipper> unzipper_,
     scoped_refptr<Patcher> patcher_,
@@ -162,9 +166,9 @@ void StartInstallOnBlockingTaskRunner(
       pk_hash, crx_path, installer, std::move(unzipper_), std::move(patcher_),
       crx_format);
 
-  unpacker->Unpack(base::BindOnce(&UnpackCompleteOnBlockingTaskRunner,
-                                  main_task_runner, crx_path, fingerprint,
-                                  installer, std::move(callback)));
+  unpacker->Unpack(base::BindOnce(
+      &UnpackCompleteOnBlockingTaskRunner, main_task_runner, crx_path,
+      fingerprint, std::move(install_params), installer, std::move(callback)));
 }
 
 // Returns a string literal corresponding to the value of the downloader |d|.
@@ -270,6 +274,11 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
 
   hash_sha256_ = package.hash_sha256;
   hashdiff_sha256_ = package.hashdiff_sha256;
+
+  if (!result.manifest.run.empty()) {
+    install_params_ = base::make_optional(CrxInstaller::InstallParams(
+        result.manifest.run, result.manifest.arguments));
+  }
 }
 
 void Component::Uninstall(const base::Version& version, int reason) {
@@ -427,6 +436,12 @@ std::vector<base::Value> Component::GetEvents() const {
   for (const auto& event : events_)
     events.push_back(event.Clone());
   return events;
+}
+
+std::unique_ptr<CrxInstaller::InstallParams> Component::install_params() const {
+  return install_params_
+             ? std::make_unique<CrxInstaller::InstallParams>(*install_params_)
+             : nullptr;
 }
 
 Component::State::State(Component* component, ComponentState state)
@@ -763,7 +778,8 @@ void Component::StateUpdatingDiff::DoHandle() {
               &update_client::StartInstallOnBlockingTaskRunner,
               base::ThreadTaskRunnerHandle::Get(),
               component.crx_component()->pk_hash, component.crx_path_,
-              component.next_fp_, component.crx_component()->installer,
+              component.next_fp_, component.install_params(),
+              component.crx_component()->installer,
               update_context.config->GetUnzipperFactory()->Create(),
               update_context.config->GetPatcherFactory()->Create(),
               component.crx_component()->crx_format_requirement,
@@ -824,7 +840,8 @@ void Component::StateUpdating::DoHandle() {
                      &update_client::StartInstallOnBlockingTaskRunner,
                      base::ThreadTaskRunnerHandle::Get(),
                      component.crx_component()->pk_hash, component.crx_path_,
-                     component.next_fp_, component.crx_component()->installer,
+                     component.next_fp_, component.install_params(),
+                     component.crx_component()->installer,
                      update_context.config->GetUnzipperFactory()->Create(),
                      update_context.config->GetPatcherFactory()->Create(),
                      component.crx_component()->crx_format_requirement,

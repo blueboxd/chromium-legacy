@@ -13,15 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -30,7 +27,6 @@
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -66,31 +62,16 @@ CreateInvalidationServiceForSenderId(const std::string& fcm_sender_id) {
 }
 
 std::unique_ptr<KeyedService> BuildProfileInvalidationProvider(
-    bool is_fcm_enabled,
     content::BrowserContext* context) {
-  if (is_fcm_enabled) {
-    return std::make_unique<invalidation::ProfileInvalidationProvider>(
-        nullptr, nullptr,
-        base::BindRepeating(&CreateInvalidationServiceForSenderId));
-  }
-  auto invalidation_service =
-      std::make_unique<invalidation::FakeInvalidationService>();
-  invalidation_service->SetInvalidatorState(
-      syncer::TRANSIENT_INVALIDATION_ERROR);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
-      std::move(invalidation_service), nullptr);
+      nullptr, nullptr,
+      base::BindRepeating(&CreateInvalidationServiceForSenderId));
 }
 
 void SendInvalidatorStateChangeNotification(
-    bool is_fcm_enabled,
     invalidation::InvalidationService* service,
     syncer::InvalidatorState state) {
-  if (is_fcm_enabled) {
-    static_cast<invalidation::FCMInvalidationService*>(service)
-        ->OnInvalidatorStateChange(state);
-    return;
-  }
-  static_cast<invalidation::TiclInvalidationService*>(service)
+  static_cast<invalidation::FCMInvalidationService*>(service)
       ->OnInvalidatorStateChange(state);
 }
 
@@ -121,13 +102,9 @@ class FakeConsumer : public AffiliatedInvalidationServiceProvider::Consumer {
   DISALLOW_COPY_AND_ASSIGN(FakeConsumer);
 };
 
-// The param is is_fcm_enabled_. See below.
-class AffiliatedInvalidationServiceProviderImplTest
-    : public testing::TestWithParam<bool> {
+class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
  public:
   AffiliatedInvalidationServiceProviderImplTest();
-  ~AffiliatedInvalidationServiceProviderImplTest();
-
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
@@ -163,11 +140,6 @@ class AffiliatedInvalidationServiceProviderImplTest
       bool create);
 
  protected:
-  // If true FCM (Firebase Cloud Messaging) based topics are used when
-  // registering to invalidations, Tango based invalidation topics are used
-  // otherwise.
-  bool is_fcm_enabled() { return GetParam(); }
-
   // Ownership is not passed. The Profile is owned by the global ProfileManager.
   Profile* LogInAndReturnProfile(const std::string& user_id,
                                  bool is_affiliated);
@@ -179,7 +151,6 @@ class AffiliatedInvalidationServiceProviderImplTest
  private:
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  base::test::ScopedFeatureList feature_list_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
@@ -243,12 +214,7 @@ AffiliatedInvalidationServiceProviderImplTest::
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
   cros_settings_test_helper_.InstallAttributes()->SetCloudManaged("example.com",
                                                                   "device_id");
-  feature_list_.InitWithFeatureState(features::kPolicyFcmInvalidations,
-                                     is_fcm_enabled());
 }
-
-AffiliatedInvalidationServiceProviderImplTest::
-    ~AffiliatedInvalidationServiceProviderImplTest() = default;
 
 void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   chromeos::SystemSaltGetter::Initialize();
@@ -259,20 +225,11 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
       test_url_loader_factory_.GetSafeWeakWrapper(),
       TestingBrowserProcess::GetGlobal()->local_state());
 
-  if (is_fcm_enabled()) {
-    invalidation::ProfileInvalidationProviderFactory::GetInstance()
-        ->RegisterTestingFactory(base::BindRepeating(
-            &BuildProfileInvalidationProvider, is_fcm_enabled()));
-  } else {
-    invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
-        ->RegisterTestingFactory(base::BindRepeating(
-            &BuildProfileInvalidationProvider, is_fcm_enabled()));
-  }
+  invalidation::ProfileInvalidationProviderFactory::GetInstance()
+      ->RegisterTestingFactory(
+          base::BindRepeating(&BuildProfileInvalidationProvider));
 
-  provider_ =
-      is_fcm_enabled()
-          ? std::make_unique<AffiliatedInvalidationServiceProviderImpl>()
-          : std::make_unique<AffiliatedInvalidationServiceProviderImpl>();
+  provider_ = std::make_unique<AffiliatedInvalidationServiceProviderImpl>();
 }
 
 void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
@@ -280,15 +237,9 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   provider_->Shutdown();
   provider_.reset();
 
-  if (is_fcm_enabled()) {
-    invalidation::ProfileInvalidationProviderFactory::GetInstance()
-        ->RegisterTestingFactory(
-            BrowserContextKeyedServiceFactory::TestingFactory());
-  } else {
-    invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
-        ->RegisterTestingFactory(
-            BrowserContextKeyedServiceFactory::TestingFactory());
-  }
+  invalidation::ProfileInvalidationProviderFactory::GetInstance()
+      ->RegisterTestingFactory(
+          BrowserContextKeyedServiceFactory::TestingFactory());
   chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
   chromeos::CryptohomeClient::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
@@ -378,8 +329,7 @@ void AffiliatedInvalidationServiceProviderImplTest::
   // Indicate that the device-global invalidation service has connected. Verify
   // that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
-  SendInvalidatorStateChangeNotification(is_fcm_enabled(),
-                                         device_invalidation_service_,
+  SendInvalidatorStateChangeNotification(device_invalidation_service_,
                                          syncer::INVALIDATIONS_ENABLED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(device_invalidation_service_, consumer_->GetInvalidationService());
@@ -405,34 +355,22 @@ invalidation::FakeInvalidationService*
 AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
     Profile* profile, bool create) {
   invalidation::ProfileInvalidationProvider* invalidation_provider;
-  if (is_fcm_enabled()) {
-    invalidation_provider =
-        static_cast<invalidation::ProfileInvalidationProvider*>(
-            invalidation::ProfileInvalidationProviderFactory::GetInstance()
-                ->GetServiceForBrowserContext(profile, create));
-  } else {
-    invalidation_provider =
-        static_cast<invalidation::ProfileInvalidationProvider*>(
-            invalidation::DeprecatedProfileInvalidationProviderFactory::
-                GetInstance()
-                    ->GetServiceForBrowserContext(profile, create));
-  }
+  invalidation_provider =
+      static_cast<invalidation::ProfileInvalidationProvider*>(
+          invalidation::ProfileInvalidationProviderFactory::GetInstance()
+              ->GetServiceForBrowserContext(profile, create));
   if (!invalidation_provider)
     return nullptr;
-  if (is_fcm_enabled()) {
-    return static_cast<invalidation::FakeInvalidationService*>(
-        invalidation_provider->GetInvalidationServiceForCustomSender(
-            policy::kPolicyFCMInvalidationSenderID));
-  }
   return static_cast<invalidation::FakeInvalidationService*>(
-      invalidation_provider->GetInvalidationService());
+      invalidation_provider->GetInvalidationServiceForCustomSender(
+          policy::kPolicyFCMInvalidationSenderID));
 }
 
 // No consumers are registered with the
 // AffiliatedInvalidationServiceProviderImpl. Verifies that no device-global
 // invalidation service is created, whether an affiliated user is logged in or
 // not.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest, NoConsumers) {
+TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoConsumers) {
   // Verify that no device-global invalidation service has been created.
   EXPECT_FALSE(provider_->GetDeviceInvalidationServiceForTest());
 
@@ -445,7 +383,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest, NoConsumers) {
 
 // Verifies that when no connected invalidation service is available for use,
 // none is made available to consumers.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        NoInvalidationServiceAvailable) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
@@ -458,7 +396,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // affiliated user is available, a device-global invalidation service is
 // created. Further verifies that when the device-global invalidation service
 // connects, it is made available to the consumer.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        UseDeviceInvalidationService) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -470,18 +408,9 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
   // Verify that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   SendInvalidatorStateChangeNotification(
-      is_fcm_enabled(), device_invalidation_service_,
-      syncer::INVALIDATION_CREDENTIALS_REJECTED);
-  if (is_fcm_enabled()) {
-    EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
-    EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
-  } else {
-    // TiclInvalidationService replaces INVALIDATION_CREDENTIALS_REJECTED with
-    // TRANSIENT_INVALIDATION_ERROR. Which doesn't cause disconnection.
-    EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
-    EXPECT_EQ(provider_->GetDeviceInvalidationServiceForTest(),
-              consumer_->GetInvalidationService());
-  }
+      device_invalidation_service_, syncer::INVALIDATION_CREDENTIALS_REJECTED);
+  EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
+  EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
 
   // Verify that the device-global invalidation service still exists.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
@@ -490,7 +419,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
 // Verifies that when a per-profile invalidation service belonging to an
 // affiliated user connects, it is made available to the consumer.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        UseAffiliatedProfileInvalidationService) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -512,7 +441,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
 // Verifies that when a per-profile invalidation service belonging to an
 // unaffiliated user connects, it is ignored.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        DoNotUseUnaffiliatedProfileInvalidationService) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -531,7 +460,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // available to the consumer. Verifies that when a per-profile invalidation
 // service belonging to an affiliated user connects, it is made available to the
 // consumer instead and the device-global invalidation service is destroyed.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchToAffiliatedProfileInvalidationService) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -552,7 +481,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // service belonging to an unaffiliated user connects, it is ignored and the
 // device-global invalidation service continues to be made available to the
 // consumer.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        DoNotSwitchToUnaffiliatedProfileInvalidationService) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -573,7 +502,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // per-profile invalidation service disconnects, a device-global invalidation
 // service is created. Further verifies that when the device-global invalidation
 // service connects, it is made available to the consumer.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchToDeviceInvalidationService) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -603,7 +532,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // connected. Verifies that when the per-profile invalidation service belonging
 // to the first user disconnects, the per-profile invalidation service belonging
 // to the second user is made available to the consumer instead.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchBetweenAffiliatedProfileInvalidationServices) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -658,7 +587,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
 // invalidation service is not destroyed and remains available to the second
 // consumer. Further verifies that when the second consumer also unregisters,
 // the device-global invalidation service is destroyed.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest, MultipleConsumers) {
+TEST_F(AffiliatedInvalidationServiceProviderImplTest, MultipleConsumers) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
   // Indicate that the device-global invalidation service connected. Verify that
@@ -694,7 +623,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest, MultipleConsumers) {
 // device-global invalidation service is created and a per-profile invalidation
 // service belonging to a second affiliated user that subsequently connects is
 // ignored.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
+TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
   // Verify that a device-global invalidation service has been created.
@@ -744,7 +673,7 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
 // consumer is informed that no invalidation service is available for use
 // anymore before the device-global invalidation service is destroyed.
 // This is a regression test for http://crbug.com/455504.
-TEST_P(AffiliatedInvalidationServiceProviderImplTest,
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        ConnectedDeviceGlobalInvalidationServiceOnShutdown) {
   consumer_.reset(new FakeConsumer(provider_.get()));
 
@@ -769,9 +698,5 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
   // Verify that the device-global invalidation service has been destroyed.
   EXPECT_FALSE(provider_->GetDeviceInvalidationServiceForTest());
 }
-
-INSTANTIATE_TEST_SUITE_P(FCMEnabledAndFCMDisabled,
-                         AffiliatedInvalidationServiceProviderImplTest,
-                         testing::Bool() /* is_fcm_enabled */);
 
 }  // namespace policy

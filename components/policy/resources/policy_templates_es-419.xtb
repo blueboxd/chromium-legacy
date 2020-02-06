@@ -3915,13 +3915,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
 <translation id="7211368186050418507">Nunca detectar de forma automática la zona horaria</translation>
 <translation id="7216442368414164495">Permitir que los usuarios acepten informes extendidos de navegación segura</translation>
-<translation id="7221822638060296742">Te permite establecer qué sitios pueden ejecutar automáticamente el complemento de <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento de <ph name="FLASH_PLUGIN_NAME" /> se puede permitir o denegar para todos los sitios.
-
-          "Haz clic para reproducir" permite la ejecución del complemento de <ph name="FLASH_PLUGIN_NAME" />, pero el usuario debe hacer clic en el marcador de posición para iniciarla.
-
-          La reproducción automática solo se permite para los sitios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática para todos los sitios, agrega http://* y https://* a esta lista.
-
-          Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
 <translation id="7222749588229362483">Permite que se combinen las políticas seleccionadas cuando provienen de diferentes fuentes, con los mismos alcances y niveles.
 
         Esta acción combina las claves de primer nivel del diccionario de cada fuente. En caso de conflicto entre las claves, se aplicará la clave que provenga de la fuente de mayor prioridad.
@@ -4301,11 +4294,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       La política ExternalStorageDisabled tiene prioridad por sobre esta política. Si ExternalStorageDisabled se establece como verdadera, se inhabilita el acceso a todos los dispositivos de almacenamiento externos y, por lo tanto, se ignora esta política.
 
       La actualización dinámica de esta política es compatible con M56 y versiones posteriores.</translation>
-<translation id="7831595031698917016">Especifica la demora máxima en milisegundos entre la recepción de la invalidación de una política y la recuperación de la nueva política del servicio de administración del dispositivo.
-
-      Al establecer esta política, se anula el valor predeterminado de 5.000 milisegundos. Los valores válidos para esta política oscilan entre 1.000 (1 segundo) y 300.000 (5 minutos). Todos los valores fuera de este intervalo estarán sujetos al límite correspondiente.
-
-      Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
 <translation id="7842317008224536842">Establece la función de accesibilidad del modo de contraste alto como predeterminada en la pantalla de acceso.
 

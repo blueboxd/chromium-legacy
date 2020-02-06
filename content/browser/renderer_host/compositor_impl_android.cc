@@ -813,8 +813,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
   renderer_settings.initial_screen_size = display_props.GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-  renderer_settings.color_space =
-      display_color_spaces_.GetOutputColorSpace(requires_alpha_channel_);
+  renderer_settings.color_space = display_color_spaces_.GetOutputColorSpace(
+      gfx::ContentColorUsage::kHDR, requires_alpha_channel_);
 
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;

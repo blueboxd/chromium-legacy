@@ -14,9 +14,6 @@
 // navigations.
 
 namespace content {
-
-CONTENT_EXPORT bool IsRenderDocumentEnabledForCrashedFrame();
-
 // Navigation type that affects the download decision and relevant metrics to be
 // reported at download-discovery time.
 //

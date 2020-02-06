@@ -11,6 +11,10 @@
 
 class Browser;
 
+namespace views {
+class Widget;
+}  // namespace views
+
 namespace test {
 
 class PermissionRequestManagerTestApi {
@@ -27,9 +31,9 @@ class PermissionRequestManagerTestApi {
   // NOTIFICATIONS, GEOLOCATON, or PLUGINS.
   void AddSimpleRequest(ContentSettingsType type);
 
-  // Return the NativeWindow for the permission prompt bubble, or nullptr if
+  // Return the Widget for the permission prompt bubble, or nullptr if
   // there is no prompt currently showing.
-  gfx::NativeWindow GetPromptWindow();
+  views::Widget* GetPromptWindow();
 
   void SimulateWebContentsDestroyed();
 

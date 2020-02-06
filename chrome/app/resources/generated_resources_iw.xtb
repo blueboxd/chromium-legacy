@@ -1168,7 +1168,6 @@
 <translation id="2604255671529671813">שגיאת חיבור רשת</translation>
 <translation id="2606246518223360146">קישור נתונים</translation>
 <translation id="2607101320794533334">פרטי מפתח ציבורי של נושא</translation>
-<translation id="2608770217409477136">השתמש בהגדרות ברירת המחדל</translation>
 <translation id="2609896558069604090">יצירת קיצורי דרך...</translation>
 <translation id="2610157865375787051">שינה</translation>
 <translation id="2610260699262139870">גודל ממ&amp;שי</translation>
@@ -1598,7 +1597,7 @@
 <translation id="3192947282887913208">קובצי אודיו</translation>
 <translation id="3194737229810486521"><ph name="URL" /> רוצה לאחסן נתונים במכשיר שלך באופן קבוע</translation>
 <translation id="3199127022143353223">שרתים</translation>
-<translation id="3200941271596533635">החלפת מצב הקורא</translation>
+<translation id="3200941271596533635">הפעלה או השבתה של הקורא</translation>
 <translation id="3201306578844503970">לא ניתן להתקין את המכונה הווירטואלית כתוצאה משגיאת רשת. יש לנסות שוב או לפנות למנהל המכשיר בארגון. קוד שגיאה: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">‏התקני USB זמינים יופיעו כאן.</translation>
 <translation id="3202131003361292969">נתיב</translation>
@@ -3251,7 +3250,6 @@
 <translation id="5565735124758917034">פעיל</translation>
 <translation id="5567989639534621706">קובצי מטמון של יישום</translation>
 <translation id="5568069709869097550">אי אפשר להיכנס</translation>
-<translation id="5568144734023334204">‏אחסון ב-Android</translation>
 <translation id="5572851009514199876">‏תחילה היכנס לחשבונך ב-Chrome כדי לאפשר ל-Chrome לבדוק אם יש לך הרשאה לגשת לאתר הזה.</translation>
 <translation id="5575473780076478375">תוסף של גלישה פרטית: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">התרחשה בעיה הקשורה לבקשת הרשמה של הדגמה.</translation>

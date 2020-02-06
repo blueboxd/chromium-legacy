@@ -1227,6 +1227,35 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+void Node::MarkSubtreeNeedsStyleRecalcForFontUpdates() {
+  if (GetStyleChangeType() == kSubtreeStyleChange)
+    return;
+
+  if (IsElementNode()) {
+    const ComputedStyle* style = GetComputedStyle();
+    if (!style)
+      return;
+
+    // We require font-specific metrics to resolve length units 'ex' and 'ch',
+    // and to compute the adjusted font size when 'font-size-adjust' is set. All
+    // other style computations are unaffected by font loading.
+    if (!NeedsStyleRecalc()) {
+      if (style->DependsOnFontMetrics() ||
+          To<Element>(this)->PseudoElementStylesDependOnFontMetrics()) {
+        SetNeedsStyleRecalc(
+            kLocalStyleChange,
+            StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
+      }
+    }
+
+    if (Node* shadow_root = GetShadowRoot())
+      shadow_root->MarkSubtreeNeedsStyleRecalcForFontUpdates();
+  }
+
+  for (Node* child = firstChild(); child; child = child->nextSibling())
+    child->MarkSubtreeNeedsStyleRecalcForFontUpdates();
+}
+
 #if DCHECK_IS_ON()
 namespace {
 class AllowDirtyShadowV0TraversalScope {

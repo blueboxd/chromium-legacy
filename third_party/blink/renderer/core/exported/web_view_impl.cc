@@ -1467,12 +1467,10 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
   if (!MainFrameImpl())
     return;
 
-  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
-    MainFrameImpl()
-        ->GetFrame()
-        ->GetEventHandler()
-        .RecomputeMouseHoverStateIfNeeded();
-  }
+  MainFrameImpl()
+      ->GetFrame()
+      ->GetEventHandler()
+      .RecomputeMouseHoverStateIfNeeded();
 
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     if (FragmentAnchor* anchor = view->GetFragmentAnchor())
@@ -3229,10 +3227,8 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
                                    args.elastic_overscroll_delta.y());
   UpdateBrowserControlsConstraint(args.browser_controls_constraint);
 
-  if (args.scroll_gesture_did_end &&
-      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
+  if (args.scroll_gesture_did_end)
     MainFrameImpl()->GetFrame()->GetEventHandler().MarkHoverStateDirty();
-  }
 }
 
 void WebViewImpl::RecordManipulationTypeCounts(cc::ManipulationInfo info) {

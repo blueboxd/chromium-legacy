@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 /**
  * Autofill credit cards fragment, which allows the user to edit credit cards and control
  * payment apps.
+ * TODO(crbug.com/949269): Add tests for AutofillProfilesFragment.
  */
 public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         implements PersonalDataManager.PersonalDataManagerObserver {
@@ -78,6 +79,20 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
             }
         });
         getPreferenceScreen().addPreference(autofillSwitch);
+
+        if (PersonalDataManager.getInstance().isFidoAuthenticationAvailable()) {
+            // TODO(crbug.com/949269): Add FingerPrint availability check.
+            ChromeSwitchPreference fidoAuthSwitch =
+                    new ChromeSwitchPreference(getStyledContext(), null);
+            fidoAuthSwitch.setTitle(R.string.enable_credit_card_fido_auth_label);
+            fidoAuthSwitch.setSummary(R.string.enable_credit_card_fido_auth_sublabel);
+            fidoAuthSwitch.setChecked(PersonalDataManager.isAutofillCreditCardFidoAuthEnabled());
+            fidoAuthSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+                PersonalDataManager.setAutofillCreditCardFidoAuthEnabled((boolean) newValue);
+                return true;
+            });
+            getPreferenceScreen().addPreference(fidoAuthSwitch);
+        }
 
         for (CreditCard card : PersonalDataManager.getInstance().getCreditCardsForSettings()) {
             // Add a preference for the credit card.

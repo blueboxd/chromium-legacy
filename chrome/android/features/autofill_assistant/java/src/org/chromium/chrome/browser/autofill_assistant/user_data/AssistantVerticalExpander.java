@@ -29,7 +29,7 @@ import org.chromium.components.browser_ui.widget.TintedDrawable;
  */
 public class AssistantVerticalExpander extends LinearLayout {
     /** Controls whether the chevron should be visible. */
-    enum ChevronStyle {
+    public enum ChevronStyle {
         AUTO, /** visible if the expander has an expanded view, else invisible. */
         ALWAYS,
         NEVER

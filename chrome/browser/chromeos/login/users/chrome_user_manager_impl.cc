@@ -174,7 +174,7 @@ bool GetUserLockAttributes(const user_manager::User* user,
   return true;
 }
 
-// Sets the neccessary delegates in Public Session. They will be active for the
+// Sets the necessary delegates in Public Session. They will be active for the
 // whole user-session and they will go away together with the browser process
 // during logout (the browser process is destroyed during logout), ie. they are
 // not freed and they leak but that is fine.

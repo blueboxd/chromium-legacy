@@ -95,10 +95,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   void StopAutoscroll();
 
-  void MayUpdateHoverWhenContentUnderMouseChanged(
-      MouseEventManager::UpdateHoverReason);
-  void MayUpdateHoverAfterScroll(const FloatRect&);
-
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
       HitTestRequest::HitTestRequestType hit_type =
@@ -124,10 +120,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // Return whether a mouse cursor update is currently pending.  Used for
   // testing.
   bool CursorUpdatePending();
-
-  // Return whether sending a fake mouse move is currently pending.  Used for
-  // testing.
-  bool FakeMouseMovePending() const;
 
   void SetResizingFrameSet(HTMLFrameSetElement*);
 

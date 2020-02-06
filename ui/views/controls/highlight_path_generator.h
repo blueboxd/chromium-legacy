@@ -73,7 +73,8 @@ class VIEWS_EXPORT CircleHighlightPathGenerator
       delete;
 
   // HighlightPathGenerator:
-  SkPath GetHighlightPath(const View* view) override;
+  base::Optional<HighlightPathGenerator::RoundRect> GetRoundRect(
+      const View* view) override;
 };
 
 void VIEWS_EXPORT InstallCircleHighlightPathGenerator(View* view);
@@ -109,7 +110,7 @@ class VIEWS_EXPORT FixedSizeCircleHighlightPathGenerator
       const View* view) override;
 
  private:
-  const int corner_radius_;
+  const int radius_;
 };
 
 void VIEWS_EXPORT InstallFixedSizeCircleHighlightPathGenerator(View* view,

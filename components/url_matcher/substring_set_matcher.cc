@@ -12,6 +12,7 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 
 namespace url_matcher {
 
@@ -139,6 +140,11 @@ bool SubstringSetMatcher::IsEmpty() const {
   return patterns_.empty() && tree_.size() == 1u;
 }
 
+size_t SubstringSetMatcher::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(tree_) +
+         base::trace_event::EstimateMemoryUsage(patterns_);
+}
+
 void SubstringSetMatcher::RebuildAhoCorasickTree(
     const SubstringPatternVector& sorted_patterns) {
   tree_.clear();
@@ -264,6 +270,11 @@ void SubstringSetMatcher::AhoCorasickNode::AddMatch(StringPattern::ID id) {
 void SubstringSetMatcher::AhoCorasickNode::AddMatches(
     const SubstringSetMatcher::AhoCorasickNode::Matches& matches) {
   matches_.insert(matches.begin(), matches.end());
+}
+
+size_t SubstringSetMatcher::AhoCorasickNode::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(edges_) + sizeof(failure_) +
+         base::trace_event::EstimateMemoryUsage(matches_);
 }
 
 }  // namespace url_matcher

@@ -402,3 +402,19 @@ QUIC_FLAG(
 
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_disable_http3_settings_grease_randomness, false)
+
+// If true, QuicConnection will check handshake timeout before idle timeout.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_check_handshake_timeout_before_idle_timeout,
+    false)
+
+// If true and batch writer is used, QuicConnection will flush after a mtu probe
+// is sent.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_batch_writer_flush_after_mtu_probe,
+          false)
+
+// If true, QuicConnection will check MTU_DISCOVERY_FRAME in
+// nonretransmittable_frames to see if a packet is a MTU probe.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_better_mtu_packet_check, false)

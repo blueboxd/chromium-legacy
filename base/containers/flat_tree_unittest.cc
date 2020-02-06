@@ -338,9 +338,19 @@ TEST(FlatTree, MoveConstructor) {
   EXPECT_EQ(1U, moved.count(MoveOnlyInt(4)));
 }
 
-// flat_tree(std::vector<value_type>)
+// flat_tree(const std::vector<value_type>&)
 
-TEST(FlatTree, VectorConstructor) {
+TEST(FlatTree, VectorCopyConstructor) {
+  std::vector<int> items = {1, 2, 3, 4};
+  IntTree tree = items;
+
+  EXPECT_THAT(tree, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(items, ElementsAre(1, 2, 3, 4));
+}
+
+// flat_tree(std::vector<value_type>&&)
+
+TEST(FlatTree, VectorMoveConstructor) {
   using Pair = std::pair<int, MoveOnlyInt>;
 
   // Construct an unsorted vector with a duplicate item in it. Sorted by the

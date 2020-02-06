@@ -20,8 +20,8 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.Locale;
 
 /**

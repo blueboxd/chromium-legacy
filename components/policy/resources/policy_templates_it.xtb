@@ -3887,13 +3887,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7207095846245296855">Forza il filtro SafeSearch di Google</translation>
 <translation id="7211368186050418507">Non rilevare mai automaticamente il fuso orario</translation>
 <translation id="7216442368414164495">Consenti agli utenti di attivare i rapporti estesi di Navigazione sicura</translation>
-<translation id="7221822638060296742">Ti consente di stabilire se permettere o meno ai siti web di eseguire automaticamente il plug-in <ph name="FLASH_PLUGIN_NAME" />. L'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> può essere consentita o vietata per tutti i siti web.
-
-          L'opzione Click to play consente di eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />, ma l'utente deve fare clic sul segnaposto per avviare l'esecuzione.
-
-          La riproduzione automatica è consentita soltanto per i domini elencati esplicitamente nella norma <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se vuoi attivare la riproduzione automatica per tutti i siti, potresti aggiungere http://* e https://* a questo elenco.
-
-          Se questa norma non viene impostata, l'utente potrà cambiare manualmente questa impostazione.</translation>
 <translation id="7222749588229362483">Consente di unire i criteri selezionati quando provengono da origini diverse, con stesso ambito e livello.
 
         L'unione avviene tra le chiavi di livello superiore del dizionario da ciascuna origine. In caso di conflitto tra chiavi, viene applicata quella che proviene dall'origine con la priorità massima.
@@ -4273,11 +4266,6 @@ Se la norma è impostata su false o non è configurata, gli utenti possono crear
 La norma ExternalStorageDisabled ha la precedenza su questa norma. Se la norma ExternalStorageDisabled è impostata su true, ogni accesso ai dispositivi di archiviazione esterni viene disattivato e di conseguenza questa norma viene ignorata.
 
 L'aggiornamento dinamico della norma è supportato in M56 e versioni successive.</translation>
-<translation id="7831595031698917016">Consente di specificare il ritardo massimo in millisecondi tra il ricevimento dell'invalidamento di una norma e il recupero della nuova norma dal servizio di gestione del dispositivo.
-
-Se questa norma viene impostata, il suo valore sostituisce il valore predefinito di 5000 millisecondi. I valori validi di questa norma sono compresi tra 1000 (1 secondo) e 300000 (5 minuti). I valori non compresi in questo intervallo verranno fissati al rispettivo limite.
-
-Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il valore predefinito di 5000 millisecondi.</translation>
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>
 <translation id="7842317008224536842">Consente di impostare lo stato predefinito della funzione di accessibilità della modalità ad alto contrasto nella schermata di accesso.
 

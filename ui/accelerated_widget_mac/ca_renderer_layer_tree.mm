@@ -13,16 +13,13 @@
 
 #include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
+#include "components/metal_util/hdr_copier_layer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_image_io_surface.h"
-
-@interface CALayer (Private)
-@property BOOL wantsExtendedDynamicRangeContent;
-@end
 
 namespace ui {
 
@@ -247,7 +244,7 @@ bool CARendererLayerTree::RootLayer::WantsFullcreenLowPowerBackdrop() const {
           return false;
 
         // See if this is the video layer.
-        if (content_layer.use_av_layer) {
+        if (content_layer.type == CALayerType::kVideo) {
           found_video_layer = true;
           if (!transform_layer.transform.IsPositiveScaleOrTranslation())
             return false;
@@ -275,7 +272,7 @@ void CARendererLayerTree::RootLayer::EnforceOnlyOneAVLayer() {
   for (auto& clip_layer : clip_and_sorting_layers) {
     for (auto& transform_layer : clip_layer.transform_layers) {
       for (auto& content_layer : transform_layer.content_layers) {
-        if (content_layer.use_av_layer)
+        if (content_layer.type == CALayerType::kVideo)
           video_layer_count += 1;
       }
     }
@@ -285,8 +282,8 @@ void CARendererLayerTree::RootLayer::EnforceOnlyOneAVLayer() {
   for (auto& clip_layer : clip_and_sorting_layers) {
     for (auto& transform_layer : clip_layer.transform_layers) {
       for (auto& content_layer : transform_layer.content_layers) {
-        if (content_layer.use_av_layer)
-          content_layer.use_av_layer = false;
+        if (content_layer.type == CALayerType::kVideo)
+          content_layer.type = CALayerType::kDefault;
       }
     }
   }
@@ -387,7 +384,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect_in,
     unsigned background_color,
-    bool triggers_hdr,
+    bool has_hdr_color_space,
     unsigned edge_aa_mask,
     float opacity,
     unsigned filter)
@@ -396,7 +393,6 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       contents_rect(contents_rect),
       rect(rect_in),
       background_color(background_color),
-      triggers_hdr(triggers_hdr),
       ca_edge_aa_mask(0),
       opacity(opacity),
       ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
@@ -441,14 +437,29 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       ca_edge_aa_mask |= kCALayerBottomEdge;
   }
 
-  // Only allow 4:2:0 frames which fill the layer's contents to be promoted to
-  // AV layers.
-  if (tree->allow_av_sample_buffer_display_layer_ &&
-      IOSurfaceGetPixelFormat(io_surface) ==
-          kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
-      contents_rect == gfx::RectF(0, 0, 1, 1)) {
-    use_av_layer = true;
+  // Determine which type of CALayer subclass we should use.
+  if (io_surface) {
+    switch (IOSurfaceGetPixelFormat(io_surface)) {
+      case kCVPixelFormatType_64RGBAHalf:
+      case kCVPixelFormatType_ARGB2101010LEPacked:
+        // HDR content can come in either as half-float or as 10-10-10-2.
+        if (has_hdr_color_space)
+          type = CALayerType::kHDRCopier;
+        break;
+      case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
+        // Only allow 4:2:0 frames which fill the layer's contents to be
+        // promoted to AV layers.
+        if (tree->allow_av_sample_buffer_display_layer_ &&
+            contents_rect == gfx::RectF(0, 0, 1, 1)) {
+          type = CALayerType::kVideo;
+        }
+        break;
+      default:
+        break;
+    }
+  }
 
+  if (type == CALayerType::kVideo) {
     // If the layer's aspect ratio could be made to match the video's aspect
     // ratio by expanding either dimension by a fractional pixel, do so. The
     // mismatch probably resulted from rounding the dimensions to integers.
@@ -483,13 +494,12 @@ CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
-      triggers_hdr(layer.triggers_hdr),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
       ca_filter(layer.ca_filter),
+      type(layer.type),
       ca_layer(std::move(layer.ca_layer)),
-      av_layer(std::move(layer.av_layer)),
-      use_av_layer(layer.use_av_layer) {
+      av_layer(std::move(layer.av_layer)) {
   DCHECK(!layer.ca_layer);
   DCHECK(!layer.av_layer);
 }
@@ -559,7 +569,7 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     const CARendererLayerParams& params) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  bool triggers_hdr = false;
+  bool has_hdr_color_space = false;
   if (params.image) {
     gl::GLImageIOSurface* io_surface_image =
         gl::GLImageIOSurface::FromGLImage(params.image);
@@ -573,11 +583,11 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     // TODO(ccameron): If this indeed causes the bug to disappear, then
     // extirpate the CVPixelBufferRef path.
     // cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
-    triggers_hdr = params.image->color_space().IsHDR();
+    has_hdr_color_space = params.image->color_space().IsHDR();
   }
   content_layers.push_back(
       ContentLayer(tree, io_surface, cv_pixel_buffer, params.contents_rect,
-                   params.rect, params.background_color, triggers_hdr,
+                   params.rect, params.background_color, has_hdr_color_space,
                    params.edge_aa_mask, params.opacity, params.filter));
 }
 
@@ -754,11 +764,10 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_contents_rect = true;
   bool update_rect = true;
   bool update_background_color = true;
-  bool update_triggers_hdr = true;
   bool update_ca_edge_aa_mask = true;
   bool update_opacity = true;
   bool update_ca_filter = true;
-  if (old_layer && old_layer->use_av_layer == use_av_layer) {
+  if (old_layer && old_layer->type == type) {
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
     std::swap(av_layer, old_layer->av_layer);
@@ -768,17 +777,21 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     update_contents_rect = old_layer->contents_rect != contents_rect;
     update_rect = old_layer->rect != rect;
     update_background_color = old_layer->background_color != background_color;
-    update_triggers_hdr = old_layer->triggers_hdr != triggers_hdr;
     update_ca_edge_aa_mask = old_layer->ca_edge_aa_mask != ca_edge_aa_mask;
     update_opacity = old_layer->opacity != opacity;
     update_ca_filter = old_layer->ca_filter != ca_filter;
   } else {
-    if (use_av_layer) {
-      av_layer.reset([[AVSampleBufferDisplayLayer alloc] init]);
-      ca_layer.reset([av_layer retain]);
-      [av_layer setVideoGravity:AVLayerVideoGravityResize];
-    } else {
-      ca_layer.reset([[CALayer alloc] init]);
+    switch (type) {
+      case CALayerType::kHDRCopier:
+        ca_layer.reset(metal::CreateHDRCopierLayer());
+        break;
+      case CALayerType::kVideo:
+        av_layer.reset([[AVSampleBufferDisplayLayer alloc] init]);
+        ca_layer.reset([av_layer retain]);
+        [av_layer setVideoGravity:AVLayerVideoGravityResize];
+        break;
+      case CALayerType::kDefault:
+        ca_layer.reset([[CALayer alloc] init]);
     }
     [ca_layer setAnchorPoint:CGPointZero];
     if (old_layer && old_layer->ca_layer)
@@ -789,42 +802,53 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   DCHECK_EQ([ca_layer superlayer], superlayer);
   bool update_anything = update_contents || update_contents_rect ||
                          update_rect || update_background_color ||
-                         update_triggers_hdr || update_ca_edge_aa_mask ||
-                         update_opacity || update_ca_filter;
-  if (use_av_layer) {
-    if (update_contents) {
-      bool result = false;
-      if (cv_pixel_buffer) {
-        result = AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(
-            av_layer, cv_pixel_buffer);
-        if (!result) {
-          LOG(ERROR) << "AVSampleBufferDisplayLayerEnqueueCVPixelBuffer failed";
+                         update_ca_edge_aa_mask || update_opacity ||
+                         update_ca_filter;
+
+  switch (type) {
+    case CALayerType::kHDRCopier:
+      [ca_layer setContents:static_cast<id>(io_surface.get())];
+      break;
+    case CALayerType::kVideo:
+      if (update_contents) {
+        bool result = false;
+        if (cv_pixel_buffer) {
+          result = AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(
+              av_layer, cv_pixel_buffer);
+          if (!result) {
+            LOG(ERROR)
+                << "AVSampleBufferDisplayLayerEnqueueCVPixelBuffer failed";
+          }
+        } else {
+          result =
+              AVSampleBufferDisplayLayerEnqueueIOSurface(av_layer, io_surface);
+          if (!result) {
+            LOG(ERROR) << "AVSampleBufferDisplayLayerEnqueueIOSurface failed";
+          }
         }
-      } else {
-        result =
-            AVSampleBufferDisplayLayerEnqueueIOSurface(av_layer, io_surface);
-        if (!result) {
-          LOG(ERROR) << "AVSampleBufferDisplayLayerEnqueueIOSurface failed";
+        // TODO(ccameron): Recreate the AVSampleBufferDisplayLayer on failure.
+        // This is not being done yet, to determine if this happens concurrently
+        // with video flickering.
+        // https://crbug.com/702369
+      }
+      break;
+    case CALayerType::kDefault:
+      if (update_contents) {
+        if (io_surface) {
+          [ca_layer setContents:static_cast<id>(io_surface.get())];
+        } else if (solid_color_contents) {
+          [ca_layer setContents:solid_color_contents->GetContents()];
+        } else {
+          [ca_layer setContents:nil];
         }
+        if ([ca_layer respondsToSelector:(@selector(setContentsScale:))])
+          [ca_layer setContentsScale:scale_factor];
       }
-      // TODO(ccameron): Recreate the AVSampleBufferDisplayLayer on failure.
-      // This is not being done yet, to determine if this happens concurrently
-      // with video flickering.
-      // https://crbug.com/702369
-    }
-  } else {
-    if (update_contents) {
-      if (io_surface) {
-        [ca_layer setContents:static_cast<id>(io_surface.get())];
-      } else if (solid_color_contents) {
-        [ca_layer setContents:solid_color_contents->GetContents()];
-      } else {
-        [ca_layer setContents:nil];
-      }
-      if ([ca_layer respondsToSelector:(@selector(setContentsScale:))])
-        [ca_layer setContentsScale:scale_factor];
-    }
-    if (update_contents_rect)
+      break;
+  }
+
+  if (update_contents_rect) {
+    if (type != CALayerType::kVideo)
       [ca_layer setContentsRect:contents_rect.ToCGRect()];
   }
   if (update_rect) {
@@ -844,15 +868,6 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
         CGColorSpaceCreateWithName(kCGColorSpaceSRGB), rgba_color_components));
     [ca_layer setBackgroundColor:srgb_background_color];
   }
-  if (update_triggers_hdr) {
-    if (@available(macos 10.15, *)) {
-      if ([ca_layer
-              respondsToSelector:(@selector
-                                  (setWantsExtendedDynamicRangeContent:))]) {
-        [ca_layer setWantsExtendedDynamicRangeContent:triggers_hdr];
-      }
-    }
-  }
   if (update_ca_edge_aa_mask)
     [ca_layer setEdgeAntialiasingMask:ca_edge_aa_mask];
   if (update_opacity)
@@ -866,20 +881,19 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
       switches::kShowMacOverlayBorders);
   if (show_borders) {
     base::ScopedCFTypeRef<CGColorRef> color;
-    if (update_anything) {
-      if (use_av_layer) {
-        // Yellow represents an AV layer that changed this frame.
-        color.reset(CGColorCreateGenericRGB(1, 1, 0, 1));
-      } else if (io_surface) {
-        // Magenta represents a CALayer that changed this frame.
-        color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
-      } else if (solid_color_contents) {
-        // Cyan represents a solid color IOSurface-backed layer.
-        color.reset(CGColorCreateGenericRGB(0, 1, 1, 1));
-      } else {
-        // Red represents a solid color layer.
-        color.reset(CGColorCreateGenericRGB(1, 0, 0, 1));
-      }
+    float alpha = update_anything ? 1.f : 0.2f;
+    if (type == CALayerType::kHDRCopier) {
+      // Blue represents an HDR layer.
+      color.reset(CGColorCreateGenericRGB(0, 0, 1, alpha));
+    } else if (type == CALayerType::kVideo) {
+      // Yellow represents an AV layer.
+      color.reset(CGColorCreateGenericRGB(1, 1, 0, alpha));
+    } else if (io_surface) {
+      // Magenta represents a CALayer.
+      color.reset(CGColorCreateGenericRGB(1, 0, 1, alpha));
+    } else if (solid_color_contents) {
+      // Cyan represents a solid color.
+      color.reset(CGColorCreateGenericRGB(0, 1, 1, alpha));
     } else {
       // Grey represents a CALayer that has not changed.
       color.reset(CGColorCreateGenericRGB(0.5, 0.5, 0.5, 1));

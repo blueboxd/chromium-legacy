@@ -437,8 +437,6 @@ class Internals final : public ScriptWrappable {
 
   bool cursorUpdatePending() const;
 
-  bool fakeMouseMovePending() const;
-
   String markerTextForListItem(Element*);
 
   void forceReload(bool bypass_cache);

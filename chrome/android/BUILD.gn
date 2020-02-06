@@ -184,10 +184,10 @@ if (enable_vr) {
   }
 }
 
+# TODO(chouinard): Remove this wrapper target after downstream dependencies on it are replaced.
 android_resources("chrome_download_java_resources") {
-  resource_dirs = [ "//chrome/android/java/res_download" ]
-  deps = [ ":chrome_app_java_resources" ]
-  custom_package = "org.chromium.chrome.download"
+  resource_dirs = []
+  deps = [ "//chrome/browser/download/android:java_resources" ]
 }
 
 android_library("app_hooks_java") {
@@ -223,7 +223,6 @@ android_library("chrome_java") {
   deps = [
     ":chrome_android_java_switches",
     ":chrome_app_java_resources",
-    ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
     ":chrome_public_java",
@@ -256,6 +255,7 @@ android_library("chrome_java") {
     "//chrome/browser/android/thin_webview:factory_java",
     "//chrome/browser/android/thin_webview:java",
     "//chrome/browser/download/android:java",
+    "//chrome/browser/download/android:java_resources",
     "//chrome/browser/flags:java",
     "//chrome/browser/geolocation/android:java",
     "//chrome/browser/image_fetcher:java",
@@ -2790,6 +2790,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/settings/privacy/BrowsingDataCounterBridge.java",
     "java/src/org/chromium/chrome/browser/settings/privacy/PrivacyPreferencesManager.java",
     "java/src/org/chromium/chrome/browser/settings/website/CookieControlsBridge.java",
+    "java/src/org/chromium/chrome/browser/settings/website/CookieControlsServiceBridge.java",
     "java/src/org/chromium/chrome/browser/settings/website/WebsitePreferenceBridge.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingJNIBridge.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingServiceProxy.java",

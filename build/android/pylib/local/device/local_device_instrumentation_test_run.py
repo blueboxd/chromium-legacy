@@ -662,9 +662,7 @@ class LocalDeviceInstrumentationTestRun(
                          handle_coverage_data, handle_render_test_data,
                          pull_ui_screen_captures]
       if self._env.concurrent_adb:
-        post_test_step_thread_group = reraiser_thread.ReraiserThreadGroup(
-            reraiser_thread.ReraiserThread(f) for f in post_test_steps)
-        post_test_step_thread_group.StartAll(will_block=True)
+        reraiser_thread.RunAsync(post_test_steps)
       else:
         for step in post_test_steps:
           step()
@@ -742,8 +740,6 @@ class LocalDeviceInstrumentationTestRun(
                 tombstone_filename, 'tombstones') as tombstone_file:
               tombstone_file.write('\n'.join(resolved_tombstones))
             result.SetLink('tombstones', tombstone_file.Link())
-    if self._env.concurrent_adb:
-      post_test_step_thread_group.JoinAll()
     return results, None
 
   def _GetTestsFromRunner(self):

@@ -134,3 +134,26 @@ function preventDefaultOnPoundLinkClicks() {
     }
   });
 }
+
+/**
+ * Ensures interstitial pages on iOS aren't loaded from cache, which breaks
+ * the commands due to ErrorRetryStateMachine::DidFailProvisionalNavigation
+ * not getting triggered.
+ */
+function setupIosRefresh() {
+  if (!loadTimeData.getBoolean('committed_interstitials_enabled')) {
+    return;
+  }
+  const params = new URLSearchParams(window.location.search.substring(1));
+  const failedUrl = decodeURIComponent(params.get('url') || '');
+  const load = () => {
+    window.location.replace(failedUrl);
+  };
+  window.addEventListener('pageshow', function(e) {
+    window.onpageshow = load;
+  }, {once: true});
+}
+
+// <if expr="is_ios">
+document.addEventListener('DOMContentLoaded', setupIosRefresh);
+// </if>

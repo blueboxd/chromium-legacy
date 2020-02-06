@@ -192,7 +192,7 @@ TabImpl::TabImpl(ProfileImpl* profile,
                           base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalTabHelper::CreateForWebContents(
+  captive_portal::CaptivePortalTabHelper::CreateForWebContents(
       web_contents_.get(),
       CaptivePortalServiceFactory::GetForBrowserContext(
           web_contents_->GetBrowserContext()),

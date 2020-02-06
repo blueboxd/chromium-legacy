@@ -217,6 +217,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       /*gpu_info_for_hardware_gpu=*/gpu::GPUInfo(),
       /*gpu_feature_info_for_hardware_gpu=*/gpu::GpuFeatureInfo(),
       /*gpu_extra_info=*/gpu::GpuExtraInfo(),
+      /*device_perf_info=*/base::nullopt,
 #if BUILDFLAG(ENABLE_VULKAN)
       vulkan_implementation_.get(),
 #else

@@ -1096,7 +1096,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return ret;
         }
         sWebViewApiCallSample.record(ApiCall.GET_URL);
-        return mAwContents.getUrl();
+        return mAwContents.getUrl().getSpec();
     }
 
     @Override

@@ -735,12 +735,20 @@ void StreamMixer::UpdateStreamCounts() {
   int primary = 0;
   int sfx = 0;
   for (const auto& it : inputs_) {
-    if (it.second->source()->active()) {
-      (it.second->primary() ? primary : sfx) += 1;
+    MixerInput* input = it.second.get();
+    if (input->source()->active() &&
+        (input->TargetVolume() > 0.0f || input->InstantaneousVolume() > 0.0f)) {
+      (input->primary() ? primary : sfx) += 1;
     }
   }
-  receiver_.Post(FROM_HERE, &MixerServiceReceiver::OnStreamCountChanged,
-                 primary, sfx);
+
+  if (primary != last_sent_primary_stream_count_ ||
+      sfx != last_sent_sfx_stream_count_) {
+    last_sent_primary_stream_count_ = primary;
+    last_sent_sfx_stream_count_ = sfx;
+    receiver_.Post(FROM_HERE, &MixerServiceReceiver::OnStreamCountChanged,
+                   primary, sfx);
+  }
 }
 
 MediaPipelineBackend::AudioDecoder::RenderingDelay
@@ -767,6 +775,7 @@ void StreamMixer::PlaybackLoop() {
   }
 
   WriteOneBuffer();
+  UpdateStreamCounts();
 
   mixer_task_runner_->PostTask(FROM_HERE, playback_loop_task_);
 }
@@ -886,6 +895,7 @@ void StreamMixer::SetVolume(AudioContentType type, float level) {
   if (external_audio_pipeline_supported_ && type == AudioContentType::kMedia) {
     ExternalAudioPipelineShlib::SetExternalMediaVolume(effective_volume);
   }
+  UpdateStreamCounts();
 }
 
 void StreamMixer::SetMuted(AudioContentType type, bool muted) {
@@ -901,6 +911,7 @@ void StreamMixer::SetMuted(AudioContentType type, bool muted) {
   if (external_audio_pipeline_supported_ && type == AudioContentType::kMedia) {
     ExternalAudioPipelineShlib::SetExternalMediaMuted(muted);
   }
+  UpdateStreamCounts();
 }
 
 void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
@@ -928,6 +939,7 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
   if (external_audio_pipeline_supported_ && type == AudioContentType::kMedia) {
     ExternalAudioPipelineShlib::SetExternalMediaVolume(effective_volume);
   }
+  UpdateStreamCounts();
 }
 
 void StreamMixer::SetVolumeMultiplier(MixerInput::Source* source,
@@ -938,6 +950,7 @@ void StreamMixer::SetVolumeMultiplier(MixerInput::Source* source,
   if (it != inputs_.end()) {
     it->second->SetVolumeMultiplier(multiplier);
   }
+  UpdateStreamCounts();
 }
 
 void StreamMixer::SetPostProcessorConfig(std::string name, std::string config) {

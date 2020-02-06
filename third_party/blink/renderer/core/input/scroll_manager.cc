@@ -312,16 +312,12 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
         NOTREACHED();
     }
 
-    ScrollableArea::ScrollCallback callback;
-    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() ||
-        RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
-      callback = ScrollableArea::ScrollCallback(WTF::Bind(
-          [](WeakPersistent<ScrollableArea> area) {
-            if (area)
-              area->OnScrollFinished();
-          },
-          WrapWeakPersistent(scrollable_area)));
-    }
+    ScrollableArea::ScrollCallback callback(WTF::Bind(
+        [](WeakPersistent<ScrollableArea> area) {
+          if (area)
+            area->OnScrollFinished();
+        },
+        WrapWeakPersistent(scrollable_area)));
     ScrollResult result = scrollable_area->UserScroll(
         granularity, ToScrollDelta(physical_direction, 1), std::move(callback));
 
@@ -705,8 +701,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     base::ScopedClosureRunner callback(WTF::Bind(
         [](WeakPersistent<LocalFrame> local_frame,
            WeakPersistent<ScrollManager> scroll_manager) {
-          if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() &&
-              local_frame) {
+          if (local_frame) {
             local_frame->GetEventHandler().MarkHoverStateDirty();
           }
 

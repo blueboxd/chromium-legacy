@@ -53,6 +53,7 @@ class MockInstaller : public CrxInstaller {
   // move semantics. This function is a shim to work around it.
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
+               std::unique_ptr<InstallParams> install_params,
                update_client::CrxInstaller::Callback callback) override {
     DoInstall(unpack_path, callback);
   }

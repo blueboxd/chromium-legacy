@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image_representation_gl_ozone.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
@@ -95,15 +96,6 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
 
 SharedImageBackingOzone::~SharedImageBackingOzone() = default;
 
-gfx::Rect SharedImageBackingOzone::ClearedRect() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Rect();
-}
-
-void SharedImageBackingOzone::SetClearedRect(const gfx::Rect& cleared_rect) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 void SharedImageBackingOzone::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   NOTIMPLEMENTED_LOG_ONCE();
   return;
@@ -134,8 +126,8 @@ SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageBackingOzone::ProduceGLTexture(SharedImageManager* manager,
                                           MemoryTypeTracker* tracker) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
+  return SharedImageRepresentationGLOzone::Create(manager, this, tracker,
+                                                  pixmap_, format());
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
@@ -171,13 +163,13 @@ SharedImageBackingOzone::SharedImageBackingOzone(
     SharedContextState* context_state,
     scoped_refptr<gfx::NativePixmap> pixmap,
     scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs)
-    : SharedImageBacking(mailbox,
-                         format,
-                         size,
-                         color_space,
-                         usage,
-                         GetPixmapSizeInBytes(*pixmap),
-                         false),
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      usage,
+                                      GetPixmapSizeInBytes(*pixmap),
+                                      false),
       pixmap_(std::move(pixmap)),
       dawn_procs_(std::move(dawn_procs)) {}
 

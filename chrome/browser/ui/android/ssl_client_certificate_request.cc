@@ -139,6 +139,23 @@ class SSLClientCertPendingRequests
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
+ui::WindowAndroid* GetWindowFromWebContents(
+    content::WebContents* web_contents) {
+  ViewAndroidHelper* view_helper =
+      ViewAndroidHelper::FromWebContents(web_contents);
+  if (view_helper == nullptr) {
+    LOG(ERROR) << "Could not get ViewAndroidHelper";
+    return nullptr;
+  }
+  ui::ViewAndroid* view = view_helper->GetViewAndroid();
+  if (view == nullptr) {
+    LOG(ERROR) << "Could not get ViewAndroid";
+    return nullptr;
+  }
+  // May return nullptr.
+  return view->GetWindowAndroid();
+}
+
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SSLClientCertPendingRequests)
 
 static void StartClientCertificateRequest(
@@ -146,10 +163,11 @@ static void StartClientCertificateRequest(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(web_contents)
-                                  ->GetViewAndroid()
-                                  ->GetWindowAndroid();
-  DCHECK(window);
+  ui::WindowAndroid* window = GetWindowFromWebContents(web_contents);
+  if (window == nullptr) {
+    LOG(ERROR) << "Could not get Window";
+    return;
+  }
 
   // Build the |key_types| JNI parameter, as a String[]
   std::vector<std::string> key_types;

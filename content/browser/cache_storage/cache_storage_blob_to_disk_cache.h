@@ -17,6 +17,11 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "url/origin.h"
+
+namespace storage {
+class QuotaManagerProxy;
+}
 
 namespace content {
 
@@ -30,7 +35,9 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   // The buffer size used for reading from blobs and writing to disk cache.
   static const int kBufferSize;
 
-  CacheStorageBlobToDiskCache();
+  CacheStorageBlobToDiskCache(
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      const url::Origin& origin);
   ~CacheStorageBlobToDiskCache() override;
 
   // Writes the body of |blob_remote| to |entry| with index
@@ -50,9 +57,10 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
  protected:
   // Virtual for testing.
   virtual void ReadFromBlob();
+  void DidWriteDataToEntry(int expected_bytes, int rv);
+  const url::Origin& origin() const { return origin_; }
 
  private:
-  void DidWriteDataToEntry(int expected_bytes, int rv);
   void RunCallback(bool success);
 
   void OnDataPipeReadable(MojoResult result);
@@ -71,6 +79,9 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   bool received_on_complete_ = false;
   uint64_t expected_total_size_ = 0;
   bool data_pipe_closed_ = false;
+
+  const scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  const url::Origin origin_;
 
   base::WeakPtrFactory<CacheStorageBlobToDiskCache> weak_ptr_factory_{this};
 

@@ -121,6 +121,12 @@ Polymer({
   bluetoothPrivateOnPairingListener_: null,
 
   /**
+   * Listener for chrome.bluetoothPrivate.deviceAddressChanged events.
+   * @private {?function(!chrome.bluetooth.Device, !string)}
+   */
+  bluetoothPrivateDeviceAddressChangedListener_: null,
+
+  /**
    * Listener for chrome.bluetooth.onBluetoothDeviceChanged events.
    * @private {?function(!chrome.bluetooth.Device)}
    */
@@ -233,6 +239,12 @@ Polymer({
 
       this.connectionAttemptStartTimestampMs_ = Date.now();
     }
+    if (!this.bluetoothPrivateDeviceAddressChangedListener_) {
+      this.bluetoothPrivateDeviceAddressChangedListener_ =
+          this.onBluetoothPrivateDeviceAddressChanged_.bind(this);
+      this.bluetoothPrivate.onDeviceAddressChanged.addListener(
+          this.bluetoothPrivateDeviceAddressChangedListener_);
+    }
     if (!this.bluetoothDeviceChangedListener_) {
       this.bluetoothDeviceChangedListener_ =
           this.onBluetoothDeviceChanged_.bind(this);
@@ -247,6 +259,11 @@ Polymer({
       this.bluetoothPrivate.onPairing.removeListener(
           this.bluetoothPrivateOnPairingListener_);
       this.bluetoothPrivateOnPairingListener_ = null;
+    }
+    if (this.bluetoothPrivateDeviceAddressChangedListener_) {
+      this.bluetoothPrivate.onDeviceAddressChanged.removeListener(
+          this.bluetoothPrivateDeviceAddressChangedListener_);
+      this.bluetoothPrivateDeviceAddressChangedListener_ = null;
     }
     if (this.bluetoothDeviceChangedListener_) {
       this.bluetooth.onDeviceChanged.removeListener(
@@ -273,6 +290,19 @@ Polymer({
       event.passkey = this.pairingEvent_.passkey;
     }
     this.pairingEvent_ = event;
+  },
+
+  /**
+   * Process bluetoothPrivate.onDeviceAddressChanged events.
+   * @param {!chrome.bluetooth.Device} device
+   * @param {!string} oldAddress
+   * @private
+   */
+  onBluetoothPrivateDeviceAddressChanged_(device, oldAddress) {
+    if (!this.pairingDevice || oldAddress !== this.pairingDevice.address) {
+      return;
+    }
+    this.pairingDevice = device;
   },
 
   /**

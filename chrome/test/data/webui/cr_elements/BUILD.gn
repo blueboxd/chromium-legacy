@@ -38,8 +38,6 @@ js_modulizer("modulize") {
     "iron_list_focus_test.js",
   ]
   namespace_rewrites = [
-    "cr.isMac|isMac",
-    "cr.isWindows|isWindows",
     "cr.toastManager.getToastManager|getToastManager",
     "MockInteractions.blur|blur",
     "MockInteractions.downAndUp|downAndUp",
@@ -49,9 +47,9 @@ js_modulizer("modulize") {
     "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
     "MockInteractions.tap|tap",
     "Polymer.Base|Base",
-    "Polymer.dom.flush|flush",
     "test_util.eventToPromise|eventToPromise",
     "test_util.flushTasks|flushTasks",
+    "test_util.isChildVisible|isChildVisible",
     "test_util.isVisible|isVisible",
     "test_util.waitBeforeNextRender|waitBeforeNextRender",
     "test_util.whenAttributeIs|whenAttributeIs",

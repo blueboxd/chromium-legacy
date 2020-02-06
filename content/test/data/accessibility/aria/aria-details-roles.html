@@ -1,0 +1,32 @@
+<!--
+@WIN-ALLOW:details-roles:*
+@AURALINUX-ALLOW:details-roles:*
+@AURALINUX-DENY:details
+@AURALINUX-DENY:details-for
+@AURALINUX-DENY:last-defined
+-->
+  <!-- details-roles=comment when pointing to a group or region with comments -->
+<div aria-details="comment" aria-label="comment"></div>
+<div aria-details="comment-group" aria-label="comment-group"></div>
+<div aria-details="comment-region" aria-label="comment-region"></div>
+<div aria-details="comment-section" aria-label="comment-section"></div>
+<div aria-details="definition" aria-label="definition"></div>
+<div aria-details="doc-endnote" aria-label="doc-endnote"></div>
+<div aria-details="doc-footnote" aria-label="doc-footnote"></div>
+<div aria-details="comment-group comment definition doc-footnote" aria-label="many"></div>
+<div id="comment" role="comment">x</div>
+<div id="comment-group" role="group">
+  <h1>heading</h1>
+  <div role="group">
+    <div role="comment">x</div>
+  </div>
+</div>
+<div id="comment-region" role="region">
+  <div role="comment">x</div>
+</div>
+<div id="comment-section" role="section">
+  <div role="comment">x</div>
+</div>
+<div id="definition" role="definition">x</div>
+<div id="doc-endnote" role="doc-endnote">x</div>
+<div id="doc-footnote" role="doc-footnote">x</div>

@@ -168,6 +168,13 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
 }  // namespace
 
+class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DevToolsProtocolTest::SetUpCommandLine(command_line);
+    IsolateAllSitesForTesting(command_line);
+  }
+};
 
 class TestInterstitialDelegate : public InterstitialPageDelegate {
  private:
@@ -784,6 +791,87 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
   ASSERT_GT(scroll_top, 0);
 }
 #endif  // defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageCrash) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
+
+  std::unique_ptr<base::DictionaryValue> command_params;
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetBoolean("discover", true);
+  SendCommand("Target.setDiscoverTargets", std::move(command_params));
+
+  std::string target_id;
+  std::unique_ptr<base::DictionaryValue> params;
+  std::string type;
+  params = WaitForNotification("Target.targetCreated", true);
+  ASSERT_TRUE(params->GetString("targetInfo.type", &type));
+  ASSERT_EQ(type, "page");
+  ASSERT_TRUE(params->GetString("targetInfo.targetId", &target_id));
+
+  ClearNotifications();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    SendCommand("Page.crash", nullptr, false);
+    params = WaitForNotification("Target.targetCrashed", true);
+  }
+  ASSERT_TRUE(params);
+  std::string crashed_target_id;
+  ASSERT_TRUE(params->GetString("targetId", &crashed_target_id));
+  EXPECT_EQ(target_id, crashed_target_id);
+
+  ClearNotifications();
+  shell()->LoadURL(test_url);
+  WaitForNotification("Inspector.targetReloadedAfterCrash", true);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, PageCrashInFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url =
+      embedded_test_server()->GetURL("/devtools/page-with-oopif.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
+
+  std::unique_ptr<base::DictionaryValue> command_params;
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetBoolean("discover", true);
+  SendCommand("Target.setDiscoverTargets", std::move(command_params));
+
+  std::string frame_target_id;
+  std::unique_ptr<base::DictionaryValue> params;
+  for (int targetCount = 1; true; targetCount++) {
+    params = WaitForNotification("Target.targetCreated", true);
+    std::string type;
+    ASSERT_TRUE(params->GetString("targetInfo.type", &type));
+    if (type == "iframe") {
+      ASSERT_TRUE(params->GetString("targetInfo.targetId", &frame_target_id));
+      break;
+    }
+    ASSERT_LT(targetCount, 2);
+  }
+
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetString("targetId", frame_target_id);
+  command_params->SetBoolean("flatten", true);
+  base::DictionaryValue* result =
+      SendCommand("Target.attachToTarget", std::move(command_params));
+  ASSERT_NE(nullptr, result);
+  std::string session_id;
+  ASSERT_TRUE(result->GetString("sessionId", &session_id));
+
+  ClearNotifications();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    SendSessionCommand("Page.crash", nullptr, session_id, false);
+    params = WaitForNotification("Target.targetCrashed", true);
+  }
+  ASSERT_TRUE(params);
+  std::string crashed_target_id;
+  ASSERT_TRUE(params->GetString("targetId", &crashed_target_id));
+  EXPECT_EQ(frame_target_id, crashed_target_id);
+}
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1662,20 +1750,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InterstitialShownOnAttach) {
   SendCommand("Page.enable", nullptr, false);
   WaitForNotification("Page.interstitialShown", true);
 }
-
-class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DevToolsProtocolTest::SetUpCommandLine(command_line);
-    IsolateAllSitesForTesting(command_line);
-  }
-
-  void SetUpOnMainThread() override {
-    DevToolsProtocolTest::SetUpOnMainThread();
-    content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-};
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   ASSERT_TRUE(embedded_test_server()->Start());

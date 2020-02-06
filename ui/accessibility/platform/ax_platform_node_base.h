@@ -427,6 +427,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
               size_t index,
               bool is_indexed_from_end = false);
 
+  // Compute value for object attribute details-roles on aria-details nodes.
+  std::string ComputeDetailsRoles() const;
+
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);
 };
 

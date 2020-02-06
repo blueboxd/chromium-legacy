@@ -4,9 +4,7 @@
 
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 
-#include "base/feature_list.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google/cacheinvalidation/include/types.h"
@@ -26,43 +24,24 @@ bool IsPublicInvalidationTopic(const syncer::Topic& topic) {
 bool GetCloudPolicyObjectIdFromPolicy(
     const enterprise_management::PolicyData& policy,
     invalidation::ObjectId* object_id) {
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    if (!policy.has_policy_invalidation_topic() ||
-        policy.policy_invalidation_topic().empty()) {
-      return false;
-    }
-    *object_id = invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
-                                        policy.policy_invalidation_topic());
-  } else {
-    if (!policy.has_invalidation_source() || !policy.has_invalidation_name() ||
-        policy.invalidation_name().empty()) {
-      return false;
-    }
-    *object_id = invalidation::ObjectId(policy.invalidation_source(),
-                                        policy.invalidation_name());
+  if (!policy.has_policy_invalidation_topic() ||
+      policy.policy_invalidation_topic().empty()) {
+    return false;
   }
+  *object_id = invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
+                                      policy.policy_invalidation_topic());
   return true;
 }
 
 bool GetRemoteCommandObjectIdFromPolicy(
     const enterprise_management::PolicyData& policy,
     invalidation::ObjectId* object_id) {
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    if (!policy.has_command_invalidation_topic() ||
-        policy.command_invalidation_topic().empty()) {
-      return false;
-    }
-    *object_id = invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
-                                        policy.command_invalidation_topic());
-  } else {
-    if (!policy.has_command_invalidation_source() ||
-        !policy.has_command_invalidation_name() ||
-        policy.command_invalidation_name().empty()) {
-      return false;
-    }
-    *object_id = invalidation::ObjectId(policy.command_invalidation_source(),
-                                        policy.command_invalidation_name());
+  if (!policy.has_command_invalidation_topic() ||
+      policy.command_invalidation_topic().empty()) {
+    return false;
   }
+  *object_id = invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
+                                      policy.command_invalidation_topic());
   return true;
 }
 

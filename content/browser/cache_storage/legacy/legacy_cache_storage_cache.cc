@@ -1686,6 +1686,7 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
   base::UmaHistogramSparse("ServiceWorkerCache.DiskCacheCreateEntryResult",
                            std::abs(rv));
   if (rv != net::OK) {
+    quota_manager_proxy_->NotifyWriteFailed(origin_);
     PutComplete(std::move(put_context), CacheStorageError::kErrorExists);
     return;
   }
@@ -1767,6 +1768,7 @@ void LegacyCacheStorageCache::PutDidWriteHeaders(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   if (rv != expected_bytes) {
+    quota_manager_proxy_->NotifyWriteFailed(origin_);
     PutComplete(
         std::move(put_context),
         MakeErrorStorage(ErrorStorageType::kPutDidWriteHeadersWrongBytes));
@@ -1849,7 +1851,8 @@ void LegacyCacheStorageCache::PutWriteBlobToCache(
 
   // We have real data, so stream it into the entry.  This will overwrite
   // any existing data.
-  auto blob_to_cache = std::make_unique<CacheStorageBlobToDiskCache>();
+  auto blob_to_cache = std::make_unique<CacheStorageBlobToDiskCache>(
+      quota_manager_proxy_, origin_);
   CacheStorageBlobToDiskCache* blob_to_cache_raw = blob_to_cache.get();
   BlobToDiskCacheIDMap::KeyType blob_to_cache_key =
       active_blob_to_disk_cache_writers_.Add(std::move(blob_to_cache));

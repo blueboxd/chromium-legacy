@@ -79,6 +79,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
   void SetUseInvalidLegalMessageInGetUploadDetails(
       bool use_invalid_legal_message);
 
+  payments::PaymentsClient::UnmaskDetails* unmask_details() {
+    return &unmask_details_;
+  }
   int detected_values_in_upload_details() const { return detected_values_; }
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
     return upload_details_addresses_;

@@ -3,14 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('settings_personalization_options', function() {
-  /**
-   * @param {!Element} element
-   * @param {boolean} displayed
-   */
-  function assertVisible(element, displayed) {
-    assertEquals(
-        displayed, window.getComputedStyle(element)['display'] != 'none');
-  }
 
   suite('PersonalizationOptionsTests_AllBuilds', function() {
     /** @type {settings.TestPrivacyPageBrowserProxy} */
@@ -83,7 +75,7 @@ cr.define('settings_personalization_options', function() {
     if (!cr.isChromeOS) {
       test('signinAllowedToggle', function() {
         const toggle = testElement.$.signinAllowedToggle;
-        assertVisible(toggle, true);
+        assertTrue(test_util.isVisible(toggle));
 
         testElement.syncStatus = {signedIn: false};
         // Check initial setup.
@@ -257,7 +249,7 @@ cr.define('settings_personalization_options', function() {
     test('LinkDoctor', function() {
       // The Link Doctor setting exists if the |privacySettingsRedesignEnabled|
       // has not been turned on.
-      assertVisible(testElement.$$('#linkDoctor'), true);
+      assertTrue(test_util.isChildVisible(testElement, '#linkDoctor'));
     });
   });
 });

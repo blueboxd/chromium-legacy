@@ -258,8 +258,8 @@ void InProcessBrowserTest::SetUp() {
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService::set_state_for_testing(
-      CaptivePortalService::DISABLED_FOR_TESTING);
+  captive_portal::CaptivePortalService::set_state_for_testing(
+      captive_portal::CaptivePortalService::DISABLED_FOR_TESTING);
 #endif
 
   chrome_browser_net::NetErrorTabHelper::set_state_for_testing(

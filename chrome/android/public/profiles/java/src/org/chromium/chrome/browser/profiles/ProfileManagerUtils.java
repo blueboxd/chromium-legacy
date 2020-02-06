@@ -4,20 +4,17 @@
 
 package org.chromium.chrome.browser.profiles;
 
-import android.content.SharedPreferences;
 import android.os.SystemClock;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * A utility class for applying operations on all loaded profiles.
  */
 public class ProfileManagerUtils {
-    // "ChromeMobileApplication" is a relic kept for backward compatibility.
-    private static final String PREF_BOOT_TIMESTAMP =
-            "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
     private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
 
     /**
@@ -41,8 +38,9 @@ public class ProfileManagerUtils {
      * since the updated timestamp is immediately saved.
      */
     public static void removeSessionCookiesForAllProfiles() {
+        SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
         long lastKnownBootTimestamp =
-                ContextUtils.getAppSharedPreferences().getLong(PREF_BOOT_TIMESTAMP, 0);
+                preferences.readLong(ChromePreferenceKeys.PROFILES_BOOT_TIMESTAMP, 0);
         long bootTimestamp = System.currentTimeMillis() - SystemClock.uptimeMillis();
         long difference = bootTimestamp - lastKnownBootTimestamp;
 
@@ -50,10 +48,7 @@ public class ProfileManagerUtils {
         if (Math.abs(difference) > BOOT_TIMESTAMP_MARGIN_MS) {
             ProfileManagerUtilsJni.get().removeSessionCookiesForAllProfiles();
 
-            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putLong(PREF_BOOT_TIMESTAMP, bootTimestamp);
-            editor.apply();
+            preferences.writeLong(ChromePreferenceKeys.PROFILES_BOOT_TIMESTAMP, bootTimestamp);
         }
     }
 

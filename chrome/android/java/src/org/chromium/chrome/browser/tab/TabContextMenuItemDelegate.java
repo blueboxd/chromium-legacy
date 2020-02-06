@@ -34,8 +34,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.URI;
 
-import java.net.URI;
 import java.util.Locale;
 
 /**

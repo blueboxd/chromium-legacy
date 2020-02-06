@@ -15,7 +15,7 @@ class SearchBoxViewDelegate;
 
 namespace keyboard_shortcut_viewer {
 
-// A search_box_SearchBoxViewBase implementation for KeybaordShortcutViewer.
+// A search_box_SearchBoxViewBase implementation for KeyboardShortcutViewer.
 class KSVSearchBoxView : public search_box::SearchBoxViewBase {
  public:
   explicit KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate);

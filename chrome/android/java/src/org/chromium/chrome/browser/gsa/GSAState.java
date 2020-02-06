@@ -6,13 +6,22 @@ package org.chromium.chrome.browser.gsa;
 
 import android.accounts.Account;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PackageUtils;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.List;
@@ -72,7 +81,8 @@ public class GSAState {
     }
 
     /* Private constructor, since this is a singleton */
-    private GSAState(Context context) {
+    @VisibleForTesting
+    GSAState(Context context) {
         mContext = context.getApplicationContext();
     }
 
@@ -132,5 +142,75 @@ public class GSAState {
      */
     private boolean isPackageAboveVersion(String packageName, int minVersion) {
         return PackageUtils.getPackageVersion(mContext, packageName) >= minVersion;
+    }
+
+    /**
+     * Checks if the AGSA version is below a certain {@code String} version name.
+     *
+     * @param installedVersionName The AGSA version installed on this device,
+     * @param minimumVersionName The minimum AGSA version allowed.
+     * @return Whether the AGSA version on the device is below the given minimum
+     */
+    public boolean isAgsaVersionBelowMinimum(
+            String installedVersionName, String minimumVersionName) {
+        if (TextUtils.isEmpty(installedVersionName) || TextUtils.isEmpty(minimumVersionName)) {
+            return true;
+        }
+
+        String[] agsaNumbers = installedVersionName.split("\\.", -1);
+        String[] targetAgsaNumbers = minimumVersionName.split("\\.", -1);
+
+        // To avoid IndexOutOfBounds
+        int maxIndex = Math.min(agsaNumbers.length, targetAgsaNumbers.length);
+        for (int i = 0; i < maxIndex; ++i) {
+            int agsaNumber = Integer.parseInt(agsaNumbers[i]);
+            int targetAgsaNumber = Integer.parseInt(targetAgsaNumbers[i]);
+
+            if (agsaNumber < targetAgsaNumber) {
+                return true;
+            } else if (agsaNumber > targetAgsaNumber) {
+                return false;
+            }
+        }
+
+        // If versions are the same so far, but they have different length...
+        return agsaNumbers.length < targetAgsaNumbers.length;
+    }
+
+    /**
+     * Determines if the given intent can be handled by Agsa.
+     *
+     * @param intent Given to the system to find the Activity available to handle it.
+     * @return Whether the given intent can be handled by Agsa.
+     */
+    public boolean canAgsaHandleIntent(@NonNull Intent intent) {
+        if (!intent.getPackage().equals(IntentHandler.PACKAGE_GSA)) return false;
+
+        PackageManager packageManager = mContext.getPackageManager();
+        try {
+            ComponentName activity = intent.resolveActivity(packageManager);
+            if (activity == null) return false;
+            PackageInfo packageInfo = packageManager.getPackageInfo(activity.getPackageName(), 0);
+            if (packageInfo == null) return false;
+        } catch (NameNotFoundException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Gets the version name of the Agsa package.
+     *
+     * @return The version name of the Agsa package or null if it can't be found.
+     */
+    public @Nullable String getAgsaVersionName() {
+        try {
+            PackageInfo packageInfo =
+                    mContext.getPackageManager().getPackageInfo(IntentHandler.PACKAGE_GSA, 0);
+            return packageInfo.versionName;
+        } catch (NameNotFoundException e) {
+            return null;
+        }
     }
 }

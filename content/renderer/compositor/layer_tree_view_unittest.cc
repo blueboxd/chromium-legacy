@@ -19,6 +19,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/test_context_provider.h"
@@ -50,7 +51,7 @@ class FakeLayerTreeViewDelegate : public StubLayerTreeViewDelegate {
     // Subtract one cuz the current request has already been counted but should
     // not be included for this.
     if (num_requests_since_last_success_ - 1 < num_requests_before_success_) {
-      std::move(callback).Run(nullptr);
+      std::move(callback).Run(nullptr, nullptr);
       return;
     }
 
@@ -60,7 +61,8 @@ class FakeLayerTreeViewDelegate : public StubLayerTreeViewDelegate {
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
     std::move(callback).Run(
-        cc::FakeLayerTreeFrameSink::Create3d(std::move(context_provider)));
+        cc::FakeLayerTreeFrameSink::Create3d(std::move(context_provider)),
+        nullptr);
   }
 
   void Reset() {

@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_ukm_recorder_factory.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "content/renderer/frame_swap_message_queue.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/buffer_types.h"
@@ -92,12 +93,8 @@ void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
-    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
-        render_frame_metadata_observer_client_receiver,
-    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
-        render_frame_metadata_observer_remote,
     const char* client_name) {
-  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d());
+  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
 }
 
 #ifdef OS_ANDROID

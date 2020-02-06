@@ -208,8 +208,9 @@ void BrowserContextImpl::CreateUserPrefService() {
 }
 
 void BrowserContextImpl::RegisterPrefs(PrefRegistrySimple* pref_registry) {
-  // This pref is used by CaptivePortalService (as well as other potential use
-  // cases in the future, as it is used for various purposes through //chrome).
+  // This pref is used by captive_portal::CaptivePortalService (as well as other
+  // potential use cases in the future, as it is used for various purposes
+  // through //chrome).
   pref_registry->RegisterBooleanPref(
       embedder_support::kAlternateErrorPagesEnabled, true);
 

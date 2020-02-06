@@ -727,10 +727,23 @@ bool ParseEventsFromJson(const std::string& json,
                          std::vector<TraceEvent>* output) {
   base::Optional<base::Value> root = base::JSONReader::Read(json);
 
-  if (!root || !root->is_list())
+  if (!root)
     return false;
 
-  for (const auto& item : root->GetList()) {
+  base::Value::ListView list;
+  if (root->is_list()) {
+    list = root->GetList();
+  } else if (root->is_dict()) {
+    base::Value* trace_events = root->FindListKey("traceEvents");
+    if (!trace_events)
+      return false;
+
+    list = trace_events->GetList();
+  } else {
+    return false;
+  }
+
+  for (const auto& item : list) {
     TraceEvent event;
     if (!event.SetFromJSON(&item))
       return false;

@@ -353,7 +353,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         WebContents baseWebContents = mSelectionController.getBaseWebContents();
         if (baseWebContents == null) return null;
         try {
-            return new URL(baseWebContents.getVisibleUrl());
+            return new URL(baseWebContents.getVisibleUrlString());
         } catch (MalformedURLException e) {
             return null;
         }
@@ -1570,9 +1570,12 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                     ContextualSearchInteractionPersister.PersistedInteraction interaction =
                             mInteractionRecorder.getInteractionPersister()
                                     .getAndClearPersistedInteraction();
+                    String targetLanguage =
+                            mTranslateController.getTranslateServiceTargetLanguage();
+                    targetLanguage = targetLanguage != null ? targetLanguage : "";
                     mContext.setResolveProperties(mPolicy.getHomeCountry(mActivity),
                             mPolicy.maySendBasePageUrl(), interaction.getEventId(),
-                            interaction.getEncodedUserInteractions());
+                            interaction.getEncodedUserInteractions(), targetLanguage);
                 }
                 WebContents webContents = getBaseWebContents();
                 if (webContents != null) {

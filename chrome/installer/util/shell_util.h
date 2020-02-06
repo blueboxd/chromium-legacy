@@ -222,6 +222,15 @@ class ShellUtil {
     uint32_t options;
   };
 
+  struct FileAssociationsAndAppName {
+    FileAssociationsAndAppName();
+    FileAssociationsAndAppName(FileAssociationsAndAppName&& other);
+    ~FileAssociationsAndAppName();
+
+    std::set<base::string16> file_associations;
+    base::string16 app_name;
+  };
+
   // Relative path of the URL Protocol registry entry (prefixed with '\').
   static const wchar_t* kRegURLProtocol;
 
@@ -650,6 +659,12 @@ class ShellUtil {
   // application, as given to AddFileAssociations. All information associated
   // with this name will be deleted.
   static bool DeleteFileAssociations(const base::string16& prog_id);
+
+  // Returns the app name and file associations registered for a particular
+  // application in the Windows registry. If there is no entry in the registry
+  // for |prog_id|, nothing will be returned.
+  static FileAssociationsAndAppName GetFileAssociationsAndAppName(
+      const base::string16& prog_id);
 
   // Retrieves the file path of the application registered as the
   // shell->open->command for |prog_id|. This only queries the user's

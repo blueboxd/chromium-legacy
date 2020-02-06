@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/proxy_resolution/proxy_bypass_rules.h"
+#include "net/base/scheme_host_port_matcher.h"
 
 class GURL;
 
@@ -41,9 +41,7 @@ class TrustedSourcesManager {
   TrustedSourcesManager();
 
  private:
-  // We are using ProxyBypassRules because they have the functionality that we
-  // want, but we are not using it for proxy bypass.
-  net::ProxyBypassRules rules_;
+  net::SchemeHostPortMatcher matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustedSourcesManager);
 };

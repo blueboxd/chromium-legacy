@@ -48,8 +48,6 @@ Example:
   ],
   "current_key_index": 0,
   "robot_api_auth_code": "",
-  "invalidation_source": 1025,
-  "invalidation_name": "UENUPOL",
    "token_enrollment": {
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
@@ -1159,14 +1157,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.service_account_identity = policy.get(
         'service_account_identity',
         'policy_testserver.py-service_account_identity@gmail.com')
-    invalidation_source = policy.get('invalidation_source')
-    if invalidation_source is not None:
-      policy_data.invalidation_source = invalidation_source
-    # Since invalidation_name is type bytes in the proto, the Unicode name
-    # provided needs to be encoded as ASCII to set the correct byte pattern.
-    invalidation_name = policy.get('invalidation_name')
-    if invalidation_name is not None:
-      policy_data.invalidation_name = invalidation_name.encode('ascii')
 
     policy_invalidation_topic = policy.get('policy_invalidation_topic')
     if policy_invalidation_topic is not None:

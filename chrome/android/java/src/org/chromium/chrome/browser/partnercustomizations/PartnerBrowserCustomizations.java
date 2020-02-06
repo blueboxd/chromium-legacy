@@ -365,4 +365,9 @@ public class PartnerBrowserCustomizations {
         }
         return true;
     }
+
+    @VisibleForTesting
+    public static void setHomepageForTests(String homepage) {
+        sHomepage = homepage;
+    }
 }

@@ -24,6 +24,7 @@ class UnifiedNotifierSettingsController : public DetailedViewController {
 
   // DetailedViewControllerBase:
   views::View* CreateView() override;
+  base::string16 GetAccessibleName() const override;
 
  private:
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;

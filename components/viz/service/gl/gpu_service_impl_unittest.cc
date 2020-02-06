@@ -73,6 +73,7 @@ class GpuServiceTest : public testing::Test {
         gpu_info, /*watchdog_thread=*/nullptr, io_thread_.task_runner(),
         gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
         gpu::GpuFeatureInfo(), gpu::GpuExtraInfo(),
+        /*device_perf_info=*/base::nullopt,
         /*vulkan_implementation=*/nullptr,
         /*exit_callback=*/base::DoNothing());
   }

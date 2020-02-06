@@ -1168,11 +1168,6 @@ LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object,
                                                  : nullptr;
 }
 
-void LayoutBox::MayUpdateHoverWhenContentUnderMouseChanged(
-    EventHandler& event_handler) {
-  event_handler.MayUpdateHoverAfterScroll(AbsoluteBoundingBoxFloatRect());
-}
-
 void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
   if (delta.IsZero() || !HasOverflowClip())
     return;

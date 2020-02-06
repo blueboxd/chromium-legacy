@@ -380,10 +380,6 @@ void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechSynthesisEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableUpdateHoverAtBeginFrame(bool enable) {
-  RuntimeEnabledFeatures::SetUpdateHoverAtBeginFrameEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationPostMessageTransferEnabled(enable);
 }

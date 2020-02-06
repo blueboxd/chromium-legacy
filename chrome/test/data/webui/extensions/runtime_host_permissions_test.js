@@ -6,7 +6,7 @@ import 'chrome://extensions/extensions.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {eventToPromise, isVisible} from '../test_util.m.js';
+import {eventToPromise, isChildVisible} from '../test_util.m.js';
 
 import {TestService} from './test_service.js';
 
@@ -41,7 +41,7 @@ suite('RuntimeHostPermissions', function() {
     element.set('permissions', permissions);
     flush();
 
-    const testIsVisible = isVisible.bind(null, element);
+    const testIsVisible = isChildVisible.bind(null, element);
     expectTrue(testIsVisible('#host-access'));
 
     const selectHostAccess = element.$$('#host-access');
@@ -216,7 +216,7 @@ suite('RuntimeHostPermissions', function() {
 
     const addHostButton = element.$$('#add-host');
     assertTrue(!!addHostButton);
-    expectTrue(isVisible(element, '#add-host'));
+    expectTrue(isChildVisible(element, '#add-host'));
 
     addHostButton.click();
     flush();

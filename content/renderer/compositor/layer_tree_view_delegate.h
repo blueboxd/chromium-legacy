@@ -16,6 +16,7 @@ namespace cc {
 class LayerTreeFrameSink;
 struct BeginMainFrameMetrics;
 struct ElementId;
+class RenderFrameMetadataObserver;
 }  // namespace cc
 
 namespace content {
@@ -24,8 +25,9 @@ namespace content {
 // transport compositing information across processes.
 class LayerTreeViewDelegate {
  public:
-  using LayerTreeFrameSinkCallback =
-      base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
+  using LayerTreeFrameSinkCallback = base::OnceCallback<void(
+      std::unique_ptr<cc::LayerTreeFrameSink>,
+      std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
 
   // Report viewport related properties during a commit from the compositor
   // thread.

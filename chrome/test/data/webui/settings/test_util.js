@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {Router, Route} from 'chrome://settings/settings.js';
+
 cr.define('test_util', function() {
 
   /**
@@ -202,7 +204,7 @@ cr.define('test_util', function() {
     }
   }
 
-  function setupPopstateListener() {
+  /* #export */ function setupPopstateListener() {
     window.addEventListener('popstate', function(event) {
       // On pop state, do not push the state onto the window.history again.
       const routerInstance = settings.Router.getInstance();
@@ -214,6 +216,7 @@ cr.define('test_util', function() {
     });
   }
 
+  // #cr_define_end
   return {
     createContentSettingTypeToValuePair: createContentSettingTypeToValuePair,
     createDefaultContentSetting: createDefaultContentSetting,

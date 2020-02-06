@@ -1144,6 +1144,15 @@ void LayoutObject::ClearPreferredLogicalWidthsDirty() {
   bitfields_.SetPreferredLogicalWidthsDirty(false);
 }
 
+void LayoutObject::InvalidateSubtreeLayoutForFontUpdates() {
+  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      layout_invalidation_reason::kFontsChanged);
+  for (LayoutObject* child = SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    child->InvalidateSubtreeLayoutForFontUpdates();
+  }
+}
+
 void LayoutObject::InvalidateIntersectionObserverCachedRects() {
   if (GetNode() && GetNode()->IsElementNode()) {
     if (auto* data = To<Element>(GetNode())->IntersectionObserverData()) {

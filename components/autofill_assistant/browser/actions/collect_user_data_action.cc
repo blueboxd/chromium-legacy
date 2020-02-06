@@ -262,6 +262,25 @@ bool IsValidUserFormSection(
       }
       break;
     }
+    case autofill_assistant::UserFormSectionProto::kPopupListSection:
+      if (proto.popup_list_section().item_names().empty()) {
+        VLOG(2) << "PopupListProto: At least one item must be specified.";
+        return false;
+      }
+      if (proto.popup_list_section().initial_selection().size() > 1 &&
+          proto.popup_list_section().allow_multiselect() == false) {
+        VLOG(2) << "PopupListProto: multiple initial selections for a single "
+                   "selection popup.";
+        return false;
+      }
+      for (int selection : proto.popup_list_section().initial_selection()) {
+        if (selection >= proto.popup_list_section().item_names().size() ||
+            selection < 0) {
+          VLOG(2) << "PopupListProto: an initial selection is out of bounds.";
+          return false;
+        }
+      }
+      break;
     case autofill_assistant::UserFormSectionProto::SECTION_NOT_SET:
       VLOG(2) << "UserFormSectionProto: section oneof not set.";
       return false;
@@ -288,18 +307,110 @@ void FillProtoForAdditionalSection(
     const autofill_assistant::UserFormSectionProto& additional_section,
     const UserData& user_data,
     autofill_assistant::ProcessedActionProto* processed_action_proto) {
-  if (additional_section.section_case() ==
-      autofill_assistant::UserFormSectionProto::kTextInputSection) {
-    for (const auto& text_input :
-         additional_section.text_input_section().input_fields()) {
-      if (user_data.has_additional_value(text_input.client_memory_key())) {
-        processed_action_proto->mutable_collect_user_data_result()
-            ->add_set_text_input_memory_keys(text_input.client_memory_key());
+  switch (additional_section.section_case()) {
+    case autofill_assistant::UserFormSectionProto::kTextInputSection:
+      for (const auto& text_input :
+           additional_section.text_input_section().input_fields()) {
+        if (user_data.has_additional_value(text_input.client_memory_key())) {
+          processed_action_proto->mutable_collect_user_data_result()
+              ->add_set_text_input_memory_keys(text_input.client_memory_key());
+          if (additional_section.send_result_to_backend()) {
+            auto value = user_data.additional_values_.find(
+                text_input.client_memory_key());
+            autofill_assistant::ModelProto_ModelValue model_value;
+            model_value.set_identifier(text_input.client_memory_key());
+            *model_value.mutable_value() = value->second;
+            *processed_action_proto->mutable_collect_user_data_result()
+                 ->add_additional_sections_values() = model_value;
+          }
+        }
       }
-    }
+      break;
+    case autofill_assistant::UserFormSectionProto::kPopupListSection:
+      if (user_data.has_additional_value(
+              additional_section.popup_list_section().additional_value_key()) &&
+          additional_section.send_result_to_backend()) {
+        auto value = user_data.additional_values_.find(
+            additional_section.popup_list_section().additional_value_key());
+        autofill_assistant::ModelProto_ModelValue model_value;
+        model_value.set_identifier(
+            additional_section.popup_list_section().additional_value_key());
+        *model_value.mutable_value() = value->second;
+        *processed_action_proto->mutable_collect_user_data_result()
+             ->add_additional_sections_values() = model_value;
+      }
+      break;
+    case autofill_assistant::UserFormSectionProto::kStaticTextSection:
+    case autofill_assistant::UserFormSectionProto::SECTION_NOT_SET:
+      // Do nothing.
+      break;
   }
 }
 
+bool IsAdditionalSectionComplete(
+    const std::map<std::string, autofill_assistant::ValueProto>&
+        additional_sections,
+    const autofill_assistant::UserFormSectionProto& section) {
+  if (!section.popup_list_section().selection_mandatory()) {
+    return true;
+  }
+  auto find_result = additional_sections.find(
+      section.popup_list_section().additional_value_key());
+  if (find_result != additional_sections.end() &&
+      !find_result->second.ints().values().empty()) {
+    return true;
+  }
+  return false;
+}
+
+bool AreAdditionalSectionsComplete(
+    const std::map<std::string, autofill_assistant::ValueProto>&
+        additional_sections,
+    const CollectUserDataOptions& collect_user_data_options) {
+  for (const auto& section :
+       collect_user_data_options.additional_prepended_sections) {
+    if (!IsAdditionalSectionComplete(additional_sections, section)) {
+      return false;
+    }
+  }
+  for (const auto& section :
+       collect_user_data_options.additional_appended_sections) {
+    if (!IsAdditionalSectionComplete(additional_sections, section)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void SetInitialUserDataForAdditionalSection(
+    const autofill_assistant::UserFormSectionProto& additional_section,
+    UserData* user_data) {
+  switch (additional_section.section_case()) {
+    case autofill_assistant::UserFormSectionProto::kTextInputSection: {
+      for (const auto& text_input :
+           additional_section.text_input_section().input_fields()) {
+        autofill_assistant::ValueProto value;
+        value.mutable_strings()->add_values(text_input.value());
+        user_data->additional_values_[text_input.client_memory_key()] = value;
+      }
+      break;
+    }
+    case autofill_assistant::UserFormSectionProto::kPopupListSection: {
+      autofill_assistant::ValueProto value;
+      for (const auto& selection :
+           additional_section.popup_list_section().initial_selection()) {
+        value.mutable_ints()->add_values(selection);
+      }
+      user_data->additional_values_[additional_section.popup_list_section()
+                                        .additional_value_key()] = value;
+      break;
+    }
+    case autofill_assistant::UserFormSectionProto::kStaticTextSection:
+    case autofill_assistant::UserFormSectionProto::SECTION_NOT_SET:
+      // Do nothing.
+      break;
+  }
+}
 }  // namespace
 
 namespace autofill_assistant {
@@ -441,27 +552,11 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
   }
   for (const auto& additional_section :
        collect_user_data.additional_prepended_sections()) {
-    if (additional_section.section_case() ==
-        UserFormSectionProto::kTextInputSection) {
-      for (const auto& text_input :
-           additional_section.text_input_section().input_fields()) {
-        ValueProto value;
-        value.mutable_strings()->add_values(text_input.value());
-        user_data->additional_values_[text_input.client_memory_key()] = value;
-      }
-    }
+    SetInitialUserDataForAdditionalSection(additional_section, user_data);
   }
   for (const auto& additional_section :
        collect_user_data.additional_appended_sections()) {
-    if (additional_section.section_case() ==
-        UserFormSectionProto::kTextInputSection) {
-      for (const auto& text_input :
-           additional_section.text_input_section().input_fields()) {
-        ValueProto value;
-        value.mutable_strings()->add_values(text_input.value());
-        user_data->additional_values_[text_input.client_memory_key()] = value;
-      }
-    }
+    SetInitialUserDataForAdditionalSection(additional_section, user_data);
   }
 
   if (collect_user_data_options_->request_login_choice &&
@@ -979,7 +1074,9 @@ bool CollectUserDataAction::IsUserDataComplete(
          IsValidDateTimeRange(user_data.date_time_range_start_date_,
                               user_data.date_time_range_start_timeslot_,
                               user_data.date_time_range_end_date_,
-                              user_data.date_time_range_end_timeslot_, options);
+                              user_data.date_time_range_end_timeslot_,
+                              options) &&
+         AreAdditionalSectionsComplete(user_data.additional_values_, options);
 }
 
 // TODO(b/148448649): Move to dedicated helper namespace.

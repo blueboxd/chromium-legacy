@@ -9,9 +9,7 @@ import static org.mockito.Mockito.doReturn;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -26,7 +24,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
@@ -36,8 +33,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceInteractionSource;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
@@ -47,18 +42,16 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorIm
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
+import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
@@ -81,9 +74,6 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
-
-    @Mock
-    ExternalAuthUtils mExternalAuthUtils;
 
     private TestDataProvider mDataProvider;
     private TestDelegate mDelegate;
@@ -118,9 +108,8 @@ public class LocationBarVoiceRecognitionHandlerTest {
         private Boolean mResult;
         private Float mVoiceConfidenceValue;
 
-        public TestLocationBarVoiceRecognitionHandler(
-                Delegate delegate, ExternalAuthUtils authUtils) {
-            super(delegate, authUtils);
+        public TestLocationBarVoiceRecognitionHandler(Delegate delegate) {
+            super(delegate);
         }
 
         @Override
@@ -471,11 +460,10 @@ public class LocationBarVoiceRecognitionHandlerTest {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
 
         mDataProvider = new TestDataProvider();
         mDelegate = TestThreadUtils.runOnUiThreadBlocking(() -> new TestDelegate());
-        mHandler = new TestLocationBarVoiceRecognitionHandler(mDelegate, mExternalAuthUtils);
+        mHandler = new TestLocationBarVoiceRecognitionHandler(mDelegate);
         mPermissionDelegate = new TestAndroidPermissionDelegate();
         mAutocomplete = new TestAutocompleteController(null /* view */, sEmptySuggestionListener,
                 new HashMap<String, List<SuggestionsResult>>());
@@ -485,16 +473,11 @@ public class LocationBarVoiceRecognitionHandlerTest {
             mWindowAndroid.setAndroidPermissionDelegate(mPermissionDelegate);
             mTab = new MockTab(0, false);
         });
-
-        TemplateUrlService service = Mockito.mock(TemplateUrlService.class);
-        doReturn(true).when(service).isDefaultSearchEngineGoogle();
-        TemplateUrlServiceFactory.setInstanceForTesting(service);
     }
 
     @After
     public void tearDown() {
         SysUtils.resetForTesting();
-        TemplateUrlServiceFactory.setInstanceForTesting(null);
     }
 
     /**
@@ -564,29 +547,17 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Feature("OmniboxAssistantVoiceSearch")
     @EnableFeatures("OmniboxAssistantVoiceSearch")
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    public void testStartVoiceRecognition_StartsAssistantVoiceSearch()
-            throws NameNotFoundException {
-        Activity testActivity = Mockito.mock(Activity.class);
-        PackageManager testPackageManager = Mockito.mock(PackageManager.class);
-        PackageInfo testPackageInfo = new PackageInfo();
-        testPackageInfo.versionCode =
-                LocationBarVoiceRecognitionHandler.DEFAULT_ASSISTANT_AGSA_MIN_VERSION;
-        doReturn(testPackageInfo)
-                .when(testPackageManager)
-                .getPackageInfo(IntentHandler.PACKAGE_GSA, 0);
-        doReturn(testPackageManager).when(testActivity).getPackageManager();
-        mWindowAndroid.setActivity(testActivity);
+    public void testStartVoiceRecognition_StartsAssistantVoiceSearch() {
+        AssistantVoiceSearchService service = Mockito.mock(AssistantVoiceSearchService.class);
+        doReturn(true).when(service).shouldRequestAssistantVoiceSearch();
+        Intent intent = new Intent();
+        doReturn(intent).when(service).getAssistantVoiceSearchIntent();
 
-        doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
-
-        SysUtils.setAmountOfPhysicalMemoryKBForTesting(
-                LocationBarVoiceRecognitionHandler.DEFAULT_ASSISTANT_MIN_MEMORY_MB
-                * ConversionUtils.BYTES_PER_KILOBYTE);
+        mHandler.setAssistantVoiceSearchService(service);
         startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
 
         Assert.assertTrue(mWindowAndroid.wasCancelableIntentShown());
-        Assert.assertEquals(
-                IntentHandler.PACKAGE_GSA, mWindowAndroid.getCancelableIntent().getPackage());
+        Assert.assertEquals(intent, mWindowAndroid.getCancelableIntent());
     }
 
     /**

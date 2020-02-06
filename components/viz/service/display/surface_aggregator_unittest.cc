@@ -4331,14 +4331,21 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
       {Quad::SolidColorQuad(SK_ColorGRAY, gfx::Rect(5, 5)),
        Quad::SolidColorQuad(SK_ColorDKGRAY, gfx::Rect(5, 5))}};
 
-  gfx::DisplayColorSpaces display_color_spaces;
-  display_color_spaces.srgb = gfx::ColorSpace::CreateSRGB();
-  display_color_spaces.wcg_opaque =
+  gfx::DisplayColorSpaces display_color_spaces(gfx::ColorSpace::CreateSRGB());
+  display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+      gfx::ContentColorUsage::kWideColorGamut, false /* needs_alpha */,
       gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                      gfx::ColorSpace::TransferID::IEC61966_2_1);
-  display_color_spaces.wcg_transparent = gfx::ColorSpace::CreateSCRGBLinear();
-  display_color_spaces.hdr_opaque = gfx::ColorSpace::CreateHDR10();
-  display_color_spaces.hdr_transparent = gfx::ColorSpace::CreateSCRGBLinear();
+                      gfx::ColorSpace::TransferID::IEC61966_2_1),
+      gfx::BufferFormat::RGBA_8888);
+  display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+      gfx::ContentColorUsage::kWideColorGamut, true /* needs_alpha */,
+      gfx::ColorSpace::CreateSCRGBLinear(), gfx::BufferFormat::RGBA_8888);
+  display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+      gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
+      gfx::ColorSpace::CreateHDR10(), gfx::BufferFormat::BGRX_1010102);
+  display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+      gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
+      gfx::ColorSpace::CreateSCRGBLinear(), gfx::BufferFormat::RGBA_F16);
 
   std::vector<Pass> passes = {Pass(quads[0], 2, SurfaceSize()),
                               Pass(quads[1], 1, SurfaceSize())};
@@ -4348,7 +4355,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   passes[1].has_transparent_background = true;
 
   // HDR content with a transparent background will get an extra RenderPass
-  // converting to |hdr_transparent|.
+  // converting to SCRGB-linear.
   aggregator_.SetDisplayColorSpaces(display_color_spaces);
   {
     SubmitCompositorFrame(root_sink_.get(), passes, root_local_surface_id_,
@@ -4362,12 +4369,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[0]->color_space);
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[1]->color_space);
-    EXPECT_EQ(display_color_spaces.hdr_transparent,
+    EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
               aggregated_frame.render_pass_list[2]->color_space);
   }
 
   // HDR content with an opaque background will get an extra RenderPass
-  // converting to |hdr_opaque|.
+  // converting to HDR10.
   passes[1].has_transparent_background = false;
   {
     SubmitCompositorFrame(root_sink_.get(), passes, root_local_surface_id_,
@@ -4381,7 +4388,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[0]->color_space);
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[1]->color_space);
-    EXPECT_EQ(display_color_spaces.hdr_opaque,
+    EXPECT_EQ(gfx::ColorSpace::CreateHDR10(),
               aggregated_frame.render_pass_list[2]->color_space);
   }
 
@@ -4389,8 +4396,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   // content can be drawn into a BT2020 buffer as 10-10-10-2, but transparent
   // content needs to bump up to 16-bit, and therefore (until we find a way
   // around this) linear color space.
-  display_color_spaces.hdr_opaque = display_color_spaces.wcg_opaque;
-  display_color_spaces.hdr_transparent = display_color_spaces.wcg_transparent;
+  display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+      gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
+      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                      gfx::ColorSpace::TransferID::IEC61966_2_1),
+      gfx::BufferFormat::BGRX_1010102);
+  display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+      gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
+      gfx::ColorSpace::CreateSCRGBLinear(), gfx::BufferFormat::RGBA_F16);
 
   // Opaque content renders to the appropriate space directly.
   passes[1].has_transparent_background = false;
@@ -4405,7 +4418,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
     EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[0]->color_space);
-    EXPECT_EQ(display_color_spaces.hdr_opaque,
+    EXPECT_EQ(gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                              gfx::ColorSpace::TransferID::IEC61966_2_1),
               aggregated_frame.render_pass_list[1]->color_space);
   }
 
@@ -4424,7 +4438,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[0]->color_space);
     EXPECT_EQ(compositing_color_space,
               aggregated_frame.render_pass_list[1]->color_space);
-    EXPECT_EQ(display_color_spaces.hdr_transparent,
+    EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
               aggregated_frame.render_pass_list[2]->color_space);
   }
 }
@@ -4435,14 +4449,20 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
       [this](gfx::ContentColorUsage content_color_usage, bool is_wide,
              bool is_hdr) {
         gfx::DisplayColorSpaces display_color_spaces;
-        display_color_spaces.srgb = gfx::ColorSpace::CreateSRGB();
-        display_color_spaces.wcg_opaque = gfx::ColorSpace::CreateDisplayP3D65();
-        display_color_spaces.wcg_transparent =
-            gfx::ColorSpace::CreateDisplayP3D65();
-        display_color_spaces.hdr_opaque = gfx::ColorSpace::CreateHDR10();
-        display_color_spaces.hdr_transparent =
-            gfx::ColorSpace::CreateSCRGBLinear();
-
+        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+            gfx::ContentColorUsage::kWideColorGamut, false /* needs_alpha */,
+            gfx::ColorSpace::CreateDisplayP3D65(),
+            gfx::BufferFormat::RGBA_8888);
+        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+            gfx::ContentColorUsage::kWideColorGamut, true /* needs_alpha */,
+            gfx::ColorSpace::CreateDisplayP3D65(),
+            gfx::BufferFormat::RGBA_8888);
+        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+            gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
+            gfx::ColorSpace::CreateExtendedSRGB(), gfx::BufferFormat::RGBA_F16);
+        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+            gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
+            gfx::ColorSpace::CreateExtendedSRGB(), gfx::BufferFormat::RGBA_F16);
         aggregator_.SetDisplayColorSpaces(display_color_spaces);
 
         std::vector<Quad> child_quads = {

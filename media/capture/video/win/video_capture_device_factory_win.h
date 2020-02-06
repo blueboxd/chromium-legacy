@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread.h"
+#include "media/base/win/mf_initializer.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
 namespace media {
@@ -94,6 +95,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
       VideoCaptureFormats* formats);
 
   bool use_media_foundation_;
+  MFSessionLifetime session_;
   // In production code, when Media Foundation libraries are available,
   // |mf_enum_device_sources_func_| points to MFEnumDeviceSources. It enables
   // mock of Media Foundation API in unit tests.

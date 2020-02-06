@@ -57,10 +57,6 @@ void SetLocalizedStrings(Profile* profile,
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_FINISH_BUTTON));
   localized_strings->SetString(
       "nextButton", l10n_util::GetStringUTF16(IDS_FIRST_RUN_NEXT_BUTTON));
-  localized_strings->SetBoolean(
-      "transitionsEnabled",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableFirstRunUITransitions));
   localized_strings->SetString(
       "accessibleTitle",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_STEP_ACCESSIBLE_TITLE));

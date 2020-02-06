@@ -4118,6 +4118,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Failure bubble shown"/>
 </enum>
 
+<enum name="AutofillCreditCardUserPerceivedLatencyFollowUp">
+  <int value="0" label="User-perceived latency followed by WebAuthn"/>
+  <int value="1" label="User-perceived latency followed by CVC fallback"/>
+</enum>
+
 <enum name="AutofillCreditCardWebauthnOptInParameters">
   <int value="0" label="Fetching challenge"/>
   <int value="1" label="Creating new credential"/>
@@ -6386,6 +6391,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanBlocked">
   <int value="0" label="Not Blocked"/>
   <int value="1" label="Blocked"/>
+</enum>
+
+<enum name="BooleanBounced">
+  <int value="0" label="Not Bounced"/>
+  <int value="1" label="Bounced"/>
 </enum>
 
 <enum name="BooleanBringToForegroundReason">
@@ -20673,6 +20683,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="448" label="AUTOFILL_ASSISTANT_PRIVATE_ON_ACTIONS_CHANGED"/>
   <int value="449"
       label="AUTOFILL_ASSISTANT_PRIVATE_ON_STATUS_MESSAGE_CHANGED"/>
+  <int value="450" label="BLUETOOTH_PRIVATE_ON_DEVICE_ADDRESS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -32944,6 +32955,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IMERegisterProxyView">
+  <obsolete>
+    Removed as of Jan 2020.
+  </obsolete>
   <int value="0" label="Success">Success in registering ProxyView to IMM</int>
   <int value="1" label="Failure">Failure in registering ProxyView to IMM</int>
   <int value="2" label="DetectionFailure">Failure in detecting the result</int>
@@ -34336,6 +34350,22 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="InvalidOriginReason">
   <int value="0" label="Opaque Origin"/>
   <int value="1" label="Empty URL"/>
+</enum>
+
+<enum name="IOSContentSizeCategory">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="ExtraSmall"/>
+  <int value="2" label="Small"/>
+  <int value="3" label="Medium"/>
+  <int value="4" label="Large"/>
+  <int value="5" label="ExtraLarge"/>
+  <int value="6" label="ExtraExtraLarge"/>
+  <int value="7" label="ExtraExtraExtraLarge"/>
+  <int value="8" label="AccessibilityMedium"/>
+  <int value="9" label="AccessibilityLarge"/>
+  <int value="10" label="AccessibilityExtraLarge"/>
+  <int value="11" label="AccessibilityExtraExtraLarge"/>
+  <int value="12" label="AccessibilityExtraExtraExtraLarge"/>
 </enum>
 
 <enum name="IOSDeviceThermalState">
@@ -38054,6 +38084,7 @@ from previous Chrome versions.
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
+  <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-572012175" label="AssistantEnableStereoAudioInput:disabled"/>
   <int value="-571236436" label="AppManagement:disabled"/>
@@ -39981,6 +40012,7 @@ from previous Chrome versions.
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
   <int value="1832552562" label="EnableVirtualKeyboardUkm:enabled"/>
   <int value="1834968807" label="OmniboxAutocompleteTitles:enabled"/>
+  <int value="1835075399" label="PostQuantumCECPQ2:disabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1837330563" label="WebPaymentsMinimalUI:disabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
@@ -42348,6 +42380,9 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Skip Ad"/>
   <int value="7" label="Stop"/>
   <int value="8" label="Seek To"/>
+  <int value="9" label="Scrub To"/>
+  <int value="10" label="Enter picture in picture"/>
+  <int value="11" label="Exit picture in picture"/>
 </enum>
 
 <enum name="MediaSessionActionSource">
@@ -46482,6 +46517,48 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Dismiss"/>
 </enum>
 
+<enum name="NotificationTypeDetailed">
+  <int value="0" label="ChromeApp priority=-2"/>
+  <int value="1" label="ChromeApp priority=-2 requireInteraction"/>
+  <int value="2" label="ChromeApp priority=-1"/>
+  <int value="3" label="ChromeApp priority=-1 requireInteraction"/>
+  <int value="4" label="ChromeApp priority=0"/>
+  <int value="5" label="ChromeApp priority=0 requireInteraction"/>
+  <int value="6" label="ChromeApp priority=1"/>
+  <int value="7" label="ChromeApp priority=1 requireInteraction"/>
+  <int value="8" label="ChromeApp priority=2"/>
+  <int value="9" label="ChromeApp priority=2 requireInteraction"/>
+  <int value="10" label="Arc priority=-2"/>
+  <int value="11" label="Arc priority=-2 pinned"/>
+  <int value="12" label="Arc priority=-1"/>
+  <int value="13" label="Arc priority=-1 pinned"/>
+  <int value="14" label="Arc priority=0"/>
+  <int value="15" label="Arc priority=0 pinned"/>
+  <int value="16" label="Arc priority=1"/>
+  <int value="17" label="Arc priority=1 pinned"/>
+  <int value="18" label="Arc priority=2"/>
+  <int value="19" label="Arc priority=2 pinned"/>
+  <int value="20" label="Web"/>
+  <int value="21" label="Web requireInteraction"/>
+  <int value="22" label="CrOS priority=-2"/>
+  <int value="23" label="CrOS priority=-2 pinned"/>
+  <int value="24" label="CrOS priority=-1"/>
+  <int value="25" label="CrOS priority=-1 pinned"/>
+  <int value="26" label="CrOS priority=0"/>
+  <int value="27" label="CrOS priority=0 pinned"/>
+  <int value="28" label="CrOS priority=1"/>
+  <int value="29" label="CrOS priority=1 pinned"/>
+  <int value="30" label="CrOS priority=2"/>
+  <int value="31" label="CrOS priority=2 pinned"/>
+  <int value="32" label="CrOS SystemPriority"/>
+  <int value="33" label="CrOS SystemPriority pinned"/>
+  <int value="34" label="CrOS SystemPriority level=Warning pinned"/>
+  <int value="35" label="CrOS SystemPriority level=Warning"/>
+  <int value="36" label="CrOS SystemPriority level=CriticalWarning"/>
+  <int value="37" label="CrOS SystemPriority level=CriticalWarning pinned"/>
+  <int value="38" label="Other"/>
+</enum>
+
 <enum name="NotifierType">
   <int value="0" label="Application"/>
   <int value="1" label="Arc++"/>
@@ -47958,8 +48035,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Missing glyph metrics"/>
   <int value="2" label="Missing glyph image"/>
   <int value="3" label="Missing glyph path"/>
-  <int value="4" label="Missing glyph image, but a fallback was found"/>
-  <int value="5" label="Missing glyph path, but a fallback was found"/>
+  <int value="4"
+      label="Missing glyph image, but a fallback was found (deprecated)"/>
+  <int value="5"
+      label="Missing glyph path, but a fallback was found (deprecated)"/>
 </enum>
 
 <enum name="OpenBrowserType">

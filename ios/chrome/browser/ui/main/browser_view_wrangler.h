@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 @protocol ApplicationCommands;
@@ -18,11 +19,12 @@ class ChromeBrowserState;
 
 class AppUrlLoadingService;
 
-// Protocol for objects that can handle switching browser state storage.
-@protocol BrowserStateStorageSwitching
-- (void)changeStorageFromBrowserState:(ChromeBrowserState*)oldState
-                       toBrowserState:(ChromeBrowserState*)newState;
-@end
+namespace {
+
+// Preference key used to store which profile is current.
+NSString* kIncognitoCurrentKey = @"IncognitoActive";
+
+}  // namespace
 
 // Wrangler (a class in need of further refactoring) for handling the creation
 // and ownership of BrowserViewController instances and their associated
@@ -44,8 +46,6 @@ class AppUrlLoadingService;
          browsingDataCommandEndpoint:
              (id<BrowsingDataCommands>)browsingDataCommandEndpoint
                 appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
-                     storageSwitcher:
-                         (id<BrowserStateStorageSwitching>)storageSwitcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -66,6 +66,9 @@ class AppUrlLoadingService;
 
 // Called before the instance is deallocated.
 - (void)shutdown;
+
+// Switch all global states for the given mode (normal or incognito).
+- (void)switchGlobalStateToMode:(ApplicationMode)mode;
 
 @end
 

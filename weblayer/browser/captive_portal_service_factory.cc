@@ -10,9 +10,10 @@
 #include "content/public/browser/browser_context.h"
 
 // static
-CaptivePortalService* CaptivePortalServiceFactory::GetForBrowserContext(
+captive_portal::CaptivePortalService*
+CaptivePortalServiceFactory::GetForBrowserContext(
     content::BrowserContext* browser_context) {
-  return static_cast<CaptivePortalService*>(
+  return static_cast<captive_portal::CaptivePortalService*>(
       GetInstance()->GetServiceForBrowserContext(browser_context, true));
 }
 
@@ -23,15 +24,15 @@ CaptivePortalServiceFactory* CaptivePortalServiceFactory::GetInstance() {
 
 CaptivePortalServiceFactory::CaptivePortalServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "CaptivePortalService",
+          "captive_portal::CaptivePortalService",
           BrowserContextDependencyManager::GetInstance()) {}
 
 CaptivePortalServiceFactory::~CaptivePortalServiceFactory() = default;
 
 KeyedService* CaptivePortalServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  return new CaptivePortalService(browser_context,
-                                  user_prefs::UserPrefs::Get(browser_context));
+  return new captive_portal::CaptivePortalService(
+      browser_context, user_prefs::UserPrefs::Get(browser_context));
 }
 
 content::BrowserContext* CaptivePortalServiceFactory::GetBrowserContextToUse(

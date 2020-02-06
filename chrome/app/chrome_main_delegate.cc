@@ -1134,27 +1134,7 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
 #endif  // !defined(OS_ANDROID)
 }
 
-#if defined(OS_MACOSX)
-bool ChromeMainDelegate::ProcessRegistersWithSystemProcess(
-    const std::string& process_type) {
-#if !BUILDFLAG(ENABLE_NACL)
-  return false;
-#else
-  return process_type == switches::kNaClLoaderProcess;
-#endif
-}
-
-bool ChromeMainDelegate::DelaySandboxInitialization(
-    const std::string& process_type) {
-#if BUILDFLAG(ENABLE_NACL)
-  // NaClLoader does this in NaClMainPlatformDelegate::EnableSandbox().
-  // No sandbox needed for relauncher.
-  if (process_type == switches::kNaClLoaderProcess)
-    return true;
-#endif
-  return process_type == switches::kRelauncherProcess;
-}
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 void ChromeMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
         delegates) {

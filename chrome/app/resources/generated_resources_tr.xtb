@@ -99,7 +99,7 @@
 <translation id="1134009406053225289">Gizli pencerede aç</translation>
 <translation id="1136712381129578788">Çok sayıda yanlış PIN girildiği için güvenlik anahtarı kilitlendi. Kilidi açmak için anahtarı çıkarıp tekrar takın.</translation>
 <translation id="1137673463384776352">Bağlantıyı <ph name="APP" /> uygulamasında aç</translation>
-<translation id="1139343347646843679">Linux yeni sürüme geçirilirken bir hata oluştu. Lütfen yöneticinizle görüşün.</translation>
+<translation id="1139343347646843679">Linux yapılandırılırken bir hata oluştu. Lütfen yöneticinizle görüşün.</translation>
 <translation id="1140351953533677694">Bluetooth ve Seri cihazlarınıza erişme</translation>
 <translation id="114036956334641753">Ses ve altyazı</translation>
 <translation id="1140746652461896221">Ziyaret ettiğiniz tüm sayfalardaki içerik engellensin</translation>
@@ -846,7 +846,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2165421703844373933">Asistanınıza "Ok Google" diyerek erişin. Pilden tasarruf etmek için “Açık (Önerilen)” seçeneğini belirleyin. Asistanınız, yalnızca cihazınız güç kaynağına bağlıyken veya şarj olurken yanıt verir.</translation>
 <translation id="2166369534954157698">Pijamalı hasta, yağız şoföre çabucak güvendi</translation>
 <translation id="2169062631698640254">Yine de oturum aç</translation>
-<translation id="2170519224423744029">Gelişmiş Koruma, <ph name="FILE_NAME" /> adlı dosyanın kötü amaçlı yazılım olup olmadığının kontrol edilmesi için Google'a gönderilmesini önerir.</translation>
+<translation id="2170519224423744029">Gelişmiş Koruma, <ph name="FILE_NAME" /> dosyasının kötü amaçlı yazılım olup olmadığının kontrolü için Google'a gönderilmesini önerir.</translation>
 <translation id="2172784515318616985">Devam</translation>
 <translation id="2173302385160625112">İnternet bağlantınızı kontrol edin</translation>
 <translation id="2173801458090845390">Bu cihaza talep kimliği ekleyin</translation>
@@ -949,7 +949,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2299734369537008228">Kaydırma çubuğu: <ph name="MIN_LABEL" />değerden <ph name="MAX_LABEL" /> değere</translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> uygulamasını özelleştirin ve denetleyin</translation>
 <translation id="2301382460326681002">Uzantı kök dizini geçersiz.</translation>
-<translation id="2302444155926798584">Plugin VM'nin yüklemesi kaldırıldı</translation>
+<translation id="2302444155926798584">Plugin VM kaldırıldı</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" ek izinler istedi.</translation>
 <translation id="23055578400314116">Bir kullanıcı adı seçin</translation>
 <translation id="2307462900900812319">Ağı yapılandır</translation>
@@ -1171,7 +1171,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2604255671529671813">Ağ bağlantısı hatası</translation>
 <translation id="2606246518223360146">Verileri Bağla</translation>
 <translation id="2607101320794533334">Konunun Genel Anahtar Bilgileri</translation>
-<translation id="2608770217409477136">Varsayılan ayarları kullan</translation>
 <translation id="2609896558069604090">Kısayol Oluştur...</translation>
 <translation id="2610157865375787051">Uyku</translation>
 <translation id="2610260699262139870">&amp;Gerçek Boyut</translation>
@@ -1287,7 +1286,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> uygulamasında oturum aç...</translation>
 <translation id="2749881179542288782">Dilbilgisini Yazım ile Denetle</translation>
 <translation id="2751739896257479635">EAP Aşama 2 kimlik doğrulaması</translation>
-<translation id="2753677631968972007">Site izinlerini manuel kontrol edin.</translation>
+<translation id="2753677631968972007">Site izinlerini manuel olarak kontrol edin.</translation>
 <translation id="2755367719610958252">Erişilebilirlik özelliklerini yönet</translation>
 <translation id="275662540872599901">ekran kapalı</translation>
 <translation id="2762441749940182211">Kamera engellendi</translation>
@@ -2856,7 +2855,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4994754230098574403">Ayarlanıyor</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
 <translation id="4997086284911172121">İnternet bağlantısı yok.</translation>
-<translation id="4997384734315285248">Plugin VM'nin yüklemesini kaldır</translation>
+<translation id="4997384734315285248">Plugin VM'yi kaldır</translation>
 <translation id="4998430619171209993">Açık</translation>
 <translation id="4998873842614926205">Değişiklikleri Onayla</translation>
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
@@ -2989,7 +2988,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="520621735928254154">Sertifika İçe Aktarma Hatası</translation>
 <translation id="5209320130288484488">Cihaz bulunamadı</translation>
 <translation id="5209518306177824490">SHA-1 Parmak İzi</translation>
-<translation id="5210990770352357081">Plugin VM'nin yüklemesi kaldırılamadı</translation>
+<translation id="5210990770352357081">Plugin VM kaldırılamadı</translation>
 <translation id="5213481667492808996">"<ph name="NAME" />" veri hizmetiniz kullanıma hazır</translation>
 <translation id="5213891612754844763">Proxy ayarlarını göster</translation>
 <translation id="5215502535566372932">Ülke seçin</translation>
@@ -3254,7 +3253,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5565735124758917034">Etkin</translation>
 <translation id="5567989639534621706">Uygulama önbellekleri</translation>
 <translation id="5568069709869097550">Oturum açılamıyor</translation>
-<translation id="5568144734023334204">Android depolama alanı</translation>
 <translation id="5572851009514199876">Chrome'un bu siteye erişmenize izin verilip verilmediğini kontrol edebilmesi için lütfen Chrome'u başlatıp oturum açın.</translation>
 <translation id="5575473780076478375">Gizli Mod Uzantısı: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Demo kayıt isteğiyle ilgili bir sorun oluştu.</translation>
@@ -5636,7 +5634,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8874184842967597500">Bağlı değil</translation>
 <translation id="8876307312329369159">Bu ayar demo oturumunda değiştirilemez.</translation>
 <translation id="8877448029301136595">[üst dizin]</translation>
-<translation id="8878384954777710821">Plugin VM'nin yüklemesi kaldırılıyor...</translation>
+<translation id="8878384954777710821">Plugin VM kaldırılıyor...</translation>
 <translation id="8879284080359814990">&amp;Sekme Olarak Göster</translation>
 <translation id="8879921471468674457">Oturum açma bilgilerini hatırla.</translation>
 <translation id="8881020143150461183">Lütfen tekrar deneyin. Teknik destek için <ph name="CARRIER_NAME" /> ile iletişime geçin.</translation>

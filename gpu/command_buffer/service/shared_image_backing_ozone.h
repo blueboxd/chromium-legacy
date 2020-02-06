@@ -30,7 +30,7 @@ namespace gpu {
 // Implementation of SharedImageBacking that uses a NativePixmap created via
 // an Ozone surface factory. The memory associated with the pixmap can be
 // aliased by both GL and Vulkan for use in rendering or compositing.
-class SharedImageBackingOzone final : public SharedImageBacking {
+class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
  public:
   static std::unique_ptr<SharedImageBackingOzone> Create(
       scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs,
@@ -43,8 +43,6 @@ class SharedImageBackingOzone final : public SharedImageBacking {
   ~SharedImageBackingOzone() override;
 
   // gpu::SharedImageBacking:
-  gfx::Rect ClearedRect() const override;
-  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
 

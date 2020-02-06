@@ -1,0 +1,29 @@
+[document web]
+++[section] name='comment' details-roles:comment
+++[section] name='comment-group' details-roles:comment
+++[section] name='comment-region' details-roles:comment
+++[section] name='comment-section' details-roles:*
+++[section] name='definition' details-roles:definition
+++[section] name='doc-endnote' details-roles:doc-endnote
+++[section] name='doc-footnote' details-roles:doc-footnote
+++[section] name='many' details-roles:comment definition doc-footnote
+++[section]
+++++[static] name='x'
+++[panel]
+++++[heading] name='heading'
+++++++[static] name='heading'
+++++[panel]
+++++++[section]
+++++++++[static] name='x'
+++[landmark]
+++++[section]
+++++++[static] name='x'
+++[section]
+++++[section]
+++++++[static] name='x'
+++[description value]
+++++[static] name='x'
+++[list item]
+++++[static] name='x'
+++[footnote]
+++++[static] name='x'

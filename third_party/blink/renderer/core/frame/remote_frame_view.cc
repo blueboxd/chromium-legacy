@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 
+#include "components/paint_preview/common/paint_preview_tracker.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -205,16 +206,21 @@ void RemoteFrameView::Paint(GraphicsContext& context,
   if (!rect.Intersects(FrameRect()))
     return;
 
-  if (context.Printing()) {
+  if (context.IsPrintingOrPaintingPreview()) {
     DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
                              DisplayItem::kDocumentBackground);
     context.Save();
     context.Translate(paint_offset.Width(), paint_offset.Height());
-
     DCHECK(context.Canvas());
-    // Inform the remote frame to print.
-    uint32_t content_id = Print(FrameRect(), context.Canvas());
 
+    uint32_t content_id = 0;
+    if (context.Printing()) {
+      // Inform the remote frame to print.
+      content_id = Print(FrameRect(), context.Canvas());
+    } else if (context.IsPaintingPreview()) {
+      // Inform the remote frame to capture a paint preview.
+      content_id = CapturePaintPreview(FrameRect(), context.Canvas());
+    }
     // Record the place holder id on canvas.
     context.Canvas()->recordCustomData(content_id);
     context.Restore();
@@ -292,6 +298,34 @@ bool RemoteFrameView::HasIntrinsicSizingInfo() const {
 uint32_t RemoteFrameView::Print(const IntRect& rect,
                                 cc::PaintCanvas* canvas) const {
   return remote_frame_->Client()->Print(rect, canvas);
+}
+
+uint32_t RemoteFrameView::CapturePaintPreview(const IntRect& rect,
+                                              cc::PaintCanvas* canvas) const {
+  auto* tracker = canvas->GetPaintPreviewTracker();
+  DCHECK(tracker);  // |tracker| must exist or there is a bug upstream.
+
+  // Create a placeholder ID that maps to an embedding token.
+  HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
+  DCHECK(owner);
+
+  // RACE: there is a possibility that the embedding token will be null and
+  // still be in a valid state. This can occur is the frame has recently
+  // navigated and the embedding token hasn't propagated from the FrameTreeNode
+  // to this HTMLFrameOwnerElement yet (over IPC). If the token is null the
+  // failure can be handled gracefully by simply ignoring the subframe in the
+  // result.
+  base::Optional<base::UnguessableToken> maybe_embedding_token =
+      owner->GetEmbeddingToken();
+  if (!maybe_embedding_token.has_value())
+    return 0;
+  uint32_t content_id =
+      tracker->CreateContentForRemoteFrame(rect, maybe_embedding_token.value());
+
+  // Send a request to the browser to trigger a capture of the remote frame.
+  remote_frame_->GetRemoteFrameHostRemote()
+      .CapturePaintPreviewOfCrossProcessSubframe(rect, tracker->Guid());
+  return content_id;
 }
 
 void RemoteFrameView::Trace(blink::Visitor* visitor) {

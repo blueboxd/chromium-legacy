@@ -2,24 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {Route, Router} from 'chrome://settings/settings.js';
+// #import {setupPopstateListener} from 'chrome://test/settings/test_util.m.js';
+// clang-format on
+
 suite('settings-animated-pages', function() {
   test('focuses subpage trigger when exiting subpage', function(done) {
-    const routes = {
+    const testRoutes = {
       BASIC: new settings.Route('/'),
     };
-    routes.SEARCH = routes.BASIC.createSection('/search', 'search');
-    routes.SEARCH_ENGINES = routes.SEARCH.createChild('/searchEngines');
-    settings.Router.resetInstanceForTesting(new settings.Router(routes));
-    settings.routes = routes;
+    testRoutes.SEARCH = testRoutes.BASIC.createSection('/search', 'search');
+    testRoutes.SEARCH_ENGINES = testRoutes.SEARCH.createChild('/searchEngines');
+    settings.Router.resetInstanceForTesting(new settings.Router(testRoutes));
     test_util.setupPopstateListener();
 
     document.body.innerHTML = `
       <settings-animated-pages
-          section="${settings.routes.SEARCH_ENGINES.section}">
+          section="${testRoutes.SEARCH_ENGINES.section}">
         <div route-path="default">
           <button id="subpage-trigger"></button>
         </div>
-        <div route-path="${settings.routes.SEARCH_ENGINES.path}">
+        <div route-path="${testRoutes.SEARCH_ENGINES.path}">
           <button id="subpage-trigger"></button>
         </div>
       </settings-animated-pages>`;
@@ -28,7 +32,7 @@ suite('settings-animated-pages', function() {
         document.body.querySelector('settings-animated-pages');
     animatedPages.focusConfig = new Map();
     animatedPages.focusConfig.set(
-        settings.routes.SEARCH_ENGINES.path, '#subpage-trigger');
+        testRoutes.SEARCH_ENGINES.path, '#subpage-trigger');
 
     const trigger = document.body.querySelector('#subpage-trigger');
     assertTrue(!!trigger);
@@ -37,8 +41,8 @@ suite('settings-animated-pages', function() {
     });
 
     // Trigger subpage exit navigation.
-    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
-    settings.Router.getInstance().navigateTo(settings.routes.SEARCH_ENGINES);
+    settings.Router.getInstance().navigateTo(testRoutes.BASIC);
+    settings.Router.getInstance().navigateTo(testRoutes.SEARCH_ENGINES);
     settings.Router.getInstance().navigateToPreviousRoute();
   });
 });

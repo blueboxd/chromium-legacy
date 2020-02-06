@@ -122,13 +122,7 @@ class UserCloudPolicyManagerChromeOSNotifierFactory
   UserCloudPolicyManagerChromeOSNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "UserRemoteCommandsInvalidator") {
-    if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-      DependsOn(
-          invalidation::ProfileInvalidationProviderFactory::GetInstance());
-      return;
-    }
-    DependsOn(invalidation::DeprecatedProfileInvalidationProviderFactory::
-                  GetInstance());
+    DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   }
 
   ~UserCloudPolicyManagerChromeOSNotifierFactory() override = default;
@@ -793,17 +787,8 @@ void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
 
   observed_profile_manager_.RemoveAll();
 
-  // If true FCMInvalidationService will be used as invalidation service and
-  // TiclInvalidationService otherwise.
-  const bool is_fcm_enabled =
-      base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations);
-
   invalidation::ProfileInvalidationProvider* const invalidation_provider =
-      is_fcm_enabled
-          ? invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-                profile_)
-          : invalidation::DeprecatedProfileInvalidationProviderFactory::
-                GetForProfile(profile_);
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
 
   if (!invalidation_provider)
     return;
@@ -813,10 +798,8 @@ void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
   invalidator_ = std::make_unique<RemoteCommandsInvalidatorImpl>(core());
 
   invalidator_->Initialize(
-      is_fcm_enabled
-          ? invalidation_provider->GetInvalidationServiceForCustomSender(
-                policy::kPolicyFCMInvalidationSenderID)
-          : invalidation_provider->GetInvalidationService());
+      invalidation_provider->GetInvalidationServiceForCustomSender(
+          policy::kPolicyFCMInvalidationSenderID));
 
   shutdown_notifier_ =
       UserCloudPolicyManagerChromeOSNotifierFactory::GetInstance()

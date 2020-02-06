@@ -79,7 +79,11 @@ import java.net.URISyntaxException;
     public void didFinishNavigation(NavigationHandle navigation) {
         if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
         mModel.set(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, false);
+    }
 
+    @Override
+    public void didStartNavigation(NavigationHandle navigation) {
+        if (!navigation.isInMainFrame() || navigation.isSameDocument()) return;
         String url = navigation.getUrl();
         try {
             mModel.set(PaymentHandlerToolbarProperties.URL, new URI(url));

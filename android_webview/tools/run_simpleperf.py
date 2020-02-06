@@ -155,7 +155,7 @@ class SimplePerfRunner(object):
     package_name = self.GetCurrentWebViewProvider()
     SimplePerfRunner.RunPackageCompile(package_name)
     perf_data_path = os.path.join(self.tmp_dir, 'perf.data')
-    SimplePerfRunner.RunSimplePerf(perf_data_path, self.args.record_options)
+    SimplePerfRunner.RunSimplePerf(perf_data_path, self.args)
     lines = SimplePerfRunner.GetOriginalReportHtml(
         perf_data_path,
         os.path.join(self.tmp_dir, 'unprocessed_report.html'))
@@ -175,16 +175,25 @@ class SimplePerfRunner(object):
                  self.args.report_path)
 
   @staticmethod
-  def RunSimplePerf(perf_data_path, record_options):
+  def RunSimplePerf(perf_data_path, args):
     """Runs the simple perf commandline."""
     cmd = ['third_party/android_ndk/simpleperf/app_profiler.py',
-           '--app', 'org.chromium.webview_shell',
-           '--activity', '.TelemetryActivity',
            '--perf_data_path', perf_data_path,
            '--skip_collect_binaries']
-    if record_options:
-      cmd.extend(['--record_options', record_options])
+    if args.system_wide:
+      cmd.append('--system_wide')
+    else:
+      cmd.extend([
+          '--app', 'org.chromium.webview_shell', '--activity',
+          '.TelemetryActivity'
+      ])
+
+    if args.record_options:
+      cmd.extend(['--record_options', args.record_options])
+
+    logging.info("Profile has started.")
     subprocess.check_call(cmd)
+    logging.info("Profile has finished, processing the results...")
 
   @staticmethod
   def RunPackageCompile(package_name):
@@ -276,6 +285,11 @@ def main(raw_args):
                             ' to the default record options.'))
   parser.add_argument('--show-file-line', action='store_true',
                       help='Show file name and lines in the result.')
+  parser.add_argument(
+      '--system-wide',
+      action='store_true',
+      help=('Whether to profile system wide (without launching'
+            'an app).'))
 
   script_common.AddDeviceArguments(parser)
   logging_common.AddLoggingArguments(parser)

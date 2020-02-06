@@ -259,39 +259,7 @@ void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
   WakeUpDisplay();
 
   if (event.has_x() && event.has_y()) {
-    // On multi-monitor systems (0,0) refers to the top-left of the "main"
-    // display, whereas our coordinate scheme places (0,0) at the top-left of
-    // the bounding rectangle around all the displays, so we need to translate
-    // accordingly.
-
-    // Set the mouse position assuming single-monitor.
     mouse_pos_.set(event.x(), event.y());
-
-    // Fetch the desktop configuration.
-    // TODO(wez): Optimize this out, or at least only enumerate displays in
-    // response to display-changed events. VideoFrameCapturer's VideoFrames
-    // could be augmented to include native cursor coordinates for use by
-    // MouseClampingFilter, removing the need for translation here.
-    webrtc::MacDesktopConfiguration desktop_config =
-        webrtc::MacDesktopConfiguration::GetCurrent(
-            webrtc::MacDesktopConfiguration::TopLeftOrigin);
-
-    // Translate the mouse position into desktop coordinates.
-    mouse_pos_ = mouse_pos_.add(
-        webrtc::DesktopVector(desktop_config.pixel_bounds.left(),
-                              desktop_config.pixel_bounds.top()));
-
-    // Constrain the mouse position to the desktop coordinates.
-    mouse_pos_.set(
-       std::max(desktop_config.pixel_bounds.left(),
-           std::min(desktop_config.pixel_bounds.right(), mouse_pos_.x())),
-       std::max(desktop_config.pixel_bounds.top(),
-           std::min(desktop_config.pixel_bounds.bottom(), mouse_pos_.y())));
-
-    // Convert from pixel to Density Independent Pixel coordinates.
-    mouse_pos_.set(mouse_pos_.x() / desktop_config.dip_to_pixel_scale,
-                   mouse_pos_.y() / desktop_config.dip_to_pixel_scale);
-
     VLOG(3) << "Moving mouse to " << mouse_pos_.x() << "," << mouse_pos_.y();
   }
   if (event.has_button() && event.has_button_down()) {

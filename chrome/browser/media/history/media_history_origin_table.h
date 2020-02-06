@@ -28,6 +28,10 @@ class MediaHistoryOriginTable : public MediaHistoryTableBase {
   // Returns a flag indicating whether the origin id was created successfully.
   bool CreateOriginId(const std::string& origin);
 
+  // Returns a flag indicating whether watchtime was increased successfully.
+  bool IncrementAggregateAudioVideoWatchTime(const std::string& origin,
+                                             const base::TimeDelta& time);
+
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryOriginTable);
 };
 

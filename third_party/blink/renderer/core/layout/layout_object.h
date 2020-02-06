@@ -1362,6 +1362,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     SetPreferredLogicalWidthsDirty();
   }
 
+  // Traverses subtree, and marks all layout objects as need relayout, repaint
+  // and preferred width recalc. Also invalidates shaping on all text nodes.
+  // TODO(crbug.com/441925): Try to partially invalidate layout on font updates.
+  virtual void InvalidateSubtreeLayoutForFontUpdates();
+
   void InvalidateIntersectionObserverCachedRects();
 
   void SetPositionState(EPosition position) {

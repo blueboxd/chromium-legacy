@@ -212,11 +212,13 @@ DWORD WINAPI DumpProcessForHungInputThread(void* param);
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-// Starts the handler process with an initial client connected on fd.
+#if defined(OS_ANDROID)
+// Starts the handler process with an initial client connected on fd,
+// the handler will write minidump to database if write_minidump_to_database is
+// true.
 // Returns `true` on success.
-bool StartHandlerForClient(int fd);
-#endif  // OS_LINUX || OS_ANDROID
+bool StartHandlerForClient(int fd, bool write_minidump_to_database);
+#endif  // OS_ANDROID
 
 // The platform-specific portion of InitializeCrashpad(). On Windows, if
 // |user_data_dir| is non-empty, the user data directory will be passed to the

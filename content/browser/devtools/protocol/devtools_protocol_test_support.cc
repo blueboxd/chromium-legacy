@@ -19,6 +19,7 @@ namespace content {
 namespace {
 
 const char kIdParam[] = "id";
+const char kSessionIdParam[] = "sessionId";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
 
@@ -46,9 +47,10 @@ bool DevToolsProtocolTest::DidAddMessageToConsole(
   return true;
 }
 
-base::DictionaryValue* DevToolsProtocolTest::SendCommand(
+base::DictionaryValue* DevToolsProtocolTest::SendSessionCommand(
     const std::string& method,
     std::unique_ptr<base::Value> params,
+    const std::string& session_id,
     bool wait) {
   in_dispatch_ = true;
   base::DictionaryValue command;
@@ -56,6 +58,8 @@ base::DictionaryValue* DevToolsProtocolTest::SendCommand(
   command.SetString(kMethodParam, method);
   if (params)
     command.Set(kParamsParam, std::move(params));
+  if (!session_id.empty())
+    command.SetString(kSessionIdParam, session_id);
 
   std::string json_command;
   base::JSONWriter::Write(command, &json_command);

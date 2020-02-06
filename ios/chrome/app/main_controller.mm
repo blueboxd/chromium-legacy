@@ -170,9 +170,6 @@
 
 namespace {
 
-// Preference key used to store which profile is current.
-NSString* kIncognitoCurrentKey = @"IncognitoActive";
-
 // Constants for deferring notifying the AuthenticationService of a new cold
 // start.
 NSString* const kAuthenticationServiceNotification =
@@ -278,8 +275,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 }  // namespace
 
-@interface MainController () <BrowserStateStorageSwitching,
-                              PrefObserverDelegate> {
+@interface MainController () <PrefObserverDelegate> {
   IBOutlet UIWindow* _window;
 
   // Weak; owned by the ChromeBrowserProvider.
@@ -349,11 +345,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
-// Switch all global states for the given mode (normal or incognito).
-- (void)switchGlobalStateToMode:(ApplicationMode)mode;
-// Updates the local storage, cookie store, and sets the global state.
-- (void)changeStorageFromBrowserState:(ChromeBrowserState*)oldState
-                       toBrowserState:(ChromeBrowserState*)newState;
 // Returns the set of the sessions ids of the tabs in the given |tabModel|.
 - (NSMutableSet*)liveSessionsForTabModel:(TabModel*)tabModel;
 // Purge the unused snapshots.
@@ -593,8 +584,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
              webStateListObserver:self.sceneController
        applicationCommandEndpoint:self.sceneController
       browsingDataCommandEndpoint:self
-             appURLLoadingService:self.appURLLoadingService
-                  storageSwitcher:self];
+             appURLLoadingService:self.appURLLoadingService];
 
   // Force an obvious initialization of the AuthenticationService. This must
   // be done before creation of the UI to ensure the service is initialised
@@ -629,7 +619,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (postCrashLaunch || switchFromIncognito) {
     [self.sceneController clearIOSSpecificIncognitoData];
     if (switchFromIncognito)
-      [self switchGlobalStateToMode:ApplicationMode::NORMAL];
+      [self.browserViewWrangler
+          switchGlobalStateToMode:ApplicationMode::NORMAL];
   }
   if (switchFromIncognito)
     startInIncognito = NO;
@@ -1204,11 +1195,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                    experimental_flags::AlwaysDisplayFirstRun()) &&
                   !tests_hook::DisableFirstRun();
 
-  ChromeBrowserState* browserState =
-      (launchMode == ApplicationMode::INCOGNITO)
-          ? self.mainBrowserState->GetOffTheRecordChromeBrowserState()
-          : self.mainBrowserState;
-  [self changeStorageFromBrowserState:nullptr toBrowserState:browserState];
+  [self.browserViewWrangler switchGlobalStateToMode:launchMode];
 
   TabModel* tabModel;
   if (launchMode == ApplicationMode::INCOGNITO) {
@@ -1394,24 +1381,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 
 
-#pragma mark - Mode Switching
 
-- (void)switchGlobalStateToMode:(ApplicationMode)mode {
-  const BOOL incognito = (mode == ApplicationMode::INCOGNITO);
-  // Write the state to disk of what is "active".
-  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
-  [standardDefaults setBool:incognito forKey:kIncognitoCurrentKey];
-  // Save critical state information for switching between normal and
-  // incognito.
-  [standardDefaults synchronize];
-}
-
-- (void)changeStorageFromBrowserState:(ChromeBrowserState*)oldState
-                       toBrowserState:(ChromeBrowserState*)newState {
-  ApplicationMode mode = newState->IsOffTheRecord() ? ApplicationMode::INCOGNITO
-                                                    : ApplicationMode::NORMAL;
-  [self switchGlobalStateToMode:mode];
-}
 
 - (TabModel*)currentTabModel {
   return self.currentBVC.tabModel;

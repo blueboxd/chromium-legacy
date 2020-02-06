@@ -292,7 +292,7 @@ void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
 }
 
 void BlinkTestRunner::InspectSecondaryWindow() {
-  Send(new WebTestHostMsg_InspectSecondaryWindow(routing_id()));
+  GetWebTestClientRemote().InspectSecondaryWindow();
 }
 
 void BlinkTestRunner::ClearAllDatabases() {
@@ -313,12 +313,11 @@ void BlinkTestRunner::SimulateWebNotificationClick(
 
 void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
                                                    bool by_user) {
-  Send(new WebTestHostMsg_SimulateWebNotificationClose(routing_id(), title,
-                                                       by_user));
+  GetWebTestClientRemote().SimulateWebNotificationClose(title, by_user);
 }
 
 void BlinkTestRunner::SimulateWebContentIndexDelete(const std::string& id) {
-  Send(new WebTestHostMsg_SimulateWebContentIndexDelete(routing_id(), id));
+  GetWebTestClientRemote().SimulateWebContentIndexDelete(id);
 }
 
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
@@ -444,7 +443,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
-    Send(new WebTestHostMsg_TestFinishedInSecondaryRenderer());
+    GetWebTestClientRemote().TestFinishedInSecondaryRenderer();
     return;
   }
 
@@ -746,6 +745,14 @@ BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
 }
 
 mojom::BlinkTestClient& BlinkTestRunner::GetBlinkTestClientRemote() {
+  if (!blink_test_client_remote_) {
+    RenderThread::Get()->BindHostReceiver(
+        blink_test_client_remote_.BindNewPipeAndPassReceiver());
+  }
+  return *blink_test_client_remote_;
+}
+
+mojom::WebTestClient& BlinkTestRunner::GetWebTestClientRemote() {
   if (!web_test_client_remote_) {
     RenderThread::Get()->BindHostReceiver(
         web_test_client_remote_.BindNewPipeAndPassReceiver());

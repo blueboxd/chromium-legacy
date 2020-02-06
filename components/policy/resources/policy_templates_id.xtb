@@ -3904,13 +3904,6 @@ Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan
 <translation id="7207095846245296855">Paksa Google SafeSearch</translation>
 <translation id="7211368186050418507">Jangan mendeteksi zona waktu secara otomatis</translation>
 <translation id="7216442368414164495">Memungkinkan pengguna ikut serta dalam pelaporan yang diperluas Safe Browsing</translation>
-<translation id="7221822638060296742">Memungkinkan Anda menyetel apakah situs diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />. Otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> dapat diizinkan atau ditolak untuk semua situs.
-
-          Klik untuk memutar memungkinkan plugin <ph name="FLASH_PLUGIN_NAME" /> dijalankan, tetapi pengguna harus mengklik placeholder untuk memulai eksekusinya.
-
-          Pemutaran otomatis hanya diizinkan untuk domain yang secara eksplisit dicantumkan di kebijakan <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jika Anda ingin mengaktifkan pemutaran otomatis untuk semua situs, pertimbangkanlah menambahkan http://* dan https://* ke daftar ini.
-
-          Jika kebijakan ini tidak disetel, pengguna dapat mengubah setelan ini secara manual.</translation>
 <translation id="7222749588229362483">Mengizinkan penggabungan beberapa kebijakan yang dipilih jika kebijakan tersebut berasal dari sumber berbeda, tetapi dengan cakupan dan level yang sama.
 
         Penggabungan terdiri dari menggabungkan kunci level pertama kamus dari setiap sumber. Apabila terjadi konflik antara berbagai kunci, kunci yang berasal dari sumber dengan prioritas tertinggi akan diterapkan.
@@ -4290,11 +4283,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Kebijakan ExternalStorageDisabled lebih diutamakan daripada kebijakan ini - jika ExternalStorageDisabled disetel ke true, semua akses ke penyimpanan eksternal dinonaktifkan dan kebijakan ini akan diabaikan.
 
       Penyegaran dinamis pada kebijakan ini didukung dalam M56 dan yang lebih baru.</translation>
-<translation id="7831595031698917016">Menentukan penundaan maksimum dalam milidetik antara penerimaan invalidasi kebijakan dan pengambilan kebijakan baru dari layanan pengelola perangkat.
-
-      Setelan kebijakan ini menimpa nilai default 5000 milidetik. Nilai yang valid untuk kebijakan ini berkisar antara 1000 (1 detik) dan 300000 (5 menit). Setiap nilai yang tidak berada dalam jangkauan akan dikunci ke masing-masing batas.
-
-      Membiarkan kebijakan ini tidak disetel akan membuat penggunaan <ph name="PRODUCT_NAME" /> menggunakan nilai default 5000 milidetik.</translation>
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>
 <translation id="7842317008224536842">Menyetel status default fitur aksesibilitas mode kontras tinggi di layar login.
 

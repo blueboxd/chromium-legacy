@@ -170,7 +170,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                                 WebColorScheme color_scheme) const;
 
   virtual bool IsFocusRingOutset() const;
-  Color FocusRingColor() const;
+  virtual Color FocusRingColor() const;
   virtual Color PlatformFocusRingColor() const { return Color(0, 0, 0); }
   void SetCustomFocusRingColor(const Color&);
   static Color TapHighlightColor();
@@ -348,6 +348,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   static bool IsHovered(const Node*);
   static bool IsSpinUpButtonPartHovered(const Node*);
   static bool IsReadOnlyControl(const Node*);
+
+ protected:
+  bool HasCustomFocusRingColor() const;
+  Color GetCustomFocusRingColor() const;
 
  private:
   // This function is to be implemented in your platform-specific theme

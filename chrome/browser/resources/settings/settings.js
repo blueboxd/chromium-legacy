@@ -16,7 +16,10 @@ import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './search_engines_page/search_engines_page.m.js';
+import './settings_page/settings_subpage.m.js';
+import './settings_page/settings_animated_pages.m.js';
 
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
+export {Route, Router} from './router.m.js';
 export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';

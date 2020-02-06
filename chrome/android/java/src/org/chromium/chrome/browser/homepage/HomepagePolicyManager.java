@@ -93,7 +93,7 @@ public class HomepagePolicyManager implements PrefObserver {
     }
 
     @VisibleForTesting
-    static void setInstanceForTests(HomepagePolicyManager instance) {
+    public static void setInstanceForTests(HomepagePolicyManager instance) {
         assert instance != null;
         sInstance = instance;
     }
@@ -197,13 +197,13 @@ public class HomepagePolicyManager implements PrefObserver {
     }
 
     @VisibleForTesting
-    boolean isHomepageLocationPolicyEnabled() {
+    public boolean isHomepageLocationPolicyEnabled() {
         return mIsHomepageLocationPolicyEnabled;
     }
 
     @VisibleForTesting
     @NonNull
-    String getHomepagePreference() {
+    public String getHomepagePreference() {
         assert mIsHomepageLocationPolicyEnabled;
         return mHomepage;
     }

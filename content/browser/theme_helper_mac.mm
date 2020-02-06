@@ -341,6 +341,28 @@ void ThemeHelperMac::LoadSystemColors() {
       case blink::MacSystemColorID::kAlternateSelectedControl:
         values[i] = NSColorToSkColor([NSColor alternateSelectedControlColor]);
         break;
+      case blink::MacSystemColorID::kControlAccentBlueColor: {
+        NSColor* color =
+            [NSColor colorWithCatalogName:@"System"
+                                colorName:@"controlAccentBlueColor"];
+        if (color) {
+          values[i] = NSColorToSkColor(color);
+        } else {
+          // If the controlAccentBlueColor isn't available just set a dummy
+          // black value.
+          values[i] = SK_ColorBLACK;
+        }
+        break;
+      }
+      case blink::MacSystemColorID::kControlAccentColor:
+        if (@available(macOS 10.14, *)) {
+          values[i] = NSColorToSkColor([NSColor controlAccentColor]);
+        } else {
+          // controlAccentColor property is not available before macOS 10.14,
+          // so keyboardFocusIndicatorColor is used instead.
+          values[i] = NSColorToSkColor([NSColor keyboardFocusIndicatorColor]);
+        }
+        break;
       case blink::MacSystemColorID::kControlBackground:
         values[i] = NSColorToSkColor([NSColor controlBackgroundColor]);
         break;

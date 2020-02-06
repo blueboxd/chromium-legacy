@@ -55,7 +55,6 @@ UserSettingsEventLogger::~UserSettingsEventLogger() {
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
-// TODO(crbug/1014839): Write unit tests for the LogUkmEvent methods.
 void UserSettingsEventLogger::LogNetworkUkmEvent(
     const NetworkStateProperties& network) {
   UserSettingsEvent settings_event;

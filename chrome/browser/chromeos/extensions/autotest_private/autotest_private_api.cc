@@ -80,6 +80,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -949,11 +950,13 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetAllEnterprisePoliciesFunction";
 
-  base::Value all_policies_array = policy::DictionaryPolicyConversions()
-                                       .WithBrowserContext(browser_context())
-                                       .EnableDeviceLocalAccountPolicies(true)
-                                       .EnableDeviceInfo(true)
-                                       .ToValue();
+  auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
+      browser_context());
+  base::Value all_policies_array =
+      policy::DictionaryPolicyConversions(std::move(client))
+          .EnableDeviceLocalAccountPolicies(true)
+          .EnableDeviceInfo(true)
+          .ToValue();
 
   return RespondNow(OneArgument(
       base::Value::ToUniquePtrValue(std::move(all_policies_array))));

@@ -38,6 +38,7 @@ source_set("web") {
     "//components/resources:dev_ui_components_resources_grit",
     "//components/search_engines",
     "//components/strings",
+    "//components/ukm/ios:ukm_url_recorder",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
@@ -54,6 +55,7 @@ source_set("web") {
     "//ios/net",
     "//ios/web",
     "//ios/web/common",
+    "//services/metrics/public/cpp:ukm_builders",
     "//ui/base",
     "//url",
   ]

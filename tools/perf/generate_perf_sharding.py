@@ -372,7 +372,7 @@ def _DescheduleBenchmark(args):
       for shard, shard_map in shards_map.items():
         if shard == 'extra_infos':
           break
-        benchmarks = shard_map['benchmarks']
+        benchmarks = shard_map.get('benchmarks', dict())
         for benchmark in benchmarks.keys():
           if benchmark not in benchmarks_to_keep:
             del benchmarks[benchmark]

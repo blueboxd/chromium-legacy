@@ -105,8 +105,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
 
   Microsoft::WRL::ComPtr<Folder> folder;
   hresult = shell_dispatch->NameSpace(
-      base::win::ScopedVariant(shortcut.DirName().value().c_str()),
-      folder.GetAddressOf());
+      base::win::ScopedVariant(shortcut.DirName().value().c_str()), &folder);
   if (FAILED(hresult) || !folder) {
     error_occured_ = true;
     return false;
@@ -114,14 +113,14 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
 
   Microsoft::WRL::ComPtr<FolderItem> item;
   hresult = folder->ParseName(
-      base::win::ScopedBstr(shortcut.BaseName().value()), item.GetAddressOf());
+      base::win::ScopedBstr(shortcut.BaseName().value()), &item);
   if (FAILED(hresult) || !item) {
     error_occured_ = true;
     return false;
   }
 
   Microsoft::WRL::ComPtr<FolderItemVerbs> verbs;
-  hresult = item->Verbs(verbs.GetAddressOf());
+  hresult = item->Verbs(&verbs);
   if (FAILED(hresult) || !verbs) {
     error_occured_ = true;
     return false;
@@ -137,8 +136,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
   long error_count = 0;
   for (long i = 0; i < verb_count; ++i) {
     Microsoft::WRL::ComPtr<FolderItemVerb> verb;
-    hresult =
-        verbs->Item(base::win::ScopedVariant(i, VT_I4), verb.GetAddressOf());
+    hresult = verbs->Item(base::win::ScopedVariant(i, VT_I4), &verb);
     if (FAILED(hresult) || !verb) {
       error_count++;
       continue;

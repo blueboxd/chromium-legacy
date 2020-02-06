@@ -118,5 +118,20 @@ IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest,
                 GetActiveWebContents(),
                 "launchAndWaitUntilReady('" + GetHttpPageUrl().spec() + "')"));
 }
+
+// Make sure openWindow() can be resolved into window client.
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, WindowClientReady) {
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ("app_is_ready",
+            content::EvalJs(
+                GetActiveWebContents(),
+                "launchAndWaitUntilReady('./payment_handler_window.html')"));
+
+  DCHECK(test_controller_.GetPaymentHandlerWebContents());
+  EXPECT_EQ(true,
+            content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
+                            "isWindowClientReady()"));
+}
 }  // namespace
 }  // namespace payments

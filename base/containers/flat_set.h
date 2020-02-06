@@ -49,7 +49,9 @@ namespace base {
 //            const Compare& compare = Compare());
 //   flat_set(const flat_set&);
 //   flat_set(flat_set&&);
-//   flat_set(std::vector<Key>,
+//   flat_set(const std::vector<Key>& items,
+//            const Compare& compare = Compare());
+//   flat_set(std::vector<Key>&& items,
 //            const Compare& compare = Compare());  // Re-use storage.
 //   flat_set(std::initializer_list<value_type> ilist,
 //            const Compare& comp = Compare());

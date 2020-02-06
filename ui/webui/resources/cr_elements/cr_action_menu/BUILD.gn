@@ -24,10 +24,7 @@ polymer_modulizer("cr_action_menu") {
   html_file = "cr_action_menu.html"
   html_type = "dom-module"
   namespace_rewrites = [
-    "cr.ui.focusWithoutInk|focusWithoutInk",
     "cr.ui.FocusRow|FocusRow",
-    "cr.isMac|isMac",
-    "cr.isWindows|isWindows",
     "Polymer.dom|dom",
   ]
   auto_imports = [

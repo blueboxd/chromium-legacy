@@ -64,6 +64,8 @@ std::string NameForClient(AvailabilityProber::ClientName name) {
       return "Litepages";
     case AvailabilityProber::ClientName::kLitepagesOriginCheck:
       return "LitepagesOriginCheck";
+    case AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck:
+      return "IsolatedPrerenderOriginCheck";
   }
   NOTREACHED();
   return std::string();

@@ -107,26 +107,30 @@ class GomaLinkUnitTest(unittest.TestCase):
   Unit tests for goma_link.
   """
 
-  def test_create_file_no_dir(self):
+  def test_ensure_file_no_dir(self):
     with NamedDirectory() as d, WorkingDirectory(d):
       self.assertFalse(os.path.exists('test'))
-      goma_link.create_file('test')
+      goma_link.ensure_file('test')
       self.assertTrue(os.path.exists('test'))
 
-  def test_create_file_existing(self):
+  def test_ensure_file_existing(self):
     with NamedDirectory() as d, WorkingDirectory(d):
       self.assertFalse(os.path.exists('foo/test'))
-      goma_link.create_file('foo/test')
+      goma_link.ensure_file('foo/test')
       self.assertTrue(os.path.exists('foo/test'))
-      goma_link.create_file('foo/test')
+      os.utime('foo/test', (0, 0))
+      statresult = os.stat('foo/test')
+      goma_link.ensure_file('foo/test')
       self.assertTrue(os.path.exists('foo/test'))
+      newstatresult = os.stat('foo/test')
+      self.assertEqual(newstatresult.st_mtime, statresult.st_mtime)
 
-  def test_create_file_error(self):
+  def test_ensure_file_error(self):
     with NamedDirectory() as d, WorkingDirectory(d):
       self.assertFalse(os.path.exists('test'))
-      goma_link.create_file('test')
+      goma_link.ensure_file('test')
       self.assertTrue(os.path.exists('test'))
-      self.assertRaises(IOError, goma_link.create_file, 'test/impossible')
+      self.assertRaises(OSError, goma_link.ensure_file, 'test/impossible')
 
 
 class GomaLinkIntegrationTest(unittest.TestCase):

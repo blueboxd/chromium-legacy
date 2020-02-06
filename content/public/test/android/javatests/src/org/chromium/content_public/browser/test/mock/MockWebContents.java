@@ -25,6 +25,7 @@ import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.util.Collections;
 import java.util.List;
@@ -105,7 +106,12 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
-    public String getVisibleUrl() {
+    public GURL getVisibleUrl() {
+        return null;
+    }
+
+    @Override
+    public String getVisibleUrlString() {
         return null;
     }
 

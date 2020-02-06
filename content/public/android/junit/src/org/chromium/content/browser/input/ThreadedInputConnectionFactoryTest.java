@@ -67,11 +67,6 @@ public class ThreadedInputConnectionFactoryTest {
         }
 
         @Override
-        protected InputMethodUma createInputMethodUma() {
-            return null;
-        }
-
-        @Override
         protected void onRegisterProxyViewSuccess() {
             mSucceeded = true;
         }

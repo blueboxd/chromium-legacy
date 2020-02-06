@@ -22,16 +22,6 @@ export function keydown(element, key) {
 }
 
 /**
- * @param {!HTMLElement} element
- * @return {boolean}
- */
-export function isVisible(element) {
-  return !!(
-      element.offsetWidth || element.offsetHeight ||
-      element.getClientRects().length);
-}
-
-/**
  * Asserts the computed style value for an element.
  * @param {!HTMLElement} element The element.
  * @param {string} name The name of the style to assert.

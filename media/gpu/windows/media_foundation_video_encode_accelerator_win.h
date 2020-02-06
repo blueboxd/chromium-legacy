@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "media/base/win/mf_initializer.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -135,6 +136,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   Microsoft::WRL::ComPtr<IMFSample> input_sample_;
   Microsoft::WRL::ComPtr<IMFSample> output_sample_;
+
+  // MediaFoundation session.
+  MFSessionLifetime session_;
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to this object *MUST* be executed on

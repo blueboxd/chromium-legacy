@@ -948,6 +948,15 @@ public class PersonalDataManager {
     }
 
     /**
+     * @return Whether FIDO authentication is available.
+     */
+    public boolean isFidoAuthenticationAvailable() {
+        return isAutofillCreditCardEnabled()
+                && PersonalDataManagerJni.get().isFidoAuthenticationAvailable(
+                        mPersonalDataManagerAndroid);
+    }
+
+    /**
      * @return Whether the Autofill feature for Profiles (addresses) is enabled.
      */
     public static boolean isAutofillProfileEnabled() {
@@ -975,6 +984,25 @@ public class PersonalDataManager {
      */
     public static void setAutofillCreditCardEnabled(boolean enable) {
         PrefServiceBridge.getInstance().setBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
+    }
+
+    /**
+     * @return Whether the Autofill feature for FIDO authentication is enabled.
+     */
+    public static boolean isAutofillCreditCardFidoAuthEnabled() {
+        return PrefServiceBridge.getInstance().getBoolean(
+                Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED);
+    }
+
+    /**
+     * Enables or disables the Autofill feature for FIDO authentication.
+     * We are trying to align this pref with the server's source of truth, but any mismatches
+     * between this pref and the server should imply the user's intention to opt in/out.
+     * @param enable True to enable credit card FIDO authentication, false otherwise.
+     */
+    public static void setAutofillCreditCardFidoAuthEnabled(boolean enable) {
+        PrefServiceBridge.getInstance().setBoolean(
+                Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED, enable);
     }
 
     /**
@@ -1110,6 +1138,7 @@ public class PersonalDataManager {
                 GetSubKeysRequestDelegate delegate);
         boolean hasProfiles(long nativePersonalDataManagerAndroid);
         boolean hasCreditCards(long nativePersonalDataManagerAndroid);
+        boolean isFidoAuthenticationAvailable(long nativePersonalDataManagerAndroid);
         boolean isAutofillManaged();
         boolean isAutofillProfileManaged();
         boolean isAutofillCreditCardManaged();

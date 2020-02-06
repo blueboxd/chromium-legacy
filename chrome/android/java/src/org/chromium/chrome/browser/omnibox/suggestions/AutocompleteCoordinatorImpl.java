@@ -40,7 +40,6 @@ import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
-import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -111,7 +110,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                 // Start with visibility GONE to ensure that show() is called.
                 // http://crbug.com/517438
                 list.setVisibility(View.GONE);
-                ModelListAdapter adapter = new ModelListAdapter(modelList);
+                OmniboxSuggestionsListAdapter adapter =
+                        new OmniboxSuggestionsListAdapter(modelList);
                 list.setAdapter(adapter);
                 list.setClipToPadding(false);
 

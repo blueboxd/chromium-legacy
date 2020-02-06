@@ -35,12 +35,8 @@ base::string16 CreateLabel(const Suggestion& suggestion) {
 }  // namespace
 
 AutofillKeyboardAccessoryAdapter::AutofillKeyboardAccessoryAdapter(
-    base::WeakPtr<AutofillPopupController> controller,
-    unsigned int animation_duration_millis,
-    bool should_limit_label_width)
-    : controller_(controller),
-      animation_duration_millis_(animation_duration_millis),
-      should_limit_label_width_(should_limit_label_width) {}
+    base::WeakPtr<AutofillPopupController> controller)
+    : controller_(controller) {}
 
 AutofillKeyboardAccessoryAdapter::~AutofillKeyboardAccessoryAdapter() = default;
 
@@ -48,7 +44,6 @@ AutofillKeyboardAccessoryAdapter::~AutofillKeyboardAccessoryAdapter() = default;
 
 void AutofillKeyboardAccessoryAdapter::Show() {
   DCHECK(view_) << "Show called before a View was set!";
-  view_->Initialize(animation_duration_millis_, should_limit_label_width_);
   OnSuggestionsChanged();
 }
 

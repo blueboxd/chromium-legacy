@@ -5,15 +5,25 @@
 #ifndef MEDIA_BASE_WIN_MF_INITIALIZER_H_
 #define MEDIA_BASE_WIN_MF_INITIALIZER_H_
 
+#include <mfapi.h>
+
+#include "base/logging.h"
 #include "media/base/win/mf_initializer_export.h"
 
 namespace media {
 
-// Makes sure MFStartup() is called exactly once.  Returns true if Media
-// Foundation is available and has been initialized successfully.  Note that it
-// is expected to return false on an "N" edition of Windows, see
-// https://en.wikipedia.org/wiki/Windows_7_editions#Special-purpose_editions.
-MF_INITIALIZER_EXPORT bool InitializeMediaFoundation();
+// Handy-dandy wrapper struct that kills MediaFoundation on destruction.
+struct MF_INITIALIZER_EXPORT MFSession {
+  ~MFSession();
+};
+
+using MFSessionLifetime = std::unique_ptr<MFSession>;
+
+// Make sure that MFShutdown is called for each MFStartup that is successful.
+// The public documentation stating that it needs to have a corresponding
+// shutdown for all startups (even failed ones) is wrong.
+MF_INITIALIZER_EXPORT MFSessionLifetime InitializeMediaFoundation()
+    WARN_UNUSED_RESULT;
 
 }  // namespace media
 

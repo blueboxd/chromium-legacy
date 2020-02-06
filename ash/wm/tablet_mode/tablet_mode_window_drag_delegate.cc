@@ -44,6 +44,13 @@ namespace {
 // tablet mode.
 constexpr float kIndicatorsThresholdRatio = 0.1;
 
+// Items dragged to within |kDistanceFromEdgeDp| of the screen will get snapped
+// even if they have not moved by |kMinimumDragToSnapDistanceDp|.
+constexpr float kDistanceFromEdgeDp = 16.f;
+// The minimum distance that an item must be moved before it is snapped. This
+// prevents accidental snaps.
+constexpr float kMinimumDragToSnapDistanceDp = 96.f;
+
 // Duration of a drag that it will be considered as an intended drag. Must be at
 // least the duration of the split view divider snap animation, or else issues
 // like crbug.com/946601, crbug.com/997764, and https://crbug.com/997765, which
@@ -359,13 +366,17 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
   const gfx::Rect area =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           dragged_window_);
-  SplitViewController::SnapPosition snap_position =
-      ::ash::GetSnapPosition(Shell::GetPrimaryRootWindow(), dragged_window_,
-                             gfx::ToRoundedPoint(location_in_screen),
-                             area.width() * kHighlightScreenPrimaryAxisRatio +
-                                 kHighlightScreenEdgePaddingDp,
-                             area.height() * kHighlightScreenPrimaryAxisRatio +
-                                 kHighlightScreenEdgePaddingDp);
+  SplitViewController::SnapPosition snap_position = ::ash::GetSnapPosition(
+      Shell::GetPrimaryRootWindow(), dragged_window_,
+      gfx::ToRoundedPoint(location_in_screen),
+      gfx::ToRoundedPoint(initial_location_in_screen_),
+      /*snap_distance_from_edge=*/kDistanceFromEdgeDp,
+      /*minimum_drag_distance=*/kMinimumDragToSnapDistanceDp,
+      /*horizontal_edge_inset=*/area.width() *
+              kHighlightScreenPrimaryAxisRatio +
+          kHighlightScreenEdgePaddingDp,
+      /*vertical_edge_inset=*/area.height() * kHighlightScreenPrimaryAxisRatio +
+          kHighlightScreenEdgePaddingDp);
 
   // For portrait mode, since the drag always starts from the top of the
   // screen, we only allow the window to be dragged to snap to the bottom of

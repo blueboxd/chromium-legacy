@@ -200,6 +200,36 @@ This file contains the strings for ash.
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the quick settings bubble and the information in it.">
         Quick Settings, Press search + left to access the notification center.
       </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_A11Y_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for accessibility settings accessed through the accessibility feature pod.">
+        Accessibility Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_AUDIO_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for audio settings accessed through the audio feature pod.">
+        Audio Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_BLUETOOTH_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for bluetooth settings accessed through the bluetooth feature pod.">
+        Bluetooth Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_CAST_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for cast settings accessed through the cast feature pod.">
+        Cast Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_IME_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for IME settings accessed through the IME feature pod.">
+        IME Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_LOCALE_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for locale settings accessed through the locale feature pod.">
+        Locale Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_NETWORK_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for network settings accessed through the network feature pod.">
+        Network Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_NOTIFIER_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for notification settings accessed through the notification feature pod.">
+        Notification Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_USER_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for user settings accessed through the user avatar button.">
+        User Settings
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_VPN_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for VPN settings accessed through the VPN feature pod.">
+        VPN Settings
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED" desc="The message shown on a notification when a braille display is connected">
         Braille display connected.
       </message>

@@ -821,6 +821,7 @@ void SurfaceAggregator::AddColorConversionPass() {
       root_render_pass->has_transparent_background;
   color_conversion_pass->color_space =
       display_color_spaces_.GetOutputColorSpace(
+          root_content_color_usage_,
           root_render_pass->has_transparent_background);
 
   auto* shared_quad_state =

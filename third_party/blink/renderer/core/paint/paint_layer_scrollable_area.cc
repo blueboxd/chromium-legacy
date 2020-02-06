@@ -544,9 +544,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
 
-  GetLayoutBox()->MayUpdateHoverWhenContentUnderMouseChanged(
-      frame->GetEventHandler());
-
   if (scroll_type == mojom::blink::ScrollIntoViewParams::Type::kUser ||
       scroll_type == mojom::blink::ScrollIntoViewParams::Type::kCompositor) {
     Page* page = frame->GetPage();

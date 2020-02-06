@@ -95,7 +95,7 @@
 <translation id="1128109161498068552">禁止任何网站使用系统专有消息访问 MIDI 设备</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">修改搜索引擎</translation>
-<translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> - 属于群组“<ph name="GROUP_NAME" />”</translation>
+<translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> - 属于“<ph name="GROUP_NAME" />”群组</translation>
 <translation id="1134009406053225289">在无痕式窗口中打开</translation>
 <translation id="1136712381129578788">此安全密钥已被锁定，因为您输错 PIN 码的次数过多。要解锁此密钥，请先将其拔出，然后再重新插入。</translation>
 <translation id="1137673463384776352">在<ph name="APP" />中打开链接</translation>
@@ -1167,7 +1167,6 @@
 <translation id="2604255671529671813">网络连接错误</translation>
 <translation id="2606246518223360146">关联数据</translation>
 <translation id="2607101320794533334">证书持有者的公共密钥信息</translation>
-<translation id="2608770217409477136">使用默认设置</translation>
 <translation id="2609896558069604090">创建快捷方式...</translation>
 <translation id="2610157865375787051">休眠</translation>
 <translation id="2610260699262139870">实际大小(&amp;C)</translation>
@@ -3233,7 +3232,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">查找</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{“<ph name="TAB_TITLE" />”}=1{“<ph name="TAB_TITLE" />”和另外 1 个标签页}other{“<ph name="TAB_TITLE" />”和另外 # 个标签页}}</translation>
-<translation id="5549467165017213645">这会清除网站及其中安装的应用存储的 <ph name="TOTAL_USAGE" /> 数据。</translation>
+<translation id="5549467165017213645">这会清除网站和安装的应用所存储的 <ph name="TOTAL_USAGE" /> 数据。</translation>
 <translation id="5551573675707792127">键盘和文字输入</translation>
 <translation id="5553089923092577885">证书政策映射</translation>
 <translation id="5554489410841842733">如果该扩展程序可以在当前网页上运行，则会显示此图标。</translation>
@@ -3249,7 +3248,6 @@
 <translation id="5565735124758917034">主动</translation>
 <translation id="5567989639534621706">应用缓存</translation>
 <translation id="5568069709869097550">无法登录</translation>
-<translation id="5568144734023334204">Android 存储空间</translation>
 <translation id="5572851009514199876">请启动并登录 Chrome，以便 Chrome 能够检查您是否可以访问此网站。</translation>
 <translation id="5575473780076478375">隐身模式下使用的应用...<ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">请求注册演示模式时出问题了。</translation>
@@ -3486,7 +3484,7 @@
 <translation id="5906732635754427568">系统将会从此设备上移除与该应用相关的数据。</translation>
 <translation id="5908769186679515905">禁止网站运行 Flash</translation>
 <translation id="5910363049092958439">图片存储为(&amp;V)...</translation>
-<translation id="5910726859585389579"><ph name="DEVICE_TYPE" />处于离线状态</translation>
+<translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> 处于离线状态</translation>
 <translation id="5911533659001334206">快捷键查看器</translation>
 <translation id="5912378097832178659">修改搜索引擎(&amp;E)...</translation>
 <translation id="5914724413750400082">模数（<ph name="MODULUS_NUM_BITS" />位）：
@@ -3888,7 +3886,7 @@
 <translation id="6467304607960172345">优化全屏视频</translation>
 <translation id="6468485451923838994">字体</translation>
 <translation id="6472207088655375767">一次性密码</translation>
-<translation id="6472804939621540371">这会清除 <ph name="SITE_GROUP_NAME" />、其名下所有网站及其中安装的应用存储的所有数据和 Cookie。</translation>
+<translation id="6472804939621540371">这会清除 <ph name="SITE_GROUP_NAME" />、其下属所有网站及其安装的应用存储的所有数据和 Cookie。</translation>
 <translation id="6472893788822429178">显示“主页”按钮</translation>
 <translation id="6473842110411557830">Powerwash 图解</translation>
 <translation id="6474884162850599008">取消与 Google 云端硬盘帐号的关联</translation>
@@ -4721,7 +4719,7 @@
 <translation id="7663719505383602579">接收器：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">不支持的蓝牙设备：“<ph name="DEVICE_NAME" />”。</translation>
 <translation id="7665369617277396874">添加帐号</translation>
-<translation id="7665940458857700755">这会清除 <ph name="SITE_GROUP_NAME" /> 及其名下所有网站存储的所有数据和 Cookie。</translation>
+<translation id="7665940458857700755">这会清除 <ph name="SITE_GROUP_NAME" /> 及其下属所有网站存储的所有数据和 Cookie。</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN 码不正确。您还剩 1 次尝试机会。}other{PIN 码不正确。您还剩 # 次尝试机会。}}</translation>
 <translation id="7671130400130574146">使用系统标题栏和边框</translation>
 <translation id="767127784612208024">轻触以确认重置</translation>
@@ -5044,7 +5042,7 @@
 <translation id="8063235345342641131">默认的绿色头像</translation>
 <translation id="8064671687106936412">密钥：</translation>
 <translation id="8068253693380742035">触摸以登录</translation>
-<translation id="8068809649322155577">这会清除 <ph name="SITE_GROUP_NAME" />、其名下所有网站及其中安装的应用存储的所有数据和 Cookie。</translation>
+<translation id="8068809649322155577">这会清除 <ph name="SITE_GROUP_NAME" />、其下属所有网站及其安装的应用存储的所有数据和 Cookie。</translation>
 <translation id="8069615408251337349">Google 云打印</translation>
 <translation id="8071432093239591881">以图片形式打印</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />应用数据可以是应用根据开发者设置而保存的任何数据，包括通讯录、邮件/消息、照片等数据。<ph name="END_PARAGRAPH1" />

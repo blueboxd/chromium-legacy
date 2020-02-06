@@ -74,15 +74,15 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));
   MOCK_METHOD1(RemoveSiteStatsImpl, void(const GURL&));
   MOCK_METHOD1(AddCompromisedCredentialsImpl,
-               void(const CompromisedCredentials&));
+               bool(const CompromisedCredentials&));
   MOCK_METHOD3(RemoveCompromisedCredentialsImpl,
-               void(const std::string&,
+               bool(const std::string&,
                     const base::string16&,
                     RemoveCompromisedCredentialsReason));
   MOCK_METHOD0(GetAllCompromisedCredentialsImpl,
                std::vector<CompromisedCredentials>());
   MOCK_METHOD3(RemoveCompromisedCredentialsByUrlAndTimeImpl,
-               void(const base::RepeatingCallback<bool(const GURL&)>&,
+               bool(const base::RepeatingCallback<bool(const GURL&)>&,
                     base::Time,
                     base::Time));
   MOCK_METHOD1(AddFieldInfoImpl, void(const FieldInfo&));

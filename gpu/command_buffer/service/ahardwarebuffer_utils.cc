@@ -14,6 +14,7 @@ bool AHardwareBufferSupportedFormat(viz::ResourceFormat format) {
   switch (format) {
     case viz::RGBA_8888:
     case viz::RGB_565:
+    case viz::BGR_565:
     case viz::RGBA_F16:
     case viz::RGBX_8888:
     case viz::RGBA_1010102:
@@ -29,6 +30,8 @@ unsigned int AHardwareBufferFormat(viz::ResourceFormat format) {
     case viz::RGBA_8888:
       return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
     case viz::RGB_565:
+      return AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
+    case viz::BGR_565:
       return AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
     case viz::RGBA_F16:
       return AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT;

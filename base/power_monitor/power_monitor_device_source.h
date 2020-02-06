@@ -15,6 +15,13 @@
 #include <windows.h>
 #endif  // !OS_WIN
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include <IOKit/IOTypes.h>
+
+#include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_ionotificationportref.h"
+#endif
+
 #if defined(OS_IOS)
 #include <objc/runtime.h>
 #endif  // OS_IOS
@@ -27,18 +34,6 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
  public:
   PowerMonitorDeviceSource();
   ~PowerMonitorDeviceSource() override;
-
-#if defined(OS_MACOSX)
-  // Allocate system resources needed by the PowerMonitor class.
-  //
-  // This function must be called before instantiating an instance of the class
-  // and before the Sandbox is initialized.
-#if !defined(OS_IOS)
-  static void AllocateSystemIOPorts();
-#else
-  static void AllocateSystemIOPorts() {}
-#endif  // OS_IOS
-#endif  // OS_MACOSX
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS, Chrome receives power-related events from powerd, the system
@@ -74,12 +69,34 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
 #if defined(OS_MACOSX)
   void PlatformInit();
   void PlatformDestroy();
-#endif
+
+#if !defined(OS_IOS)
+  // Callback from IORegisterForSystemPower(). |refcon| is the |this| pointer.
+  static void SystemPowerEventCallback(void* refcon,
+                                       io_service_t service,
+                                       natural_t message_type,
+                                       void* message_argument);
+#endif  // !OS_IOS
+#endif  // OS_MACOSX
 
   // Platform-specific method to check whether the system is currently
   // running on battery power.  Returns true if running on batteries,
   // false otherwise.
   bool IsOnBatteryPowerImpl() override;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Reference to the system IOPMrootDomain port.
+  io_connect_t power_manager_port_ = IO_OBJECT_NULL;
+
+  // Notification port that delivers power (sleep/wake) notifications.
+  mac::ScopedIONotificationPortRef notification_port_;
+
+  // Notifier reference for the |notification_port_|.
+  io_object_t notifier_ = IO_OBJECT_NULL;
+
+  // Run loop source to observe power-source-change events.
+  ScopedCFTypeRef<CFRunLoopSourceRef> power_source_run_loop_source_;
+#endif
 
 #if defined(OS_IOS)
   // Holds pointers to system event notification observers.

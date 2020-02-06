@@ -282,6 +282,9 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
 // Tests going back via back button then forward via history.forward().
 - (void)testHistoryForwardNavigation {
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_DISABLED(@"EG1 Fails.");
+#endif
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Navigate to an HTML page with a forward button.
   const GURL firstURL = self.testServer->GetURL(kWindowHistoryGoTestURL);

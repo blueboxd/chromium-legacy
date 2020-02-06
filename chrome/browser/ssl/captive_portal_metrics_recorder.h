@@ -19,8 +19,8 @@ class WebContents;
 
 // This class helps the SSL interstitial record captive portal-specific
 // metrics. It should only be used on the UI thread because its implementation
-// uses captive_portal::CaptivePortalService which can only be accessed on the
-// UI thread.
+// uses captive_portal::CaptivePortalService which can only be
+// accessed on the UI thread.
 class CaptivePortalMetricsRecorder {
  public:
   CaptivePortalMetricsRecorder(content::WebContents* web_contents,
@@ -33,7 +33,7 @@ class CaptivePortalMetricsRecorder {
  private:
   typedef std::vector<std::string> Tokens;
 
-  void Observe(const CaptivePortalService::Results& results);
+  void Observe(const captive_portal::CaptivePortalService::Results& results);
 
   bool overridable_;
   bool captive_portal_detection_enabled_;
@@ -43,7 +43,8 @@ class CaptivePortalMetricsRecorder {
   bool captive_portal_no_response_;
   bool captive_portal_detected_;
 
-  std::unique_ptr<CaptivePortalService::Subscription> subscription_;
+  std::unique_ptr<captive_portal::CaptivePortalService::Subscription>
+      subscription_;
 };
 
 #endif  // CHROME_BROWSER_SSL_CAPTIVE_PORTAL_METRICS_RECORDER_H_

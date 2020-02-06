@@ -170,6 +170,29 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
             CreateJavaTextInputsForSection(env, section.text_input_section()));
         break;
       }
+      case UserFormSectionProto::kPopupListSection: {
+        std::vector<std::string> items;
+        std::copy(section.popup_list_section().item_names().begin(),
+                  section.popup_list_section().item_names().end(),
+                  std::back_inserter(items));
+        std::vector<int> initial_selections;
+        std::copy(section.popup_list_section().initial_selection().begin(),
+                  section.popup_list_section().initial_selection().end(),
+                  std::back_inserter(initial_selections));
+        Java_AssistantCollectUserDataModel_appendPopupListSection(
+            env, jsection_list,
+            base::android::ConvertUTF8ToJavaString(env, section.title()),
+            base::android::ConvertUTF8ToJavaString(
+                env, section.popup_list_section().additional_value_key()),
+            base::android::ToJavaArrayOfStrings(env, items),
+            base::android::ToJavaIntArray(env, initial_selections),
+            section.popup_list_section().allow_multiselect(),
+            section.popup_list_section().selection_mandatory(),
+            base::android::ConvertUTF8ToJavaString(
+                env,
+                section.popup_list_section().no_selection_error_message()));
+        break;
+      }
       case UserFormSectionProto::SECTION_NOT_SET:
         NOTREACHED();
         break;

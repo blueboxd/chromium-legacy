@@ -75,7 +75,7 @@ class SmbTaskQueue {
 
   // This runs the next task in operations_ if there is capacity to run an
   // additional task, and a task remaing to run.
-  void RunTaskIfNeccessary();
+  void RunTaskIfNecessary();
 
   // Helper method that returns the next task to run.
   SmbTask GetNextTask();

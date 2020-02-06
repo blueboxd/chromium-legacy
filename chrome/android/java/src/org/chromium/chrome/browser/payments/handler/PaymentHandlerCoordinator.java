@@ -44,6 +44,15 @@ public class PaymentHandlerCoordinator {
         void onPaymentHandlerUiShown();
     }
 
+    /** Observes the WebContents of the payment-handler UI. */
+    public interface PaymentHandlerWebContentsObserver {
+        /**
+         * Called when the WebContents has been initialized.
+         * @param webContents The WebContents of the PaymentHandler.
+         */
+        void onWebContentsInitialized(WebContents webContents);
+    }
+
     /**
      * Shows the payment-handler UI.
      *
@@ -51,11 +60,14 @@ public class PaymentHandlerCoordinator {
      * @param url The url of the payment handler app, i.e., that of
      *         "PaymentRequestEvent.openWindow(url)".
      * @param isIncognito Whether the tab is in incognito mode.
-     * @param observer The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
+     * @param webContentsObserver The observer of the WebContents of the
+     *         PaymentHandler.
+     * @param uiObserver The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
      * @return Whether the payment-handler UI was shown. Can be false if the UI was suppressed.
      */
     public boolean show(ChromeActivity activity, URI url, boolean isIncognito,
-            PaymentHandlerUiObserver observer) {
+            PaymentHandlerWebContentsObserver webContentsObserver,
+            PaymentHandlerUiObserver uiObserver) {
         assert mHider == null : "Already showing payment-handler UI";
 
         mWebContents = WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
@@ -63,11 +75,12 @@ public class PaymentHandlerCoordinator {
         mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
                 ViewAndroidDelegate.createBasicDelegate(webContentView), webContentView,
                 activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
+        webContentsObserver.onWebContentsInitialized(mWebContents);
         mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
 
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
         PaymentHandlerMediator mediator =
-                new PaymentHandlerMediator(model, this::hide, mWebContents, observer);
+                new PaymentHandlerMediator(model, this::hide, mWebContents, uiObserver);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
         mWebContents.addObserver(mediator);
@@ -84,7 +97,8 @@ public class PaymentHandlerCoordinator {
             bottomSheetController.removeObserver(mediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
             mWebContents.destroy();
-            observer.onPaymentHandlerUiClosed();
+            uiObserver.onPaymentHandlerUiClosed();
+            mediator.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);
     }
@@ -104,6 +118,7 @@ public class PaymentHandlerCoordinator {
     public void hide() {
         if (mHider == null) return;
         mHider.run();
+        mHider = null;
     }
 
     /**

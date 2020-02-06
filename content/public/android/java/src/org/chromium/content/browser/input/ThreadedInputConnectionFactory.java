@@ -34,7 +34,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     private static final int CHECK_REGISTER_RETRY = 1;
 
     private final InputMethodManagerWrapper mInputMethodManagerWrapper;
-    private final InputMethodUma mInputMethodUma;
     private ThreadedInputConnectionProxyView mProxyView;
     private ThreadedInputConnection mThreadedInputConnection;
     private CheckInvalidator mCheckInvalidator;
@@ -71,7 +70,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
 
     ThreadedInputConnectionFactory(InputMethodManagerWrapper inputMethodManagerWrapper) {
         mInputMethodManagerWrapper = inputMethodManagerWrapper;
-        mInputMethodUma = createInputMethodUma();
         mTriggerDelayedOnCreateInputConnection = true;
     }
 
@@ -85,11 +83,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
             Handler handler, View containerView) {
         return new ThreadedInputConnectionProxyView(
                 containerView.getContext(), handler, containerView, this);
-    }
-
-    @VisibleForTesting
-    protected InputMethodUma createInputMethodUma() {
-        return new InputMethodUma();
     }
 
     @VisibleForTesting
@@ -233,13 +226,11 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     @VisibleForTesting
     protected void onRegisterProxyViewSuccess() {
         Log.d(TAG, "onRegisterProxyViewSuccess");
-        mInputMethodUma.recordProxyViewSuccess();
     }
 
     @VisibleForTesting
     protected void onRegisterProxyViewFailure() {
         Log.w(TAG, "onRegisterProxyViewFailure");
-        mInputMethodUma.recordProxyViewFailure();
     }
 
     @Override

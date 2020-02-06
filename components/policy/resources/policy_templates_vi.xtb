@@ -4023,13 +4023,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7207095846245296855">Bắt buộc bật Tìm kiếm an toàn của Google</translation>
 <translation id="7211368186050418507">Không bao giờ tự động phát hiện múi giờ</translation>
 <translation id="7216442368414164495">Cho phép người dùng chọn sử dụng báo cáo mở rộng trong Duyệt web an toàn</translation>
-<translation id="7221822638060296742">Cho phép bạn đặt có cho phép trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /> hay không. Có thể cho phép hoặc không cho phép tất cả các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
-
-          Tùy chọn Nhấp để phát sẽ cho phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />, tuy nhiên, người dùng phải nhấp vào trình giữ chỗ để bắt đầu thực thi.
-
-          Chỉ các miền nêu rõ ràng trong chính sách <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> mới được phép tự động phát lại. Nếu bạn muốn bật tự động phát lại cho tất cả các trang web, hãy cân nhắc việc thêm http://* và https://* vào danh sách này.
-
-          Nếu bạn không đặt chính sách này, người dùng sẽ có thể thay đổi cài đặt này theo cách thủ công.</translation>
 <translation id="7222749588229362483">Cho phép hợp nhất các chính sách đã chọn khi các chính sách đó thuộc nhiều nguồn, có cùng phạm vi và cấp độ.
 
         Quá trình hợp nhất bao gồm việc hợp nhất các khóa ở cấp độ đầu tiên của từ điển thuộc mỗi nguồn. Trong trường hợp xảy ra xung đột giữa các khóa, thì khóa thuộc nguồn có mức ưu tiên cao nhất sẽ được áp dụng.
@@ -4411,11 +4404,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Chính sách ExternalStorageDisabled được ưu tiên hơn so với chính sách này - nếu ExternalStorageDisabled được đặt thành true thì tất cả các hoạt động truy cập vào bộ nhớ ngoài đều bị vô hiệu và do đó, chính sách này bị bỏ qua.
 
       Làm mới động chính sách này được hỗ trợ trong M56 trở lên.</translation>
-<translation id="7831595031698917016">Chỉ định độ trễ tối thiểu bằng mili giây giữa quá trình nhận hủy hiệu lực chính sách và tìm nạp chính sách mới từ dịch vụ quản lý thiết bị.
-
-      Việc đặt chính sách này sẽ thay thế giá trị mặc định là 5000 mili giây. Giá trị hợp lệ cho chính sách này nằm trong khoảng từ 1000 (1 giây) đến 300000 (5 phút). Mọi giá trị không nằm trong khoảng này sẽ bị xếp vào ranh giới tương ứng.
-
-      Nếu không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng giá trị mặc định là 5000 mili giây.</translation>
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>
 <translation id="7842317008224536842">Đặt trạng thái mặc định cho tính năng hỗ trợ tiếp cận về độ tương phản cao trên màn hình đăng nhập.
 

@@ -365,7 +365,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // --- Feature tab helpers behind flags ---
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalTabHelper::CreateForWebContents(
+  captive_portal::CaptivePortalTabHelper::CreateForWebContents(
       web_contents, CaptivePortalServiceFactory::GetForProfile(profile),
       base::Bind(&ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents,
                  web_contents, false));

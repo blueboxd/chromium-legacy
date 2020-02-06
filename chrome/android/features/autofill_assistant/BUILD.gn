@@ -159,6 +159,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/additional_sections/AssistantAdditionalSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/additional_sections/AssistantAdditionalSectionContainer.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/additional_sections/AssistantAdditionalSectionFactory.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/additional_sections/AssistantPopupListSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/additional_sections/AssistantStaticTextSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/additional_sections/AssistantTextInputSection.java",
   ]

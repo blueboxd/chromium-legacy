@@ -4171,28 +4171,6 @@ TEST_P(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
   EndSplitView();
 }
 
-// Tests that if window being dragged into drop target when preview area is
-// shown, window should go to be snapped instead of being dropped into overview.
-TEST_P(SplitViewTabDraggingTest, DragWindowIntoPreviewAreaAndDropTarget) {
-  const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> browser_window(
-      CreateWindowWithType(bounds, AppType::BROWSER));
-  WindowState::Get(browser_window.get())->Maximize();
-
-  std::unique_ptr<WindowResizer> resizer =
-      StartDrag(browser_window.get(), browser_window.get());
-  gfx::Rect drop_target_bounds =
-      GetDropTargetBoundsDuringDrag(browser_window.get());
-  // Drag window to inside the drop target.
-  DragWindowTo(resizer.get(), gfx::Point(drop_target_bounds.x() + 5,
-                                         drop_target_bounds.y() + 5));
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
-            GetWindowDraggingState(resizer.get()));
-  CompleteDrag(std::move(resizer));
-  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
-            split_view_controller()->state());
-}
-
 // Tests that if a fling event happens on a tab, the tab might or might not
 // merge back into the source window depending on the fling event velocity.
 TEST_P(SplitViewTabDraggingTest, FlingTest) {

@@ -184,6 +184,8 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/web_test_browser_main.h",
     "browser/web_test/web_test_browser_main_parts.cc",
     "browser/web_test/web_test_browser_main_parts.h",
+    "browser/web_test/web_test_client_impl.cc",
+    "browser/web_test/web_test_client_impl.h",
     "browser/web_test/web_test_content_browser_client.cc",
     "browser/web_test/web_test_content_browser_client.h",
     "browser/web_test/web_test_content_index_provider.cc",
@@ -889,6 +891,7 @@ mojom("mojo_bindings") {
   sources = [
     "common/blink_test.mojom",
     "common/power_monitor_test.mojom",
+    "common/web_test.mojom",
     "common/web_test/fake_bluetooth_chooser.mojom",
     "common/web_test/web_test_bluetooth_fake_adapter_setter.mojom",
   ]

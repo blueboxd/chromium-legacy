@@ -27,19 +27,7 @@ int ContentMainDelegate::RunProcess(
   return -1;
 }
 
-#if defined(OS_MACOSX)
-
-bool ContentMainDelegate::ProcessRegistersWithSystemProcess(
-    const std::string& process_type) {
-  return false;
-}
-
-bool ContentMainDelegate::DelaySandboxInitialization(
-    const std::string& process_type) {
-  return false;
-}
-
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 
 void ContentMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*

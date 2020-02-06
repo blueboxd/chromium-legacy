@@ -484,6 +484,7 @@ CrSettingsPeoplePageSyncAccountControlTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    '../test_util.js',
     'sync_test_util.js',
     'test_sync_browser_proxy.js',
     'sync_account_control_test.js',
@@ -923,6 +924,11 @@ TEST_F(
       settings_privacy_page.registerPrivacyPageSoundTests();
       mocha.run();
     });
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSecureDnsTests', function() {
+  settings_privacy_page.registerPrivacyPageSecureDnsTests();
+  mocha.run();
+});
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
 TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_UMALoggingTests', function() {

@@ -30,35 +30,42 @@ void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
     return;
   }
 
-  // We scale based on the maximum input & output coordinates, rather than the
-  // input and output sizes, so that it's possible to reach the edge of the
-  // output when up-scaling.  We also take care to round up or down correctly,
-  // which is important when down-scaling.
-  // After scaling, we offset by the output rect origin. This is normally (0,0),
-  // but will be non-zero when we are showing a single display.
+  // We scale based on the max input and output coordinates (which are equal
+  // to size-1), rather than the input and output sizes, so that it's possible
+  // to reach the edge of the output when up-scaling.  We also take care to
+  // round up or down correctly, which is important when down-scaling.
+  // After scaling, we offset by the output rect origin. This is normally
+  // (0,0), but may be non-zero when there are multiple displays and we are
+  // showing a single display.
+
   MouseEvent out_event(event);
   if (out_event.has_x()) {
-    int x = out_event.x() * x_output_;
-    x = (x + x_input_ / 2) / x_input_;
+    int x = out_event.x();
+    if (x_output_ != x_input_)
+      x = ((x * x_output_) + (x_input_ / 2)) / x_input_;
     out_event.set_x(output_offset_.x() + base::ClampToRange(x, 0, x_output_));
   }
   if (out_event.has_y()) {
-    int y = out_event.y() * y_output_;
-    y = (y + y_input_ / 2) / y_input_;
+    int y = out_event.y();
+    if (y_output_ != y_input_)
+      y = ((y * y_output_) + (y_input_ / 2)) / y_input_;
     out_event.set_y(output_offset_.y() + base::ClampToRange(y, 0, y_output_));
   }
-
   InputFilter::InjectMouseEvent(out_event);
 }
 
 void MouseInputFilter::set_input_size(const int32_t x, const int32_t y) {
   x_input_ = x - 1;
   y_input_ = y - 1;
+  LOG(INFO) << "Setting MouseInputFilter input_size to " << x_input_ << ","
+            << y_input_;
 }
 
 void MouseInputFilter::set_output_size(const int32_t x, const int32_t y) {
   x_output_ = x - 1;
   y_output_ = y - 1;
+  LOG(INFO) << "Setting MouseInputFilter output_size to " << x_output_ << ","
+            << y_output_;
 }
 
 void MouseInputFilter::set_output_offset(const webrtc::DesktopVector& v) {

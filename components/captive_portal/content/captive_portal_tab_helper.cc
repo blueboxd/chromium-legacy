@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/ssl/ssl_info.h"
 
-using captive_portal::CaptivePortalResult;
+namespace captive_portal {
 
 // static
 void CaptivePortalTabHelper::CreateForWebContents(
@@ -169,3 +169,5 @@ CaptivePortalTabReloader* CaptivePortalTabHelper::GetTabReloaderForTest() {
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(CaptivePortalTabHelper)
+
+}  // namespace captive_portal

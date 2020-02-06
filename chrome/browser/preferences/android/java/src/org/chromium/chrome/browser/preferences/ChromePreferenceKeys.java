@@ -401,6 +401,7 @@ public final class ChromePreferenceKeys {
     /** Keys used to save settings related to homepage. */
     public static final String HOMEPAGE_CUSTOM_URI = "homepage_custom_uri";
     public static final String HOMEPAGE_ENABLED = "homepage";
+    public static final String HOMEPAGE_USE_CHROME_NTP = "Chrome.Homepage.UseNTP";
     public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
 
     /**
@@ -482,6 +483,9 @@ public final class ChromePreferenceKeys {
     public static final String PRIVACY_BANDWIDTH_OLD = "prefetch_bandwidth";
     public static final String PRIVACY_BANDWIDTH_NO_CELLULAR_OLD = "prefetch_bandwidth_no_cellular";
     public static final String PRIVACY_ALLOW_PRERENDER_OLD = "allow_prefetch";
+
+    public static final String PROFILES_BOOT_TIMESTAMP =
+            "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
 
     /**
      * Key to cache the enabled bottom toolbar parameter.
@@ -679,7 +683,8 @@ public final class ChromePreferenceKeys {
                 FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
                 FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY,
                 FLAGS_FIELD_TRIAL_PARAM_CACHED.pattern(),
-                HOMEPAGE_LOCATION_POLICY
+                HOMEPAGE_LOCATION_POLICY,
+                HOMEPAGE_USE_CHROME_NTP
         );
         // clang-format on
     }
@@ -863,6 +868,7 @@ public final class ChromePreferenceKeys {
                 PRIVACY_METRICS_IN_SAMPLE,
                 PRIVACY_METRICS_REPORTING,
                 PRIVACY_NETWORK_PREDICTIONS,
+                PROFILES_BOOT_TIMESTAMP,
                 PROMOS_SKIPPED_ON_FIRST_START,
                 REACHED_CODE_PROFILER_GROUP,
                 RLZ_NOTIFIED,

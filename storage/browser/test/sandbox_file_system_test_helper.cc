@@ -68,7 +68,7 @@ void SandboxFileSystemTestHelper::TearDown() {
 
 base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() {
   return file_system_context_->sandbox_delegate()
-      ->GetBaseDirectoryForOriginAndType(origin_.GetURL(), type_, false);
+      ->GetBaseDirectoryForOriginAndType(origin_, type_, false);
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetLocalPath(
@@ -163,7 +163,7 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
 
   // Prepare the origin's root directory.
   file_system_context_->sandbox_delegate()->GetBaseDirectoryForOriginAndType(
-      origin_.GetURL(), type_, true /* create */);
+      origin_, type_, true /* create */);
 
   base::FilePath usage_cache_path = GetUsageCachePath();
   if (!usage_cache_path.empty())

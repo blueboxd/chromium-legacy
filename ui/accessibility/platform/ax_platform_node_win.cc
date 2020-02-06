@@ -1786,12 +1786,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Expand() {
   return E_FAIL;
 }
 
-IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
-    ExpandCollapseState* result) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(
-      UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE);
-  UIA_VALIDATE_CALL_1_ARG(result);
-
+ExpandCollapseState AXPlatformNodeWin::ComputeExpandCollapseState() const {
   const AXNodeData& data = GetData();
   const bool is_menu_button = data.GetHasPopup() == ax::mojom::HasPopup::kMenu;
   const bool is_expanded_menu_button =
@@ -1802,13 +1797,23 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
       data.GetCheckedState() != ax::mojom::CheckedState::kTrue;
 
   if (data.HasState(ax::mojom::State::kExpanded) || is_expanded_menu_button) {
-    *result = ExpandCollapseState_Expanded;
+    return ExpandCollapseState_Expanded;
   } else if (data.HasState(ax::mojom::State::kCollapsed) ||
              is_collapsed_menu_button) {
-    *result = ExpandCollapseState_Collapsed;
+    return ExpandCollapseState_Collapsed;
   } else {
-    *result = ExpandCollapseState_LeafNode;
+    return ExpandCollapseState_LeafNode;
   }
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
+    ExpandCollapseState* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(
+      UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE);
+  UIA_VALIDATE_CALL_1_ARG(result);
+
+  *result = ComputeExpandCollapseState();
+
   return S_OK;
 }
 
@@ -4280,6 +4285,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
     }
 
+    case UIA_ExpandCollapseExpandCollapseStatePropertyId:
+      result->vt = VT_I4;
+      result->intVal = static_cast<int>(ComputeExpandCollapseState());
+      break;
+
     // Not currently implemented.
     case UIA_AnnotationObjectsPropertyId:
     case UIA_AnnotationTypesPropertyId:
@@ -5838,7 +5848,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
           GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
       if (html_tag == "select")
         return L"combobox";
-      return L"menu";
+      return L"button";
     }
 
     case ax::mojom::Role::kPortal:
@@ -6509,7 +6519,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
           GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
       if (html_tag == "select")
         return UIA_ComboBoxControlTypeId;
-      return UIA_MenuControlTypeId;
+      return UIA_ButtonControlTypeId;
     }
 
     case ax::mojom::Role::kPortal:

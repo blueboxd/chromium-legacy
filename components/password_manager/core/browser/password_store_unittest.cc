@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -22,10 +23,11 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/compromised_credentials_consumer.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
-#include "components/password_manager/core/browser/password_leak_history_consumer.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
@@ -79,15 +81,16 @@ constexpr const char kTestAndroidIconURL1[] = "https://example.com/icon_1.png";
 constexpr const char kTestAndroidName2[] = "Example Android App 2";
 constexpr const char kTestAndroidIconURL2[] = "https://example.com/icon_2.png";
 
-class MockPasswordLeakHistoryConsumer : public PasswordLeakHistoryConsumer {
+class MockCompromisedCredentialsConsumer
+    : public CompromisedCredentialsConsumer {
  public:
-  MockPasswordLeakHistoryConsumer() = default;
+  MockCompromisedCredentialsConsumer() = default;
 
   MOCK_METHOD1(OnGetCompromisedCredentials,
                void(std::vector<CompromisedCredentials>));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordLeakHistoryConsumer);
+  DISALLOW_COPY_AND_ASSIGN(MockCompromisedCredentialsConsumer);
 };
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
@@ -106,6 +109,11 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
+};
+
+struct MockCompromisedPasswordsObserver
+    : PasswordStore::CompromisedPasswordsObserver {
+  MOCK_METHOD0(OnCompromisedPasswordsChanged, void());
 };
 
 class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
@@ -401,7 +409,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
   store->AddLogin(*test_form);
   WaitForPasswordStore();
 
-  MockPasswordLeakHistoryConsumer consumer;
+  MockCompromisedCredentialsConsumer consumer;
   base::RunLoop run_loop;
   store->RemoveLoginsCreatedBetween(base::Time::FromDoubleT(0),
                                     base::Time::FromDoubleT(2),
@@ -443,7 +451,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
   store->AddLogin(*test_form);
   WaitForPasswordStore();
 
-  MockPasswordLeakHistoryConsumer consumer;
+  MockCompromisedCredentialsConsumer consumer;
   kTestCredential.password_value = L"password_value_2";
   std::unique_ptr<PasswordForm> test_form_2(
       FillPasswordFormWithData(kTestCredential));
@@ -485,7 +493,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginAdded) {
   store->AddLogin(*test_form);
   WaitForPasswordStore();
 
-  MockPasswordLeakHistoryConsumer consumer;
+  MockCompromisedCredentialsConsumer consumer;
   kTestCredential.password_value = L"password_value_2";
   std::unique_ptr<PasswordForm> test_form_2(
       FillPasswordFormWithData(kTestCredential));
@@ -494,6 +502,94 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginAdded) {
 
   EXPECT_CALL(consumer, OnGetCompromisedCredentials(testing::IsEmpty()));
   store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest,
+       CompromisedPasswordObserverOnCompromisedCredentialAdded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPasswordCheck);
+  MockCompromisedPasswordsObserver observer;
+
+  CompromisedCredentials compromised_credentials(
+      kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->AddCompromisedPasswordsObserver(&observer);
+
+  // Expect a notification after adding a credential.
+  EXPECT_CALL(observer, OnCompromisedPasswordsChanged);
+  store->AddCompromisedCredentials(compromised_credentials);
+  WaitForPasswordStore();
+
+  // Adding the same credential should not result in another notification.
+  EXPECT_CALL(observer, OnCompromisedPasswordsChanged).Times(0);
+  store->AddCompromisedCredentials(compromised_credentials);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest,
+       CompromisedPasswordObserverOnCompromisedCredentialRemoved) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPasswordCheck);
+  MockCompromisedPasswordsObserver observer;
+
+  CompromisedCredentials compromised_credentials(
+      kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->AddCompromisedCredentials(compromised_credentials);
+  WaitForPasswordStore();
+
+  store->AddCompromisedPasswordsObserver(&observer);
+
+  // Expect a notification after removing a credential.
+  EXPECT_CALL(observer, OnCompromisedPasswordsChanged);
+  store->RemoveCompromisedCredentials(
+      compromised_credentials.signon_realm, compromised_credentials.username,
+      RemoveCompromisedCredentialsReason::kRemove);
+  WaitForPasswordStore();
+
+  // Removing the same credential should not result in another notification.
+  EXPECT_CALL(observer, OnCompromisedPasswordsChanged).Times(0);
+  store->RemoveCompromisedCredentials(
+      compromised_credentials.signon_realm, compromised_credentials.username,
+      RemoveCompromisedCredentialsReason::kRemove);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest,
+       CompromisedPasswordObserverOnCompromisedCredentialRemovedByTime) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPasswordCheck);
+  MockCompromisedPasswordsObserver observer;
+
+  CompromisedCredentials compromised_credentials(
+      kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->AddCompromisedCredentials(compromised_credentials);
+  WaitForPasswordStore();
+
+  store->AddCompromisedPasswordsObserver(&observer);
+
+  // Expect a notification after removing all credential.
+  EXPECT_CALL(observer, OnCompromisedPasswordsChanged);
+  store->RemoveCompromisedCredentialsByUrlAndTime(
+      base::NullCallback(), base::Time::Min(), base::Time::Max(),
+      base::NullCallback());
   WaitForPasswordStore();
 
   store->ShutdownOnUIThread();
@@ -1400,7 +1496,7 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
 
   store->AddCompromisedCredentials(compromised_credentials);
   store->AddCompromisedCredentials(compromised_credentials2);
-  MockPasswordLeakHistoryConsumer consumer;
+  MockCompromisedCredentialsConsumer consumer;
   EXPECT_CALL(consumer,
               OnGetCompromisedCredentials(UnorderedElementsAre(
                   compromised_credentials, compromised_credentials2)));
@@ -1439,7 +1535,7 @@ TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
   store->AddCompromisedCredentials(compromised_credentials2);
   store->AddCompromisedCredentials(compromised_credentials3);
 
-  MockPasswordLeakHistoryConsumer consumer;
+  MockCompromisedCredentialsConsumer consumer;
   EXPECT_CALL(consumer, OnGetCompromisedCredentials(UnorderedElementsAre(
                             compromised_credentials1, compromised_credentials2,
                             compromised_credentials3)));

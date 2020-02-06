@@ -73,6 +73,10 @@ class MockQuotaManager : public QuotaManager {
                         int quota_client_mask,
                         StatusCallback callback) override;
 
+  // Overrides QuotaManager's implementation so that tests can observe
+  // calls to this function.
+  void NotifyWriteFailed(const url::Origin& origin) override;
+
   // Helper method for updating internal quota info.
   void SetQuota(const url::Origin& origin, StorageType type, int64_t quota);
 
@@ -93,6 +97,10 @@ class MockQuotaManager : public QuotaManager {
   bool OriginHasData(const url::Origin& origin,
                      StorageType type,
                      QuotaClient::ID quota_client) const;
+
+  std::map<const url::Origin, int> write_error_tracker() const {
+    return write_error_tracker_;
+  }
 
  protected:
   ~MockQuotaManager() override;
@@ -140,6 +148,10 @@ class MockQuotaManager : public QuotaManager {
   std::vector<OriginInfo> origins_;
   std::map<std::pair<url::Origin, StorageType>, StorageInfo>
       usage_and_quota_map_;
+
+  // Tracks number of times NotifyFailedWrite has been called per origin.
+  std::map<const url::Origin, int> write_error_tracker_;
+
   base::WeakPtrFactory<MockQuotaManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);

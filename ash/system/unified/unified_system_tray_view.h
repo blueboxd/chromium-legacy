@@ -134,6 +134,13 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // Returns the number of visible feature pods.
   int GetVisibleFeaturePodCount() const;
 
+  // Get the accessible name for the currently shown detailed view.
+  base::string16 GetDetailedViewAccessibleName() const;
+
+  // Returns true if a detailed view is being shown in the tray. (e.g Bluetooth
+  // Settings).
+  bool IsDetailedViewShown() const;
+
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -159,6 +166,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
     return notification_hidden_view_;
   }
 
+  View* detailed_view() { return detailed_view_container_; }
   View* detailed_view_for_testing() { return detailed_view_container_; }
 
  private:

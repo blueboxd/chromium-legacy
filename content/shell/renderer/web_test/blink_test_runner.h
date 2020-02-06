@@ -18,6 +18,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/blink_test.mojom.h"
+#include "content/shell/common/web_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/web_test_delegate.h"
@@ -181,7 +182,10 @@ class BlinkTestRunner : public RenderViewObserver,
       bluetooth_fake_adapter_setter_;
 
   mojom::BlinkTestClient& GetBlinkTestClientRemote();
-  mojo::Remote<mojom::BlinkTestClient> web_test_client_remote_;
+  mojo::Remote<mojom::BlinkTestClient> blink_test_client_remote_;
+
+  mojom::WebTestClient& GetWebTestClientRemote();
+  mojo::Remote<mojom::WebTestClient> web_test_client_remote_;
 
   test_runner::TestPreferences prefs_;
 

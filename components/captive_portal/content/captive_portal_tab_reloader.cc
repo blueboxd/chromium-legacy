@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
-using captive_portal::CaptivePortalResult;
+namespace captive_portal {
 
 namespace {
 
@@ -133,7 +133,7 @@ void CaptivePortalTabReloader::OnRedirect(bool is_ssl) {
 void CaptivePortalTabReloader::OnCaptivePortalResults(
     CaptivePortalResult previous_result,
     CaptivePortalResult result) {
-  if (result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
+  if (result == RESULT_BEHIND_CAPTIVE_PORTAL) {
     if (state_ == STATE_MAYBE_BROKEN_BY_PORTAL) {
       SetState(STATE_BROKEN_BY_PORTAL);
       MaybeOpenCaptivePortalLoginTab();
@@ -150,7 +150,7 @@ void CaptivePortalTabReloader::OnCaptivePortalResults(
       // page, so if the page ends up at an error caused by a captive portal, it
       // will be reloaded.  If not, the state will just be reset.  The helps in
       // the case that a user tries to reload a tab, and then quickly logs in.
-      if (previous_result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
+      if (previous_result == RESULT_BEHIND_CAPTIVE_PORTAL) {
         SetState(STATE_NEEDS_RELOAD);
         return;
       }
@@ -291,3 +291,5 @@ void CaptivePortalTabReloader::CheckForCaptivePortal() {
   if (captive_portal_service_)
     captive_portal_service_->DetectCaptivePortal();
 }
+
+}  // namespace captive_portal

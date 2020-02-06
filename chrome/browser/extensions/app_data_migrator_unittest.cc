@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/app_data_migrator.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -28,6 +29,7 @@
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/test/mock_blob_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,28 +117,45 @@ scoped_refptr<const Extension> GetTestExtension(bool platform_app) {
   return app;
 }
 
-void DidWrite(base::File::Error status, int64_t bytes, bool complete) {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+void OpenFileSystem(storage::FileSystemContext* fs_context,
+                    GURL extension_url,
+                    storage::FileSystemType type) {
+  base::RunLoop run_loop;
+  fs_context->OpenFileSystem(
+      extension_url, type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::BindLambdaForTesting([&](const GURL& root, const std::string& name,
+                                     base::File::Error result) {
+        EXPECT_EQ(result, base::File::FILE_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
-void DidCreate(base::File::Error status) {
-}
+void CreateAndWriteFile(storage::FileSystemContext* fs_context,
+                        const storage::FileSystemURL& url,
+                        std::unique_ptr<storage::BlobDataHandle> blob) {
+  {
+    base::RunLoop run_loop;
+    fs_context->operation_runner()->CreateFile(
+        url, false, base::BindLambdaForTesting([&](base::File::Error result) {
+          EXPECT_EQ(result, base::File::FILE_OK);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
 
-void DidOpenFileSystem(const GURL& root,
-                       const std::string& name,
-                       base::File::Error result) {
-}
-
-void OpenFileSystems(storage::FileSystemContext* fs_context,
-                     GURL extension_url) {
-  fs_context->OpenFileSystem(extension_url, storage::kFileSystemTypeTemporary,
-                             storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                             base::BindOnce(&DidOpenFileSystem));
-
-  fs_context->OpenFileSystem(extension_url, storage::kFileSystemTypePersistent,
-                             storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                             base::BindOnce(&DidOpenFileSystem));
-  content::RunAllTasksUntilIdle();
+  {
+    base::RunLoop run_loop;
+    fs_context->operation_runner()->Write(
+        url, std::move(blob), 0,
+        base::BindLambdaForTesting(
+            [&](base::File::Error result, int64_t bytes, bool complete) {
+              if (complete)
+                run_loop.Quit();
+              EXPECT_EQ(result, base::File::FILE_OK);
+            }));
+    run_loop.Run();
+  }
 }
 
 void GenerateTestFiles(storage::BlobStorageContext* blob_storage_context,
@@ -149,7 +168,8 @@ void GenerateTestFiles(storage::BlobStorageContext* blob_storage_context,
   GURL extension_url =
       extensions::Extension::GetBaseURLFromExtensionId(ext->id());
 
-  OpenFileSystems(fs_context, extension_url);
+  OpenFileSystem(fs_context, extension_url, storage::kFileSystemTypeTemporary);
+  OpenFileSystem(fs_context, extension_url, storage::kFileSystemTypePersistent);
 
   storage::FileSystemURL fs_temp_url = fs_context->CreateCrackedFileSystemURL(
       extension_url, storage::kFileSystemTypeTemporary, path);
@@ -161,37 +181,33 @@ void GenerateTestFiles(storage::BlobStorageContext* blob_storage_context,
   storage::ScopedTextBlob blob1(blob_storage_context, "blob-id:success1",
                                 "Hello, world!\n");
 
-  fs_context->operation_runner()->CreateFile(fs_temp_url, false,
-                                             base::Bind(&DidCreate));
-
-  fs_context->operation_runner()->CreateFile(fs_persistent_url, false,
-                                             base::Bind(&DidCreate));
-  content::RunAllTasksUntilIdle();
-
-  fs_context->operation_runner()->Write(fs_temp_url, blob1.GetBlobDataHandle(),
-                                        0, base::BindRepeating(&DidWrite));
-  content::RunAllTasksUntilIdle();
-  fs_context->operation_runner()->Write(fs_persistent_url,
-                                        blob1.GetBlobDataHandle(), 0,
-                                        base::BindRepeating(&DidWrite));
-  content::RunAllTasksUntilIdle();
+  CreateAndWriteFile(fs_context, fs_temp_url, blob1.GetBlobDataHandle());
+  CreateAndWriteFile(fs_context, fs_persistent_url, blob1.GetBlobDataHandle());
 }
 
-void VerifyFileContents(base::File file, base::OnceClosure on_close_callback) {
-  ASSERT_EQ(14, file.GetLength());
-  std::unique_ptr<char[]> buffer(new char[15]);
+void VerifyFileContents(storage::FileSystemContext* new_fs_context,
+                        const storage::FileSystemURL& url) {
+  base::RunLoop run_loop;
+  new_fs_context->operation_runner()->OpenFile(
+      url, base::File::FLAG_READ | base::File::FLAG_OPEN,
+      base::BindLambdaForTesting(
+          [&](base::File file, base::OnceClosure on_close_callback) {
+            ASSERT_EQ(14, file.GetLength());
+            std::unique_ptr<char[]> buffer(new char[15]);
 
-  file.Read(0, buffer.get(), 14);
-  buffer.get()[14] = 0;
+            file.Read(0, buffer.get(), 14);
+            buffer.get()[14] = 0;
 
-  std::string expected = "Hello, world!\n";
-  std::string actual = buffer.get();
-  EXPECT_EQ(expected, actual);
+            std::string expected = "Hello, world!\n";
+            std::string actual = buffer.get();
+            EXPECT_EQ(expected, actual);
 
-  file.Close();
-  if (!on_close_callback.is_null())
-    std::move(on_close_callback).Run();
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+            file.Close();
+            if (!on_close_callback.is_null())
+              std::move(on_close_callback).Run();
+            run_loop.Quit();
+          }));
+  run_loop.Run();
 }
 
 void VerifyTestFilesMigrated(content::StoragePartition* new_partition,
@@ -201,7 +217,10 @@ void VerifyTestFilesMigrated(content::StoragePartition* new_partition,
   storage::FileSystemContext* new_fs_context =
       new_partition->GetFileSystemContext();
 
-  OpenFileSystems(new_fs_context, extension_url);
+  OpenFileSystem(new_fs_context, extension_url,
+                 storage::kFileSystemTypeTemporary);
+  OpenFileSystem(new_fs_context, extension_url,
+                 storage::kFileSystemTypePersistent);
 
   base::FilePath path(FILE_PATH_LITERAL("test.txt"));
 
@@ -212,14 +231,8 @@ void VerifyTestFilesMigrated(content::StoragePartition* new_partition,
       new_fs_context->CreateCrackedFileSystemURL(
           extension_url, storage::kFileSystemTypePersistent, path);
 
-  new_fs_context->operation_runner()->OpenFile(
-      fs_temp_url, base::File::FLAG_READ | base::File::FLAG_OPEN,
-      base::Bind(&VerifyFileContents));
-  content::RunAllTasksUntilIdle();
-  new_fs_context->operation_runner()->OpenFile(
-      fs_persistent_url, base::File::FLAG_READ | base::File::FLAG_OPEN,
-      base::Bind(&VerifyFileContents));
-  content::RunAllTasksUntilIdle();
+  VerifyFileContents(new_fs_context, fs_temp_url);
+  VerifyFileContents(new_fs_context, fs_persistent_url);
 }
 
 TEST_F(AppDataMigratorTest, ShouldMigrate) {
@@ -254,27 +267,30 @@ TEST_F(AppDataMigratorTest, NoOpMigration) {
 
 // crbug.com/747589
 TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
+  // When writing files, this touches the quota manager, which then
+  // kicks off extra tasks to write to the quota database that fail
+  // when the test is over.  Because this test is not about quota,
+  // disable the quota manager database for both partitions.
+  default_partition_->GetQuotaManager()->DisableDatabaseForTesting();
+
   scoped_refptr<const Extension> old_ext = GetTestExtension(false);
   scoped_refptr<const Extension> new_ext = GetTestExtension(true);
 
   GenerateTestFiles(blob_storage_context_.get(), old_ext.get(),
                     default_fs_context_, profile_.get());
 
+  base::RunLoop run_loop;
   migrator_->DoMigrationAndReply(old_ext.get(), new_ext.get(),
-                                 base::DoNothing());
-
-  content::RunAllTasksUntilIdle();
+                                 run_loop.QuitClosure());
+  run_loop.Run();
 
   registry_->AddEnabled(new_ext);
   content::StoragePartition* new_partition =
       util::GetStoragePartitionForExtensionId(new_ext->id(), profile_.get());
-
+  new_partition->GetQuotaManager()->DisableDatabaseForTesting();
   ASSERT_NE(new_partition->GetPath(), default_partition_->GetPath());
 
   VerifyTestFilesMigrated(new_partition, new_ext.get());
-
-  // Clean up.
-  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace extensions

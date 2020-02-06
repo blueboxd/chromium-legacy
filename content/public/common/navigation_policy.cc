@@ -26,10 +26,6 @@ void LogArbitraryPolicyPerDownload(NavigationDownloadType type) {
 }
 }  // namespace
 
-bool IsRenderDocumentEnabledForCrashedFrame() {
-  return base::FeatureList::IsEnabled(features::kRenderDocumentForCrashedFrame);
-}
-
 NavigationDownloadPolicy::NavigationDownloadPolicy() = default;
 NavigationDownloadPolicy::~NavigationDownloadPolicy() = default;
 NavigationDownloadPolicy::NavigationDownloadPolicy(

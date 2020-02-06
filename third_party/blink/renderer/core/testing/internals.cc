@@ -2809,13 +2809,6 @@ bool Internals::cursorUpdatePending() const {
   return GetFrame()->GetEventHandler().CursorUpdatePending();
 }
 
-bool Internals::fakeMouseMovePending() const {
-  if (!GetFrame())
-    return false;
-
-  return GetFrame()->GetEventHandler().FakeMouseMovePending();
-}
-
 DOMArrayBuffer* Internals::serializeObject(
     scoped_refptr<SerializedScriptValue> value) const {
   base::span<const uint8_t> span = value->GetWireData();

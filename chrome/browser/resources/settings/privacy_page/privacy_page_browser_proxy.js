@@ -7,6 +7,9 @@
 /** @typedef {{enabled: boolean, managed: boolean}} */
 let MetricsReporting;
 
+/** @typedef {{mode: string}} */
+let SecureDnsSetting;
+
 cr.define('settings', function() {
   /** @interface */
   class PrivacyPageBrowserProxy {
@@ -27,6 +30,9 @@ cr.define('settings', function() {
 
     /** @param {boolean} enabled */
     setBlockAutoplayEnabled(enabled) {}
+
+    /** @return {!Promise<!SecureDnsSetting>} */
+    getSecureDnsSetting() {}
   }
 
   /**
@@ -57,6 +63,11 @@ cr.define('settings', function() {
       chrome.send('showManageSSLCertificates');
     }
     // </if>
+
+    /** @override */
+    getSecureDnsSetting() {
+      return cr.sendWithPromise('getSecureDnsSetting');
+    }
   }
 
   cr.addSingletonGetter(PrivacyPageBrowserProxyImpl);

@@ -562,6 +562,10 @@ const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
 }  // namespace
 
+bool IsRenderDocumentEnabledForCrashedFrame() {
+  return base::FeatureList::IsEnabled(features::kRenderDocumentForCrashedFrame);
+}
+
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
     : public blink::mojom::BrowserInterfaceBroker {
  public:

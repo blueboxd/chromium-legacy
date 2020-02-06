@@ -4258,6 +4258,37 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="IOS.PageZoomChanged">
+  <owner>rkgibson@google.com</owner>
+  <summary>
+    Logged when the user changes their zoom level on iOS.
+  </summary>
+  <metric name="ContentSizeCategory" enum="IOSContentSizeCategory">
+    <summary>
+      The content size category the user is currently using.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="OverallZoomLevel">
+    <summary>
+      The overall zoom level. This is based on a combination of the user zoom
+      level and a multiplier from the user's content size category.
+    </summary>
+  </metric>
+  <metric name="UserZoomLevel">
+    <summary>
+      The current zoom multiplier (percentage-based, with 100 -&gt; 100%) the
+      user has chosen.
+    </summary>
+  </metric>
+</event>
+
 <event name="IOS.RendererGone">
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -6652,7 +6683,8 @@ be describing additional metrics about the same event.
       Measures First Input Delay, the duration between the hardware timestamp
       and the start of event processing on the main thread for the first
       meaningful input per navigation. See https://goo.gl/tr1oTZ for a detailed
-      explanation. In ms.
+      explanation. In ms. Log of major changes:
+      http://bit.ly/chrome-speed-metrics-changelog
     </summary>
     <aggregation>
       <history>
@@ -6836,7 +6868,9 @@ be describing additional metrics about the same event.
       Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
       occurred on the page (including all subframes) during the session. This
       metric's integral value is 100x the fractional cumulative layout shift
-      score described in the explainer.
+      score described in the explainer. Stable since M79; previous versions are
+      expermental and subject to fluctuation between releases. Log of major
+      changes: http://bit.ly/chrome-speed-metrics-changelog
     </summary>
     <aggregation>
       <history>
@@ -7140,7 +7174,8 @@ be describing additional metrics about the same event.
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints content. A contentful paint
-      includes a paint of text, image, SVG, or canvas.
+      includes a paint of text, image, SVG, or canvas. Log of major changes:
+      http://bit.ly/chrome-speed-metrics-changelog
     </summary>
     <aggregation>
       <history>
@@ -7175,7 +7210,9 @@ be describing additional metrics about the same event.
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
       image) within viewport, across all frames. See http://bit.ly/fcp_plus_plus
-      for more details.
+      for more details. Stable since M79; previous versions are experimental and
+      subject to fluctuation between releases. Log of major changes:
+      http://bit.ly/chrome-speed-metrics-changelog
     </summary>
     <aggregation>
       <history>
@@ -7304,6 +7341,22 @@ be describing additional metrics about the same event.
       Records a 1 for every page on which a user has modified a password text
       field - regardless of how many password fields a page contains or the user
       modifies.
+    </summary>
+  </metric>
+</event>
+
+<event name="PaintPreviewCapture">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    Metrics related to the performance of capturing Paint Previews.
+  </summary>
+  <metric name="BlinkCaptureTime">
+    <summary>
+      The amount of time spent painting in Blink to record a Paint Preview of
+      the main frame.
     </summary>
   </metric>
 </event>

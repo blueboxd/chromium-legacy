@@ -115,6 +115,9 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
                      device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
+  void DeviceAddressChanged(device::BluetoothAdapter* adapter,
+                            device::BluetoothDevice* device,
+                            const std::string& old_address) override;
 
   // Overridden from content::NotificationObserver.
   void Observe(int type,

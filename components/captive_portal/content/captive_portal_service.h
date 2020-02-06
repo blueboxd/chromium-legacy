@@ -29,6 +29,12 @@ class URLLoaderFactory;
 }
 }  // namespace network
 
+class CaptivePortalBrowserTest;
+
+namespace captive_portal {
+
+class CaptivePortalServiceTest;
+
 // Service that checks for captive portals when queried and sends updates to
 // its registered consumers when results are obtained.
 //
@@ -50,9 +56,9 @@ class CaptivePortalService : public KeyedService {
   // The details sent to consumers on a query completing.
   struct Results {
     // The result of the second most recent captive portal check.
-    captive_portal::CaptivePortalResult previous_result;
+    CaptivePortalResult previous_result;
     // The result of the most recent captive portal check.
-    captive_portal::CaptivePortalResult result;
+    CaptivePortalResult result;
     // Landing url of the captive portal check ping. If behind a captive portal,
     // this points to the login page.
     GURL landing_url;
@@ -82,7 +88,7 @@ class CaptivePortalService : public KeyedService {
   const GURL& test_url() const { return test_url_; }
 
   // Result of the most recent captive portal check.
-  captive_portal::CaptivePortalResult last_detection_result() const {
+  CaptivePortalResult last_detection_result() const {
     return last_detection_result_;
   }
 
@@ -99,7 +105,7 @@ class CaptivePortalService : public KeyedService {
 
  private:
   friend class CaptivePortalServiceTest;
-  friend class CaptivePortalBrowserTest;
+  friend class ::CaptivePortalBrowserTest;
 
   enum State {
     // No check is running or pending.
@@ -134,19 +140,18 @@ class CaptivePortalService : public KeyedService {
 
   // Called by CaptivePortalDetector when detection completes.
   void OnPortalDetectionCompleted(
-      const captive_portal::CaptivePortalDetector::Results& results);
+      const CaptivePortalDetector::Results& results);
 
   // KeyedService:
   void Shutdown() override;
 
   // Called when a captive portal check completes.  Passes the result to all
   // observers.
-  void OnResult(captive_portal::CaptivePortalResult result,
-                const GURL& landing_url);
+  void OnResult(CaptivePortalResult result, const GURL& landing_url);
 
   // Updates BackoffEntry::Policy and creates a new BackoffEntry, which
   // resets the count used for throttling.
-  void ResetBackoffEntry(captive_portal::CaptivePortalResult result);
+  void ResetBackoffEntry(CaptivePortalResult result);
 
   // Updates |enabled_| based on command line flags and Profile preferences,
   // and sets |state_| to STATE_NONE if it's false.
@@ -177,15 +182,14 @@ class CaptivePortalService : public KeyedService {
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   // Detector for checking active network for a portal state.
-  std::unique_ptr<captive_portal::CaptivePortalDetector>
-      captive_portal_detector_;
+  std::unique_ptr<CaptivePortalDetector> captive_portal_detector_;
 
   // True if the service is enabled.  When not enabled, all checks will return
   // RESULT_INTERNET_CONNECTED.
   bool enabled_;
 
   // The result of the most recent captive portal check.
-  captive_portal::CaptivePortalResult last_detection_result_;
+  CaptivePortalResult last_detection_result_;
 
   base::CallbackList<void(const Results&)> callback_list_;
 
@@ -202,7 +206,7 @@ class CaptivePortalService : public KeyedService {
   RecheckPolicy recheck_policy_;
 
   // Implements behavior needed by |recheck_policy_|.  Whenever there's a new
-  // captive_portal::CaptivePortalResult, BackoffEntry::Policy is updated and
+  // CaptivePortalResult, BackoffEntry::Policy is updated and
   // |backoff_entry_| is recreated.  Each check that returns the same result
   // is considered a "failure", to trigger throttling.
   std::unique_ptr<net::BackoffEntry> backoff_entry_;
@@ -224,5 +228,7 @@ class CaptivePortalService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };
+
+}  // namespace captive_portal
 
 #endif  // COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_SERVICE_H_

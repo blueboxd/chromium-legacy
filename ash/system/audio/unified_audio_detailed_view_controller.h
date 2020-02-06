@@ -31,6 +31,7 @@ class UnifiedAudioDetailedViewController
 
   // DetailedViewControllerBase:
   views::View* CreateView() override;
+  base::string16 GetAccessibleName() const override;
 
   // CrasAudioHandler::AudioObserver.
   void OnAudioNodesChanged() override;

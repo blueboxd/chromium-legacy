@@ -106,11 +106,7 @@ class ServiceFontManager::SkiaDiscardableManager
     // it can be fixed.
     NOTREACHED();
 
-    const bool no_fallback = (type == SkStrikeClient::kGlyphMetrics ||
-                              type == SkStrikeClient::kGlyphPath ||
-                              type == SkStrikeClient::kGlyphImage);
-
-    if (no_fallback && dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1) {
+    if (dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1) {
       ++dump_count_;
       base::debug::DumpWithoutCrashing();
     }

@@ -652,6 +652,108 @@ TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordCrossingPlaceholderBR) {
   EXPECT_EQ("<p>|<br></p><p>abc</p>", DoPreviousWord("<p><br></p><p>|abc</p>"));
 }
 
+TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordInFloat) {
+  InsertStyleElement(
+      "c { display: block; float: right; }"
+      "e { display: block; }");
+
+  // To "|abc"
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>|abc def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>a|bc def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>ab|c def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>abc| def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>abc |def ghi</e></c>"));
+  // To "|def"
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc d|ef ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc de|f ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc def| ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc def |ghi</e></c>"));
+  // To "|ghi"
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def g|hi</e></c>"));
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def gh|i</e></c>"));
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def ghi|</e></c>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordInInlineBlock) {
+  InsertStyleElement(
+      "c { display: inline-block; }"
+      "e { display: block; }");
+
+  // To "|abc"
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>|abc def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>a|bc def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>ab|c def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>abc| def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>abc |def ghi</e></c>"));
+  // To "|def"
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc d|ef ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc de|f ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc def| ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc def |ghi</e></c>"));
+  // To "|ghi"
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def g|hi</e></c>"));
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def gh|i</e></c>"));
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def ghi|</e></c>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordInPositionAbsolute) {
+  InsertStyleElement(
+      "c { display: block; position: absolute; }"
+      "e { display: block; }");
+
+  // To "|abc"
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>|abc def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>a|bc def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>ab|c def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>abc| def ghi</e></c>"));
+  EXPECT_EQ("<c><e>|abc def ghi</e></c>",
+            DoPreviousWord("<c><e>abc |def ghi</e></c>"));
+  // To "|def"
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc d|ef ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc de|f ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc def| ghi</e></c>"));
+  EXPECT_EQ("<c><e>abc |def ghi</e></c>",
+            DoPreviousWord("<c><e>abc def |ghi</e></c>"));
+  // To "|ghi"
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def g|hi</e></c>"));
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def gh|i</e></c>"));
+  EXPECT_EQ("<c><e>abc def |ghi</e></c>",
+            DoPreviousWord("<c><e>abc def ghi|</e></c>"));
+}
+
 TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordSkipTextControl) {
   EXPECT_EQ("|foo<input value=\"bla\">bar",
             DoPreviousWord("|foo<input value=\"bla\">bar"));

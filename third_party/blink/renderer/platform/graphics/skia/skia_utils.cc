@@ -383,17 +383,17 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
   flags.setColor(color);
   flags.setStrokeWidth(width);
 
+  if (::features::IsFormControlsRefreshEnabled()) {
+    DrawFocusRingPrimitive(primitive, canvas, flags, border_radius);
+    return;
+  }
+
 #if defined(OS_MACOSX)
   flags.setAlpha(64);
   const float corner_radius = (width - 1) * 0.5f;
 #else
   const float corner_radius = width;
 #endif
-
-  if (::features::IsFormControlsRefreshEnabled()) {
-    DrawFocusRingPrimitive(primitive, canvas, flags, border_radius);
-    return;
-  }
 
   DrawFocusRingPrimitive(primitive, canvas, flags, corner_radius);
 

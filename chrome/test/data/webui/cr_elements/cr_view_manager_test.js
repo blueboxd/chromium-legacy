@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {isVisible} from '../test_util.m.js';
+// #import {isChildVisible} from '../test_util.m.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-view-manager. */
@@ -42,7 +42,7 @@ cr.define('cr_view_manager_test', function() {
     test(assert(TestNames.Visibility), function() {
       function assertViewVisible(id, expectIsVisible) {
         const expectFunc = expectIsVisible ? expectTrue : expectFalse;
-        expectFunc(test_util.isVisible(viewManager, '#' + id, true));
+        expectFunc(test_util.isChildVisible(viewManager, '#' + id, true));
       }
 
       assertViewVisible('viewOne', false);

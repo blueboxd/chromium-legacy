@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -112,10 +113,11 @@ public class NewTabPageView extends FrameLayout {
      * @param searchProviderIsGoogle Whether the search provider is Google.
      * @param scrollPosition The adapter scroll position to initialize to.
      * @param constructedTimeNs The timestamp at which the new tab page's construction started.
+     * @param activityLifecycleDispatcher Allows us to subscribe to lifecycle events.
      */
     public void initialize(NewTabPageManager manager, Tab tab, TileGroup.Delegate tileGroupDelegate,
             boolean searchProviderHasLogo, boolean searchProviderIsGoogle, int scrollPosition,
-            long constructedTimeNs) {
+            long constructedTimeNs, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         TraceEvent.begin(TAG + ".initialize()");
         mTab = tab;
         mManager = manager;
@@ -138,7 +140,7 @@ public class NewTabPageView extends FrameLayout {
 
         mNewTabPageLayout.initialize(manager, ((TabImpl) tab).getActivity(), overviewModeBehavior,
                 tileGroupDelegate, searchProviderHasLogo, searchProviderIsGoogle, mRecyclerView,
-                mContextMenuManager, mUiConfig);
+                mContextMenuManager, mUiConfig, activityLifecycleDispatcher);
 
         NewTabPageUma.trackTimeToFirstDraw(this, constructedTimeNs);
 

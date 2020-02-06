@@ -688,7 +688,7 @@ void HandleSSLErrorWrapper(
   if (!profile)
     return;
 
-  CaptivePortalService* captive_portal_service = nullptr;
+  captive_portal::CaptivePortalService* captive_portal_service = nullptr;
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal_service = CaptivePortalServiceFactory::GetForProfile(profile);
@@ -4306,7 +4306,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   result.push_back(
-      std::make_unique<CaptivePortalURLLoaderThrottle>(wc_getter.Run()));
+      std::make_unique<captive_portal::CaptivePortalURLLoaderThrottle>(
+          wc_getter.Run()));
 #endif
 
   if (chrome_navigation_ui_data &&
@@ -4583,8 +4584,9 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   if (disable_secure_dns) {
     WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
     *disable_secure_dns =
-        web_contents && CaptivePortalTabHelper::FromWebContents(web_contents) &&
-        CaptivePortalTabHelper::FromWebContents(web_contents)
+        web_contents &&
+        captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents) &&
+        captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents)
             ->is_captive_portal_window();
   }
 #endif

@@ -28,7 +28,7 @@ applied to every BUILD.gn file in the project. This has multiple drawbacks:
 
 ## Conversion pattern
 
-To convert a BUILD.gn file it is neccessary to change the following:
+To convert a BUILD.gn file it is necessary to change the following:
 
 ```
   source_set("foo") {

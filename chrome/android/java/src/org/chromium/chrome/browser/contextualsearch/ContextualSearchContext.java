@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
@@ -42,6 +43,7 @@ public abstract class ContextualSearchContext {
     private int mSelectionEndOffset = INVALID_OFFSET;
 
     // The home country, or an empty string if not set.
+    @NonNull
     private String mHomeCountry = "";
 
     // The detected language of the context, or {@code null} if not yet detected, and empty if
@@ -78,6 +80,10 @@ public abstract class ContextualSearchContext {
     private long mPreviousEventId;
     private int mPreviousUserInteractions;
 
+    // Translation members.
+    @NonNull
+    private String mTargetLanguage = "";
+
     /** A {@link ContextualSearchContext} that ignores changes to the selection. */
     static class ChangeIgnoringContext extends ContextualSearchContext {
         @Override
@@ -106,7 +112,7 @@ public abstract class ContextualSearchContext {
         if (context.hasValidSelection() && !TextUtils.isEmpty(context.getInitialSelectedWord())) {
             Log.i(TAG, "identified default query: " + context.getWordTapped());
             // TODO(donnd): figure out which of these parameters should be passed in.
-            context.setResolveProperties("US", true, 0, 0);
+            context.setResolveProperties("US", true, 0, 0, "");
             return context;
         }
 
@@ -130,16 +136,18 @@ public abstract class ContextualSearchContext {
      * @param maySendBasePageUrl Whether policy allows sending the base-page URL to the server.
      * @param previousEventId An EventID from the server to send along with the resolve request.
      * @param previousUserInteractions Persisted interaction outcomes to send along with the resolve
-     *         request.
+     *        request.
+     * @param targetLanguage The language to translate into, in case translation might be needed.
      */
-    void setResolveProperties(String homeCountry, boolean maySendBasePageUrl, long previousEventId,
-            int previousUserInteractions) {
+    void setResolveProperties(@NonNull String homeCountry, boolean maySendBasePageUrl,
+            long previousEventId, int previousUserInteractions, @NonNull String targetLanguage) {
         mHasSetResolveProperties = true;
         mHomeCountry = homeCountry;
         mPreviousEventId = previousEventId;
         mPreviousUserInteractions = previousUserInteractions;
         ContextualSearchContextJni.get().setResolveProperties(getNativePointer(), this, homeCountry,
                 maySendBasePageUrl, previousEventId, previousUserInteractions);
+        mTargetLanguage = targetLanguage;
     }
 
     /**
@@ -196,6 +204,8 @@ public abstract class ContextualSearchContext {
             ContextualSearchContextJni.get().setContent(getNativePointer(), this, mSurroundingText,
                     mSelectionStartOffset, mSelectionEndOffset);
         }
+        // Detect the language of the surroundings or the selection.
+        setTranslationLanguages(getDetectedLanguage(), mTargetLanguage);
     }
 
     /**
@@ -344,6 +354,16 @@ public abstract class ContextualSearchContext {
                     ContextualSearchContextJni.get().detectLanguage(mNativePointer, this);
         }
         return mDetectedLanguage;
+    }
+
+    /**
+     * Pushes the given language down to the native ContextualSearchContext.
+     * @param detectedLanguage An ISO 639 language code string for the language to translate from.
+     * @param targetLanguage An ISO 639 language code string to translation into.
+     */
+    void setTranslationLanguages(String detectedLanguage, String targetLanguage) {
+        ContextualSearchContextJni.get().setTranslationLanguages(
+                mNativePointer, this, detectedLanguage, targetLanguage);
     }
 
     // ============================================================================================
@@ -580,6 +600,8 @@ public abstract class ContextualSearchContext {
         void setContent(long nativeContextualSearchContext, ContextualSearchContext caller,
                 String content, int selectionStart, int selectionEnd);
         String detectLanguage(long nativeContextualSearchContext, ContextualSearchContext caller);
+        void setTranslationLanguages(long nativeContextualSearchContext,
+                ContextualSearchContext caller, String detectedLanguage, String targetLanguage);
         void setExactResolve(long nativeContextualSearchContext, ContextualSearchContext caller);
     }
 }

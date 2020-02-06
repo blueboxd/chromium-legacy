@@ -473,6 +473,10 @@ class CORE_EXPORT Node : public EventTarget {
   // Propagates a dirty bit breadcrumb for this element up the ancestor chain.
   void MarkAncestorsWithChildNeedsStyleRecalc();
 
+  // Traverses subtree (include pseudo elements and shadow trees) and
+  // invalidates nodes whose styles depend on font metrics (e.g., 'ex' unit).
+  void MarkSubtreeNeedsStyleRecalcForFontUpdates();
+
   // Nodes which are not connected are style clean. Mark them for style recalc
   // when inserting them into a document. This method was added as a light-
   // weight alternative to SetNeedsStyleRecalc because using that method caused

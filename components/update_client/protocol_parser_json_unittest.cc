@@ -328,6 +328,27 @@ const char* kJSONAppsStatusError = R"()]}'
    ]
   }})";
 
+// Includes a manifest |run| value for an update check with status='ok'.
+const char* kJSONManifestRun = R"()]}'
+  {"response":{
+   "protocol":"3.1",
+   "app":[
+    {"appid":"12345",
+     "updatecheck":{
+     "status":"ok",
+     "urls":{"url":[{"codebase":"http://example.com/"},
+                    {"codebasediff":"http://diff.example.com/"}]},
+     "manifest":{
+      "version":"1.2.3.4",
+      "prodversionmin":"2.0.143.0",
+      "run":"UpdaterSetup.exe",
+      "arguments":"--arg1 --arg2",
+      "packages":{"package":[{"name":"extension_1_2_3_4.crx"}]}}
+     }
+    }
+   ]
+  }})";
+
 TEST(UpdateClientProtocolParserJSONTest, Parse) {
   const auto parser = std::make_unique<ProtocolParserJSON>();
 
@@ -500,6 +521,14 @@ TEST(UpdateClientProtocolParserJSONTest, Parse) {
     EXPECT_EQ(third_result->extension_id, "cccccccc");
     EXPECT_STREQ("error-invalidAppId", third_result->status.c_str());
     EXPECT_TRUE(third_result->manifest.version.empty());
+  }
+  {
+    EXPECT_TRUE(parser->Parse(kJSONManifestRun));
+    EXPECT_TRUE(parser->errors().empty());
+    EXPECT_EQ(1u, parser->results().list.size());
+    const auto& result = parser->results().list[0];
+    EXPECT_STREQ("UpdaterSetup.exe", result.manifest.run.c_str());
+    EXPECT_STREQ("--arg1 --arg2", result.manifest.arguments.c_str());
   }
 }
 

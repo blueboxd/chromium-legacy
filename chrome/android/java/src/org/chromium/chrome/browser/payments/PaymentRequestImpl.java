@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
@@ -1291,21 +1292,28 @@ public class PaymentRequestImpl
     }
 
     /**
-     *  Called to open a new PaymentHandler UI on the showing PaymentRequest.
-     *  @param url The url of the payment app to be displayed in the UI.
-     *  @return Whether the opening is successful.
+     * Called to open a new PaymentHandler UI on the showing PaymentRequest.
+     * @param url The url of the payment app to be displayed in the UI.
+     * @param paymentHandlerWebContentsObserver The observer of the WebContents of the
+     * PaymentHandler.
+     * @return Whether the opening is successful.
      */
-    public static boolean openPaymentHandlerWindow(URI url) {
+    public static boolean openPaymentHandlerWindow(
+            URI url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         return sShowingPaymentRequest != null
-                && sShowingPaymentRequest.openPaymentHandlerWindowInternal(url);
+                && sShowingPaymentRequest.openPaymentHandlerWindowInternal(
+                        url, paymentHandlerWebContentsObserver);
     }
 
     /**
-     *  Called to open a new PaymentHandler UI on this PaymentRequest.
-     *  @param url The url of the payment app to be displayed in the UI.
-     *  @return Whether the opening is successful.
+     * Called to open a new PaymentHandler UI on this PaymentRequest.
+     * @param url The url of the payment app to be displayed in the UI.
+     * @param paymentHandlerWebContentsObserver The observer of the WebContents of the
+     * PaymentHandler.
+     * @return Whether the opening is successful.
      */
-    private boolean openPaymentHandlerWindowInternal(URI url) {
+    private boolean openPaymentHandlerWindowInternal(
+            URI url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         assert mInvokedPaymentInstrument != null;
         assert mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp;
         assert org.chromium.chrome.browser.browserservices.Origin.create(url.toString())
@@ -1318,7 +1326,8 @@ public class PaymentRequestImpl
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return false;
-        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito, /*observer=*/this);
+        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito,
+                paymentHandlerWebContentsObserver, /*uiObserver=*/this);
     }
 
     @Override

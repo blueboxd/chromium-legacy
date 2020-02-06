@@ -313,7 +313,7 @@ void SearchResultRanker::InitializeRankers(
 void SearchResultRanker::FetchRankings(const base::string16& query) {
   // The search controller potentially calls SearchController::FetchResults
   // several times for each user's search, so we cache the results of querying
-  // the models for a short time, to prevent uneccessary queries.
+  // the models for a short time, to prevent unecessary queries.
   const auto& now = Time::Now();
   if (now - time_of_last_fetch_ < kMinSecondsBetweenFetches)
     return;

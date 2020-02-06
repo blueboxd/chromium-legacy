@@ -13,7 +13,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -320,9 +323,40 @@ void PrintConsoleMessage(const MixedContentDownloadData& data,
                       : "will be blocked in future versions of Chrome")));
 }
 
+bool IsDownloadPermittedByContentSettings(
+    Profile* profile,
+    const base::Optional<url::Origin>& initiator) {
+  // TODO(crbug.com/1048957): Checking content settings crashes unit tests on
+  // Android. It shouldn't.
+#if !defined(OS_ANDROID)
+  ContentSettingsForOneType settings;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::MIXEDSCRIPT, std::string(), &settings);
+
+  // When there's only one rule, it's the default wildcard rule.
+  if (settings.size() == 1) {
+    DCHECK(settings[0].primary_pattern == ContentSettingsPattern::Wildcard());
+    DCHECK(settings[0].secondary_pattern == ContentSettingsPattern::Wildcard());
+    return settings[0].GetContentSetting() == CONTENT_SETTING_ALLOW;
+  }
+
+  for (const auto& setting : settings) {
+    if (setting.primary_pattern.Matches(initiator->GetURL())) {
+      return setting.GetContentSetting() == CONTENT_SETTING_ALLOW;
+    }
+  }
+  NOTREACHED();
+#endif
+
+  return false;
+}
+
 }  // namespace
 
 MixedContentStatus GetMixedContentStatusForDownload(
+    Profile* profile,
     const base::FilePath& path,
     const download::DownloadItem* item) {
   MixedContentDownloadData data(path, item);
@@ -333,6 +367,11 @@ MixedContentStatus GetMixedContentStatusForDownload(
 
   // As of M81, print a console message even if no other blocking is enabled.
   if (!base::FeatureList::IsEnabled(features::kTreatUnsafeDownloadsAsActive)) {
+    PrintConsoleMessage(data, false);
+    return MixedContentStatus::SAFE;
+  }
+
+  if (IsDownloadPermittedByContentSettings(profile, data.initiator_)) {
     PrintConsoleMessage(data, false);
     return MixedContentStatus::SAFE;
   }

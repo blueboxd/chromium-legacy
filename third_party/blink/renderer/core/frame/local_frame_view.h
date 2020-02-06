@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
-#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -118,8 +117,7 @@ struct LifecycleData {
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollected<LocalFrameView>,
-      public FrameView,
-      public MemoryPressureListener {
+      public FrameView {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 
   friend class PaintControllerPaintTestBase;
@@ -622,7 +620,7 @@ class CORE_EXPORT LocalFrameView final
 
   void MapLocalToRemoteRootFrame(TransformState&);
 
-  void CrossOriginStatusChanged();
+  void CrossOriginToMainFrameChanged();
 
   // The visual viewport can supply scrollbars.
   void VisualViewportScrollbarsChanged();
@@ -835,9 +833,6 @@ class CORE_EXPORT LocalFrameView final
 
   void UpdateLayerDebugInfoEnabled();
 
-  // MemoryPressureListener
-  void OnPurgeMemory() override;
-
   // Return the interstitial-ad detector for this frame, creating it if
   // necessary.
   OverlayInterstitialAdDetector& EnsureOverlayInterstitialAdDetector();
@@ -963,10 +958,6 @@ class CORE_EXPORT LocalFrameView final
 
   // For testing.
   bool is_tracking_raster_invalidations_ = false;
-
-  // True if a memory pressure signal has been received on a foregrounded page
-  // that has accelerated compositing enabled.
-  bool received_foreground_compositor_memory_pressure_purge_signal_ = false;
 
   // Currently used in PushPaintArtifactToCompositor() to collect composited
   // layers as foreign layers. It's transient, but may live across frame updates

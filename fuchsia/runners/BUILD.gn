@@ -96,6 +96,7 @@ fuchsia_package("cast_runner_pkg") {
   binary = ":cast_runner_exe"
   package_name_override = _cast_runner_package_name
   archive_name_override = "cast_runner"
+  component_name_override = "cast_runner"
   manifest = "cast/cast_runner.cmx"
 }
 
@@ -105,7 +106,7 @@ fuchsia_package_runner("cast_runner") {
   install_only = true
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "web_engine",
+        "web_engine${release_channel_suffix}",
       ] ]
 }
 
@@ -200,6 +201,7 @@ executable("web_runner_exe") {
 fuchsia_package("web_runner_pkg") {
   binary = ":web_runner_exe"
   package_name_override = _web_runner_package_name
+  component_name_override = "web_runner"
   archive_name_override = "web_runner"
   manifest = "web/web_runner.cmx"
 }
@@ -210,7 +212,7 @@ fuchsia_package_runner("web_runner") {
   install_only = true
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "web_engine",
+        "web_engine${release_channel_suffix}",
       ] ]
 }
 

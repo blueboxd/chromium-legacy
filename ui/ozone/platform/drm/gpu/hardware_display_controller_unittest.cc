@@ -279,6 +279,40 @@ TEST_F(HardwareDisplayControllerTest, ModifiersWithConnectorType) {
             internal_modifiers.end());
 }
 
+TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
+  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
+
+  EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
+
+  ui::DrmOverlayPlane plane2(CreateBuffer(), nullptr);
+  std::vector<ui::DrmOverlayPlane> planes = {};
+  planes.push_back(plane2.Clone());
+
+  SchedulePageFlip(std::move(planes));
+
+  // Test props values after disabling.
+  controller_->Disable();
+
+  ui::DrmDevice::Property connector_prop_crtc_id;
+  ui::ScopedDrmObjectPropertyPtr connector_props =
+      drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
+  ui::GetDrmPropertyForName(drm_.get(), connector_props.get(), "CRTC_ID",
+                            &connector_prop_crtc_id);
+  EXPECT_EQ(0U, connector_prop_crtc_id.value);
+
+  ui::DrmDevice::Property crtc_prop_for_name;
+  ui::ScopedDrmObjectPropertyPtr crtc_props =
+      drm_->GetObjectProperties(kPrimaryCrtc, DRM_MODE_OBJECT_CRTC);
+  GetDrmPropertyForName(drm_.get(), crtc_props.get(), "ACTIVE",
+                        &crtc_prop_for_name);
+  EXPECT_EQ(0U, crtc_prop_for_name.value);
+
+  crtc_props = drm_->GetObjectProperties(kPrimaryCrtc, DRM_MODE_OBJECT_CRTC);
+  GetDrmPropertyForName(drm_.get(), crtc_props.get(), "MODE_ID",
+                        &crtc_prop_for_name);
+  EXPECT_EQ(0U, crtc_prop_for_name.value);
+}
+
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
 

@@ -14,8 +14,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {CustomElement} from './custom_element.js';
+import {DragManager, DragManagerDelegate} from './drag_manager.js';
 import {TabElement} from './tab.js';
-import {TabGroupElement} from './tab_group.js';
+import {isTabGroupElement, TabGroupElement} from './tab_group.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
 import {TabData, TabGroupVisualData, TabsApiProxy} from './tabs_api_proxy.js';
@@ -37,20 +38,6 @@ export function setScrollAnimationEnabledForTesting(enabled) {
 }
 
 /**
- * Gets the data type of tab IDs on DataTransfer objects in drag events. This
- * is a function so that loadTimeData can get overridden by tests.
- * @return {string}
- */
-function getTabIdDataType() {
-  return loadTimeData.getString('tabIdDataType');
-}
-
-/** @return {string} */
-function getGroupIdDataType() {
-  return loadTimeData.getString('tabGroupIdDataType');
-}
-
-/**
  * @enum {string}
  */
 const LayoutVariable = {
@@ -60,22 +47,7 @@ const LayoutVariable = {
   TAB_WIDTH: '--tabstrip-tab-thumbnail-width',
 };
 
-/**
- * @param {!Element} element
- * @return {boolean}
- */
-function isTabElement(element) {
-  return element.tagName === 'TABSTRIP-TAB';
-}
-
-/**
- * @param {!Element} element
- * @return {boolean}
- */
-function isTabGroupElement(element) {
-  return element.tagName === 'TABSTRIP-TAB-GROUP';
-}
-
+/** @implements {DragManagerDelegate} */
 class TabListElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
@@ -182,16 +154,6 @@ class TabListElement extends CustomElement {
     this.addWebUIListener_(
         'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
 
-    this.addEventListener(
-        'dragstart', (e) => this.onDragStart_(/** @type {!DragEvent} */ (e)));
-    this.addEventListener(
-        'dragend', (e) => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
-    this.addEventListener('dragleave', () => this.onDragLeave_());
-    this.addEventListener(
-        'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
-    this.addEventListener(
-        'drop', e => this.onDrop_(/** @type {!DragEvent} */ (e)));
-
     document.addEventListener('contextmenu', this.contextMenuListener_);
     document.addEventListener(
         'visibilitychange', this.documentVisibilityChangeListener_);
@@ -202,6 +164,20 @@ class TabListElement extends CustomElement {
     this.newTabButtonElement_.addEventListener('click', () => {
       this.tabsApi_.createNewTab();
     });
+
+    const dragManager = new DragManager(this);
+    this.addEventListener(
+        'dragstart', e => dragManager.startDrag(/** @type {!DragEvent} */ (e)));
+    this.addEventListener(
+        'dragend', e => dragManager.stopDrag(/** @type {!DragEvent} */ (e)));
+    this.addEventListener('dragleave', () => dragManager.cancelDrag());
+    this.addEventListener(
+        'dragover',
+        e => dragManager.continueDrag(
+            /** @type {!DragEvent} */ (e), this.windowId_));
+    this.addEventListener(
+        'drop',
+        e => dragManager.drop(/** @type {!DragEvent} */ (e), this.windowId_));
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.$('#demoOptions').style.display = 'block';
@@ -398,6 +374,14 @@ class TabListElement extends CustomElement {
   }
 
   /**
+   * @param {!TabElement} tabElement
+   * @return {number}
+   */
+  getIndexOfTab(tabElement) {
+    return Array.prototype.indexOf.call(this.$all('tabstrip-tab'), tabElement);
+  }
+
+  /**
    * @param {!LayoutVariable} variable
    * @return {number} in pixels
    */
@@ -490,164 +474,6 @@ class TabListElement extends CustomElement {
             /** @type {!TabElement} */ (element));
       }
     });
-  }
-
-  /**
-   * @param {!DragEvent} event
-   * @private
-   */
-  onDragEnd_(event) {
-    if (!this.draggedItem_) {
-      return;
-    }
-
-    this.draggedItem_.setDragging(false);
-    this.draggedItem_ = undefined;
-  }
-
-  /** @private */
-  onDragLeave_() {
-    this.dropPlaceholder_.remove();
-  }
-
-  /**
-   * @param {!DragEvent} event
-   * @private
-   */
-  onDragOver_(event) {
-    event.preventDefault();
-
-    if (!this.draggedItem_) {
-      this.unpinnedTabsElement_.appendChild(this.dropPlaceholder_);
-      this.animateScrollPosition_(this.dropPlaceholder_.offsetLeft);
-      return;
-    }
-
-    event.dataTransfer.dropEffect = 'move';
-    if (isTabGroupElement(this.draggedItem_)) {
-      this.onDragOverWithGroupElement_(event);
-    } else if (isTabElement(this.draggedItem_)) {
-      this.onDragOverWithTabElement_(event);
-    }
-  }
-
-  /**
-   * @param {!DragEvent} event
-   * @private
-   */
-  onDragOverWithGroupElement_(event) {
-    const composedPath = /** @type {!Array<!Element>} */ (event.composedPath());
-    if (composedPath.includes(assert(this.draggedItem_))) {
-      // Dragging over itself or a child of itself.
-      return;
-    }
-
-    const allTabElements = Array.from(this.$all('tabstrip-tab'));
-    const dragOverTabElement = composedPath.find(isTabElement);
-    if (dragOverTabElement && !dragOverTabElement.tab.pinned) {
-      const dragOverIndex = allTabElements.indexOf(dragOverTabElement);
-      this.tabsApi_.moveGroup(this.draggedItem_.dataset.groupId, dragOverIndex);
-      return;
-    }
-
-    const dragOverGroupElement = composedPath.find(isTabGroupElement);
-    if (dragOverGroupElement) {
-      const dragOverIndex =
-          allTabElements.indexOf(dragOverGroupElement.firstElementChild);
-      this.tabsApi_.moveGroup(this.draggedItem_.dataset.groupId, dragOverIndex);
-    }
-  }
-
-  /**
-   * @param {!DragEvent} event
-   * @private
-   */
-  onDragOverWithTabElement_(event) {
-    const composedPath = /** @type {!Array<!Element>} */ (event.composedPath());
-    const dragOverTabElement = composedPath.find(isTabElement);
-    if (dragOverTabElement &&
-        dragOverTabElement.tab.pinned !== this.draggedItem_.tab.pinned) {
-      // Can only drag between the same pinned states.
-      return;
-    }
-
-    const dragOverTabGroup = composedPath.find(isTabGroupElement);
-    if (dragOverTabGroup &&
-        dragOverTabGroup.dataset.groupId !== this.draggedItem_.tab.groupId) {
-      this.tabsApi_.groupTab(
-          this.draggedItem_.tab.id, dragOverTabGroup.dataset.groupId);
-      return;
-    }
-
-    if (!dragOverTabGroup && this.draggedItem_.tab.groupId) {
-      this.tabsApi_.ungroupTab(this.draggedItem_.tab.id);
-      return;
-    }
-
-    if (!dragOverTabElement) {
-      return;
-    }
-
-    const dragOverIndex =
-        Array.from(this.$all('tabstrip-tab')).indexOf(dragOverTabElement);
-    this.tabsApi_.moveTab(
-        this.draggedItem_.tab.id, this.windowId_, dragOverIndex);
-  }
-
-  /**
-   * @param {!DragEvent} event
-   * @private
-   */
-  onDragStart_(event) {
-    const draggedItem =
-        /** @type {!Array<!Element>} */ (event.composedPath()).find(item => {
-          return isTabElement(item) || isTabGroupElement(item);
-        });
-    if (!draggedItem) {
-      return;
-    }
-
-    this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
-    event.dataTransfer.effectAllowed = 'move';
-    const draggedItemRect = this.draggedItem_.getBoundingClientRect();
-    this.draggedItem_.setDragging(true);
-    event.dataTransfer.setDragImage(
-        this.draggedItem_.getDragImage(), event.clientX - draggedItemRect.left,
-        event.clientY - draggedItemRect.top);
-
-    if (isTabElement(draggedItem)) {
-      event.dataTransfer.setData(
-          getTabIdDataType(), this.draggedItem_.tab.id.toString());
-    } else if (isTabGroupElement(draggedItem)) {
-      event.dataTransfer.setData(
-          getGroupIdDataType(), this.draggedItem_.dataset.groupId);
-    }
-  }
-
-  /**
-   * @param {!DragEvent} event
-   * @private
-   */
-  onDrop_(event) {
-    if (this.draggedItem_) {
-      // If there is a valid dragged item, the drag originated from this TabList
-      // and is handled already by previous dragover events.
-      return;
-    }
-
-    this.dropPlaceholder_.remove();
-
-    if (event.dataTransfer.types.includes(getTabIdDataType())) {
-      const tabId = Number(event.dataTransfer.getData(getTabIdDataType()));
-      if (Number.isNaN(tabId)) {
-        // Invalid tab ID. Return silently.
-        return;
-      }
-      this.tabsApi_.moveTab(tabId, this.windowId_, -1);
-    } else if (event.dataTransfer.types.includes(getGroupIdDataType())) {
-      const groupId = event.dataTransfer.getData(getGroupIdDataType());
-      this.tabsApi_.moveGroup(groupId, -1);
-    }
   }
 
   /** @private */
@@ -905,6 +731,12 @@ class TabListElement extends CustomElement {
     }
 
     this.animateScrollPosition_(scrollBy);
+  }
+
+  /** @param {!Element} element */
+  showDropPlaceholder(element) {
+    this.unpinnedTabsElement_.appendChild(element);
+    this.animateScrollPosition_(element.offsetLeft);
   }
 
   /**

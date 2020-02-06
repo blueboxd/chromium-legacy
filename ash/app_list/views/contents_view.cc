@@ -127,13 +127,10 @@ void ContentsView::Init(AppListModel* model) {
 
   AddLauncherPage(search_results_page_view_, AppListState::kStateSearchResults);
 
-  if (app_list_features::IsAssistantLauncherUIEnabled()) {
-    assistant_page_view_ =
-        new AssistantPageView(view_delegate->GetAssistantViewDelegate(), this);
-    assistant_page_view_->SetVisible(false);
-    AddLauncherPage(assistant_page_view_,
-                    AppListState::kStateEmbeddedAssistant);
-  }
+  assistant_page_view_ =
+      new AssistantPageView(view_delegate->GetAssistantViewDelegate(), this);
+  assistant_page_view_->SetVisible(false);
+  AddLauncherPage(assistant_page_view_, AppListState::kStateEmbeddedAssistant);
 
   int initial_page_index = GetPageIndexForState(AppListState::kStateApps);
   DCHECK_GE(initial_page_index, 0);

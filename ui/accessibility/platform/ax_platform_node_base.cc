@@ -29,6 +29,31 @@ namespace {
 // A function to call when focus changes, for testing only.
 base::LazyInstance<std::map<ax::mojom::Event, base::RepeatingClosure>>::
     DestructorAtExit g_on_notify_event_for_testing;
+
+// Check for descendant comment, using limited depth first search.
+bool FindDescendantRoleWithMaxDepth(AXPlatformNodeBase* node,
+                                    ax::mojom::Role descendant_role,
+                                    int max_depth,
+                                    int max_children_to_check) {
+  if (node->GetData().role == descendant_role)
+    return true;
+  if (max_depth <= 1)
+    return false;
+
+  int num_children_to_check =
+      std::min(node->GetChildCount(), max_children_to_check);
+  for (int index = 0; index < num_children_to_check; index++) {
+    auto* child = static_cast<AXPlatformNodeBase*>(
+        AXPlatformNode::FromNativeViewAccessible(node->ChildAtIndex(index)));
+    if (child &&
+        FindDescendantRoleWithMaxDepth(child, descendant_role, max_depth - 1,
+                                       max_children_to_check)) {
+      return true;
+    }
+  }
+
+  return false;
+}
 }  // namespace
 
 const base::char16 AXPlatformNodeBase::kEmbeddedCharacter = L'\xfffc';
@@ -1124,6 +1149,10 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
       GetData().GetHtmlAttribute("type", &type)) {
     AddAttributeToList("text-input-type", type, attributes);
   }
+
+  std::string details_roles = ComputeDetailsRoles();
+  if (!details_roles.empty())
+    AddAttributeToList("details-roles", details_roles, attributes);
 }
 
 void AXPlatformNodeBase::AddAttributeToList(
@@ -1904,6 +1933,59 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
 void AXPlatformNodeBase::SanitizeTextAttributeValue(const std::string& input,
                                                     std::string* output) const {
   DCHECK(output);
+}
+
+std::string AXPlatformNodeBase::ComputeDetailsRoles() const {
+  const std::vector<int32_t>& details_ids =
+      GetIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds);
+  if (details_ids.empty())
+    return std::string();
+
+  std::set<std::string> details_roles_set;
+
+  for (int id : details_ids) {
+    AXPlatformNodeBase* detail_object =
+        static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(id));
+    if (!detail_object)
+      continue;
+    switch (detail_object->GetData().role) {
+      case ax::mojom::Role::kComment:
+        details_roles_set.insert("comment");
+        break;
+      case ax::mojom::Role::kDefinition:
+        details_roles_set.insert("definition");
+        break;
+      case ax::mojom::Role::kDocEndnote:
+        details_roles_set.insert("doc-endnote");
+        break;
+      case ax::mojom::Role::kDocFootnote:
+        details_roles_set.insert("doc-footnote");
+        break;
+      case ax::mojom::Role::kGroup:
+      case ax::mojom::Role::kRegion: {
+        // These should still report comment if there are comments inside them.
+        constexpr int kMaxChildrenToCheck = 8;
+        constexpr int kMaxDepthToCheck = 4;
+        if (FindDescendantRoleWithMaxDepth(
+                detail_object, ax::mojom::Role::kComment, kMaxDepthToCheck,
+                kMaxChildrenToCheck)) {
+          details_roles_set.insert("comment");
+          break;
+        }
+        FALLTHROUGH;
+      }
+      default:
+        // Use * to indicate some other role.
+        details_roles_set.insert("*");
+        break;
+    }
+  }
+
+  // Create space delimited list of types. The set will not be large, as there
+  // are not very many possible types.
+  std::vector<std::string> details_roles_vector(details_roles_set.begin(),
+                                                details_roles_set.end());
+  return base::JoinString(details_roles_vector, " ");
 }
 
 }  // namespace ui

@@ -122,9 +122,6 @@ class BottomSheet extends FrameLayout
     @Nullable
     protected BottomSheetContent mSheetContent;
 
-    /** A handle to the find-in-page toolbar. */
-    private View mFindInPageView;
-
     /** A handle to the FrameLayout that holds the content of the bottom sheet. */
     private TouchRestrictingFrameLayout mBottomSheetContentContainer;
 
@@ -227,7 +224,7 @@ class BottomSheet extends FrameLayout
         // anything with them.
         if (!mIsTouchEnabled) return true;
 
-        if (!canMoveSheet()) return false;
+        if (isHiding()) return false;
 
         return mGestureDetector.onInterceptTouchEvent(e);
     }
@@ -1133,19 +1130,6 @@ class BottomSheet extends FrameLayout
      */
     public int getToolbarShadowHeight() {
         return mToolbarShadowHeight;
-    }
-
-    /**
-     * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
-     * mode, when "find in page" is visible, when the toolbar is in the animation to hide, or when
-     * the toolbar is hidden.
-     */
-    protected boolean canMoveSheet() {
-        if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
-        boolean isFindInPageVisible =
-                mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
-
-        return !isFindInPageVisible && mTargetState != SheetState.HIDDEN;
     }
 
     /**

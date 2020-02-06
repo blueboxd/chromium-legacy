@@ -324,7 +324,8 @@ void Display::SetSize(const gfx::Size& size_in_pixel) {
 }
 
 gfx::ColorSpace Display::color_space() const {
-  return color_spaces_.hdr_transparent;
+  return color_spaces_.GetOutputColorSpace(gfx::ContentColorUsage::kHDR,
+                                           true /* needs_alpha */);
 }
 
 void Display::set_color_space(const gfx::ColorSpace& color_space) {
@@ -332,13 +333,13 @@ void Display::set_color_space(const gfx::ColorSpace& color_space) {
 }
 
 float Display::sdr_white_level() const {
-  return color_spaces_.sdr_white_level;
+  return color_spaces_.GetSDRWhiteLevel();
 }
 
 void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space,
                                     float sdr_white_level) {
   color_spaces_ = gfx::DisplayColorSpaces(color_space);
-  color_spaces_.sdr_white_level = sdr_white_level;
+  color_spaces_.SetSDRWhiteLevel(sdr_white_level);
   if (color_spaces_.SupportsHDR()) {
     color_depth_ = kHDR10BitsPerPixel;
     depth_per_component_ = kHDR10BitsPerComponent;

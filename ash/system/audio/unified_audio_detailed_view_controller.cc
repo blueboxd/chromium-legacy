@@ -4,8 +4,10 @@
 
 #include "ash/system/audio/unified_audio_detailed_view_controller.h"
 
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -27,6 +29,11 @@ views::View* UnifiedAudioDetailedViewController::CreateView() {
   view_ = new tray::AudioDetailedView(detailed_view_delegate_.get());
   view_->Update();
   return view_;
+}
+
+base::string16 UnifiedAudioDetailedViewController::GetAccessibleName() const {
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_QUICK_SETTINGS_BUBBLE_AUDIO_SETTINGS_ACCESSIBLE_DESCRIPTION);
 }
 
 void UnifiedAudioDetailedViewController::OnAudioNodesChanged() {

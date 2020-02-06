@@ -34,6 +34,7 @@
 #include "content/shell/browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_browser_main_parts.h"
+#include "content/shell/browser/web_test/web_test_client_impl.h"
 #include "content/shell/browser/web_test/web_test_message_filter.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
@@ -158,6 +159,9 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       ui_task_runner);
 
   registry->AddInterface(base::BindRepeating(&BlinkTestClientImpl::Create),
+                         ui_task_runner);
+
+  registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create),
                          ui_task_runner);
 
   registry->AddInterface(base::BindRepeating(&bluetooth::FakeBluetooth::Create),

@@ -1170,7 +1170,6 @@
 <translation id="2604255671529671813">網絡連線錯誤</translation>
 <translation id="2606246518223360146">連結資料</translation>
 <translation id="2607101320794533334">主體公開金鑰資料</translation>
-<translation id="2608770217409477136">使用預設設定</translation>
 <translation id="2609896558069604090">建立捷徑…</translation>
 <translation id="2610157865375787051">休眠</translation>
 <translation id="2610260699262139870">實際大小(&amp;C)</translation>
@@ -3252,7 +3251,6 @@
 <translation id="5565735124758917034">啟用</translation>
 <translation id="5567989639534621706">應用程式快取</translation>
 <translation id="5568069709869097550">無法登入</translation>
-<translation id="5568144734023334204">Android 儲存空間</translation>
 <translation id="5572851009514199876">請啟動 Chrome 並登入帳戶，讓 Chrome 確認您是否擁有此網站的存取權。</translation>
 <translation id="5575473780076478375">無痕模式擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">示範註冊要求發生問題。</translation>
@@ -4724,7 +4722,7 @@
 <translation id="7663719505383602579">接收端：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">不支援的藍牙裝置：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
-<translation id="7665940458857700755">此操作會清除 <ph name="SITE_GROUP_NAME" /> 儲存的所有資料和 Cookie，以及所包含的網站。</translation>
+<translation id="7665940458857700755">此操作會清除 <ph name="SITE_GROUP_NAME" /> 儲存的所有資料和 Cookie，以及當中包含的網站。</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN 不正確。您還可再試 1 次。}other{PIN 不正確。您還可再試 # 次。}}</translation>
 <translation id="7671130400130574146">使用系統標題列及邊界</translation>
 <translation id="767127784612208024">輕觸即可確認重設</translation>

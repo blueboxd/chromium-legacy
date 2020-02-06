@@ -191,7 +191,7 @@ cr.define('device_table', function() {
       const row = this.body_.rows[index];
       assert(row, 'Row ' + index + ' is not in the table.');
 
-      row.classList.toggle('removed', device.removed);
+      row.classList.toggle('removed', this.devices_.isRemoved(device));
 
       const forgetLink = row.cells[COLUMNS.LINKS].children[1];
 

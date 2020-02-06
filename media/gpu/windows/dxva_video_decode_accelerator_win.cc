@@ -47,7 +47,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
-#include "media/base/win/mf_initializer.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "media/gpu/windows/dxva_picture_buffer_win.h"
@@ -629,7 +628,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   RETURN_ON_FAILURE((state == kUninitialized),
                     "Initialize: invalid state: " << state, false);
 
-  RETURN_ON_FAILURE(InitializeMediaFoundation(),
+  RETURN_ON_FAILURE(session_ = InitializeMediaFoundation(),
                     "Could not initialize Media Foundartion", false);
 
   config_ = config;

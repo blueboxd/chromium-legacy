@@ -968,6 +968,79 @@ TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
   }
 }
 
+TEST_F(CollectUserDataActionTest, PopupListSectionValid) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([this](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.succeed_ = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
+
+  auto* popup_list_section =
+      collect_user_data_proto->add_additional_prepended_sections();
+  popup_list_section->set_title("Popup list section");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+  popup_list_section->mutable_popup_list_section()->add_item_names("item1");
+  popup_list_section->mutable_popup_list_section()->add_item_names("item2");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  // Having multiple initial selections fails if multiselect is not allowed
+  popup_list_section->mutable_popup_list_section()->add_initial_selection(0);
+  popup_list_section->mutable_popup_list_section()->add_initial_selection(1);
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  popup_list_section->mutable_popup_list_section()->set_allow_multiselect(true);
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  // If an initial selection is out of bonds of the list of items there is an
+  // error.
+  popup_list_section->mutable_popup_list_section()->add_initial_selection(2);
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+    action.ProcessAction(callback_.Get());
+  }
+
+  popup_list_section->mutable_popup_list_section()->add_item_names("item3");
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    EXPECT_CALL(
+        callback_,
+        Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+    action.ProcessAction(callback_.Get());
+  }
+}
+
 TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();

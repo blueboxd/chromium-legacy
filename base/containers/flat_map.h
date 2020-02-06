@@ -63,7 +63,9 @@ struct GetKeyFromValuePairFirst {
 //            const Compare& compare = Compare());
 //   flat_map(const flat_map&);
 //   flat_map(flat_map&&);
-//   flat_map(std::vector<value_type>,
+//   flat_map(const std::vector<value_type>& items,
+//            const Compare& compare = Compare());
+//   flat_map(std::vector<value_type>&& items,
 //            const Compare& compare = Compare()); // Re-use storage.
 //   flat_map(std::initializer_list<value_type> ilist,
 //            const Compare& comp = Compare());
@@ -159,6 +161,7 @@ class flat_map : public ::base::internal::flat_tree<
       std::pair<Key, Mapped>,
       ::base::internal::GetKeyFromValuePairFirst<Key, Mapped>,
       Compare>;
+  using underlying_type = typename tree::underlying_type;
 
  public:
   using key_type = typename tree::key_type;
@@ -186,8 +189,8 @@ class flat_map : public ::base::internal::flat_tree<
   flat_map(const flat_map&) = default;
   flat_map(flat_map&&) noexcept = default;
 
-  flat_map(std::vector<value_type> items,
-           const Compare& comp = Compare());
+  flat_map(const underlying_type& items, const Compare& comp = Compare());
+  flat_map(underlying_type&& items, const Compare& comp = Compare());
 
   flat_map(std::initializer_list<value_type> ilist,
            const Compare& comp = Compare());
@@ -254,7 +257,12 @@ flat_map<Key, Mapped, Compare>::flat_map(InputIterator first,
     : tree(first, last, comp) {}
 
 template <class Key, class Mapped, class Compare>
-flat_map<Key, Mapped, Compare>::flat_map(std::vector<value_type> items,
+flat_map<Key, Mapped, Compare>::flat_map(const underlying_type& items,
+                                         const Compare& comp)
+    : tree(items, comp) {}
+
+template <class Key, class Mapped, class Compare>
+flat_map<Key, Mapped, Compare>::flat_map(underlying_type&& items,
                                          const Compare& comp)
     : tree(std::move(items), comp) {}
 

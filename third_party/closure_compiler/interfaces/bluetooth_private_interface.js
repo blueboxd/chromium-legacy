@@ -78,3 +78,10 @@ BluetoothPrivate.prototype = {
  * @see https://developer.chrome.com/extensions/bluetoothPrivate#event-onPairing
  */
 BluetoothPrivate.prototype.onPairing;
+
+/**
+ * Fired when a Bluetooth device changed its address.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/bluetoothPrivate#event-onDeviceAddressChanged
+ */
+BluetoothPrivate.prototype.onDeviceAddressChanged;

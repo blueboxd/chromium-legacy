@@ -103,7 +103,8 @@ void AvatarToolbarButton::UpdateIcon() {
     return;
 
   gfx::Image gaia_account_image = delegate_->GetGaiaAccountImage();
-  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(gaia_account_image));
+  for (auto state : kButtonStates)
+    SetImage(state, GetAvatarIcon(state, gaia_account_image));
   delegate_->ShowIdentityAnimation(gaia_account_image);
 }
 
@@ -250,12 +251,12 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
+    ButtonState state,
     const gfx::Image& gaia_account_image) const {
   const int icon_size = ui::MaterialDesignController::touch_ui()
                             ? kDefaultTouchableIconSize
                             : kIconSizeForNonTouchUi;
-  SkColor icon_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  SkColor icon_color = GetForegroundColor(state);
 
   switch (delegate_->GetState()) {
     case State::kIncognitoProfile:

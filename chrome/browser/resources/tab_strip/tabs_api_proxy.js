@@ -139,6 +139,7 @@ export class TabsApiProxy {
 
   /**
    * @param {number} tabId
+   * @param {number} windowId
    * @param {number} newIndex
    * @return {!Promise<!ExtensionsApiTab>}
    */

@@ -488,6 +488,7 @@
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
+          'shards': 2,
         },
       },
       'telemetry_unittests': {
@@ -2946,6 +2947,22 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
         ],
         'test': 'views_unittests',
+      }
+    },
+
+    'ozone_linux_gtests_wayland': {
+      # TODO(crbug.com/1029241): Add tests once third_party weston is added.
+    },
+
+    'ozone_linux_gtests_x11': {
+      'content_unittests': {},
+      'ozone_unittests': {},
+      'ozone_x11_unittests': {},
+      'services_unittests': {},
+      'views_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
+        ],
       }
     },
 

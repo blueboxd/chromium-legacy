@@ -55,6 +55,11 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   AXAuraObjWrapper* GetOrCreate(Widget* widget);
   AXAuraObjWrapper* GetOrCreate(aura::Window* window);
 
+  // Creates an entry in this cache given a wrapper object. Use this method when
+  // creating a wrapper not backed by any of the supported views above. This
+  // cache will take ownership. Will replace an existing entry with the same id.
+  void CreateOrReplace(std::unique_ptr<AXAuraObjWrapper> obj);
+
   // Gets an id given an Aura view.
   int32_t GetID(View* view) const;
   int32_t GetID(Widget* widget) const;

@@ -217,6 +217,9 @@ class StreamMixer {
   int redirector_samples_per_second_ = 0;
   int redirector_frames_per_write_ = 0;
 
+  int last_sent_primary_stream_count_ = 0;
+  int last_sent_sfx_stream_count_ = 0;
+
   State state_;
   base::TimeTicks close_timestamp_;
 

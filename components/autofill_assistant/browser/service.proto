@@ -518,6 +518,8 @@ message CollectUserDataResultProto {
   optional DateProto date_range_end_date = 13;
   // The index of the selected timeslot for the end of the date/time range.
   optional int32 date_range_end_timeslot = 14;
+  // The values obtained from the additional sections.
+  repeated ModelProto.ModelValue additional_sections_values = 15;
 
   reserved 7, 8;
 }
@@ -1407,7 +1409,33 @@ message UserFormSectionProto {
   oneof section {
     StaticTextSectionProto static_text_section = 2;
     TextInputSectionProto text_input_section = 3;
+    PopupListSectionProto popup_list_section = 4;
   }
+  // Whether to send the result values to the backend.
+  optional bool send_result_to_backend = 5;
+}
+
+// A section that when tapped presents the user a popup with a list of options.
+// The selected option is displayed in the section.
+message PopupListSectionProto {
+  // The key used to store the selection in CollectUserDataResultProto
+  optional string additional_value_key = 1;
+
+  // The name of the items to be displayed
+  repeated string item_names = 2;
+
+  // The list of the indexes of the items to be initially selected.
+  repeated int32 initial_selection = 3;
+
+  // Whether to allow the selection of multiple items or just one.
+  optional bool allow_multiselect = 4;
+
+  // Whether the selection of this section is required to proceed.
+  optional bool selection_mandatory = 5 [default = true];
+
+  // The error message displayed when the selection is mandatory and missing.
+  // Ignored if |selection_mandatory| is false.
+  optional string no_selection_error_message = 6;
 }
 
 // Asks to provide the data used by UseAddressAction and

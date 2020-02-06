@@ -87,7 +87,7 @@ public class LensUtils {
      *
      * @return The minimum version name string or an empty string if not available.
      */
-    private static String getMinimumAgsaVersionForLensSupport() {
+    public static String getMinimumAgsaVersionForLensSupport() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS)) {
             final String serverProvidedMinAgsaVersion =
                     ChromeFeatureList.getFieldTrialParamByFeature(
@@ -102,39 +102,6 @@ public class LensUtils {
         }
         // The feature is disabled so no need to return a minimum version.
         return "";
-    }
-
-    /**
-     * Checks if the AGSA version is below a certain {@code String} version name
-     * which denotes support for the Lens postcapture experience.
-     * @param installedVersionName The AGSA version installed on this device,
-     * @return Whether the AGSA version on the device is high enough.
-     */
-    public static boolean isAgsaVersionBelowMinimum(String installedVersionName) {
-        String minimumAllowedAgsaVersionName = getMinimumAgsaVersionForLensSupport();
-        if (TextUtils.isEmpty(installedVersionName)
-                || TextUtils.isEmpty(minimumAllowedAgsaVersionName)) {
-            return true;
-        }
-
-        String[] agsaNumbers = installedVersionName.split("\\.", -1);
-        String[] targetAgsaNumbers = minimumAllowedAgsaVersionName.split("\\.", -1);
-
-        // To avoid IndexOutOfBounds
-        int maxIndex = Math.min(agsaNumbers.length, targetAgsaNumbers.length);
-        for (int i = 0; i < maxIndex; ++i) {
-            int agsaNumber = Integer.parseInt(agsaNumbers[i]);
-            int targetAgsaNumber = Integer.parseInt(targetAgsaNumbers[i]);
-
-            if (agsaNumber < targetAgsaNumber) {
-                return true;
-            } else if (agsaNumber > targetAgsaNumber) {
-                return false;
-            }
-        }
-
-        // If versions are the same so far, but they have different length...
-        return agsaNumbers.length < targetAgsaNumbers.length;
     }
 
     /**

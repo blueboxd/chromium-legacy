@@ -11,10 +11,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace paint_preview {
@@ -69,16 +74,32 @@ PaintPreviewCaptureResponseToPaintPreviewFrameProto(
   return frame_guids;
 }
 
+// Records UKM data for the capture.
+// TODO(crbug/1038390): Add more metrics;
+// - Peak memory during capture (bucketized).
+// - Compressed on disk size (bucketized).
+void RecordUkmCaptureData(ukm::SourceId source_id,
+                          base::TimeDelta blink_recording_time) {
+  if (source_id == ukm::kInvalidSourceId)
+    return;
+  ukm::builders::PaintPreviewCapture(source_id)
+      .SetBlinkCaptureTime(blink_recording_time.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
+}
+
 }  // namespace
 
 PaintPreviewClient::PaintPreviewParams::PaintPreviewParams() = default;
+
 PaintPreviewClient::PaintPreviewParams::~PaintPreviewParams() = default;
 
 PaintPreviewClient::PaintPreviewData::PaintPreviewData() = default;
+
 PaintPreviewClient::PaintPreviewData::~PaintPreviewData() = default;
 
 PaintPreviewClient::PaintPreviewData& PaintPreviewClient::PaintPreviewData::
 operator=(PaintPreviewData&& rhs) noexcept = default;
+
 PaintPreviewClient::PaintPreviewData::PaintPreviewData(
     PaintPreviewData&& other) noexcept = default;
 
@@ -89,11 +110,13 @@ PaintPreviewClient::CreateResult::CreateResult(base::File file,
 PaintPreviewClient::CreateResult::~CreateResult() = default;
 
 PaintPreviewClient::CreateResult::CreateResult(CreateResult&& other) = default;
+
 PaintPreviewClient::CreateResult& PaintPreviewClient::CreateResult::operator=(
     CreateResult&& other) = default;
 
 PaintPreviewClient::PaintPreviewClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
+
 PaintPreviewClient::~PaintPreviewClient() = default;
 
 void PaintPreviewClient::CapturePaintPreview(
@@ -105,11 +128,13 @@ void PaintPreviewClient::CapturePaintPreview(
                             mojom::PaintPreviewStatus::kGuidCollision, nullptr);
     return;
   }
-  all_document_data_.insert({params.document_guid, PaintPreviewData()});
-  auto* document_data = &all_document_data_[params.document_guid];
-  document_data->root_dir = params.root_dir;
-  document_data->callback = std::move(callback);
-  document_data->root_url = render_frame_host->GetLastCommittedURL();
+  PaintPreviewData document_data;
+  document_data.root_dir = params.root_dir;
+  document_data.callback = std::move(callback);
+  document_data.root_url = render_frame_host->GetLastCommittedURL();
+  document_data.source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents());
+  all_document_data_.insert({params.document_guid, std::move(document_data)});
   CapturePaintPreviewInternal(params, render_frame_host);
 }
 
@@ -309,16 +334,17 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     content::RenderFrameHost* render_frame_host,
     mojom::PaintPreviewCaptureResponsePtr response) {
   auto it = all_document_data_.find(guid);
+  DCHECK(it != all_document_data_.end());
   if (!it->second.proto) {
     it->second.proto = std::make_unique<PaintPreviewProto>();
-    it->second.proto->mutable_metadata()->set_url(
-        all_document_data_[guid].root_url.spec());
+    it->second.proto->mutable_metadata()->set_url(it->second.root_url.spec());
   }
 
   PaintPreviewProto* proto_ptr = it->second.proto.get();
 
   PaintPreviewFrameProto* frame_proto;
   if (is_main_frame) {
+    it->second.main_frame_blink_recording_time = response->blink_recording_time;
     frame_proto = proto_ptr->mutable_root_frame();
     frame_proto->set_is_main_frame(true);
     uint64_t old_style_id = MakeOldStyleId(render_frame_host);
@@ -352,6 +378,9 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
     base::UmaHistogramCounts100(
         "Browser.PaintPreview.Capture.NumberOfFramesCaptured",
         document_data->finished_subframes.size());
+
+    RecordUkmCaptureData(document_data->source_id,
+                         document_data->main_frame_blink_recording_time);
 
     // At a minimum one frame was captured successfully, it is up to the
     // caller to decide if a partial success is acceptable based on what is

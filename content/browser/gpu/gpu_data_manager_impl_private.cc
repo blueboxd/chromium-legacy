@@ -613,24 +613,27 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
   gpu_info_dx_diag_requested_ = true;
 
   base::OnceClosure task = base::BindOnce([]() {
-    // No info collection for software GL implementation (id == 0xffff).
-    // There are a few crash reports on exit_or_terminate_process() during
-    // process teardown.
-    const gpu::GPUInfo::GPUDevice gpu =
-        GpuDataManagerImpl::GetInstance()->GetGPUInfo().gpu;
-    if (gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) {
-      GpuDataManagerImpl::GetInstance()->UpdateDxDiagNodeRequestStatus(false);
+    GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+    // No info collection for software GL implementation (id == 0xffff) or
+    // abnormal situation (id == 0). There are a few crash reports on
+    // exit_or_terminate_process() during process teardown. The GPU ID
+    // should be available by the time this task starts to run.
+    // This request comes from chrome://gpu page.
+    const gpu::GPUInfo::GPUDevice gpu = manager->GetGPUInfo().gpu;
+    if ((gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) ||
+        (gpu.vendor_id == 0 && gpu.device_id == 0)) {
+      manager->UpdateDxDiagNodeRequestStatus(false);
       return;
     }
 
-    GpuProcessHost* host = GpuProcessHost::Get(
-        GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */);
+    GpuProcessHost* host = GpuProcessHost::Get(GPU_PROCESS_KIND_INFO_COLLECTION,
+                                               true /* force_create */);
     if (!host) {
-      GpuDataManagerImpl::GetInstance()->UpdateDxDiagNodeRequestStatus(false);
+      manager->UpdateDxDiagNodeRequestStatus(false);
       return;
     }
 
-    GpuDataManagerImpl::GetInstance()->UpdateDxDiagNodeRequestStatus(true);
+    manager->UpdateDxDiagNodeRequestStatus(true);
     host->gpu_service()->RequestCompleteGpuInfo(
         base::BindOnce([](const gpu::DxDiagNode& dx_diagnostics) {
           GpuDataManagerImpl::GetInstance()->UpdateDxDiagNode(dx_diagnostics);
@@ -644,33 +647,41 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     bool delayed) {
 #if defined(OS_WIN)
-  base::OnceClosure task = base::BindOnce([]() {
-    if (GpuDataManagerImpl::GetInstance()->Dx12VulkanRequested())
-      return;
+  base::OnceClosure task = base::BindOnce(
+      [](bool delayed) {
+        GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+        if (manager->Dx12VulkanRequested())
+          return;
 
-    // No info collection for software GL implementation (id == 0xffff).
-    // There are a few crash reports on exit_or_terminate_process() during
-    // process teardown.
-    const gpu::GPUInfo::GPUDevice gpu =
-        GpuDataManagerImpl::GetInstance()->GetGPUInfo().gpu;
-    if (gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) {
-      GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanRequestStatus(false);
-      return;
-    }
+        // No info collection for software GL implementation (id == 0xffff) or
+        // abnormal situation (id == 0). There are a few crash reports on
+        // exit_or_terminate_process() during process teardown. The GPU ID
+        // should be available by the time this task starts to run. In the case
+        // of no delay, which is for testing only, don't check the GPU ID
+        // because the ID is not available yet.
+        const gpu::GPUInfo::GPUDevice gpu = manager->GetGPUInfo().gpu;
+        if ((gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) ||
+            (delayed && gpu.vendor_id == 0 && gpu.device_id == 0)) {
+          manager->UpdateDx12VulkanRequestStatus(false);
+          return;
+        }
 
-    GpuProcessHost* host = GpuProcessHost::Get(
-        GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */);
-    if (!host) {
-      GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanRequestStatus(false);
-      return;
-    }
+        GpuProcessHost* host = GpuProcessHost::Get(
+            GPU_PROCESS_KIND_INFO_COLLECTION, true /* force_create */);
+        if (!host) {
+          manager->UpdateDx12VulkanRequestStatus(false);
+          return;
+        }
 
-    GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanRequestStatus(true);
-    host->gpu_service()->GetGpuSupportedRuntimeVersion(
-        base::BindOnce([](const gpu::Dx12VulkanVersionInfo& info) {
-          GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(info);
-        }));
-  });
+        manager->UpdateDx12VulkanRequestStatus(true);
+        host->gpu_service()->GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
+            base::BindOnce([](const gpu::Dx12VulkanVersionInfo& info,
+                              const gpu::DevicePerfInfo& device_perf_info) {
+              GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(info);
+              // TODO(zmo): Process collected DevicePerfInfo.
+            }));
+      },
+      delayed);
 
   if (delayed) {
     base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
@@ -981,15 +992,16 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
       base::CommandLine::ForCurrentProcess();
   gpu_preferences->gpu_startup_dialog =
 #if defined(OS_WIN)
-      (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL &&
+      (kind == GPU_PROCESS_KIND_INFO_COLLECTION &&
        command_line->HasSwitch(switches::kGpu2StartupDialog)) ||
 #endif
       (kind == GPU_PROCESS_KIND_SANDBOXED &&
        command_line->HasSwitch(switches::kGpuStartupDialog));
 
 #if defined(OS_WIN)
-  if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+  if (kind == GPU_PROCESS_KIND_INFO_COLLECTION) {
     gpu_preferences->disable_gpu_watchdog = true;
+    gpu_preferences->enable_perf_data_collection = true;
   }
 #endif
 

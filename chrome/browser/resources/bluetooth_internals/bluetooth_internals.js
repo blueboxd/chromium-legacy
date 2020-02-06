@@ -110,11 +110,6 @@ cr.define('bluetooth_internals', function() {
     $('page-container').appendChild(pageSection);
 
     deviceDetailsPage = new DeviceDetailsPage(deviceDetailsPageId, deviceInfo);
-    deviceDetailsPage.pageDiv.addEventListener(
-        'connectionchanged', function(event) {
-          devices.updateConnectionStatus(
-              event.detail.address, event.detail.status);
-        });
 
     deviceDetailsPage.pageDiv.addEventListener('infochanged', function(event) {
       devices.addOrUpdate(event.detail.info);
@@ -176,7 +171,11 @@ cr.define('bluetooth_internals', function() {
 
     adapterPage.pageDiv.addEventListener('refreshpressed', function() {
       adapterBroker.getInfo().then(function(response) {
-        adapterPage.setAdapterInfo(response.info);
+        if (response && response.info) {
+          adapterPage.setAdapterInfo(response.info);
+        } else {
+          console.error('Failed to fetch adapter info.');
+        }
       });
     });
   }

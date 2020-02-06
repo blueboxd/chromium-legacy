@@ -240,12 +240,15 @@ void CanvasCaptureHandler::RequestRefreshFrame() {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (last_frame_ && delegate_) {
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
-                           SendNewFrameOnIOThread,
-                       delegate_->GetWeakPtrForIOThread(), last_frame_,
-                       base::TimeTicks::Now()));
+    // If we're currently reading out pixels from GL memory, we risk
+    // emitting frames with non-incrementally increasing timestamps.
+    // Defer sending the refresh frame until we have completed those async
+    // reads.
+    if (num_ongoing_async_pixel_readouts_ > 0) {
+      deferred_request_refresh_frame_ = true;
+      return;
+    }
+    SendRefreshFrame();
   }
 }
 
@@ -310,6 +313,8 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
   const bool result = backend_texture.getGLTextureInfo(&texture_info);
   DCHECK(result);
   DCHECK(context_provider->GetGLHelper());
+
+  IncrementOngoingAsyncPixelReadouts();
   context_provider->GetGLHelper()->ReadbackTextureAsync(
       texture_info.fID, texture_info.fTarget, image_size,
       temp_argb_frame->visible_data(VideoFrame::kARGBPlane), kN32_SkColorType,
@@ -390,6 +395,7 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
     bool flip,
     bool success) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  DecrementOngoingAsyncPixelReadouts();
   if (!success) {
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     // Async reading is not supported on some platforms, see
@@ -409,6 +415,8 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
                         temp_argb_frame->stride(VideoFrame::kARGBPlane),
                         kN32_SkColorType),
       this_frame_ticks, color_space);
+  if (num_ongoing_async_pixel_readouts_ == 0 && deferred_request_refresh_frame_)
+    SendRefreshFrame();
 }
 
 void CanvasCaptureHandler::OnYUVPixelsReadAsync(
@@ -540,6 +548,31 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   web_track->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
       media_stream_source,
       blink::MediaStreamVideoSource::ConstraintsOnceCallback(), true));
+}
+
+void CanvasCaptureHandler::IncrementOngoingAsyncPixelReadouts() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  ++num_ongoing_async_pixel_readouts_;
+}
+
+void CanvasCaptureHandler::DecrementOngoingAsyncPixelReadouts() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  --num_ongoing_async_pixel_readouts_;
+  DCHECK_GE(num_ongoing_async_pixel_readouts_, 0);
+}
+
+void CanvasCaptureHandler::SendRefreshFrame() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  DCHECK_EQ(num_ongoing_async_pixel_readouts_, 0);
+  if (last_frame_ && delegate_) {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
+                           SendNewFrameOnIOThread,
+                       delegate_->GetWeakPtrForIOThread(), last_frame_,
+                       base::TimeTicks::Now()));
+  }
+  deferred_request_refresh_frame_ = false;
 }
 
 }  // namespace blink

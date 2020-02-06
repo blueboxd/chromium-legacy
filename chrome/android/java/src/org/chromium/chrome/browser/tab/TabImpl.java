@@ -351,7 +351,7 @@ public class TabImpl implements Tab {
     @CalledByNative
     @Override
     public String getUrl() {
-        String url = getWebContents() != null ? getWebContents().getVisibleUrl() : "";
+        String url = getWebContents() != null ? getWebContents().getVisibleUrlString() : "";
 
         // If we have a ContentView, or a NativePage, or the url is not empty, we have a WebContents
         // so cache the WebContent's url. If not use the cached version.
@@ -861,7 +861,7 @@ public class TabImpl implements Tab {
             initWebContents(webContents);
 
             if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
-                didStartPageLoad(webContents.getVisibleUrl());
+                didStartPageLoad(webContents.getVisibleUrlString());
             }
 
         } finally {

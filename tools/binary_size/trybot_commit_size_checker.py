@@ -65,6 +65,9 @@ class _SizeDelta(collections.namedtuple(
   def IsAllowable(self):
     return self.actual <= self.expected
 
+  def IsLargeImprovement(self):
+    return (self.actual * -1) >= self.expected
+
   def __cmp__(self, other):
     return cmp(self.name, other.name)
 
@@ -213,6 +216,7 @@ def _GenerateBinarySizePluginDetails(metrics):
         'limit': '{} {}'.format(_FormatNumber(delta.expected), delta.units),
         'log_name': log_name,
         'allowed': delta.IsAllowable(),
+        'large_improvement': delta.IsLargeImprovement(),
     }
     if log_name == _RESOURCE_SIZES_LOG:
       listing['name'] = 'Android Binary Size'

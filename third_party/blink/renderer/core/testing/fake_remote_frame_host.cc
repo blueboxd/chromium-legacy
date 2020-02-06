@@ -29,4 +29,8 @@ void FakeRemoteFrameHost::BindFrameHostReceiver(
       std::move(handle)));
 }
 
+void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
+    const blink::WebRect& clip_rect,
+    const base::UnguessableToken& guid) {}
+
 }  // namespace blink

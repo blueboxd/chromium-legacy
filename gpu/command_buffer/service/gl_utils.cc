@@ -26,6 +26,8 @@ const int kS3TCBlockHeight = 4;
 const int kS3TCDXT1BlockSize = 8;
 const int kS3TCDXT3AndDXT5BlockSize = 16;
 const int kEACAndETC2BlockSize = 4;
+const int kBPTCBlockWidth = 4;
+const int kBPTCBlockHeight = 4;
 
 typedef struct {
   int blockWidth;
@@ -490,6 +492,15 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
       bytes_required *= 16;
       bytes_required *= depth;
       break;
+    case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
+    case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
+      bytes_required = (width + kBPTCBlockWidth - 1) / kBPTCBlockWidth;
+      bytes_required *= (height + kBPTCBlockHeight - 1) / kBPTCBlockHeight;
+      bytes_required *= 16;
+      bytes_required *= depth;
+      break;
     default:
       if (function_name && error_state) {
         ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(error_state, function_name, format,
@@ -765,6 +776,19 @@ bool ValidateCompressedTexDimensions(GLenum target,
       }
       if (target == GL_TEXTURE_3D) {
         *error_message = "target invalid for format";
+        return false;
+      }
+      return true;
+    case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
+    case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
+      if (width < 0 || height < 0 || depth < 0) {
+        *error_message = "width, height, or depth invalid";
+        return false;
+      }
+      if (!(width % kBPTCBlockWidth == 0 && height % kBPTCBlockHeight == 0)) {
+        *error_message = "width or height is not a multiple of four";
         return false;
       }
       return true;

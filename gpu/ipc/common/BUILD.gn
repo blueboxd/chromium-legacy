@@ -198,6 +198,7 @@ mojom("interfaces") {
   sources = [
     "capabilities.mojom",
     "context_result.mojom",
+    "device_perf_info.mojom",
     "dx_diag_node.mojom",
     "gpu_extra_info.mojom",
     "gpu_feature_info.mojom",

@@ -54,12 +54,16 @@ void InstallRectHighlightPathGenerator(View* view) {
       view, std::make_unique<RectHighlightPathGenerator>());
 }
 
-SkPath CircleHighlightPathGenerator::GetHighlightPath(const View* view) {
-  const SkRect rect = gfx::RectToSkRect(view->GetLocalBounds());
-  const SkScalar corner_radius =
-      SkScalarHalf(std::min(rect.width(), rect.height()));
-
-  return SkPath().addCircle(rect.centerX(), rect.centerY(), corner_radius);
+base::Optional<HighlightPathGenerator::RoundRect>
+CircleHighlightPathGenerator::GetRoundRect(const View* view) {
+  gfx::RectF bounds(view->GetLocalBounds());
+  const float corner_radius = std::min(bounds.width(), bounds.height()) / 2.f;
+  bounds.ClampToCenteredSize(
+      gfx::SizeF(corner_radius * 2.f, corner_radius * 2.f));
+  HighlightPathGenerator::RoundRect round_rect;
+  round_rect.bounds = bounds;
+  round_rect.corner_radius = corner_radius;
+  return base::make_optional(round_rect);
 }
 
 void InstallCircleHighlightPathGenerator(View* view) {
@@ -82,25 +86,22 @@ void InstallPillHighlightPathGenerator(View* view) {
 }
 
 FixedSizeCircleHighlightPathGenerator::FixedSizeCircleHighlightPathGenerator(
-    int corner_radius)
-    : corner_radius_(corner_radius) {}
+    int radius)
+    : radius_(radius) {}
 
 base::Optional<HighlightPathGenerator::RoundRect>
 FixedSizeCircleHighlightPathGenerator::GetRoundRect(const View* view) {
   gfx::RectF bounds(view->GetLocalBounds());
-  bounds.ClampToCenteredSize(
-      gfx::SizeF(corner_radius_ * 2, corner_radius_ * 2));
+  bounds.ClampToCenteredSize(gfx::SizeF(radius_ * 2, radius_ * 2));
   HighlightPathGenerator::RoundRect round_rect;
   round_rect.bounds = bounds;
-  round_rect.corner_radius = corner_radius_;
+  round_rect.corner_radius = radius_;
   return base::make_optional(round_rect);
 }
 
-void InstallFixedSizeCircleHighlightPathGenerator(View* view,
-                                                  int corner_radius) {
+void InstallFixedSizeCircleHighlightPathGenerator(View* view, int radius) {
   HighlightPathGenerator::Install(
-      view,
-      std::make_unique<FixedSizeCircleHighlightPathGenerator>(corner_radius));
+      view, std::make_unique<FixedSizeCircleHighlightPathGenerator>(radius));
 }
 
 }  // namespace views

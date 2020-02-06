@@ -152,6 +152,7 @@ void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform receiver_device_platform,
     SharingChannelType channel_type,
+    base::TimeDelta receiver_pulse_interval,
     SharingSendMessageResult result);
 
 // Logs to UMA result of sending an ack of a SharingMessage.

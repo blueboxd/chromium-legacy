@@ -1457,7 +1457,7 @@ void RenderFrameImpl::CreateFrame(
     bool has_committed_real_load) {
   // TODO(danakj): Split this method into two pieces. The first block makes a
   // WebLocalFrame and collects the RenderView and RenderFrame for it. The
-  // second block uses that to make/setup a RenderWidget, if needed.
+  // second block uses that to make a RenderWidget, if needed.
   RenderViewImpl* render_view = nullptr;
   RenderFrameImpl* render_frame = nullptr;
   blink::WebLocalFrame* web_frame = nullptr;
@@ -1549,17 +1549,11 @@ void RenderFrameImpl::CreateFrame(
   if (!is_main_frame)
     DCHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
 
-  // We now have a WebLocalFrame for the new frame. The next step is to set
-  // up a RenderWidget for it, if it is needed.
+  // We now have a WebLocalFrame for the new frame. The next step is to make
+  // a RenderWidget (aka WebWidgetClient) for it, if it is a local root.
   if (is_main_frame) {
     // Main frames are always local roots, so they should always have a
-    // |widget_params| (and it always comes with a routing id). Surprisingly,
-    // this routing id is *not* used though, as the routing id on the existing
-    // RenderWidget is not changed (since the RenderWidgetHost objects are not
-    // destroyed along with the RenderWidget if the RenderView is kept alive).
-    // TODO(crbug.com/888105): It's a bug that the RenderWidget is not using
-    // this routing id, but it should be the same routing id at the moment
-    // anyway.
+    // |widget_params| (and it always comes with a routing id).
     DCHECK(widget_params);
     DCHECK_NE(widget_params->routing_id, MSG_ROUTING_NONE);
 

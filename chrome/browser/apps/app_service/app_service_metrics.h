@@ -12,6 +12,8 @@
 
 namespace apps {
 
+class AppUpdate;
+
 // The built-in app's histogram name. This is used for logging so do not change
 // the order of this enum.
 enum class BuiltInAppName {
@@ -29,6 +31,8 @@ void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source);
 
 void RecordBuiltInAppSearchResult(const std::string& app_id);
+
+void RecordAppBounce(const apps::AppUpdate& app);
 
 }  // namespace apps
 

@@ -629,6 +629,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // WebGL extensions.
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
+  friend class EXTTextureCompressionBPTC;
   friend class OESVertexArrayObject;
   friend class OVRMultiview2;
   friend class WebGLCompressedTextureASTC;

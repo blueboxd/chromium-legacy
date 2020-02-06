@@ -30,7 +30,8 @@ sql::InitStatus MediaHistoryOriginTable::CreateTableIfNonExistent() {
                          "media_engagement_visits INTEGER,"
                          "media_engagement_playbacks INTEGER,"
                          "media_engagement_last_playback_time REAL,"
-                         "media_engagement_has_high_score INTEGER)",
+                         "media_engagement_has_high_score INTEGER, "
+                         "aggregate_watchtime_audio_video_s INTEGER DEFAULT 0)",
                          kTableName)
           .c_str());
 
@@ -60,6 +61,36 @@ bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
                       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
   if (!statement.Run()) {
     LOG(ERROR) << "Failed to create the origin ID.";
+    return false;
+  }
+
+  return true;
+}
+
+bool MediaHistoryOriginTable::IncrementAggregateAudioVideoWatchTime(
+    const std::string& origin,
+    const base::TimeDelta& time) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
+  // Update the cached aggregate watchtime in the origin table.
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      base::StringPrintf("UPDATE %s SET "
+                         "aggregate_watchtime_audio_video_s = "
+                         "aggregate_watchtime_audio_video_s + ?, "
+                         "last_updated_time_s = ? "
+                         "WHERE origin = ?",
+                         kTableName)
+          .c_str()));
+  statement.BindInt64(0, time.InSeconds());
+  statement.BindInt64(1,
+                      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+  statement.BindString(2, origin);
+
+  if (!statement.Run()) {
+    LOG(ERROR) << "Failed to update the watchtime.";
     return false;
   }
 

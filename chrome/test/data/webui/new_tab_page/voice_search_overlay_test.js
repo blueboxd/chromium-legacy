@@ -6,8 +6,8 @@ import 'chrome://new-tab-page/voice_search_overlay.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
-import {assertStyle, createTestProxy, isVisible} from './test_support.js';
+import {flushTasks, isVisible} from 'chrome://test/test_util.m.js';
+import {assertStyle, createTestProxy} from './test_support.js';
 
 class MockSpeechRecognition {
   constructor() {

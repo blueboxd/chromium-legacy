@@ -185,3 +185,9 @@ chrome.bluetoothPrivate.recordDeviceSelection = function(selectionDurationMs, wa
  * @type {!ChromeEvent}
  */
 chrome.bluetoothPrivate.onPairing;
+
+/**
+ * Fired when a Bluetooth device changed its address.
+ * @type {!ChromeEvent}
+ */
+chrome.bluetoothPrivate.onDeviceAddressChanged;

@@ -155,7 +155,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       BlockingPageReadyCallback blocking_page_ready_callback,
       network_time::NetworkTimeTracker* network_time_tracker,
-      CaptivePortalService* captive_portal_service,
+      captive_portal::CaptivePortalService* captive_portal_service,
       std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
       bool user_can_proceed_past_interstitial = true);
 
@@ -193,7 +193,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                   int cert_error,
                   const net::SSLInfo& ssl_info,
                   network_time::NetworkTimeTracker* network_time_tracker,
-                  CaptivePortalService* captive_portal_service,
+                  captive_portal::CaptivePortalService* captive_portal_service,
                   const GURL& request_url);
 
   // Called when an SSL cert error is encountered. Triggers a captive portal
@@ -225,7 +225,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const GURL& suggested_url);
 
   // Callback invoked with the result of a query for captive portal status.
-  void Observe(const CaptivePortalService::Results& results);
+  void Observe(const captive_portal::CaptivePortalService::Results& results);
 
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -253,10 +253,11 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // The below field is unused if captive portal detection is not enabled,
   // which causes a compiler error.
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService* captive_portal_service_;
+  captive_portal::CaptivePortalService* captive_portal_service_;
 #endif
 
-  std::unique_ptr<CaptivePortalService::Subscription> subscription_;
+  std::unique_ptr<captive_portal::CaptivePortalService::Subscription>
+      subscription_;
 
   base::OneShotTimer timer_;
 

@@ -72,6 +72,11 @@
           file="tab_swiper.js"
           type="chrome_html"
           compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_DRAG_MANAGER_JS"
+          file="drag_manager.js"
+          type="chrome_html"
+          compress="gzip"/>
     </structures>
 
     <includes>

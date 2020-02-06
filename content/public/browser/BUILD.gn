@@ -417,6 +417,7 @@ jumbo_source_set("browser_sources") {
     "//components/services/storage/public/mojom",
     "//content/public/common:common_sources",
     "//ipc",
+    "//media/mojo/mojom",
     "//media/mojo/mojom:remoting",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

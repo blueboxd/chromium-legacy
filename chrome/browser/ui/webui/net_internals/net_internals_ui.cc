@@ -19,6 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/net/net_export_helper.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
+#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -436,10 +438,10 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
   if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
     path = prefs->GetDefaultDownloadDirectoryForProfile();
   base::FilePath policies_path = path.Append("policies.json");
+  auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
+      web_ui()->GetWebContents()->GetBrowserContext());
   std::string json_policies =
-      policy::DictionaryPolicyConversions()
-          .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
-          .ToJSON();
+      policy::DictionaryPolicyConversions(std::move(client)).ToJSON();
   base::PostTaskAndReply(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,

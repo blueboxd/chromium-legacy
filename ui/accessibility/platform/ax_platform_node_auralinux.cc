@@ -2893,8 +2893,10 @@ struct AtkIntListRelation {
 static AtkIntListRelation kIntListRelations[] = {
     {ax::mojom::IntListAttribute::kControlsIds, ATK_RELATION_CONTROLLER_FOR,
      ATK_RELATION_CONTROLLED_BY},
+#if defined(ATK_226)
     {ax::mojom::IntListAttribute::kDetailsIds, ATK_RELATION_DETAILS,
      ATK_RELATION_DETAILS_FOR},
+#endif
     {ax::mojom::IntListAttribute::kDescribedbyIds, ATK_RELATION_DESCRIBED_BY,
      ATK_RELATION_DESCRIPTION_FOR},
     {ax::mojom::IntListAttribute::kFlowtoIds, ATK_RELATION_FLOWS_TO,

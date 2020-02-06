@@ -693,17 +693,6 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !OS_ANDROID
 
-#if defined(OS_MACOSX)
-    // We need to allocate the IO Ports before the Sandbox is initialized or
-    // the first instance of PowerMonitor is created.
-    // It's important not to allocate the ports for processes which don't
-    // register with the power monitor - see https://crbug.com/88867.
-    if (process_type.empty() ||
-        delegate_->ProcessRegistersWithSystemProcess(process_type)) {
-      base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
-    }
-#endif
-
     // If we are on a platform where the default allocator is overridden (shim
     // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
     // overriding logic is working correctly. If not causes a hard crash, as its

@@ -6,7 +6,7 @@
 
 #include "components/captive_portal/core/captive_portal_types.h"
 
-using captive_portal::CaptivePortalResult;
+namespace captive_portal {
 
 CaptivePortalLoginDetector::CaptivePortalLoginDetector(
     CaptivePortalService* captive_portal_service)
@@ -30,7 +30,7 @@ void CaptivePortalLoginDetector::OnStoppedLoading() {
 void CaptivePortalLoginDetector::OnCaptivePortalResults(
     CaptivePortalResult previous_result,
     CaptivePortalResult result) {
-  if (result != captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
+  if (result != RESULT_BEHIND_CAPTIVE_PORTAL)
     is_login_tab_ = false;
 }
 
@@ -38,3 +38,5 @@ void CaptivePortalLoginDetector::SetIsLoginTab() {
   is_login_tab_ = true;
   first_login_tab_load_ = true;
 }
+
+}  // namespace captive_portal

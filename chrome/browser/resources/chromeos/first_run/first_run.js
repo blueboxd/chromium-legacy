@@ -8,20 +8,13 @@
 
 // <include src="step.js">
 
-// Transitions durations.
-/** @const  */ var DEFAULT_TRANSITION_DURATION_MS = 400;
-/** @const  */ var BG_TRANSITION_DURATION_MS = 800;
-
 /**
  * Changes visibility of element with animated transition.
  * @param {Element} element Element which visibility should be changed.
  * @param {boolean} visible Whether element should be visible after transition.
- * @param {number=} opt_transitionDuration Time length of transition in
- *     milliseconds. Default value is DEFAULT_TRANSITION_DURATION_MS.
  * @param {function()=} opt_onFinished Called after transition has finished.
  */
-function changeVisibility(
-    element, visible, opt_transitionDuration, opt_onFinished) {
+function changeVisibility(element, visible, opt_onFinished) {
   var classes = element.classList;
   // If target visibility is the same as current element visibility.
   if (classes.contains('transparent') === !visible) {
@@ -29,9 +22,7 @@ function changeVisibility(
       opt_onFinished();
     return;
   }
-  var transitionDuration = (opt_transitionDuration === undefined) ?
-      cr.FirstRun.getDefaultTransitionDuration() :
-      opt_transitionDuration;
+  const transitionDuration = 0;
   var style = element.style;
   var oldDurationValue = style.getPropertyValue('transition-duration');
   style.setProperty('transition-duration', transitionDuration + 'ms');
@@ -53,9 +44,6 @@ function changeVisibility(
 
 cr.define('cr.FirstRun', function() {
   return {
-    // Whether animated transitions are enabled.
-    transitionsEnabled_: false,
-
     // SVG element representing UI background.
     background_: null,
 
@@ -82,7 +70,6 @@ cr.define('cr.FirstRun', function() {
      */
     initialize() {
       disableTextSelectAndDrag();
-      this.transitionsEnabled_ = loadTimeData.getBoolean('transitionsEnabled');
 
       // Note: we don't use $() here because these are SVGElements, not
       // HTMLElements.
@@ -180,13 +167,12 @@ cr.define('cr.FirstRun', function() {
         return;
       }
       holes.forEach(function(hole) {
-        changeVisibility(
-            hole, false, this.getDefaultTransitionDuration(), function() {
-              mask.removeChild(hole);
-              --holesLeft;
-              if (!holesLeft && opt_onHolesRemoved)
-                opt_onHolesRemoved();
-            });
+        changeVisibility(hole, false, function() {
+          mask.removeChild(hole);
+          --holesLeft;
+          if (!holesLeft && opt_onHolesRemoved)
+            opt_onHolesRemoved();
+        });
       }.bind(this));
     },
 
@@ -213,7 +199,7 @@ cr.define('cr.FirstRun', function() {
         return;
       }
       var name = this.currentStep_.getName();
-      this.currentStep_.hide(true, function() {
+      this.currentStep_.hide(function() {
         this.currentStep_ = null;
         if (opt_onStepHidden)
           opt_onStepHidden(name);
@@ -246,7 +232,7 @@ cr.define('cr.FirstRun', function() {
       }
       if (stepParams.assistantEnabled)
         step.setAssistantEnabled();
-      step.show(true, function(step) {
+      step.show(function(step) {
         step.focusDefaultControl();
         this.currentStep_ = step;
         chrome.send('stepShown', [stepParams.name]);
@@ -260,24 +246,8 @@ cr.define('cr.FirstRun', function() {
      *     changed.
      */
     setBackgroundVisible(visible, opt_onCompletion) {
-      changeVisibility(
-          this.backgroundContainer_, visible,
-          this.getBackgroundTransitionDuration(), opt_onCompletion);
+      changeVisibility(this.backgroundContainer_, visible, opt_onCompletion);
     },
-
-    /**
-     * Returns default duration of animated transitions, in ms.
-     */
-    getDefaultTransitionDuration() {
-      return this.transitionsEnabled_ ? DEFAULT_TRANSITION_DURATION_MS : 0;
-    },
-
-    /**
-     * Returns duration of transitions of background shield, in ms.
-     */
-    getBackgroundTransitionDuration() {
-      return this.transitionsEnabled_ ? BG_TRANSITION_DURATION_MS : 0;
-    }
   };
 });
 

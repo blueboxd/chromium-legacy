@@ -18,7 +18,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
@@ -59,6 +63,60 @@ base::FilePath GetAppSpecificLauncherFilename(const base::string16& app_name) {
   return base::FilePath(sanitized_app_name);
 }
 
+// Returns true if the app with id |app_id| is currently installed in one or
+// more profiles, excluding |curr_profile|, and has its web_app launcher
+// registered with Windows as a handler for the file extensions it supports.
+// Sets |only_profile_with_app_installed| to the path of profile that is the
+// only profile with the app installed, an empty path otherwise. If the app is
+// only installed in exactly one other profile, it will need its app name
+// updated.
+bool IsWebAppLauncherRegisteredWithWindows(
+    const web_app::AppId& app_id,
+    Profile* curr_profile,
+    base::FilePath* only_profile_with_app_installed) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  auto* storage = &profile_manager->GetProfileAttributesStorage();
+
+  bool found_app = false;
+  std::vector<ProfileAttributesEntry*> entries =
+      storage->GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
+    base::FilePath profile_path = entry->GetPath();
+    if (profile_path == curr_profile->GetPath())
+      continue;
+    base::string16 profile_prog_id =
+        web_app::GetProgIdForApp(profile_path, app_id);
+    base::FilePath shim_app_path =
+        ShellUtil::GetApplicationPathForProgId(profile_prog_id);
+    if (shim_app_path.empty())
+      continue;
+    *only_profile_with_app_installed =
+        found_app ? base::FilePath() : profile_path;
+    found_app = true;
+    if (only_profile_with_app_installed->empty())
+      break;
+  }
+  return found_app;
+}
+
+// Construct a string that is used to specify which profile a web
+// app is installed for. The string is of the form "( <profile name>)".
+base::string16 GetAppNameExtensionForProfile(
+    const base::FilePath& profile_path) {
+  base::string16 app_name_extension;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry;
+  bool has_entry = storage.GetProfileAttributesWithPath(profile_path, &entry);
+  if (has_entry) {
+    app_name_extension.append(STRING16_LITERAL(" ("));
+    app_name_extension.append(entry->GetName());
+    app_name_extension.append(STRING16_LITERAL(")"));
+  }
+  return app_name_extension;
+}
+
 }  // namespace
 
 namespace web_app {
@@ -74,10 +132,11 @@ bool ShouldRegisterFileHandlersWithOs() {
 // the allowed characters in a prog_id. Since the prog_id is stored in the
 // Windows registry, the mapping between a given profile+app_id and a prog_id
 // can not be changed.
-base::string16 GetProgIdForApp(Profile* profile, const AppId& app_id) {
+base::string16 GetProgIdForApp(const base::FilePath& profile_path,
+                               const AppId& app_id) {
   base::string16 prog_id = install_static::GetBaseAppId();
   std::string app_specific_part(
-      base::UTF16ToUTF8(profile->GetPath().BaseName().value()));
+      base::UTF16ToUTF8(profile_path.BaseName().value()));
   app_specific_part.append(app_id);
   uint32_t hash = base::PersistentHash(app_specific_part);
   prog_id.push_back('.');
@@ -89,16 +148,21 @@ void RegisterFileHandlersWithOsTask(
     const AppId& app_id,
     const std::string& app_name,
     const base::FilePath& profile_path,
-    const base::string16& app_prog_id,
-    const std::set<std::string>& file_extensions) {
+    const std::set<base::string16>& file_extensions,
+    const base::string16& app_name_extension) {
   base::FilePath web_app_path =
       GetWebAppDataDirectory(profile_path, app_id, GURL());
   base::string16 utf16_app_name = base::UTF8ToUTF16(app_name);
   base::FilePath icon_path =
       internals::GetIconFilePath(web_app_path, utf16_app_name);
   base::FilePath pwa_launcher_path = GetChromePwaLauncherPath();
-  base::FilePath app_specific_launcher_path =
-      web_app_path.Append(GetAppSpecificLauncherFilename(utf16_app_name));
+  base::string16 user_visible_app_name(utf16_app_name);
+  // Specialize utf16_app_name to be per-profile, if there are other profiles
+  // which have the web app installed. Also, migrate the registration
+  // for the other profile(s), if needed.
+  user_visible_app_name.append(app_name_extension);
+  base::FilePath app_specific_launcher_path = web_app_path.Append(
+      GetAppSpecificLauncherFilename(user_visible_app_name));
 
   // Create a hard link to the chrome pwa launcher app. Delete any pre-existing
   // version of the file first.
@@ -113,16 +177,34 @@ void RegisterFileHandlersWithOsTask(
   app_specific_launcher_command.AppendSwitchPath(switches::kProfileDirectory,
                                                  profile_path.BaseName());
   app_specific_launcher_command.AppendSwitchASCII(switches::kAppId, app_id);
-  std::set<base::string16> file_exts;
-  // Copy |file_extensions| to a string16 set in O(n) time by hinting that
-  // the appended elements should go at the end of the set.
-  std::transform(file_extensions.begin(), file_extensions.end(),
-                 std::inserter(file_exts, file_exts.end()),
-                 [](const std::string& ext) { return base::UTF8ToUTF16(ext); });
-
   ShellUtil::AddFileAssociations(
-      app_prog_id, app_specific_launcher_command, utf16_app_name,
-      utf16_app_name + STRING16_LITERAL(" File"), icon_path, file_exts);
+      GetProgIdForApp(profile_path, app_id), app_specific_launcher_command,
+      user_visible_app_name, utf16_app_name + STRING16_LITERAL(" File"),
+      icon_path, file_extensions);
+}
+
+// Remove existing registration for an app, and reregister it. This is called
+// when the app name changes.
+void ReRegisterFileHandlersWithOs(
+    const AppId& app_id,
+    const std::string& app_name,
+    const base::FilePath& profile_path,
+    const std::set<base::string16>& file_extensions,
+    const base::string16& prog_id,
+    const base::string16& app_name_extension) {
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::MayBlock(),
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                 base::BindOnce(IgnoreResult(&base::DeleteFile),
+                                ShellUtil::GetApplicationPathForProgId(prog_id),
+                                /*recursively=*/false));
+  ShellUtil::DeleteFileAssociations(prog_id);
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&RegisterFileHandlersWithOsTask, app_id, app_name,
+                     profile_path, file_extensions, app_name_extension));
 }
 
 void RegisterFileHandlersWithOs(const AppId& app_id,
@@ -130,13 +212,34 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                                 Profile* profile,
                                 const std::set<std::string>& file_extensions,
                                 const std::set<std::string>& mime_types) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&RegisterFileHandlersWithOsTask, app_id, app_name,
-                     profile->GetPath(), GetProgIdForApp(profile, app_id),
-                     file_extensions));
+  base::string16 app_name_extension;
+  base::FilePath only_profile_with_app_installed;
+  // Determine if there is exactly one other profile with the
+  // app installed, before doing this new registration.
+  if (IsWebAppLauncherRegisteredWithWindows(app_id, profile,
+                                            &only_profile_with_app_installed))
+    app_name_extension = GetAppNameExtensionForProfile(profile->GetPath());
+
+  std::set<base::string16> file_extensions16;
+  // Copy |file_extensions| to a string16 set in O(n) time by hinting that
+  // the appended elements should go at the end of the set.
+  std::transform(file_extensions.begin(), file_extensions.end(),
+                 std::inserter(file_extensions16, file_extensions16.end()),
+                 [](const std::string& ext) { return base::UTF8ToUTF16(ext); });
+
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::MayBlock(),
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                 base::BindOnce(&RegisterFileHandlersWithOsTask, app_id,
+                                app_name, profile->GetPath(), file_extensions16,
+                                app_name_extension));
+  // If there's another profile that needs its name changed, reregister it.
+  if (!only_profile_with_app_installed.empty()) {
+    ReRegisterFileHandlersWithOs(
+        app_id, app_name, only_profile_with_app_installed, file_extensions16,
+        GetProgIdForApp(only_profile_with_app_installed, app_id),
+        GetAppNameExtensionForProfile(only_profile_with_app_installed));
+  }
 }
 
 void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
@@ -145,10 +248,9 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
   // the registry, since the app-specific-launcher path is retrieved from the
   // registry.
 
-  base::string16 prog_id = GetProgIdForApp(profile, app_id);
+  base::string16 prog_id = GetProgIdForApp(profile->GetPath(), app_id);
   base::FilePath app_specific_launcher_path =
       ShellUtil::GetApplicationPathForProgId(prog_id);
-
   ShellUtil::DeleteFileAssociations(prog_id);
 
   // Need to delete the hardlink file as well, since extension uninstall
@@ -160,6 +262,43 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(IgnoreResult(&base::DeleteFile),
                        app_specific_launcher_path, /*recursively=*/false));
+  }
+  base::FilePath only_profile_with_app_installed;
+  if (IsWebAppLauncherRegisteredWithWindows(app_id, profile,
+                                            &only_profile_with_app_installed) &&
+      !only_profile_with_app_installed.empty()) {
+    base::string16 remaining_prog_id =
+        GetProgIdForApp(only_profile_with_app_installed, app_id);
+    // Before deleting the file associations for the remaining app registration,
+    // remember the app name and file extensions.
+    ShellUtil::FileAssociationsAndAppName file_associations_and_app_name =
+        ShellUtil::GetFileAssociationsAndAppName(remaining_prog_id);
+    if (file_associations_and_app_name.app_name.empty()) {
+      // If we can't get the file associations, just leave the remaining app
+      // registration as is.
+      return;
+    }
+    base::string16 app_name_extension =
+        GetAppNameExtensionForProfile(only_profile_with_app_installed);
+    // If |app_name| ends with " (<profile name>)", remove it.
+    std::string new_app_name;
+    if (base::EndsWith(file_associations_and_app_name.app_name,
+                       app_name_extension, base::CompareCase::SENSITIVE) &&
+        file_associations_and_app_name.app_name.size() >
+            app_name_extension.size()) {
+      new_app_name = base::UTF16ToUTF8(
+          base::StringPiece16(file_associations_and_app_name.app_name.c_str(),
+                              file_associations_and_app_name.app_name.size() -
+                                  app_name_extension.size()));
+    } else {
+      // We probably don't have to reregister the app, but it's probably safer
+      // to make sure the app name is correct.
+      new_app_name = base::UTF16ToUTF8(file_associations_and_app_name.app_name);
+    }
+    ReRegisterFileHandlersWithOs(
+        app_id, new_app_name, only_profile_with_app_installed,
+        file_associations_and_app_name.file_associations, remaining_prog_id,
+        base::string16());
   }
 }
 

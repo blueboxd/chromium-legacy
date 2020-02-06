@@ -12,8 +12,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 
-import org.chromium.chrome.browser.AppHooks;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -34,16 +32,7 @@ public class FeatureHighlightProvider {
     /** The value for IPH timeout if the IPH will not timeout. */
     public static final long NO_TIMEOUT = -1;
 
-    /** Static handle to the sole highlight provider. */
-    private static FeatureHighlightProvider sInstance;
-
-    /**
-     * @return A handle to the highlight provider.
-     */
-    public static FeatureHighlightProvider getInstance() {
-        if (sInstance == null) sInstance = AppHooks.get().createFeatureHighlightProvider();
-        return sInstance;
-    }
+    public FeatureHighlightProvider() {}
 
     /**
      * Build and show a feature highlight bubble for a particular view.

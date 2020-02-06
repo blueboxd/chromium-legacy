@@ -293,18 +293,15 @@ void ScrollableArea::ProgrammaticScrollHelper(
   CancelScrollAnimation();
 
   ScrollCallback callback = std::move(on_finish);
-  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
-    callback = ScrollCallback(WTF::Bind(
-        [](ScrollCallback original_callback,
-           WeakPersistent<ScrollableArea> area) {
-          if (area)
-            area->OnScrollFinished();
-          if (original_callback)
-            std::move(original_callback).Run();
-        },
-        std::move(callback), WrapWeakPersistent(this)));
-  }
+  callback = ScrollCallback(WTF::Bind(
+      [](ScrollCallback original_callback,
+         WeakPersistent<ScrollableArea> area) {
+        if (area)
+          area->OnScrollFinished();
+        if (original_callback)
+          std::move(original_callback).Run();
+      },
+      std::move(callback), WrapWeakPersistent(this)));
 
   if (scroll_behavior ==
           mojom::blink::ScrollIntoViewParams::Behavior::kSmooth &&
@@ -815,13 +812,11 @@ void ScrollableArea::OnScrollFinished() {
       if (Node* node = GetLayoutBox()->GetNode())
         node->GetDocument().EnqueueScrollEndEventForNode(node);
     }
-    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
-      GetLayoutBox()
-          ->GetFrame()
-          ->LocalFrameRoot()
-          .GetEventHandler()
-          .MarkHoverStateDirty();
-    }
+    GetLayoutBox()
+        ->GetFrame()
+        ->LocalFrameRoot()
+        .GetEventHandler()
+        .MarkHoverStateDirty();
   }
 }
 

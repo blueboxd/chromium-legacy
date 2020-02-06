@@ -47,21 +47,6 @@ MockPlatformNotificationService* GetMockPlatformNotificationService() {
   return static_cast<MockPlatformNotificationService*>(service);
 }
 
-WebTestContentIndexProvider* GetWebTestContentIndexProvider() {
-  auto* client = WebTestContentBrowserClient::Get();
-  auto* context = client->GetWebTestBrowserContext();
-  return static_cast<WebTestContentIndexProvider*>(
-      context->GetContentIndexProvider());
-}
-
-ContentIndexContext* GetContentIndexContext(const url::Origin& origin) {
-  auto* client = WebTestContentBrowserClient::Get();
-  auto* context = client->GetWebTestBrowserContext();
-  auto* storage_partition = BrowserContext::GetStoragePartitionForSite(
-      context, origin.GetURL(), /* can_create= */ false);
-  return storage_partition->GetContentIndexContext();
-}
-
 }  // namespace
 
 WebTestMessageFilter::WebTestMessageFilter(
@@ -91,14 +76,10 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
     case WebTestHostMsg_ClearAllDatabases::ID:
       return database_tracker_->task_runner();
     case WebTestHostMsg_SimulateWebNotificationClick::ID:
-    case WebTestHostMsg_SimulateWebNotificationClose::ID:
-    case WebTestHostMsg_SimulateWebContentIndexDelete::ID:
     case WebTestHostMsg_SetPermission::ID:
     case WebTestHostMsg_ResetPermissions::ID:
     case WebTestHostMsg_WebTestRuntimeFlagsChanged::ID:
-    case WebTestHostMsg_TestFinishedInSecondaryRenderer::ID:
     case WebTestHostMsg_InitiateCaptureDump::ID:
-    case WebTestHostMsg_InspectSecondaryWindow::ID:
     case WebTestHostMsg_DeleteAllCookies::ID:
     case WebTestHostMsg_GetWritableDirectory::ID:
     case WebTestHostMsg_SetFilePathForMockFileDialog::ID:
@@ -117,21 +98,13 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClose,
-                        OnSimulateWebNotificationClose)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebContentIndexDelete,
-                        OnSimulateWebContentIndexDelete)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetPermission, OnSetPermission)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ResetPermissions, OnResetPermissions)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_WebTestRuntimeFlagsChanged,
                         OnWebTestRuntimeFlagsChanged)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_TestFinishedInSecondaryRenderer,
-                        OnTestFinishedInSecondaryRenderer)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
-                        OnInitiateCaptureDump);
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_InspectSecondaryWindow,
-                        OnInspectSecondaryWindow)
+                        OnInitiateCaptureDump)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_GetWritableDirectory,
                         OnGetWritableDirectory)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetFilePathForMockFileDialog,
@@ -190,27 +163,6 @@ void WebTestMessageFilter::OnSimulateWebNotificationClick(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetMockPlatformNotificationService()->SimulateClick(title, action_index,
                                                       reply);
-}
-
-void WebTestMessageFilter::OnSimulateWebNotificationClose(
-    const std::string& title,
-    bool by_user) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetMockPlatformNotificationService()->SimulateClose(title, by_user);
-}
-
-void WebTestMessageFilter::OnSimulateWebContentIndexDelete(
-    const std::string& id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto* provider = GetWebTestContentIndexProvider();
-
-  std::pair<int64_t, url::Origin> registration_data =
-      provider->GetRegistrationDataFromId(id);
-
-  auto* context = GetContentIndexContext(registration_data.second);
-  context->OnUserDeletedItem(registration_data.first, registration_data.second,
-                             id);
 }
 
 void WebTestMessageFilter::OnDeleteAllCookies() {
@@ -289,12 +241,6 @@ void WebTestMessageFilter::OnWebTestRuntimeFlagsChanged(
   }
 }
 
-void WebTestMessageFilter::OnTestFinishedInSecondaryRenderer() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
-}
-
 void WebTestMessageFilter::OnInitiateCaptureDump(
     bool capture_navigation_history,
     bool capture_pixels) {
@@ -303,12 +249,6 @@ void WebTestMessageFilter::OnInitiateCaptureDump(
     BlinkTestController::Get()->OnInitiateCaptureDump(
         capture_navigation_history, capture_pixels);
   }
-}
-
-void WebTestMessageFilter::OnInspectSecondaryWindow() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->OnInspectSecondaryWindow();
 }
 
 void WebTestMessageFilter::OnGetWritableDirectory(base::FilePath* path) {

@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":alert_indicator",
     ":alert_indicators",
     ":custom_element",
+    ":drag_manager",
     ":tab",
     ":tab_group",
     ":tab_list",
@@ -38,6 +39,16 @@ js_library("alert_indicators") {
 }
 
 js_library("custom_element") {
+}
+
+js_library("drag_manager") {
+  deps = [
+    ":tab",
+    ":tab_group",
+    ":tabs_api_proxy",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
 }
 
 js_library("tabs_api_proxy") {
@@ -73,6 +84,7 @@ js_library("tab_group") {
 js_library("tab_list") {
   deps = [
     ":custom_element",
+    ":drag_manager",
     ":tab",
     ":tab_group",
     ":tab_strip_embedder_proxy",

@@ -32,6 +32,7 @@ class AnimationHost;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LayerTreeSettings;
+class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
 }  // namespace cc
@@ -123,7 +124,9 @@ class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
 
  private:
   void SetLayerTreeFrameSink(
-      std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
+      std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink,
+      std::unique_ptr<cc::RenderFrameMetadataObserver>
+          render_frame_metadata_observer);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;

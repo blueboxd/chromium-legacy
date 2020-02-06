@@ -25,6 +25,7 @@ class TestInstaller : public CrxInstaller {
 
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
+               std::unique_ptr<InstallParams> install_params,
                Callback callback) override;
 
   bool GetInstalledFile(const std::string& file,
@@ -35,6 +36,8 @@ class TestInstaller : public CrxInstaller {
   int error() const { return error_; }
 
   int install_count() const { return install_count_; }
+
+  const InstallParams* install_params() const { return install_params_.get(); }
 
  protected:
   ~TestInstaller() override;
@@ -47,6 +50,9 @@ class TestInstaller : public CrxInstaller {
  private:
   // Contains the |unpack_path| argument of the Install call.
   base::FilePath unpack_path_;
+
+  // Contains the |install_params| argument of the Install call.
+  std::unique_ptr<InstallParams> install_params_;
 };
 
 // A ReadOnlyTestInstaller is an installer that knows about files in an existing
@@ -72,6 +78,7 @@ class VersionedTestInstaller : public TestInstaller {
 
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
+               std::unique_ptr<InstallParams> install_params,
                Callback callback) override;
 
   bool GetInstalledFile(const std::string& file,

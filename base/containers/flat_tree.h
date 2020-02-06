@@ -48,7 +48,7 @@ struct IsTransparentCompare<T, void_t<typename T::is_transparent>>
 //   const Key& operator()(const Value&).
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 class flat_tree {
- private:
+ protected:
   using underlying_type = std::vector<Value>;
 
  public:
@@ -109,8 +109,9 @@ class flat_tree {
   flat_tree(const flat_tree&);
   flat_tree(flat_tree&&) noexcept = default;
 
-  flat_tree(std::vector<value_type> items,
+  flat_tree(const underlying_type& items,
             const key_compare& comp = key_compare());
+  flat_tree(underlying_type&& items, const key_compare& comp = key_compare());
 
   flat_tree(std::initializer_list<value_type> ilist,
             const key_compare& comp = key_compare());
@@ -472,7 +473,15 @@ flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
-    std::vector<value_type> items,
+    const underlying_type& items,
+    const KeyCompare& comp)
+    : impl_(comp, items) {
+  sort_and_unique(begin(), end());
+}
+
+template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+    underlying_type&& items,
     const KeyCompare& comp)
     : impl_(comp, std::move(items)) {
   sort_and_unique(begin(), end());

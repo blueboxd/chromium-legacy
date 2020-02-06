@@ -3,14 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('settings_privacy_page', function() {
-  /**
-   * @param {!Element} element
-   * @param {boolean} displayed
-   */
-  function assertVisible(element, displayed) {
-    assertEquals(
-        displayed, window.getComputedStyle(element)['display'] != 'none');
-  }
 
   /** @implements {settings.ClearBrowsingDataBrowserProxy} */
   class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
@@ -396,10 +388,12 @@ cr.define('settings_privacy_page', function() {
         });
         Polymer.dom.flush();
         assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
-        assertVisible(element.$$('#sync-info'), true);
-        assertVisible(element.$$('#sync-paused-info'), false);
-        assertVisible(element.$$('#sync-passphrase-error-info'), false);
-        assertVisible(element.$$('#sync-other-error-info'), false);
+        assertTrue(test_util.isChildVisible(element, '#sync-info'));
+        assertFalse(test_util.isChildVisible(element, '#sync-paused-info'));
+        assertFalse(
+            test_util.isChildVisible(element, '#sync-passphrase-error-info'));
+        assertFalse(
+            test_util.isChildVisible(element, '#sync-other-error-info'));
 
         // Sync is paused.
         cr.webUIListenerCallback('sync-status-changed', {
@@ -408,10 +402,12 @@ cr.define('settings_privacy_page', function() {
           statusAction: settings.StatusAction.REAUTHENTICATE,
         });
         Polymer.dom.flush();
-        assertVisible(element.$$('#sync-info'), false);
-        assertVisible(element.$$('#sync-paused-info'), true);
-        assertVisible(element.$$('#sync-passphrase-error-info'), false);
-        assertVisible(element.$$('#sync-other-error-info'), false);
+        assertFalse(test_util.isChildVisible(element, '#sync-info'));
+        assertTrue(test_util.isChildVisible(element, '#sync-paused-info'));
+        assertFalse(
+            test_util.isChildVisible(element, '#sync-passphrase-error-info'));
+        assertFalse(
+            test_util.isChildVisible(element, '#sync-other-error-info'));
 
         // Sync passphrase error.
         cr.webUIListenerCallback('sync-status-changed', {
@@ -420,10 +416,12 @@ cr.define('settings_privacy_page', function() {
           statusAction: settings.StatusAction.ENTER_PASSPHRASE,
         });
         Polymer.dom.flush();
-        assertVisible(element.$$('#sync-info'), false);
-        assertVisible(element.$$('#sync-paused-info'), false);
-        assertVisible(element.$$('#sync-passphrase-error-info'), true);
-        assertVisible(element.$$('#sync-other-error-info'), false);
+        assertFalse(test_util.isChildVisible(element, '#sync-info'));
+        assertFalse(test_util.isChildVisible(element, '#sync-paused-info'));
+        assertTrue(
+            test_util.isChildVisible(element, '#sync-passphrase-error-info'));
+        assertFalse(
+            test_util.isChildVisible(element, '#sync-other-error-info'));
 
         // Other sync error.
         cr.webUIListenerCallback('sync-status-changed', {
@@ -432,10 +430,11 @@ cr.define('settings_privacy_page', function() {
           statusAction: settings.StatusAction.NO_ACTION,
         });
         Polymer.dom.flush();
-        assertVisible(element.$$('#sync-info'), false);
-        assertVisible(element.$$('#sync-paused-info'), false);
-        assertVisible(element.$$('#sync-passphrase-error-info'), false);
-        assertVisible(element.$$('#sync-other-error-info'), true);
+        assertFalse(test_util.isChildVisible(element, '#sync-info'));
+        assertFalse(test_util.isChildVisible(element, '#sync-paused-info'));
+        assertFalse(
+            test_util.isChildVisible(element, '#sync-passphrase-error-info'));
+        assertTrue(test_util.isChildVisible(element, '#sync-other-error-info'));
       });
 
       test('ClearBrowsingDataPauseSyncDesktop', function() {
@@ -446,7 +445,7 @@ cr.define('settings_privacy_page', function() {
         Polymer.dom.flush();
         assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         const syncInfo = element.$$('#sync-info');
-        assertVisible(syncInfo, true);
+        assertTrue(test_util.isVisible(syncInfo));
         const signoutLink = syncInfo.querySelector('a[href]');
         assertTrue(!!signoutLink);
         assertEquals(0, testSyncBrowserProxy.getCallCount('pauseSync'));
@@ -463,7 +462,7 @@ cr.define('settings_privacy_page', function() {
         Polymer.dom.flush();
         assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         const syncInfo = element.$$('#sync-paused-info');
-        assertVisible(syncInfo, true);
+        assertTrue(test_util.isVisible(syncInfo));
         const signinLink = syncInfo.querySelector('a[href]');
         assertTrue(!!signinLink);
         assertEquals(0, testSyncBrowserProxy.getCallCount('startSignIn'));
@@ -480,7 +479,7 @@ cr.define('settings_privacy_page', function() {
         Polymer.dom.flush();
         assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         const syncInfo = element.$$('#sync-passphrase-error-info');
-        assertVisible(syncInfo, true);
+        assertTrue(test_util.isVisible(syncInfo));
         const passphraseLink = syncInfo.querySelector('a[href]');
         assertTrue(!!passphraseLink);
         passphraseLink.click();
@@ -720,6 +719,95 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
+  function registerPrivacyPageSecureDnsTests() {
+    suite('PrivacyPageSecureDns', function() {
+      /** @type {settings.TestPrivacyPageBrowserProxy} */
+      let testBrowserProxy;
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      setup(function() {
+        loadTimeData.overrideValues({showSecureDnsSetting: true});
+        testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-secure-dns');
+        page.prefs = {
+          dns_over_https: {mode: {value: 'automatic'}},
+        };
+        document.body.appendChild(page);
+        // settings-secure-dns element must call 'getSecureDnsSetting'
+        // upon attachment to the DOM.
+        return testBrowserProxy.whenCalled('getSecureDnsSetting')
+            .then(function() {
+              assertTrue(page.$$('#secureDnsToggle').hasAttribute('checked'));
+              assertFalse(page.$$('#secureDnsToggle').hasAttribute('disabled'));
+              assertFalse(page.$$('#secureDnsRadioGroup').hidden);
+              assertEquals(
+                  testBrowserProxy.secureDnsSetting.mode,
+                  page.$$('#secureDnsRadioGroup').selected);
+            });
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('SecureDnsOff', function() {
+        cr.webUIListenerCallback('secure-dns-setting-changed', {mode: 'off'});
+        assertFalse(page.$$('#secureDnsToggle').hasAttribute('checked'));
+        assertFalse(page.$$('#secureDnsToggle').hasAttribute('disabled'));
+        assertTrue(page.$$('#secureDnsRadioGroup').hidden);
+      });
+
+      test('SecureDnsAutomatic', function() {
+        cr.webUIListenerCallback(
+            'secure-dns-setting-changed', {mode: 'automatic'});
+        assertTrue(page.$$('#secureDnsToggle').hasAttribute('checked'));
+        assertFalse(page.$$('#secureDnsToggle').hasAttribute('disabled'));
+        assertFalse(page.$$('#secureDnsRadioGroup').hidden);
+        assertEquals('automatic', page.$$('#secureDnsRadioGroup').selected);
+      });
+
+      test('SecureDnsSecure', function() {
+        cr.webUIListenerCallback(
+            'secure-dns-setting-changed', {mode: 'secure'});
+        assertTrue(page.$$('#secureDnsToggle').hasAttribute('checked'));
+        assertFalse(page.$$('#secureDnsToggle').hasAttribute('disabled'));
+        assertFalse(page.$$('#secureDnsRadioGroup').hidden);
+        assertEquals('secure', page.$$('#secureDnsRadioGroup').selected);
+      });
+
+      test('SecureDnsModeChange', function() {
+        // Start in secure mode.
+        cr.webUIListenerCallback(
+            'secure-dns-setting-changed', {mode: 'secure'});
+
+        // Click on the secure dns toggle to disable secure dns.
+        page.$$('#secureDnsToggle').click();
+        assertEquals('off', page.prefs.dns_over_https.mode.value);
+
+        // Click on the secure dns toggle to enable secure dns.
+        page.$$('#secureDnsToggle').click();
+        assertEquals('secure', page.prefs.dns_over_https.mode.value);
+
+        // Change the radio button to automatic mode.
+        page.$$('#secureDnsRadioGroup')
+            .querySelectorAll('cr-radio-button')[0]
+            .click();
+        assertEquals('automatic', page.prefs.dns_over_https.mode.value);
+
+        // Click on the secure dns toggle to disable secure dns.
+        page.$$('#secureDnsToggle').click();
+        assertEquals('off', page.prefs.dns_over_https.mode.value);
+
+        // Click on the secure dns toggle to enable secure dns.
+        page.$$('#secureDnsToggle').click();
+        assertEquals('automatic', page.prefs.dns_over_https.mode.value);
+      });
+    });
+  }
+
   function registerPrivacyPageSoundTests() {
     suite('PrivacyPageSound', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
@@ -911,6 +999,7 @@ cr.define('settings_privacy_page', function() {
     registerClearBrowsingDataTests,
     registerInstalledAppsTests,
     registerPrivacyPageTests,
+    registerPrivacyPageSecureDnsTests,
     registerPrivacyPageSoundTests,
     registerUMALoggingTests,
   };

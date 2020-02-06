@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 #include "chrome/browser/enterprise_reporting/policy_info.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -55,8 +56,9 @@ ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
 
   if (policies_enabled_) {
     // TODO(crbug.com/983151): Upload policy error as their IDs.
-    policies_ = policy::DictionaryPolicyConversions()
-                    .WithBrowserContext(profile_)
+    auto client =
+        std::make_unique<policy::ChromePolicyConversionsClient>(profile_);
+    policies_ = policy::DictionaryPolicyConversions(std::move(client))
                     .EnableConvertTypes(false)
                     .EnablePrettyPrint(false)
                     .ToValue();

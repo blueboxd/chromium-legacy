@@ -364,7 +364,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mVisibleTab = tab;
 
         // Don't execute the tab display part if Chrome has just been sent to background. This
-        // avoids uneccessary work (tab restore) and prevents pollution of tab display metrics - see
+        // avoids unecessary work (tab restore) and prevents pollution of tab display metrics - see
         // http://crbug.com/316166.
         if (type != TabSelectionType.FROM_EXIT) {
             tab.show(type);

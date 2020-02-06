@@ -154,10 +154,19 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
 // base::RunLoop since base::RunLoop is used internally to wait for completing
 // all of tasks. If it's in another base::RunLoop, consider to use
 // WriteToDiskCacheAsync().
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheWithIdSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     int64_t resource_id,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body,
+    const std::string& meta_data);
+
+// Similar to WriteToDiskCacheWithIdSync() but instead of taking a resource id,
+// this assigns a new resource ID internally.
+ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+    ServiceWorkerStorage* storage,
+    const GURL& script_url,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data);
@@ -172,7 +181,6 @@ using WriteToDiskCacheCallback =
 void WriteToDiskCacheAsync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
-    int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data,

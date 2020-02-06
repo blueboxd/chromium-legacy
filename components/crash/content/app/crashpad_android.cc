@@ -403,7 +403,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
   crash_reporter_client->GetCrashDumpLocation(database_path);
   crash_reporter_client->GetCrashMetricsLocation(metrics_path);
 
-// TODO(jperaza): Set URL for Android when Crashpad takes over report upload.
+  // TODO(jperaza): Set URL for Android when Crashpad takes over report upload.
   *url = std::string();
 
   std::string product_name;
@@ -427,6 +427,16 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
   }
 
   (*process_annotations)["plat"] = std::string("Android");
+}
+
+bool ShouldHandleCrashAndUpdateArguments(bool write_minidump_to_database,
+                                         bool write_minidump_to_log,
+                                         std::vector<std::string>* arguments) {
+  if (!write_minidump_to_database)
+    arguments->push_back("--no-write-minidump-to-database");
+  if (write_minidump_to_log)
+    arguments->push_back("--write-minidump-to-log");
+  return write_minidump_to_database || write_minidump_to_log;
 }
 
 bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
@@ -510,7 +520,9 @@ class HandlerStarter {
           !GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
     }
 
-    if (!dump_at_crash) {
+    if (!ShouldHandleCrashAndUpdateArguments(
+            dump_at_crash, GetCrashReporterClient()->ShouldWriteMinidumpToLog(),
+            &arguments)) {
       return database_path;
     }
 
@@ -543,7 +555,9 @@ class HandlerStarter {
     return database_path;
   }
 
-  bool StartHandlerForClient(CrashReporterClient* client, int fd) {
+  bool StartHandlerForClient(CrashReporterClient* client,
+                             int fd,
+                             bool write_minidump_to_database) {
     base::FilePath database_path;
     base::FilePath metrics_path;
     std::string url;
@@ -556,6 +570,12 @@ class HandlerStarter {
     base::FilePath handler_path;
     if (!GetHandlerPath(&exe_dir, &handler_path)) {
       return false;
+    }
+
+    if (!ShouldHandleCrashAndUpdateArguments(write_minidump_to_database,
+                                             client->ShouldWriteMinidumpToLog(),
+                                             &arguments)) {
+      return true;
     }
 
     if (use_java_handler_ || !handler_trampoline_.empty()) {
@@ -606,8 +626,9 @@ bool ConnectToHandler(CrashReporterClient* client, base::ScopedFD* connection) {
   base::ScopedFD local_connection(fds[0]);
   base::ScopedFD handlers_socket(fds[1]);
 
-  if (!HandlerStarter::Get()->StartHandlerForClient(client,
-                                                    handlers_socket.get())) {
+  if (!HandlerStarter::Get()->StartHandlerForClient(
+          client, handlers_socket.get(),
+          true /* write_minidump_to_database */)) {
     return false;
   }
 
@@ -676,9 +697,9 @@ void WhitelistMemoryRange(void* begin, size_t length) {
 
 namespace internal {
 
-bool StartHandlerForClient(int fd) {
-  return HandlerStarter::Get()->StartHandlerForClient(GetCrashReporterClient(),
-                                                      fd);
+bool StartHandlerForClient(int fd, bool write_minidump_to_database) {
+  return HandlerStarter::Get()->StartHandlerForClient(
+      GetCrashReporterClient(), fd, write_minidump_to_database);
 }
 
 base::FilePath PlatformCrashpadInitialization(

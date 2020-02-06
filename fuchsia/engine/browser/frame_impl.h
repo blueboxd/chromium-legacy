@@ -39,7 +39,7 @@ class FromRenderFrameHost;
 }  // namespace content
 
 class ContextImpl;
-class FuchsiaLayoutManager;
+class FrameLayoutManager;
 
 // Implementation of fuchsia.web.Frame based on content::WebContents.
 class FrameImpl : public fuchsia::web::Frame,
@@ -200,15 +200,17 @@ class FrameImpl : public fuchsia::web::Frame,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
-  std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
-
-  // Dependents of |window_tree_host_|.
-  std::unique_ptr<wm::FocusController> focus_controller_;
-  DiscardingEventFilter discarding_event_filter_;
-  FuchsiaLayoutManager* layout_manager_ = nullptr;
-
   const std::unique_ptr<content::WebContents> web_contents_;
   ContextImpl* const context_;
+
+  std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
+
+  std::unique_ptr<wm::FocusController> focus_controller_;
+  DiscardingEventFilter discarding_event_filter_;
+
+  // Owned via |window_tree_host_|.
+  FrameLayoutManager* layout_manager_ = nullptr;
+
   std::unique_ptr<AccessibilityBridge> accessibility_bridge_;
   fuchsia::accessibility::semantics::SemanticsManagerPtr
       semantics_manager_for_test_;

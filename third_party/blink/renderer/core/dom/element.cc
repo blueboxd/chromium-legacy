@@ -5370,6 +5370,34 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
   return nullptr;
 }
 
+bool Element::PseudoElementStylesDependOnFontMetrics() const {
+  const ComputedStyle* style = GetComputedStyle();
+  if (!style)
+    return false;
+  if (style->CachedPseudoElementStylesDependOnFontMetrics())
+    return true;
+
+  // Note that |HasAnyPseudoElementStyles()| counts public pseudo elements only.
+  // ::-webkit-scrollbar-*  are internal, and hence are not counted. So we must
+  // perform this check after checking the cached pseudo element styles to avoid
+  // false negatives.
+  if (!style->HasAnyPseudoElementStyles())
+    return false;
+
+  // If we don't generate a PseudoElement, its style must have been cached on
+  // the originating element's ComputedStyle. Hence, it remains to check styles
+  // on the generated PseudoElements.
+  if (!HasRareData())
+    return false;
+  for (PseudoElement* pseudo_element :
+       GetElementRareData()->GetPseudoElements()) {
+    if (pseudo_element->GetComputedStyle()->DependsOnFontMetrics())
+      return true;
+  }
+
+  return false;
+}
+
 const ComputedStyle* Element::CachedStyleForPseudoElement(
     const PseudoElementStyleRequest& request) {
   const ComputedStyle* style = GetComputedStyle();

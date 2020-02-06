@@ -406,8 +406,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
     std::vector<ServiceWorkerDatabase::ResourceRecord> records_1;
     records_1.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_1->script_url(),
-        helper_->context()->storage()->NewResourceId(), {} /* headers */,
-        "I'm the body", "I'm the meta data"));
+        {} /* headers */, "I'm the body", "I'm the meta data"));
     version_1->script_cache_map()->SetResources(records_1);
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
@@ -448,8 +447,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
     std::vector<ServiceWorkerDatabase::ResourceRecord> records_2;
     records_2.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_2->script_url(),
-        helper_->context()->storage()->NewResourceId(), {} /* headers */,
-        "I'm the body", "I'm the meta data"));
+        {} /* headers */, "I'm the body", "I'm the meta data"));
     version_2->script_cache_map()->SetResources(records_2);
     version_2->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
@@ -892,9 +890,9 @@ class ServiceWorkerRegistrationObjectHostTest
         context()->registry()->CreateNewVersion(
             registration, script_url, blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(WriteToDiskCacheSync(
-        storage(), version->script_url(), storage()->NewResourceId(),
-        {} /* headers */, "I'm the body", "I'm the meta data"));
+    records.push_back(WriteToDiskCacheSync(storage(), version->script_url(),
+                                           {} /* headers */, "I'm the body",
+                                           "I'm the meta data"));
     version->script_cache_map()->SetResources(records);
     version->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());

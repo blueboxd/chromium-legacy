@@ -72,7 +72,26 @@ bool HardwareDisplayPlaneManagerAtomic::Modeset(
 
 bool HardwareDisplayPlaneManagerAtomic::DisableModeset(uint32_t crtc_id,
                                                        uint32_t connector) {
-  return drm_->DisableCrtc(crtc_id);
+  ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
+
+  const int connector_idx = LookupConnectorIndex(connector);
+  DCHECK_GE(connector_idx, 0);
+  connectors_props_[connector_idx].crtc_id.value = 0UL;
+  bool res = AddPropertyIfValid(property_set.get(), connector,
+                                connectors_props_[connector_idx].crtc_id);
+
+  const int crtc_idx = LookupCrtcIndex(crtc_id);
+  DCHECK_GE(crtc_idx, 0);
+  crtc_state_[crtc_idx].properties.active.value = 0UL;
+  crtc_state_[crtc_idx].properties.mode_id.value = 0UL;
+  res &= AddPropertyIfValid(property_set.get(), crtc_id,
+                            crtc_state_[crtc_idx].properties.active);
+  res &= AddPropertyIfValid(property_set.get(), crtc_id,
+                            crtc_state_[crtc_idx].properties.mode_id);
+
+  DCHECK(res);
+  return drm_->CommitProperties(property_set.get(),
+                                DRM_MODE_ATOMIC_ALLOW_MODESET, 1, nullptr);
 }
 
 bool HardwareDisplayPlaneManagerAtomic::Commit(

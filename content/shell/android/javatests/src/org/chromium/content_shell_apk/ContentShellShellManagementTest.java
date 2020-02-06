@@ -39,19 +39,15 @@ public class ContentShellShellManagementTest {
     public void testMultipleShellsLaunched() throws ExecutionException {
         final ContentShellActivity activity =
                 mActivityTestRule.launchContentShellWithUrl(TEST_PAGE_1);
-        Assert.assertEquals(TEST_PAGE_1,
-                activity.getActiveShell()
-                        .getWebContents()
-                        .getVisibleUrl());
+        Assert.assertEquals(
+                TEST_PAGE_1, activity.getActiveShell().getWebContents().getVisibleUrlString());
 
         Shell previousActiveShell = activity.getActiveShell();
         Assert.assertFalse(previousActiveShell.isDestroyed());
 
         mActivityTestRule.loadNewShell(TEST_PAGE_2);
-        Assert.assertEquals(TEST_PAGE_2,
-                activity.getActiveShell()
-                        .getWebContents()
-                        .getVisibleUrl());
+        Assert.assertEquals(
+                TEST_PAGE_2, activity.getActiveShell().getWebContents().getVisibleUrlString());
 
         Assert.assertNotSame(previousActiveShell, activity.getActiveShell());
         Assert.assertNull(previousActiveShell.getWebContents());

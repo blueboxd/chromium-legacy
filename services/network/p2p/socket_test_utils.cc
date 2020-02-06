@@ -19,7 +19,7 @@ namespace network {
 
 const int kStunHeaderSize = 20;
 const uint16_t kStunBindingRequest = 0x0001;
-const uint16_t kStunBindingResponse = 0x0102;
+const uint16_t kStunBindingResponse = 0x0101;
 const uint16_t kStunBindingError = 0x0111;
 const uint32_t kStunMagicCookie = 0x2112A442;
 

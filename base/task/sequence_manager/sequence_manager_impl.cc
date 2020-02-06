@@ -135,13 +135,14 @@ class SequenceManagerImpl::NativeWorkHandleImpl : public NativeWorkHandle {
   NativeWorkHandleImpl(SequenceManagerImpl* sequence_manager,
                        TaskQueue::QueuePriority priority)
       : sequence_manager_(sequence_manager->GetWeakPtr()), priority_(priority) {
-    TRACE_EVENT_ASYNC_BEGIN1("sequence_manager", "NativeWork", this, "priority",
-                             TaskQueue::PriorityToString(priority_));
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("sequence_manager", "NativeWork", this,
+                                      "priority",
+                                      TaskQueue::PriorityToString(priority_));
     sequence_manager_->main_thread_only().pending_native_work.insert(priority_);
   }
 
   ~NativeWorkHandleImpl() final {
-    TRACE_EVENT_ASYNC_END0("sequence_manager", "NativeWork", this);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("sequence_manager", "NativeWork", this);
     if (!sequence_manager_)
       return;
     TaskQueue::QueuePriority prev_priority = effective_priority();

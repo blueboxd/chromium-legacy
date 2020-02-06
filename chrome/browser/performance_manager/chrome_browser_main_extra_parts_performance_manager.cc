@@ -18,6 +18,7 @@
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/graph/policies/urgent_page_discarding_policy.h"
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
+#include "chrome/browser/performance_manager/metrics/memory_pressure_metrics.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -104,6 +105,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
             performance_manager::policies::UrgentPageDiscardingPolicy>());
   }
 #endif  // !defined(OS_ANDROID)
+
+  graph->PassToGraph(
+      std::make_unique<performance_manager::metrics::MemoryPressureMetrics>());
 }
 
 content::LockObserver*

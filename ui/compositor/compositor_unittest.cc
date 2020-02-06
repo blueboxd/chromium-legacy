@@ -115,7 +115,7 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
   color_matrix.set(2, 2, 0.4f);
   gfx::DisplayColorSpaces display_color_spaces(
       gfx::ColorSpace::CreateDisplayP3D65());
-  display_color_spaces.sdr_white_level = 1.f;
+  display_color_spaces.SetSDRWhiteLevel(1.f);
   base::TimeTicks vsync_timebase(base::TimeTicks::Now());
   base::TimeDelta vsync_interval(base::TimeDelta::FromMilliseconds(250));
   compositor()->SetDisplayColorMatrix(color_matrix);
@@ -131,7 +131,7 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
             context_factory_private->GetOutputColorMatrix(compositor()));
   EXPECT_EQ(display_color_spaces,
             context_factory_private->GetDisplayColorSpaces(compositor()));
-  EXPECT_EQ(display_color_spaces.sdr_white_level,
+  EXPECT_EQ(display_color_spaces.GetSDRWhiteLevel(),
             context_factory_private->GetSDRWhiteLevel(compositor()));
   EXPECT_EQ(vsync_timebase,
             context_factory_private->GetDisplayVSyncTimeBase(compositor()));
@@ -154,7 +154,7 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
             context_factory_private->GetOutputColorMatrix(compositor()));
   EXPECT_EQ(display_color_spaces,
             context_factory_private->GetDisplayColorSpaces(compositor()));
-  EXPECT_EQ(display_color_spaces.sdr_white_level,
+  EXPECT_EQ(display_color_spaces.GetSDRWhiteLevel(),
             context_factory_private->GetSDRWhiteLevel(compositor()));
   EXPECT_EQ(vsync_timebase,
             context_factory_private->GetDisplayVSyncTimeBase(compositor()));

@@ -2055,4 +2055,118 @@
       await remoteCall.waitForElement(appId, query.query);
     }
   };
+
+  /**
+   * Tests deleting an item from Quick View when in single select mode, and
+   * that Quick View closes when there are no more items to view.
+   */
+  testcase.deleteItemFromQuickViewSingleSelection = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Press Delete
+    const deleteKey = ['#quick-view', 'Delete', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
+        'Pressing Delete failed.');
+
+    // Click the OK button.
+    const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, deleteConfirm);
+
+    // Check: File has been deleted.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="hello.txt"]');
+
+    // Check: Quick View has closed.
+    await waitQuickViewClose(appId);
+  };
+
+  /**
+   * Tests deleting an item from Quick View while in check-selection mode.
+   * Deletes the item at the bottom of the file list, and checks that
+   * the item below the item deleted is shown in Quick View after the item's
+   * deletion.
+   */
+  testcase.deleteItemFromQuickViewCheckSelection = async () => {
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    const caller = getCaller();
+
+    // Ctrl+A to select all files in the file-list.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA),
+        'Ctrl+A failed');
+
+    function checkQuickViewElementsDisplayBlock(elements) {
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return;
+    }
+
+    // Open Quick View via its keyboard shortcut.
+    const space = ['#file-list', ' ', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+
+    // Check: the Quick View dialog should be shown.
+    await repeatUntil(async () => {
+      const elements = ['#quick-view', '#dialog[open]'];
+      return checkQuickViewElementsDisplayBlock(
+          await remoteCall.callRemoteTestUtil(
+              'deepQueryAllElements', appId, [elements, ['display']]));
+    });
+
+    // Press the up arrow to go to the last file in the selection.
+    const quickViewArrowUp = ['#quick-view', 'ArrowUp', false, false, false];
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', appId, quickViewArrowUp));
+
+    // Open the Quick View delete confirm dialog.
+    const deleteKey = ['#quick-view', 'Delete', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
+        'Pressing Delete failed.');
+
+    // Click the delete confirm dialog OK button.
+    const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, deleteConfirm);
+
+    // Check: the hello.txt file should be deleted.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="hello.txt"]');
+
+    // Check: Quick View should display the entry below |hello.txt|,
+    // which is |world.ogv|.
+    function checkWebViewVideoLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+
+    const videoWebView =
+        ['#quick-view', 'files-safe-media[type="video"]', 'webview'];
+
+    await repeatUntil(async () => {
+      return checkWebViewVideoLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [videoWebView, ['display']]));
+    });
+
+    // Check: The MIME type of |world.ogv| is audio/ogg
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq(mimeType, 'audio/ogg');
+  };
 })();

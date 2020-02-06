@@ -55,14 +55,6 @@ def autoninja():
     return name
 
 
-def create_file(path):
-  """
-  Creates an empty file at path, creating parent directories if needed.
-  """
-  ensure_dir(os.path.dirname(path))
-  open(path, 'wb').close()
-
-
 def ensure_dir(path):
   """
   Creates path as a directory if it does not already exist.
@@ -71,6 +63,20 @@ def ensure_dir(path):
     return
   try:
     os.makedirs(path)
+  except OSError as e:
+    if e.errno != errno.EEXIST:
+      raise
+
+
+def ensure_file(path):
+  """
+  Creates an empty file at path if it does not already exist.
+  Also creates directories as needed.
+  """
+  ensure_dir(os.path.dirname(path))
+  try:
+    fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+    os.close(fd)
   except OSError as e:
     if e.errno != errno.EEXIST:
       raise
@@ -395,7 +401,7 @@ class GomaLinkBase(object):
             index = common_index
           else:
             index = obj_dir + '/' + param + '.thinlto.bc'
-            create_file(index)
+            ensure_file(index)
           codegen.append((os.path.normpath(native), param, index))
         else:
           final_params.append(param)
@@ -549,10 +555,10 @@ class GomaLinkBase(object):
     # If we determined that no distributed code generation need be done, just
     # invoke the original command.
     if params is None:
-      return subprocess.call(argv[1:])
+      return subprocess.call([args.linker] + args.linker_args)
     if use_common_objects:
       objs = [x[0] for x in params.codegen]
-      create_file(common_dir + '/empty.thinlto.bc')
+      ensure_file(common_dir + '/empty.thinlto.bc')
     else:
       objs = self.thin_link(params, gen_dir)
     self.codegen_and_link(params, gen_dir, objs)

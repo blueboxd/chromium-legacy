@@ -9,7 +9,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 import {TestService} from './test_service.js';
 import {createExtensionInfo, MockItemDelegate, testVisible} from './test_util.js';
@@ -260,12 +260,15 @@ suite(extension_item_tests.suiteName, function() {
     const kRuntime = 1 << 3;
 
     function assertWarnings(mask) {
-      assertEquals(!!(mask & kCorrupt), isVisible(item, '#corrupted-warning'));
       assertEquals(
-          !!(mask & kSuspicious), isVisible(item, '#suspicious-warning'));
+          !!(mask & kCorrupt), isChildVisible(item, '#corrupted-warning'));
       assertEquals(
-          !!(mask & kBlacklisted), isVisible(item, '#blacklisted-warning'));
-      assertEquals(!!(mask & kRuntime), isVisible(item, '#runtime-warnings'));
+          !!(mask & kSuspicious), isChildVisible(item, '#suspicious-warning'));
+      assertEquals(
+          !!(mask & kBlacklisted),
+          isChildVisible(item, '#blacklisted-warning'));
+      assertEquals(
+          !!(mask & kRuntime), isChildVisible(item, '#runtime-warnings'));
     }
 
     assertWarnings(0);
@@ -298,33 +301,33 @@ suite(extension_item_tests.suiteName, function() {
   });
 
   test(assert(extension_item_tests.TestNames.SourceIndicator), function() {
-    expectFalse(isVisible(item, '#source-indicator'));
+    expectFalse(isChildVisible(item, '#source-indicator'));
     item.set('data.location', 'UNPACKED');
     flush();
-    expectTrue(isVisible(item, '#source-indicator'));
+    expectTrue(isChildVisible(item, '#source-indicator'));
     const icon = item.$$('#source-indicator iron-icon');
     assertTrue(!!icon);
     expectEquals('extensions-icons:unpacked', icon.icon);
 
     item.set('data.location', 'THIRD_PARTY');
     flush();
-    expectTrue(isVisible(item, '#source-indicator'));
+    expectTrue(isChildVisible(item, '#source-indicator'));
     expectEquals('extensions-icons:input', icon.icon);
 
     item.set('data.location', 'UNKNOWN');
     flush();
-    expectTrue(isVisible(item, '#source-indicator'));
+    expectTrue(isChildVisible(item, '#source-indicator'));
     expectEquals('extensions-icons:input', icon.icon);
 
     item.set('data.location', 'FROM_STORE');
     item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
     flush();
-    expectTrue(isVisible(item, '#source-indicator'));
+    expectTrue(isChildVisible(item, '#source-indicator'));
     expectEquals('extensions-icons:business', icon.icon);
 
     item.set('data.controlledInfo', null);
     flush();
-    expectFalse(isVisible(item, '#source-indicator'));
+    expectFalse(isChildVisible(item, '#source-indicator'));
   });
 
   test(

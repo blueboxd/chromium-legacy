@@ -68,6 +68,7 @@ enum Pref {
   WEBKIT_PASSWORD_ECHO_ENABLED,
   WEBKIT_FORCE_DARK_MODE_ENABLED,
   HOME_PAGE,
+  AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -121,6 +122,7 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kWebKitPasswordEchoEnabled,
     prefs::kWebKitForceDarkModeEnabled,
     prefs::kHomePage,
+    autofill::prefs::kAutofillCreditCardFidoAuthEnabled,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

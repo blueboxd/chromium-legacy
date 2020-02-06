@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_DIGITAL_ASSET_LINKS_DIGITAL_ASSET_LINKS_HANDLER_H_
 #define CHROME_BROWSER_ANDROID_DIGITAL_ASSET_LINKS_DIGITAL_ASSET_LINKS_HANDLER_H_
 
+#include <map>
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -22,9 +26,9 @@ extern const char kDigitalAssetLinksCheckResponseKeyLinked[];
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browserservices
 enum class RelationshipCheckResult {
-  SUCCESS = 0,
-  FAILURE,
-  NO_CONNECTION
+  kSuccess = 0,
+  kFailure,
+  kNoConnection,
 };
 
 using RelationshipCheckResultCallback =
@@ -39,9 +43,10 @@ using RelationshipCheckResultCallback =
 // The WebContents are used for logging console messages.
 class DigitalAssetLinksHandler : public content::WebContentsObserver {
  public:
-  DigitalAssetLinksHandler(
-      content::WebContents* web_contents,
-      scoped_refptr<network::SharedURLLoaderFactory> factory);
+  // Optionally include |web_contents| for logging error messages to DevTools.
+  explicit DigitalAssetLinksHandler(
+      scoped_refptr<network::SharedURLLoaderFactory> factory,
+      content::WebContents* web_contents = nullptr);
   ~DigitalAssetLinksHandler() override;
 
   // Checks whether the given "relationship" has been declared by the target
@@ -55,23 +60,31 @@ class DigitalAssetLinksHandler : public content::WebContentsObserver {
   // See
   // https://developers.google.com/digital-asset-links/reference/rest/v1/assetlinks/check
   // for details.
-  bool CheckDigitalAssetLinkRelationship(
-      RelationshipCheckResultCallback callback,
+  bool CheckDigitalAssetLinkRelationshipForAndroidApp(
       const std::string& web_domain,
-      const std::string& package,
+      const std::string& relationship,
       const std::string& fingerprint,
-      const std::string& relationship);
+      const std::string& package,
+      RelationshipCheckResultCallback callback);
 
  private:
-  void OnURLLoadComplete(const std::string& package,
-                         const std::string& fingerprint,
-                         const std::string& relationship,
+  // Generic DAL verifier.
+  bool CheckDigitalAssetLinkRelationship(
+      const std::string& web_domain,
+      const std::string& relationship,
+      const base::Optional<std::string>& fingerprint,
+      const std::map<std::string, std::string>& target_values,
+      RelationshipCheckResultCallback callback);
+
+  void OnURLLoadComplete(std::string relationship,
+                         base::Optional<std::string> fingerprint,
+                         std::map<std::string, std::string> target_values,
                          std::unique_ptr<std::string> response_body);
 
   // Callback for the DataDecoder.
-  void OnJSONParseResult(const std::string& package,
-                         const std::string& fingerprint,
-                         const std::string& relationship,
+  void OnJSONParseResult(std::string relationship,
+                         base::Optional<std::string> fingerprint,
+                         std::map<std::string, std::string> target_values,
                          data_decoder::DataDecoder::ValueOrError result);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

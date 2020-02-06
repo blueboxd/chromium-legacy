@@ -698,6 +698,7 @@ const char kAttributeChanged[] = "Attribute changed";
 const char kColumnsChanged[] = "Attribute changed";
 const char kChildAnonymousBlockChanged[] = "Child anonymous block changed";
 const char kAnonymousBlockChange[] = "Anonymous block change";
+const char kFontsChanged[] = "Fonts changed";
 const char kFullscreen[] = "Fullscreen change";
 const char kChildChanged[] = "Child changed";
 const char kListValueChange[] = "List value change";

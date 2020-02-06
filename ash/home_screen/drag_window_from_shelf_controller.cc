@@ -8,6 +8,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
@@ -32,6 +33,7 @@
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -65,6 +67,12 @@ constexpr float kReturnToMaximizedStandardThreshold = 164.f;
 
 // The scroll update threshold to restart the show overview timer.
 constexpr float kScrollUpdateOverviewThreshold = 2.f;
+
+// Presentation time histogram names.
+constexpr char kDragWindowFromShelfHistogram[] =
+    "Ash.DragWindowFromShelf.PresentationTime";
+constexpr char kDragWindowFromShelfMaxLatencyHistogram[] =
+    "Ash.DragWindowFromShelf.PresentationTime.MaxLatency";
 
 }  // namespace
 
@@ -146,6 +154,10 @@ DragWindowFromShelfController::DragWindowFromShelfController(
   DCHECK_NE(hotseat_state, HotseatState::kShown);
   window_->AddObserver(this);
   OnDragStarted(location_in_screen);
+
+  presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+      window_->GetHost()->compositor(), kDragWindowFromShelfHistogram,
+      kDragWindowFromShelfMaxLatencyHistogram);
 }
 
 DragWindowFromShelfController::~DragWindowFromShelfController() {
@@ -164,6 +176,7 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   if (!drag_started_)
     return;
 
+  presentation_time_recorder_->RequestNext();
   UpdateDraggedWindow(location_in_screen);
 
   // Open overview if the window has been dragged far enough and the scroll
@@ -227,6 +240,7 @@ base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
     return base::nullopt;
 
   drag_started_ = false;
+  presentation_time_recorder_.reset();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
@@ -278,6 +292,7 @@ void DragWindowFromShelfController::CancelDrag() {
                             ShelfWindowDragResult::kDragCanceled);
 
   drag_started_ = false;
+  presentation_time_recorder_.reset();
   // Reset the window's transform to identity transform.
   window_->SetTransform(gfx::Transform());
   WindowBackdrop::Get(window_)->RestoreBackdrop();
@@ -474,7 +489,11 @@ DragWindowFromShelfController::GetSnapPosition(
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   SplitViewController::SnapPosition snap_position = ::ash::GetSnapPosition(
       root_window, window_, gfx::ToRoundedPoint(location_in_screen),
-      kScreenEdgeInsetForSnap, kScreenEdgeInsetForSnap);
+      gfx::ToRoundedPoint(initial_location_in_screen_),
+      /*snap_distance_from_edge=*/kDistanceFromEdge,
+      /*minimum_drag_distance=*/kMinDragDistance,
+      /*horizontal_edge_inset=*/kScreenEdgeInsetForSnap,
+      /*vertical_edge_inset=*/kScreenEdgeInsetForSnap);
 
   // For portrait mode, since the drag starts from the bottom of the screen,
   // we should only allow the window to snap to the top of the screen.
@@ -484,42 +503,6 @@ DragWindowFromShelfController::GetSnapPosition(
       ((is_primary && snap_position == SplitViewController::RIGHT) ||
        (!is_primary && snap_position == SplitViewController::LEFT))) {
     snap_position = SplitViewController::NONE;
-  }
-
-  // A window has to be dragged toward the direction of the edge of the screen
-  // for a minimum of |kMinDragDistance| to a point within
-  // |kScreenEdgeInsetForSnap| of the edge of the screen, or dragged inside
-  // |kDistanceFromEdge| from edge.
-  if (snap_position != SplitViewController::NONE) {
-    const gfx::Rect area =
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            root_window);
-
-    // Check if the drag ends inside |kDistanceFromEdge| from edge. If so, the
-    // window should be get snapped no matter how far it's been dragged.
-    bool drag_end_near_edge = false;
-    if ((is_landscape &&
-         (location_in_screen.x() < kDistanceFromEdge ||
-          location_in_screen.x() > area.right() - kDistanceFromEdge)) ||
-        (!is_landscape &&
-         (location_in_screen.y() < kDistanceFromEdge ||
-          location_in_screen.y() > area.bottom() - kDistanceFromEdge))) {
-      drag_end_near_edge = true;
-    }
-
-    if (!drag_end_near_edge) {
-      // Check how far the window has been dragged.
-      const int initial_x = initial_location_in_screen_.x();
-      const int initial_y = initial_location_in_screen_.y();
-      const int distance = is_landscape ? location_in_screen.x() - initial_x
-                                        : location_in_screen.y() - initial_y;
-      if ((SplitViewController::IsPhysicalLeftOrTop(snap_position) &&
-           distance > -kMinDragDistance) ||
-          (!SplitViewController::IsPhysicalLeftOrTop(snap_position) &&
-           distance < kMinDragDistance)) {
-        snap_position = SplitViewController::NONE;
-      }
-    }
   }
 
   return snap_position;

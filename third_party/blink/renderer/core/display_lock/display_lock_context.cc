@@ -499,7 +499,7 @@ DisplayLockContext::GetScopedForcedUpdate() {
 
   DCHECK(!update_forced_);
   update_forced_ = true;
-  TRACE_EVENT_ASYNC_BEGIN0(
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"), "LockForced",
       TRACE_ID_LOCAL(this));
 
@@ -516,8 +516,9 @@ DisplayLockContext::GetScopedForcedUpdate() {
 void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
   DCHECK(update_forced_);
   update_forced_ = false;
-  TRACE_EVENT_ASYNC_END0(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-                         "LockForced", TRACE_ID_LOCAL(this));
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"), "LockForced",
+      TRACE_ID_LOCAL(this));
 }
 
 void DisplayLockContext::StartCommit() {

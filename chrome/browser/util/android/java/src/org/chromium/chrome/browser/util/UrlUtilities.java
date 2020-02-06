@@ -100,15 +100,6 @@ public class UrlUtilities {
     }
 
     /**
-     * @param uri A URI.
-     *
-     * @return Whether the URI's scheme is for a internal chrome page.
-     */
-    public static boolean isInternalScheme(URI uri) {
-        return INTERNAL_SCHEMES.contains(uri.getScheme());
-    }
-
-    /**
      * @param gurl A GURL.
      *
      * @return Whether the URL's scheme is for a internal chrome page.

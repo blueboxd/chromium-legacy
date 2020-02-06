@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(dpapad): Share these with polymer_modulizer.gni.
 common_namespace_rewrites = [
   "cr.addSingletonGetter|addSingletonGetter",
   "cr.addWebUIListener|addWebUIListener",
   "cr.dispatchSimpleEvent|dispatchSimpleEvent",
+  "cr.icon.getFavicon|getFavicon",
   "cr.isAndroid|isAndroid",
   "cr.isChromeOS|isChromeOS",
   "cr.isIOS|isIOS",
@@ -16,10 +16,15 @@ common_namespace_rewrites = [
   "cr.removeWebUIListener|removeWebUIListener",
   "cr.sendWithPromise|sendWithPromise",
   "cr.ui.FocusOutlineManager|FocusOutlineManager",
+  "cr.ui.FocusRowBehavior|FocusRowBehavior",
   "cr.ui.focusWithoutInk|focusWithoutInk",
   "Polymer.dom.flush|flush",
+  "Polymer.IronA11yAnnouncer|IronA11yAnnouncer",
+  "Polymer.PaperRippleBehavior|PaperRippleBehavior",
   "Polymer.RenderStatus.afterNextRender|afterNextRender",
   "Polymer.RenderStatus.beforeNextRender|beforeNextRender",
+
+  # TODO(dpapad): Add more such rewrites as they get discovered.
 ]
 
 template("js_modulizer") {

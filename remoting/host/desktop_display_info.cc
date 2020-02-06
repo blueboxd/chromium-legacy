@@ -72,8 +72,13 @@ const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
   return &displays_[id];
 }
 
-// Calculate the offset from the upper-left of the desktop to the origin of
-// the specified display.
+// Calculate the offset from the origin of the desktop to the origin of the
+// specified display.
+//
+// For Mac, the origin of the desktop is the origin of the default display.
+//
+// For Windows/Linux, the origin of the desktop is the upper-left of the
+// entire desktop region.
 //
 // x         b-----------+            ---
 //           |           |             |  y-offset to c
@@ -89,13 +94,31 @@ const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
 // x = upper left of desktop
 // a,b,c = origin of display A,B,C
 webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
-    unsigned int disp_id) {
-  if (disp_id >= displays_.size()) {
-    LOG(INFO) << "Invalid display id for CalcDisplayOffset: " << disp_id;
+    webrtc::ScreenId disp_id) {
+  bool full_desktop = (disp_id == webrtc::kFullDesktopScreenId);
+  unsigned int disp_index = disp_id;
+
+  if (full_desktop) {
+#if defined(OS_MACOSX)
+    // For Mac, we need to calculate the offset relative to the default
+    // display.
+    disp_index = 0;
+#else
+    // For other platforms, the origin for full desktop is 0,0.
+    return webrtc::DesktopVector();
+#endif  // !defined(OS_MACOSX)
+  }
+
+  if (displays_.size() == 0) {
+    LOG(INFO) << "No display info available";
+    return webrtc::DesktopVector();
+  }
+  if (disp_index >= displays_.size()) {
+    LOG(INFO) << "Invalid display id for CalcDisplayOffset: " << disp_index;
     return webrtc::DesktopVector();
   }
 
-  DisplayGeometry disp_info = displays_[disp_id];
+  DisplayGeometry disp_info = displays_[disp_index];
   webrtc::DesktopVector origin(disp_info.x, disp_info.y);
 
   // Find topleft-most display coordinate. This is the topleft of the desktop.
@@ -109,7 +132,21 @@ webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
       dy = disp.y;
   }
   webrtc::DesktopVector topleft(dx, dy);
+
+#if defined(OS_MACOSX)
+  // Mac display offsets need to be relative to the main display's origin.
+  if (full_desktop) {
+    // For full desktop, this is the offset to the topleft display coord.
+    return topleft;
+  } else {
+    // For single displays, this offset is stored in the DisplayGeometry
+    // x,y values.
+    return origin;
+  }
+#else
+  // Return offset to this screen, relative to topleft.
   return origin.subtract(topleft);
+#endif  // defined(OS_MACOSX)
 }
 
 void DesktopDisplayInfo::AddDisplay(DisplayGeometry* display) {

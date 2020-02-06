@@ -860,7 +860,7 @@ void TranslatePrefs::RegisterProfilePrefs(
 }
 
 void TranslatePrefs::MigrateSitesBlacklist() {
-  // Migration should only be neccessary once but there could still be old
+  // Migration should only be necessary once but there could still be old
   // Chrome instances that sync the old preference, so do it once per
   // startup.
   static bool migrated = false;

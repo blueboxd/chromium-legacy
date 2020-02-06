@@ -263,8 +263,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableTextFragmentAnchor, blink::features::kTextFragmentAnchor,
            kUseFeatureState},
           {wf::EnableBackgroundFetch, features::kBackgroundFetch, kDisableOnly},
-          {wf::EnableUpdateHoverAtBeginFrame,
-           features::kUpdateHoverAtBeginFrame, kUseFeatureState},
           {wf::EnableForcedColors, features::kForcedColors, kUseFeatureState},
           {wf::EnableFractionalScrollOffsets,
            features::kFractionalScrollOffsets, kUseFeatureState},

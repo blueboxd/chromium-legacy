@@ -428,7 +428,7 @@ float InProcessContextFactory::GetSDRWhiteLevel(Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return 0;
-  return iter->second->display_color_spaces.sdr_white_level;
+  return iter->second->display_color_spaces.GetSDRWhiteLevel();
 }
 
 base::TimeTicks InProcessContextFactory::GetDisplayVSyncTimeBase(

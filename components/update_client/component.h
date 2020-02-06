@@ -384,6 +384,8 @@ class Component {
                                  int error_code,
                                  int extra_code1) const;
 
+  std::unique_ptr<CrxInstaller::InstallParams> install_params() const;
+
   base::ThreadChecker thread_checker_;
 
   const std::string id_;
@@ -436,6 +438,10 @@ class Component {
   ErrorCategory diff_error_category_ = ErrorCategory::kNone;
   int diff_error_code_ = 0;
   int diff_extra_code1_ = 0;
+
+  // Contains the optional |run| and |arguments| values in the update response
+  // manifest. This data is provided as an argument to the |Install| call.
+  base::Optional<CrxInstaller::InstallParams> install_params_;
 
   // Contains the events which are therefore serialized in the requests.
   std::vector<base::Value> events_;

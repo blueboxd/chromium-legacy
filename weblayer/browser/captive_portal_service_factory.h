@@ -10,14 +10,16 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace captive_portal {
 class CaptivePortalService;
+}
 
-// Singleton that owns all CaptivePortalServices and associates them with
-// BrowserContextImpl instances.
+// Singleton that owns all captive_portal::CaptivePortalServices and associates
+// them with BrowserContextImpl instances.
 class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the CaptivePortalService for |browser_context|.
-  static CaptivePortalService* GetForBrowserContext(
+  // Returns the captive_portal::CaptivePortalService for |browser_context|.
+  static captive_portal::CaptivePortalService* GetForBrowserContext(
       content::BrowserContext* browser_context);
 
   static CaptivePortalServiceFactory* GetInstance();
@@ -35,9 +37,9 @@ class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
-  // Incognito profiles have their own instance of CaptivePortalService rather
-  // than the default behavior of the service being null if the profile is
-  // incognito.
+  // Incognito profiles have their own instance of
+  // captive_portal::CaptivePortalService rather than the default behavior of
+  // the service being null if the profile is incognito.
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };

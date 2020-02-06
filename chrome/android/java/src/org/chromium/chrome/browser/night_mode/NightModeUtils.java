@@ -19,7 +19,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemeType;
 
 /**
  * Helper methods for supporting night mode.

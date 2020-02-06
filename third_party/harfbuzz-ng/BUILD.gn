@@ -319,12 +319,22 @@ source_set("hb_scoped_util") {
   deps = [ "//third_party:freetype_harfbuzz" ]
 }
 
-fuzzer_test("harfbuzz_fuzzer") {
-  sources = [ "fuzz/harfbuzz_fuzzer.cc" ]
+fuzzer_test("hb_shape_fuzzer") {
+  sources = [ "fuzz/hb_shape_fuzzer.cc" ]
   deps = [
     ":hb_scoped_util",
+    "//base",
     "//third_party:freetype_harfbuzz",
   ]
-  libfuzzer_options = [ "max_len=16800" ]
+  seed_corpus = "fuzz/seed_corpus"
+}
+
+fuzzer_test("hb_subset_fuzzer") {
+  sources = [ "fuzz/hb_subset_fuzzer.cc" ]
+  deps = [
+    ":hb_scoped_util",
+    "//base",
+    "//third_party:freetype_harfbuzz",
+  ]
   seed_corpus = "fuzz/seed_corpus"
 }

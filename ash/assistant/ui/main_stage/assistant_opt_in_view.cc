@@ -10,7 +10,6 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -126,9 +125,7 @@ void AssistantOptInView::InitLayout() {
           views::BoxLayout::Orientation::kHorizontal));
 
   layout_manager->set_cross_axis_alignment(
-      app_list_features::IsAssistantLauncherUIEnabled()
-          ? views::BoxLayout::CrossAxisAlignment::kCenter
-          : views::BoxLayout::CrossAxisAlignment::kEnd);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);

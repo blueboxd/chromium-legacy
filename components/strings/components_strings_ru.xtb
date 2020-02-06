@@ -527,7 +527,7 @@
 <translation id="3366477098757335611">Список карт</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
 <translation id="337363190475750230">Отключен</translation>
-<translation id="3376829916920036789">Администратор домена <ph name="ENROLLMENT_DOMAIN" /> включил в браузере перехватчик событий Enterprise, у которого есть доступ к некоторым вашим данным.</translation>
+<translation id="3376829916920036789">Администратор домена <ph name="ENROLLMENT_DOMAIN" /> включил в браузере перехватчики событий Enterprise. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="3377144306166885718">Этот сервер использует устаревшую версию протокола TLS.</translation>
 <translation id="3377188786107721145">Не удалось выполнить анализ политики</translation>
 <translation id="3377736046129930310">Использовать блокировку экрана для быстрого подтверждения карт</translation>
@@ -537,7 +537,7 @@
 <translation id="3391030046425686457">Адрес доставки</translation>
 <translation id="3395827396354264108">Способ выдачи</translation>
 <translation id="3399952811970034796">Адрес доставки</translation>
-<translation id="3402261774528610252">Сайт использует устаревший протокол TLS 1.0 или TLS 1.1. В будущем этот протокол будет отключен, из-за чего пользователи не смогут зайти на сайт. На сервере нужно включить протокол TLS 1.2 или выше.</translation>
+<translation id="3402261774528610252">Сайт использует устаревший протокол TLS 1.0 или TLS 1.1. В будущем эти протоколы будут отключены, из-за чего пользователи не смогут зайти на сайт. На сервере нужно включить протокол TLS 1.2 или более поздней версии.</translation>
 <translation id="3422248202833853650">Закройте другие программы, чтобы освободить память.</translation>
 <translation id="3422472998109090673">Сайт <ph name="HOST_NAME" /> недоступен.</translation>
 <translation id="3423742043356668186">Использовать системные параметры</translation>
@@ -943,7 +943,7 @@
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="519422657042045905">В этот PDF-файл нельзя добавлять заметки</translation>
-<translation id="5196187217592847346">Перехватчик событий Enterprise</translation>
+<translation id="5196187217592847346">Перехватчики событий Enterprise</translation>
 <translation id="5201306358585911203">Подтвердите действие</translation>
 <translation id="5205222826937269299">Введите имя или название</translation>
 <translation id="5215116848420601511">Способы оплаты и адреса из Google Pay</translation>
@@ -1365,7 +1365,7 @@
 <translation id="7152423860607593928">Number-14 (конверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
 <translation id="7153618581592392745">Бледно-лиловый</translation>
-<translation id="7156870133441232244">На сервере нужно обновить протокол TLS до версии 1.2 или выше.</translation>
+<translation id="7156870133441232244">На сервере нужно обновить протокол TLS до версии 1.2 или более поздней.</translation>
 <translation id="717330890047184534">Идентификатор GAIA:</translation>
 <translation id="7174545416324379297">Объединенное правило</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариантов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}}</translation>
@@ -1391,7 +1391,7 @@
 <translation id="725866823122871198">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Запретить доступ</translation>
 <translation id="7275334191706090484">Управляемые закладки</translation>
-<translation id="7288778322931489286">Администратор включил в браузере перехватчик событий Enterprise, у которого есть доступ к некоторым вашим данным.</translation>
+<translation id="7288778322931489286">Администратор включил в браузере перехватчики событий Enterprise. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="7292031607255951991">Имя получателя</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="7300012071106347854">Синий (кобальт)</translation>
@@ -1440,7 +1440,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Узнайте больше<ph name="END_LINK" /> об этой проблеме.</translation>
 <translation id="7455133967321480974">Использовать глобальный параметр по умолчанию (блокировать)</translation>
 <translation id="7460618730930299168">Настройки этого сеанса отличаются от тех, которые выбрали вы. Продолжить?</translation>
-<translation id="7464821087936825778">Выход из режима поиска</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7485870689360869515">Данные не найдены.</translation>
@@ -1734,7 +1733,7 @@
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="8866928039507595380">Фальцовка</translation>
 <translation id="886872106311861689">В3</translation>
-<translation id="8869862664961249123">Отправлять администратору данные о событиях безопасности, которые были помечены перехватчиком событий Enterprise как потенциально опасные. Это могут быть URL страниц, которые вы посещаете, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в браузер Chrome.</translation>
+<translation id="8869862664961249123">Отправлять администратору данные о событиях безопасности, которые были помечены перехватчиками событий Enterprise как потенциально опасные. Такими данными могут быть URL страниц, которые вы посещаете, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в браузер Chrome.</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8870494189203302833">В том же порядке лицевой стороной вниз</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>

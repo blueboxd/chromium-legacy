@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
  */
 public class HomepageTestRule implements TestRule {
     private boolean mIsHomepageEnabled;
+    private boolean mIsUsingChromeNTP;
     private boolean mIsUsingDefaultHomepage;
     private String mCustomizedHomepage;
 
@@ -44,6 +45,8 @@ public class HomepageTestRule implements TestRule {
 
     private void copyInitialValueBeforeTest() {
         mIsHomepageEnabled = mManager.readBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
+        mIsUsingChromeNTP =
+                mManager.readBoolean(ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, false);
         mIsUsingDefaultHomepage =
                 mManager.readBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true);
         mCustomizedHomepage = mManager.readString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, "");
@@ -53,6 +56,7 @@ public class HomepageTestRule implements TestRule {
         mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, mIsHomepageEnabled);
         mManager.writeBoolean(
                 ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, mIsUsingDefaultHomepage);
+        mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, mIsUsingChromeNTP);
         mManager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, mCustomizedHomepage);
     }
 
@@ -72,10 +76,26 @@ public class HomepageTestRule implements TestRule {
      *
      * HOMEPAGE_ENABLED -> true;
      * HOMEPAGE_USE_DEFAULT_URI -> true;
+     * HOMEPAGE_USE_CHROME_NTP -> false;
      */
     public void useDefaultHomepageForTest() {
         mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
         mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true);
+        mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, false);
+    }
+
+    /**
+     * Set up shared preferences to use Chrome NTP as homepage. This is to select chrome NTP in the
+     * home settings page, rather than setting the address of Chrome NTP as customized homepage.
+     *
+     * HOMEPAGE_ENABLED -> true;
+     * HOMEPAGE_USE_DEFAULT_URI -> false;
+     * HOMEPAGE_USE_CHROME_NTP -> true;
+     */
+    public void useChromeNTPForTest() {
+        mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
+        mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, false);
+        mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, true);
     }
 
     /**
@@ -83,6 +103,7 @@ public class HomepageTestRule implements TestRule {
      *
      * HOMEPAGE_ENABLED -> true;
      * HOMEPAGE_USE_DEFAULT_URI -> false;
+     * HOMEPAGE_USE_CHROME_NTP -> false;
      * HOMEPAGE_CUSTOM_URI -> <b>homepage</b>
      *
      * @param homepage The customized homepage that will be used in this testcase.
@@ -90,6 +111,7 @@ public class HomepageTestRule implements TestRule {
     public void useCustomizedHomepageForTest(String homepage) {
         mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
         mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, false);
+        mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, false);
         mManager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, homepage);
     }
 }

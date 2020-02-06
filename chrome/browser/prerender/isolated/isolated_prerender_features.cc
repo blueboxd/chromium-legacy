@@ -11,6 +11,10 @@ namespace features {
 const base::Feature kIsolatePrerenders{"IsolatePrerenders",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Forces Chrome to probe the origin before reusing a cached response.
+const base::Feature kIsolatePrerendersMustProbeOrigin{
+    "IsolatePrerendersMustProbeOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Forces all isolated prerenders to be proxied through a CONNECT tunnel.
 const base::Feature kIsolatedPrerenderUsesProxy{
     "IsolatedPrerenderUsesProxy", base::FEATURE_DISABLED_BY_DEFAULT};

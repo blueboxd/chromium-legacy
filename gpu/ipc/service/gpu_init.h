@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
@@ -64,6 +65,9 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
       const {
     return gpu_feature_info_for_hardware_gpu_;
   }
+  const base::Optional<DevicePerfInfo>& device_perf_info() const {
+    return device_perf_info_;
+  }
   const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
   std::unique_ptr<GpuWatchdogThread> TakeWatchdogThread() {
     return std::move(watchdog_thread_);
@@ -95,6 +99,9 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   base::Optional<GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
 
   GpuExtraInfo gpu_extra_info_;
+
+  // The following data are collected by the info collection GPU process.
+  base::Optional<DevicePerfInfo> device_perf_info_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<VulkanImplementation> vulkan_implementation_;

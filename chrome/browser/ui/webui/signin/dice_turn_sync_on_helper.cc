@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/policy_conversions.h"
@@ -365,8 +366,9 @@ void DiceTurnSyncOnHelper::OnProviderUpdatePropagated(
   if (provider != profile_->GetUserCloudPolicyManager())
     return;
   VLOG(2) << "Policies after sign in:";
-  VLOG(2) << policy::DictionaryPolicyConversions()
-                 .WithBrowserContext(profile_)
+  VLOG(2) << policy::DictionaryPolicyConversions(
+                 std::make_unique<policy::ChromePolicyConversionsClient>(
+                     profile_))
                  .ToJSON();
   profile_->GetProfilePolicyConnector()
       ->policy_service()

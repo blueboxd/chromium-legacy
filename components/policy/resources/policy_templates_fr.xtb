@@ -4015,13 +4015,6 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
 <translation id="7207095846245296855">Forcer Google SafeSearch</translation>
 <translation id="7211368186050418507">Ne jamais détecter automatiquement le fuseau horaire</translation>
 <translation id="7216442368414164495">Permettre aux utilisateurs d'activer la création de rapports détaillés dans le cadre de la navigation sécurisée</translation>
-<translation id="7221822638060296742">Vous permet de définir si les sites Web peuvent exécuter le plug-in <ph name="FLASH_PLUGIN_NAME" /> automatiquement. L'exécution automatique du plug-in <ph name="FLASH_PLUGIN_NAME" /> peut être autorisée pour tous les sites Web ou refusée pour tous les sites Web.
-
-          La fonctionnalité Cliquer pour lire permet d'exécuter le plug-in <ph name="FLASH_PLUGIN_NAME" />, mais l'utilisateur doit cliquer sur l'espace réservé pour lancer cette exécution.
-
-          La lecture automatique n'est autorisée que pour les domaines indiqués dans la règle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si vous souhaitez autoriser la lecture automatique pour tous les sites, vous pouvez ajouter http://* et https://* à cette liste.
-
-          Si cette règle n'est pas définie, l'utilisateur peut modifier ce paramètre manuellement.</translation>
 <translation id="7222749588229362483">Permet de fusionner les règles sélectionnées lorsqu'elles proviennent de sources différentes, et si le niveau et les champs d'application sont les mêmes.
 
         La fusion consiste à fusionner les clés de premier niveau du dictionnaire de chaque source. En cas de conflit entre des clés, la clé provenant de la source avec la plus haute priorité est appliquée.
@@ -4411,11 +4404,6 @@ au maximum si un utilisateur se sert de l'appareil.
       Cette règle ne prévaut pas sur la règle ExternalStorageDisabled. Si ExternalStorageDisabled est définie sur "True", l'accès aux périphériques de stockage externes est désactivé, et la présente règle est alors ignorée.
 
       Cette règle peut être actualisée dynamiquement dans M56 (ou version ultérieure).</translation>
-<translation id="7831595031698917016">Spécifie le délai maximal en millisecondes entre la réception du rejet d'une règle et la récupération de la nouvelle règle auprès du service de gestion de l'appareil.
-
-      La définition de cette règle remplace la valeur par défaut de 5 000 millisecondes. Les valeurs valides pour cette règle sont comprises entre 1 000 millisecondes (1 seconde) et 300 000 millisecondes (5 minutes). Toute valeur se situant hors de cette plage sera rapportée à la valeur limite la plus proche.
-
-      En l'absence de définition de cette règle, la valeur par défaut de 5 000 millisecondes est utilisée dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
 <translation id="7842317008224536842">Permet de définir l'état par défaut de la fonctionnalité d'accessibilité de contraste élevé sur l'écran de connexion.
 

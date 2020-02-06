@@ -170,5 +170,9 @@ namespace bluetoothPrivate {
     // Fired when a pairing event occurs.
     // |pairingEvent|: A pairing event.
     [maxListeners=1] static void onPairing(PairingEvent pairingEvent);
+
+    // Fired when a Bluetooth device changed its address.
+    static void onDeviceAddressChanged(bluetooth.Device device,
+                                       DOMString oldAddress);
   };
 };

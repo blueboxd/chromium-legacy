@@ -122,6 +122,18 @@ TEST_F('CrSettingsSliderV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsSubpageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/settings_subpage_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSubpageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsTextareaV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {

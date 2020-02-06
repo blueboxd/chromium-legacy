@@ -161,23 +161,24 @@ ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
 }
 
 ProfileDestroyer::~ProfileDestroyer() {
-  // Don't wait for pending registrations, if any, these hosts are buggy.
-  // Note: this can happen, but if so, it's better to crash here than wait
-  // for the host to dereference a deleted Profile. http://crbug.com/248625
+  if (profile_) {
+    ProfileDestroyer::DestroyOffTheRecordProfileNow(profile_);
+    profile_ = nullptr;
+  }
+
+  // Once the profile is deleted, all renderer hosts must have been deleted.
+  // Crash here if this is not the case instead of having a host dereference
+  // a deleted profile. http://crbug.com/248625
   CHECK_EQ(0U, num_hosts_) << "Some render process hosts were not "
                            << "destroyed early enough!";
-  DCHECK(pending_destroyers_ != NULL);
+
+  DCHECK(pending_destroyers_ != nullptr);
   auto iter = pending_destroyers_->find(this);
   DCHECK(iter != pending_destroyers_->end());
   pending_destroyers_->erase(iter);
   if (pending_destroyers_->empty()) {
     delete pending_destroyers_;
-    pending_destroyers_ = NULL;
-  }
-
-  if (profile_) {
-    ProfileDestroyer::DestroyOffTheRecordProfileNow(profile_);
-    profile_ = nullptr;
+    pending_destroyers_ = nullptr;
   }
 }
 

@@ -11,7 +11,6 @@ js_modulizer("modulize") {
   ]
   namespace_rewrites = [
     "certificate_manager.CertificatesBrowserProxyImpl|CertificatesBrowserProxyImpl",
-    "cr.isChromeOS|isChromeOS",
     "test_util.eventToPromise|eventToPromise",
     "MockInteractions.keyEventOn|keyEventOn",
   ]

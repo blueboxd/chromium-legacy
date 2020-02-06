@@ -112,7 +112,7 @@
 <translation id="1405567553485452995">Мала жашыл</translation>
 <translation id="1407135791313364759">Баарын ачуу</translation>
 <translation id="1408787208417187241">Жогорку жагын үч жолу илмек менен бекитүү</translation>
-<translation id="1413809658975081374">Купуялуулук катасы</translation>
+<translation id="1413809658975081374">Купуялык катасы</translation>
 <translation id="1426410128494586442">Ооба</translation>
 <translation id="1428146450423315676">7-төшөгүч</translation>
 <translation id="1430915738399379752">Басып чыгаруу</translation>
@@ -918,7 +918,7 @@
 <translation id="5031870354684148875">Google Котормо жөнүндө</translation>
 <translation id="5034369478845443529">Жергиликтүү контекст <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Уруксат берүү</translation>
-<translation id="5040262127954254034">Купуялуулук</translation>
+<translation id="5040262127954254034">Купуялык</translation>
 <translation id="5043480802608081735">Сиз көчүргөн шилтеме</translation>
 <translation id="5045550434625856497">Сырсөз туура эмес</translation>
 <translation id="5056549851600133418">Сизге ылайыктуу макалалар</translation>
@@ -1191,7 +1191,7 @@
 <translation id="6240447795304464094">Google Pay логотиби</translation>
 <translation id="6241121617266208201">Сунуштарды жашыруу</translation>
 <translation id="624499991300733384">Басып чыгарууну курамалоо кызматы</translation>
-<translation id="6251924700383757765">Купуялуулук саясаты</translation>
+<translation id="6251924700383757765">Купуялык саясаты</translation>
 <translation id="6254436959401408446">Бул баракчаны ачууга эстутум жетишсиз</translation>
 <translation id="625755898061068298">Сиз бул сайт үчүн коопсуздук эскертүүлөрү өчүрүлсүн деп тандагансыз.</translation>
 <translation id="6259156558325130047">Иреттештирүүнү &amp;кайталоо</translation>
@@ -1456,7 +1456,6 @@
 <translation id="7451311239929941790">Бул көйгөй жөнүндө <ph name="BEGIN_LINK" />көбүрөөк маалымат<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">Глобалдык демейки маанини колдонуу (Бөгөттөө)</translation>
 <translation id="7460618730930299168">Сеанстын форматы сиз тандагандан башкача экен. Уланта бересизби?</translation>
-<translation id="7464821087936825778">Издөө режиминен чыгууда</translation>
 <translation id="7473891865547856676">Жок, рахмат</translation>
 <translation id="7481312909269577407">Багыттоо</translation>
 <translation id="7485870689360869515">Дайындар табылган жок.</translation>

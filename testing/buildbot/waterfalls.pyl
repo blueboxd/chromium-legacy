@@ -1518,6 +1518,24 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      'Linux Ozone Tester (Wayland)': {
+        'args': [ '--ozone-platform=wayland' ],
+        'mixins': [
+          'linux-xenial',
+         ],
+        'test_suites': {
+         'gtest_tests': 'ozone_linux_gtests_wayland',
+        },
+      },
+      'Linux Ozone Tester (X11)': {
+        'args': [ '--ozone-platform=x11' ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+         'gtest_tests': 'ozone_linux_gtests_x11',
+        },
+      },
       'Linux Viz': {
         'mixins': [
           'linux-xenial',

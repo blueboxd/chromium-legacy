@@ -353,6 +353,9 @@ extern const char kEnableSystemWebAppsDescription[];
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
+extern const char kPostQuantumCECPQ2Name[];
+extern const char kPostQuantumCECPQ2Description[];
+
 extern const char kWinrtGeolocationImplementationName[];
 extern const char kWinrtGeolocationImplementationDescription[];
 

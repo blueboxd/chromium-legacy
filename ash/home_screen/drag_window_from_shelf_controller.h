@@ -202,6 +202,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   bool during_window_restoration_callback_ = false;
 
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+
   base::WeakPtrFactory<DragWindowFromShelfController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowFromShelfController);

@@ -13650,7 +13650,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobileTabClosed">
+<action name="MobileTabClosed" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -17091,6 +17091,14 @@ should be able to be added at any place in this file.
   <owner>mohsen@chromium.org</owner>
   <description>
     When vertical overscroll initiates a RELOAD navigation in the browser.
+  </description>
+</action>
+
+<action name="OverscrollActionCloseTab">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>kkhorimoto@chromium.org</owner>
+  <description>
+    Called when the user closes the tab using overscroll action.
   </description>
 </action>
 

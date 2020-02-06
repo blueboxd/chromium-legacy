@@ -14,7 +14,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyDownOn, keyUpOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 import {TestService} from './test_service.js';
 
@@ -42,7 +42,7 @@ suite(extension_shortcut_input_tests.suiteName, function() {
   test(assert(extension_shortcut_input_tests.TestNames.Basic), function() {
     const field = input.$['input'];
     assertEquals('', field.value);
-    const isClearVisible = isVisible.bind(null, input, '#clear', false);
+    const isClearVisible = isChildVisible.bind(null, input, '#clear', false);
     expectFalse(isClearVisible());
 
     // Click the input. Capture should start.

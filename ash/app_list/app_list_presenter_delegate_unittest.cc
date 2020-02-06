@@ -38,8 +38,10 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -1436,6 +1438,46 @@ TEST_P(AppListPresenterDelegateTest,
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
+// Tests that a drag to the bezel from Fullscreen/Peeking will close the app
+// list even on external display with non zero y origin.
+TEST_P(AppListPresenterDelegateTest,
+       DragToBezelClosesAppListFromFullscreenAndPeekingOnExternal) {
+  UpdateDisplay("800x600,1000x768");
+
+  const bool test_fullscreen = GetParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
+  AppListView* view = GetAppListView();
+  {
+    SCOPED_TRACE("Peeking");
+    GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  }
+  EXPECT_EQ(Shell::GetAllRootWindows()[1],
+            view->GetWidget()->GetNativeWindow()->GetRootWindow());
+
+  if (test_fullscreen) {
+    FlingUpOrDown(GetEventGenerator(), view, true /* up */);
+    GetAppListTestHelper()->WaitUntilIdle();
+    SCOPED_TRACE("FullscreenAllApps");
+    GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+  }
+
+  // Drag the app list to 50 DIPs from the bottom bezel.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestView(
+          view->GetWidget()->GetNativeWindow());
+  const int bezel_y = display.bounds().bottom();
+  const int drag_x = display.bounds().x() + 10;
+  GetEventGenerator()->GestureScrollSequence(
+      gfx::Point(drag_x, bezel_y - (kAppListBezelMargin + 100)),
+      gfx::Point(drag_x, bezel_y - (kAppListBezelMargin)),
+      base::TimeDelta::FromMilliseconds(1500), 100);
+
+  GetAppListTestHelper()->WaitUntilIdle();
+  SCOPED_TRACE("Closed");
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckVisibility(false);
+}
+
 // Tests that a fling from Fullscreen/Peeking closes the app list.
 TEST_P(AppListPresenterDelegateTest,
        FlingDownClosesAppListFromFullscreenAndPeeking) {
@@ -2528,9 +2570,23 @@ class AppListPresenterDelegateHomeLauncherTest
   }
 
   void PressHomeButton() {
-    Shell::Get()->app_list_controller()->ToggleAppList(
-        GetPrimaryDisplayId(), AppListShowSource::kShelfButton,
-        base::TimeTicks());
+    HomeButton* const home_button =
+        GetPrimaryShelf()->navigation_widget()->GetHomeButton();
+    auto* gen = GetEventGenerator();
+    gfx::Point click_point = home_button->GetBoundsInScreen().CenterPoint();
+    gen->MoveMouseTo(click_point);
+    gen->ClickLeftButton();
+    GetAppListTestHelper()->WaitUntilIdle();
+  }
+
+  void TapHomeButton(int64_t display_id) {
+    HomeButton* const home_button =
+        Shell::GetRootWindowControllerWithDisplayId(display_id)
+            ->shelf()
+            ->navigation_widget()
+            ->GetHomeButton();
+    gfx::Point tap_point = home_button->GetBoundsInScreen().CenterPoint();
+    GetEventGenerator()->GestureTapDownAndUp(tap_point);
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
@@ -3415,6 +3471,25 @@ TEST_P(AppListPresenterDelegateVirtualKeyboardTest,
   }
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
   EXPECT_FALSE(GetAppListView()->search_box_view()->is_search_box_active());
+}
+
+TEST_P(AppListPresenterDelegateHomeLauncherTest,
+       TapHomeButtonOnExternalDisplay) {
+  UpdateDisplay("800x600,1000x768");
+
+  TapHomeButton(GetSecondaryDisplay().id());
+  {
+    SCOPED_TRACE("1st tap");
+    GetAppListTestHelper()->CheckVisibility(true);
+    GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  }
+
+  TapHomeButton(GetSecondaryDisplay().id());
+  {
+    SCOPED_TRACE("2nd tap");
+    GetAppListTestHelper()->CheckVisibility(false);
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  }
 }
 
 }  // namespace ash

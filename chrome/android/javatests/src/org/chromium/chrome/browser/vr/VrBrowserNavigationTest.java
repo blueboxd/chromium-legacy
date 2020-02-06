@@ -155,7 +155,8 @@ public class VrBrowserNavigationTest {
     private void assertState(WebContents wc, @Page int page, @PresentationMode int presentationMode,
             @FullscreenMode int fullscreenMode) throws TimeoutException {
         Assert.assertTrue("Browser is not in VR", VrShellDelegate.isInVr());
-        Assert.assertEquals("Browser is not on correct web site", getUrl(page), wc.getVisibleUrl());
+        Assert.assertEquals(
+                "Browser is not on correct web site", getUrl(page), wc.getVisibleUrlString());
         Assert.assertEquals("Browser's presentation mode does not match expectation",
                 presentationMode == PresentationMode.PRESENTING,
                 TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
@@ -594,7 +595,7 @@ public class VrBrowserNavigationTest {
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.CLOSE_INCOGNITO_TABS, new PointF());
         CriteriaHelper.pollUiThread(() -> {
-            return mTestRule.getWebContents().getVisibleUrl().equals(TEST_PAGE_2D_2_URL);
+            return mTestRule.getWebContents().getVisibleUrlString().equals(TEST_PAGE_2D_2_URL);
         }, "Did not successfully exit Incognito mode");
 
         // Ensure that non-Incognito's forward/back was unaffected by Incognito.

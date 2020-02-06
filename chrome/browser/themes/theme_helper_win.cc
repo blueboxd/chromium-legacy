@@ -179,6 +179,14 @@ bool ThemeHelperWin::GetPlatformHighContrastColor(int id,
       break;
 
     // Highlight/Selected Text Foreground
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
+      if (!base::FeatureList::IsEnabled(
+              views::features::kEnablePlatformHighContrastInkDrop)) {
+        return GetPlatformHighContrastColor(
+            ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, color);
+      }
+      FALLTHROUGH;
     case ThemeProperties::COLOR_TAB_TEXT:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:

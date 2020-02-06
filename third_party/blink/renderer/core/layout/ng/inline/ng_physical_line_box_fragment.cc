@@ -151,8 +151,8 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
   const TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
 
-  for (NGInlineCursor descendants = cursor.CursorForDescendants(); descendants;
-       descendants.MoveToNextSkippingChildren()) {
+  for (NGInlineCursor descendants = cursor.CursorForDescendants();
+       descendants;) {
     const NGFragmentItem* item = descendants.CurrentItem();
     DCHECK(item);
     if (item->IsText()) {
@@ -163,6 +163,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
                                            &child_scroll_overflow);
       }
       overflow.Unite(child_scroll_overflow);
+      descendants.MoveToNextSkippingChildren();
       continue;
     }
 
@@ -174,7 +175,14 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
           ComputeRelativeOffset(child_box->Style(), container_writing_mode,
                                 container_direction, container.Size());
       overflow.Unite(child_scroll_overflow);
+      descendants.MoveToNextSkippingChildren();
+      continue;
     }
+
+    // Add all children of a culled inline box; i.e., an inline box without
+    // margin/border/padding etc.
+    DCHECK_EQ(item->Type(), NGFragmentItem::kBox);
+    descendants.MoveToNext();
   }
 
   // Make sure we include the inline-size of the line-box in the overflow.

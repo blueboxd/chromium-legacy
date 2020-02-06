@@ -172,7 +172,7 @@
 <translation id="1224275271335624810">Cea mai rapidă</translation>
 <translation id="1225177025209879837">Se procesează solicitarea...</translation>
 <translation id="1227507814927581609">Autentificarea nu a reușit în timpul conectării la „<ph name="DEVICE_NAME" />”.</translation>
-<translation id="1229587244632896090">Fișierul selectat este necunoscut și poate fi periculos. Protecția avansată recomandă trimiterea fișierului la Google în vederea verificării pentru programe malware.</translation>
+<translation id="1229587244632896090">Fișierul selectat este necunoscut și poate fi periculos. Protecția avansată recomandă trimiterea fișierului la Google pentru detectarea eventualelor programe malware.</translation>
 <translation id="1231733316453485619">Activezi sincronizarea?</translation>
 <translation id="1232569758102978740">Fără titlu</translation>
 <translation id="1233497634904001272">Atinge din nou cheia de securitate pentru a finaliza solicitarea.</translation>
@@ -846,7 +846,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2165421703844373933">Accesează Asistentul rostind „Ok Google”. Pentru a economisi bateria, alege „Activat (recomandat)”. Asistentul va răspunde doar atunci când dispozitivul este conectat la o sursă de alimentare sau când se încarcă.</translation>
 <translation id="2166369534954157698">Vând muzică de jazz și haine de bun-gust în New York și Quebec, la preț fix.</translation>
 <translation id="2169062631698640254">Conectați-vă oricum</translation>
-<translation id="2170519224423744029">Protecția avansată recomandă trimiterea fișierului <ph name="FILE_NAME" /> la Google în vederea verificării pentru programe malware.</translation>
+<translation id="2170519224423744029">Protecția avansată recomandă trimiterea fișierului <ph name="FILE_NAME" /> la Google pentru detectarea eventualelor programe malware.</translation>
 <translation id="2172784515318616985">Continuă</translation>
 <translation id="2173302385160625112">Verifică-ți conexiunea la internet</translation>
 <translation id="2173801458090845390">Adaugă ID-ul de solicitare la acest dispozitiv</translation>
@@ -949,7 +949,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2299734369537008228">Glisor: de la <ph name="MIN_LABEL" /> la <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Personalizează și controlează <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Directorul rădăcină pentru extensie este nevalid.</translation>
-<translation id="2302444155926798584">Plugin VM a fost dezinstalată</translation>
+<translation id="2302444155926798584">Plugin VM a fost dezinstalat</translation>
 <translation id="23030561267973084">„<ph name="EXTENSION_NAME" />” a solicitat permisiuni suplimentare.</translation>
 <translation id="23055578400314116">Selectează un nume de utilizator</translation>
 <translation id="2307462900900812319">Configurați rețeaua</translation>
@@ -1171,7 +1171,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2604255671529671813">Eroare de conectare la rețea</translation>
 <translation id="2606246518223360146">Conectează datele</translation>
 <translation id="2607101320794533334">Informații privind cheia publică a subiectului</translation>
-<translation id="2608770217409477136">Utilizează setările prestabilite</translation>
 <translation id="2609896558069604090">Creați comenzi rapide...</translation>
 <translation id="2610157865375787051">Inactivitate</translation>
 <translation id="2610260699262139870">Di&amp;mensiunea actuală</translation>
@@ -3254,7 +3253,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5565735124758917034">Activ</translation>
 <translation id="5567989639534621706">Memoriile cache ale aplicației</translation>
 <translation id="5568069709869097550">Nu se poate conecta</translation>
-<translation id="5568144734023334204">Stocare Android</translation>
 <translation id="5572851009514199876">Pornește și conectează-te la Chrome, ca acesta să verifice dacă ai permisiunea să accesezi site-ul.</translation>
 <translation id="5575473780076478375">Extensie incognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">A apărut o problemă cu solicitarea de înregistrare demo.</translation>

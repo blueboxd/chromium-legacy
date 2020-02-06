@@ -110,8 +110,6 @@ extern const char kEnableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableExtensionAssetsSharing[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableFirstRunUITransitions[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableMarketingOptInScreen[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableRequestTabletSite[];

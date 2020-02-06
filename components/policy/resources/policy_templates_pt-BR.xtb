@@ -3894,13 +3894,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7207095846245296855">Forçar o Google SafeSearch</translation>
 <translation id="7211368186050418507">Nunca detectar o fuso horário automaticamente</translation>
 <translation id="7216442368414164495">Permitir que os usuários ativem os relatórios estendidos do Navegação segura</translation>
-<translation id="7221822638060296742">Permite definir se os sites têm permissão para executar automaticamente o plug-in <ph name="FLASH_PLUGIN_NAME" />. A execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> pode ser permitida para todos os sites ou negada para todos eles.
-
-          "Clicar para reproduzir" permite que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado, mas o usuário precisa clicar no marcador para começar a execução dele.
-
-          A reprodução automática só é permitida para domínios explicitamente listados na política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se você quiser ativar a reprodução automática para todos os sites, recomendamos que adicione http://* e https://* a essa lista.
-
-          Se esta política for deixada sem definição, o usuário poderá alterar essa configuração manualmente.</translation>
 <translation id="7222749588229362483">Permite que as políticas selecionadas sejam mescladas quando vierem de fontes diferentes, com o mesmo escopo e nível.
 
         Essa ação consiste em mesclar as chaves de primeiro nível do dicionário de cada fonte. Caso haja conflito entre as chaves, a chave da fonte com a maior prioridade será aplicada.
@@ -4281,11 +4274,6 @@ Se esta política não for definida, o renderizador padrão será usado para tod
       A política ExternalStorageDisabled tem precedência sobre esta política. Se ExternalStorageDisabled for definida como true, todo o acesso ao armazenamento externo será desativado, e esta política será consequentemente ignorada.
 
       A atualização dinâmica desta política é compatível com M56 e versões posteriores.</translation>
-<translation id="7831595031698917016">Especifica o atraso máximo, em milissegundos, entre o recebimento da invalidação de uma política e a busca pela nova política no serviço de gerenciamento de dispositivos.
-
-      A definição desta política substitui o valor padrão de 5.000 milissegundos. Os valores válidos para esta política variam entre 1.000 (um segundo) e 300.000 (cinco minutos). Quaisquer valores que não estejam neste intervalo são mantidos no limite correspondente.
-
-      Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> usa o valor padrão de 5.000 milissegundos.</translation>
 <translation id="7841880500990419427">Versão TLS mínima para substituição</translation>
 <translation id="7842317008224536842">Definir o estado padrão do recurso de acessibilidade do modo de alto contraste na tela de login.
 

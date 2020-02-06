@@ -42,8 +42,7 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
                webStateListObserver:nil
          applicationCommandEndpoint:(id<ApplicationCommands>)nil
         browsingDataCommandEndpoint:nil
-               appURLLoadingService:nil
-                    storageSwitcher:nil];
+               appURLLoadingService:nil];
     [wrangler createMainBrowser];
     // Test that BVC is created on demand.
     BrowserViewController* bvc = wrangler.mainInterface.bvc;
@@ -74,8 +73,7 @@ TEST_F(BrowserViewWranglerTest, TestBrowserList) {
              webStateListObserver:nil
        applicationCommandEndpoint:nil
       browsingDataCommandEndpoint:nil
-             appURLLoadingService:nil
-                  storageSwitcher:nil];
+             appURLLoadingService:nil];
 
   // After creating the main browser, it should have been added to the browser
   // list.

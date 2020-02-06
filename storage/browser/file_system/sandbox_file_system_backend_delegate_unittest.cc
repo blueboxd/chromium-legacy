@@ -50,7 +50,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
     return delegate_->IsAccessValid(url);
   }
 
-  void OpenFileSystem(const GURL& origin,
+  void OpenFileSystem(const url::Origin& origin,
                       storage::FileSystemType type,
                       storage::OpenFileSystemMode mode) {
     delegate_->OpenFileSystem(
@@ -128,7 +128,7 @@ TEST_F(SandboxFileSystemBackendDelegateTest, OpenFileSystemAccessesStorage) {
   EXPECT_EQ(quota_manager_proxy()->notify_storage_accessed_count(), 0);
   EXPECT_EQ(callback_count(), 0);
 
-  OpenFileSystem(origin, storage::kFileSystemTypeTemporary,
+  OpenFileSystem(url::Origin::Create(origin), storage::kFileSystemTypeTemporary,
                  storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
 
   EXPECT_EQ(callback_count(), 1);

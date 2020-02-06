@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.params.ParameterizedCommandLineFlags;
 import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
+import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -113,10 +114,14 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCopyHuge() {
+    public void testCopyHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
-        Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
+        // Allow DiskWrites temporarily in main thread to avoid
+        // violation during copying under emulator environment.
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
+            Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
+        }
     }
 
     @Test

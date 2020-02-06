@@ -170,7 +170,7 @@ public class VrBrowserTransitionTest {
         VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         CriteriaHelper.pollUiThread(
                 ()
-                        -> { return mTestRule.getWebContents().getVisibleUrl().equals(url); },
+                        -> { return mTestRule.getWebContents().getVisibleUrlString().equals(url); },
                 "Displayed URL does not match URL provided to VR launch intent",
                 POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         return url;
@@ -191,7 +191,8 @@ public class VrBrowserTransitionTest {
         CriteriaHelper.pollUiThread(() -> {
             return !VrShellDelegate.isInVr();
         }, "2D intent did not exit VR", POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
-        Assert.assertEquals("URL is incorrect", url, mTestRule.getWebContents().getVisibleUrl());
+        Assert.assertEquals(
+                "URL is incorrect", url, mTestRule.getWebContents().getVisibleUrlString());
     }
 
     /**

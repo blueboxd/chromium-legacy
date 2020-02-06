@@ -1747,6 +1747,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       break;
   }
 
+  // VoiceOver computes the wrong description for a link.
+  if (ui::IsLink(_owner->GetRole()))
+    return true;
+
   // VoiceOver will not read the label of a fieldset or radiogroup unless it is
   // exposed in the description instead of the title.
   switch (_owner->GetRole()) {

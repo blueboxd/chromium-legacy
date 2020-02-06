@@ -22,7 +22,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-using captive_portal::CaptivePortalResult;
+namespace captive_portal {
 
 namespace {
 
@@ -90,13 +90,13 @@ void RecordRepeatHistograms(CaptivePortalResult result,
 }
 
 CaptivePortalDetectionResult GetHistogramEntryForDetectionResult(
-    const captive_portal::CaptivePortalDetector::Results& results) {
+    const CaptivePortalDetector::Results& results) {
   bool is_https = results.landing_url.SchemeIs("https");
   bool is_ip = results.landing_url.HostIsIPAddress();
   switch (results.result) {
-    case captive_portal::RESULT_INTERNET_CONNECTED:
+    case RESULT_INTERNET_CONNECTED:
       return DETECTION_RESULT_INTERNET_CONNECTED;
-    case captive_portal::RESULT_NO_RESPONSE:
+    case RESULT_NO_RESPONSE:
       if (is_ip) {
         return is_https
                    ? DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL_IP_ADDRESS
@@ -104,7 +104,7 @@ CaptivePortalDetectionResult GetHistogramEntryForDetectionResult(
       }
       return is_https ? DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL
                       : DETECTION_RESULT_NO_RESPONSE;
-    case captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL:
+    case RESULT_BEHIND_CAPTIVE_PORTAL:
       if (is_ip) {
         return is_https
                    ? DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL_IP_ADDRESS
@@ -172,9 +172,9 @@ CaptivePortalService::CaptivePortalService(
     : browser_context_(browser_context),
       state_(STATE_IDLE),
       enabled_(false),
-      last_detection_result_(captive_portal::RESULT_INTERNET_CONNECTED),
+      last_detection_result_(RESULT_INTERNET_CONNECTED),
       num_checks_with_same_result_(0),
-      test_url_(captive_portal::CaptivePortalDetector::kDefaultURL),
+      test_url_(CaptivePortalDetector::kDefaultURL),
       tick_clock_for_testing_(clock_for_testing) {
   network::mojom::URLLoaderFactory* loader_factory;
   if (loader_factory_for_testing) {
@@ -186,7 +186,7 @@ CaptivePortalService::CaptivePortalService(
     loader_factory = shared_url_loader_factory_.get();
   }
   captive_portal_detector_ =
-      std::make_unique<captive_portal::CaptivePortalDetector>(loader_factory);
+      std::make_unique<CaptivePortalDetector>(loader_factory);
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The order matters here:
@@ -237,7 +237,7 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
     // Count this as a success, so the backoff entry won't apply exponential
     // backoff, but will apply the standard delay.
     backoff_entry_->InformOfRequest(true);
-    OnResult(captive_portal::RESULT_INTERNET_CONNECTED, GURL());
+    OnResult(RESULT_INTERNET_CONNECTED, GURL());
     return;
   }
 
@@ -277,7 +277,7 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
 }
 
 void CaptivePortalService::OnPortalDetectionCompleted(
-    const captive_portal::CaptivePortalDetector::Results& results) {
+    const CaptivePortalDetector::Results& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(STATE_CHECKING_FOR_PORTAL, state_);
   DCHECK(!TimerRunning());
@@ -359,7 +359,7 @@ void CaptivePortalService::OnResult(CaptivePortalResult result,
 }
 
 void CaptivePortalService::ResetBackoffEntry(CaptivePortalResult result) {
-  if (!enabled_ || result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
+  if (!enabled_ || result == RESULT_BEHIND_CAPTIVE_PORTAL) {
     // Use the shorter time when the captive portal service is not enabled, or
     // behind a captive portal.
     recheck_policy_.backoff_policy.initial_delay_ms =
@@ -421,3 +421,5 @@ bool CaptivePortalService::DetectionInProgress() const {
 bool CaptivePortalService::TimerRunning() const {
   return check_captive_portal_timer_.IsRunning();
 }
+
+}  // namespace captive_portal

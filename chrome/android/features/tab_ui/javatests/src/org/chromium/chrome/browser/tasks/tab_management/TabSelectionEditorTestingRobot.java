@@ -30,6 +30,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.RecyclerViewMatch
 
 import android.os.Build;
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.Root;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.v7.widget.RecyclerView;
@@ -181,7 +182,7 @@ public class TabSelectionEditorTestingRobot {
                 onView(withId(org.chromium.chrome.tab_ui.R.id.selectable_list))
                         .inRoot(isTabSelectionEditorPopup())
                         .check(matches(isDisplayed()));
-            } catch (NoMatchingRootException e) {
+            } catch (NoMatchingRootException | NoMatchingViewException e) {
                 return this;
             }
 

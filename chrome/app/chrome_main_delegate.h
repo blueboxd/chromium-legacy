@@ -51,11 +51,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
   void ProcessExiting(const std::string& process_type) override;
-#if defined(OS_MACOSX)
-  bool ProcessRegistersWithSystemProcess(
-      const std::string& process_type) override;
-  bool DelaySandboxInitialization(const std::string& process_type) override;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   void ZygoteStarting(
       std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
           delegates) override;

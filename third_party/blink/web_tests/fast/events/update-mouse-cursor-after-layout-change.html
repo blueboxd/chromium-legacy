@@ -37,10 +37,6 @@ function addOverlay() {
 }
 
 window.onload = async () => {
-  if (window.internals) {
-    internals.runtimeFlags.updateHoverAtBeginFrameEnabled = true;
-  }
-
   promise_test (async () => {
     document.addEventListener('click', addOverlay);
     var target = document.getElementById('target');

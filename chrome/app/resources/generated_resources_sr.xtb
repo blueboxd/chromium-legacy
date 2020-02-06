@@ -1124,7 +1124,7 @@
 <translation id="2537178555904266562">Дошло је до грешке при синхронизовању лозинки</translation>
 <translation id="2537296579376733324">Сви колачићи, само на овом сајту</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> може да прегледа и мења следеће датотеке и директоријуме</translation>
-<translation id="2537464584626495441">Отворите апликацију безбедносни кључ на телефону</translation>
+<translation id="2537464584626495441">Отворите апликацију за безбедносни кључ на телефону</translation>
 <translation id="2538361623464451692">Синхронизација је онемогућена</translation>
 <translation id="2540449034743108469">Притисните „Почетак“ да бисте слушали активности прегледача</translation>
 <translation id="2541002089857695151">Желите ли да оптимизујете пребацивање целог екрана?</translation>
@@ -1168,7 +1168,6 @@
 <translation id="2604255671529671813">Грешка мрежне везе</translation>
 <translation id="2606246518223360146">Повежи податке</translation>
 <translation id="2607101320794533334">Информације о јавном кључу субјекта</translation>
-<translation id="2608770217409477136">Користи подразумевана подешавања</translation>
 <translation id="2609896558069604090">Направи пречице...</translation>
 <translation id="2610157865375787051">Спавање</translation>
 <translation id="2610260699262139870">A&amp;ctual Size (Стварна величина)</translation>
@@ -1598,7 +1597,7 @@
 <translation id="3192947282887913208">Аудио датотеке</translation>
 <translation id="3194737229810486521"><ph name="URL" /> жели да трајно складишти податке на уређају</translation>
 <translation id="3199127022143353223">Сервери</translation>
-<translation id="3200941271596533635">Укључи/искључи режим читаоца</translation>
+<translation id="3200941271596533635">Укључи/искључи режим читача</translation>
 <translation id="3201306578844503970">Инсталирање виртуелне машине није успело због грешке на мрежи. Пробајте поново или се обратите администратору уређаја у организацији. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Доступни USB уређаји ће се приказивати овде.</translation>
 <translation id="3202131003361292969">Путања</translation>
@@ -3235,7 +3234,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">Пронађи</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ и још 1 картица}one{„<ph name="TAB_TITLE" />“ и још # картица}few{„<ph name="TAB_TITLE" />“ и још # картице}other{„<ph name="TAB_TITLE" />“ и још # картица}}</translation>
-<translation id="5549467165017213645">Овим бришете <ph name="TOTAL_USAGE" /> података које чувају сајт и инсталиране апликације.</translation>
+<translation id="5549467165017213645">Овим бришете <ph name="TOTAL_USAGE" /> података које чувају сајтови и инсталиране апликације.</translation>
 <translation id="5551573675707792127">Тастатура и унос текста</translation>
 <translation id="5553089923092577885">Мапирања смерница сертификата</translation>
 <translation id="5554489410841842733">Ова икона ће бити видљива када додатак може да делује на тренутној страници.</translation>
@@ -3251,7 +3250,6 @@
 <translation id="5565735124758917034">Активно</translation>
 <translation id="5567989639534621706">Кешеви апликација</translation>
 <translation id="5568069709869097550">Не могу да се пријавим</translation>
-<translation id="5568144734023334204">Android меморијски простор</translation>
 <translation id="5572851009514199876">Отворите и пријавите се у Chrome да би Chrome могао да провери да ли имате дозволу за приступ овом сајту.</translation>
 <translation id="5575473780076478375">Додатак у режиму без архивирања: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Дошло је до проблема са захтевом за регистрацију за режим демонстрације.</translation>
@@ -3891,7 +3889,7 @@
 <translation id="6467304607960172345">Оптимизујте видео снимке преко целог екрана</translation>
 <translation id="6468485451923838994">Фонтови</translation>
 <translation id="6472207088655375767">OTP</translation>
-<translation id="6472804939621540371">Овим бришете све податке и колачиће које чува <ph name="SITE_GROUP_NAME" />, сви сајтови у оквиру те групе и њена инсталирана апликација.</translation>
+<translation id="6472804939621540371">Овим бришете све податке и колачиће које чувају сајт <ph name="SITE_GROUP_NAME" />, сви њему подређени сајтови и његове инсталиране апликације.</translation>
 <translation id="6472893788822429178">Прикажи дугме Почетна</translation>
 <translation id="6473842110411557830">Илустрација за Powerwash</translation>
 <translation id="6474884162850599008">Прекини везу са налогом Google диска</translation>
@@ -4724,7 +4722,7 @@
 <translation id="7663719505383602579">Пријемник: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Неподржани Bluetooth уређај: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="7665369617277396874">Додајте налог</translation>
-<translation id="7665940458857700755">Овим бришете све податке и колачиће које чува <ph name="SITE_GROUP_NAME" /> и сви сајтови у оквиру те групе.</translation>
+<translation id="7665940458857700755">Овим бришете све податке и колачиће које чувају сајт <ph name="SITE_GROUP_NAME" /> и сви њему подређени сајтови.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Нетачан PIN. Имате још један покушај.}one{Нетачан PIN. Имате још # покушај.}few{Нетачан PIN. Имате још # покушаја.}other{Нетачан PIN. Имате још # покушаја.}}</translation>
 <translation id="7671130400130574146">Користи системску траку наслова и ивице</translation>
 <translation id="767127784612208024">Додирните да бисте потврдили ресетовање</translation>
@@ -5047,7 +5045,7 @@
 <translation id="8063235345342641131">Подразумевани зелени аватар</translation>
 <translation id="8064671687106936412">Кључ:</translation>
 <translation id="8068253693380742035">Додирните да бисте се пријавили</translation>
-<translation id="8068809649322155577">Овим бришете све податке и колачиће које чува <ph name="SITE_GROUP_NAME" />, сви сајтови у оквиру те групе и њене инсталиране апликације.</translation>
+<translation id="8068809649322155577">Овим бришете све податке и колачиће које чувају сајт <ph name="SITE_GROUP_NAME" />, сви њему подређени сајтови и његове инсталиране апликације.</translation>
 <translation id="8069615408251337349">Google Cloud штампање</translation>
 <translation id="8071432093239591881">Одштампај као слику</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Подаци апликација могу да буду било који подаци које је апликација сачувала (на основу подешавања програмера), укључујући податке као што су контакти, поруке и слике.<ph name="END_PARAGRAPH1" />

@@ -1328,16 +1328,26 @@ const FeatureEntry::FeatureVariation kAndroidNightModeFeatureVariations[] = {
     {"(default to light theme)", kAndroidNightModeDefaultToLightConstant,
      base::size(kAndroidNightModeDefaultToLightConstant), nullptr}};
 
-const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearch_Variations[] = {
-    {"min_agsa_version", ""},
-    {"min_android_sdk", ""},
-    {"min_memory_mb", ""},
-    {"enabled_locales", ""}};
+const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearchGreyMic[] = {
+    {"min_agsa_version", "10.95"},
+    {"min_android_sdk", "21"},
+    {"min_memory_mb", "1024"},
+    {"enabled_locales", ""},
+    {"colorful_mic", "false"}};
+
+const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearchColorfulMic[] = {
+    {"min_agsa_version", "10.95"},
+    {"min_android_sdk", "21"},
+    {"min_memory_mb", "1024"},
+    {"enabled_locales", ""},
+    {"colorful_mic", "true"}};
 
 const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
     {
-        {"(with params)", kOmniboxAssistantVoiceSearch_Variations,
-         base::size(kOmniboxAssistantVoiceSearch_Variations), nullptr},
+        {"(grey mic)", kOmniboxAssistantVoiceSearchGreyMic,
+         base::size(kOmniboxAssistantVoiceSearchGreyMic), nullptr},
+        {"(colorful mic)", kOmniboxAssistantVoiceSearchColorfulMic,
+         base::size(kOmniboxAssistantVoiceSearchColorfulMic), nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -2477,6 +2487,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tls13-early-data", flag_descriptions::kEnableTLS13EarlyDataName,
      flag_descriptions::kEnableTLS13EarlyDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kEnableTLS13EarlyData)},
+    {"post-quantum-cecpq2", flag_descriptions::kPostQuantumCECPQ2Name,
+     flag_descriptions::kPostQuantumCECPQ2Description, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kPostQuantumCECPQ2)},
 #if defined(OS_ANDROID)
     {"interest-feed-content-suggestions",
      flag_descriptions::kInterestFeedContentSuggestionsName,
@@ -4492,11 +4505,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationSchedulerDebugOptionDescription,
      kOsAndroid, MULTI_VALUE_TYPE(kNotificationSchedulerChoices)},
 
-    {"update-hover-at-begin-frame",
-     flag_descriptions::kUpdateHoverAtBeginFrameName,
-     flag_descriptions::kUpdateHoverAtBeginFrameDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kUpdateHoverAtBeginFrame)},
-
 #if defined(OS_ANDROID)
     {"usage-stats", flag_descriptions::kUsageStatsName,
      flag_descriptions::kUsageStatsDescription, kOsAndroid,
@@ -4965,7 +4973,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
 #endif  // OS_WIN
 
   if (!strcmp("dns-over-https", entry.internal_name) &&
-      chrome_browser_net::ShouldDisableDohForManaged()) {
+      (chrome_browser_net::ShouldDisableDohForManaged() ||
+       features::kDnsOverHttpsShowUiParam.Get())) {
     return true;
   }
 

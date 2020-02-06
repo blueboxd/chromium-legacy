@@ -88,7 +88,6 @@ bool SoftwareRenderer::CanPartialSwap() {
 
 void SoftwareRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SoftwareRenderer::BeginDrawingFrame");
-  root_canvas_ = output_device_->BeginPaint(current_frame()->root_damage_rect);
 }
 
 void SoftwareRenderer::FinishDrawingFrame() {
@@ -125,6 +124,7 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 void SoftwareRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!output_surface_->HasExternalStencilTest());
   current_framebuffer_canvas_.reset();
+  root_canvas_ = output_device_->BeginPaint(current_frame()->root_damage_rect);
   current_canvas_ = root_canvas_;
 }
 

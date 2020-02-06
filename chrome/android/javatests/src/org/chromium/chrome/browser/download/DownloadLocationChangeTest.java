@@ -4,13 +4,19 @@
 
 package org.chromium.chrome.browser.download;
 
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
+import static org.hamcrest.Matchers.equalTo;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,6 +31,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityStart;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.settings.download.DownloadDirectoryAdapter;
 import org.chromium.chrome.download.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -77,17 +84,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     @Feature({"Downloads"})
     @Features.EnableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
     public void testDefaultDialogPositiveButtonClickThrough() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(
-                    DownloadPromptStatus.SHOW_INITIAL, DownloadUtils.getPromptForDownloadAndroid());
-
-            simulateDownloadDirectories(true /* hasSDCard */);
-
-            // Trigger the download through navigation.
-            LoadUrlParams params =
-                    new LoadUrlParams(mTestServer.getURL(TEST_DATA_DIRECTORY + TEST_FILE));
-            mDownloadTestRule.getActivity().getActivityTab().loadUrl(params);
-        });
+        startDownload(/*hasSDCard=*/true);
 
         // Ensure the dialog is being shown.
         CriteriaHelper.pollUiThread(Criteria.equals(
@@ -105,6 +102,55 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     }
 
     /**
+     * Matches the {@link DirectoryOption} used in the {@link DownloadDirectoryAdapter}.
+     */
+    private static class DirectoryOptionMatcher extends TypeSafeMatcher<DirectoryOption> {
+        private Matcher<String> mNameMatcher;
+
+        public DirectoryOptionMatcher(Matcher<String> nameMatcher) {
+            mNameMatcher = nameMatcher;
+        }
+
+        @Override
+        protected boolean matchesSafely(DirectoryOption directoryOption) {
+            return mNameMatcher.matches(directoryOption.name);
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("has DirectoryOption with name: ");
+            description.appendDescriptionOf(mNameMatcher);
+        }
+    }
+
+    /**
+     * Ensures the default download location dialog has two download location options in the drop
+     * down spinner.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Downloads"})
+    @Features.EnableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
+    public void testDefaultDialogShowSpinner() {
+        startDownload(/*hasSDCard=*/true);
+
+        // Ensure the dialog is being shown.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                true, () -> mDownloadTestRule.getActivity().getModalDialogManager().isShowing()));
+
+        // Open the spinner inside the dialog to show download location options.
+        Espresso.onView(withId(R.id.file_location)).perform(click());
+
+        // Wait for data to feed into the DownloadDirectoryAdapter.
+        String defaultOptionName =
+                InstrumentationRegistry.getTargetContext().getString(R.string.menu_downloads);
+        String sdCardOptionName = InstrumentationRegistry.getTargetContext().getString(
+                R.string.downloads_location_sd_card);
+        onData(new DirectoryOptionMatcher(equalTo(defaultOptionName))).atPosition(0);
+        onData(new DirectoryOptionMatcher(equalTo(sdCardOptionName))).atPosition(1);
+    }
+
+    /**
      * Ensures no default download location dialog is shown to the user without SD card inserted.
      */
     @Test
@@ -113,23 +159,29 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     @Features.EnableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
     public void testNoDialogWithoutSDCard() {
         int currentCallCount = mDownloadTestRule.getChromeDownloadCallCount();
+        startDownload(/*hasSDCard=*/false);
 
+        // Ensure download is done, no download location dialog should show to interact with user.
+        Assert.assertTrue(mDownloadTestRule.waitForChromeDownloadToFinish(currentCallCount));
+        mDownloadTestRule.deleteFilesInDownloadDirectory(new String[] {TEST_FILE});
+    }
+
+    /**
+     * Starts a download, the download location dialog will show afterward.
+     * @param hasSDCard Whether the SD card download option is valid.
+     */
+    private void startDownload(boolean hasSDCard) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     DownloadPromptStatus.SHOW_INITIAL, DownloadUtils.getPromptForDownloadAndroid());
 
-            simulateDownloadDirectories(false /* hasSDCard */);
+            simulateDownloadDirectories(hasSDCard);
 
             // Trigger the download through navigation.
             LoadUrlParams params =
                     new LoadUrlParams(mTestServer.getURL(TEST_DATA_DIRECTORY + TEST_FILE));
             mDownloadTestRule.getActivity().getActivityTab().loadUrl(params);
         });
-
-        // Ensure download is done, no download location dialog should show to interact with user.
-        Assert.assertTrue(mDownloadTestRule.waitForChromeDownloadToFinish(currentCallCount));
-
-        mDownloadTestRule.deleteFilesInDownloadDirectory(new String[] {TEST_FILE});
     }
 
     /**

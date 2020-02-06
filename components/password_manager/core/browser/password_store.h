@@ -14,6 +14,7 @@
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -56,7 +57,7 @@ using metrics_util::GaiaPasswordHashChange;
 class AffiliatedMatchHelper;
 class CompromisedCredentialsObserver;
 class PasswordStoreConsumer;
-class PasswordLeakHistoryConsumer;
+class CompromisedCredentialsConsumer;
 class PasswordStoreSigninNotifier;
 class PasswordSyncableService;
 class PasswordSyncBridge;
@@ -91,7 +92,20 @@ class PasswordStore : protected PasswordStoreSync,
     virtual void OnLoginsChanged(const PasswordStoreChangeList& changes) = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
+  };
+
+  class CompromisedPasswordsObserver {
+    // An interface used to notify clients (observers) of this object that the
+    // list of comrpomised crendentials in the password store has changed.
+    // Register the observer via PasswordStore::AddCompromisedPasswordsObserver.
+   public:
+    // Notifies the observer that the list of compromised credentials changed.
+    // Will be called from the UI thread.
+    virtual void OnCompromisedPasswordsChanged() = 0;
+
+   protected:
+    virtual ~CompromisedPasswordsObserver() = default;
   };
 
   // Represents a subset of autofill::PasswordForm needed for credential
@@ -259,7 +273,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Retrieves all compromised credentials and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
-  void GetAllCompromisedCredentials(PasswordLeakHistoryConsumer* consumer);
+  void GetAllCompromisedCredentials(CompromisedCredentialsConsumer* consumer);
 
   // Removes all compromised credentials in the given date range. If
   // |url_filter| is not null, only compromised credentials for matching urls
@@ -292,6 +306,14 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Removes |observer| from the observer list.
   void RemoveObserver(Observer* observer);
+
+  // Adds an observer to be notified when the list of compromised passwords in
+  // the password store changes.
+  void AddCompromisedPasswordsObserver(CompromisedPasswordsObserver* observer);
+
+  // Removes |observer| from the list of compromised credentials observer.
+  void RemoveCompromisedPasswordsObserver(
+      CompromisedPasswordsObserver* observer);
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
@@ -487,15 +509,15 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation for manipulating with information about
   // compromised credentials.
-  virtual void AddCompromisedCredentialsImpl(
+  virtual bool AddCompromisedCredentialsImpl(
       const CompromisedCredentials& compromised_credentials) = 0;
-  virtual void RemoveCompromisedCredentialsImpl(
+  virtual bool RemoveCompromisedCredentialsImpl(
       const std::string& signon_realm,
       const base::string16& username,
       RemoveCompromisedCredentialsReason reason) = 0;
   virtual std::vector<CompromisedCredentials>
   GetAllCompromisedCredentialsImpl() = 0;
-  virtual void RemoveCompromisedCredentialsByUrlAndTimeImpl(
+  virtual bool RemoveCompromisedCredentialsByUrlAndTimeImpl(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) = 0;
@@ -519,6 +541,11 @@ class PasswordStore : protected PasswordStoreSync,
   // has been performed. Notifies observers that password store data may have
   // been changed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
+
+  // Invokes callback and notifies observers if there was a change to the list
+  // of compromised passwords.
+  void InvokeAndNotifyAboutCompromisedPasswordsChange(
+      base::OnceCallback<bool()> callback);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Saves |username| and a hash of |password| for password reuse checking.
@@ -622,7 +649,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Invokes |consumer|->OnGetCompromisedCredentials() on the caller's thread
   // with the result.
   void PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
-      PasswordLeakHistoryConsumer* consumer,
+      CompromisedCredentialsConsumer* consumer,
       CompromisedCredentialsTask task);
 
   // The following methods notify observers that the password store may have
@@ -652,7 +679,7 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Closure& completion);
   void UnblacklistInternal(const PasswordStore::FormDigest& form_digest,
                            base::OnceClosure completion);
-  void RemoveCompromisedCredentialsByUrlAndTimeInternal(
+  bool RemoveCompromisedCredentialsByUrlAndTimeInternal(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end,
@@ -761,6 +788,9 @@ class PasswordStore : protected PasswordStoreSync,
 
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
+  scoped_refptr<base::ObserverListThreadSafe<CompromisedPasswordsObserver>>
+      compromised_passwords_observers_ = base::MakeRefCounted<
+          base::ObserverListThreadSafe<CompromisedPasswordsObserver>>();
 
   // Either of two below would actually be set based on a feature flag.
   std::unique_ptr<PasswordSyncableService> syncable_service_;

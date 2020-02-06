@@ -22,6 +22,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "new_tab_page/new_tab_page_interactive_test.js",
     "print_preview/print_preview_interactive_ui_tests.js",
     "settings/cr_settings_interactive_ui_tests.js",
+    "settings/cr_settings_v3_interactive_ui_tests.js",
     "settings/settings_ui_browsertest.js",
   ]
 
@@ -46,6 +47,8 @@ js2gtest("interactive_ui_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/iron_list_focus_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_focus_row_behavior_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/settings_animated_pages_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/test_util.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
@@ -214,11 +217,13 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/pref_util_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/search_engines_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_slider_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/settings_subpage_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_textarea_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_toggle_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_favicon_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_extension_control_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_search_engines_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/test_util.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
@@ -329,7 +334,6 @@ js_modulizer("modulize_local") {
     "test_util.js",
   ]
   namespace_rewrites = [
-    "cr.ui.FocusRowBehavior|FocusRowBehavior",
     "cr.ui.Store|Store",
     "MockInteractions.down|down",
     "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",

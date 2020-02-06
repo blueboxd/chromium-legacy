@@ -811,7 +811,7 @@ public class CompositorViewHolder extends FrameLayout
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
         if (mTabVisible == null) return;
-        getWebContents().notifyBrowserControlsHeightChanged();
+        onBrowserControlsHeightChanged();
         Point viewportSize = getViewportSize();
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
                 viewportSize.y);
@@ -821,11 +821,21 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {
         if (mTabVisible == null) return;
-        getWebContents().notifyBrowserControlsHeightChanged();
+        onBrowserControlsHeightChanged();
         Point viewportSize = getViewportSize();
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
                 viewportSize.y);
         onViewportChanged();
+    }
+
+    /**
+     * Notify the {@link WebContents} of the browser controls height changes. Unlike #setSize, this
+     * will make sure the renderer's properties are updated even if the size didn't change.
+     */
+    private void onBrowserControlsHeightChanged() {
+        final WebContents webContents = getWebContents();
+        if (webContents == null) return;
+        webContents.notifyBrowserControlsHeightChanged();
     }
 
     @Override

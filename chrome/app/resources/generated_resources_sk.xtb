@@ -172,7 +172,7 @@
 <translation id="1224275271335624810">Najrýchlejšia</translation>
 <translation id="1225177025209879837">Prebieha spracovanie žiadosti...</translation>
 <translation id="1227507814927581609">Overenie totožnosti počas pripájania k zariadeniu <ph name="DEVICE_NAME" /> zlyhalo.</translation>
-<translation id="1229587244632896090">Vybraný súbor je neznámy a môže byť nebezpečný. Rozšírená ochrana odporúča tento súbor odoslať do Googlu na kontrolu malvéru.</translation>
+<translation id="1229587244632896090">Vybraný súbor je neznámy a môže byť nebezpečný. Rozšírená ochrana odporúča tento súbor odoslať Googlu na kontrolu malvéru.</translation>
 <translation id="1231733316453485619">Chcete zapnúť synchronizáciu?</translation>
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1233497634904001272">Ak chcete dokončiť žiadosť, znova stlačte tlačidlo bezpečnostného kľúča.</translation>
@@ -846,7 +846,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2165421703844373933">Aktivujte svojho Asistenta vyslovením výrazu „OK Google“. Ak chcete šetriť batériu, vyberte Zapnutý (odporúčané). Váš Asistent bude reagovať iba vtedy, keď bude zariadenie pripojené do zásuvky alebo sa bude nabíjať.</translation>
 <translation id="2166369534954157698">Kŕdeľ ďateľov učí koňa žrať kôru</translation>
 <translation id="2169062631698640254">Napriek tomu sa prihlásiť</translation>
-<translation id="2170519224423744029">Rozšírená ochrana odporúča odoslať súbor <ph name="FILE_NAME" /> do Googlu na kontrolu malvéru.</translation>
+<translation id="2170519224423744029">Rozšírená ochrana odporúča odoslať súbor <ph name="FILE_NAME" /> Googlu na kontrolu malvéru.</translation>
 <translation id="2172784515318616985">Pokračovať</translation>
 <translation id="2173302385160625112">Skontrolujte svoje internetové pripojenie</translation>
 <translation id="2173801458090845390">Pridať do tohto zariadenia ID rekvizície</translation>
@@ -1170,7 +1170,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2604255671529671813">Chyba sieťového pripojenia</translation>
 <translation id="2606246518223360146">Prepojiť dáta</translation>
 <translation id="2607101320794533334">Informácie verejného kľúča subjektu</translation>
-<translation id="2608770217409477136">Použiť predvolené nastavenia</translation>
 <translation id="2609896558069604090">Vytvoriť odkazy...</translation>
 <translation id="2610157865375787051">Spánok</translation>
 <translation id="2610260699262139870">S&amp;kutočná veľkosť</translation>
@@ -3253,7 +3252,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5565735124758917034">Aktívne</translation>
 <translation id="5567989639534621706">Vyrovnávacie pamäte aplikácií</translation>
 <translation id="5568069709869097550">Nedá sa prihlásiť</translation>
-<translation id="5568144734023334204">Úložisko Android</translation>
 <translation id="5572851009514199876">Začnite a prihláste sa do Chromu, aby skontroloval, či môžete navštíviť tento web.</translation>
 <translation id="5575473780076478375">Rozšírenie inkognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Vyskytol sa problém so žiadosťou o registráciu ukážky.</translation>

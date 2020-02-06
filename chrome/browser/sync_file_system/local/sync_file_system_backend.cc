@@ -89,7 +89,7 @@ void SyncFileSystemBackend::ResolveURL(const storage::FileSystemURL& url,
 
   if (skip_initialize_syncfs_service_for_testing_) {
     GetDelegate()->OpenFileSystem(
-        url.origin().GetURL(), url.type(), mode, std::move(callback),
+        url.origin(), url.type(), mode, std::move(callback),
         GetSyncableFileSystemRootURI(url.origin().GetURL()));
     return;
   }

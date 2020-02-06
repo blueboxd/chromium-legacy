@@ -56,7 +56,9 @@ public class AddToHomescreenCoordinator {
     @VisibleForTesting
     boolean showForAppMenu(WebContents webContents) {
         // Don't start if there is no visible URL to add.
-        if (webContents == null || TextUtils.isEmpty(webContents.getVisibleUrl())) return false;
+        if (webContents == null || TextUtils.isEmpty(webContents.getVisibleUrlString())) {
+            return false;
+        }
 
         buildMediatorAndShowDialog().startForAppMenu(webContents);
         return true;

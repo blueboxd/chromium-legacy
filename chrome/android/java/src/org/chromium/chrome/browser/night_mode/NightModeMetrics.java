@@ -8,7 +8,6 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.settings.themes.ThemeType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

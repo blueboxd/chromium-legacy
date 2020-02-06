@@ -113,7 +113,7 @@ js_library("settings_subpage.m") {
 import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":modulize",
     ":settings_animated_pages_module",
     ":settings_section_module",

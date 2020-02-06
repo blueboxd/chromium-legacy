@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -149,14 +148,8 @@ void SMILTimeContainer::TimingUpdate::HandleEvents(
   updated_elements_.insert(element, SMILInterval::Unresolved());
 }
 
-static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
-    base::TimeDelta::FromSeconds(3);
-
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
-    // We can't seek beyond this time, because at Latest() any additions will
-    // yield the same value.
-    : max_presentation_time_(SMILTime::Latest() - SMILTime::Epsilon()),
-      frame_scheduling_state_(kIdle),
+    : frame_scheduling_state_(kIdle),
       started_(false),
       paused_(false),
       should_dispatch_events_(!SVGImage::IsInSVGImage(&owner)),
@@ -166,15 +159,13 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
           owner.GetDocument().GetTaskRunner(TaskType::kInternalDefault),
           this,
           &SMILTimeContainer::WakeupTimerFired),
-      animation_policy_once_timer_(
-          owner.GetDocument().GetTaskRunner(TaskType::kInternalDefault),
-          this,
-          &SMILTimeContainer::AnimationPolicyTimerFired),
-      owner_svg_element_(&owner) {}
+      owner_svg_element_(&owner) {
+  // Update the max presentation time based on the animation policy in effect.
+  SetPresentationTime(presentation_time_);
+}
 
 SMILTimeContainer::~SMILTimeContainer() {
   CancelAnimationFrame();
-  CancelAnimationPolicyTimer();
   DCHECK(!wakeup_timer_.IsActive());
   DCHECK(AnimationTargetsMutationsAllowed());
 }
@@ -275,7 +266,7 @@ void SMILTimeContainer::SynchronizeToDocumentTimeline() {
 
 bool SMILTimeContainer::IsPaused() const {
   // If animation policy is "none", the timeline is always paused.
-  return paused_ || AnimationPolicy() == kImageAnimationPolicyNoAnimation;
+  return paused_ || AnimationsDisabled();
 }
 
 bool SMILTimeContainer::IsStarted() const {
@@ -289,10 +280,7 @@ bool SMILTimeContainer::IsTimelineRunning() const {
 void SMILTimeContainer::Start() {
   CHECK(!IsStarted());
 
-  if (!GetDocument().IsActive())
-    return;
-
-  if (!HandleAnimationPolicy(kRestartOnceTimerIfNotPaused))
+  if (AnimationsDisabled())
     return;
 
   // Sample the document timeline to get a time reference for the "presentation
@@ -305,20 +293,21 @@ void SMILTimeContainer::Start() {
 }
 
 void SMILTimeContainer::Pause() {
-  if (!HandleAnimationPolicy(kCancelOnceTimer))
+  if (AnimationsDisabled())
     return;
   DCHECK(!IsPaused());
 
   if (IsStarted()) {
-    presentation_time_ = Elapsed();
+    SetPresentationTime(Elapsed());
     CancelAnimationFrame();
   }
+
   // Update the flag after sampling elapsed().
   paused_ = true;
 }
 
 void SMILTimeContainer::Unpause() {
-  if (!HandleAnimationPolicy(kRestartOnceTimer))
+  if (AnimationsDisabled())
     return;
   DCHECK(IsPaused());
 
@@ -331,23 +320,36 @@ void SMILTimeContainer::Unpause() {
   ScheduleWakeUp(base::TimeDelta(), kSynchronizeAnimations);
 }
 
+void SMILTimeContainer::SetPresentationTime(SMILTime new_presentation_time) {
+  // Start by resetting the max presentation time, because if the
+  // animation-policy is "once" we'll set a new limit below regardless, and for
+  // the other cases it's the right thing to do.
+  //
+  // We can't seek beyond this time, because at Latest() any additions will
+  // yield the same value.
+  max_presentation_time_ = SMILTime::Latest() - SMILTime::Epsilon();
+  presentation_time_ = ClampPresentationTime(new_presentation_time);
+  if (AnimationPolicy() != kImageAnimationPolicyAnimateOnce)
+    return;
+  const SMILTime kAnimationPolicyOnceDuration = SMILTime::FromSecondsD(3);
+  max_presentation_time_ =
+      ClampPresentationTime(presentation_time_ + kAnimationPolicyOnceDuration);
+}
+
 SMILTime SMILTimeContainer::ClampPresentationTime(
     SMILTime presentation_time) const {
   return std::min(presentation_time, max_presentation_time_);
 }
 
 void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
-  presentation_time_ = ClampPresentationTime(elapsed);
+  SetPresentationTime(elapsed);
 
-  if (!GetDocument().IsActive())
+  if (AnimationsDisabled())
     return;
 
   // If the document hasn't finished loading, |presentation_time_| will be
   // used as the start time to seek to once it's possible.
   if (!IsStarted())
-    return;
-
-  if (!HandleAnimationPolicy(kRestartOnceTimerIfNotPaused))
     return;
 
   CancelAnimationFrame();
@@ -407,58 +409,15 @@ void SMILTimeContainer::WakeupTimerFired(TimerBase*) {
   }
 }
 
-void SMILTimeContainer::ScheduleAnimationPolicyTimer() {
-  animation_policy_once_timer_.StartOneShot(kAnimationPolicyOnceDuration,
-                                            FROM_HERE);
-}
-
-void SMILTimeContainer::CancelAnimationPolicyTimer() {
-  animation_policy_once_timer_.Stop();
-}
-
-void SMILTimeContainer::AnimationPolicyTimerFired(TimerBase*) {
-  Pause();
-}
-
 ImageAnimationPolicy SMILTimeContainer::AnimationPolicy() const {
-  Settings* settings = GetDocument().GetSettings();
-  if (!settings)
-    return kImageAnimationPolicyAllowed;
-
-  return settings->GetImageAnimationPolicy();
+  const Settings* settings = GetDocument().GetSettings();
+  return settings ? settings->GetImageAnimationPolicy()
+                  : kImageAnimationPolicyAllowed;
 }
 
-bool SMILTimeContainer::HandleAnimationPolicy(
-    AnimationPolicyOnceAction once_action) {
-  ImageAnimationPolicy policy = AnimationPolicy();
-  // If the animation policy is "none", control is not allowed.
-  // returns false to exit flow.
-  if (policy == kImageAnimationPolicyNoAnimation)
-    return false;
-  // If the animation policy is "once",
-  if (policy == kImageAnimationPolicyAnimateOnce) {
-    switch (once_action) {
-      case kRestartOnceTimerIfNotPaused:
-        if (IsPaused())
-          break;
-        FALLTHROUGH;
-      case kRestartOnceTimer:
-        ScheduleAnimationPolicyTimer();
-        break;
-      case kCancelOnceTimer:
-        CancelAnimationPolicyTimer();
-        break;
-    }
-  }
-  if (policy == kImageAnimationPolicyAllowed) {
-    // When the SVG owner element becomes detached from its document,
-    // the policy defaults to ImageAnimationPolicyAllowed; there's
-    // no way back. If the policy had been "once" prior to that,
-    // ensure cancellation of its timer.
-    if (once_action == kCancelOnceTimer)
-      CancelAnimationPolicyTimer();
-  }
-  return true;
+bool SMILTimeContainer::AnimationsDisabled() const {
+  return !GetDocument().IsActive() ||
+         AnimationPolicy() == kImageAnimationPolicyNoAnimation;
 }
 
 void SMILTimeContainer::UpdateDocumentOrderIndexes() {

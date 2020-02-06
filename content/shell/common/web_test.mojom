@@ -1,0 +1,23 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+// Web test messages sent from the renderer process to the browser.
+interface WebTestClient {
+  // Start to inspect a secondary window.
+  InspectSecondaryWindow();
+
+  // Sent by secondary test window to notify the test has finished.
+  TestFinishedInSecondaryRenderer();
+
+  // Simulates a user deleting a content index entry.
+  SimulateWebContentIndexDelete(string id);
+
+  // Simulates closing a titled web notification depending on the user
+  // click.
+  //   - |title|: the title of the notification.
+  //   - |by_user|: whether the user clicks the notification.
+  SimulateWebNotificationClose(string title, bool by_user);
+};

@@ -127,7 +127,7 @@ void HandleSSLErrorWrapper(
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback) {
-  CaptivePortalService* captive_portal_service = nullptr;
+  captive_portal::CaptivePortalService* captive_portal_service = nullptr;
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal_service = CaptivePortalServiceFactory::GetForBrowserContext(

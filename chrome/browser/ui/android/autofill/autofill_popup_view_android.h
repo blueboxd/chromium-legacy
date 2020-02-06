@@ -53,7 +53,7 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
  private:
   friend class AutofillPopupView;
   // Creates the AutofillPopupBridge Java object.
-  void Init();
+  bool Init();
   // Returns whether the dropdown was suppressed (mainly due to not enough
   // screen space available).
   bool WasSuppressed();

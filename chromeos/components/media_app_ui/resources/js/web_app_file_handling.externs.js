@@ -68,6 +68,51 @@ class FileSystemFileHandle extends FileSystemHandle {
   getFile() {}
 }
 
+/** @typedef {{create: boolean}} */
+var FileSystemGetFileOptions;
+
+/** @typedef {{create: boolean}} */
+var FileSystemGetDirectoryOptions;
+
+/** @typedef {{recursive: boolean}} */
+var FileSystemRemoveOptions;
+
+/** @typedef {{type: string}} */
+var GetSystemDirectoryOptions;
+
+/** @interface */
+class FileSystemDirectoryHandle extends FileSystemHandle {
+  /**
+   * @param {string} name
+   * @param {FileSystemGetFileOptions=} options
+   * @return {Promise<!FileSystemFileHandle>}
+   */
+  getFile(name, options) {}
+
+  /**
+   * @param {string} name
+   * @param {FileSystemGetDirectoryOptions=} options
+   * @return {Promise<!FileSystemDirectoryHandle>}
+   */
+  getDirectory(name, options) {}
+
+  /** @return {!AsyncIterable<!FileSystemHandle>} */
+  getEntries() {}
+
+  /**
+   * @param {string} name
+   * @param {FileSystemRemoveOptions=} options
+   * @return {Promise<undefined>}
+   */
+  removeEntry(name, options) {}
+
+  /**
+   * @param {GetSystemDirectoryOptions} options
+   * @return {Promise<!FileSystemDirectoryHandle>}
+   */
+  static getSystemDirectory(options) {}
+};
+
 /** @interface */
 class LaunchParams {
   constructor() {

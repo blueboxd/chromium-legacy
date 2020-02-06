@@ -432,7 +432,10 @@ jumbo_component("color_space") {
       "color_space_win.h",
     ]
   }
-  deps = [ "//skia:skcms" ]
+  deps = [
+    "//skia:skcms",
+    "//ui/gfx:buffer_types",
+  ]
   public_deps = [
     "//base",
     "//skia",

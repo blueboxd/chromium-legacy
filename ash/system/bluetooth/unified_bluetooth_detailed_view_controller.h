@@ -32,6 +32,7 @@ class UnifiedBluetoothDetailedViewController
 
   // DetailedViewControllerBase:
   views::View* CreateView() override;
+  base::string16 GetAccessibleName() const override;
 
   // BluetoothObserver:
   void OnBluetoothSystemStateChanged() override;

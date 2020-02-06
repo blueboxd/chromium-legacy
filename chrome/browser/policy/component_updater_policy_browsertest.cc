@@ -137,6 +137,7 @@ update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
 
     void Install(const base::FilePath& unpack_path,
                  const std::string& public_key,
+                 std::unique_ptr<InstallParams> /*install_params*/,
                  Callback callback) override {
       DoInstall(unpack_path, public_key, std::move(callback));
     }

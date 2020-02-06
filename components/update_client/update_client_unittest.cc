@@ -1643,6 +1643,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
     void Install(const base::FilePath& unpack_path,
                  const std::string& public_key,
+                 std::unique_ptr<InstallParams> /*install_params*/,
                  Callback callback) override {
       DoInstall(unpack_path, std::move(callback));
 
@@ -2284,7 +2285,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
   update_client->RemoveObserver(&observer);
 }
 
-// Tests the install of one CRX.
+// Tests the install of one CRX. Tests the installer is invoked with the
+// run and arguments values of the manifest object.
 TEST_F(UpdateClientTest, OneCrxInstall) {
   class DataCallbackMock {
    public:
@@ -2333,7 +2335,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
             <urls>
               <url codebase='http://localhost/download/'/>
             </urls>
-            <manifest version='1.0' prodversionmin='11.0.1.0'>
+            <manifest version='1.0' prodversionmin='11.0.1.0'
+              run='UpdaterSetup.exe' arguments='--arg1 --arg2'>
               <packages>
                 <package name='jebgalgnebhfojomionfpkfelancnnkf.crx'
                          hash_sha256='7ab32f071cd9b5ef8e0d7913be161f532d98b3e9f
@@ -2363,6 +2366,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       result.crx_urls.push_back(GURL("http://localhost/download/"));
       result.manifest.version = "1.0";
       result.manifest.browser_min_version = "11.0.1.0";
+      result.manifest.run = "UpdaterSetup.exe";
+      result.manifest.arguments = "--arg1 --arg2";
       result.manifest.packages.push_back(package);
 
       ProtocolParser::Results results;
@@ -2454,7 +2459,19 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
                                 "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1)
+      .WillOnce(Invoke([update_client](Events event, const std::string& id) {
+        CrxUpdateItem update_item;
+        ASSERT_TRUE(update_client->GetCrxUpdateState(id, &update_item));
+        ASSERT_TRUE(update_item.component);
+        const auto* test_installer =
+            static_cast<TestInstaller*>(update_item.component->installer.get());
+        EXPECT_STREQ("UpdaterSetup.exe",
+                     test_installer->install_params()->run.c_str());
+        EXPECT_STREQ("--arg1 --arg2",
+                     test_installer->install_params()->arguments.c_str());
+      }));
 
   update_client->AddObserver(&observer);
 

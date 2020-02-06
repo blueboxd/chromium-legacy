@@ -245,3 +245,79 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(NotAFrame)) {
   EXPECT_TRUE(was_intercepted().has_value());
   EXPECT_FALSE(was_intercepted().value());
 }
+
+TEST_F(IsolatedPrerenderURLLoaderInterceptorTest,
+       DISABLE_ASAN(ProbeOrigin_Success)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kIsolatePrerenders,
+       features::kIsolatePrerendersMustProbeOrigin},
+      {});
+
+  std::unique_ptr<prerender::PrerenderHandle> handle =
+      StartPrerender(TestURL());
+
+  std::unique_ptr<IsolatedPrerenderURLLoaderInterceptor> interceptor =
+      std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
+          handle->contents()
+              ->prerender_contents()
+              ->GetMainFrame()
+              ->GetFrameTreeNodeId());
+
+  network::ResourceRequest request;
+  request.url = TestURL();
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
+  request.method = "GET";
+
+  interceptor->MaybeCreateLoader(
+      request, profile(),
+      base::BindOnce(
+          &IsolatedPrerenderURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
+
+  interceptor->CallOnProbeCompleteForTesting(request, profile(), true);
+
+  WaitForCallback();
+
+  EXPECT_TRUE(was_intercepted().has_value());
+  EXPECT_TRUE(was_intercepted().value());
+}
+
+TEST_F(IsolatedPrerenderURLLoaderInterceptorTest,
+       DISABLE_ASAN(ProbeOrigin_Failure)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kIsolatePrerenders,
+       features::kIsolatePrerendersMustProbeOrigin},
+      {});
+
+  std::unique_ptr<prerender::PrerenderHandle> handle =
+      StartPrerender(TestURL());
+
+  std::unique_ptr<IsolatedPrerenderURLLoaderInterceptor> interceptor =
+      std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
+          handle->contents()
+              ->prerender_contents()
+              ->GetMainFrame()
+              ->GetFrameTreeNodeId());
+
+  network::ResourceRequest request;
+  request.url = TestURL();
+  request.resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
+  request.method = "GET";
+
+  interceptor->MaybeCreateLoader(
+      request, profile(),
+      base::BindOnce(
+          &IsolatedPrerenderURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
+
+  interceptor->CallOnProbeCompleteForTesting(request, profile(), false);
+
+  WaitForCallback();
+
+  EXPECT_TRUE(was_intercepted().has_value());
+  EXPECT_FALSE(was_intercepted().value());
+}

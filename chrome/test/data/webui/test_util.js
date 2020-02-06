@@ -111,20 +111,27 @@ cr.define('test_util', function() {
   }
 
   /**
-   * Returns whether or not the element specified is visible. This is different
-   * from isElementVisible in that this function attempts to search for the
-   * element within a parent element, which means you can use it to check if
-   * the element exists at all.
+   * Returns whether or not the element specified is visible.
+   * @param {!HTMLElement} element
+   * @return {boolean}
+   */
+  /* #export */ function isVisible(element) {
+    const rect = element ? element.getBoundingClientRect() : null;
+    return (!!rect && rect.width * rect.height > 0);
+  }
+
+  /**
+   * Searches the DOM of the parentEl element for a child matching the provided
+   * selector then checks the visibility of the child.
    * @param {!HTMLElement} parentEl
    * @param {string} selector
    * @param {boolean=} checkLightDom
    * @return {boolean}
    */
-  /* #export */ function isVisible(parentEl, selector, checkLightDom) {
+  /* #export */ function isChildVisible(parentEl, selector, checkLightDom) {
     const element = (checkLightDom ? parentEl.querySelector : parentEl.$$)
                         .call(parentEl, selector);
-    const rect = element ? element.getBoundingClientRect() : null;
-    return !!rect && rect.width * rect.height > 0;
+    return isVisible(element);
   }
 
   // #cr_define_end
@@ -133,6 +140,7 @@ cr.define('test_util', function() {
     fakeDataBind: fakeDataBind,
     flushTasks: flushTasks,
     isVisible: isVisible,
+    isChildVisible: isChildVisible,
     waitAfterNextRender: waitAfterNextRender,
     waitBeforeNextRender: waitBeforeNextRender,
     whenAttributeIs: whenAttributeIs,

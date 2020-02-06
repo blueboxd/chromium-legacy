@@ -243,7 +243,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
       frame_tree_node_(nullptr) {
   SetFrameTreeNode(frame_tree_node);
-  frame_host_ = frame_host;
+  ChangeFrameHostAndObservedProcess(frame_host);
   render_frame_alive_ = frame_host_ && frame_host_->IsRenderFrameLive();
   AddRef();  // Balanced in DestroyOnRenderFrameGone.
   NotifyCreated();
@@ -383,6 +383,7 @@ void RenderFrameDevToolsAgentHost::InspectElement(RenderFrameHost* frame_host,
 
 RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
   SetFrameTreeNode(nullptr);
+  ChangeFrameHostAndObservedProcess(nullptr);
 }
 
 void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
@@ -456,7 +457,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   }
 
   RenderFrameHostImpl* old_host = frame_host_;
-  frame_host_ = frame_host;
+  ChangeFrameHostAndObservedProcess(frame_host);
   if (IsAttached())
     UpdateRawHeadersAccess(old_host, frame_host);
 
@@ -523,7 +524,7 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
     ForceDetachAllSessions();
     UpdateRawHeadersAccess(frame_host_, nullptr);
   }
-  frame_host_ = nullptr;
+  ChangeFrameHostAndObservedProcess(nullptr);
   UpdateRendererChannel(IsAttached());
   SetFrameTreeNode(nullptr);
   Release();
@@ -548,9 +549,19 @@ device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
 }
 #endif
 
-void RenderFrameDevToolsAgentHost::RenderProcessGone(
-    base::TerminationStatus status) {
-  switch (status) {
+void RenderFrameDevToolsAgentHost::ChangeFrameHostAndObservedProcess(
+    RenderFrameHostImpl* frame_host) {
+  if (frame_host_)
+    frame_host_->GetProcess()->RemoveObserver(this);
+  frame_host_ = frame_host;
+  if (frame_host_)
+    frame_host_->GetProcess()->AddObserver(this);
+}
+
+void RenderFrameDevToolsAgentHost::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
+  switch (info.status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
 #if defined(OS_CHROMEOS)
@@ -563,7 +574,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
         inspector->TargetCrashed();
-      NotifyCrashed(status);
+      NotifyCrashed(info.status);
       break;
     default:
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))

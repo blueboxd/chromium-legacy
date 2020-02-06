@@ -771,10 +771,7 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
                                         spdy::SpdyPriority priority) {
   InitializeHeader(packet_number, should_include_version);
 
-  if (!client_headers_include_h2_stream_dependency_ ||
-      quic::VersionUsesHttp3(version_.transport_version)) {
-    // TODO(rch): both stream_dependencies and priority frames need to be
-    // supported in IETF QUIC.
+  if (!client_headers_include_h2_stream_dependency_) {
     parent_stream_id = 0;
   }
   int weight = spdy::Spdy3PriorityToHttp2Weight(priority);
@@ -791,6 +788,29 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
 
     return BuildPacket();
   }
+  if (priority != quic::QuicStream::kDefaultUrgency) {
+    std::string priority_data = GenerateHttp3PriorityData(priority, id);
+    AddQuicStreamFrame(2, false, priority_data);
+  }
+
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeAckAndPriorityUpdatePacket(
+    uint64_t packet_number,
+    bool should_include_version,
+    uint64_t largest_received,
+    uint64_t smallest_received,
+    uint64_t least_unacked,
+    quic::QuicStreamId id,
+    spdy::SpdyPriority priority) {
+  InitializeHeader(packet_number, should_include_version);
+
+  AddQuicAckFrame(largest_received, smallest_received);
+
+  std::string priority_data = GenerateHttp3PriorityData(priority, id);
+  AddQuicStreamFrame(2, false, priority_data);
 
   return BuildPacket();
 }

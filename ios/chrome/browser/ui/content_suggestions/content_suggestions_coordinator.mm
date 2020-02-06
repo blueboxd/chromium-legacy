@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
@@ -224,6 +226,7 @@
     } break;
     case OverscrollAction::CLOSE_TAB: {
       [_dispatcher closeCurrentTab];
+      base::RecordAction(base::UserMetricsAction("OverscrollActionCloseTab"));
     } break;
     case OverscrollAction::REFRESH:
       [self reload];

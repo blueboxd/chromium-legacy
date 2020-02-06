@@ -33,10 +33,15 @@ base::string16 SimplifyDocumentTitleWithLength(const base::string16& title,
   no_controls.erase(
       std::remove_if(no_controls.begin(), no_controls.end(), &u_iscntrl),
       no_controls.end());
-  base::ReplaceChars(no_controls, base::ASCIIToUTF16("\\"),
-                     base::ASCIIToUTF16("_"), &no_controls);
-  base::ReplaceChars(no_controls, base::ASCIIToUTF16("/"),
-                     base::ASCIIToUTF16("_"), &no_controls);
+
+  static constexpr const char* kCharsToReplace[] = {
+      "\\", "/", "<", ">", ":", "\"", "'", "|", "?", "*", "~",
+  };
+  for (const char* c : kCharsToReplace) {
+    base::ReplaceChars(no_controls, base::ASCIIToUTF16(c),
+                       base::ASCIIToUTF16("_"), &no_controls);
+  }
+
   base::string16 result;
   gfx::ElideString(no_controls, length, &result);
   return result;

@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -51,6 +52,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
+import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
@@ -76,9 +78,10 @@ import java.util.List;
  * This class represents the location bar where the user types in URLs and
  * search terms.
  */
-public class LocationBarLayout extends FrameLayout
-        implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
-                   LocationBarVoiceRecognitionHandler.Delegate {
+public class LocationBarLayout
+        extends FrameLayout implements OnClickListener, LocationBar, AutocompleteDelegate,
+                                       FakeboxDelegate, LocationBarVoiceRecognitionHandler.Delegate,
+                                       AssistantVoiceSearchService.Observer {
     private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
             new EnumeratedHistogramSample(
                     "Android.OmniboxFocusReason", OmniboxFocusReason.NUM_ENTRIES);
@@ -119,6 +122,8 @@ public class LocationBarLayout extends FrameLayout
     private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
 
     protected CompositeTouchDelegate mCompositeTouchDelegate;
+
+    private AssistantVoiceSearchService mAssistantVoiceSearchService;
 
     /**
      * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
@@ -203,8 +208,7 @@ public class LocationBarLayout extends FrameLayout
 
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
 
-        mVoiceRecognitionHandler =
-                new LocationBarVoiceRecognitionHandler(this, ExternalAuthUtils.getInstance());
+        mVoiceRecognitionHandler = new LocationBarVoiceRecognitionHandler(this);
     }
 
     @Override
@@ -212,6 +216,11 @@ public class LocationBarLayout extends FrameLayout
         removeUrlFocusChangeListener(mAutocompleteCoordinator);
         mAutocompleteCoordinator.destroy();
         mAutocompleteCoordinator = null;
+
+        if (mAssistantVoiceSearchService != null) {
+            mAssistantVoiceSearchService.destroy();
+            mAssistantVoiceSearchService = null;
+        }
     }
 
     @Override
@@ -328,6 +337,12 @@ public class LocationBarLayout extends FrameLayout
         updateVisualsForState();
 
         updateMicButtonVisibility();
+
+        mAssistantVoiceSearchService =
+                new AssistantVoiceSearchService(getContext(), ExternalAuthUtils.getInstance(),
+                        TemplateUrlServiceFactory.get(), GSAState.getInstance(getContext()), this);
+        mVoiceRecognitionHandler.setAssistantVoiceSearchService(mAssistantVoiceSearchService);
+        onAssistantVoiceSearchServiceChanged();
     }
 
     /**
@@ -1087,13 +1102,18 @@ public class LocationBarLayout extends FrameLayout
                 getResources(), mToolbarDataProvider.isIncognito());
         final int primaryColor =
                 mUrlHasFocus ? defaultPrimaryColor : mToolbarDataProvider.getPrimaryColor();
-        final boolean useDarkColors = !ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
 
-        int id = ChromeColors.getIconTintRes(!useDarkColors);
-        ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
+        // This will be called between inflation and initialization. For those calls, using a null
+        // ColorStateList should have no visible impact to the user.
+        ColorStateList colorStateList = mAssistantVoiceSearchService == null
+                ? null
+                : mAssistantVoiceSearchService.getMicButtonColorStateList(
+                        primaryColor, getContext());
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
         ApiCompatibilityUtils.setImageTintList(mDeleteButton, colorStateList);
 
+        final boolean useDarkColors =
+                !ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
         // If the URL changed colors and is not focused, update the URL to account for the new
         // color scheme.
         if (mUrlCoordinator.setUseDarkTextColors(useDarkColors) && !mUrlBar.hasFocus()) {
@@ -1146,5 +1166,19 @@ public class LocationBarLayout extends FrameLayout
 
     private void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
         ENUMERATED_FOCUS_REASON.record(reason);
+    }
+
+    @Override
+    public void onAssistantVoiceSearchServiceChanged() {
+        Drawable drawable = mAssistantVoiceSearchService.getCurrentMicDrawable();
+        mMicButton.setImageDrawable(drawable);
+
+        final int defaultPrimaryColor = ChromeColors.getDefaultThemeColor(
+                getResources(), mToolbarDataProvider.isIncognito());
+        final int primaryColor =
+                mUrlHasFocus ? defaultPrimaryColor : mToolbarDataProvider.getPrimaryColor();
+        ColorStateList colorStateList =
+                mAssistantVoiceSearchService.getMicButtonColorStateList(primaryColor, getContext());
+        ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
     }
 }

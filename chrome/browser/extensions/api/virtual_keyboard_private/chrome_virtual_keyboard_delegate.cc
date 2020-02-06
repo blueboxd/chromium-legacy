@@ -304,7 +304,7 @@ bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
     const api::virtual_keyboard_private::Bounds& rect) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   // Since controller will be destroyed when system switch from VK to
-  // physical keyboard, return true to avoid unneccessary exception.
+  // physical keyboard, return true to avoid unnecessary exception.
   if (!keyboard_client->is_keyboard_enabled())
     return true;
 

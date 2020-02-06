@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -179,8 +180,9 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
           user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated();
     }
   }
-  return policy::DictionaryPolicyConversions()
-      .WithBrowserContext(ProfileManager::GetActiveUserProfile())
+  auto client = std::make_unique<ChromePolicyConversionsClient>(
+      ProfileManager::GetActiveUserProfile());
+  return policy::DictionaryPolicyConversions(std::move(client))
       .EnableUserPolicies(include_user_policies)
       .EnableDeviceLocalAccountPolicies(true)
       .EnableDeviceInfo(true)

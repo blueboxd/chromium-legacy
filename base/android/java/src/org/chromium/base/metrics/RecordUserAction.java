@@ -6,7 +6,6 @@ package org.chromium.base.metrics;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -38,18 +37,7 @@ public class RecordUserAction {
 
     public static void record(final String action) {
         if (sDisabledBy != null) return;
-
-        if (ThreadUtils.runningOnUiThread()) {
-            RecordUserActionJni.get().recordUserAction(action);
-            return;
-        }
-
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                RecordUserActionJni.get().recordUserAction(action);
-            }
-        });
+        RecordUserActionJni.get().recordUserAction(action);
     }
 
     /**

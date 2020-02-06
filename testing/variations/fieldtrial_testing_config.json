@@ -1003,26 +1003,6 @@
             ]
         }
     ],
-    "AutofillUpstreamEditableCardholderName": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUpstreamEditableCardholderName"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillUpstreamEditableExpirationDate": [
         {
             "platforms": [
@@ -6267,6 +6247,25 @@
             ]
         }
     ],
+    "SmartDimModelV3": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "dim_threshold": "-0.5"
+                    },
+                    "enable_features": [
+                        "SmartDimModelV3",
+                        "UserActivityPredictionMlService"
+                    ]
+                }
+            ]
+        }
+    ],
     "SplitCacheByNetworkIsolationKey": [
         {
             "platforms": [
@@ -6393,6 +6392,27 @@
                     ],
                     "disable_features": [
                         "AlwaysShowServerCardsInSyncTransport"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncInstanceIDTokenTTL": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "time_to_live_seconds": "1209600"
+                    },
+                    "enable_features": [
+                        "SyncInstanceIDTokenTTL"
                     ]
                 }
             ]

@@ -1390,7 +1390,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
 <translation id="3046192273793919231">Netzwerkpakete zur Überwachung des Onlinestatus an den Verwaltungsserver senden</translation>
 <translation id="3047732214002457234">Festlegen, wie Daten vom Chrome Cleanup Tool an Google gesendet werden</translation>
-<translation id="3048744057455266684">Falls diese Richtlinie festgelegt ist und eine Such-URL-Vervollständigung aus der Omnibox diesen Parameter im Suchanfragen-String oder der Fragment-ID enthält, werden die Suchbegriffe und Suchanbieter anstelle der Such-URL angezeigt.
+<translation id="3048744057455266684">Falls diese Richtlinie festgelegt ist und eine Such-URL-Vervollständigung aus der Omnibox diesen Parameter im Abfragestring oder in der Fragment-ID enthält, werden die Suchbegriffe und Suchanbieter anstelle der Such-URL angezeigt.
 
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
 
@@ -3910,13 +3910,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfrag
 <translation id="7207095846245296855">Google SafeSearch erzwingen</translation>
 <translation id="7211368186050418507">Zeitzone nie automatisch erkennen</translation>
 <translation id="7216442368414164495">Ermöglicht Nutzern die Aktivierung erweiterter Berichterstellung bei Verwendung von Safe Browsing</translation>
-<translation id="7221822638060296742">Mit dieser Option können Sie festlegen, ob auf Websites automatisch das Plug-in <ph name="FLASH_PLUGIN_NAME" /> ausgeführt werden darf. Das automatische Ausführen des Plug-ins <ph name="FLASH_PLUGIN_NAME" /> kann entweder für alle Websites erlaubt oder abgelehnt werden.
-
-          Mit "Click-to-Play" wird gestattet, dass das Plug-in <ph name="FLASH_PLUGIN_NAME" /> ausgeführt wird, der Nutzer muss jedoch den Platzhalter anklicken, um die Ausführung zu starten.
-
-          Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie http://* und https://* dieser Liste hinzufügen.
-
-          Wenn diese Richtlinie nicht aktiviert wird, kann der Nutzer diese Einstellung manuell ändern.</translation>
 <translation id="7222749588229362483">Ermöglicht das Zusammenführen der ausgewählten Richtlinien, wenn diese aus unterschiedlichen Quellen stammen, mit gleichem Bereich und gleicher Ebene.
 
         Dabei werden die Schlüssel des Wörterbuchs auf der ersten Ebene aus jeder Quelle zusammengeführt. Sollte ein Konflikt zwischen Schlüsseln bestehen, wird der Schlüssel aus der Quelle mit der höheren Priorität angewendet.
@@ -4296,11 +4289,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Die Richtlinie "ExternalStorageDisabled" hat Vorrang vor dieser Richtlinie. Wenn ExternalStorageDisabled auf "true" gesetzt ist, wird der Zugriff auf externe Speichergeräte deaktiviert und diese Richtlinie entsprechend ignoriert.
 
       Die dynamische Aktualisierung dieser Einstellung wird ab M56 unterstützt.</translation>
-<translation id="7831595031698917016">Gibt die maximale Verzögerung in Millisekunden zwischen dem Empfang der Außerkraftsetzung einer Richtlinie und dem Abrufen der neuen Richtlinie vom Geräteverwaltungsdienst an.
-
-      Durch das Festlegen dieser Richtlinie wird der Standardwert von 5.000 Millisekunden außer Kraft gesetzt. Für diese Richtlinie können Werte von 1.000 (1 Sekunde) bis 300.000 (5 Minuten) festgelegt werden. Werte außerhalb dieses Bereichs werden auf den nächstgelegenen Grenzwert gerundet.
-
-      Bei Festlegung dieser Richtlinie verwendet <ph name="PRODUCT_NAME" /> den Standardwert von 5.000 Millisekunden.</translation>
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>
 <translation id="7842317008224536842">Hiermit wird der Standardstatus der Bedienungshilfefunktion für den Modus mit hohem Kontrast auf dem Anmeldebildschirm festgelegt.
 

@@ -2,17 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-common_namespace_rewrites_polymer = [
-  "cr.icon.getFavicon|getFavicon",
-  "cr.ui.FocusOutlineManager|FocusOutlineManager",
-  "cr.ui.FocusRowBehavior|FocusRowBehavior",
-  "cr.ui.focusWithoutInk|focusWithoutInk",
-  "Polymer.IronA11yAnnouncer|IronA11yAnnouncer",
-  "Polymer.PaperRippleBehavior|PaperRippleBehavior",
-  "Polymer.RenderStatus.afterNextRender|afterNextRender",
-
-  # TODO(dpapad): Add more such rewrites as they get discovered.
-]
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 common_auto_imports = [
   "third_party/polymer/v1_0/components-chromium/iron-a11y-announcer/iron-a11y-announcer.html|IronA11yAnnouncer",
@@ -59,7 +49,7 @@ template("polymer_modulizer") {
       rebase_path(target_gen_dir, root_build_dir),
     ]
 
-    args += [ "--namespace_rewrites" ] + common_namespace_rewrites_polymer
+    args += [ "--namespace_rewrites" ] + common_namespace_rewrites
     if (defined(invoker.namespace_rewrites)) {
       args += invoker.namespace_rewrites
     }

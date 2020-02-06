@@ -527,7 +527,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5013696553129441713">Жаңы сунуш жок</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Уруксат берүү</translation>
-<translation id="5040262127954254034">Купуялуулук</translation>
+<translation id="5040262127954254034">Купуялык</translation>
 <translation id="5048398596102334565">Сайттарга сенсорлорду колдонууга уруксат берүү (сунушталат)</translation>
 <translation id="5063480226653192405">Колдонулушу</translation>
 <translation id="5087580092889165836">Карточка кошуу</translation>
@@ -569,7 +569,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ачык өтмөк, өтмөктөрдү которуштуруу үчүн таптап коюңуз}other{<ph name="OPEN_TABS_MANY" /> ачык өтмөк, өтмөктөрдү которуштуруу үчүн таптап коюңуз}}</translation>
 <translation id="5391532827096253100">Бул сайтка туташуу корголгон эмес. Сайт тууралуу маалымат</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ дагы 1)}other{(+ дагы #)}}</translation>
-<translation id="5400569084694353794">Бул колдонмону пайдалануу менен, Chrome'дун <ph name="BEGIN_LINK1" />Тейлөө шарттарына<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />Купуялуулук эскертмесине<ph name="END_LINK2" /> макулдугуңузду билдиресиз.</translation>
+<translation id="5400569084694353794">Бул колдонмону пайдалануу менен, Chrome'дун <ph name="BEGIN_LINK1" />Тейлөө шарттарына<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />Купуялык эскертмесине<ph name="END_LINK2" /> макулдугуңузду билдиресиз.</translation>
 <translation id="5403592356182871684">Ысымдар</translation>
 <translation id="5403644198645076998">Белгилүү сайттарга гана кирүүгө уруксат</translation>
 <translation id="5414836363063783498">Текшерилүүдө…</translation>
@@ -754,7 +754,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6657585470893396449">Сырсөз</translation>
 <translation id="6659594942844771486">Өтмөк</translation>
 <translation id="666731172850799929">Төмөнкүдө ачуу <ph name="APP_NAME" /></translation>
-<translation id="666981079809192359">Chrome Купуялуулук эскертмеси</translation>
+<translation id="666981079809192359">Chrome Купуялык эскертмеси</translation>
 <translation id="6671495933530132209">Сүрөттү көчүрүү</translation>
 <translation id="6676840375528380067">Chrome'догу дайын-даректериңиз бул түзмөктөн өчүрүлсүнбү?</translation>
 <translation id="6689172468748959065">Профилдин сүрөттөрү</translation>

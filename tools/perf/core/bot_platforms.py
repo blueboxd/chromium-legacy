@@ -335,7 +335,10 @@ _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS = _ANDROID_GO_BENCHMARK_CONFIGS
 _ANDROID_NEXUS_5_BENCHMARK_CONFIGS = PerfSuite(
     OFFICIAL_BENCHMARK_CONFIGS
 ).Remove([
-    'blink_perf.display_locking', 'jetstream2', 'blink_perf.layout'
+    'blink_perf.display_locking',
+    'jetstream2',
+    'blink_perf.layout',
+    'v8.browsing_mobile-future',
 ]).Abridge([
     'rendering.mobile',
     # TODO(crbug.com/1039851): Abridge common_mobile after we make
@@ -346,13 +349,21 @@ _ANDROID_NEXUS_5_BENCHMARK_CONFIGS = PerfSuite(
 ])
 _ANDROID_NEXUS_5_EXECUTABLE_CONFIGS = frozenset([
     _TRACING_PERFTESTS, _COMPONENTS_PERFTESTS, _GPU_PERFTESTS])
-_ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = (
-    _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
+_ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = PerfSuite(
+    OFFICIAL_BENCHMARK_CONFIGS).Remove([
+        'blink_perf.display_locking',
+        'jetstream2',
+        'v8.browsing_mobile-future',
+    ])
 _ANDROID_PIXEL2_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_PIXEL2_EXECUTABLE_CONFIGS = frozenset([
     _COMPONENTS_PERFTESTS, _MEDIA_PERFTESTS])
-_ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
-    _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
+_ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = PerfSuite(
+    OFFICIAL_BENCHMARK_CONFIGS).Remove([
+        'blink_perf.display_locking',
+        'jetstream2',
+        'v8.browsing_mobile-future',
+    ])
 _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_mobile', True),
     _GetBenchmarkConfig('system_health.memory_mobile', True),

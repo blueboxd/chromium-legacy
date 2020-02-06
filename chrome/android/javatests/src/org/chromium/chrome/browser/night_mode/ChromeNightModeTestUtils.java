@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.night_mode;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemeType;
 
 /**
  * Helper methods to be used in tests to specify night mode state. See also {@link

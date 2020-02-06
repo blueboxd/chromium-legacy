@@ -44,29 +44,38 @@ class ResultRecorder(object):
     self.output = {}
     self.return_code = 0
     self._failed_stories = set()
+    self._noisy_control_stories = set()
+    # Set of _noisy_control_stories keeps track of control tests which failed
+    # because of high noise values.
 
   def set_tests(self, output):
     self.output = output
-    self.fails = 0
-    if 'FAIL' in output['num_failures_by_type']:
-      self.fails = output['num_failures_by_type']['FAIL']
-    self.tests = self.fails + output['num_failures_by_type']['PASS']
+    self.fails = output['num_failures_by_type'].get('FAIL', 0)
+    self.tests = self.fails + output['num_failures_by_type'].get('PASS', 0)
 
-  def add_failure(self, name, benchmark):
+  def add_failure(self, name, benchmark, is_control=False):
     self.output['tests'][benchmark][name]['actual'] = 'FAIL'
     self.output['tests'][benchmark][name]['is_unexpected'] = True
     self._failed_stories.add(name)
     self.fails += 1
+    if is_control:
+      self._noisy_control_stories.add(name)
 
-  def remove_failure(self, name, benchmark):
+  def remove_failure(self, name, benchmark, is_control=False):
     self.output['tests'][benchmark][name]['actual'] = 'PASS'
     self.output['tests'][benchmark][name]['is_unexpected'] = False
     self._failed_stories.remove(name)
     self.fails -= 1
+    if is_control:
+      self._noisy_control_stories.remove(name)
 
   @property
   def failed_stories(self):
     return self._failed_stories
+
+  @property
+  def is_control_stories_noisy(self):
+    return len(self._noisy_control_stories) > 0
 
   def get_output(self, return_code):
     self.output['seconds_since_epoch'] = time.time() - self.start_time
@@ -82,7 +91,8 @@ class ResultRecorder(object):
     print('[  PASSED  ] ' + tests(self.tests - self.fails) + '.')
     if self.fails > 0:
       print('[  FAILED  ] ' + tests(self.fails) + '.')
-      self.return_code = 1
+      if not self.is_control_stories_noisy:
+        self.return_code = 1
 
     return (self.output, self.return_code)
 
@@ -159,7 +169,9 @@ def compare_values(values_per_story, upper_limit_data, benchmark,
       print(('[  FAILED  ] {}/{} frame_times has higher noise ({:.3f}) ' +
         'compared to upper limit ({:.3f})').format(
           benchmark, story_name, measured_ci,upper_limit_ci))
-      result_recorder.add_failure(story_name, benchmark)
+      result_recorder.add_failure(story_name, benchmark,
+        is_control_story(upper_limit_data[story_name]))
+
     elif (measured_avg > upper_limit_avg * AVG_ERROR_MARGIN):
       print(('[  FAILED  ] {}/{} higher average frame_times({:.3f}) compared' +
         ' to upper limit ({:.3f})').format(
@@ -203,6 +215,9 @@ def replace_arg_values(args, key_value_pairs):
         else:
           args[index+1] = value
   return args
+
+def is_control_story(story_data):
+  return ('control' in story_data and story_data['control'] == True)
 
 def main():
   overall_return_code = 0
@@ -282,7 +297,8 @@ def main():
 
       for story_name in result_recorder.failed_stories.copy():
         if story_name not in re_run_result_recorder.failed_stories:
-          result_recorder.remove_failure(story_name, benchmark)
+          result_recorder.remove_failure(story_name, benchmark,
+            is_control_story(upper_limit_data[platform][story_name]))
 
     (
       finalOut,
@@ -293,6 +309,10 @@ def main():
 
     with open(options.isolated_script_test_output, 'w') as outputFile:
       json.dump(finalOut, outputFile, indent=4)
+
+    if result_recorder.is_control_stories_noisy:
+      assert overall_return_code == 0
+      print('Control story has high noise. These runs are not reliable!')
 
   return overall_return_code
 

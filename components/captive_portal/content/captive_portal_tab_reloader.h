@@ -22,6 +22,10 @@ namespace net {
 class SSLInfo;
 }
 
+class CaptivePortalBrowserTest;
+
+namespace captive_portal {
+
 // Keeps track of whether a tab has encountered a navigation error caused by a
 // captive portal.  Also triggers captive portal checks when a page load may
 // have been broken or be taking longer due to a captive portal.  All methods
@@ -106,9 +110,8 @@ class CaptivePortalTabReloader {
   virtual void OnRedirect(bool is_ssl);
 
   // Called whenever a captive portal test completes.
-  virtual void OnCaptivePortalResults(
-      captive_portal::CaptivePortalResult previous_result,
-      captive_portal::CaptivePortalResult result);
+  virtual void OnCaptivePortalResults(CaptivePortalResult previous_result,
+                                      CaptivePortalResult result);
 
   // Called on certificate errors, which often indicate a captive portal.
   void OnSSLCertError(const net::SSLInfo& ssl_info);
@@ -131,7 +134,7 @@ class CaptivePortalTabReloader {
   base::OneShotTimer slow_ssl_load_timer_;
 
  private:
-  friend class CaptivePortalBrowserTest;
+  friend class ::CaptivePortalBrowserTest;
 
   // Sets |state_| and takes any action associated with the new state.  Also
   // stops the timer, if needed.
@@ -187,5 +190,7 @@ class CaptivePortalTabReloader {
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalTabReloader);
 };
+
+}  // namespace captive_portal
 
 #endif  // COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_TAB_RELOADER_H_

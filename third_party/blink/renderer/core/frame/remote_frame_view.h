@@ -74,6 +74,7 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   IntRect GetCompositingRect();
 
   uint32_t Print(const IntRect&, cc::PaintCanvas*) const;
+  uint32_t CapturePaintPreview(const IntRect&, cc::PaintCanvas*) const;
 
   void Trace(blink::Visitor*) override;
 

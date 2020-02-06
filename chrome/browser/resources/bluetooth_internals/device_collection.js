@@ -9,10 +9,7 @@
 
 cr.define('device_collection', function() {
   /**
-   * Enum of connection status for a device. Used for
-   * DeviceCollection.updateConnectionStatus which sets the connectionStatus
-   * on the DeviceInfo object. New DeviceInfo objects have a DISCONNECTED status
-   * by default.
+   * Enum of connection status for a device.
    * @enum {number}
    */
   const ConnectionStatus = {
@@ -32,6 +29,11 @@ cr.define('device_collection', function() {
      */
     constructor(array) {
       super(array);
+
+      // Keep track of MAC addresses which were previously found via scan, but
+      // are no longer being advertised or nearby. Used to inform isRemoved().
+      /** @private {!Object<string, boolean>} */
+      this.removedDevices_ = {};
     }
 
     /**
@@ -53,7 +55,7 @@ cr.define('device_collection', function() {
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
     addOrUpdate(deviceInfo) {
-      deviceInfo.removed = false;
+      this.removedDevices_[deviceInfo.address] = false;
       const oldDeviceInfo = this.getByAddress(deviceInfo.address);
 
       if (oldDeviceInfo) {
@@ -61,14 +63,11 @@ cr.define('device_collection', function() {
         const rssi = (deviceInfo.rssi && deviceInfo.rssi.value) ||
             (oldDeviceInfo.rssi && oldDeviceInfo.rssi.value);
 
-        // The connectionStatus and connectionMessage properties may not exist
-        // on |deviceInfo|. The rssi property may be null, so it must be
-        // re-assigned.
+        // The rssi property may be null, so it must be re-assigned.
         Object.assign(oldDeviceInfo, deviceInfo);
         oldDeviceInfo.rssi = {value: rssi};
         this.updateIndex(this.indexOf(oldDeviceInfo));
       } else {
-        deviceInfo.connectionStatus = ConnectionStatus.DISCONNECTED;
         this.push(deviceInfo);
       }
     }
@@ -80,20 +79,17 @@ cr.define('device_collection', function() {
     remove(deviceInfo) {
       const device = this.getByAddress(deviceInfo.address);
       assert(device, 'Device does not exist.');
-      device.removed = true;
+      this.removedDevices_[deviceInfo.address] = true;
       this.updateIndex(this.indexOf(device));
     }
 
     /**
-     * Updates the device connection status.
-     * @param {string} address The address of the device.
-     * @param {number} status The new connection status.
+     * Return true if device was "removed" -- previously found via scan but
+     * either no longer advertising or no longer nearby.
+     * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
-    updateConnectionStatus(address, status) {
-      const device =
-          assert(this.getByAddress(address), 'Device does not exist');
-      device.connectionStatus = status;
-      this.updateIndex(this.indexOf(device));
+    isRemoved(deviceInfo) {
+      return !!this.removedDevices_[deviceInfo.address];
     }
   }
 

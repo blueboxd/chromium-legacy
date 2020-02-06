@@ -1,6 +1,9 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+
+#define _GNU_SOURCE
 
 #include "components/exo/wayland/clients/client_base.h"
 
@@ -11,6 +14,8 @@
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
@@ -18,12 +23,15 @@
 #include <string>
 #include <utility>
 
+#include "base/bits.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/unguessable_token.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -69,6 +77,9 @@ const char kTransparentBackground[] = "transparent-background";
 // Use drm buffer instead of shared memory.
 const char kUseDrm[] = "use-drm";
 
+// Use memfd backed buffer instead of shared memory.
+const char kUseMemfd[] = "use-memfd";
+
 // Specifies if client should be fullscreen.
 const char kFullscreen[] = "fullscreen";
 
@@ -95,6 +106,15 @@ const char kDriRenderNodeTemplate[] = "/dev/dri/renderD%u";
 ClientBase* CastToClientBase(void* data) {
   return static_cast<ClientBase*>(data);
 }
+
+class MemfdMemoryMapping : public base::SharedMemoryMapping {
+ public:
+  MemfdMemoryMapping(void* memory, size_t size)
+      : base::SharedMemoryMapping(memory,
+                                  size,
+                                  size /* mapped_size */,
+                                  base::UnguessableToken::Create()) {}
+};
 
 void RegistryHandler(void* data,
                      wl_registry* registry,
@@ -360,6 +380,8 @@ bool ClientBase::InitParams::FromCommandLine(
   if (use_drm)
     use_drm_value = command_line.GetSwitchValueASCII(switches::kUseDrm);
 
+  use_memfd = command_line.HasSwitch(switches::kUseMemfd);
+
   fullscreen = command_line.HasSwitch(switches::kFullscreen);
   transparent_background =
       command_line.HasSwitch(switches::kTransparentBackground);
@@ -543,6 +565,8 @@ bool ClientBase::Init(const InitParams& params) {
     wl_region_add(opaque_region.get(), 0, 0, size_.width(), size_.height());
     wl_surface_set_opaque_region(surface_.get(), opaque_region.get());
   }
+
+  use_memfd_ = params.use_memfd;
 
   if (params.allocate_buffers_with_output_mode) {
     static wl_output_listener kOutputListener = {
@@ -756,18 +780,75 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
 
   if (!buffer) {
     buffer = std::make_unique<Buffer>();
-
     size_t stride = size.width() * kBytesPerPixel;
-    base::UnsafeSharedMemoryRegion shared_memory_region =
-        base::UnsafeSharedMemoryRegion::Create(stride * size.height());
-    buffer->shared_memory_mapping = shared_memory_region.Map();
-    base::subtle::PlatformSharedMemoryRegion platform_shared_memory =
-        base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-            std::move(shared_memory_region));
+    size_t length = size.height() * stride;
+    uint8_t* mapped_data;
 
-    buffer->shm_pool.reset(wl_shm_create_pool(
-        globals_.shm.get(), platform_shared_memory.GetPlatformHandle().fd,
-        buffer->shared_memory_mapping.size()));
+    if (use_memfd_) {
+      // udmabuf_create requires a page aligned buffer.
+      length = base::bits::Align(length, getpagesize());
+      int memfd = memfd_create("memfd", MFD_ALLOW_SEALING);
+      if (memfd < 0) {
+        PLOG(ERROR) << "memfd_create failed";
+        return nullptr;
+      }
+
+      // Truncate the chunk of memory to be page aligned so that the server
+      // has the option of using the shared memory region as a dma-buf through
+      // udmabuf_create.
+      int res = HANDLE_EINTR(ftruncate(memfd, length));
+      if (res < 0) {
+        PLOG(ERROR) << "ftruncate failed";
+        return nullptr;
+      }
+
+      // Seal the fd with F_SEAL_SHRINK so that the server has the option of
+      // using the shared memory region as a dma-buf through udmabuf_create.
+      if (fcntl(memfd, F_ADD_SEALS, F_SEAL_SHRINK) < 0) {
+        PLOG(ERROR) << "Failed to seal memfd";
+        return nullptr;
+      }
+      mapped_data = static_cast<uint8_t*>(
+          mmap(nullptr, length, PROT_WRITE | PROT_READ, MAP_SHARED, memfd, 0));
+
+      if (mapped_data == MAP_FAILED) {
+        PLOG(ERROR) << "Failed to mmap";
+        return nullptr;
+      }
+
+      buffer->shared_memory_mapping = MemfdMemoryMapping(mapped_data, length);
+      buffer->shm_pool.reset(
+          wl_shm_create_pool(globals_.shm.get(), memfd, length));
+
+      close(memfd);
+
+    } else {
+      base::UnsafeSharedMemoryRegion shared_memory_region =
+          base::UnsafeSharedMemoryRegion::Create(length);
+
+      if (!shared_memory_region.IsValid()) {
+        LOG(ERROR) << "Shared Memory Region is not valid";
+        return nullptr;
+      }
+
+      base::WritableSharedMemoryMapping map = shared_memory_region.Map();
+
+      if (!map.IsValid()) {
+        LOG(ERROR) << "WritableSharedMemoryMapping is not valid";
+        return nullptr;
+      }
+
+      mapped_data = map.GetMemoryAs<uint8_t>();
+      buffer->shared_memory_mapping = std::move(map);
+
+      base::subtle::PlatformSharedMemoryRegion platform_shared_memory =
+          base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+              std::move(shared_memory_region));
+
+      buffer->shm_pool.reset(wl_shm_create_pool(
+          globals_.shm.get(), platform_shared_memory.GetPlatformHandle().fd,
+          buffer->shared_memory_mapping.size()));
+    }
 
     buffer->buffer.reset(static_cast<wl_buffer*>(
         wl_shm_pool_create_buffer(buffer->shm_pool.get(), 0, size.width(),
@@ -780,7 +861,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     buffer->sk_surface = SkSurface::MakeRasterDirect(
         SkImageInfo::Make(size.width(), size.height(), kColorType,
                           kOpaque_SkAlphaType),
-        buffer->shared_memory_mapping.GetMemoryAs<uint8_t>(), stride);
+        mapped_data, stride);
     DCHECK(buffer->sk_surface);
   }
 
@@ -808,7 +889,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 
     buffer->params.reset(
         zwp_linux_dmabuf_v1_create_params(globals_.linux_dmabuf.get()));
-    for (size_t i = 0; i < gbm_bo_get_plane_count(buffer->bo.get()); ++i) {
+    for (size_t i = 0;
+         i < static_cast<size_t>(gbm_bo_get_plane_count(buffer->bo.get()));
+         ++i) {
       base::ScopedFD fd(gbm_bo_get_plane_fd(buffer->bo.get(), i));
       uint32_t stride = gbm_bo_get_stride_for_plane(buffer->bo.get(), i);
       uint32_t offset = gbm_bo_get_offset(buffer->bo.get(), i);

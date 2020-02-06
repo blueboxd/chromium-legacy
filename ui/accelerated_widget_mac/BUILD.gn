@@ -29,6 +29,7 @@ component("accelerated_widget_mac") {
 
   deps = [
     "//base",
+    "//components/metal_util",
     "//skia",
     "//ui/base",
     "//ui/events",

@@ -92,6 +92,8 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
     return true;
   }
 
+  bool ShouldWriteMinidumpToLog() override { return true; }
+
   bool JavaExceptionFilter(
       const base::android::JavaRef<jthrowable>& java_exception) {
     return Java_AwCrashReporterClient_stackTraceContainsWebViewCode(

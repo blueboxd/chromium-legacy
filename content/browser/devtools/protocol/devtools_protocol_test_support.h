@@ -47,7 +47,20 @@ class DevToolsProtocolTest : public ContentBrowserTest,
 
   base::DictionaryValue* SendCommand(const std::string& method,
                                      std::unique_ptr<base::Value> params,
-                                     bool wait);
+                                     bool wait) {
+    return SendSessionCommand(method, std::move(params), std::string(), wait);
+  }
+
+  base::DictionaryValue* SendSessionCommand(const std::string& method,
+                                            std::unique_ptr<base::Value> params,
+                                            const std::string& session_id) {
+    return SendSessionCommand(method, std::move(params), session_id, true);
+  }
+
+  base::DictionaryValue* SendSessionCommand(const std::string& method,
+                                            std::unique_ptr<base::Value> params,
+                                            const std::string& session_id,
+                                            bool wait);
 
   void WaitForResponse();
 

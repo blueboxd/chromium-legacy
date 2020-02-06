@@ -567,7 +567,8 @@ void CrashHandlerHost::Init() {
 }
 
 bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
-                                            base::ScopedFD* handler_fd) {
+                                            base::ScopedFD* handler_fd,
+                                            bool* write_minidump_to_database) {
   int signo;
   unsigned char request_dump;
   iovec iov[2];
@@ -622,11 +623,8 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
     NotifyCrashSignalObservers(child_pid, signo);
   }
 
-  if (!request_dump) {
-    return false;
-  }
-
   handler_fd->reset(child_fd.release());
+  *write_minidump_to_database = request_dump;
   return true;
 }
 
@@ -646,12 +644,13 @@ void CrashHandlerHost::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK_EQ(browser_socket_.get(), fd);
 
   base::ScopedFD handler_fd;
-  if (!ReceiveClientMessage(fd, &handler_fd)) {
+  bool write_minidump_to_database = false;
+  if (!ReceiveClientMessage(fd, &handler_fd, &write_minidump_to_database)) {
     return;
   }
 
-  bool result =
-      crash_reporter::internal::StartHandlerForClient(handler_fd.get());
+  bool result = crash_reporter::internal::StartHandlerForClient(
+      handler_fd.get(), write_minidump_to_database);
   DCHECK(result);
 }
 

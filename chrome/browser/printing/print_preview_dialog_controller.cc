@@ -252,7 +252,7 @@ PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
 // static
 void PrintPreviewDialogController::PrintPreview(WebContents* initiator) {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  ModuleDatabase::GetInstance()->DisableThirdPartyBlocking();
+  ModuleDatabase::DisableThirdPartyBlocking();
 #endif
 
   if (initiator->ShowingInterstitialPage() || initiator->IsCrashed())

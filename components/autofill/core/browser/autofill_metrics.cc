@@ -1007,6 +1007,23 @@ void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
 }
 
 // static
+void AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionDuration(
+    const base::TimeDelta duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "Duration",
+      duration);
+}
+
+// static
+void AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionTimedOut(
+    bool did_time_out) {
+  base::UmaHistogramBoolean(
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "TimedOutCvcFallback",
+      did_time_out);
+}
+
 void AutofillMetrics::LogUserVerifiabilityCheckDuration(
     const base::TimeDelta& duration) {
   base::UmaHistogramLongTimes(

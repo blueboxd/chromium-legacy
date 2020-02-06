@@ -225,16 +225,18 @@ std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
   return std::vector<InteractionsStats>();
 }
 
-void TestPasswordStore::AddCompromisedCredentialsImpl(
+bool TestPasswordStore::AddCompromisedCredentialsImpl(
     const CompromisedCredentials& stats) {
   NOTIMPLEMENTED();
+  return false;
 }
 
-void TestPasswordStore::RemoveCompromisedCredentialsImpl(
+bool TestPasswordStore::RemoveCompromisedCredentialsImpl(
     const std::string& signon_realm,
     const base::string16& username,
     RemoveCompromisedCredentialsReason reason) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 std::vector<CompromisedCredentials>
@@ -243,11 +245,12 @@ TestPasswordStore::GetAllCompromisedCredentialsImpl() {
   return std::vector<CompromisedCredentials>();
 }
 
-void TestPasswordStore::RemoveCompromisedCredentialsByUrlAndTimeImpl(
+bool TestPasswordStore::RemoveCompromisedCredentialsByUrlAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 void TestPasswordStore::AddFieldInfoImpl(const FieldInfo& field_info) {

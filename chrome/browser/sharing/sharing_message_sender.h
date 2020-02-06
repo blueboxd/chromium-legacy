@@ -93,7 +93,8 @@ class SharingMessageSender {
                         SharingDevicePlatform receiver_device_platform,
                         base::TimeDelta last_updated_age,
                         int trace_id,
-                        SharingChannelType channel_type);
+                        SharingChannelType channel_type,
+                        base::TimeDelta receiver_pulse_interval);
     SentMessageMetadata(SentMessageMetadata&& other);
     SentMessageMetadata& operator=(SentMessageMetadata&& other);
     ~SentMessageMetadata();
@@ -105,6 +106,7 @@ class SharingMessageSender {
     base::TimeDelta last_updated_age;
     int trace_id;
     SharingChannelType channel_type;
+    base::TimeDelta receiver_pulse_interval;
   };
 
   void OnMessageSent(const std::string& message_guid,

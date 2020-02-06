@@ -4,16 +4,9 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_win.h"
 
-#include <Windows.h>
-
-#define SECURITY_WIN32 1
-#include <security.h>
-#include <wincred.h>
-
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 #include "base/win/wmi.h"
 #include "net/base/network_interfaces.h"
@@ -112,37 +105,9 @@ base::Optional<bool> GetConsoleLockStatus() {
   return status;
 }
 
-// Returns false if user doesn't have password and we can login successfully
-// without one. Returns true if user has a password and the login failed with an
-// empty one. Returns empty value for any other error.
-base::Optional<bool> UserHasPassword() {
-  WCHAR username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
-  DWORD username_length = sizeof(username);
-  if (!::GetUserNameEx(NameUserPrincipal, username, &username_length))
-    return base::Optional<bool>();
-
-  base::win::ScopedHandle::Handle handle;
-  if (!::LogonUser(username, /* lpszDomain= */ nullptr, /* lpszPassword= */ L"",
-                   /* dwLogonType= */ LOGON32_LOGON_INTERACTIVE,
-                   /* dwLogonProvider= */ LOGON32_PROVIDER_DEFAULT, &handle)) {
-    return false;
-  } else if (GetLastError() == ERROR_LOGON_FAILURE) {
-    return true;
-  }
-
-  return base::Optional<bool>();
-}
-
 // Gets cumulative screen locking policy based on the screen saver and console
 // lock status.
 enterprise_reporting_private::SettingValue GetScreenlockSecured() {
-  base::Optional<bool> has_password = UserHasPassword();
-  if (!has_password.has_value())
-    return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
-  if (!has_password.value()) {
-    return enterprise_reporting_private::SETTING_VALUE_DISABLED;
-  }
-
   const base::Optional<bool> screen_lock_status = GetScreenLockStatus();
   if (screen_lock_status.value_or(false))
     return enterprise_reporting_private::SETTING_VALUE_ENABLED;

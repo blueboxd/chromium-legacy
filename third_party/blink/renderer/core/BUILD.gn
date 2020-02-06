@@ -216,6 +216,7 @@ component("core") {
     "//v8",
   ]
   deps = [
+    "//components/paint_preview/common",
     "//third_party/blink/public/common",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
@@ -1445,6 +1446,7 @@ jumbo_source_set("unit_tests") {
     "style/style_variables_test.cc",
     "style/svg_computed_style_test.cc",
     "svg/animation/priority_queue_test.cc",
+    "svg/animation/smil_time_container_test.cc",
     "svg/graphics/svg_image_test.cc",
     "svg/svg_foreign_object_element_test.cc",
     "svg/svg_path_parser_test.cc",

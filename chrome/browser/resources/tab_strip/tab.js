@@ -379,3 +379,11 @@ export class TabElement extends CustomElement {
 }
 
 customElements.define('tabstrip-tab', TabElement);
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export function isTabElement(element) {
+  return element.tagName === 'TABSTRIP-TAB';
+}

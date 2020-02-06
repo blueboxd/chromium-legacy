@@ -172,6 +172,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_webgpu = prefs.enable_webgpu();
     out->enable_gpu_blocked_time_metric =
         prefs.enable_gpu_blocked_time_metric();
+    out->enable_perf_data_collection = prefs.enable_perf_data_collection();
 
 #if defined(USE_OZONE)
     if (!prefs.ReadMessagePumpType(&out->message_pump_type))
@@ -343,6 +344,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool enable_gpu_blocked_time_metric(const gpu::GpuPreferences& prefs) {
     return prefs.enable_gpu_blocked_time_metric;
+  }
+  static bool enable_perf_data_collection(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_perf_data_collection;
   }
 #if defined(USE_OZONE)
   static base::MessagePumpType message_pump_type(

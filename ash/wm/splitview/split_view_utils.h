@@ -139,15 +139,20 @@ ASH_EXPORT bool ShouldAllowSplitView();
 ASH_EXPORT void ShowAppCannotSnapToast();
 
 // Returns the desired snap position. To be able to get snapped (meaning the
-// return value is not |SplitViewController::NONE|), |window| must first of all
-// satisfy |SplitViewController::CanSnapWindow| on the split view controller for
-// |root_window|, and secondly be dragged near a suitable edge of the work area
-// of |root_window| (|horizontal_edge_inset| if dragged horizontally to snap, or
-// |vertical_edge_inset| if dragged vertically to snap).
+// return value is not |SplitViewController::NONE|), |window| must 1) first of
+// all satisfy |SplitViewController::CanSnapWindow| on the split view controller
+// for |root_window|, and 2) secondly be dragged either inside
+// |snap_distance_from_edge| or dragged toward the edge for at least
+// |minimum_drag_distance| distance until it's dragged into a suitable edge of
+// the work area of |root_window| (i.e., |horizontal_edge_inset| if dragged
+// horizontally to snap, or |vertical_edge_inset| if dragged vertically).
 ASH_EXPORT SplitViewController::SnapPosition GetSnapPosition(
     aura::Window* root_window,
     aura::Window* window,
     const gfx::Point& location_in_screen,
+    const gfx::Point& initial_location_in_screen,
+    int snap_distance_from_edge,
+    int minimum_drag_distance,
     int horizontal_edge_inset,
     int vertical_edge_inset);
 

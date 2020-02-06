@@ -498,6 +498,20 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
   return nullptr;
 }
 
+bool ComputedStyle::CachedPseudoElementStylesDependOnFontMetrics() const {
+  if (!cached_pseudo_element_styles_ || !cached_pseudo_element_styles_->size())
+    return false;
+
+  DCHECK_EQ(StyleType(), kPseudoIdNone);
+
+  for (const auto& pseudo_style : *cached_pseudo_element_styles_) {
+    if (pseudo_style->DependsOnFontMetrics())
+      return true;
+  }
+
+  return false;
+}
+
 const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
     scoped_refptr<const ComputedStyle> pseudo) const {
   DCHECK(pseudo);

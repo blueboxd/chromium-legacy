@@ -40,6 +40,7 @@
 [ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+[ mac ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
@@ -50,6 +51,7 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 [ win amd d3d9 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ win d3d9 ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 [ win d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
+[ win d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
 
 # Android general
 [ android ] WebglExtension_EXT_frag_depth [ Failure ]
@@ -62,6 +64,7 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 [ android qualcomm ] WebglExtension_EXT_float_blend [ Failure ]
 [ android qualcomm ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 [ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Failure ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
 [ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
 [ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_compressed_texture_astc [ Failure ]

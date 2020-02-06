@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "remoting/proto/control.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -36,7 +37,8 @@ class DesktopDisplayInfo {
   int NumDisplays();
   const DisplayGeometry* GetDisplayInfo(unsigned int id);
 
-  webrtc::DesktopVector CalcDisplayOffset(unsigned int id);
+  // Calculate the offset to the origin (upper left) of the specific display.
+  webrtc::DesktopVector CalcDisplayOffset(webrtc::ScreenId id);
 
   // Add a new display with the given info to the display list.
   void AddDisplay(DisplayGeometry* display);

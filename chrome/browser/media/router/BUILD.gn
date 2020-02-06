@@ -81,6 +81,7 @@ static_library("router") {
       # resolution for browser.h, which is used in multiple extension-only
       # files.
       # TODO(crbug.com/1030821): Resolve circular dependencies
+      "//components/paint_preview/buildflags",
       "//components/signin/public/base:signin_buildflags",
       "//components/translate/content/common",
       "//mojo/public/cpp/bindings",

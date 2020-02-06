@@ -109,9 +109,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
-        context()->storage(), version_->script_url(),
-        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
-        "I'm a meta data"));
+        context()->storage(), version_->script_url(), {} /* headers */,
+        "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());

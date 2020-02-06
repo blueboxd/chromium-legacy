@@ -222,6 +222,159 @@ class DelayableBackend : public disk_cache::Backend {
   base::OnceClosure open_entry_started_callback_;
 };
 
+class FailableCacheEntry : public disk_cache::Entry {
+ public:
+  explicit FailableCacheEntry(disk_cache::Entry* entry) : entry_(entry) {}
+
+  void Doom() override { entry_->Doom(); }
+  void Close() override { entry_->Close(); }
+  std::string GetKey() const override { return entry_->GetKey(); }
+  base::Time GetLastUsed() const override { return entry_->GetLastUsed(); }
+  base::Time GetLastModified() const override {
+    return entry_->GetLastModified();
+  }
+  int32_t GetDataSize(int index) const override {
+    return entry_->GetDataSize(index);
+  }
+  int ReadData(int index,
+               int offset,
+               IOBuffer* buf,
+               int buf_len,
+               CompletionOnceCallback callback) override {
+    return entry_->ReadData(index, offset, buf, buf_len, std::move(callback));
+  }
+  int WriteData(int index,
+                int offset,
+                IOBuffer* buf,
+                int buf_len,
+                CompletionOnceCallback callback,
+                bool truncate) override {
+    std::move(callback).Run(net::ERR_FAILED);
+    return net::ERR_IO_PENDING;
+  }
+  int ReadSparseData(int64_t offset,
+                     IOBuffer* buf,
+                     int buf_len,
+                     CompletionOnceCallback callback) override {
+    return entry_->ReadSparseData(offset, buf, buf_len, std::move(callback));
+  }
+  int WriteSparseData(int64_t offset,
+                      IOBuffer* buf,
+                      int buf_len,
+                      CompletionOnceCallback callback) override {
+    return entry_->WriteSparseData(offset, buf, buf_len, std::move(callback));
+  }
+  int GetAvailableRange(int64_t offset,
+                        int len,
+                        int64_t* start,
+                        CompletionOnceCallback callback) override {
+    return entry_->GetAvailableRange(offset, len, start, std::move(callback));
+  }
+  bool CouldBeSparse() const override { return entry_->CouldBeSparse(); }
+  void CancelSparseIO() override { entry_->CancelSparseIO(); }
+  net::Error ReadyForSparseIO(CompletionOnceCallback callback) override {
+    return entry_->ReadyForSparseIO(std::move(callback));
+  }
+  void SetLastUsedTimeForTest(base::Time time) override {
+    entry_->SetLastUsedTimeForTest(time);
+  }
+
+ private:
+  disk_cache::Entry* const entry_;
+};
+
+class FailableBackend : public disk_cache::Backend {
+ public:
+  enum class FailureStage { CREATE_ENTRY = 0, WRITE_HEADERS = 1 };
+  explicit FailableBackend(std::unique_ptr<disk_cache::Backend> backend,
+                           FailureStage stage)
+      : Backend(backend->GetCacheType()),
+        backend_(std::move(backend)),
+        stage_(stage) {}
+
+  // disk_cache::Backend overrides
+  int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
+
+  EntryResult OpenOrCreateEntry(const std::string& key,
+                                net::RequestPriority request_priority,
+                                EntryResultCallback callback) override {
+    if (stage_ == FailureStage::CREATE_ENTRY) {
+      return EntryResult::MakeError(net::ERR_FILE_NO_SPACE);
+    } else if (stage_ == FailureStage::WRITE_HEADERS) {
+      return backend_->OpenOrCreateEntry(
+          key, request_priority,
+          base::BindOnce(
+              [](EntryResultCallback callback, disk_cache::EntryResult result) {
+                FailableCacheEntry failable_entry(result.ReleaseEntry());
+                EntryResult failable_result =
+                    EntryResult::MakeCreated(&failable_entry);
+                std::move(callback).Run(std::move(failable_result));
+              },
+              std::move(callback)));
+    } else {
+      return backend_->OpenOrCreateEntry(key, request_priority,
+                                         std::move(callback));
+    }
+  }
+
+  EntryResult OpenEntry(const std::string& key,
+                        net::RequestPriority request_priority,
+                        EntryResultCallback callback) override {
+    return backend_->OpenEntry(key, request_priority, std::move(callback));
+  }
+
+  EntryResult CreateEntry(const std::string& key,
+                          net::RequestPriority request_priority,
+                          EntryResultCallback callback) override {
+    return backend_->CreateEntry(key, request_priority, std::move(callback));
+  }
+
+  net::Error DoomEntry(const std::string& key,
+                       net::RequestPriority request_priority,
+                       CompletionOnceCallback callback) override {
+    return backend_->DoomEntry(key, request_priority, std::move(callback));
+  }
+
+  net::Error DoomAllEntries(CompletionOnceCallback callback) override {
+    return backend_->DoomAllEntries(std::move(callback));
+  }
+
+  net::Error DoomEntriesBetween(base::Time initial_time,
+                                base::Time end_time,
+                                CompletionOnceCallback callback) override {
+    return backend_->DoomEntriesBetween(initial_time, end_time,
+                                        std::move(callback));
+  }
+  net::Error DoomEntriesSince(base::Time initial_time,
+                              CompletionOnceCallback callback) override {
+    return backend_->DoomEntriesSince(initial_time, std::move(callback));
+  }
+  int64_t CalculateSizeOfAllEntries(
+      Int64CompletionOnceCallback callback) override {
+    return backend_->CalculateSizeOfAllEntries(std::move(callback));
+  }
+  std::unique_ptr<Iterator> CreateIterator() override {
+    return backend_->CreateIterator();
+  }
+  void GetStats(base::StringPairs* stats) override {
+    return backend_->GetStats(stats);
+  }
+  void OnExternalCacheHit(const std::string& key) override {
+    return backend_->OnExternalCacheHit(key);
+  }
+  size_t DumpMemoryStats(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const std::string& parent_absolute_name) const override {
+    NOTREACHED();
+    return 0u;
+  }
+  int64_t MaxFileSize() const override { return backend_->MaxFileSize(); }
+
+ private:
+  std::unique_ptr<disk_cache::Backend> backend_;
+  FailureStage stage_;
+};
+
 std::string CopySideData(blink::mojom::Blob* actual_blob) {
   std::string output;
   base::RunLoop loop;
@@ -349,6 +502,13 @@ class TestCacheStorageCache : public LegacyCacheStorageCache {
         new DelayableBackend(std::move(backend_));
     backend_.reset(delayable_backend);
     return delayable_backend;
+  }
+
+  void UseFailableBackend(FailableBackend::FailureStage stage) {
+    EXPECT_TRUE(backend_);
+    auto failable_backend =
+        std::make_unique<FailableBackend>(std::move(backend_), stage);
+    backend_ = std::move(failable_backend);
   }
 
   void Init() { InitBackend(); }
@@ -2595,6 +2755,73 @@ TEST_P(CacheStorageCacheTestP, SelfRefsDuringPut) {
 
   // The operation should succeed.
   EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutFailCreateEntry) {
+  // Open the backend.
+  EXPECT_TRUE(Keys());
+  std::unique_ptr<base::RunLoop> run_loop;
+  cache_->UseFailableBackend(FailableBackend::FailureStage::CREATE_ENTRY);
+  cache_->Put(
+      BackgroundFetchSettledFetch::CloneRequest(body_request_),
+      CreateBlobBodyResponse(), /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(run_loop.get())));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // The operation should fail.
+  EXPECT_EQ(CacheStorageError::kErrorExists, callback_error_);
+
+  // QuotaManager should have been notified of write failures.
+  ASSERT_EQ(1U, mock_quota_manager_->write_error_tracker().size());
+  EXPECT_EQ(1,
+            /*error_count*/ mock_quota_manager_->write_error_tracker()
+                .begin()
+                ->second);
+
+  EXPECT_FALSE(Put(body_request_, CreateBlobBodyResponse()));
+  ASSERT_EQ(1U, mock_quota_manager_->write_error_tracker().size());
+  EXPECT_EQ(2,
+            /*error_count*/ mock_quota_manager_->write_error_tracker()
+                .begin()
+                ->second);
+}
+
+TEST_P(CacheStorageCacheTestP, PutFailWriteHeaders) {
+  // Only interested in quota being notified for disk write errors
+  // as opposed to errors from a memory only scenario.
+  if (MemoryOnly()) {
+    return;
+  }
+
+  // Open the backend.
+  EXPECT_TRUE(Keys());
+
+  std::unique_ptr<base::RunLoop> run_loop;
+  cache_->UseFailableBackend(FailableBackend::FailureStage::WRITE_HEADERS);
+
+  EXPECT_FALSE(Put(body_request_, CreateBlobBodyResponse()));
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // The operation should fail.
+  EXPECT_EQ(CacheStorageError::kErrorStorage, callback_error_);
+
+  // QuotaManager should have been notified of write failures.
+  ASSERT_EQ(1U, mock_quota_manager_->write_error_tracker().size());
+  EXPECT_EQ(1,
+            /*error_count*/ mock_quota_manager_->write_error_tracker()
+                .begin()
+                ->second);
+
+  EXPECT_FALSE(Put(body_request_, CreateBlobBodyResponse()));
+  ASSERT_EQ(1U, mock_quota_manager_->write_error_tracker().size());
+  EXPECT_EQ(2,
+            /*error_count*/ mock_quota_manager_->write_error_tracker()
+                .begin()
+                ->second);
 }
 
 INSTANTIATE_TEST_SUITE_P(CacheStorageCacheTest,

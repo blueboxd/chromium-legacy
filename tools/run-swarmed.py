@@ -23,6 +23,8 @@ See //docs/workflow/debugging-with-swarming.md for more details.
 from __future__ import print_function
 
 import argparse
+import hashlib
+import json
 import multiprocessing
 import os
 import shutil
@@ -46,34 +48,44 @@ def _Spawn(args):
   """
   index, args, isolated_hash = args
   json_file = os.path.join(args.results, '%d.json' % index)
-  trigger_args = [sys.executable,
-      'tools/swarming_client/swarming.py', 'trigger',
-      '-S', 'https://chromium-swarm.appspot.com',
-      '-I', 'https://isolateserver.appspot.com',
-      '-d', 'pool', args.pool,
-      '-s', isolated_hash,
-      '--dump-json', json_file,
-      '-d', 'os', args.swarming_os,
-      '--tags=purpose:user-debug-run-swarmed',
+  trigger_args = [
+      'tools/luci-go/swarming',
+      'trigger',
+      '-S',
+      'https://chromium-swarm.appspot.com',
+      '-I',
+      'https://isolateserver.appspot.com',
+      '-d',
+      'pool=' + args.pool,
+      '-s',
+      isolated_hash,
+      '-dump-json',
+      json_file,
+      '-d',
+      'os=' + args.swarming_os,
+      '-tag=purpose:user-debug-run-swarmed',
   ]
   if args.target_os == 'fuchsia':
     trigger_args += [
-      '-d', 'kvm', '1',
-      '-d', 'gpu', 'none',
-      '-d', 'cpu', args.arch,
+        '-d',
+        'kvm=1',
+        '-d',
+        'gpu=none',
+        '-d',
+        'cpu=' + args.arch,
     ]
   if args.target_os == 'android':
-    trigger_args += ['-d', 'device_os', args.device_os]
+    trigger_args += ['-d', 'device_os=' + args.device_os]
   # The canonical version numbers are stored in the infra repository here:
   # build/scripts/slave/recipe_modules/swarming/api.py
   cpython_version = 'version:2.7.15.chromium14'
   vpython_version = 'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'
   cpython_pkg = (
-      '.swarming_module:infra/python/cpython/${platform}:' + cpython_version)
+      '.swarming_module:infra/python/cpython/${platform}=' + cpython_version)
   vpython_native_pkg = (
-      '.swarming_module:infra/tools/luci/vpython-native/${platform}:' +
+      '.swarming_module:infra/tools/luci/vpython-native/${platform}=' +
       vpython_version)
-  vpython_pkg = ('.swarming_module:infra/tools/luci/vpython/${platform}:' +
+  vpython_pkg = ('.swarming_module:infra/tools/luci/vpython/${platform}=' +
                  vpython_version)
   trigger_args += [
       '--cipd-package',
@@ -83,14 +95,11 @@ def _Spawn(args):
       '--cipd-package',
       vpython_pkg,
       '--env-prefix',
-      'PATH',
-      '.swarming_module',
+      'PATH=.swarming_module',
       '--env-prefix',
-      'PATH',
-      '.swarming_module/bin',
+      'PATH=.swarming_module/bin',
       '--env-prefix',
-      'VPYTHON_VIRTUALENV_ROOT',
-      '.swarming_module_cache/vpython',
+      'VPYTHON_VIRTUALENV_ROOT=.swarming_module_cache/vpython',
   ]
   trigger_args += [
       '--',
@@ -110,12 +119,19 @@ def _Spawn(args):
 
 def _Collect(spawn_result):
   index, json_file, args = spawn_result
-  p = subprocess.Popen([sys.executable,
-    'tools/swarming_client/swarming.py', 'collect',
-    '-S', 'https://chromium-swarm.appspot.com',
-    '--json', json_file,
-    '--task-output-stdout=console'],
-    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  with open(json_file) as f:
+    task_json = json.load(f)
+  task_ids = [task['task_id'] for task in task_json['tasks']]
+  p = subprocess.Popen(
+      [
+          'tools/luci-go/swarming',
+          'collect',
+          '-S',
+          'https://chromium-swarm.appspot.com',
+          '--task-output-stdout=console',
+      ] + task_ids,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT)
   stdout = p.communicate()[0]
   if p.returncode != 0 and len(stdout) < 2**10 and 'Internal error!' in stdout:
     exit_code = INTERNAL_ERROR_EXIT_CODE
@@ -192,12 +208,14 @@ def main():
   )
 
   print('Uploading to isolate server, this can take a while...')
-  archive_output = subprocess.check_output(
-      [sys.executable,'tools/swarming_client/isolate.py', 'archive',
-       '-I', 'https://isolateserver.appspot.com',
-       '-i', os.path.join(args.out_dir, args.target_name + '.isolate'),
-       '-s', os.path.join(args.out_dir, args.target_name + '.isolated')])
-  isolated_hash = archive_output.split()[0]
+  isolated = os.path.join(args.out_dir, args.target_name + '.isolated')
+  subprocess.check_output([
+      'tools/luci-go/isolate', 'archive', '-I',
+      'https://isolateserver.appspot.com', '-i',
+      os.path.join(args.out_dir, args.target_name + '.isolate'), '-s', isolated
+  ])
+  with open(isolated) as f:
+    isolated_hash = hashlib.sha1(f.read()).hexdigest()
 
   if os.path.isdir(args.results):
     shutil.rmtree(args.results)

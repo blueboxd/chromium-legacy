@@ -5,6 +5,7 @@
 #include "components/update_client/test_installer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -35,9 +36,11 @@ void TestInstaller::OnUpdateError(int error) {
 
 void TestInstaller::Install(const base::FilePath& unpack_path,
                             const std::string& /*public_key*/,
+                            std::unique_ptr<InstallParams> install_params,
                             Callback callback) {
   ++install_count_;
   unpack_path_ = unpack_path;
+  install_params_ = std::move(install_params);
 
   InstallComplete(std::move(callback), Result(InstallError::NONE));
 }
@@ -78,9 +81,11 @@ VersionedTestInstaller::~VersionedTestInstaller() {
   base::DeleteFileRecursively(install_directory_);
 }
 
-void VersionedTestInstaller::Install(const base::FilePath& unpack_path,
-                                     const std::string& public_key,
-                                     Callback callback) {
+void VersionedTestInstaller::Install(
+    const base::FilePath& unpack_path,
+    const std::string& public_key,
+    std::unique_ptr<InstallParams> /*install_params*/,
+    Callback callback) {
   const auto manifest = update_client::ReadManifest(unpack_path);
   std::string version_string;
   manifest->GetStringASCII("version", &version_string);

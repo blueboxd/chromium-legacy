@@ -27,11 +27,7 @@ NavigatorBadge& NavigatorBadge::From(ScriptState* script_state) {
   return *supplement;
 }
 
-NavigatorBadge::NavigatorBadge(ExecutionContext* context) {
-  context->GetBrowserInterfaceBroker().GetInterface(
-      badge_service_.BindNewPipeAndPassReceiver());
-  DCHECK(badge_service_);
-}
+NavigatorBadge::NavigatorBadge(ExecutionContext* context) : context_(context) {}
 
 // static
 ScriptPromise NavigatorBadge::setAppBadge(ScriptState* script_state,
@@ -75,6 +71,8 @@ ScriptPromise NavigatorBadge::clearAppBadge(ScriptState* script_state,
 
 void NavigatorBadge::Trace(blink::Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
+
+  visitor->Trace(context_);
 }
 
 // static
@@ -84,14 +82,23 @@ ScriptPromise NavigatorBadge::SetAppBadgeHelper(
   if (badge_value->is_number() && badge_value->get_number() == 0)
     return ClearAppBadgeHelper(script_state);
 
-  From(script_state).badge_service_->SetBadge(std::move(badge_value));
+  From(script_state).badge_service()->SetBadge(std::move(badge_value));
   return ScriptPromise::CastUndefined(script_state);
 }
 
 // static
 ScriptPromise NavigatorBadge::ClearAppBadgeHelper(ScriptState* script_state) {
-  From(script_state).badge_service_->ClearBadge();
+  From(script_state).badge_service()->ClearBadge();
   return ScriptPromise::CastUndefined(script_state);
+}
+
+mojo::Remote<mojom::blink::BadgeService> NavigatorBadge::badge_service() {
+  mojo::Remote<mojom::blink::BadgeService> badge_service;
+  context_->GetBrowserInterfaceBroker().GetInterface(
+      badge_service.BindNewPipeAndPassReceiver());
+  DCHECK(badge_service);
+
+  return badge_service;
 }
 
 }  // namespace blink

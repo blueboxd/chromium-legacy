@@ -8,6 +8,7 @@
 
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/trees/layer_tree_frame_sink.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/swap_promise.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 
@@ -15,7 +16,7 @@ namespace content {
 
 void StubLayerTreeViewDelegate::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
-  std::move(callback).Run(nullptr);
+  std::move(callback).Run(nullptr, nullptr);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>

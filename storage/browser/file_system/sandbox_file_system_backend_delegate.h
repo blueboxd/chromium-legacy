@@ -104,12 +104,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   // the 'unique' part.)
   // Returns an empty path if the given type is invalid.
   // This method can only be called on the file thread.
-  base::FilePath GetBaseDirectoryForOriginAndType(const GURL& origin_url,
+  base::FilePath GetBaseDirectoryForOriginAndType(const url::Origin& origin,
                                                   FileSystemType type,
                                                   bool create);
 
   // FileSystemBackend helpers.
-  void OpenFileSystem(const GURL& origin_url,
+  void OpenFileSystem(const url::Origin& origin,
                       FileSystemType type,
                       OpenFileSystemMode mode,
                       OpenFileSystemCallback callback,

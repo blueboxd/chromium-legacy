@@ -295,33 +295,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   current_frame()->device_viewport_size = device_viewport_size;
   current_frame()->sdr_white_level = sdr_white_level;
 
-  // Only reshape when we know we are going to draw. Otherwise, the reshape
-  // can leave the window at the wrong size if we never draw and the proper
-  // viewport size is never set.
-  bool frame_has_alpha =
-      current_frame()->root_render_pass->has_transparent_background;
-  bool use_stencil = overdraw_feedback_;
-  bool needs_full_frame_redraw = false;
-  if (device_viewport_size != reshape_surface_size_ ||
-      device_scale_factor != reshape_device_scale_factor_ ||
-      root_render_pass->color_space != reshape_device_color_space_ ||
-      frame_has_alpha != reshape_has_alpha_ ||
-      use_stencil != reshape_use_stencil_) {
-    reshape_surface_size_ = device_viewport_size;
-    reshape_device_scale_factor_ = device_scale_factor;
-    reshape_device_color_space_ = root_render_pass->color_space;
-    reshape_has_alpha_ =
-        current_frame()->root_render_pass->has_transparent_background;
-    reshape_use_stencil_ = overdraw_feedback_;
-    output_surface_->Reshape(
-        reshape_surface_size_, reshape_device_scale_factor_,
-        reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
-    if (overlay_processor_)
-      overlay_processor_->SetViewportSize(reshape_surface_size_);
-    // The entire surface has to be redrawn if reshape is requested.
-    needs_full_frame_redraw = true;
-  }
-
   BeginDrawingFrame();
 
   // RenderPass owns filters, backdrop_filters, etc., and will outlive this
@@ -341,11 +314,14 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     }
   }
 
+  bool frame_has_alpha =
+      current_frame()->root_render_pass->has_transparent_background;
   if (overlay_processor_) {
     // Display transform is needed for overlay validator on Android
     // SurfaceControl. This needs to called before ProcessForOverlays.
     overlay_processor_->SetDisplayTransformHint(
         output_surface_->GetDisplayTransform());
+    overlay_processor_->SetViewportSize(device_viewport_size);
 
     // Before ProcessForOverlay calls into the hardware to ask about whether the
     // overlay setup can be handled, we need to set up the primary plane.
@@ -360,7 +336,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       current_frame()->output_surface_plane =
           overlay_processor_->ProcessOutputSurfaceAsOverlay(
               device_viewport_size, output_surface_->GetOverlayBufferFormat(),
-              reshape_device_color_space_, reshape_has_alpha_,
+              root_render_pass->color_space, frame_has_alpha,
               output_surface_->GetOverlayMailbox());
       primary_plane = &(current_frame()->output_surface_plane.value());
     }
@@ -374,9 +350,37 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
         &current_frame()->overlay_list, &current_frame()->root_damage_rect,
         &current_frame()->root_content_bounds);
 
+    // If we promote any quad to an underlay then the main plane must support
+    // alpha.
+    if (current_frame()->output_surface_plane)
+      frame_has_alpha |= current_frame()->output_surface_plane->enable_blending;
+
     overlay_processor_->AdjustOutputSurfaceOverlay(
         &(current_frame()->output_surface_plane));
   }
+
+  // Only reshape when we know we are going to draw. Otherwise, the reshape
+  // can leave the window at the wrong size if we never draw and the proper
+  // viewport size is never set.
+  bool use_stencil = overdraw_feedback_;
+  bool needs_full_frame_redraw = false;
+  if (device_viewport_size != reshape_surface_size_ ||
+      device_scale_factor != reshape_device_scale_factor_ ||
+      root_render_pass->color_space != reshape_device_color_space_ ||
+      frame_has_alpha != reshape_has_alpha_ ||
+      use_stencil != reshape_use_stencil_) {
+    reshape_surface_size_ = device_viewport_size;
+    reshape_device_scale_factor_ = device_scale_factor;
+    reshape_device_color_space_ = root_render_pass->color_space;
+    reshape_has_alpha_ = frame_has_alpha;
+    reshape_use_stencil_ = overdraw_feedback_;
+    output_surface_->Reshape(
+        reshape_surface_size_, reshape_device_scale_factor_,
+        reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+    // The entire surface has to be redrawn if reshape is requested.
+    needs_full_frame_redraw = true;
+  }
+
 #if defined(OS_WIN)
   bool was_using_dc_layers = using_dc_layers_;
   if (!current_frame()->overlay_list.empty()) {

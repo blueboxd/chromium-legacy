@@ -195,6 +195,57 @@ void OnWriteBodyInfoToDiskCache(
                      meta_data, std::move(callback)));
 }
 
+void WriteToDiskCacheAsyncInternal(
+    const GURL& script_url,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body,
+    const std::string& meta_data,
+    std::unique_ptr<ServiceWorkerResponseWriter> body_writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer,
+    WriteToDiskCacheCallback callback) {
+  std::unique_ptr<net::HttpResponseInfo> http_info =
+      std::make_unique<net::HttpResponseInfo>();
+  http_info->request_time = base::Time::Now();
+  http_info->response_time = base::Time::Now();
+  http_info->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
+  for (const auto& header : headers)
+    http_info->headers->AddHeader(header.first + ": " + header.second);
+
+  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
+      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(http_info));
+  info_buffer->response_data_size = body.size();
+  ServiceWorkerResponseWriter* writer_rawptr = body_writer.get();
+  writer_rawptr->WriteInfo(
+      info_buffer.get(),
+      base::BindOnce(&OnWriteBodyInfoToDiskCache, std::move(body_writer),
+                     std::move(metadata_writer), script_url, body, meta_data,
+                     std::move(callback)));
+}
+
+ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSyncInternal(
+    const GURL& script_url,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body,
+    const std::string& meta_data,
+    std::unique_ptr<ServiceWorkerResponseWriter> body_writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer) {
+  ServiceWorkerDatabase::ResourceRecord record;
+
+  base::RunLoop loop;
+  WriteToDiskCacheAsyncInternal(
+      script_url, headers, body, meta_data, std::move(body_writer),
+      std::move(metadata_writer),
+      base::BindLambdaForTesting(
+          [&](ServiceWorkerDatabase::ResourceRecord result) {
+            record = result;
+            loop.Quit();
+          }));
+  loop.Run();
+
+  return record;
+}
+
 }  // namespace
 
 ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint() {}
@@ -367,60 +418,51 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
   return registration;
 }
 
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheWithIdSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data) {
-  ServiceWorkerDatabase::ResourceRecord record;
+  std::unique_ptr<ServiceWorkerResponseWriter> body_writer =
+      storage->CreateResponseWriter(resource_id);
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(resource_id);
+  return WriteToDiskCacheSyncInternal(script_url, headers, body, meta_data,
+                                      std::move(body_writer),
+                                      std::move(metadata_writer));
+}
 
-  base::RunLoop loop;
-  WriteToDiskCacheAsync(
-      storage, script_url, resource_id, headers, body, meta_data,
-      base::BindOnce(
-          [](ServiceWorkerDatabase::ResourceRecord* out_record,
-             base::OnceClosure quit_closure,
-             ServiceWorkerDatabase::ResourceRecord result) {
-            *out_record = result;
-            std::move(quit_closure).Run();
-          },
-          &record, loop.QuitClosure()));
-  loop.Run();
-
-  return record;
+ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+    ServiceWorkerStorage* storage,
+    const GURL& script_url,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body,
+    const std::string& meta_data) {
+  std::unique_ptr<ServiceWorkerResponseWriter> body_writer =
+      CreateNewResponseWriterSync(storage);
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(body_writer->response_id());
+  return WriteToDiskCacheSyncInternal(script_url, headers, body, meta_data,
+                                      std::move(body_writer),
+                                      std::move(metadata_writer));
 }
 
 void WriteToDiskCacheAsync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
-    int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data,
     WriteToDiskCacheCallback callback) {
-  std::unique_ptr<net::HttpResponseInfo> http_info =
-      std::make_unique<net::HttpResponseInfo>();
-  http_info->request_time = base::Time::Now();
-  http_info->response_time = base::Time::Now();
-  http_info->headers =
-      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
-  for (const auto& header : headers)
-    http_info->headers->AddHeader(header.first + ": " + header.second);
-
-  auto body_writer = storage->CreateResponseWriter(resource_id);
-  auto metadata_writer = storage->CreateResponseMetadataWriter(resource_id);
-
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(http_info));
-  info_buffer->response_data_size = body.size();
-  ServiceWorkerResponseWriter* writer_rawptr = body_writer.get();
-  writer_rawptr->WriteInfo(
-      info_buffer.get(),
-      base::BindOnce(&OnWriteBodyInfoToDiskCache, std::move(body_writer),
-                     std::move(metadata_writer), script_url, body, meta_data,
-                     std::move(callback)));
+  std::unique_ptr<ServiceWorkerResponseWriter> body_writer =
+      CreateNewResponseWriterSync(storage);
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(body_writer->response_id());
+  WriteToDiskCacheAsyncInternal(
+      script_url, headers, body, meta_data, std::move(body_writer),
+      std::move(metadata_writer), std::move(callback));
 }
 
 std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(

@@ -63,6 +63,7 @@ class ScreenManagerTest : public testing::Test {
     device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
     screen_manager_ = std::make_unique<ui::ScreenManager>();
   }
+
   void TearDown() override {
     screen_manager_.reset();
     drm_ = nullptr;

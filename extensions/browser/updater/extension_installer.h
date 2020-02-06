@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSIONS_INSTALLER_H_
-#define EXTENSIONS_BROWSER_UPDATER_EXTENSIONS_INSTALLER_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_INSTALLER_H_
+#define EXTENSIONS_BROWSER_UPDATER_EXTENSION_INSTALLER_H_
 
 #include <memory>
 #include <string>
@@ -49,6 +49,7 @@ class ExtensionInstaller : public update_client::CrxInstaller {
   // |update_client_callback| is expected to be called on a UI thread.
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
+               std::unique_ptr<InstallParams> install_params,
                UpdateClientCallback update_client_callback) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -71,4 +72,4 @@ class ExtensionInstaller : public update_client::CrxInstaller {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSIONS_INSTALLER_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSION_INSTALLER_H_

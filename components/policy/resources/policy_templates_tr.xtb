@@ -3994,13 +3994,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="7207095846245296855">Google Güvenli Arama'yı zorla</translation>
 <translation id="7211368186050418507">Saat dilimini hiçbir zaman otomatik algılama</translation>
 <translation id="7216442368414164495">Kullanıcıların Güvenli Tarama genişletilmiş raporlamasını etkinleştirmesine izin ver</translation>
-<translation id="7221822638060296742">Web sitelerinin, <ph name="FLASH_PLUGIN_NAME" /> eklentisini otomatik olarak çalıştırmasına izin verilip verilmeyeceğini belirlemenize olanak tanır. <ph name="FLASH_PLUGIN_NAME" /> eklentisinin otomatik olarak çalıştırılmasına ya tüm web siteleri için izin verilir ya da tüm web siteleri için izin verilmez.
-
-          Tıkla oynat özelliği, <ph name="FLASH_PLUGIN_NAME" /> eklentisinin çalıştırılmasına olanak tanır. Ancak yer tutucunun çalışması için kullanıcının yer tutucuyu tıklaması gerekir.
-
-          Otomatik oynatma özelliği yalnızca <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> politikasında açıkça listelenen alan adlarında kullanılabilir. Otomatik oynatma özelliğini tüm sitelerde etkinleştirmek istiyorsanız bu listeye http://* ve https://* ekleme seçeneğini değerlendirin.
-
-          Bu politika ayarlanmadan bırakılırsa kullanıcı bu ayarı manuel olarak değiştirebilir.</translation>
 <translation id="7222749588229362483">Seçilen politikaların, farklı kaynaklardan geldiklerinde aynı kapsam ve düzeyle birleştirilmesine olanak verir.
 
         Birleştirme, her bir kaynaktaki sözlük ilk düzey anahtarlarının birleştirilmesinden oluşur. Anahtarlar arasında çakışma olması durumunda, en yüksek önceliğe sahip kaynaktan gelen anahtar uygulanır.
@@ -4389,11 +4382,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       ExternalStorageDisabled politikası, bu politikadan önceliklidir. ExternalStorageDisabled doğru (true) değerine ayarlanırsa harici depolama birimine tüm erişim devre dışı kalır ve bu politika yoksayılır.
 
       Bu politika için yapılan dinamik yenileme, M56 ve sonraki sürümlerde desteklenir.</translation>
-<translation id="7831595031698917016">Bir politika iptalinin alınmasıyla cihaz yönetimi hizmetinden yeni politikanın getirilmesi arasındaki maksimum gecikmeyi milisaniye olarak belirtir.
-
-      Bu politika ayarlanırsa, varsayılan 5000 milisaniye değeri geçersiz olur. Bu politika için geçerli değerler 1000 (1 saniye) - 300000 (5 dakika) arasıdır. Bu aralık dışındaki değerler ilgili sınıra ayarlanır.
-
-      Bu politika ayarlanmazsa, <ph name="PRODUCT_NAME" /> varsayılan 5000 milisaniye değerini kullanır.</translation>
 <translation id="7841880500990419427">Yedek olarak kullanılacak minimum TLS sürümü</translation>
 <translation id="7842317008224536842">Giriş ekranında yüksek kontrast modu erişilebilirlik özelliğinin varsayılan durumunu ayarlayın.
 

@@ -1641,10 +1641,15 @@ TEST_F(ControllerTest, SetAdditionalValues) {
       .Times(1);
   controller_->SetCollectUserDataOptions(options.get());
 
-  EXPECT_CALL(
-      mock_observer_,
-      OnUserDataChanged(Not(nullptr), UserData::FieldChange::ADDITIONAL_VALUES))
-      .Times(2);
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                    Property(&UserAction::enabled, Eq(true)))))
+        .Times(1);
+    EXPECT_CALL(mock_observer_,
+                OnUserDataChanged(Not(nullptr),
+                                  UserData::FieldChange::ADDITIONAL_VALUES))
+        .Times(1);
+  }
   ValueProto value4;
   value4.mutable_strings()->add_values("value2");
   ValueProto value5;

@@ -172,7 +172,7 @@
 <translation id="1224275271335624810">Snelst</translation>
 <translation id="1225177025209879837">Je verzoek wordt verwerkt...</translation>
 <translation id="1227507814927581609">Verificatie mislukt tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
-<translation id="1229587244632896090">Het geselecteerde bestand is onbekend en kan gevaarlijk zijn. 'Geavanceerde beveiliging' raadt je aan dit bestand naar Google te sturen om het te controleren op malware.</translation>
+<translation id="1229587244632896090">Het geselecteerde bestand is onbekend en kan gevaarlijk zijn. 'Geavanceerde beveiliging' raadt je aan dit bestand naar Google te sturen om het te checken op malware.</translation>
 <translation id="1231733316453485619">Synchronisatie inschakelen?</translation>
 <translation id="1232569758102978740">Naamloos</translation>
 <translation id="1233497634904001272">Tik opnieuw op de beveiligingssleutel om het verzoek te voltooien.</translation>
@@ -846,7 +846,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2165421703844373933">Activeer je Assistent als je 'Oké Google' zegt. Als je batterijlading wilt besparen, kies je 'Aan (aanbevolen)'. De Assistent reageert dan alleen als je apparaat is aangesloten op een voedingsbron of wordt opgeladen.</translation>
 <translation id="2166369534954157698">Pa's wijze lynx bezag vroom het fikse aquaduct</translation>
 <translation id="2169062631698640254">Toch inloggen</translation>
-<translation id="2170519224423744029">'Geavanceerde beveiliging' raadt je aan <ph name="FILE_NAME" /> naar Google te sturen om het te controleren op malware.</translation>
+<translation id="2170519224423744029">'Geavanceerde beveiliging' raadt je aan <ph name="FILE_NAME" /> naar Google te sturen om het te checken op malware.</translation>
 <translation id="2172784515318616985">Doorgaan</translation>
 <translation id="2173302385160625112">Controleer je internetverbinding</translation>
 <translation id="2173801458090845390">Aanvraag-ID toevoegen aan dit apparaat</translation>
@@ -1171,7 +1171,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2604255671529671813">Fout bij netwerkverbinding</translation>
 <translation id="2606246518223360146">Gegevens linken</translation>
 <translation id="2607101320794533334">Informatie van openbare sleutel van entiteit</translation>
-<translation id="2608770217409477136">Standaardinstellingen gebruiken</translation>
 <translation id="2609896558069604090">Snelle links maken...</translation>
 <translation id="2610157865375787051">Slaapstand</translation>
 <translation id="2610260699262139870">We&amp;rkelijke grootte</translation>
@@ -1601,7 +1600,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3192947282887913208">Audiobestanden</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vraagt toestemming om gegevens permanent op je apparaat op te slaan</translation>
 <translation id="3199127022143353223">Servers</translation>
-<translation id="3200941271596533635">Lezermodus schakelen</translation>
+<translation id="3200941271596533635">Lezermodus in-/uitschakelen</translation>
 <translation id="3201306578844503970">Kan de virtuele machine niet installeren door een netwerkfout. Probeer het opnieuw of neem contact op met de apparaatbeheerder van je organisatie. Foutcode: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Hier worden de beschikbare USB-apparaten weergegeven.</translation>
 <translation id="3202131003361292969">Pad</translation>
@@ -3254,7 +3253,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5565735124758917034">Actief</translation>
 <translation id="5567989639534621706">Applicatiecaches</translation>
 <translation id="5568069709869097550">Kan niet aanmelden</translation>
-<translation id="5568144734023334204">Android-opslag</translation>
 <translation id="5572851009514199876">Start Chrome en log in zodat Chrome kan controleren of je deze site mag openen.</translation>
 <translation id="5575473780076478375">Incognito-extensie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Er is een probleem opgetreden met een demoregistratieverzoek.</translation>

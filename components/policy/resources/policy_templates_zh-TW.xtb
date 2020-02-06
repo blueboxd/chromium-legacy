@@ -3873,13 +3873,6 @@
 <translation id="7207095846245296855">強制啟用 Google 安全搜尋模式</translation>
 <translation id="7211368186050418507">一律不自動偵測時區</translation>
 <translation id="7216442368414164495">允許使用者採用安全瀏覽模式的進階回報功能</translation>
-<translation id="7221822638060296742">讓你設定是否允許網站自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式。你可以允許或禁止所有網站自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式。
-
-          啟用 [點選播放] 選項時，使用者必須手動點選預留位置，<ph name="FLASH_PLUGIN_NAME" /> 外掛程式才會開始執行。
-
-          [自動播放] 選項僅適用於 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策明確列出的網域。如要為所有網站啟用 [自動播放] 選項，可在這份清單中加入 http://* 和 https://*。
-
-          如未設定這項政策，使用者可以手動變更這項設定。</translation>
 <translation id="7222749588229362483">當所選政策的來源不同，但具有相同的範圍和層級時，允許系統加以合併。
 
         合併方式是將各個來源字典的第一層金鑰合併。如果金鑰之間發生衝突，系統會套用優先程度最高的來源所提供的金鑰。
@@ -4253,11 +4246,6 @@
       ExternalStorageDisabled 政策優先於本政策。如果將 ExternalStorageDisabled 設為 True，便會完全停用對外部儲存裝置的存取權，並且略過本政策。
 
       M56 以上版本支援這項政策的動態更新功能。</translation>
-<translation id="7831595031698917016">指定從接收無效政策到向裝置管理服務擷取新政策的最長延遲時間 (以毫秒數為單位)。
-
-      設定這項政策會覆寫 5000 毫秒的預設值。這項政策的有效值範圍由 1000 毫秒 (1 秒) 到 300000 毫秒 (5 分鐘)。超出範圍的值會自動套用上限值或下限值。
-
-      如未設定這項政策，<ph name="PRODUCT_NAME" /> 將會套用 5000 毫秒的預設值。</translation>
 <translation id="7841880500990419427">備用的最低 TLS 版本</translation>
 <translation id="7842317008224536842">設定高對比模式無障礙功能在登入畫面中的預設狀態。
 

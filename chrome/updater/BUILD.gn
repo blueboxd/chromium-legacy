@@ -34,6 +34,7 @@ if (is_win || is_mac) {
       "crash_reporter.h",
       "installer.cc",
       "installer.h",
+      "installer_win.cc",
       "patcher.cc",
       "patcher.h",
       "prefs.cc",

@@ -331,6 +331,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the app doesn't crash when opening multiple tabs.
 - (void)testOpenMultipleTabs {
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_DISABLED(@"EG1 Fails.");
+#endif
   NSInteger numberOfTabs = 10;
   for (NSInteger i = 0; i < numberOfTabs; i++) {
     [ChromeEarlGreyUI openNewTab];
@@ -593,6 +596,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 - (void)testOpeningNewTab {
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_DISABLED(@"EG1 Fails.");
+#endif
   [ChromeEarlGreyUI openNewTab];
 
   // Check that the fake omnibox is here.

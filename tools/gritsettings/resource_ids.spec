@@ -195,6 +195,7 @@
     # Big alignment at start of section.
     "META": {"align": 100},
     "includes": [2000],
+    "messages": [2010],
   },
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [2020],

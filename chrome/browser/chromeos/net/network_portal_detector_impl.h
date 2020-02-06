@@ -47,7 +47,7 @@ class NetworkState;
 
 // This class handles all notifications about network changes from
 // NetworkStateHandler and delegates portal detection for the default
-// network to CaptivePortalService.
+// network to captive_portal::CaptivePortalService.
 class NetworkPortalDetectorImpl : public NetworkPortalDetector,
                                   public chromeos::NetworkStateHandlerObserver,
                                   public content::NotificationObserver,

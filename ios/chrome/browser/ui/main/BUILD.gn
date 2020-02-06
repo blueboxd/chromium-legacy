@@ -84,6 +84,7 @@ source_set("main") {
   deps = [
     "//base",
     "//components/translate/core/browser",
+    "//ios/chrome/app:mode",
     "//ios/chrome/app/resources:launchscreen_xib",
     "//ios/chrome/browser",
     "//ios/chrome/browser/app_launcher",

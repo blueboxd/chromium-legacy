@@ -81,7 +81,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     /* Resize ThinWebView to reflow the web-contents. */
     private void reflowWebContents(float heightFraction) {
         // Scale mThinWebView to make the web-content fit into the visible area of the bottom-sheet.
-        if (mThinWebView.getView() == null) return;
+        if (mThinWebView.getView() == null || mWebContents.isDestroyed()) return;
         LayoutParams params = (LayoutParams) mThinWebView.getView().getLayoutParams();
         params.height = Math.max(0, (int) (mTabHeight * heightFraction) - mToolbarHeightPx);
         mThinWebView.getView().setLayoutParams(params);

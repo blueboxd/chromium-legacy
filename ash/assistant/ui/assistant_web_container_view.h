@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_WEB_CONTAINER_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_WEB_CONTAINER_VIEW_H_
 
+#include "ash/public/cpp/assistant/assistant_web_view_2.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -13,13 +14,11 @@ namespace ash {
 
 class AssistantViewDelegate;
 class AssistantWebViewDelegate;
-class AssistantWebView;
 
-// TODO(dmblack): Merge AssistantWebView and AssistantWebContainerView once
-// standalone Assistant UI has been removed.
-// The container of assistant_web_view when Assistant web container is enabled.
+// The container for hosting standalone WebContents in Assistant.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
-    : public views::WidgetDelegateView {
+    : public views::WidgetDelegateView,
+      public AssistantWebView2::Observer {
  public:
   AssistantWebContainerView(
       AssistantViewDelegate* assistant_view_delegate,
@@ -29,6 +28,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   // views::WidgetDelegateView:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+
+  // AssistantWebView2::Observer:
+  void DidStopLoading() override;
+  void DidSuppressNavigation(const GURL& url,
+                             WindowOpenDisposition disposition,
+                             bool from_user_gesture) override;
+  void DidChangeCanGoBack(bool can_go_back) override;
 
   // Invoke to navigate back in the embedded WebContents' navigation stack. If
   // backwards navigation is not possible, returns |false|. Otherwise |true| to
@@ -40,12 +47,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
 
  private:
   void InitLayout();
+  void RemoveContents();
 
   AssistantViewDelegate* const assistant_view_delegate_;
   AssistantWebViewDelegate* const web_container_view_delegate_;
 
-  // Owned by the views hierarchy.
-  AssistantWebView* assistant_web_view_ = nullptr;
+  std::unique_ptr<AssistantWebView2> contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebContainerView);
 };

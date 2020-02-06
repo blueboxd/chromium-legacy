@@ -38,7 +38,6 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "url/origin.h"
 
 namespace {
 constexpr size_t kMaxImageDownloadSize = 5 * 1024 * 1024;
@@ -164,7 +163,7 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
     return;
   }
 
-  if (!IsOriginAllowed(url)) {
+  if (!IsImageSourceAllowed(url)) {
     Finish(RemoteCopyHandleMessageResult::kFailureImageOriginNotAllowed);
     return;
   }
@@ -187,15 +186,19 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
       kMaxImageDownloadSize);
 }
 
-bool RemoteCopyMessageHandler::IsOriginAllowed(const GURL& image_url) {
-  url::Origin image_origin = url::Origin::Create(image_url);
+bool RemoteCopyMessageHandler::IsImageSourceAllowed(const GURL& image_url) {
   std::vector<std::string> parts =
       base::SplitString(kRemoteCopyAllowedOrigins.Get(), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const auto& part : parts) {
-    url::Origin allowed_origin = url::Origin::Create(GURL(part));
-    if (image_origin.IsSameOriginWith(allowed_origin))
+    GURL allowed_origin(part);
+    // The actual image URL may have a hash in the subdomain. This means we
+    // cannot match the entire host - we'll match the domain instead.
+    if (image_url.SchemeIs(allowed_origin.scheme_piece()) &&
+        image_url.DomainIs(allowed_origin.host_piece()) &&
+        image_url.EffectiveIntPort() == allowed_origin.EffectiveIntPort()) {
       return true;
+    }
   }
   return false;
 }

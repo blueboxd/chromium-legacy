@@ -231,8 +231,8 @@ void CardExpirationDateFixFlowViewBridge::DeleteSelf() {
   DCHECK(_expirationDateYear.length > 0);
 
   _bridge->OnConfirmedExpirationDate(
-      base::SysNSStringToUTF16(_expirationDateYear),
-      base::SysNSStringToUTF16(_expirationDateMonth));
+      base::SysNSStringToUTF16(_expirationDateMonth),
+      base::SysNSStringToUTF16(_expirationDateYear));
 }
 
 - (void)didSelectMonth:(NSString*)month year:(NSString*)year {

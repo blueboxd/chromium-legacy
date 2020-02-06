@@ -768,6 +768,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   PseudoElement* GetPseudoElement(PseudoId) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
+  bool PseudoElementStylesDependOnFontMetrics() const;
   const ComputedStyle* CachedStyleForPseudoElement(
       const PseudoElementStyleRequest&);
   scoped_refptr<ComputedStyle> StyleForPseudoElement(

@@ -118,11 +118,17 @@ void LayerTreeView::SetVisible(bool visible) {
 }
 
 void LayerTreeView::SetLayerTreeFrameSink(
-    std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
+    std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink,
+    std::unique_ptr<cc::RenderFrameMetadataObserver>
+        render_frame_metadata_observer) {
   DCHECK(delegate_);
   if (!layer_tree_frame_sink) {
     DidFailToInitializeLayerTreeFrameSink();
     return;
+  }
+  if (render_frame_metadata_observer) {
+    layer_tree_host_->SetRenderFrameObserver(
+        std::move(render_frame_metadata_observer));
   }
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }

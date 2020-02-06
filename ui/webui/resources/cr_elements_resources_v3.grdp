@@ -223,6 +223,7 @@
   <include name="IDR_CR_ELEMENTS_ICONS_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/icons.m.js"
          use_base_dir="false"
+         preprocess="true"
          type="BINDATA"
          compress="gzip" />
   <include name="IDR_CR_ELEMENTS_SEARCH_HIGHLIGHT_STYLE_CSS_M_JS"

@@ -230,4 +230,92 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   }
 }
 
+TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
+  GURL url("http://google.com/test");
+  GURL url_alt("http://example.org/test");
+
+  {
+    // Record a watchtime for audio/video for 30 seconds.
+    content::MediaPlayerWatchTime watch_time(
+        url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
+        base::TimeDelta(), true /* has_video */, true /* has_audio */);
+    GetMediaHistoryStore()->SavePlayback(watch_time);
+    content::RunAllTasksUntilIdle();
+  }
+
+  {
+    // Record a watchtime for audio/video for 60 seconds.
+    content::MediaPlayerWatchTime watch_time(
+        url, url.GetOrigin(), base::TimeDelta::FromSeconds(60),
+        base::TimeDelta(), true /* has_video */, true /* has_audio */);
+    GetMediaHistoryStore()->SavePlayback(watch_time);
+    content::RunAllTasksUntilIdle();
+  }
+
+  {
+    // Record an audio-only watchtime for 30 seconds.
+    content::MediaPlayerWatchTime watch_time(
+        url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
+        base::TimeDelta(), false /* has_video */, true /* has_audio */);
+    GetMediaHistoryStore()->SavePlayback(watch_time);
+    content::RunAllTasksUntilIdle();
+  }
+
+  const int64_t url_now_in_seconds_before =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+
+  {
+    // Record a video-only watchtime for 30 seconds.
+    content::MediaPlayerWatchTime watch_time(
+        url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
+        base::TimeDelta(), true /* has_video */, false /* has_audio */);
+    GetMediaHistoryStore()->SavePlayback(watch_time);
+    content::RunAllTasksUntilIdle();
+  }
+
+  const int64_t url_now_in_seconds_after =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+
+  {
+    // Record a watchtime for audio/video for 60 seconds on a different origin.
+    content::MediaPlayerWatchTime watch_time(
+        url_alt, url_alt.GetOrigin(), base::TimeDelta::FromSeconds(30),
+        base::TimeDelta(), true /* has_video */, true /* has_audio */);
+    GetMediaHistoryStore()->SavePlayback(watch_time);
+    content::RunAllTasksUntilIdle();
+  }
+
+  const int64_t url_alt_now_in_seconds_after =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+
+  {
+    // Check the playbacks were recorded.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+    EXPECT_EQ(5,
+              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+  }
+
+  // Verify that the origin table has the correct aggregate watchtime in
+  // minutes.
+  sql::Statement s(GetDB().GetUniqueStatement(
+      "SELECT origin, aggregate_watchtime_audio_video_s, last_updated_time_s "
+      "FROM origin"));
+  ASSERT_TRUE(s.is_valid());
+
+  EXPECT_TRUE(s.Step());
+  EXPECT_EQ("http://google.com/", s.ColumnString(0));
+  EXPECT_EQ(90, s.ColumnInt64(1));
+  EXPECT_LE(url_now_in_seconds_before, s.ColumnInt64(2));
+  EXPECT_GE(url_now_in_seconds_after, s.ColumnInt64(2));
+
+  EXPECT_TRUE(s.Step());
+  EXPECT_EQ("http://example.org/", s.ColumnString(0));
+  EXPECT_EQ(30, s.ColumnInt64(1));
+  EXPECT_LE(url_now_in_seconds_after, s.ColumnInt64(2));
+  EXPECT_GE(url_alt_now_in_seconds_after, s.ColumnInt64(2));
+
+  EXPECT_FALSE(s.Step());
+}
+
 }  // namespace media_history

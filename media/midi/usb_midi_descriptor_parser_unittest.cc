@@ -117,6 +117,22 @@ TEST(UsbMidiDescriptorParserTest, ParseDeviceInfo) {
   EXPECT_EQ(0xef, info.product_index);
 }
 
+TEST(UsbMidiDescriptorParserTest, BcdVersionToString) {
+  UsbMidiDescriptorParser::DeviceInfo device_info;
+  {
+    const std::string version = device_info.BcdVersionToString(0x3456);
+    EXPECT_EQ(version, "34.56");
+  }
+  {
+    const std::string invalid_version = device_info.BcdVersionToString(0xb456);
+    EXPECT_EQ(invalid_version, "Invalid BCD $b4.56");
+  }
+  {
+    const std::string invalid_version = device_info.BcdVersionToString(0x345d);
+    EXPECT_EQ(invalid_version, "Invalid BCD $34.5d");
+  }
+}
+
 }  // namespace
 
 }  // namespace midi

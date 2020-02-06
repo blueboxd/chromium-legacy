@@ -71,13 +71,22 @@ class AvailabilityProber
 
   // Callers who wish to use this class should add a value to this enum. This
   // enum is mapped to a string value which is then used in histograms and
-  // prefs.
+  // prefs. Be sure to update the |Availability.Prober.Clients| histogram suffix
+  // in //tools/metrics/histograms.xml whenever a change is made to this enum.
+  //
+  // Please add the header file of the client when new items are added.
   enum class ClientName {
+    // chrome/browser/previews/previews_lite_page_redirect_decider.h
     kLitepages = 0,
 
+    // chrome/browser/previews/previews_lite_page_redirect_url_loader.h
     kLitepagesOriginCheck = 1,
 
-    kMaxValue = kLitepagesOriginCheck,
+    // chrome/browser/prerender/isolated/
+    // isolated_prerender_url_loader_interceptor.h
+    kIsolatedPrerenderOriginCheck = 2,
+
+    kMaxValue = kIsolatedPrerenderOriginCheck,
   };
 
   // This enum describes the different algorithms that can be used to calculate

@@ -100,7 +100,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         blink::mojom::ScriptType::kClassic);
     EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(WriteToDiskCacheSync(
+    records.push_back(WriteToDiskCacheWithIdSync(
         helper_->context()->storage(), version_->script_url(), 10,
         {} /* headers */, "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);

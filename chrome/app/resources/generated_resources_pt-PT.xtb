@@ -95,7 +95,7 @@
 <translation id="1128109161498068552">Não permitir que os sites utilizem mensagens exclusivas do sistema para aceder a dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar motor de pesquisa</translation>
-<translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> – parte do grupo <ph name="GROUP_NAME" /></translation>
+<translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> – Parte do grupo <ph name="GROUP_NAME" /></translation>
 <translation id="1134009406053225289">Abrir na janela de navegação anónima</translation>
 <translation id="1136712381129578788">A chave de segurança está bloqueada porque foi introduzido o PIN incorreto demasiadas vezes. Para a desbloquear, remova-a e volte a inseri-la.</translation>
 <translation id="1137673463384776352">Abrir link na aplicação <ph name="APP" /></translation>
@@ -1170,7 +1170,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2604255671529671813">Erro de ligação à rede</translation>
 <translation id="2606246518223360146">Associar dados</translation>
 <translation id="2607101320794533334">Informações de chave pública do requerente</translation>
-<translation id="2608770217409477136">Utilizar predefinições</translation>
 <translation id="2609896558069604090">Criar Atalhos...</translation>
 <translation id="2610157865375787051">Suspensão</translation>
 <translation id="2610260699262139870">Tamanho R&amp;eal</translation>
@@ -1968,7 +1967,7 @@ Pretende pará-lo?</translation>
 <translation id="370665806235115550">A carregar...</translation>
 <translation id="3709244229496787112">O navegador foi encerrado antes de a transferência estar concluída.</translation>
 <translation id="3711931198657368127">Co&amp;lar e ir para <ph name="URL" /></translation>
-<translation id="3711945201266135623">Foram encontradas <ph name="NUM_PRINTERS" /> impressoras do servidor de impressão.</translation>
+<translation id="3711945201266135623">Foram encontradas <ph name="NUM_PRINTERS" /> impressoras no servidor de impressão.</translation>
 <translation id="3712050472459130149">É necessário atualizar a conta.</translation>
 <translation id="3712217561553024354">Permitir que este dispositivo utilize a sua Conta Google para encontrar outros dispositivos com uma ligação móvel de dados</translation>
 <translation id="3712897371525859903">Guard&amp;ar página como...</translation>
@@ -2728,7 +2727,7 @@ Pretende pará-lo?</translation>
 <translation id="4830502475412647084">A instalar a atualização do SO…</translation>
 <translation id="4830573902900904548">O seu <ph name="DEVICE_TYPE" /> não consegue estabelecer ligação à Internet através de <ph name="NETWORK_NAME" />. Escolha outra rede. <ph name="LEARN_MORE_LINK_START" />Saiba mais<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Veja as novidades no Chromebook</translation>
-<translation id="4833683849865011483">Foi encontrada 1 impressora do servidor de impressão.</translation>
+<translation id="4833683849865011483">Foi encontrada 1 impressora no servidor de impressão.</translation>
 <translation id="4835385943915508971">O Chrome não tem acesso ao recurso solicitado.</translation>
 <translation id="4836504898754963407">Faça a gestão das impressões digitais</translation>
 <translation id="4837926214103741331">Não está autorizado a utilizar este dispositivo. Contacte o proprietário do dispositivo para obter autorização de início de sessão.</translation>
@@ -3238,7 +3237,7 @@ Pretende pará-lo?</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">Localizar</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" e mais 1 separador}other{"<ph name="TAB_TITLE" />" e mais # separadores}}</translation>
-<translation id="5549467165017213645">Esta ação irá limpar <ph name="TOTAL_USAGE" /> de dados armazenados pelos sites e aplicações instaladas.</translation>
+<translation id="5549467165017213645">Esta ação irá limpar <ph name="TOTAL_USAGE" /> de dados armazenados pelos sites e apps instaladas.</translation>
 <translation id="5551573675707792127">Teclado e introdução de texto</translation>
 <translation id="5553089923092577885">Mapeamentos de políticas de certificados</translation>
 <translation id="5554489410841842733">Este ícone estará visível se for possível utilizar a extensão na página actual.</translation>
@@ -3254,7 +3253,6 @@ Pretende pará-lo?</translation>
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="5567989639534621706">Caches de aplicações</translation>
 <translation id="5568069709869097550">Não é possível iniciar sessão</translation>
-<translation id="5568144734023334204">Armazenamento Android</translation>
 <translation id="5572851009514199876">Comece e inicie sessão no Chrome para que este possa verificar se tem autorização para aceder a este site.</translation>
 <translation id="5575473780076478375">Extensão da navegação anónima: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Ocorreu um problema com o pedido de registo de demonstração.</translation>
@@ -3627,7 +3625,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6080515710685820702">Está a utilizar um computador partilhado? Experimente abrir uma janela de navegação anónima.</translation>
 <translation id="6080689532560039067">Verificar a hora do sistema</translation>
 <translation id="6082651258230788217">Mostrar na barra de ferramentas</translation>
-<translation id="608531959444400877"><ph name="WINDOW_TITLE" /> – parte de um grupo sem nome</translation>
+<translation id="608531959444400877"><ph name="WINDOW_TITLE" /> – Parte de um grupo sem nome</translation>
 <translation id="6086846494333236931">Instalada pelo gestor</translation>
 <translation id="6087960857463881712">Cara de fantástico</translation>
 <translation id="6091761513005122595">A partilha foi montada com êxito.</translation>
@@ -3894,7 +3892,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6467304607960172345">Otimizar vídeos em ecrã inteiro</translation>
 <translation id="6468485451923838994">Tipos de letra</translation>
 <translation id="6472207088655375767">PUU</translation>
-<translation id="6472804939621540371">Esta ação irá limpar todos os dados e cookies armazenados pelo grupo de sites <ph name="SITE_GROUP_NAME" />, por quaisquer sites associados a este e pela respetiva aplicação instalada.</translation>
+<translation id="6472804939621540371">Esta ação irá limpar todos os dados e cookies armazenados pelo grupo de sites <ph name="SITE_GROUP_NAME" />, por quaisquer sites associados a este e pela respetiva app instalada.</translation>
 <translation id="6472893788822429178">Mostrar botão Página Inicial</translation>
 <translation id="6473842110411557830">Ilustração do Powerwash</translation>
 <translation id="6474884162850599008">Desligar a conta do Google Drive</translation>
@@ -5050,7 +5048,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8063235345342641131">Avatar verde predefinido</translation>
 <translation id="8064671687106936412">Chave:</translation>
 <translation id="8068253693380742035">Toque para iniciar sessão</translation>
-<translation id="8068809649322155577">Esta ação irá limpar todos os dados e cookies armazenados pelo grupo de sites <ph name="SITE_GROUP_NAME" />, por quaisquer sites associados a este e pelas respetivas aplicações instaladas.</translation>
+<translation id="8068809649322155577">Esta ação irá limpar todos os dados e cookies armazenados pelo grupo de sites <ph name="SITE_GROUP_NAME" />, por quaisquer sites associados a este e pelas respetivas apps instaladas.</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Os dados de aplicações podem ser quaisquer dados que uma aplicação tenha guardado (com base nas definições do programador), incluindo dados como contactos, mensagens e fotos.<ph name="END_PARAGRAPH1" />
@@ -5084,7 +5082,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8114875720387900039">Divisão horizontal</translation>
 <translation id="8116972784401310538">&amp;Gestor de marcadores</translation>
 <translation id="8117620576188476503">Faça a gestão de ligações, atualizações e definições através do tabuleiro de estado. Para chegar aqui através do teclado, prima Alt + Shift + S.</translation>
-<translation id="8117752106453549166">O Linux está a ser configurado pelo seu administrador. A configuração irá demorar alguns minutos.</translation>
+<translation id="8117752106453549166">O administrador está a configurar o Linux. A configuração irá demorar alguns minutos.</translation>
 <translation id="8118076340394175570">A sua entidade requer uma atualização a este dispositivo.</translation>
 <translation id="8118362518458010043">Desativada pelo Chrome. Esta extensão pode ser insegura.</translation>
 <translation id="8118488170956489476">O seu <ph name="BEGIN_LINK" />navegador é gerido<ph name="END_LINK" /> pela sua entidade.</translation>
@@ -5374,7 +5372,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8539727552378197395">Não (HttpOnly)</translation>
 <translation id="8539766201049804895">Atualizar</translation>
 <translation id="8540608333167683902">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, detalhes</translation>
-<translation id="8541462173655894684">Não foram encontradas quaisquer impressoras do servidor de impressão.</translation>
+<translation id="8541462173655894684">Não foram encontradas quaisquer impressoras no servidor de impressão.</translation>
 <translation id="8543556556237226809">Tem dúvidas? Contacte a pessoa que supervisiona o seu perfil.</translation>
 <translation id="8545575359873600875">Lamentamos, mas não foi possível confirmar a sua palavra-passe. O gestor deste utilizador supervisionado pode ter alterado a palavra-passe recentemente. Se for o caso, a nova palavra-passe será aplicada na próxima vez que iniciar sessão. Experimente utilizar a palavra-passe antiga.</translation>
 <translation id="8546186510985480118">O dispositivo tem pouco espaço</translation>

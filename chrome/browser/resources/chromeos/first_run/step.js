@@ -51,13 +51,10 @@ cr.define('cr.FirstRun', function() {
 
     /**
      * Hides the step.
-     * @param {boolean} animated Whether transition should be animated.
      * @param {function()=} opt_onHidden Called after step has been hidden.
      */
-    hide(animated, opt_onHidden) {
-      var transitionDuration =
-          animated ? cr.FirstRun.getDefaultTransitionDuration() : 0;
-      changeVisibility(this, false, transitionDuration, function() {
+    hide(opt_onHidden) {
+      changeVisibility(this, false, function() {
         this.classList.add('hidden');
         if (opt_onHidden)
           opt_onHidden();
@@ -66,14 +63,11 @@ cr.define('cr.FirstRun', function() {
 
     /**
      * Shows the step.
-     * @param {boolean} animated Whether transition should be animated.
      * @param {function(Step)=} opt_onShown Called after step has been shown.
      */
-    show(animated, opt_onShown) {
-      var transitionDuration =
-          animated ? cr.FirstRun.getDefaultTransitionDuration() : 0;
+    show(opt_onShown) {
       this.classList.remove('hidden');
-      changeVisibility(this, true, transitionDuration, function() {
+      changeVisibility(this, true, function() {
         if (opt_onShown)
           opt_onShown(this);
       }.bind(this));
@@ -200,7 +194,7 @@ cr.define('cr.FirstRun', function() {
       // "Showing" bubble in order to make offset* methods work.
       if (shouldShowBefore) {
         this.style.setProperty('opacity', '0');
-        this.show(false);
+        this.show();
       }
       var arrow = [
         this.arrow_.offsetLeft + this.arrow_.offsetWidth / 2,
@@ -229,7 +223,7 @@ cr.define('cr.FirstRun', function() {
       this.style.setProperty('left', left + 'px');
       this.style.setProperty('top', top + 'px');
       if (shouldShowBefore) {
-        this.hide(false);
+        this.hide();
         this.style.removeProperty('opacity');
       }
     },

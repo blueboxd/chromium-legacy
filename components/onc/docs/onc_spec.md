@@ -423,19 +423,18 @@ static IP configuration (see **StaticIPConfig**).
     * (optional) - **array of string**
     * An array of strings, each of which is an IP block in CIDR notation,
       whose traffic should be handled by the network. Example:
-      `["10.0.0.0/8", "192.168.5.0/24"]`. If **IncludedRoutes** or
-      **ExcludedRoutes** are not specified, this network
-      will be used to handle traffic for all IPs by default. Currently this
-      property only has an effect if the Network **Type** is *VPN* and the
-      VPN **Type** is *ARCVPN*.
+      `["10.0.0.0/8", "192.168.5.0/24"]`. These routes will supplement the
+      existing routes for this network; physical networks (**Type** *Cellular*,
+      *Ethernet*, or *WiFi*) and *L2TP-IPsec* VPN networks will by default route
+      all traffic sent to them. *ARCVPN* and *ThirdPartyVPN* VPN networks have
+      routes configured by the corresponding VPN app, and *OpenVPN* VPN networks
+      have routes configured by the OpenVPN server.
 
 * **ExcludedRoutes**
     * (optional) - **array of string**
     * An array of strings, each of which is an IP block in CIDR notation,
       whose traffic should **not** be handled by the network. Example:
-      `["10.0.0.0/8", "192.168.5.0/24"]`. Currently this
-      only has an effect if the Network **Type** is *VPN* and the VPN
-      **Type** is *ARCVPN*.
+      `["10.0.0.0/8", "192.168.5.0/24"]`.
 
 * **WebProxyAutoDiscoveryUrl**
     * (optional if part of **IPConfigs**, read-only) - **string**

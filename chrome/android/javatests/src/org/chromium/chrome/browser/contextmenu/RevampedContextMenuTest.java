@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -95,9 +96,13 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     @MediumTest
     public void testCopyLinkURL() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        RevampedContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
-                mDownloadTestRule.getActivity(), tab, "testLink",
-                R.id.contextmenu_copy_link_address);
+        // Allow DiskWrites temporarily in main thread to avoid
+        // violation during copying under emulator environment.
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
+            RevampedContextMenuUtils.selectContextMenuItem(
+                    InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(),
+                    tab, "testLink", R.id.contextmenu_copy_link_address);
+        }
 
         assertStringContains("test_link.html", getClipboardText());
     }
@@ -193,8 +198,15 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     @MediumTest
     public void testCopyEmailAddress() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        RevampedContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
-                mDownloadTestRule.getActivity(), tab, "testEmail", R.id.contextmenu_copy);
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
+            RevampedContextMenuUtils.selectContextMenuItem(
+                    InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(),
+                    tab, "testEmail", R.id.contextmenu_copy);
+        }
 
         Assert.assertEquals("Copied email address is not correct",
                 "someone1@example.com,someone2@example.com", getClipboardText());
@@ -204,8 +216,13 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     @MediumTest
     public void testCopyTelNumber() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        RevampedContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
-                mDownloadTestRule.getActivity(), tab, "testTel", R.id.contextmenu_copy);
+        // Allow DiskWrites temporarily in main thread to avoid
+        // violation during copying under emulator environment.
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
+            RevampedContextMenuUtils.selectContextMenuItem(
+                    InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(),
+                    tab, "testTel", R.id.contextmenu_copy);
+        }
 
         Assert.assertEquals("Copied tel number is not correct", "10000000000", getClipboardText());
     }

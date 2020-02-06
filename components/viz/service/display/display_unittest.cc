@@ -273,7 +273,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
             software_output_device_->viewport_pixel_size());
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), software_output_device_->damage_rect());
 
-  // Only damaged portion should be swapped.
+  // Only a small area is damaged but the color space changes which should
+  // result in full damage.
   {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
@@ -294,6 +295,36 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(2u, output_surface_->num_sent_frames());
+    EXPECT_EQ(gfx::Size(100, 100),
+              software_output_device_->viewport_pixel_size());
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
+              software_output_device_->damage_rect());
+
+    EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
+  }
+
+  // Same frame as above but no color space change. Only partial area should be
+  // drawn.
+  {
+    pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 100, 100);
+    pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+    pass->id = 1u;
+
+    pass_list.push_back(std::move(pass));
+    ResetDamageForTest();
+    SubmitCompositorFrame(
+        &pass_list,
+        id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+    EXPECT_TRUE(scheduler_->damaged());
+
+    scheduler_->reset_swapped_for_test();
+    EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
+    display_->SetDisplayColorSpaces(color_spaces_2);
+    display_->DrawAndSwap(base::TimeTicks::Now());
+    EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
+    EXPECT_TRUE(scheduler_->swapped());
+    EXPECT_EQ(3u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Size(100, 100),
               software_output_device_->viewport_pixel_size());
     EXPECT_EQ(gfx::Rect(10, 10, 1, 1), software_output_device_->damage_rect());
@@ -318,7 +349,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(2u, output_surface_->num_sent_frames());
+    EXPECT_EQ(3u, output_surface_->num_sent_frames());
   }
 
   // Pass is wrong size so shouldn't be swapped. However, damage should
@@ -346,7 +377,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(2u, output_surface_->num_sent_frames());
+    EXPECT_EQ(3u, output_surface_->num_sent_frames());
   }
 
   // Previous frame wasn't swapped, so next swap should have full damage.
@@ -371,7 +402,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(3u, output_surface_->num_sent_frames());
+    EXPECT_EQ(4u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
               software_output_device_->damage_rect());
 
@@ -399,7 +430,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(4u, output_surface_->num_sent_frames());
+    EXPECT_EQ(5u, output_surface_->num_sent_frames());
     EXPECT_TRUE(copy_called);
   }
 
@@ -424,7 +455,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(4u, output_surface_->num_sent_frames());
+    EXPECT_EQ(5u, output_surface_->num_sent_frames());
   }
 
   // DisableSwapUntilResize() should cause a swap if no frame was swapped at the
@@ -437,7 +468,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler_->swapped());
-    EXPECT_EQ(4u, output_surface_->num_sent_frames());
+    EXPECT_EQ(5u, output_surface_->num_sent_frames());
     ResetDamageForTest();
 
     constexpr gfx::Rect kOutputRect(0, 0, 200, 200);
@@ -455,7 +486,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     display_->DisableSwapUntilResize(base::OnceClosure());
     display_->Resize(gfx::Size(100, 100));
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(5u, output_surface_->num_sent_frames());
+    EXPECT_EQ(6u, output_surface_->num_sent_frames());
     EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
 
@@ -480,7 +511,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
-    EXPECT_EQ(6u, output_surface_->num_sent_frames());
+    EXPECT_EQ(7u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Size(100, 100),
               software_output_device_->viewport_pixel_size());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),

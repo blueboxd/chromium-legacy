@@ -259,20 +259,22 @@ void BrowserAppMenuButton::OnThemeChanged() {
 }
 
 void BrowserAppMenuButton::UpdateIcon() {
+  bool touch_ui = ui::MaterialDesignController::touch_ui();
   if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton)) {
-    SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(
-            ui::MaterialDesignController::touch_ui() ? kBrowserToolsTouchIcon
-                                                     : kBrowserToolsIcon,
-            toolbar_view_->app_menu_icon_controller()->GetIconColor(
-                GetPromoHighlightColor())));
+    const gfx::VectorIcon& icon =
+        touch_ui ? kBrowserToolsTouchIcon : kBrowserToolsIcon;
+    for (auto state : kButtonStates) {
+      SkColor icon_color =
+          toolbar_view_->app_menu_icon_controller()->GetIconColor(
+              GetForegroundColor(state));
+      SetImage(state, gfx::CreateVectorIcon(icon, icon_color));
+    }
     return;
   }
-  SetImage(
-      views::Button::STATE_NORMAL,
-      toolbar_view_->app_menu_icon_controller()->GetIconImage(
-          ui::MaterialDesignController::touch_ui(), GetPromoHighlightColor()));
+  for (auto state : kButtonStates) {
+    SetImage(state, toolbar_view_->app_menu_icon_controller()->GetIconImage(
+                        touch_ui, GetForegroundColor(state)));
+  }
 }
 
 void BrowserAppMenuButton::OnTouchUiChanged() {
@@ -285,11 +287,10 @@ const char* BrowserAppMenuButton::GetClassName() const {
   return "BrowserAppMenuButton";
 }
 
-base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
-  if (promo_feature_)
-    return GetFeaturePromoHighlightColorForToolbar(GetThemeProvider());
-
-  return base::nullopt;
+SkColor BrowserAppMenuButton::GetForegroundColor(ButtonState state) const {
+  return promo_feature_
+             ? GetFeaturePromoHighlightColorForToolbar(GetThemeProvider())
+             : ToolbarButton::GetForegroundColor(state);
 }
 
 bool BrowserAppMenuButton::GetDropFormats(
@@ -361,9 +362,9 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
 }
 
 SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
-  auto promo_highlight_color = GetPromoHighlightColor();
-  return promo_highlight_color ? promo_highlight_color.value()
-                               : AppMenuButton::GetInkDropBaseColor();
+  return promo_feature_
+             ? GetFeaturePromoHighlightColorForToolbar(GetThemeProvider())
+             : AppMenuButton::GetInkDropBaseColor();
 }
 
 base::string16 BrowserAppMenuButton::GetTooltipText(const gfx::Point& p) const {

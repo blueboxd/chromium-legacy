@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -176,6 +177,12 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
     int extended_error = 0;
   };
 
+  struct InstallParams {
+    InstallParams(const std::string& run, const std::string& arguments);
+    std::string run;
+    std::string arguments;
+  };
+
   using Callback = base::OnceCallback<void(const Result& result)>;
 
   // Called on the main thread when there was a problem unpacking or
@@ -187,10 +194,15 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   // and it is ready to be installed. |unpack_path| contains the
   // temporary directory with all the unpacked CRX files. |pubkey| contains the
   // public key of the CRX in the PEM format, without the header and the footer.
+  // |install_params| is an optional parameter which provides the name and
+  // the arguments for a binary program which is invoked as part of the
+  // install or update flows. To avoid forcing the callers to depend on
+  // base::Optional, an std::unique_ptr type is used.
   // The caller must invoke the |callback| when the install flow has completed.
   // This method may be called from a thread other than the main thread.
   virtual void Install(const base::FilePath& unpack_path,
                        const std::string& public_key,
+                       std::unique_ptr<InstallParams> install_params,
                        Callback callback) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is

@@ -16,11 +16,15 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/sampling_heap_profiler/module_cache.h"
 #include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
@@ -35,7 +39,9 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "services/tracing/perfetto/privacy_filtering_check.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/tracing_features.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "third_party/zlib/zlib.h"
 
 #if defined(OS_POSIX)
@@ -1085,6 +1091,119 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, CustomConfig) {
   ASSERT_TRUE(trace_config);
   EXPECT_NE(trace_config->find("record-until-full"), trace_config->npos)
       << *trace_config;
+}
+
+// Used as a known symbol to look up the current module.
+void DummyFunc() {}
+
+// Test that the tracing sampler profiler running in background tracing mode,
+// produces stack frames in the expected JSON format.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       EndToEndStackSampling) {
+  // In the browser process, the tracing sampler profiler gets constructed by
+  // the chrome/ layer, so we need to do the same manually for testing purposes.
+  auto tracing_sampler_profiler =
+      tracing::TracingSamplerProfiler::CreateOnMainThread();
+
+  // There won't be any samples if stack unwinding isn't supported.
+  if (!tracing::TracingSamplerProfiler::IsStackUnwindingSupported()) {
+    return;
+  }
+
+  base::RunLoop wait_for_sample;
+  tracing_sampler_profiler->SetSampleCallbackForTesting(
+      wait_for_sample.QuitClosure());
+
+  TestBackgroundTracingHelper background_tracing_helper;
+  TestTraceReceiverHelper trace_receiver_helper;
+
+  base::DictionaryValue dict;
+  dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+  dict.SetString("category", "CUSTOM");
+  dict.SetString("custom_categories", "disabled-by-default-cpu_profiler,-*");
+
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
+    rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    rules_dict->SetString("trigger_name", "preemptive_test");
+    rules_list->Append(std::move(rules_dict));
+  }
+
+  dict.Set("configs", std::move(rules_list));
+
+  std::unique_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::FromDict(&dict));
+  EXPECT_TRUE(config);
+
+  content::BackgroundTracingManager::TriggerHandle handle =
+      content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+          "preemptive_test");
+
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      std::move(config), trace_receiver_helper.get_receive_callback(),
+      BackgroundTracingManager::ANONYMIZE_DATA));
+
+  background_tracing_helper.WaitForTracingEnabled();
+
+  wait_for_sample.Run();
+
+  TestTriggerHelper trigger_helper;
+  BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+      handle, trigger_helper.receive_closure(true));
+
+  trace_receiver_helper.WaitForTraceReceived();
+  BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
+  background_tracing_helper.WaitForScenarioAborted();
+
+  EXPECT_TRUE(trace_receiver_helper.trace_received());
+
+  trace_analyzer::TraceEventVector events;
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer(
+      trace_analyzer::TraceAnalyzer::Create(
+          trace_receiver_helper.file_contents()));
+  ASSERT_TRUE(analyzer);
+
+  base::ModuleCache module_cache;
+  const base::ModuleCache::Module* this_module =
+      module_cache.GetModuleForAddress(reinterpret_cast<uintptr_t>(&DummyFunc));
+  ASSERT_TRUE(this_module);
+
+  std::string module_id = this_module->GetId();
+  tracing::TracingSamplerProfiler::MangleModuleIDIfNeeded(&module_id);
+
+  std::string desired_frame_pattern = base::StrCat(
+      {"0x[[:xdigit:]]+ - /?", this_module->GetDebugBasename().MaybeAsASCII(),
+       " \\[", module_id, "\\]"});
+
+  analyzer->FindEvents(trace_analyzer::Query::EventName() ==
+                           trace_analyzer::Query::String("StackCpuSampling"),
+                       &events);
+  EXPECT_GT(events.size(), 0u);
+
+  bool found_match = false;
+  for (const trace_analyzer::TraceEvent* event : events) {
+    if (found_match) {
+      break;
+    }
+
+    std::string frames = event->GetKnownArgAsString("frames");
+    EXPECT_FALSE(frames.empty());
+    base::StringTokenizer values_tokenizer(frames, "\n");
+    while (values_tokenizer.GetNext()) {
+      if (values_tokenizer.token_is_delim()) {
+        continue;
+      }
+
+      if (RE2::FullMatch(values_tokenizer.token(), desired_frame_pattern)) {
+        found_match = true;
+        break;
+      }
+    }
+  }
+
+  EXPECT_TRUE(found_match);
 }
 
 // This tests that histogram triggers for reactive mode configs.

@@ -14,6 +14,8 @@ class HeadlessContentRendererClient : public content::ContentRendererClient {
   HeadlessContentRendererClient();
   ~HeadlessContentRendererClient() override;
 
+  bool RequiresWebComponentsV0(const GURL& url) override;
+
  private:
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
 

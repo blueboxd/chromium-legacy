@@ -305,6 +305,8 @@ bool LegacyAbstractInlineTextBox::IsLineBreak() const {
 
 const NGOffsetMapping* LegacyAbstractInlineTextBox::GetOffsetMapping() const {
   const auto* text_node = DynamicTo<Text>(GetNode());
+  if (!text_node)
+    return nullptr;
 
   LayoutBlockFlow& block_flow = *NGOffsetMapping::GetInlineFormattingContextOf(
       *text_node->GetLayoutObject());

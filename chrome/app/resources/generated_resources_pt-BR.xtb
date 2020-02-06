@@ -1171,7 +1171,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2604255671529671813">Erro de conexão da rede</translation>
 <translation id="2606246518223360146">Vincular dados</translation>
 <translation id="2607101320794533334">Informações da chave pública do requerente</translation>
-<translation id="2608770217409477136">Usar configurações padrão</translation>
 <translation id="2609896558069604090">Criar atalhos...</translation>
 <translation id="2610157865375787051">Suspender</translation>
 <translation id="2610260699262139870">&amp;Tamanho real</translation>
@@ -1180,7 +1179,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2616366145935564096">Ler e alterar seus dados em <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">O chip está bloqueado</translation>
 <translation id="2619761439309613843">Atualização diária</translation>
-<translation id="2620215283731032047">O download de <ph name="FILE_NAME" /> não é possível por motivo de segurança.</translation>
+<translation id="2620215283731032047">Não foi possível fazer o download de <ph name="FILE_NAME" /> por motivo de segurança.</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2621713457727696555">Protegida</translation>
 <translation id="26224892172169984">Não permitir que qualquer site trabalhe com protocolos</translation>
@@ -1349,7 +1348,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2825758591930162672">Chave pública do requerente</translation>
 <translation id="2825848369316359348">Localize o nome impresso na parte de trás da sua chave de segurança</translation>
 <translation id="2828650939514476812">Conectar à rede Wi-Fi</translation>
-<translation id="2835294513443818940">O download deste arquivo não é possível por motivo de segurança.</translation>
+<translation id="2835294513443818940">Não foi possível fazer o download do arquivo por motivos de segurança.</translation>
 <translation id="2836269494620652131">Falha</translation>
 <translation id="2836635946302913370">O login com este nome foi desativado pelo administrador.</translation>
 <translation id="283669119850230892">Para usar a rede <ph name="NETWORK_ID" />, conclua primeiro sua conexão com a Internet abaixo.</translation>
@@ -3254,7 +3253,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="5567989639534621706">Caches de aplicativos</translation>
 <translation id="5568069709869097550">Não consigo acessar</translation>
-<translation id="5568144734023334204">Armazenamento do Android</translation>
 <translation id="5572851009514199876">Inicie e faça login no Chrome para que ele possa verificar se você tem permissão para acessar este site.</translation>
 <translation id="5575473780076478375">Extensão anônima: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Ocorreu um problema com a solicitação de registro de demonstração.</translation>

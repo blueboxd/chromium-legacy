@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Debug;
 import android.support.v4.view.ViewCompat;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -143,6 +144,7 @@ public class OmniboxSuggestionsList extends ListView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        final long start = Debug.threadCpuTimeNanos();
         View contentView =
                 mEmbedder.getAnchorView().getRootView().findViewById(android.R.id.content);
         ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mTempPosition);
@@ -157,10 +159,13 @@ public class OmniboxSuggestionsList extends ListView {
         }
         mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
         int availableViewportHeight = mTempRect.height() - anchorBottomRelativeToContent;
+
         super.onMeasure(
                 MeasureSpec.makeMeasureSpec(mAnchorView.getMeasuredWidth(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(availableViewportHeight,
                         mEmbedder.isTablet() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY));
+        final long end = Debug.threadCpuTimeNanos();
+        SuggestionsMetrics.recordSuggestionListMeasureTime(start, end);
     }
 
     @Override
@@ -215,6 +220,14 @@ public class OmniboxSuggestionsList extends ListView {
             adjustSidePadding();
             mAlignmentView.addOnLayoutChangeListener(mAlignmentViewLayoutListener);
         }
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        final long start = Debug.threadCpuTimeNanos();
+        super.onLayout(changed, l, t, r, b);
+        final long end = Debug.threadCpuTimeNanos();
+        SuggestionsMetrics.recordSuggestionListLayoutTime(start, end);
     }
 
     @Override

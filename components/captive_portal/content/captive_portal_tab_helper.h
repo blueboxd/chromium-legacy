@@ -23,6 +23,10 @@ namespace net {
 class SSLInfo;
 }
 
+class CaptivePortalBrowserTest;
+
+namespace captive_portal {
+
 class CaptivePortalLoginDetector;
 class CaptivePortalTabReloader;
 
@@ -84,7 +88,7 @@ class CaptivePortalTabHelper
           open_login_tab_callback);
 
  private:
-  friend class CaptivePortalBrowserTest;
+  friend class ::CaptivePortalBrowserTest;
   friend class CaptivePortalTabHelperTest;
 
   friend class content::WebContentsUserData<CaptivePortalTabHelper>;
@@ -95,9 +99,8 @@ class CaptivePortalTabHelper
   void Observe(const CaptivePortalService::Results& results);
 
   // Called by Observe in response to the corresponding event.
-  void OnCaptivePortalResults(
-      captive_portal::CaptivePortalResult previous_result,
-      captive_portal::CaptivePortalResult result);
+  void OnCaptivePortalResults(CaptivePortalResult previous_result,
+                              CaptivePortalResult result);
 
   // |this| takes ownership of |tab_reloader|.
   void SetTabReloaderForTest(CaptivePortalTabReloader* tab_reloader);
@@ -123,5 +126,7 @@ class CaptivePortalTabHelper
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalTabHelper);
 };
+
+}  // namespace captive_portal
 
 #endif  // COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_TAB_HELPER_H_

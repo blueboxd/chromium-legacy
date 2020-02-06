@@ -178,6 +178,11 @@ bool CrashReporterClient::ShouldEnableBreakpadMicrodumps() {
   return false;
 #endif
 }
+
+bool CrashReporterClient::ShouldWriteMinidumpToLog() {
+  return false;
+}
+
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)

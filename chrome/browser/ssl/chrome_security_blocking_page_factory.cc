@@ -395,8 +395,8 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
   if (secure_dns_mode == net::DnsConfig::SecureDnsMode::SECURE) {
     // If there is already a captive portal popup window, do not create another.
     for (auto* contents : AllTabContentses()) {
-      CaptivePortalTabHelper* captive_portal_tab_helper =
-          CaptivePortalTabHelper::FromWebContents(contents);
+      captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+          captive_portal::CaptivePortalTabHelper::FromWebContents(contents);
       if (captive_portal_tab_helper->IsLoginTab()) {
         Browser* browser_with_login_tab =
             chrome::FindBrowserWithWebContents(contents);
@@ -418,8 +418,8 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
     params.is_captive_portal_popup = true;
     Navigate(&params);
     content::WebContents* new_contents = params.navigated_or_inserted_contents;
-    CaptivePortalTabHelper* captive_portal_tab_helper =
-        CaptivePortalTabHelper::FromWebContents(new_contents);
+    captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+        captive_portal::CaptivePortalTabHelper::FromWebContents(new_contents);
     captive_portal_tab_helper->SetIsLoginTab();
     return;
   }
@@ -431,8 +431,8 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     content::WebContents* contents =
         browser->tab_strip_model()->GetWebContentsAt(i);
-    CaptivePortalTabHelper* captive_portal_tab_helper =
-        CaptivePortalTabHelper::FromWebContents(contents);
+    captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+        captive_portal::CaptivePortalTabHelper::FromWebContents(contents);
     if (captive_portal_tab_helper->IsLoginTab()) {
       if (focus)
         browser->tab_strip_model()->ActivateTabAt(i);
@@ -441,14 +441,15 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
   }
 
   // Otherwise, open a login tab.  Only end up here when a captive portal result
-  // was received, so it's safe to assume profile has a CaptivePortalService.
+  // was received, so it's safe to assume profile has a
+  // captive_portal::CaptivePortalService.
   content::WebContents* new_contents = chrome::AddSelectedTabWithURL(
       browser,
       CaptivePortalServiceFactory::GetForProfile(browser->profile())
           ->test_url(),
       ui::PAGE_TRANSITION_TYPED);
-  CaptivePortalTabHelper* captive_portal_tab_helper =
-      CaptivePortalTabHelper::FromWebContents(new_contents);
+  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+      captive_portal::CaptivePortalTabHelper::FromWebContents(new_contents);
   captive_portal_tab_helper->SetIsLoginTab();
 }
 #endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

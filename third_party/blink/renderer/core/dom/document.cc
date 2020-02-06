@@ -2419,6 +2419,7 @@ void Document::UpdateStyleAndLayoutTree() {
   UpdateDistributionForLegacyDistributedNodes();
 
   UpdateActiveStyle();
+  InvalidateStyleAndLayoutForFontUpdates();
   UpdateStyleInvalidationIfNeeded();
   UpdateStyle();
 
@@ -2446,6 +2447,12 @@ void Document::UpdateActiveStyle() {
   DCHECK(IsMainThread());
   TRACE_EVENT0("blink", "Document::updateActiveStyle");
   GetStyleEngine().UpdateActiveStyle();
+}
+
+void Document::InvalidateStyleAndLayoutForFontUpdates() {
+  DCHECK(IsActive());
+  DCHECK(IsMainThread());
+  GetStyleEngine().InvalidateStyleAndLayoutForFontUpdates();
 }
 
 void Document::UpdateStyle() {
@@ -5734,8 +5741,21 @@ void Document::setDomain(const String& raw_domain,
     if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler())
       frame_scheduler->SetCrossOriginToMainFrame(is_cross_origin_to_main_frame);
     if (View() &&
-        (was_cross_origin_to_main_frame != is_cross_origin_to_main_frame))
-      View()->CrossOriginStatusChanged();
+        (was_cross_origin_to_main_frame != is_cross_origin_to_main_frame)) {
+      View()->CrossOriginToMainFrameChanged();
+    }
+    if (frame_->IsMainFrame()) {
+      // Notify descendants if their cross-origin-to-main-frame status changed.
+      // TODO(pdr): This will notify even if |Frame::IsCrossOriginToMainFrame|
+      // is the same. Track whether each child was cross-origin to main before
+      // and after changing the domain, and only notify the changed ones.
+      for (Frame* child = frame_->Tree().FirstChild(); child;
+           child = child->Tree().TraverseNext(frame_)) {
+        auto* child_local_frame = DynamicTo<LocalFrame>(child);
+        if (child_local_frame && child_local_frame->View())
+          child_local_frame->View()->CrossOriginToMainFrameChanged();
+      }
+    }
 
     frame_->GetScriptController().UpdateSecurityOrigin(GetSecurityOrigin());
   }

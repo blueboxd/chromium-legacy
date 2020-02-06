@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 
 #include "cc/test/fake_layer_tree_frame_sink.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -84,7 +85,7 @@ void SimCompositor::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
   // Make a valid LayerTreeFrameSink so the compositor will generate begin main
   // frames.
-  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d());
+  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
 }
 
 void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {

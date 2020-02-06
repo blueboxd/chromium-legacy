@@ -5,10 +5,13 @@
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/common/constants.h"
 
@@ -169,6 +172,23 @@ void RecordBuiltInAppSearchResult(const std::string& app_id) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
                               BuiltInAppName::kPluginVm);
 #endif  // OS_CHROMEOS
+  }
+}
+
+void RecordAppBounce(const apps::AppUpdate& app) {
+  base::Time install_time = app.InstallTime();
+  base::Time uninstall_time = base::Time::Now();
+
+  DCHECK(uninstall_time >= install_time);
+
+  base::TimeDelta amount_time_installed = uninstall_time - install_time;
+
+  const base::TimeDelta seven_days = base::TimeDelta::FromDays(7);
+
+  if (amount_time_installed < seven_days) {
+    base::UmaHistogramBoolean("Apps.Bounced", true);
+  } else {
+    base::UmaHistogramBoolean("Apps.Bounced", false);
   }
 }
 

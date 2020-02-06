@@ -87,11 +87,19 @@ def main(raw_args):
       dest='read_only',
       default=True,
       help='Run a modifiable emulator. Will save snapshots on exit.')
+  start_parser.add_argument(
+      '--emulator-window',
+      action='store_true',
+      default=False,
+      help='Enable graphical window display on the emulator.')
   add_common_arguments(start_parser)
 
   def start_cmd(args):
     inst = avd.AvdConfig(args.avd_config).CreateInstance()
-    inst.Start(read_only=args.read_only, snapshot_save=not args.read_only)
+    inst.Start(
+        read_only=args.read_only,
+        snapshot_save=not args.read_only,
+        window=args.emulator_window)
     print('%s started (pid: %d)' % (str(inst), inst._emulator_proc.pid))
     return 0
 

@@ -116,9 +116,10 @@ TEST_P(AbstractInlineTextBoxTest, GetTextWithLineBreakAtTrailingWhiteSpace) {
 
 TEST_P(AbstractInlineTextBoxTest, GetTextOffsetInContainer) {
   // "&#10" is a Line Feed ("\n").
-  SetBodyInnerHTML(
-      R"HTML(<style>p { white-space: pre-line; }</style>
-      <p id="paragraph">First sentence of the &#10; paragraph. Second sentence of &#10; the paragraph.</p>)HTML");
+  SetBodyInnerHTML(R"HTML(
+    <style>p { white-space: pre-line; }</style>
+    <p id="paragraph">First sentence of the &#10; paragraph. Second sentence of &#10; the paragraph. </p>
+    <br id='br'>)HTML");
 
   const Element& paragraph = *GetDocument().getElementById("paragraph");
   LayoutText& layout_text =
@@ -145,6 +146,13 @@ TEST_P(AbstractInlineTextBoxTest, GetTextOffsetInContainer) {
   inline_text_box = inline_text_box->NextInlineTextBox()->NextInlineTextBox();
   EXPECT_EQ("the paragraph.", inline_text_box->GetText());
   EXPECT_EQ(52u, inline_text_box->TextOffsetInContainer(0));
+
+  // Ensure that calling TextOffsetInContainer on a br gives the correct result.
+  const Element& br_element = *GetDocument().getElementById("br");
+  LayoutText& br_text = *ToLayoutText(br_element.GetLayoutObject());
+  inline_text_box = br_text.FirstAbstractInlineTextBox();
+  EXPECT_EQ("\n", inline_text_box->GetText());
+  EXPECT_EQ(0u, inline_text_box->TextOffsetInContainer(0));
 }
 
 }  // namespace blink

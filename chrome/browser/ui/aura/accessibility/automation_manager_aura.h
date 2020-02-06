@@ -19,8 +19,6 @@
 #include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
-class AXRootObjWrapper;
-
 namespace base {
 template <typename T>
 class NoDestructor;
@@ -103,9 +101,6 @@ class AutomationManagerAura : public ui::AXActionHandler,
 
   // Whether automation support for views is enabled.
   bool enabled_ = false;
-
-  // Root object representing the entire desktop. Must outlive |current_tree_|.
-  std::unique_ptr<AXRootObjWrapper> desktop_root_;
 
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).

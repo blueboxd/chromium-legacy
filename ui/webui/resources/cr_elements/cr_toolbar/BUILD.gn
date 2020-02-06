@@ -40,8 +40,6 @@ polymer_modulizer("cr_toolbar") {
   html_type = "dom-module"
   auto_imports =
       [ "ui/webui/resources/html/polymer.html|afterNextRender,html,Polymer" ]
-  namespace_rewrites =
-      [ "Polymer.RenderStatus.afterNextRender|afterNextRender" ]
 }
 
 polymer_modulizer("cr_toolbar_search_field") {

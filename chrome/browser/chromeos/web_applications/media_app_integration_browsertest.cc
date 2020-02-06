@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using platform_util::OpenOperationResult;
 using web_app::SystemAppType;
 
 namespace {
@@ -40,6 +41,9 @@ constexpr char kFilePng800x600[] = "image.png";
 
 // A 640x480 image/jpeg (all green pixels).
 constexpr char kFileJpeg640x480[] = "image3.jpg";
+
+// A 100x100 image/jpeg (all blue pixels).
+constexpr char kFileJpeg100x100[] = "small.jpg";
 
 // A 1-second long 648x486 VP9-encoded video with stereo Opus-encoded audio.
 constexpr char kFileVideoVP9[] = "world.webm";
@@ -80,6 +84,22 @@ base::FilePath TestFile(const std::string& ascii_name) {
   return path;
 }
 
+// Use platform_util::OpenItem() on the given |path| to simulate a user request
+// to open that path, e.g., from the Files app or chrome://downloads.
+OpenOperationResult OpenPathWithPlatformUtil(Profile* profile,
+                                             const base::FilePath& path) {
+  base::RunLoop run_loop;
+  OpenOperationResult open_result;
+  platform_util::OpenItem(
+      profile, path, platform_util::OPEN_FILE,
+      base::BindLambdaForTesting([&](OpenOperationResult result) {
+        open_result = result;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return open_result;
+}
+
 // Runs |script| in the unprivileged app frame of |web_ui|.
 content::EvalJsResult EvalJsInAppFrame(content::WebContents* web_ui,
                                        const std::string& script) {
@@ -101,6 +121,14 @@ void PrepareAppForTest(content::WebContents* web_ui) {
   EXPECT_TRUE(WaitForLoadStop(web_ui));
   EXPECT_EQ(nullptr, EvalJsInAppFrame(
                          web_ui, MediaAppUiBrowserTest::AppJsTestLibrary()));
+}
+
+content::WebContents* PrepareActiveBrowserForTest() {
+  Browser* app_browser = chrome::FindBrowserWithActiveWindow();
+  content::WebContents* web_ui =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  PrepareAppForTest(web_ui);
+  return web_ui;
 }
 
 // Waits for a promise that resolves with image dimensions, once an <img>
@@ -165,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
 
 // Ensures that chrome://media-app is available as a file task for the ChromeOS
 // file manager and eligible for opening appropriate files / mime types.
-IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppElibibleOpenTask) {
+IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
   constexpr bool kIsDirectory = false;
   const extensions::EntryInfo image_entry(TestFile(kFilePng800x600),
                                           "image/png", kIsDirectory);
@@ -203,20 +231,11 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
   WaitForTestSystemAppInstall();
   Browser* test_browser = chrome::FindBrowserWithActiveWindow();
 
-  using platform_util::OpenOperationResult;
-
   file_manager::test::FolderInMyFiles folder(profile());
   folder.Add({TestFile(kFilePng800x600)});
 
-  base::RunLoop run_loop;
-  OpenOperationResult open_result;
-  platform_util::OpenItem(
-      profile(), folder.files()[0], platform_util::OPEN_FILE,
-      base::BindLambdaForTesting([&](OpenOperationResult result) {
-        open_result = result;
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  OpenOperationResult open_result =
+      OpenPathWithPlatformUtil(profile(), folder.files()[0]);
 
   // Window focus changes on ChromeOS are synchronous, so just get the newly
   // focused window.
@@ -231,5 +250,63 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
   EXPECT_NE(test_browser, app_browser);
   EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
             *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::MEDIA));
+  EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
+}
+
+// Test that the MediaApp can navigate other files in the directory of a file
+// that was opened.
+IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
+                       FileOpenCanTraverseDirectory) {
+  WaitForTestSystemAppInstall();
+
+  // Initialize a folder with 3 files: 2 JPEG, 1 PNG. Note this approach doesn't
+  // guarantee the modification times of the files so, and therefore does not
+  // suggest an ordering to the files of the directory contents. But by having
+  // at most two active files, we can still write a robust test.
+  file_manager::test::FolderInMyFiles folder(profile());
+  folder.Add({
+      TestFile(kFilePng800x600),
+      TestFile(kFileJpeg640x480),
+      TestFile(kFileJpeg100x100),
+  });
+
+  const base::FilePath copied_png_800x600 = folder.files()[0];
+  const base::FilePath copied_jpeg_640x480 = folder.files()[1];
+
+  // Sent an open request using only the 640x480 JPEG file.
+  OpenPathWithPlatformUtil(profile(), copied_jpeg_640x480);
+  content::WebContents* web_ui = PrepareActiveBrowserForTest();
+
+  EXPECT_EQ("640x480", WaitForOpenedImage(web_ui));
+
+  // Clear the <img> src attribute to ensure we can detect changes reliably.
+  // TODO(crbug/893226): Use the alt-text to find the image instead.
+  ClearOpenedImage(web_ui);
+
+  // Navigate to the next file in the directory.
+  EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
+  EXPECT_EQ("100x100", WaitForOpenedImage(web_ui));
+
+  // Navigating again should wraparound, but skip the 800x600 PNG because it is
+  // a different mime type to the original open request.
+  ClearOpenedImage(web_ui);
+  EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
+  EXPECT_EQ("640x480", WaitForOpenedImage(web_ui));
+
+  // Navigate backwards.
+  ClearOpenedImage(web_ui);
+  EXPECT_EQ(true, ExecuteScript(web_ui, "advance(-1)"));
+  EXPECT_EQ("100x100", WaitForOpenedImage(web_ui));
+
+  // Now open the png.
+  ClearOpenedImage(web_ui);
+  OpenPathWithPlatformUtil(profile(), copied_png_800x600);
+  EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
+
+  // Navigating should stay on this file. Note currently, this will "reload" the
+  // file. It would also be acceptable to "do nothing", but that will be tackled
+  // on the UI layer by hiding the buttons.
+  ClearOpenedImage(web_ui);
+  EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
   EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
 }

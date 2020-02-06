@@ -140,10 +140,8 @@ TEST_F(CompromisedCredentialsTableTest,
   compromised_credentials2.create_time = base::Time::FromTimeT(2);
 
   EXPECT_TRUE(db()->AddRow(compromised_credentials1));
-  // It should return true as the sql statement ran correctly. It ignored
-  // new row though because of unique constraints, hence there is only one
-  // record in the database.
-  EXPECT_TRUE(db()->AddRow(compromised_credentials2));
+  // It should return false because of unique constraints.
+  EXPECT_FALSE(db()->AddRow(compromised_credentials2));
   EXPECT_THAT(db()->GetAllRows(), ElementsAre(compromised_credentials1));
 }
 

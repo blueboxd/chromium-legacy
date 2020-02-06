@@ -43,10 +43,6 @@
   window.onload = async () => {
 
     promise_test(async () => {
-      if (window.internals) {
-        internals.runtimeFlags.updateHoverAtBeginFrameEnabled = true;
-      }
-
       await waitForCompositorCommit();
       array = document.getElementsByClassName('hoverme');
 

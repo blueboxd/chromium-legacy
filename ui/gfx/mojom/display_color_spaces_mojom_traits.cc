@@ -42,21 +42,33 @@ bool EnumTraits<gfx::mojom::ContentColorUsage, gfx::ContentColorUsage>::
 }
 
 // static
+base::span<const gfx::ColorSpace>
+StructTraits<gfx::mojom::DisplayColorSpacesDataView, gfx::DisplayColorSpaces>::
+    color_spaces(const gfx::DisplayColorSpaces& input) {
+  return input.color_spaces_;
+}
+
+// static
+base::span<const gfx::BufferFormat>
+StructTraits<gfx::mojom::DisplayColorSpacesDataView, gfx::DisplayColorSpaces>::
+    buffer_formats(const gfx::DisplayColorSpaces& input) {
+  return input.buffer_formats_;
+}
+
+// static
 bool StructTraits<
     gfx::mojom::DisplayColorSpacesDataView,
     gfx::DisplayColorSpaces>::Read(gfx::mojom::DisplayColorSpacesDataView input,
                                    gfx::DisplayColorSpaces* out) {
-  if (!input.ReadSrgb(&out->srgb))
+  base::span<gfx::BufferFormat> buffer_formats(out->buffer_formats_);
+  if (!input.ReadBufferFormats(&buffer_formats))
     return false;
-  if (!input.ReadWcgOpaque(&out->wcg_opaque))
+
+  base::span<gfx::ColorSpace> color_spaces(out->color_spaces_);
+  if (!input.ReadColorSpaces(&color_spaces))
     return false;
-  if (!input.ReadWcgTransparent(&out->wcg_transparent))
-    return false;
-  if (!input.ReadHdrOpaque(&out->hdr_opaque))
-    return false;
-  if (!input.ReadHdrTransparent(&out->hdr_transparent))
-    return false;
-  out->sdr_white_level = input.sdr_white_level();
+
+  out->SetSDRWhiteLevel(input.sdr_white_level());
   return true;
 }
 

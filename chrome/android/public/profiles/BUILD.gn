@@ -11,6 +11,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/android/public/crypto:java",
+    "//chrome/browser/preferences:java",
     "//content/public/android:content_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

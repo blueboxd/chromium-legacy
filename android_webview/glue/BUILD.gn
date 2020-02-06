@@ -24,6 +24,7 @@ android_library("glue") {
     "//content/public/android:content_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
+    "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 

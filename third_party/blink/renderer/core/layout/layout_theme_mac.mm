@@ -154,11 +154,16 @@ class LayoutThemeMacRefresh final : public LayoutThemeDefault {
       WebColorScheme color_scheme) const override;
   Color PlatformSpellingMarkerUnderlineColor() const override;
   Color PlatformGrammarMarkerUnderlineColor() const override;
+  Color FocusRingColor() const override;
   String DisplayNameForFile(const File& file) const override {
     if (file.GetUserVisibility() == File::kIsUserVisible)
       return [[NSFileManager defaultManager] displayNameAtPath:file.GetPath()];
     return file.name();
   }
+
+ protected:
+  // Controls color values returned from FocusRingColor().
+  bool UsesTestModeFocusRingColor() const;
 };
 
 // Inflate an IntRect to account for specific padding around margins.
@@ -310,6 +315,37 @@ Color LayoutThemeMacRefresh::PlatformSpellingMarkerUnderlineColor() const {
 
 Color LayoutThemeMacRefresh::PlatformGrammarMarkerUnderlineColor() const {
   return Color(107, 107, 107);
+}
+
+Color LayoutThemeMacRefresh::FocusRingColor() const {
+  static const RGBA32 kDefaultFocusRingColor = 0xFF101010;
+  if (UsesTestModeFocusRingColor())
+    return kDefaultFocusRingColor;
+
+  if (!HasCustomFocusRingColor())
+    return GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
+
+  // Use the custom focus ring color when the system accent color wasn't
+  // changed.
+  if (@available(macOS 10.14, *)) {
+    static const Color kControlBlueAccentColor =
+        GetSystemColor(MacSystemColorID::kControlAccentBlueColor);
+    if (kControlBlueAccentColor ==
+        GetSystemColor(MacSystemColorID::kControlAccentColor)) {
+      return GetCustomFocusRingColor();
+    }
+  } else {
+    if (NSBlueControlTint == [[NSUserDefaults standardUserDefaults]
+                                 integerForKey:@"AppleAquaColorVariant"]) {
+      return GetCustomFocusRingColor();
+    }
+  }
+
+  return GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
+}
+
+bool LayoutThemeMacRefresh::UsesTestModeFocusRingColor() const {
+  return WebTestSupport::IsRunningWebTest();
 }
 
 static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {

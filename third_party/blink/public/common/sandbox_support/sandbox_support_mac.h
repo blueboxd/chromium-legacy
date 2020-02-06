@@ -11,6 +11,8 @@ namespace blink {
 // NSColor.
 enum class MacSystemColorID {
   kAlternateSelectedControl,
+  kControlAccentBlueColor,
+  kControlAccentColor,
   kControlBackground,
   kControlDarkShadow,
   kControlHighlight,

@@ -151,6 +151,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   void DidFocusFrame() override;
   void CheckCompleted() override;
+  void CapturePaintPreviewOfCrossProcessSubframe(
+      const gfx::Rect& clip_rect,
+      const base::UnguessableToken& guid) override;
 
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
 

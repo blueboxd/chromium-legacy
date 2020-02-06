@@ -6,6 +6,8 @@ package org.chromium.base.test.util;
 
 import android.support.test.InstrumentationRegistry;
 
+import org.chromium.base.StrictModeContext;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -55,6 +57,42 @@ public final class CloseableOnMainThread implements Closeable {
         });
         if (mException != null) {
             throw new IOException(mException.getCause());
+        }
+    }
+
+    /**
+     * Enables try-with-resources compatible StrictMode violation whitelisting on android's main
+     * thread.
+     *
+     * Prefer "ignored" as the variable name to appease Android Studio's "Unused symbol" inspection.
+     *
+     * Example:
+     * <pre>
+     *     try (CloseableOnMainThread ignored =
+     *                     CloseableOnMainThread.StrictMode.allowDiskWrites()) {
+     *         return Example.doThingThatRequiresDiskWrites();
+     *     }
+     * </pre>
+     *
+     */
+    public static class StrictMode {
+        private StrictMode() {}
+
+        /**
+         * Convenience method for disabling all thread-level StrictMode checks with
+         * try-with-resources. Includes everything listed here:
+         *     https://developer.android.com/reference/android/os/StrictMode.ThreadPolicy.Builder.html
+         */
+        public static CloseableOnMainThread allowAllThreadPolicies() throws Exception {
+            return new CloseableOnMainThread(
+                    () -> { return StrictModeContext.allowAllThreadPolicies(); });
+        }
+
+        /**
+         * Convenience method for disabling StrictMode for disk-writes with try-with-resources.
+         */
+        public static CloseableOnMainThread allowDiskWrites() throws Exception {
+            return new CloseableOnMainThread(() -> { return StrictModeContext.allowDiskWrites(); });
         }
     }
 }

@@ -638,6 +638,10 @@ UIViewController* TopPresentedViewController() {
 // Verifies that the back/forward buttons are working and are correctly enabled
 // during navigations.
 - (void)testNavigationButtons {
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_DISABLED(@"EG1 Fails.");
+#endif
+
   // Setup the server.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));

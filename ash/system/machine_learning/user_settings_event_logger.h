@@ -17,8 +17,8 @@ namespace ash {
 namespace ml {
 
 // This class handles logging for settings changes that are initiated by the
-// user from the quick settings tray.
-class UserSettingsEventLogger
+// user from the quick settings tray. Exported for tests.
+class ASH_EXPORT UserSettingsEventLogger
     : public ShellObserver,
       public chromeos::CrasAudioHandler::AudioObserver {
  public:

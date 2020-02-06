@@ -351,7 +351,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
   base_dir = base_dir.Append(relative_install_dir);
   EXPECT_TRUE(base::CreateDirectory(base_dir));
   installer->Install(
-      unpack_path, update_client::jebg_public_key,
+      unpack_path, update_client::jebg_public_key, nullptr,
       base::BindOnce([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(0, result.error);
       }));
@@ -380,7 +380,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
 
   // Calling |Install| fails since DIR_COMPONENT_USER does not exist.
   installer->Install(
-      unpack_path, update_client::jebg_public_key,
+      unpack_path, update_client::jebg_public_key, nullptr,
       base::BindOnce([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(static_cast<int>(
                       update_client::InstallError::NO_DIR_COMPONENT_USER),

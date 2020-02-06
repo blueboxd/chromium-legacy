@@ -3332,13 +3332,8 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
 }
 
 void WebMediaPlayerImpl::RequestAnimationFrame() {
-  vfc_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoFrameCompositor::SetOnFramePresentedCallback,
-                     base::Unretained(compositor_.get()),
-                     BindToCurrentLoop(base::BindOnce(
-                         &WebMediaPlayerImpl::OnNewFramePresentedCallback,
-                         weak_factory_.GetWeakPtr()))));
+  compositor_->SetOnFramePresentedCallback(BindToCurrentLoop(base::BindOnce(
+      &WebMediaPlayerImpl::OnNewFramePresentedCallback, weak_this_)));
 }
 
 void WebMediaPlayerImpl::OnNewFramePresentedCallback(

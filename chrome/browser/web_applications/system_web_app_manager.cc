@@ -87,6 +87,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {
     infos.emplace(SystemAppType::MEDIA,
                   SystemAppInfo("Media", GURL("chrome://media-app/pwa.html")));
+    infos.at(SystemAppType::MEDIA).include_launch_directory = true;
   }
 
 #if !defined(OFFICIAL_BUILD)

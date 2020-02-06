@@ -1,11 +1,11 @@
 AXWebArea
 ++AXGroup
-++++AXLink AXTitle='unread '
+++++AXLink AXDescription='unread '
 ++++++AXStaticText AXValue='unread '
-++++AXLink AXTitle='read '
+++++AXLink AXDescription='read '
 ++++++AXStaticText AXValue='read '
-++++AXLink AXTitle='read '
+++++AXLink AXDescription='read '
 ++++++AXStaticText AXValue='read '
-++++AXLink AXTitle='read'
+++++AXLink AXDescription='read'
 ++++++AXImage AXDescription='/read.jpg'
 ++++++AXStaticText AXValue='read'

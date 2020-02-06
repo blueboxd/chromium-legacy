@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -104,11 +106,20 @@ bool CompromisedCredentialsTable::AddRow(
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.CompromisedCredentials.Add",
                             compromised_credentials.compromise_type);
 
-  sql::Statement s(
-      db_->GetCachedStatement(SQL_FROM_HERE,
-                              "INSERT OR IGNORE INTO compromised_credentials "
-                              "(url, username, create_time, compromise_type) "
-                              "VALUES (?, ?, ?, ?)"));
+  // In case there is an error, expect it to be a constraint violation.
+  db_->set_error_callback(base::BindRepeating([](int error, sql::Statement*) {
+    constexpr int kSqliteErrorMask = 0xFF;
+    constexpr int kSqliteConstraint = 19;
+    if ((error & kSqliteErrorMask) != kSqliteConstraint) {
+      DLOG(ERROR) << "Got unexpected SQL error code: " << error;
+    }
+  }));
+
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT INTO compromised_credentials (url, username, create_time, "
+      "compromise_type) VALUES (?, ?, ?, ?)"));
+
   s.BindString(GetColumnNumber(CompromisedCredentialsTableColumn::kSignonRealm),
                compromised_credentials.signon_realm);
   s.BindString16(GetColumnNumber(CompromisedCredentialsTableColumn::kUsername),
@@ -119,7 +130,10 @@ bool CompromisedCredentialsTable::AddRow(
   s.BindInt64(
       GetColumnNumber(CompromisedCredentialsTableColumn::kCompromiseType),
       static_cast<int>(compromised_credentials.compromise_type));
-  return s.Run();
+
+  bool result = s.Run();
+  db_->reset_error_callback();
+  return result;
 }
 
 std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetRows(

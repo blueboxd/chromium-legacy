@@ -9,7 +9,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 import {ClickMock, createExtensionInfo} from './test_util.js';
 
@@ -86,7 +86,7 @@ suite(extension_error_page_tests.suiteName, function() {
   test(assert(extension_error_page_tests.TestNames.Layout), function() {
     flush();
 
-    const testIsVisible = isVisible.bind(null, errorPage);
+    const testIsVisible = isChildVisible.bind(null, errorPage);
     expectTrue(testIsVisible('#closeButton'));
     expectTrue(testIsVisible('#heading'));
     expectTrue(testIsVisible('#errorsList'));

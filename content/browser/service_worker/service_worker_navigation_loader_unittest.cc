@@ -347,9 +347,9 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
         registration_.get(), GURL("https://example.com/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(WriteToDiskCacheSync(
-        storage(), version_->script_url(), storage()->NewResourceId(),
-        {} /* headers */, "I'm the body", "I'm the meta data"));
+    records.push_back(WriteToDiskCacheSync(storage(), version_->script_url(),
+                                           {} /* headers */, "I'm the body",
+                                           "I'm the meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);

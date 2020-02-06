@@ -38,16 +38,20 @@ self.addEventListener('paymentrequest', (evt) => {
   evt.respondWith(new Promise((responder) => {
     paymentRequestResponder = responder;
     const errorString = 'open_window_failed';
-    evt.openWindow(url).then((result) => {
-      if (!result) {
-        paymentRequestEvent.changePaymentMethod(methodName, {
-          status: errorString,
+    evt.openWindow(url)
+        .then((windowClient) => {
+          if (!windowClient) {
+            paymentRequestEvent.changePaymentMethod(methodName, {
+              status: errorString,
+            });
+          } else {
+            windowClient.postMessage('window_client_ready');
+          }
+        })
+        .catch((error) => {
+          paymentRequestEvent.changePaymentMethod(methodName, {
+            status: errorString,
+          });
         });
-      }
-    }).catch((error) => {
-      paymentRequestEvent.changePaymentMethod(methodName, {
-        status: errorString,
-      });
-    });
   }));
 });

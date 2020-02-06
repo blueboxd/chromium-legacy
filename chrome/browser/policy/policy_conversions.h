@@ -14,36 +14,20 @@
 #include "components/policy/core/common/policy_types.h"
 #include "ui/base/webui/web_ui_util.h"
 
-class Profile;
-
-namespace content {
-class BrowserContext;
-}  // namespace content
-
-namespace enterprise_management {
-class PolicyData;
-}
-
 namespace policy {
 
-class PolicyErrorMap;
-class Schema;
+class PolicyConversionsClient;
 
 extern const webui::LocalizedString kPolicySources[POLICY_SOURCE_COUNT];
 
 // A convenience class to retrieve all policies values.
 class PolicyConversions {
  public:
-  // Maps known policy names to their schema. If a policy is not present, it is
-  // not known (either through policy_templates.json or through an extension's
-  // managed storage schema).
-  using PolicyToSchemaMap = base::flat_map<std::string, Schema>;
-
-  PolicyConversions();
+  // |client| provides embedder-specific policy information and must not be
+  // nullptr.
+  explicit PolicyConversions(std::unique_ptr<PolicyConversionsClient> client);
   virtual ~PolicyConversions();
 
-  // Set to get Chrome and extension policies.
-  PolicyConversions& WithBrowserContext(content::BrowserContext* context);
   // Set to get policy types as human friendly string instead of enum integer.
   // Policy types includes policy source, policy scope and policy level.
   // Enabled by default.
@@ -71,78 +55,27 @@ class PolicyConversions {
   virtual std::string ToJSON();
 
  protected:
-  const Profile* profile() const { return profile_; }
-
-  // Returns policies for Chrome browser.
-  virtual base::Value GetChromePolicies();
-  // Returns policies for Chrome extensions.
-  virtual base::Value GetExtensionPolicies(PolicyDomain policy_domain);
-#if defined(OS_CHROMEOS)
-  // Returns policies for ChromeOS device.
-  virtual base::Value GetDeviceLocalAccountPolicies();
-  // Returns device specific information if this device is enterprise managed.
-  virtual base::Value GetIdentityFields();
-#endif
-
-  std::string ConvertValueToJSON(const base::Value& value);
+  PolicyConversionsClient* client() { return client_.get(); }
 
  private:
-  // Returns a copy of |value|. If necessary (which is specified by
-  // |convert_values_enabled_|), converts some values to a representation that
-  // i18n_template.js will display.
-  base::Value CopyAndMaybeConvert(const base::Value& value,
-                                  const base::Optional<Schema>& schema);
-
-  // Creates a description of the policy |policy_name| using |policy| and the
-  // optional errors in |errors| to determine the status of each policy.
-  // |known_policy_schemas| contains |Schema|s for known policies in the same
-  // policy namespace of |map|. A policy without an entry in
-  // |known_policy_schemas| is an unknown policy.
-  base::Value GetPolicyValue(
-      const std::string& policy_name,
-      const PolicyMap::Entry& policy,
-      PolicyErrorMap* errors,
-      const base::Optional<PolicyToSchemaMap>& known_policy_schemas);
-
-  // Returns a description of each policy in |map| as Value, using the
-  // optional errors in |errors| to determine the status of each policy.
-  // |known_policy_schemas| contains |Schema|s for known policies in the same
-  // policy namespace of |map|. A policy in |map| but without an entry
-  // |known_policy_schemas| is an unknown policy.
-  base::Value GetPolicyValues(
-      const PolicyMap& map,
-      PolicyErrorMap* errors,
-      const base::Optional<PolicyToSchemaMap>& known_policy_schemas);
-
-#if defined(OS_CHROMEOS)
-  base::Value GetIdentityFieldsFromPolicy(
-      const enterprise_management::PolicyData* policy);
-#endif
-
-  Profile* profile_;
-
-  bool convert_types_enabled_ = true;
-  bool convert_values_enabled_ = false;
-  bool device_local_account_policies_enabled_ = false;
-  bool device_info_enabled_ = false;
-  bool pretty_print_enabled_ = true;
-  bool user_policies_enabled_ = true;
+  std::unique_ptr<PolicyConversionsClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyConversions);
 };
 
 class DictionaryPolicyConversions : public PolicyConversions {
  public:
-  DictionaryPolicyConversions();
+  explicit DictionaryPolicyConversions(
+      std::unique_ptr<PolicyConversionsClient> client);
   ~DictionaryPolicyConversions() override;
 
   base::Value ToValue() override;
 
  private:
-  base::Value GetExtensionPolicies(PolicyDomain policy_domain) override;
+  base::Value GetExtensionPolicies(PolicyDomain policy_domain);
 
 #if defined(OS_CHROMEOS)
-  base::Value GetDeviceLocalAccountPolicies() override;
+  base::Value GetDeviceLocalAccountPolicies();
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DictionaryPolicyConversions);
@@ -150,13 +83,14 @@ class DictionaryPolicyConversions : public PolicyConversions {
 
 class ArrayPolicyConversions : public PolicyConversions {
  public:
-  ArrayPolicyConversions();
+  explicit ArrayPolicyConversions(
+      std::unique_ptr<PolicyConversionsClient> client);
   ~ArrayPolicyConversions() override;
 
   base::Value ToValue() override;
 
  private:
-  base::Value GetChromePolicies() override;
+  base::Value GetChromePolicies();
 
   DISALLOW_COPY_AND_ASSIGN(ArrayPolicyConversions);
 };

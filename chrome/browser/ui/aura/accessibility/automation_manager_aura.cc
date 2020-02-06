@@ -94,7 +94,7 @@ void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
   if (!obj)
     return;
 
-  AutomationManagerAura::PostEvent(obj->GetUniqueId(), event_type);
+  PostEvent(obj->GetUniqueId(), event_type);
 }
 
 void AutomationManagerAura::HandleAlert(const std::string& text) {
@@ -141,9 +141,10 @@ AutomationManagerAura::~AutomationManagerAura() = default;
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
-    desktop_root_ = std::make_unique<AXRootObjWrapper>(this, cache_.get());
+    auto desktop_root = std::make_unique<AXRootObjWrapper>(this, cache_.get());
     current_tree_ = std::make_unique<views::AXTreeSourceViews>(
-        desktop_root_.get(), ax_tree_id(), cache_.get());
+        desktop_root.get(), ax_tree_id(), cache_.get());
+    cache_->CreateOrReplace(std::move(desktop_root));
   }
   if (reset_serializer) {
     current_tree_serializer_.reset();

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -17,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
-#include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -29,10 +27,6 @@
 namespace policy {
 
 namespace {
-
-bool IsFcmEnabled() {
-  return base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations);
-}
 
 // Get the kMetricPolicyInvalidations histogram metric which should be
 // incremented when an invalidation is received.
@@ -62,16 +56,14 @@ void RecordPolicyRefreshMetric(
     base::UmaHistogramEnumeration(kMetricDevicePolicyRefresh,
                                   metric_policy_refresh,
                                   METRIC_POLICY_REFRESH_SIZE);
-    base::UmaHistogramEnumeration(
-        IsFcmEnabled() ? kMetricDevicePolicyRefreshFcm
-                       : kMetricDevicePolicyRefreshTicl,
-        metric_policy_refresh, METRIC_POLICY_REFRESH_SIZE);
+    base::UmaHistogramEnumeration(kMetricDevicePolicyRefreshFcm,
+                                  metric_policy_refresh,
+                                  METRIC_POLICY_REFRESH_SIZE);
   } else {
     base::UmaHistogramEnumeration(kMetricUserPolicyRefresh,
                                   metric_policy_refresh,
                                   METRIC_POLICY_REFRESH_SIZE);
-    base::UmaHistogramEnumeration(IsFcmEnabled() ? kMetricUserPolicyRefreshFcm
-                                                 : kMetricUserPolicyRefreshTicl,
+    base::UmaHistogramEnumeration(kMetricUserPolicyRefreshFcm,
                                   metric_policy_refresh,
                                   METRIC_POLICY_REFRESH_SIZE);
   }
@@ -285,18 +277,16 @@ void CloudPolicyInvalidator::HandleInvalidation(
     base::UmaHistogramEnumeration(kMetricDevicePolicyInvalidations,
                                   policy_invalidation_type,
                                   POLICY_INVALIDATION_TYPE_SIZE);
-    base::UmaHistogramEnumeration(
-        IsFcmEnabled() ? kMetricDevicePolicyInvalidationsFcm
-                       : kMetricDevicePolicyInvalidationsTicl,
-        policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
+    base::UmaHistogramEnumeration(kMetricDevicePolicyInvalidationsFcm,
+                                  policy_invalidation_type,
+                                  POLICY_INVALIDATION_TYPE_SIZE);
   } else {
     base::UmaHistogramEnumeration(kMetricUserPolicyInvalidations,
                                   policy_invalidation_type,
                                   POLICY_INVALIDATION_TYPE_SIZE);
-    base::UmaHistogramEnumeration(
-        IsFcmEnabled() ? kMetricUserPolicyInvalidationsFcm
-                       : kMetricUserPolicyInvalidationsTicl,
-        policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
+    base::UmaHistogramEnumeration(kMetricUserPolicyInvalidationsFcm,
+                                  policy_invalidation_type,
+                                  POLICY_INVALIDATION_TYPE_SIZE);
   }
   if (is_expired) {
     invalidation.Acknowledge();
@@ -375,10 +365,7 @@ void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
                << " for policy invalidations";
   }
   base::UmaHistogramBoolean(kMetricPolicyInvalidationRegistration, success);
-  base::UmaHistogramBoolean(IsFcmEnabled()
-                                ? kMetricPolicyInvalidationRegistrationFcm
-                                : kMetricPolicyInvalidationRegistrationTicl,
-                            success);
+  base::UmaHistogramBoolean(kMetricPolicyInvalidationRegistrationFcm, success);
 }
 
 void CloudPolicyInvalidator::Unregister() {

@@ -1171,7 +1171,6 @@
 <translation id="2604255671529671813">ネットワーク接続エラー</translation>
 <translation id="2606246518223360146">データをリンク</translation>
 <translation id="2607101320794533334">サブジェクトの公開鍵情報</translation>
-<translation id="2608770217409477136">デフォルト設定を使用する</translation>
 <translation id="2609896558069604090">ショートカットの作成...</translation>
 <translation id="2610157865375787051">スリープモードにする</translation>
 <translation id="2610260699262139870">実寸大(&amp;C)</translation>
@@ -3254,7 +3253,6 @@
 <translation id="5565735124758917034">有効</translation>
 <translation id="5567989639534621706">アプリケーション キャッシュ</translation>
 <translation id="5568069709869097550">ログインできない</translation>
-<translation id="5568144734023334204">Android のストレージ</translation>
 <translation id="5572851009514199876">このサイトへのアクセス権があるかどうかを Chrome で確認できるように、Chrome を起動してログインしてください。</translation>
 <translation id="5575473780076478375">シークレット モード拡張機能: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">デモ登録リクエストで問題が発生しました。</translation>
@@ -4539,7 +4537,7 @@
 <translation id="7388044238629873883">もうすぐ終わりです。</translation>
 <translation id="7392118418926456391">ウイルス スキャンに失敗しました</translation>
 <translation id="7392915005464253525">閉じたウィンドウを開く（&amp;E）</translation>
-<translation id="7396017167185131589">共有フォルダはここに表示されます</translation>
+<translation id="7396017167185131589">共有フォルダがここに表示されます</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> はシステム起動時に開始され、他の <ph name="PRODUCT_NAME" /> ウィンドウをすべて閉じてもバックグラウンドで動作し続けます。</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923">「<ph name="PHONE_NAME" />」で接続設定を行ってください</translation>

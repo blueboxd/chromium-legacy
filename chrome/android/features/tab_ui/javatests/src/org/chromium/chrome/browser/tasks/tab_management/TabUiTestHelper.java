@@ -31,6 +31,7 @@ import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.Root;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewAssertion;
@@ -38,7 +39,9 @@ import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -462,7 +465,22 @@ public class TabUiTestHelper {
      */
     static void clickScrimToExitDialog(ChromeTabbedActivity cta) {
         onView(instanceOf(ScrimView.class))
-                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .inRoot(new TypeSafeMatcher<Root>() {
+                    @Override
+                    protected boolean matchesSafely(Root root) {
+                        // Make sure we match the root window that takes up the whole screen.
+                        return root.getDecorView() != cta.getWindow().getDecorView()
+                                && root.getDecorView().getWidth()
+                                >= cta.getCompositorViewHolder().getWidth()
+                                && root.getDecorView().getHeight()
+                                >= cta.getCompositorViewHolder().getHeight();
+                    }
+
+                    @Override
+                    public void describeTo(Description description) {
+                        description.appendText("is full screen PopupWindow");
+                    }
+                })
                 .perform(new ViewAction() {
                     @Override
                     public Matcher<View> getConstraints() {
@@ -485,7 +503,7 @@ public class TabUiTestHelper {
 
     /**
      * Implementation of {@link ViewAssertion} to verify the {@link RecyclerView} has correct number
-     * of children, and children are showing correctly.
+     * of children.
      */
     public static class ChildrenCountAssertion implements ViewAssertion {
         private int mExpectedCount;
@@ -506,16 +524,6 @@ public class TabUiTestHelper {
             RecyclerView.Adapter adapter = recyclerView.getAdapter();
             CriteriaHelper.pollUiThread(
                     Criteria.equals(mExpectedCount, () -> adapter.getItemCount()));
-
-            recyclerView.setItemAnimator(null); // Disable animation to reduce flakiness.
-            for (int i = 0; i < mExpectedCount; i++) {
-                RecyclerView.ViewHolder viewHolder =
-                        recyclerView.findViewHolderForAdapterPosition(i);
-                if (viewHolder == null) return;
-                // This is to check if dialog hiding animation plays properly.
-                assertTrue(1f == viewHolder.itemView.getAlpha());
-                assertEquals(View.VISIBLE, viewHolder.itemView.getVisibility());
-            }
         }
     }
 }

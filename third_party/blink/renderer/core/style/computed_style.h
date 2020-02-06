@@ -1017,6 +1017,12 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT bool SetFontDescription(const FontDescription&);
   bool HasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;
 
+  // If true, the ComputedStyle must be recalculated when fonts are updated.
+  bool DependsOnFontMetrics() const {
+    return HasGlyphRelativeUnits() || HasFontSizeAdjust();
+  }
+  bool CachedPseudoElementStylesDependOnFontMetrics() const;
+
   // font-size
   int FontSize() const { return GetFontDescription().ComputedPixelSize(); }
   CORE_EXPORT float SpecifiedFontSize() const {

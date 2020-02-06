@@ -344,6 +344,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void MarkViewportStyleDirty();
   bool IsViewportStyleDirty() const { return viewport_style_dirty_; }
 
+  void MarkFontsNeedUpdate();
+  void InvalidateStyleAndLayoutForFontUpdates();
+
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
 
@@ -528,6 +531,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool in_layout_tree_rebuild_ = false;
   bool in_dom_removal_ = false;
   bool viewport_style_dirty_ = false;
+  bool fonts_need_update_ = false;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;

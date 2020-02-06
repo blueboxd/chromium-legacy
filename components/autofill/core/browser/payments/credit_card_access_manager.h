@@ -217,8 +217,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // For logging metrics. May be NULL for tests.
   CreditCardFormEventLogger* form_event_logger_;
 
-  // Timestamp used for metrics.
+  // Timestamp used for preflight call metrics.
   base::TimeTicks preflight_call_timestamp_;
+
+  // Timestamp used for user-perceived latency metrics.
+  base::Optional<base::TimeTicks>
+      card_selected_without_unmask_details_timestamp_ = base::nullopt;
 
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;

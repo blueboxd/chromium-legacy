@@ -26,7 +26,7 @@
 <translation id="1089439967362294234">கடவுச்சொல்லை மாற்று</translation>
 <translation id="1096545575934602868">இதில் <ph name="MAX_ITEMS_LIMIT" /> உள்ளீடுகளுக்கு மேல் இருக்கக்கூடாது. மீதமிருக்கும் அனைத்தும் நிராகரிக்கப்படும்.</translation>
 <translation id="109743633954054152">Chrome அமைப்புகளில் கடவுச்சொற்களை நிர்வகிக்கவும்</translation>
-<translation id="1101672080107056897">பிழை தொடர்பான நடவடிக்கை</translation>
+<translation id="1101672080107056897">பிழையின்போது செய்ய வேண்டியது</translation>
 <translation id="1103523840287552314">எப்போதும் இந்த மொழியை மொழிபெயர் <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">இது தேர்ந்தெடுக்கப்பட்டால், விரைவாக படிவங்களை நிரப்புவதற்காக, Chrome இந்த கார்டின் பிரதியை சாதனத்தில் சேமிக்கும்.</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" />க்கான அனுமதியைத் தேர்ந்தெடுக்கவும்</translation>
@@ -163,7 +163,7 @@
 <translation id="1639239467298939599">ஏற்றுகிறது</translation>
 <translation id="1640180200866533862">பயனர் கொள்கைகள்</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />தளத்தின் முகப்புப் பக்கத்திற்குச் செல்லவும்<ph name="END_LINK" />.</translation>
-<translation id="1641976391427233992">அவுட்புட்டை இவ்வளவு காலம் வரை தாமதப்படுத்து</translation>
+<translation id="1641976391427233992">அவுட்புட்டை இவ்வளவு நேரம் வரை தாமதப்படுத்து</translation>
 <translation id="1644574205037202324">வரலாறு</translation>
 <translation id="1645368109819982629">ஆதரிக்கப்படாத நெறிமுறை</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -300,7 +300,7 @@
 <translation id="2263079731045660823">Chrome அமைப்புகளில் கிரெடிட் கார்டுத் தன்னிரப்பித் தகவலைப் புதுப்பிக்கவும்</translation>
 <translation id="2267047181501709434">உங்கள் அடையாளத்தைச் சரிபார்க்கிறது...</translation>
 <translation id="2270484714375784793">தொலைபேசி எண்</translation>
-<translation id="2276057643614339130">அச்சிடுவதற்கான அடிப்பகுதி</translation>
+<translation id="2276057643614339130">அச்சின் அடிப்பகுதி</translation>
 <translation id="2277103315734023688">முன்செல்</translation>
 <translation id="2283340219607151381">முகவரிகளைச் சேமித்துத் தானாக நிரப்பு</translation>
 <translation id="2288422996159078444">நீங்கள் தட்டச்சு செய்பவை, பார்வையிடும் பக்கங்கள், இணையத்தில் செய்யும் பிற நடவடிக்கைகள் கண்காணிக்கப்படுகின்றன. மேலும் உங்களுக்குத் தெரியாமலேயே தளங்களில் உள்ள உள்ளடக்கம் மாற்றப்படலாம்.</translation>
@@ -388,7 +388,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">வெளியேறு</translation>
 <translation id="2684561033061424857">11x12</translation>
-<translation id="2687555958734450033">சிறந்த வகையிலான பொருத்தம்</translation>
+<translation id="2687555958734450033">கச்சிதமாகப் பொருந்தும் அளவு</translation>
 <translation id="2691924980723297736">பாதுகாப்பு எச்சரிக்கை</translation>
 <translation id="2699302886720511147">ஏற்கப்படும் கார்டுகள்</translation>
 <translation id="2701514975700770343">கீழ் நோக்கியது</translation>
@@ -409,7 +409,7 @@
 <translation id="2742870351467570537">தேர்ந்தெடுத்த உருப்படிகளை அகற்றுக</translation>
 <translation id="277133753123645258">ஷிப்பிங் முறை</translation>
 <translation id="277499241957683684">சாதனப் பதிவு இல்லை</translation>
-<translation id="2775884851269838147">முதல் பக்கத்தை அச்சிடுதல்</translation>
+<translation id="2775884851269838147">முதலில் அச்சிடும் பக்கம்</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">இணைப்பு மீட்டமைக்கப்பட்டது.</translation>
 <translation id="2792012897584536778">இந்தச் சாதனத்தின் நிர்வாகிகள் பாதுகாப்புச் சான்றிதழ்களை அமைத்துள்ளனர். இவற்றின் மூலம் நீங்கள் சென்ற இணையதளங்களின் உள்ளடக்கத்தை அவர்கள் பார்க்கக்கூடும்.</translation>
@@ -543,7 +543,7 @@
 <translation id="3447661539832366887">சாதனத்தின் உரிமையாளர் டைனோசர் கேமை முடக்கியுள்ளார்.</translation>
 <translation id="3447884698081792621">சான்றிதழைக் காட்டு (வழங்கியது: <ph name="ISSUER" />)</translation>
 <translation id="3452404311384756672">எடுப்பதற்கான இடைவேளை:</translation>
-<translation id="3453962258458347894">மீண்டும் முயன்ற எண்ணிக்கை</translation>
+<translation id="3453962258458347894">மீண்டும் முயலும் எண்ணிக்கை</translation>
 <translation id="3456231139987291353">Number-11 (என்வலப்)</translation>
 <translation id="3461824795358126837">ஹைலைட்டர்</translation>
 <translation id="3462200631372590220">மேம்பட்டவையை மறை</translation>
@@ -574,7 +574,7 @@
 <translation id="3587738293690942763">நடுவிலுள்ளது</translation>
 <translation id="3592413004129370115">Italian (என்வலப்)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608932978122581043">திசையமைப்பை வழங்கு</translation>
+<translation id="3608932978122581043">உட்செலுத்தும் திசையமைப்பு</translation>
 <translation id="3614103345592970299">அளவு: 2</translation>
 <translation id="361438452008624280">பட்டியல் உள்ளீடு '<ph name="LANGUAGE_ID" />': தெரியாத அல்லது ஆதரிக்கப்படாத மொழி.</translation>
 <translation id="3615877443314183785">சரியான காலாவதித் தேதியை உள்ளிடவும்</translation>
@@ -1313,7 +1313,7 @@
 <translation id="6964255747740675745">நெட்வொர்க் உள்ளமைவைப் பாகுபடுத்த முடியவில்லை (தவறான JSON).</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="6965978654500191972">சாதனம்</translation>
-<translation id="696703987787944103">கண்டுணர்தல் சார்ந்தது</translation>
+<translation id="696703987787944103">பெர்செப்ச்சுவல்</translation>
 <translation id="6970216967273061347">மாவட்டம்</translation>
 <translation id="6973656660372572881">நிலையான ப்ராக்ஸி சேவையகங்களும் .pac ஸ்கிரிப்ட் URL ஆகிய இரண்டும் குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="6973932557599545801">மன்னிக்கவும், என்னால் உதவ இயலவில்லை. நீங்களே செய்யுங்கள்.</translation>
@@ -1423,7 +1423,6 @@
 <translation id="7451311239929941790">இந்தச் சிக்கல் குறித்து <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">முழுமையான இயல்புநிலையைப் பயன்படுத்து (தடு)</translation>
 <translation id="7460618730930299168">திரையிலுள்ள உள்ளடக்கமும் நீங்கள் தேர்ந்தெடுத்த உள்ளடக்கமும் மாறுபடுகின்றன. தொடரவா?</translation>
-<translation id="7464821087936825778">தேடல் பயன்முறையிலிருந்து வெளியேறுகிறது</translation>
 <translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
 <translation id="7485870689360869515">தரவு எதுவும் இல்லை.</translation>

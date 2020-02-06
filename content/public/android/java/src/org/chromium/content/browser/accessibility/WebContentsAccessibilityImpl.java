@@ -703,11 +703,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 && WebContentsAccessibilityImplJni.get().isFocused(
                         mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId)) {
             // If selection/cursor are "unassigned" (e.g. first user swipe), then assign as needed
-            if (mSelectionStart == -1 || mCursorIndex == -1) {
+            if (mSelectionStart == -1) {
                 mSelectionStart =
                         WebContentsAccessibilityImplJni.get().getEditableTextSelectionStart(
                                 mNativeObj, WebContentsAccessibilityImpl.this,
                                 mAccessibilityFocusId);
+            }
+            if (mCursorIndex == -1) {
                 mCursorIndex = WebContentsAccessibilityImplJni.get().getEditableTextSelectionEnd(
                         mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
             }
@@ -719,9 +721,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         setGranularityAndUpdateSelection(granularity);
 
         // This calls finishGranularityMoveNext when it's done.
-        return WebContentsAccessibilityImplJni.get().nextAtGranularity(mNativeObj,
-                WebContentsAccessibilityImpl.this, mSelectionGranularity, extendSelection,
-                virtualViewId, mCursorIndex);
+        // If we are extending or starting a selection, pass the current cursor index, otherwise
+        // default to selection start, which will be the position at the end of the last move
+        if (extendSelection && mIsCurrentlyExtendingSelection) {
+            return WebContentsAccessibilityImplJni.get().nextAtGranularity(mNativeObj,
+                    WebContentsAccessibilityImpl.this, mSelectionGranularity, extendSelection,
+                    virtualViewId, mCursorIndex);
+        } else {
+            return WebContentsAccessibilityImplJni.get().nextAtGranularity(mNativeObj,
+                    WebContentsAccessibilityImpl.this, mSelectionGranularity, extendSelection,
+                    virtualViewId, mSelectionStart);
+        }
     }
 
     private boolean previousAtGranularity(
@@ -764,7 +774,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         } else {
             // User is no longer selecting, or wasn't originally, reset values
             mIsCurrentlyExtendingSelection = false;
-            mSelectionStart = -1;
+            mSelectionStart = itemEndIndex;
 
             // Set selection to/from indices to new cursor position, itemEndIndex with forwards nav
             selectionEvent.setFromIndex(itemEndIndex);
@@ -822,7 +832,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         } else {
             // User is no longer selecting, or wasn't originally, reset values
             mIsCurrentlyExtendingSelection = false;
-            mSelectionStart = -1;
+            mSelectionStart = itemStartIndex;
 
             // Set selection to/from indices to new cursor position, itemStartIndex with back nav
             selectionEvent.setFromIndex(itemStartIndex);
@@ -899,7 +909,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mSelectionGranularity = NO_GRANULARITY_SELECTED;
         mIsCurrentlyExtendingSelection = false;
         mSelectionStart = -1;
-        mCursorIndex = -1;
+        mCursorIndex = WebContentsAccessibilityImplJni.get().getTextLength(
+                mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
         mSuppressNextSelectionEvent = false;
 
         if (WebContentsAccessibilityImplJni.get().isAutofillPopupNode(

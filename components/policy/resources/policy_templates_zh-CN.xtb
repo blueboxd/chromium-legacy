@@ -3839,13 +3839,6 @@
 <translation id="7207095846245296855">强制启用 Google 安全搜索功能</translation>
 <translation id="7211368186050418507">一律不自动检测时区</translation>
 <translation id="7216442368414164495">允许用户启用安全浏览扩展报告功能</translation>
-<translation id="7221822638060296742">可让您设置是否允许网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。可以允许或拒绝所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
-
-          如果启用“点击播放”，用户必须点击相应的占位符，<ph name="FLASH_PLUGIN_NAME" /> 插件才能开始运行。
-
-          “自动播放”仅适用于 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策中明确列出的网域。如果要为所有网站启用“自动播放”，可以将 http://* 和 https://* 添加到此列表。
-
-          如果此策略未设置，用户将能够手动更改此项设置。</translation>
 <translation id="7222749588229362483">允许合并来自多个不同来源并具有相同范围及级别的所选政策。
 
         合并操作包括合并来自每个来源的字典的第一级密钥。如果密钥之间存在冲突，则应用来自最高优先级来源的密钥。
@@ -4225,11 +4218,6 @@
       ExternalStorageDisabled 政策的优先级高于此政策 - 如果 ExternalStorageDisabled 设为 true，则对外部存储设备的所有访问权限都将被停用，因而此政策会被忽略。
 
       M56 及更新版本均支持动态刷新此政策。</translation>
-<translation id="7831595031698917016">指定收到政策失效通知与从设备管理服务提取新政策之间的最大延迟（以毫秒为单位）。
-
-      设置此政策会覆盖默认值（即5000毫秒）。此政策的有效值范围为1000毫秒（1秒）至300000毫秒（5分钟），若超出此范围，则一律采用上限值或下限值。
-
-      如果未设置此政策，<ph name="PRODUCT_NAME" /> 将使用默认值（即5000毫秒）。</translation>
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
 <translation id="7842317008224536842">设置高对比度模式无障碍功能在登录屏幕上的默认状态。
 

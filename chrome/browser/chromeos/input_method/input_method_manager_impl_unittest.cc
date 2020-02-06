@@ -427,7 +427,7 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
 
   // The observer is always notified even when the same input method ID is
   // passed to ChangeInputMethod() more than twice.
-  // TODO(komatsu): Revisit if this is neccessary.
+  // TODO(komatsu): Revisit if this is necessary.
   EXPECT_EQ(3, observer.input_method_changed_count_);
 
   // If the same input method ID is passed, PropertyChanged() is not

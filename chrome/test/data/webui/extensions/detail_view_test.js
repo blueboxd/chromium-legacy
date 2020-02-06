@@ -8,7 +8,7 @@ import {navigation, Page} from 'chrome://extensions/extensions.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 import {createExtensionInfo, MockItemDelegate} from './test_util.js';
 
@@ -60,7 +60,7 @@ suite(extension_detail_view_tests.suiteName, function() {
   test(assert(extension_detail_view_tests.TestNames.Layout), function() {
     flush();
 
-    const testIsVisible = isVisible.bind(null, item);
+    const testIsVisible = isChildVisible.bind(null, item);
     expectTrue(testIsVisible('#closeButton'));
     expectTrue(testIsVisible('#icon'));
     expectTrue(testIsVisible('#enableToggle'));
@@ -79,15 +79,15 @@ suite(extension_detail_view_tests.suiteName, function() {
     ];
     const isChecked = id => item.$$(id).checked;
     for (let option of accessOptions) {
-      expectTrue(isVisible(item, option.id));
+      expectTrue(isChildVisible(item, option.id));
       expectFalse(isChecked(option.id), option.id);
       item.set('data.' + option.key + '.isEnabled', false);
       flush();
-      expectFalse(isVisible(item, option.id));
+      expectFalse(isChildVisible(item, option.id));
       item.set('data.' + option.key + '.isEnabled', true);
       item.set('data.' + option.key + '.isActive', true);
       flush();
-      expectTrue(isVisible(item, option.id));
+      expectTrue(isChildVisible(item, option.id));
       expectTrue(isChecked(option.id));
     }
 
@@ -260,19 +260,19 @@ suite(extension_detail_view_tests.suiteName, function() {
     item.set('data.location', 'FROM_STORE');
     flush();
     assertEquals('Chrome Web Store', item.$.source.textContent.trim());
-    assertFalse(isVisible(item, '#load-path'));
+    assertFalse(isChildVisible(item, '#load-path'));
 
     item.set('data.location', 'THIRD_PARTY');
     flush();
     assertEquals('Added by a third-party', item.$.source.textContent.trim());
-    assertFalse(isVisible(item, '#load-path'));
+    assertFalse(isChildVisible(item, '#load-path'));
 
     item.set('data.location', 'UNPACKED');
     item.set('data.prettifiedPath', 'foo/bar/baz/');
     flush();
     assertEquals('Unpacked extension', item.$.source.textContent.trim());
     // Test whether the load path is displayed for unpacked extensions.
-    assertTrue(isVisible(item, '#load-path'));
+    assertTrue(isChildVisible(item, '#load-path'));
 
     item.set('data.location', 'UNKNOWN');
     item.set('data.prettifiedPath', '');
@@ -280,7 +280,7 @@ suite(extension_detail_view_tests.suiteName, function() {
     item.set('data.locationText', 'Foo');
     flush();
     assertEquals('Foo', item.$.source.textContent.trim());
-    assertFalse(isVisible(item, '#load-path'));
+    assertFalse(isChildVisible(item, '#load-path'));
   });
 
   test(
@@ -354,7 +354,7 @@ suite(extension_detail_view_tests.suiteName, function() {
   test(assert(extension_detail_view_tests.TestNames.Warnings), function() {
     const testWarningVisible = function(id, expectVisible) {
       const f = expectVisible ? expectTrue : expectFalse;
-      f(isVisible(item, id));
+      f(isChildVisible(item, id));
     };
 
     testWarningVisible('#runtime-warnings', false);
@@ -378,7 +378,7 @@ suite(extension_detail_view_tests.suiteName, function() {
     testWarningVisible('#suspicious-warning', false);
     testWarningVisible('#blacklisted-warning', false);
     testWarningVisible('#update-required-warning', false);
-    const testIsVisible = isVisible.bind(null, item);
+    const testIsVisible = isChildVisible.bind(null, item);
     expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#enableButton'));
 

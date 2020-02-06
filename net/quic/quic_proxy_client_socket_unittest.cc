@@ -366,6 +366,9 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
       RequestPriority request_priority = LOWEST) {
     spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
+    if (VersionUsesHttp3(version_.transport_version)) {
+      request_priority = MEDIUM;
+    }
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
         ConvertRequestPriorityToQuicPriority(request_priority),
@@ -374,13 +377,17 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectAuthRequestPacket(
       uint64_t packet_number) {
+    RequestPriority request_priority = LOWEST;
+    if (VersionUsesHttp3(version_.transport_version)) {
+      request_priority = MEDIUM;
+    }
     spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     block["proxy-authorization"] = "Basic Zm9vOmJhcg==";
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
-        ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), 0,
-        nullptr);
+        ConvertRequestPriorityToQuicPriority(request_priority),
+        std::move(block), 0, nullptr);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructDataPacket(

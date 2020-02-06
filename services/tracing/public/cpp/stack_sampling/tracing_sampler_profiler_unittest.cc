@@ -166,18 +166,6 @@ class TracingSampleProfilerTest : public testing::Test {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
   }
 
-  // Returns whether of not the sampler profiling is able to unwind the stack
-  // on this platform.
-  bool IsStackUnwindingSupported() {
-#if defined(OS_MACOSX) || defined(OS_WIN) && defined(_WIN64) ||     \
-    (defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-     defined(OFFICIAL_BUILD))
-    return true;
-#else
-    return false;
-#endif
-  }
-
   void EndTracing() {
     TracingSamplerProfiler::StopTracingForTesting();
     base::RunLoop().RunUntilIdle();
@@ -191,7 +179,7 @@ class TracingSampleProfilerTest : public testing::Test {
   }
 
   void ValidateReceivedEvents() {
-    if (IsStackUnwindingSupported()) {
+    if (TracingSamplerProfiler::IsStackUnwindingSupported()) {
       EXPECT_GT(events_stack_received_count_, 0U);
     } else {
       EXPECT_EQ(events_stack_received_count_, 0U);
@@ -280,7 +268,7 @@ TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
-  if (IsStackUnwindingSupported()) {
+  if (TracingSamplerProfiler::IsStackUnwindingSupported()) {
     uint32_t seq_id = FindProfilerSequenceId();
     auto& packets = producer()->finalized_packets();
     int64_t reference_ts = 0;
@@ -314,7 +302,7 @@ TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
-  if (IsStackUnwindingSupported()) {
+  if (TracingSamplerProfiler::IsStackUnwindingSupported()) {
     uint32_t seq_id = FindProfilerSequenceId();
     auto& packets = producer()->finalized_packets();
     int64_t reference_ts = 0;

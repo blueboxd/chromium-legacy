@@ -1170,7 +1170,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2604255671529671813">Produciuse un erro de conexión de rede</translation>
 <translation id="2606246518223360146">Ligar datos</translation>
 <translation id="2607101320794533334">Información de clave pública de entidade</translation>
-<translation id="2608770217409477136">Utilizar a configuración predeterminada</translation>
 <translation id="2609896558069604090">Crear atallos...</translation>
 <translation id="2610157865375787051">Suspender</translation>
 <translation id="2610260699262139870">&amp;Tamaño real</translation>
@@ -3253,7 +3252,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5565735124758917034">Activo</translation>
 <translation id="5567989639534621706">Memorias caché das aplicacións</translation>
 <translation id="5568069709869097550">Non se pode iniciar sesión</translation>
-<translation id="5568144734023334204">Almacenamento de Android</translation>
 <translation id="5572851009514199876">Abre Chrome e inicia sesión para que o navegador poida comprobar se tes permiso para acceder a este sitio.</translation>
 <translation id="5575473780076478375">Extensión do modo de incógnito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Produciuse un problema coa solicitude de rexistro de demostración.</translation>
@@ -5033,7 +5031,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">Detívose a sincronización a través do Panel de control de Google.</translation>
 <translation id="8045923671629973368">Introduce o código da aplicación ou o URL de almacenamento web.</translation>
-<translation id="804786196054284061">Acordo de licenza de usuario final</translation>
+<translation id="804786196054284061">Contrato de licenza de usuario final</translation>
 <translation id="8049705080247101012">Google marcou a extensión "<ph name="EXTENSION_NAME" />" como maliciosa e impediuse a instalación</translation>
 <translation id="8050038245906040378">Sinatura de código comercial de Microsoft</translation>
 <translation id="8053278772142718589">Ficheiros PKCS n.º 12</translation>

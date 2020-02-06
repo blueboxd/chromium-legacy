@@ -170,6 +170,9 @@ SkCanvas* SoftwareOutputDeviceMac::BeginPaint(
 
 void SoftwareOutputDeviceMac::EndPaint() {
   SoftwareOutputDevice::EndPaint();
+  if (!current_paint_buffer_)
+    return;
+
   {
     TRACE_EVENT0("browser", "IOSurfaceUnlock");
     IOReturn io_result = IOSurfaceUnlock(current_paint_buffer_->io_surface,

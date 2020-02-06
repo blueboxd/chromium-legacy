@@ -11,7 +11,7 @@ document
 ++++++++++description Name='/'
 ++++++++++spinbutton Name='Year' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=275760.00 RangeValue.Minimum=1.00 RangeValue.Value=2008.00 Value.Value='2008'
 ++++++++++++description Name='2008'
-++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
+++++++button Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++textbox LocalizedControlType='date picker'
 ++++++group IsControlElement=false
 ++++++++group IsControlElement=false
@@ -23,7 +23,7 @@ document
 ++++++++++description Name='/'
 ++++++++++spinbutton Name='Year' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=275760.00 RangeValue.Minimum=1.00 RangeValue.Value=2008.00 Value.Value='2008'
 ++++++++++++description Name='2008'
-++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
+++++++button Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++textbox LocalizedControlType='date picker' Name='Third date picker' ControllerFor='{document}'
 ++++++group IsControlElement=false
 ++++++++group IsControlElement=false
@@ -35,7 +35,7 @@ document
 ++++++++++description Name='/'
 ++++++++++spinbutton Name='Year Third date picker' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=275760.00 RangeValue.Minimum=1.00 RangeValue.Value=2008.00 Value.Value='2008'
 ++++++++++++description Name='2008'
-++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
+++++++button Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++++Name='Chrome Legacy Window' IsControlElement=false
 ++++++++document
 ++++++++++group IsControlElement=false
@@ -67,3 +67,4 @@ document
 ++++++++++++++++group IsControlElement=false
 ++++++++++++++++++group IsControlElement=false
 ++++++++++++++++button Name='Today'
+<-- End-of-file -->

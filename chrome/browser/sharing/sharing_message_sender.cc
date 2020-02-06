@@ -51,10 +51,10 @@ void SharingMessageSender::SendMessageToDevice(
 
   auto inserted = base::InsertOrAssign(
       message_metadata_, message_guid,
-      SentMessageMetadata(std::move(callback), base::TimeTicks::Now(),
-                          message_type, receiver_device_platform,
-                          last_updated_age, trace_id,
-                          SharingChannelType::kUnknown));
+      SentMessageMetadata(
+          std::move(callback), base::TimeTicks::Now(), message_type,
+          receiver_device_platform, last_updated_age, trace_id,
+          SharingChannelType::kUnknown, device.pulse_interval()));
   DCHECK(inserted.second);
 
   auto delegate_iter = send_delegates_.find(delegate_type);
@@ -185,7 +185,8 @@ void SharingMessageSender::InvokeSendMessageCallback(
   std::move(metadata.callback).Run(result, std::move(response));
 
   LogSendSharingMessageResult(metadata.type, metadata.receiver_device_platform,
-                              metadata.channel_type, result);
+                              metadata.channel_type,
+                              metadata.receiver_pulse_interval, result);
   LogSharingDeviceLastUpdatedAgeWithResult(result, metadata.last_updated_age);
   TRACE_EVENT_NESTABLE_ASYNC_END1("sharing", "SharingMessageSender.SendMessage",
                                   TRACE_ID_LOCAL(metadata.trace_id), "result",
@@ -199,14 +200,16 @@ SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
     SharingDevicePlatform receiver_device_platform,
     base::TimeDelta last_updated_age,
     int trace_id,
-    SharingChannelType channel_type)
+    SharingChannelType channel_type,
+    base::TimeDelta receiver_pulse_interval)
     : callback(std::move(callback)),
       timestamp(timestamp),
       type(type),
       receiver_device_platform(receiver_device_platform),
       last_updated_age(last_updated_age),
       trace_id(trace_id),
-      channel_type(channel_type) {}
+      channel_type(channel_type),
+      receiver_pulse_interval(receiver_pulse_interval) {}
 
 SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
     SentMessageMetadata&& other) = default;

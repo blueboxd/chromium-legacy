@@ -49,6 +49,7 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lifetime/switch_utils.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
@@ -74,6 +75,7 @@
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -235,7 +237,7 @@ BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
 
 void BrowserProcessImpl::Init() {
 #if defined(OS_CHROMEOS)
-  // Forces creation of |metrics_services_manager_client_| if neccessary
+  // Forces creation of |metrics_services_manager_client_| if necessary
   // (typically this call is a no-op as MetricsServicesManager has already been
   // created).
   GetMetricsServicesManager();
@@ -1416,6 +1418,9 @@ void BrowserProcessImpl::Unpin() {
   std::move(quit_closure_).Run();
 
   chrome::ShutdownIfNeeded();
+
+  // TODO(crbug.com/967603): remove when root cause is found.
+  CHECK_EQ(BrowserList::GetInstance()->size(), 0u);
 #endif  // !defined(OS_ANDROID)
 }
 

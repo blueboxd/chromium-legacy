@@ -58,12 +58,30 @@ class Installer final : public update_client::CrxInstaller {
   void OnUpdateError(int error) override;
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
+               std::unique_ptr<InstallParams> install_params,
                Callback callback) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
   bool Uninstall() override;
 
-  Result InstallHelper(const base::FilePath& unpack_path);
+  Result InstallHelper(const base::FilePath& unpack_path,
+                       std::unique_ptr<InstallParams> install_params);
+
+  // Runs the installer code with sync primitives to allow the code to
+  // create processes and wait for them to exit.
+  void InstallWithSyncPrimitives(const base::FilePath& unpack_path,
+                                 const std::string& public_key,
+                                 std::unique_ptr<InstallParams> install_params,
+                                 Callback callback);
+
+  // Handles the application installer specified by the |app_installer| and
+  // its |arguments|. This data is returned by the update server as part of
+  // the manifest object in an update response. Handling of the application
+  // installer is typically OS-specific, such as building a command line,
+  // creating processes, mounting images, running scripts, and collecting
+  // exit codes.
+  int RunApplicationInstaller(const base::FilePath& app_installer,
+                              const std::string& arguments);
 
   const std::string app_id_;
   std::unique_ptr<InstallInfo> install_info_;

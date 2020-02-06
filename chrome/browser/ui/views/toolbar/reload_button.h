@@ -46,6 +46,9 @@ class ReloadButton : public ToolbarButton,
 
   void SetColors(SkColor normal_color, SkColor disabled_color);
 
+  // views::View:
+  void OnThemeChanged() override;
+
   // ToolbarButton:
   void OnMouseExited(const ui::MouseEvent& event) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
@@ -72,7 +75,9 @@ class ReloadButton : public ToolbarButton,
   std::unique_ptr<ui::SimpleMenuModel> CreateMenuModel();
 
   void ExecuteBrowserCommand(int command, int event_flags);
-  void ChangeModeInternal(Mode mode);
+
+  // Updates the icon images.
+  void UpdateIcon();
 
   void OnDoubleClickTimer();
   void OnStopToReloadTimer();
@@ -99,8 +104,9 @@ class ReloadButton : public ToolbarButton,
   base::TimeDelta double_click_timer_delay_;
   base::TimeDelta mode_switch_timer_delay_;
 
-  SkColor normal_color_;
-  SkColor disabled_color_;
+  // The colors used for the icon if explicitly set by SetColors().
+  base::Optional<SkColor> normal_color_;
+  base::Optional<SkColor> disabled_color_;
 
   // Indicates if reload menu is enabled.
   bool menu_enabled_ = false;

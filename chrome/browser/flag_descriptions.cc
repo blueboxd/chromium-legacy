@@ -578,6 +578,11 @@ const char kEnableTLS13EarlyDataDescription[] =
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
 
+const char kPostQuantumCECPQ2Name[] = "TLS Post-Quantum Confidentiality";
+const char kPostQuantumCECPQ2Description[] =
+    "This option enables a post-quantum (i.e. resistent to quantum computers) "
+    "key exchange algorithm in TLS (CECPQ2).";
+
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";
 const char kWinrtGeolocationImplementationDescription[] =

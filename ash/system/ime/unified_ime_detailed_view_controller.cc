@@ -7,9 +7,11 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
@@ -44,6 +46,11 @@ views::View* UnifiedIMEDetailedViewController::CreateView() {
                                     Shell::Get()->ime_controller());
   view_->Init(ShouldShowKeyboardToggle(), GetSingleImeBehavior());
   return view_;
+}
+
+base::string16 UnifiedIMEDetailedViewController::GetAccessibleName() const {
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_QUICK_SETTINGS_BUBBLE_IME_SETTINGS_ACCESSIBLE_DESCRIPTION);
 }
 
 void UnifiedIMEDetailedViewController::OnKeyboardSuppressionChanged(

@@ -75,7 +75,8 @@ public class FeedNewTabPage
         mNewTabPageLayout.initialize(mNewTabPageManager, activity, overviewModeBehavior,
                 mTileGroupDelegate, mSearchProviderHasLogo,
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
-                mCoordinator.getScrollDelegate(), mContextMenuManager, mCoordinator.getUiConfig());
+                mCoordinator.getScrollDelegate(), mContextMenuManager, mCoordinator.getUiConfig(),
+                activityLifecycleDispatcher);
     }
 
     @Override

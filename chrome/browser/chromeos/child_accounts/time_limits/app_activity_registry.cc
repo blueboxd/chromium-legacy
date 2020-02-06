@@ -136,6 +136,9 @@ void AppActivityRegistry::OnAppActive(const AppId& app_id,
 
   std::set<aura::Window*>& active_windows = app_details.active_windows;
 
+  if (base::Contains(active_windows, window))
+    return;
+
   active_windows.insert(window);
 
   // No need to set app as active if there were already active windows for the
@@ -523,6 +526,7 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
       WebTimeLimitReached(base::Time::Now());
     } else {
       // Set app activity state as time limit reached.
+      details.active_windows.clear();
       details.activity.SetAppInactive(base::Time::Now());
       details.activity.SetAppState(AppState::kLimitReached);
     }
@@ -563,8 +567,10 @@ void AppActivityRegistry::WebTimeLimitReached(base::Time timestamp) {
     if (details.activity.app_state() == AppState::kLimitReached)
       return;
 
-    if (details.activity.is_active())
+    if (details.activity.is_active()) {
+      details.active_windows.clear();
       details.activity.SetAppInactive(timestamp);
+    }
     details.activity.SetAppState(AppState::kLimitReached);
   }
 }

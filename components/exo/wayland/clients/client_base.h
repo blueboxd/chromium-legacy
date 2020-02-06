@@ -57,6 +57,7 @@ class ClientBase {
     bool y_invert = false;
     bool allocate_buffers_with_output_mode = false;
     bool use_fullscreen_shell = false;
+    bool use_memfd = false;
     bool use_touch = false;
     bool use_vulkan = false;
   };
@@ -103,7 +104,7 @@ class ClientBase {
 #endif  // defined(USE_GBM)
     std::unique_ptr<zwp_linux_buffer_params_v1> params;
     std::unique_ptr<wl_shm_pool> shm_pool;
-    base::WritableSharedMemoryMapping shared_memory_mapping;
+    base::SharedMemoryMapping shared_memory_mapping;
     sk_sp<SkSurface> sk_surface;
   };
 
@@ -180,6 +181,7 @@ class ClientBase {
   int transform_ = WL_OUTPUT_TRANSFORM_NORMAL;
   gfx::Size surface_size_ = gfx::Size(256, 256);
   bool fullscreen_ = false;
+  bool use_memfd_ = false;
   bool transparent_background_ = false;
   bool y_invert_ = false;
 

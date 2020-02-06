@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -57,12 +58,10 @@ import org.chromium.ui.modelutil.PropertyModel;
         mPaymentHandlerUiObserver = observer;
     }
 
-    private void closeUIForInsecureNavigation() {
-        mHandler.post(() -> {
-            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
-                    mWebContentsRef);
-            mHider.run();
-        });
+    @Override
+    public void destroy() {
+        super.destroy(); // Stops observing the web contents and cleans up associated references.
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     // BottomSheetObserver:
@@ -100,7 +99,17 @@ import org.chromium.ui.modelutil.PropertyModel;
 
     // WebContentsObserver:
     @Override
-    public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+    public void didFinishNavigation(NavigationHandle navigationHandle) {
+        if (navigationHandle.isSameDocument()) return;
+        closeIfInsecure();
+    }
+
+    @Override
+    public void didChangeVisibleSecurityState() {
+        closeIfInsecure();
+    }
+
+    private void closeIfInsecure() {
         if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(mWebContentsRef)) {
             closeUIForInsecureNavigation();
         }
@@ -109,6 +118,14 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void didAttachInterstitialPage() {
         closeUIForInsecureNavigation();
+    }
+
+    private void closeUIForInsecureNavigation() {
+        mHandler.post(() -> {
+            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
+                    mWebContentsRef);
+            mHider.run();
+        });
     }
 
     @Override

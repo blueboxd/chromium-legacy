@@ -13,6 +13,18 @@ Polymer({
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
 
+    /**
+     * Whether the secure DNS setting should be displayed.
+     * @private
+     */
+    showSecureDnsSetting_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('showSecureDnsSetting');
+      },
+    },
+
     /** @private */
     enableSecurityKeysSubpage_: {
       type: Boolean,

@@ -228,6 +228,7 @@ extern const char kAttributeChanged[];
 extern const char kColumnsChanged[];
 extern const char kChildAnonymousBlockChanged[];
 extern const char kAnonymousBlockChange[];
+extern const char kFontsChanged[];
 extern const char kFullscreen[];
 extern const char kChildChanged[];
 extern const char kListValueChange[];

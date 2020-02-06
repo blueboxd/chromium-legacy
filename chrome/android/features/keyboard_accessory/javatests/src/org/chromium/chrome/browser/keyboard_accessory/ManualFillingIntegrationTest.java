@@ -318,7 +318,7 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
-    public void testInfobarStaysHiddenWhileChangingFieldsWithOpenKeybaord()
+    public void testInfobarStaysHiddenWhileChangingFieldsWithOpenKeyboard()
             throws TimeoutException {
         mHelper.loadTestPage(false);
 

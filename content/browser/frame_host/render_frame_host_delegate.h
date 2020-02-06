@@ -449,6 +449,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                          int document_cookie,
                                          RenderFrameHost* render_frame_host) {}
 
+  // Request to paint preview a frame that is in a different process that its
+  // parent.
+  virtual void CapturePaintPreviewOfCrossProcessSubframe(
+      const gfx::Rect& rect,
+      const base::UnguessableToken& guid,
+      RenderFrameHost* render_frame_host) {}
+
   // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
   // of the video to be in Picture-in-Picture mode.
   virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,

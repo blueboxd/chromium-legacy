@@ -117,6 +117,14 @@ class MODULES_EXPORT CanvasCaptureHandler {
       std::unique_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
 
+  // Helper methods to increment/decrement the number of ongoing async pixel
+  // readouts currently happening.
+  void IncrementOngoingAsyncPixelReadouts();
+  void DecrementOngoingAsyncPixelReadouts();
+
+  // Send a refresh frame.
+  void SendRefreshFrame();
+
   // Object that does all the work of running |new_frame_callback_|.
   // Destroyed on |frame_callback_task_runner_| after the class is destroyed.
   class CanvasCaptureHandlerDelegate;
@@ -126,6 +134,11 @@ class MODULES_EXPORT CanvasCaptureHandler {
   media::VideoFramePool frame_pool_;
   base::Optional<base::TimeTicks> first_frame_ticks_;
   scoped_refptr<media::VideoFrame> last_frame_;
+
+  // The following attributes ensure that CanvasCaptureHandler emits
+  // frames with monotonically increasing timestamps.
+  bool deferred_request_refresh_frame_ = false;
+  int num_ongoing_async_pixel_readouts_ = 0;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::unique_ptr<CanvasCaptureHandlerDelegate> delegate_;

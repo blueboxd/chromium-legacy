@@ -463,6 +463,8 @@ void AppServiceProxy::OnUninstallDialogClosed(
     bool report_abuse,
     UninstallDialog* uninstall_dialog) {
   if (uninstall) {
+    cache_.ForOneApp(app_id, RecordAppBounce);
+
     app_service_->Uninstall(app_type, app_id, clear_site_data, report_abuse);
   }
 

@@ -134,6 +134,10 @@ class ASH_EXPORT UnifiedSystemTrayController
     return pagination_controller_.get();
   }
 
+  DetailedViewController* detailed_view_controller() {
+    return detailed_view_controller_.get();
+  }
+
  private:
   friend class UnifiedSystemTrayControllerTest;
   friend class UnifiedMessageCenterBubbleTest;

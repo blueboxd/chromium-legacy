@@ -181,10 +181,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                              int64_t delta);
 
   // Called by clients via proxy.
+  // This method is declared as virtual to allow test code to override it.
+  //
   // Client storage must call this method whenever they run into disk
   // write errors. Used as a hint to determine if the storage partition is out
   // of space, and trigger actions if deemed appropriate.
-  void NotifyWriteFailed(const url::Origin& origin);
+  virtual void NotifyWriteFailed(const url::Origin& origin);
 
   // Used to avoid evicting origins with open pages.
   // A call to NotifyOriginInUse must be balanced by a later call
@@ -272,6 +274,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   // TODO(kinuko): Make this a real const value and add a proper way to set
   // the quota for syncable storage. (http://crbug.com/155488)
   static int64_t kSyncableStorageDefaultHostQuota;
+
+  void DisableDatabaseForTesting() { db_disabled_ = true; }
 
  protected:
   ~QuotaManager() override;

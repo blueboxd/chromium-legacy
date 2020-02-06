@@ -160,6 +160,21 @@ class Runner():
         with open(os.path.join(self.args.out_dir, 'full_results.json'),
                   'w') as f:
           json.dump(tr.test_results, f)
+
+        # The value of test-launcher-summary-output is set by the recipe
+        # and passed here via swarming.py. This argument defaults to
+        # ${ISOLATED_OUTDIR}/output.json. out-dir is set to ${ISOLATED_OUTDIR}
+
+        # TODO(crbug.com/1031338) - the content of this output.json will
+        # work with Chromium recipe because we use the noop_merge merge script,
+        # but will require structural changes to support the default gtest
+        # merge script (ref: //testing/merge_scripts/standard_gtest_merge.py)
+        output_json_path = (
+            self.args.test_launcher_summary_output or
+            os.path.join(self.args.out_dir, 'output.json'))
+        with open(output_json_path, 'w') as f:
+          json.dump(tr.test_results, f)
+
       test_runner.defaults_delete('com.apple.CoreSimulator',
                                   'FramebufferServerRendererPolicy')
 
@@ -310,6 +325,11 @@ class Runner():
         action='store_true',
         help='Whether or not the given app should be run as an XCTest.',
     )
+    parser.add_argument(
+        '--test-launcher-summary-output',
+        default=None,
+        help='Full path to output.json file. output.json is consumed by both '
+        'collect_task.py and merge scripts.')
 
     def load_from_json(args):
       """

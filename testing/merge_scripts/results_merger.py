@@ -115,7 +115,7 @@ def _merge_json_test_result_format(shard_results_list):
   # To make sure that we don't mutate existing shard_results_list.
   shard_results_list = copy.deepcopy(shard_results_list)
   for result_json in shard_results_list:
-    # TODO(tansell): check whether this deepcopy is actually neccessary.
+    # TODO(tansell): check whether this deepcopy is actually necessary.
     result_json = copy.deepcopy(result_json)
 
     # Check the version first

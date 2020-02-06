@@ -12,11 +12,8 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinatee.h"
 
 @class AdaptiveToolbarViewController;
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
-@protocol OmniboxFocuser;
+class Browser;
 @protocol PopupMenuLongPressDelegate;
-class WebStateList;
 
 // Coordinator for the adaptive toolbar. This Coordinator is the super class of
 // the specific coordinator (primary or secondary).
@@ -37,12 +34,6 @@ class WebStateList;
 // The Toolbar view controller owned by this coordinator.
 @property(nonatomic, strong) AdaptiveToolbarViewController* viewController;
 
-// Dispatcher.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
-        dispatcher;
-// The web state list this ToolbarCoordinator is handling.
-@property(nonatomic, assign) WebStateList* webStateList;
 // Delegate for the long press gesture recognizer triggering popup menu.
 @property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
 

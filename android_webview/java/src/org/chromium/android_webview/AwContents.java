@@ -110,6 +110,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
+import org.chromium.url.GURL;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -1968,10 +1969,10 @@ public class AwContents implements SmartClipProvider {
      *
      * @return The URL of the current page or null if it's empty.
      */
-    public String getUrl() {
+    public GURL getUrl() {
         if (isDestroyed(WARN)) return null;
-        String url = mWebContents.getVisibleUrl();
-        if (url == null || url.trim().isEmpty()) return null;
+        GURL url = mWebContents.getVisibleUrl();
+        if (url == null || url.getSpec().trim().isEmpty()) return null;
         return url;
     }
 

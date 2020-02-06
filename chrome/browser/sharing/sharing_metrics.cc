@@ -64,6 +64,16 @@ std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
   }
 }
 
+// Maps pulse intervals to strings used as histogram suffixes. Keep in sync with
+// "SharingPulseInterval" in histograms.xml.
+std::string PulseIntervalToString(base::TimeDelta pulse_interval) {
+  if (pulse_interval < base::TimeDelta::FromHours(4))
+    return "PulseIntervalShort";
+  if (pulse_interval > base::TimeDelta::FromHours(12))
+    return "PulseIntervalLong";
+  return "PulseIntervalMedium";
+}
+
 // Major Chrome version comparison with the receiver device.
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
@@ -353,6 +363,7 @@ void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform receiving_device_platform,
     SharingChannelType channel_type,
+    base::TimeDelta pulse_interval,
     SharingSendMessageResult result) {
   const std::string metric_prefix = "Sharing.SendMessageResult";
 
@@ -377,6 +388,10 @@ void LogSendSharingMessageResult(
   base::UmaHistogramEnumeration(
       base::StrCat(
           {metric_prefix, ".", SharingChannelTypeToString(channel_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".", PulseIntervalToString(pulse_interval)}),
       result);
 }
 

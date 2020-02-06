@@ -1302,10 +1302,18 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   // payment handler, content settings, autofill, ...?
 }
 
+// PRE_StorageRemovedFromDisk fails on Chrome OS. http://crbug.com/1035156.
+#if defined(OS_CHROMEOS)
+#define MAYBE_PRE_StorageRemovedFromDisk DISABLED_PRE_StorageRemovedFromDisk
+#define MAYBE_StorageRemovedFromDisk DISABLED_StorageRemovedFromDisk
+#else
+#define MAYBE_PRE_StorageRemovedFromDisk PRE_StorageRemovedFromDisk
+#define MAYBE_StorageRemovedFromDisk StorageRemovedFromDisk
+#endif
 // Restart after creating the data to ensure that everything was written to
 // disk.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       PRE_StorageRemovedFromDisk) {
+                       MAYBE_PRE_StorageRemovedFromDisk) {
   EXPECT_EQ(1, GetSiteDataCount());
   // Expect all datatypes from above except SessionStorage. SessionStorage is
   // not supported by the CookieTreeModel yet.
@@ -1320,7 +1328,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Check if any data remains after a deletion and a Chrome restart to force
 // all writes to be finished.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       MAYBE_StorageRemovedFromDisk) {
   // Deletions should remove all traces of browsing data from disk
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().

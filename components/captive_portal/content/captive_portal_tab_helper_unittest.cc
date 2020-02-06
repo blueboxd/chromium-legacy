@@ -24,8 +24,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using captive_portal::CaptivePortalResult;
 using content::NavigationSimulator;
+
+namespace captive_portal {
 
 namespace {
 
@@ -483,8 +484,7 @@ TEST_F(CaptivePortalTabHelperTest, LoginTabLogin) {
   SetIsLoginTab();
   EXPECT_TRUE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
-                      captive_portal::RESULT_INTERNET_CONNECTED);
+  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
@@ -494,8 +494,7 @@ TEST_F(CaptivePortalTabHelperTest, LoginTabError) {
   SetIsLoginTab();
   EXPECT_TRUE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
-                      captive_portal::RESULT_NO_RESPONSE);
+  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_NO_RESPONSE);
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
@@ -505,31 +504,28 @@ TEST_F(CaptivePortalTabHelperTest, LoginTabMultipleResultsBeforeLogin) {
   SetIsLoginTab();
   EXPECT_TRUE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
-                      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
+  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_TRUE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
-                      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
+  ObservePortalResult(RESULT_BEHIND_CAPTIVE_PORTAL,
+                      RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_TRUE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_NO_RESPONSE,
-                      captive_portal::RESULT_INTERNET_CONNECTED);
+  ObservePortalResult(RESULT_NO_RESPONSE, RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, NoLoginTab) {
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
-                      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
+  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
-                      captive_portal::RESULT_NO_RESPONSE);
+  ObservePortalResult(RESULT_BEHIND_CAPTIVE_PORTAL, RESULT_NO_RESPONSE);
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 
-  ObservePortalResult(captive_portal::RESULT_NO_RESPONSE,
-                      captive_portal::RESULT_INTERNET_CONNECTED);
+  ObservePortalResult(RESULT_NO_RESPONSE, RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
+
+}  // namespace captive_portal

@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickScrimToExitDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
@@ -68,6 +69,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -87,6 +89,8 @@ public class TabGridDialogTest {
     // clang-format on
 
     private boolean mHasReceivedSourceRect;
+    private TabSelectionEditorTestingRobot mSelectionEditorRobot =
+            new TabSelectionEditorTestingRobot();
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -133,7 +137,7 @@ public class TabGridDialogTest {
 
         // Press back and dialog should be hidden.
         Espresso.pressBack();
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        waitForDialogHidingAnimationInTabSwitcher(cta);
 
         verifyTabSwitcherCardCount(cta, 1);
 
@@ -146,7 +150,7 @@ public class TabGridDialogTest {
 
         // Press back and dialog should be hidden.
         Espresso.pressBack();
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        waitForDialogHidingAnimation(cta);
     }
 
     @Test
@@ -258,8 +262,8 @@ public class TabGridDialogTest {
         verifyShowingDialog(cta, 1);
 
         // Exit dialog, wait for the undo bar showing and undo the closure.
-        TabUiTestHelper.clickScrimToExitDialog(cta);
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
         CriteriaHelper.pollInstrumentationThread(this::verifyUndoBarShowingAndClickUndo);
 
         // Verify the undo has happened.
@@ -295,8 +299,8 @@ public class TabGridDialogTest {
         verifyShowingDialog(cta, 1);
 
         // Exit dialog, wait for the undo bar showing and undo the closure.
-        TabUiTestHelper.clickScrimToExitDialog(cta);
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimation(cta);
         CriteriaHelper.pollInstrumentationThread(this::verifyUndoBarShowingAndClickUndo);
 
         // Verify the undo has happened.
@@ -325,6 +329,100 @@ public class TabGridDialogTest {
 
         // Trigger the share sheet by clicking the share button and verify it.
         triggerShareGroupAndVerify(cta);
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testSelectionEditorShowHide() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and open selection editor.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openSelectionEditorAndVerify(cta, 2);
+
+        // Click navigation button should close selection editor but not tab grid dialog.
+        mSelectionEditorRobot.actionRobot.clickToolbarNavigationButton();
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        assertTrue(isDialogShowing(cta));
+
+        // Back press should close both the dialog and selection editor.
+        openSelectionEditorAndVerify(cta, 2);
+        Espresso.pressBack();
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Clicking ScrimView should close both the dialog and selection editor.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openSelectionEditorAndVerify(cta, 2);
+        clickScrimToExitDialog(cta);
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testSelectionEditorUngroup() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        assertTrue(cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
+                           instanceof TabGroupModelFilter);
+        final TabGroupModelFilter filter = (TabGroupModelFilter) cta.getTabModelSelector()
+                                                   .getTabModelFilterProvider()
+                                                   .getCurrentTabModelFilter();
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        assertEquals(1, filter.getCount());
+
+        // Open dialog and open selection editor.
+        openDialogFromTabSwitcherAndVerify(cta, 3);
+        openSelectionEditorAndVerify(cta, 3);
+
+        // Select and ungroup the first tab.
+        mSelectionEditorRobot.actionRobot.clickItemAtAdapterPosition(0);
+        mSelectionEditorRobot.resultRobot.verifyItemSelectedAtAdapterPosition(0)
+                .verifyToolbarActionButtonEnabled()
+                .verifyToolbarSelectionText("1 selected");
+
+        mSelectionEditorRobot.actionRobot.clickToolbarActionButton();
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        verifyShowingDialog(cta, 2);
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        assertEquals(2, filter.getCount());
+
+        // Open dialog and open selection editor.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openSelectionEditorAndVerify(cta, 2);
+
+        // Select and ungroup all two tabs in dialog.
+        mSelectionEditorRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(
+                1);
+        mSelectionEditorRobot.resultRobot.verifyItemSelectedAtAdapterPosition(0)
+                .verifyItemSelectedAtAdapterPosition(1)
+                .verifyToolbarActionButtonEnabled()
+                .verifyToolbarSelectionText("2 selected");
+
+        mSelectionEditorRobot.actionRobot.clickToolbarActionButton();
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+        assertEquals(3, filter.getCount());
     }
 
     private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {
@@ -449,5 +547,43 @@ public class TabGridDialogTest {
                                     hasType("text/plain"))))));
         }
         Intents.release();
+    }
+
+    private void waitForDialogHidingAnimation(ChromeTabbedActivity cta) {
+        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+    }
+
+    private void waitForDialogHidingAnimationInTabSwitcher(ChromeTabbedActivity cta) {
+        waitForDialogHidingAnimation(cta);
+        // Animation source card becomes alpha = 0f when dialog is showing and animates back to 1f
+        // when dialog hides. Make sure the source card has restored its alpha change.
+        CriteriaHelper.pollUiThread(() -> {
+            RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+            for (int i = 0; i < recyclerView.getAdapter().getItemCount(); i++) {
+                RecyclerView.ViewHolder viewHolder =
+                        recyclerView.findViewHolderForAdapterPosition(i);
+                if (viewHolder == null) continue;
+                if (viewHolder.itemView.getAlpha() != 1f) return false;
+            }
+            return true;
+        });
+    }
+
+    private void openSelectionEditorAndVerify(ChromeTabbedActivity cta, int count) {
+        // Open tab selection editor by selecting ungroup item in tab grid dialog menu.
+        onView(withId(R.id.toolbar_menu_button))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(click());
+        onView(withText(cta.getString(R.string.tab_grid_dialog_toolbar_remove_from_group)))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(click());
+
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsVisible()
+                .verifyToolbarActionButtonDisabled()
+                .verifyToolbarActionButtonWithResourceId(
+                        R.string.tab_grid_dialog_selection_mode_remove)
+                .verifyToolbarSelectionTextWithResourceId(
+                        R.string.tab_selection_editor_toolbar_select_tabs)
+                .verifyAdapterHasItemCount(count);
     }
 }

@@ -497,7 +497,7 @@ void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
 void ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable(
     std::unique_ptr<network::SimpleURLLoader> loader) {
   // RemoteSuggestionsService has already started |loader|, so here it's
-  // only neccessary to grab its ownership until results come in to
+  // only necessary to grab its ownership until results come in to
   // OnURLLoadComplete().
   loader_ = std::move(loader);
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);

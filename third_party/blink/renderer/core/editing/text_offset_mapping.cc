@@ -52,6 +52,17 @@ bool CanBeInlineContentsContainer(const LayoutObject& layout_object) {
   return HasNonPsuedoNode(*block_flow);
 }
 
+Node* PreviousNodeSkippingAncestors(const Node& node) {
+  ContainerNode* parent = FlatTreeTraversal::Parent(node);
+  for (Node* runner = FlatTreeTraversal::Previous(node); runner;
+       runner = FlatTreeTraversal::Previous(*runner)) {
+    if (runner != parent)
+      return runner;
+    parent = FlatTreeTraversal::Parent(*runner);
+  }
+  return nullptr;
+}
+
 // Returns outer most nested inline formatting context.
 const LayoutBlockFlow& RootInlineContentsContainerOf(
     const LayoutBlockFlow& block_flow) {
@@ -118,6 +129,7 @@ const LayoutBlockFlow* ComputeInlineContentsAsBlockFlow(
 
 TextOffsetMapping::InlineContents CreateInlineContentsFromBlockFlow(
     const LayoutBlockFlow& block_flow) {
+  DCHECK(block_flow.ChildrenInline()) << block_flow;
   const LayoutObject* first = nullptr;
   for (const LayoutObject* runner = block_flow.FirstChild(); runner;
        runner = runner->NextInPreOrder(&block_flow)) {
@@ -270,7 +282,7 @@ TextOffsetMapping::InlineContents TextOffsetMapping::FindBackwardInlineContents(
 
   auto previous_skipping_text_control = [](const Node& node) -> const Node* {
     DCHECK(!EnclosingTextControl(&node));
-    const Node* previous = FlatTreeTraversal::Previous(node);
+    const Node* previous = PreviousNodeSkippingAncestors(node);
     const TextControlElement* previous_text_control =
         EnclosingTextControl(previous);
     if (!previous_text_control)

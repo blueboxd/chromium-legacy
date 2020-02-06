@@ -15,7 +15,7 @@ import android.text.format.DateUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.settings.SettingsUtils;
-import org.chromium.chrome.browser.settings.developer.DeveloperSettings;
+import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.ui.widget.Toast;
 
 import java.util.Calendar;

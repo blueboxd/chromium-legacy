@@ -132,13 +132,14 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
 
 class TestSSLErrorHandler : public SSLErrorHandler {
  public:
-  TestSSLErrorHandler(std::unique_ptr<Delegate> delegate,
-                      content::WebContents* web_contents,
-                      int cert_error,
-                      const net::SSLInfo& ssl_info,
-                      network_time::NetworkTimeTracker* network_time_tracker,
-                      const GURL& request_url,
-                      CaptivePortalService* captive_portal_service)
+  TestSSLErrorHandler(
+      std::unique_ptr<Delegate> delegate,
+      content::WebContents* web_contents,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      network_time::NetworkTimeTracker* network_time_tracker,
+      const GURL& request_url,
+      captive_portal::CaptivePortalService* captive_portal_service)
       : SSLErrorHandler(std::move(delegate),
                         web_contents,
                         cert_error,
@@ -321,8 +322,9 @@ class SSLErrorHandlerNameMismatchTest
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
     pref_service_.registry()->RegisterBooleanPref(
         embedder_support::kAlternateErrorPagesEnabled, true);
-    captive_portal_service_ = std::make_unique<CaptivePortalService>(
-        web_contents()->GetBrowserContext(), &pref_service_);
+    captive_portal_service_ =
+        std::make_unique<captive_portal::CaptivePortalService>(
+            web_contents()->GetBrowserContext(), &pref_service_);
 #endif
 
     delegate_ = new TestSSLErrorHandlerDelegate(web_contents(), ssl_info_);
@@ -356,7 +358,7 @@ class SSLErrorHandlerNameMismatchTest
 
   net::SSLInfo ssl_info_;
   TestingPrefServiceSimple pref_service_;
-  std::unique_ptr<CaptivePortalService> captive_portal_service_;
+  std::unique_ptr<captive_portal::CaptivePortalService> captive_portal_service_;
   std::unique_ptr<TestSSLErrorHandler> error_handler_;
   TestSSLErrorHandlerDelegate* delegate_;
 
@@ -596,8 +598,9 @@ class SSLErrorAssistantProtoTest : public content::RenderViewHostTestHarness {
         net::HashValue(kCertPublicKeyHashValue));
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-    captive_portal_service_ = std::make_unique<CaptivePortalService>(
-        web_contents()->GetBrowserContext(), &pref_service_);
+    captive_portal_service_ =
+        std::make_unique<captive_portal::CaptivePortalService>(
+            web_contents()->GetBrowserContext(), &pref_service_);
 #endif
 
     delegate_ = new TestSSLErrorHandlerDelegate(web_contents(), ssl_info_);
@@ -610,7 +613,7 @@ class SSLErrorAssistantProtoTest : public content::RenderViewHostTestHarness {
 
   net::SSLInfo ssl_info_;
   TestingPrefServiceSimple pref_service_;
-  std::unique_ptr<CaptivePortalService> captive_portal_service_;
+  std::unique_ptr<captive_portal::CaptivePortalService> captive_portal_service_;
   std::unique_ptr<TestSSLErrorHandler> error_handler_;
   TestSSLErrorHandlerDelegate* delegate_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -776,7 +779,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   // Fake a captive portal result.
   delegate()->ClearSeenOperations();
 
-  CaptivePortalService::Results results;
+  captive_portal::CaptivePortalService::Results results;
   results.previous_result = captive_portal::RESULT_INTERNET_CONNECTED;
   results.result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
 
@@ -811,7 +814,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   // the timer to expire.
   delegate()->ClearSeenOperations();
 
-  CaptivePortalService::Results results;
+  captive_portal::CaptivePortalService::Results results;
   results.previous_result = captive_portal::RESULT_INTERNET_CONNECTED;
   results.result = captive_portal::RESULT_INTERNET_CONNECTED;
 

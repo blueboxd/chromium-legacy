@@ -2655,6 +2655,11 @@ TEST_F(AppListViewTest, BackAction) {
 
 // Tests selecting search result to show embedded Assistant UI.
 TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {app_list_features::kEnableAssistantSearch}, {});
+  ASSERT_TRUE(app_list_features::IsAssistantSearchEnabled());
+
   Show();
 
   // Initially the search box is inactive, hitting Enter to activate it.
@@ -2708,7 +2713,6 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {app_list_features::kEnableAssistantSearch}, {});
-  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
   ASSERT_TRUE(app_list_features::IsAssistantSearchEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2720,8 +2724,6 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
 // Tests that pressing escape when in embedded Assistant UI results in showing
 // the search page view.
 TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
-  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
-
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2739,8 +2741,6 @@ TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
 // Tests that clicking empty region in AppListview when showing Assistant UI
 // should go back to peeking state.
 TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
-  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
-
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2771,8 +2771,6 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
 
 // Tests that expand arrow is not visible when showing embedded Assistant UI.
 TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
-  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
-
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2787,8 +2785,6 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
 
 // Tests that search box is not visible when showing embedded Assistant UI.
 TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
-  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
-
   Initialize(false /*is_tablet_mode*/);
   Show();
 

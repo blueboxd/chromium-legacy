@@ -18,11 +18,11 @@ ContextualSearchContext::ContextualSearchContext(
     const std::string& home_country,
     const GURL& page_url,
     const std::string& encoding)
-    : can_resolve(true),
-      can_send_base_page_url(true),
-      home_country(home_country),
-      base_page_url(page_url),
-      base_page_encoding(encoding) {
+    : can_resolve_(true),
+      can_send_base_page_url_(true),
+      home_country_(home_country),
+      base_page_url_(page_url),
+      base_page_encoding_(encoding) {
   java_object_ = nullptr;
 }
 
@@ -52,11 +52,11 @@ void ContextualSearchContext::SetResolveProperties(
     jboolean j_may_send_base_page_url,
     jlong j_previous_event_id,
     jint j_previous_event_results) {
-  can_resolve = true;
-  home_country = base::android::ConvertJavaStringToUTF8(env, j_home_country);
-  can_send_base_page_url = j_may_send_base_page_url;
-  previous_event_id = j_previous_event_id;
-  previous_event_results = j_previous_event_results;
+  can_resolve_ = true;
+  home_country_ = base::android::ConvertJavaStringToUTF8(env, j_home_country);
+  can_send_base_page_url_ = j_may_send_base_page_url;
+  previous_event_id_ = j_previous_event_id;
+  previous_event_results_ = j_previous_event_results;
 }
 
 void ContextualSearchContext::SetContent(
@@ -74,102 +74,137 @@ void ContextualSearchContext::AdjustSelection(JNIEnv* env,
                                               jobject obj,
                                               jint j_start_adjust,
                                               jint j_end_adjust) {
-  DCHECK(start_offset + j_start_adjust >= 0);
-  DCHECK(start_offset + j_start_adjust <= (int)surrounding_text.length());
-  DCHECK(end_offset + j_end_adjust >= 0);
-  DCHECK(end_offset + j_end_adjust <= (int)surrounding_text.length());
-  start_offset += j_start_adjust;
-  end_offset += j_end_adjust;
+  DCHECK(start_offset_ + j_start_adjust >= 0);
+  DCHECK(start_offset_ + j_start_adjust <= (int)surrounding_text_.length());
+  DCHECK(end_offset_ + j_end_adjust >= 0);
+  DCHECK(end_offset_ + j_end_adjust <= (int)surrounding_text_.length());
+  start_offset_ += j_start_adjust;
+  end_offset_ += j_end_adjust;
 }
 
 // Accessors
 
 bool ContextualSearchContext::CanResolve() const {
-  return can_resolve;
+  return can_resolve_;
 }
 
 bool ContextualSearchContext::CanSendBasePageUrl() const {
-  return can_send_base_page_url;
+  return can_send_base_page_url_;
 }
 
 const GURL ContextualSearchContext::GetBasePageUrl() const {
-  return base_page_url;
+  return base_page_url_;
 }
 
 void ContextualSearchContext::SetBasePageUrl(const GURL& base_page_url) {
-  this->base_page_url = base_page_url;
+  this->base_page_url_ = base_page_url;
 }
 
 const std::string ContextualSearchContext::GetBasePageEncoding() const {
-  return base_page_encoding;
+  return base_page_encoding_;
 }
 
 void ContextualSearchContext::SetBasePageEncoding(
     const std::string& base_page_encoding) {
-  this->base_page_encoding = base_page_encoding;
+  this->base_page_encoding_ = base_page_encoding;
 }
 
 const std::string ContextualSearchContext::GetHomeCountry() const {
-  return home_country;
+  return home_country_;
 }
 
 int64_t ContextualSearchContext::GetPreviousEventId() const {
-  return previous_event_id;
+  return previous_event_id_;
 }
 
 int ContextualSearchContext::GetPreviousEventResults() const {
-  return previous_event_results;
+  return previous_event_results_;
 }
 
 void ContextualSearchContext::SetSelectionSurroundings(
     int start_offset,
     int end_offset,
     const base::string16& surrounding_text) {
-  this->start_offset = start_offset;
-  this->end_offset = end_offset;
-  this->surrounding_text = surrounding_text;
+  this->start_offset_ = start_offset;
+  this->end_offset_ = end_offset;
+  this->surrounding_text_ = surrounding_text;
 }
 
 const base::string16 ContextualSearchContext::GetSurroundingText() const {
-  return surrounding_text;
+  return surrounding_text_;
 }
 
 int ContextualSearchContext::GetStartOffset() const {
-  return start_offset;
+  return start_offset_;
 }
 
 int ContextualSearchContext::GetEndOffset() const {
-  return end_offset;
+  return end_offset_;
 }
 
 void ContextualSearchContext::SetExactResolve(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  is_exact_resolve = true;
+  is_exact_resolve_ = true;
 }
 
 bool ContextualSearchContext::GetExactResolve() {
-  return is_exact_resolve;
+  return is_exact_resolve_;
 }
 
 base::android::ScopedJavaLocalRef<jstring>
 ContextualSearchContext::DetectLanguage(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  std::string language = GetReliableLanguage(GetSelection());
+  if (language.empty())
+    language = GetReliableLanguage(this->surrounding_text_);
+  base::android::ScopedJavaLocalRef<jstring> j_language =
+      base::android::ConvertUTF8ToJavaString(env, language);
+  return j_language;
+}
+
+void ContextualSearchContext::SetTranslationLanguages(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_detected_language,
+    const base::android::JavaParamRef<jstring>& j_target_language) {
+  translation_languages_.detected_language =
+      base::android::ConvertJavaStringToUTF8(env, j_detected_language);
+  translation_languages_.target_language =
+      base::android::ConvertJavaStringToUTF8(env, j_target_language);
+}
+
+const ContextualSearchContext::TranslationLanguages&
+ContextualSearchContext::GetTranslationLanguages() {
+  return translation_languages_;
+}
+
+std::string ContextualSearchContext::GetReliableLanguage(
+    const base::string16& contents) {
   std::string content_language;
   std::string html_lang;
   std::string cld_language;
   bool is_cld_reliable;
   std::string language = translate::DeterminePageLanguage(
-      content_language, html_lang, this->surrounding_text, &cld_language,
-      &is_cld_reliable);
+      content_language, html_lang, contents, &cld_language, &is_cld_reliable);
   // Make sure we return an empty string when unreliable or an unknown result.
   if (!is_cld_reliable || language == translate::kUnknownLanguageCode)
     language = "";
-  base::android::ScopedJavaLocalRef<jstring> j_language =
-      base::android::ConvertUTF8ToJavaString(env, language);
-  return j_language;
+  return language;
 }
+
+base::string16 ContextualSearchContext::GetSelection() {
+  int start = this->start_offset_;
+  int end = this->end_offset_;
+  DCHECK(start >= 0);
+  DCHECK(end >= 0);
+  DCHECK(end <= (int)this->surrounding_text_.length());
+  DCHECK(start <= end);
+  return this->surrounding_text_.substr(start, end - start);
+}
+
+// Boilerplate.
 
 base::WeakPtr<ContextualSearchContext> ContextualSearchContext::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();

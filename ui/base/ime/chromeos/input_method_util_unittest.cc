@@ -355,7 +355,7 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Zh) {
   util_.GetFirstLoginInputMethodIds("zh-CN", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ(Id("xkb:us::eng"), input_method_ids[0]);
-  EXPECT_EQ(Id(pinyin_ime_id), input_method_ids[1]);  // Pinyin for US keybaord.
+  EXPECT_EQ(Id(pinyin_ime_id), input_method_ids[1]);  // Pinyin for US keyboard.
 }
 
 // US keyboard + Russian UI = US keyboard + Russsian keyboard

@@ -9,6 +9,7 @@
     height: 100vh;
     margin: 0;
     overflow: hidden;
+    position: relative;
   }
   /*
    * This is the <iframe> style set for sandboxed guests that use
@@ -20,7 +21,42 @@
     height: 100%;
     width: 100%;
   }
+  /*
+   * Container for the UI that overlays the sandboxed guest. Used for hosting UI
+   * components deemed to be privileged (e.g. to detect user gestures).
+   */
+  div#overlay {
+    display: grid;
+    grid-template-rows: auto 40px auto;
+    grid-template-columns: 40px auto 40px;
+    height: 100%;
+    justify-items: stretch;
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+  div.navigation-button {
+    pointer-events: auto;
+    grid-row: 2;
+    background-color: green;
+    opacity: 0;
+  }
+  div.navigation-button:hover {
+    opacity: 0.5;
+  }
+  div#prev-container {
+    grid-column: 1;
+  }
+  div#next-container {
+    grid-column: 3;
+  }
 </style>
 <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
 <iframe src="chrome://media-app-guest/app.html"></iframe>
+<div id="overlay">
+  <div id="prev-container" class="navigation-button"></div>
+  <div id="next-container" class="navigation-button"></div>
+</div>
 <script src="/launch.js"></script>

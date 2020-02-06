@@ -65,7 +65,7 @@ public class HomepageEditor extends Fragment implements TextWatcher {
         mResetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHomepageManager.setPrefHomepageUseDefaultUri(true);
+                mHomepageManager.setHomepagePreferences(false, true, "");
                 getActivity().finish();
             }
         });
@@ -79,8 +79,7 @@ public class HomepageEditor extends Fragment implements TextWatcher {
             @Override
             public void onClick(View v) {
                 GURL url = UrlFormatter.fixupUrl(mHomepageUrlEdit.getText().toString());
-                mHomepageManager.setPrefHomepageCustomUri(url.getValidSpecOrEmpty());
-                mHomepageManager.setPrefHomepageUseDefaultUri(false);
+                mHomepageManager.setHomepagePreferences(false, false, url.getValidSpecOrEmpty());
                 getActivity().finish();
             }
         });

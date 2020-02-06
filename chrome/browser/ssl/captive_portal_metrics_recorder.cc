@@ -77,7 +77,7 @@ void CaptivePortalMetricsRecorder::RecordCaptivePortalUMAStatistics() const {
 }
 
 void CaptivePortalMetricsRecorder::Observe(
-    const CaptivePortalService::Results& results) {
+    const captive_portal::CaptivePortalService::Results& results) {
   // When detection is disabled, captive portal service always sends
   // RESULT_INTERNET_CONNECTED. Ignore any probe results in that case.
   if (!captive_portal_detection_enabled_)

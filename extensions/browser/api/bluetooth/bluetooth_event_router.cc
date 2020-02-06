@@ -383,6 +383,29 @@ void BluetoothEventRouter::DeviceRemoved(device::BluetoothAdapter* adapter,
                       bluetooth::OnDeviceRemoved::kEventName, device);
 }
 
+void BluetoothEventRouter::DeviceAddressChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device,
+    const std::string& old_address) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (adapter != adapter_.get()) {
+    BLUETOOTH_LOG(DEBUG) << "Ignoring event for adapter "
+                         << adapter->GetAddress();
+    return;
+  }
+  DCHECK(device);
+
+  bluetooth::Device extension_device;
+  bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
+
+  std::unique_ptr<base::ListValue> args =
+      bt_private::OnDeviceAddressChanged::Create(extension_device, old_address);
+  auto event = std::make_unique<Event>(
+      events::BLUETOOTH_PRIVATE_ON_DEVICE_ADDRESS_CHANGED,
+      bt_private::OnDeviceAddressChanged::kEventName, std::move(args));
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
+}
+
 void BluetoothEventRouter::OnListenerAdded(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string id = GetListenerId(details);

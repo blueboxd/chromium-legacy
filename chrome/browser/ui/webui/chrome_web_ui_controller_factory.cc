@@ -342,7 +342,7 @@ bool IsAboutUI(const GURL& url) {
 #endif
 #if defined(OS_CHROMEOS)
           || url.host_piece() == chrome::kChromeUIOSCreditsHost ||
-          url.host_piece() == chrome::kChromeUILinuxCreditsHost
+          url.host_piece() == chrome::kChromeUICrostiniCreditsHost
 #endif
   );  // NOLINT
 }

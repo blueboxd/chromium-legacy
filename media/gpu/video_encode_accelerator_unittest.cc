@@ -516,7 +516,6 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   ASSERT_NE(test_stream->pixel_format, PIXEL_FORMAT_UNKNOWN);
   const VideoPixelFormat pixel_format = test_stream->pixel_format;
   size_t num_planes = VideoFrame::NumPlanes(pixel_format);
-  std::vector<size_t> padding_sizes(num_planes);
   std::vector<size_t> coded_bpl(num_planes);
   std::vector<size_t> visible_bpl(num_planes);
   std::vector<size_t> visible_plane_rows(num_planes);
@@ -529,22 +528,16 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   // the VEA; each row of visible_bpl bytes in the original file needs to be
   // copied into a row of coded_bpl bytes in the aligned file.
   for (size_t i = 0; i < num_planes; i++) {
-    const size_t size =
-        VideoFrame::PlaneSize(pixel_format, i, coded_size).GetArea();
-    test_stream->aligned_plane_size.push_back(
-        AlignToPlatformRequirements(size));
-    test_stream->aligned_buffer_size += test_stream->aligned_plane_size.back();
-
     coded_bpl[i] = VideoFrame::RowBytes(i, pixel_format, coded_size.width());
     visible_bpl[i] = VideoFrame::RowBytes(i, pixel_format,
                                           test_stream->visible_size.width());
     visible_plane_rows[i] =
         VideoFrame::Rows(i, pixel_format, test_stream->visible_size.height());
-    const size_t padding_rows =
-        VideoFrame::Rows(i, pixel_format, coded_size.height()) -
-        visible_plane_rows[i];
-    padding_sizes[i] =
-        padding_rows * coded_bpl[i] + AlignToPlatformRequirements(size) - size;
+    size_t coded_area_size =
+        coded_bpl[i] * VideoFrame::Rows(i, pixel_format, coded_size.height());
+    const size_t aligned_size = AlignToPlatformRequirements(coded_area_size);
+    test_stream->aligned_plane_size.push_back(aligned_size);
+    test_stream->aligned_buffer_size += aligned_size;
   }
 
   base::FilePath src_file(StringToFilePathStringType(test_stream->in_filename));
@@ -591,13 +584,13 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
       // Assert that each plane of frame starts at required byte boundary.
       ASSERT_EQ(0u, dest_offset & (kPlatformBufferAlignment - 1))
           << "Planes of frame should be mapped per platform requirements";
+      char* dst_ptr = &test_stream->aligned_in_file_data[dest_offset];
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
-        memcpy(&test_stream->aligned_in_file_data[dest_offset], src_ptr,
-               visible_bpl[i]);
+        memcpy(dst_ptr, src_ptr, visible_bpl[i]);
         src_ptr += visible_bpl[i];
-        dest_offset += static_cast<off_t>(coded_bpl[i]);
+        dst_ptr += static_cast<off_t>(coded_bpl[i]);
       }
-      dest_offset += static_cast<off_t>(padding_sizes[i]);
+      dest_offset += test_stream->aligned_plane_size[i];
     }
     src_offset += static_cast<off_t>(frame_buffer_size);
   }

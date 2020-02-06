@@ -429,24 +429,24 @@ class ChromeOSCreditsHandler
   DISALLOW_COPY_AND_ASSIGN(ChromeOSCreditsHandler);
 };
 
-class LinuxCreditsHandler
-    : public base::RefCountedThreadSafe<LinuxCreditsHandler> {
+class CrostiniCreditsHandler
+    : public base::RefCountedThreadSafe<CrostiniCreditsHandler> {
  public:
   static void Start(const std::string& path,
                     content::URLDataSource::GotDataCallback callback) {
-    scoped_refptr<LinuxCreditsHandler> handler(
-        new LinuxCreditsHandler(path, std::move(callback)));
+    scoped_refptr<CrostiniCreditsHandler> handler(
+        new CrostiniCreditsHandler(path, std::move(callback)));
     handler->StartOnUIThread();
   }
 
  private:
-  friend class base::RefCountedThreadSafe<LinuxCreditsHandler>;
+  friend class base::RefCountedThreadSafe<CrostiniCreditsHandler>;
 
-  LinuxCreditsHandler(const std::string& path,
-                      content::URLDataSource::GotDataCallback callback)
+  CrostiniCreditsHandler(const std::string& path,
+                         content::URLDataSource::GotDataCallback callback)
       : path_(path), callback_(std::move(callback)) {}
 
-  virtual ~LinuxCreditsHandler() {}
+  virtual ~CrostiniCreditsHandler() {}
 
   void StartOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -461,11 +461,11 @@ class LinuxCreditsHandler
     base::PostTaskAndReply(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&LinuxCreditsHandler::LoadLinuxCreditsFileAsync, this),
-        base::Bind(&LinuxCreditsHandler::ResponseOnUIThread, this));
+        base::Bind(&CrostiniCreditsHandler::LoadCrostiniCreditsFileAsync, this),
+        base::Bind(&CrostiniCreditsHandler::ResponseOnUIThread, this));
   }
 
-  void LoadLinuxCreditsFileAsync() {
+  void LoadCrostiniCreditsFileAsync() {
     base::FilePath credits_file_path(chrome::kLinuxCreditsPath);
     if (!base::ReadFileToString(credits_file_path, &contents_)) {
       // File with credits not found, ResponseOnUIThread will load credits
@@ -496,7 +496,7 @@ class LinuxCreditsHandler
   // Linux credits contents that was loaded from file.
   std::string contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(LinuxCreditsHandler);
+  DISALLOW_COPY_AND_ASSIGN(CrostiniCreditsHandler);
 };
 #endif
 
@@ -625,8 +625,8 @@ void AboutUIHTMLSource::StartDataRequest(
   } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
     ChromeOSCreditsHandler::Start(path, std::move(callback));
     return;
-  } else if (source_name_ == chrome::kChromeUILinuxCreditsHost) {
-    LinuxCreditsHandler::Start(path, std::move(callback));
+  } else if (source_name_ == chrome::kChromeUICrostiniCreditsHost) {
+    CrostiniCreditsHandler::Start(path, std::move(callback));
     return;
 #endif
 #if !defined(OS_ANDROID)
@@ -665,7 +665,7 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) {
 bool AboutUIHTMLSource::ShouldAddContentSecurityPolicy() {
 #if defined(OS_CHROMEOS)
   if (source_name_ == chrome::kChromeUIOSCreditsHost ||
-      source_name_ == chrome::kChromeUILinuxCreditsHost) {
+      source_name_ == chrome::kChromeUICrostiniCreditsHost) {
     return false;
   }
 #endif

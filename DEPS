@@ -134,11 +134,6 @@ vars = {
   # qemu on linux-arm64 machines.
   'checkout_fuchsia_for_arm64_host': False,
 
-  # By Default, do not checkout AEMU, as it is too big. This can be overridden
-  # e.g. with custom_vars.
-  # TODO(chonggu): Delete once AEMU package is small enough.
-  'checkout_aemu': False,
-
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_board': '',

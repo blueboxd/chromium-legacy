@@ -237,8 +237,8 @@ const char kChromeUIIntenetDetailDialogURL[] =
     "chrome://internet-detail-dialog/";
 const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
-const char kChromeUILinuxCreditsHost[] = "linux-credits";
-const char kChromeUILinuxCreditsURL[] = "chrome://linux-credits/";
+const char kChromeUICrostiniCreditsHost[] = "crostini-credits";
+const char kChromeUICrostiniCreditsURL[] = "chrome://crostini-credits/";
 const char kChromeUIMachineLearningInternalsHost[] =
     "machine-learning-internals";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
@@ -290,13 +290,13 @@ bool IsSystemWebUIHost(base::StringPiece host) {
       kChromeUIBluetoothPairingHost,
       kChromeUICellularSetupHost,
       kChromeUICertificateManagerHost,
+      kChromeUICrostiniCreditsHost,
       kChromeUICrostiniInstallerHost,
       kChromeUICryptohomeHost,
       kChromeUIDeviceEmulatorHost,
       kChromeUIFirstRunHost,
       kChromeUIInternetConfigDialogHost,
       kChromeUIInternetDetailDialogHost,
-      kChromeUILinuxCreditsHost,
       kChromeUIMobileSetupHost,
       kChromeUIMultiDeviceSetupHost,
       kChromeUINetworkHost,
@@ -594,10 +594,10 @@ const char* const kChromeHostURLs[] = {
 #endif
 #if defined(OS_CHROMEOS)
     kChromeUICertificateManagerHost,
+    kChromeUICrostiniCreditsHost,
     kChromeUICryptohomeHost,
     kChromeUIDriveInternalsHost,
     kChromeUIFirstRunHost,
-    kChromeUILinuxCreditsHost,
     kChromeUIMachineLearningInternalsHost,
     kChromeUINetworkHost,
     kChromeUIOobeHost,

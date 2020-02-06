@@ -130,9 +130,13 @@ def GetDeploymentTargetForArgs(args, require_kvm=False):
   else:
     system_log_file = None
 
-  # Allow fuchsia to run on qemu if device not explicitly chosen.
+  # Allow fuchsia to run on emulator if device not explicitly chosen.
+  # AEMU is the default emulator for x64 Fuchsia, and QEMU for others.
   if not args.device:
-    args.device = 'qemu'
+    if args.target_cpu == 'x64':
+      args.device = 'aemu'
+    else:
+      args.device = 'qemu'
 
   target_args = { 'output_dir':args.output_directory,
                   'target_cpu':args.target_cpu,

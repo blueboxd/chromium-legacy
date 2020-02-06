@@ -139,39 +139,45 @@ void RecordAppLaunch(const std::string& app_id,
 
   // Above are default Essential apps; below are built-in apps.
 
-  else if (app_id == ash::kInternalAppIdKeyboardShortcutViewer)
+  if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
     RecordBuiltInAppLaunch(BuiltInAppName::kKeyboardShortcutViewer,
                            launch_source);
-  else if (app_id == ash::kReleaseNotesAppId)
-    RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
-  else if (app_id == ash::kInternalAppIdDiscover)
-    RecordBuiltInAppLaunch(BuiltInAppName::kDiscover, launch_source);
-  else if (app_id == ash::kInternalAppIdSettings)
+  } else if (app_id == ash::kInternalAppIdSettings) {
     RecordBuiltInAppLaunch(BuiltInAppName::kSettings, launch_source);
+  } else if (app_id == ash::kInternalAppIdContinueReading) {
+    RecordBuiltInAppLaunch(BuiltInAppName::kContinueReading, launch_source);
+  } else if (app_id == ash::kInternalAppIdDiscover) {
+    RecordBuiltInAppLaunch(BuiltInAppName::kDiscover, launch_source);
 #if defined(OS_CHROMEOS)
-  else if (app_id == plugin_vm::kPluginVmAppId)
+  } else if (app_id == plugin_vm::kPluginVmAppId) {
     RecordBuiltInAppLaunch(BuiltInAppName::kPluginVm, launch_source);
 #endif  // OS_CHROMEOS
+  } else if (app_id == ash::kReleaseNotesAppId) {
+    RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
+  }
 }
 
 void RecordBuiltInAppSearchResult(const std::string& app_id) {
   if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
                               BuiltInAppName::kKeyboardShortcutViewer);
-  } else if (app_id == ash::kReleaseNotesAppId) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kReleaseNotes);
-  } else if (app_id == ash::kInternalAppIdDiscover) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kDiscover);
   } else if (app_id == ash::kInternalAppIdSettings) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
                               BuiltInAppName::kSettings);
+  } else if (app_id == ash::kInternalAppIdContinueReading) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kContinueReading);
+  } else if (app_id == ash::kInternalAppIdDiscover) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kDiscover);
 #if defined(OS_CHROMEOS)
   } else if (app_id == plugin_vm::kPluginVmAppId) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
                               BuiltInAppName::kPluginVm);
 #endif  // OS_CHROMEOS
+  } else if (app_id == ash::kReleaseNotesAppId) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
+                              BuiltInAppName::kReleaseNotes);
   }
 }
 

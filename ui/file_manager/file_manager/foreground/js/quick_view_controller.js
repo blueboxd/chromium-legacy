@@ -304,6 +304,18 @@ class QuickViewController {
   }
 
   /**
+   * Returns true if the entry can be deleted.
+   * @param {Entry} entry
+   * @return {!Promise<boolean>}
+   * @private
+   */
+  canDeleteEntry_(entry) {
+    const deleteCommand = CommandHandler.getCommand('delete');
+    return new Promise(
+        deleteCommand.canDeleteEntries([entry], this.fileManager_));
+  }
+
+  /**
    * Display quick view.
    *
    * @param {QuickViewUma.WayToOpen} wayToOpen The open quick view trigger.
@@ -382,13 +394,12 @@ class QuickViewController {
         .all([
           this.metadataModel_.get([entry], ['thumbnailUrl']),
           this.taskController_.getEntryFileTasks(entry),
-          CommandHandler.getCommand('delete').canDeleteEntries(
-              [entry], this.fileManager_)
+          this.canDeleteEntry_(entry),
         ])
         .then(values => {
-          const items = (/**@type{Array<MetadataItem>}*/ (values[0]));
-          const tasks = (/**@type{!FileTasks}*/ (values[1]));
-          const canDelete = ((values[2]));
+          const items = /**@type{Array<MetadataItem>}*/ (values[0]);
+          const tasks = /**@type{!FileTasks}*/ (values[1]);
+          const canDelete = values[2];
           return this.onMetadataLoaded_(entry, items, tasks, canDelete);
         })
         .catch(error => {
@@ -411,11 +422,6 @@ class QuickViewController {
    * @private
    */
   onMetadataLoaded_(entry, items, fileTasks, canDelete) {
-    // Question: Now that canDelete is in the typedef of QuickViewParams,
-    // closure will complain unless I add canDelete to the params object
-    // that is returned by getQuickViewParameters. This means that I am passing
-    // canDelete into getQuickViewParameters_ unnecessarily. Is this okay, or
-    // is there another way to make it so that this does not happen?
     const tasks = fileTasks.getTaskItems();
 
     return this.getQuickViewParameters_(entry, items, tasks, canDelete)

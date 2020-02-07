@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {EDIT_STARTUP_URL_EVENT, StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
 cr.define('settings_startup_urls_page', function() {
   /** @implements {settings.StartupUrlsPageBrowserProxy} */
   class TestStartupUrlsPageBrowserProxy extends TestBrowserProxy {
@@ -367,4 +374,5 @@ cr.define('settings_startup_urls_page', function() {
       assertTrue(!!element.$$('#dots'));
     });
   });
+  // #cr_define_end
 });

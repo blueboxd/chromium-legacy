@@ -168,6 +168,7 @@ Polymer({
       facingMode: 'user',
       width: {ideal: CAPTURE_SIZE.width},
       height: {ideal: CAPTURE_SIZE.height},
+      resizeMode: 'none',
     };
     navigator.webkitGetUserMedia(
         {video: videoConstraints}, successCallback, errorCallback);

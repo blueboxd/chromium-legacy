@@ -136,8 +136,8 @@ namespace automationInternal {
     static void enableTab(EnableTabParams args,
                           EnableTabCallback callback);
 
-    // Enable automation of the frame with the given tree id.
-    static void enableFrame(DOMString tree_id);
+    // Enable automation of the tree with the given id.
+    static void enableTree(DOMString tree_id);
 
     // Enables desktop automation.
     static void enableDesktop(EnableDesktopCallback callback);

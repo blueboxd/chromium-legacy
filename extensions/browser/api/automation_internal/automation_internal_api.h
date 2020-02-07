@@ -33,7 +33,7 @@ class AutomationInternalEnableTabFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableTab",
                              AUTOMATIONINTERNAL_ENABLETAB)
  protected:
-  ~AutomationInternalEnableTabFunction() override {}
+  ~AutomationInternalEnableTabFunction() override = default;
 
   ExtensionFunction::ResponseAction Run() override;
 };
@@ -42,7 +42,7 @@ class AutomationInternalPerformActionFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.performAction",
                              AUTOMATIONINTERNAL_PERFORMACTION)
  protected:
-  ~AutomationInternalPerformActionFunction() override {}
+  ~AutomationInternalPerformActionFunction() override = default;
 
   ExtensionFunction::ResponseAction Run() override;
 
@@ -53,12 +53,12 @@ class AutomationInternalPerformActionFunction : public ExtensionFunction {
       ui::AXActionData* data);
 };
 
-class AutomationInternalEnableFrameFunction : public ExtensionFunction {
-  DECLARE_EXTENSION_FUNCTION("automationInternal.enableFrame",
-                             AUTOMATIONINTERNAL_ENABLEFRAME)
+class AutomationInternalEnableTreeFunction : public ExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION("automationInternal.enableTree",
+                             AUTOMATIONINTERNAL_ENABLETREE)
 
  protected:
-  ~AutomationInternalEnableFrameFunction() override {}
+  ~AutomationInternalEnableTreeFunction() override = default;
 
   ExtensionFunction::ResponseAction Run() override;
 };
@@ -67,7 +67,7 @@ class AutomationInternalEnableDesktopFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableDesktop",
                              AUTOMATIONINTERNAL_ENABLEDESKTOP)
  protected:
-  ~AutomationInternalEnableDesktopFunction() override {}
+  ~AutomationInternalEnableDesktopFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -81,7 +81,7 @@ class AutomationInternalQuerySelectorFunction : public ExtensionFunction {
       Callback;
 
  protected:
-  ~AutomationInternalQuerySelectorFunction() override {}
+  ~AutomationInternalQuerySelectorFunction() override = default;
 
   ResponseAction Run() override;
 

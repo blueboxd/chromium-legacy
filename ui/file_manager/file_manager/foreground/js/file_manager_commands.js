@@ -1033,7 +1033,7 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
   }
 
   /**
-   * Returns true if all entries can be deleted Note: This does not check for
+   * Returns true if all entries can be deleted. Note: This does not check for
    * root or fake entries.
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
@@ -1051,14 +1051,19 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
    * Returns True if entries can be deleted.
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
-   * @return {!Promise<!boolean>}
+   * @return {boolean}
    * @public
    */
   canDeleteEntries(entries, fileManager) {
-    // Question: Now that we use this as a public method, in canDeleteEntries_
-    // should we now check for the condition
-    // !entries.every(CommandUtil.shouldShowMenuItemsForEntry?
-    return Promise.resolve(this.canDeleteEntries_(entries, fileManager));
+    // Verify that the entries are not fake or root entries, and that they
+    // can be deleted.
+    if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
+            null, fileManager.volumeManager)) ||
+        !this.canDeleteEntries_(entries, fileManager)) {
+      return false;
+    }
+
+    return true;
   }
 
   /**

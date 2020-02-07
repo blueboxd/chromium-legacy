@@ -197,3 +197,27 @@ var CrSettingsSearchPageV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsSearchPageV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsOnStartupPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/on_startup_page_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsOnStartupPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsStartupUrlsPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/startup_urls_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsStartupUrlsPageV3Test', 'All', function() {
+  mocha.run();
+});

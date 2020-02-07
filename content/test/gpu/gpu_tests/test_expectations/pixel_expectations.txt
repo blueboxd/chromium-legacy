@@ -1,5 +1,5 @@
 # tags: [ android chromeos highsierra linux mac mojave win ]
-# tags: [ android-chromium android-webview-instrumentation debug ]
+# tags: [ android-chromium android-webview-instrumentation android-not-webview debug ]
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-gl no-use-gl ]
 # tags: [ use-vulkan no-use-vulkan ]
@@ -33,6 +33,9 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 # Skip tab switching tests on Android webview since it doesn't have tabs
 [ android android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
 [ android android-webview-instrumentation ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
+
+# Failing on Android Pixel 2 with SkiaRenderer Vulkan
+crbug.com/1049864 [ android android-not-webview qualcomm-adreno-(tm)-540 skia-renderer use-vulkan ] Pixel_WebGLReadPixelsTabSwitch [ Failure ]
 
 # Tests running with SwiftShader are skipped on platforms where SwiftShader
 # isn't supported.

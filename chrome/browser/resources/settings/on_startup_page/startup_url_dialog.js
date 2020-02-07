@@ -52,7 +52,7 @@ Polymer({
     actionButtonText_: String,
   },
 
-  /** @private {!settings.SearchEnginesBrowserProxy} */
+  /** @private {?settings.StartupUrlsPageBrowserProxy} */
   browserProxy_: null,
 
   /** @override */

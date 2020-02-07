@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 cr.define('settings', function() {
   /**
@@ -329,8 +330,12 @@ cr.define('settings', function() {
       assert(!urlPath.startsWith('settings'));
       assert(urlPath.startsWith('/'));
       assert(!urlPath.match(/\?/g));
-      chrome.metricsPrivate.recordSparseHashable(
-          'WebUI.Settings.PathVisited', urlPath);
+
+      const metricName = loadTimeData.valueExists('isOSSettings') &&
+              loadTimeData.getBoolean('isOSSettings') ?
+          'ChromeOS.Settings.PathVisited' :
+          'WebUI.Settings.PathVisited';
+      chrome.metricsPrivate.recordSparseHashable(metricName, urlPath);
     }
 
     resetRouteForTesting() {

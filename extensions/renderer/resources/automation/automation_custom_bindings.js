@@ -193,7 +193,7 @@ automationInternal.onChildTreeID.addListener(function(childTreeId) {
     privates(root).impl.dispatchEvent('loadComplete', 'page');
   }, true);
 
-  automationInternal.enableFrame(childTreeId);
+  automationInternal.enableTree(childTreeId);
 });
 
 automationInternal.onTreeChange.addListener(function(observerID,
@@ -288,7 +288,7 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
 
 automationInternal.onAccessibilityTreeSerializationError.addListener(
     function(id) {
-  automationInternal.enableFrame(id);
+  automationInternal.enableTree(id);
 });
 
 automationInternal.onActionResult.addListener(function(

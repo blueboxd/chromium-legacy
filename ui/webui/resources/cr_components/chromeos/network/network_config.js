@@ -554,7 +554,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedBoolean|undefined} property
+   * @param {?mojom.ManagedBoolean|undefined} property
    * @return {boolean}
    * @private
    */
@@ -566,7 +566,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedStringList|undefined} property
+   * @param {?mojom.ManagedStringList|undefined} property
    * @return {!Array<string>|undefined}
    * @private
    */
@@ -728,7 +728,7 @@ Polymer({
       clientCertPkcs11Id: OncMojo.getActiveString(openVpn.clientCertPkcs11Id),
       clientCertType: OncMojo.getActiveString(openVpn.clientCertType),
       extraHosts: this.getActiveStringList_(openVpn.extraHosts),
-      otp: OncMojo.getActiveString(openVpn.otp),
+      otp: '',
       password: OncMojo.getActiveString(openVpn.password),
       saveCredentials: this.getActiveBoolean_(openVpn.saveCredentials),
       serverCaPems: this.getActiveStringList_(openVpn.serverCaPems),
@@ -775,8 +775,6 @@ Polymer({
         configWifi.security = security;
         break;
       case mojom.NetworkType.kEthernet:
-        autoConnect = this.getActiveBoolean_(
-            managedProperties.typeProperties.ethernet.autoConnect);
         const eap = managedProperties.typeProperties.ethernet.eap ?
             this.getEAPConfigProperties_(
                 managedProperties.typeProperties.ethernet.eap) :
@@ -1447,11 +1445,11 @@ Polymer({
       }
       if (vpnConfig.type === mojom.VpnType.kOpenVPN) {
         this.setOpenVPNProperties_(propertiesToSet);
-        delete propertiesToSet.ipSec;
-        delete propertiesToSet.l2tp;
+        delete propertiesToSet.typeConfig.vpn.ipSec;
+        delete propertiesToSet.typeConfig.vpn.l2tp;
       } else if (vpnConfig.type === mojom.VpnType.kL2TPIPsec) {
         this.setVpnIPsecProperties_(propertiesToSet);
-        delete propertiesToSet.openVpn;
+        delete propertiesToSet.typeConfig.vpn.openVpn;
       }
     }
     return propertiesToSet;
@@ -1702,9 +1700,10 @@ Polymer({
     const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
-        return vpn.openVpn.saveCredentials;
+        return vpn.openVpn.saveCredentials || OncMojo.createManagedBool(false);
       case mojom.VpnType.kL2TPIPsec:
-        return vpn.ipSec.saveCredentials || vpn.l2tp.saveCredentials;
+        return vpn.ipSec.saveCredentials || vpn.l2tp.saveCredentials ||
+            OncMojo.createManagedBool(false);
     }
     assertNotReached();
     return undefined;
@@ -1712,7 +1711,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @return {!mojom.ManagedStringList|undefined}
+   * @return {?mojom.ManagedStringList|undefined}
    * @private
    */
   getManagedVpnServerCaRefs_(managedProperties) {
@@ -1736,9 +1735,9 @@ Polymer({
     const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
-        return vpn.openVpn.clientCertType;
+        return vpn.openVpn.clientCertType || OncMojo.createManagedString('');
       case mojom.VpnType.kL2TPIPsec:
-        return vpn.ipSec.clientCertType;
+        return vpn.ipSec.clientCertType || OncMojo.createManagedString('');
     }
     assertNotReached();
     return undefined;

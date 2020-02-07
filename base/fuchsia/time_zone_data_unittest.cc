@@ -31,7 +31,7 @@ class TimeZoneDataTest : public testing::Test {
   std::unique_ptr<base::Environment> env_;
 };
 
-TEST_F(TimeZoneDataTest, RevisionFromConfig) {
+TEST_F(TimeZoneDataTest, DISABLED_RevisionFromConfig) {
   // Config data is not available on Chromium test runners, so don't actually
   // run this test there.  A marker for this is the presence of revision.txt.
   if (!base::PathExists(base::FilePath("/config/data/tzdata/revision.txt")))
@@ -49,7 +49,7 @@ TEST_F(TimeZoneDataTest, RevisionFromConfig) {
   EXPECT_EQ(expected, actual);
 }
 
-TEST_F(TimeZoneDataTest, RevisionFromTestData) {
+TEST_F(TimeZoneDataTest, DISABLED_RevisionFromTestData) {
   // TODO(1047475): Adding more asserts in case they give more hints to the
   // buildbot failures.
   ASSERT_TRUE(base::DirectoryExists(

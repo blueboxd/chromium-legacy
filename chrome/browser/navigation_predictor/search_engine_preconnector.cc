@@ -117,7 +117,8 @@ GURL SearchEnginePreconnector::GetDefaultSearchEngineOriginURL() const {
       Profile::FromBrowserContext(browser_context_));
   if (!template_service)
     return GURL();
-  return template_service->GetDefaultSearchProvider()
-      ->GenerateSearchURL({})
-      .GetOrigin();
+  const auto* search_provider = template_service->GetDefaultSearchProvider();
+  if (!search_provider)
+    return GURL();
+  return search_provider->GenerateSearchURL({}).GetOrigin();
 }

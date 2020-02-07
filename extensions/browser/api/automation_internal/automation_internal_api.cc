@@ -292,9 +292,8 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
           ax_tree_id.ToString(), tab_id)));
 }
 
-ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
-  // TODO(dtseng): Limited to desktop tree for now pending out of proc iframes.
-  using api::automation_internal::EnableFrame::Params;
+ExtensionFunction::ResponseAction AutomationInternalEnableTreeFunction::Run() {
+  using api::automation_internal::EnableTree::Params;
 
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

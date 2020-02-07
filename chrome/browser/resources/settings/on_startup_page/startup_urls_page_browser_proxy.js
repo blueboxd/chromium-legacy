@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * @typedef {{
  *   modelIndex: number,
@@ -10,11 +14,11 @@
  *   url: string
  * }}
  */
-let StartupPageInfo;
+/* #export */ let StartupPageInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  class StartupUrlsPageBrowserProxy {
+  /* #export */ class StartupUrlsPageBrowserProxy {
     loadStartupPages() {}
     useCurrentPages() {}
 
@@ -46,7 +50,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.StartupUrlsPageBrowserProxy}
    */
-  class StartupUrlsPageBrowserProxyImpl {
+  /* #export */ class StartupUrlsPageBrowserProxyImpl {
     /** @override */
     loadStartupPages() {
       chrome.send('onStartupPrefsPageLoad');
